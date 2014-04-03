@@ -101,7 +101,7 @@ function buildfloorPlanList(model) {
 var deferredInit = null;
 
 function loadPlugin() {
-    //lock ui
+    // lock uia
     $.blockUI({
 	message : '<div>Please wait ...</div>',
 	css : {
@@ -145,9 +145,9 @@ function loadPlugin() {
 		    yepnope({
 			load : resources,
 			complete : function() {
-			    //here, all resources are really loaded
+			    // here, all resources are really loaded
 			    init_plugin();
-			    //unlock ui
+			    // unlock ui
 			    $.unblockUI();
 			}
 		    });
@@ -187,6 +187,8 @@ function initGUI() {
 	init_eventConfig();
     } else if (page == "scenarioConfig") {
 	init_scenarioConfig();
+    } else if (page == "securityConfig") {
+	init_securityConfig();
     } else if (page == "inventoryView") {
 	deferredInit = init_inventoryView;
     } else if (page == "systemStatus") {
@@ -229,6 +231,8 @@ function getStartJSFile() {
 	return "js/app.systemstatus.js";
     } else if (page == "pluginsConfig") {
 	return "js/app.config.plugins.js";
+    } else if (page == "securityConfig") {
+	return "js/app.config.security.js";
     }
 
     return null;
