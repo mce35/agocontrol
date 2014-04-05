@@ -4,6 +4,8 @@ lib/systemd/system/agoscenario.service
 lib/systemd/system/agotimer.service
 lib/systemd/system/agorpc.service
 lib/systemd/system/agodatalogger.service
+lib/systemd/system/agolua.service
+lib/systemd/system/agosecurity.service
 etc/opt/agocontrol/conf.d/system.conf
 etc/opt/agocontrol/conf.d/rpc.conf
 etc/opt/agocontrol/schema.yaml
