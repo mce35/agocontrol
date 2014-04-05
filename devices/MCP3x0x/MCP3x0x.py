@@ -10,16 +10,12 @@
 # See the GNU General Public License for more details.
 #
 #
-# ago raspberry pi MCP3002 GPIO device
+# /etc/opt/agocontrol/conf.d/MCP3x0x.conf
 #
-# I am developing this driver on occidentalis distro from adfruit.com
-#
-# /etc/opt/agocontrol/config.ini
-#
-# [raspiMCP300xGPIO]
+# [MCP3x0x]
 #
 # voltage_divider = 1
-# inputs = 0
+# inputs = 0,0
 # interval=600
 # change=0.1
 #
@@ -37,12 +33,12 @@ import spidev
 spi = spidev.SpiDev()
 spi.open(0, 0)
 
-client = agoclient.AgoConnection("raspiMCP3x0xGPIO")
+client = agoclient.AgoConnection("MCP3x0x")
 
-vDiv = float(agoclient.getConfigOption("raspiMCP3xxxGPIO", "voltage_divider", "1"))
-readInputs = agoclient.getConfigOption("raspiMCP3xxxGPIO", "inputs", "0,1")
-interval = int(agoclient.getConfigOption("raspiMCP3xxxGPIO", "interval", "60"))
-change = float(agoclient.getConfigOption("raspiMCP3xxxGPIO", "change", "0.1"))
+vDiv = float(agoclient.getConfigOption("MCP3x0x", "voltage_divider", "1"))
+readInputs = agoclient.getConfigOption("MCP3x0x", "inputs", "0,1")
+interval = int(agoclient.getConfigOption("MCP3x0x", "interval", "60"))
+change = float(agoclient.getConfigOption("MCP3x0x", "change", "0.1"))
 
 inputs = map(int, readInputs.split(','))
 
