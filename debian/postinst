@@ -34,8 +34,11 @@ sasldblistusers2 -f /etc/qpid/qpidd.sasldb  | grep -q agocontrol || (
 	echo $PASSWD | saslpasswd2 -c -p -f /etc/qpid/qpidd.sasldb -u QPID agocontrol
 )
 
-grep -q agocontrol /etc/qpid/qpidd.acl || sed -i 's/admin@QPID/admin@QPID agocontrol@QPID/g' /etc/qpid/qpidd.acl
-chown .qpidd /etc/qpid/qpidd.acl
+grep -q agocontrol /etc/qpid/qpidd.acl || (
+	sed -i 's/admin@QPID/admin@QPID agocontrol@QPID/g' /etc/qpid/qpidd.acl
+	chown .qpidd /etc/qpid/qpidd.acl
+	invoke-rc.d qpidd restart
+)
 
 chown -R agocontrol:agocontrol /etc/opt/agocontrol
 
