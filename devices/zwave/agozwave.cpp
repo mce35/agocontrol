@@ -931,6 +931,9 @@ int main(int argc, char **argv) {
 	Options::Get()->AddOptionBool("PerformReturnRoutes", false );
 	Options::Get()->AddOptionBool("ConsoleOutput", false ); 
 
+	int retryTimeout = atoi(getConfigOption("zwave","retrytimeout","2000").c_str());
+	OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
+
 	Options::Get()->Lock();
 	Manager::Create();
 	Manager::Get()->AddWatcher( OnNotification, NULL );
