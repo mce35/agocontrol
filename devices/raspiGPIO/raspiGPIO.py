@@ -18,9 +18,9 @@ import syslog
 
 client = agoclient.AgoConnection("raspiGPIO")
 
-readInputs = agoclient.getConfigOption("raspiGPIO", "inputs", "")
-readOutputs = agoclient.getConfigOption("raspiGPIO", "outputs", "")
-reverse = agoclient.getConfigOption("raspiGPIO", "reverse", "0")
+readInputs = agoclient.get_config_option("raspiGPIO", "inputs", "")
+readOutputs = agoclient.get_config_option("raspiGPIO", "outputs", "")
+reverse = agoclient.get_config_option("raspiGPIO", "reverse", "0")
 
 GPIO.setmode(GPIO.BCM)
 
@@ -33,7 +33,7 @@ else:
 	for pin in inputs:
 		#print pin
 		GPIO.setup(pin, GPIO.IN)
-		client.addDevice(pin, "binarysensor")
+		client.add_device(pin, "binarysensor")
 
 try:
 	outputs = map(int, readOutputs.split(','))
@@ -44,7 +44,7 @@ else:
 	for pin in outputs:
 		#print pin
 		GPIO.setup(pin, GPIO.OUT)
-		client.addDevice(pin, "switch")
+		client.add_device(pin, "switch")
 
 def messageHandler(internalid, content):
 	if "command" in content:
@@ -54,16 +54,16 @@ def messageHandler(internalid, content):
 				GPIO.output(internalid, False)
 			else:
 				GPIO.output(internalid, True)
-			client.emitEvent(internalid, "event.device.statechanged", "255", "")
+			client.emit_event(internalid, "event.device.statechanged", "255", "")
 		if content["command"] == "off":
 			#print "switching off: ", internalid
 			if reverse=="1":
 				GPIO.output(internalid, True)
 			else:
 				GPIO.output(internalid, False)
-			client.emitEvent(internalid, "event.device.statechanged", "0", "")
+			client.emit_event(internalid, "event.device.statechanged", "0", "")
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 class readGPIO(threading.Thread):
     def __init__(self,):
@@ -80,10 +80,10 @@ class readGPIO(threading.Thread):
 				input[pin] = GPIO.input(pin)
 				if (not prev_input[pin]) and input[pin]:
 					#print 'sensor:', pin, '255'
-					client.emitEvent(pin, "event.security.sensortriggered", 255, "")
+					client.emit_event(pin, "event.security.sensortriggered", 255, "")
 				if prev_input[pin] and (not input[pin]):
 					#print 'sensor:', pin, '0'
-					client.emitEvent(pin, "event.security.sensortriggered", 0, "")
+					client.emit_event(pin, "event.security.sensortriggered", 0, "")
 				prev_input[pin] = input[pin]
 			time.sleep(0.002)
 

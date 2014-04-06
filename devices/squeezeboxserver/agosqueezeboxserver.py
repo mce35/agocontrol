@@ -11,10 +11,10 @@ import time
 
 client = agoclient.AgoConnection("squeezebox")
 
-# if you need to fetch any settings from config.ini, use the getConfigOption call. The first parameter is the section name in the file (should be yor instance name)
+# if you need to fetch any settings from config.ini, use the get_config_option call. The first parameter is the section name in the file (should be yor instance name)
 # the second one is the parameter name, and the third one is the default value for the case when nothing is set in the config.ini
 
-server = agoclient.getConfigOption("squeezebox", "server", "127.0.0.1:9000")
+server = agoclient.get_config_option("squeezebox", "server", "127.0.0.1:9000")
 print "Server: " + server
 
 squeezebox = squeezeboxserver.SqueezeboxServer(server)
@@ -30,44 +30,44 @@ def messageHandler(internalid, content):
 
 			squeezebox.power(internalid, content["command"])
 
-			client.emitEvent(internalid, "event.device.statechanged", "255", "")
+			client.emit_event(internalid, "event.device.statechanged", "255", "")
 
 		if content["command"] == "off":
 			print "switching off: " + internalid
 
 			squeezebox.power(internalid, content["command"])
 			
-			client.emitEvent(internalid, "event.device.statechanged", "0", "")
+			client.emit_event(internalid, "event.device.statechanged", "0", "")
 			
 		if content["command"] == "play":
 			print "Play: " + internalid
 
 			squeezebox.playlist(internalid, content["command"])
 			
-			client.emitEvent(internalid, "event.mediaplayer.statechanged", content["command"], "")	
+			client.emit_event(internalid, "event.mediaplayer.statechanged", content["command"], "")	
 		
 		if content["command"] == "pause":
 			print "Pause: " + internalid
 
 			squeezebox.playlist(internalid, content["command"])
 			
-			client.emitEvent(internalid, "event.mediaplayer.statechanged", content["command"], "")	
+			client.emit_event(internalid, "event.mediaplayer.statechanged", content["command"], "")	
 		
 		if content["command"] == "stop":
 			print "Stop: " + internalid
 
 			squeezebox.playlist(internalid, content["command"])
 			
-			client.emitEvent(internalid, "event.mediaplayer.statechanged", content["command"], "")
+			client.emit_event(internalid, "event.mediaplayer.statechanged", content["command"], "")
 
 # specify our message handler method
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
-# of course you need to tell the client library about the devices you provide. The addDevice call expects a internal id and a device type (you can find all valid types
+# of course you need to tell the client library about the devices you provide. The add_device call expects a internal id and a device type (you can find all valid types
 # in the schema.yaml configuration file). The internal id is whatever you're using in your code to distinct your devices. Or the pin number of some GPIO output. Or
 # the IP of a networked device. Whatever fits your device specific stuff. The persistent translation to a ago control uuid will be done by the client library. The
 # mapping is stored as a json file in CONFDIR/uuidmap/<instance name>.json
-# you don't need to worry at all about this, when the messageHandler is called, you'll be passed the internalid for the device that you did specifiy when using addDevice()
+# you don't need to worry at all about this, when the messageHandler is called, you'll be passed the internalid for the device that you did specifiy when using add_device()
 
 # Discover the devices connected
 
@@ -75,9 +75,9 @@ players = squeezebox.players()
 
 for p in players:
 	print ("MAC: %s" % p['playerid'])
-	client.addDevice(p['playerid'], "squeezebox")
+	client.add_device(p['playerid'], "squeezebox")
 
-#client.addDevice("MAC Address", "squeezebox")
+#client.add_device("MAC Address", "squeezebox")
 
 # then we add a background thread. This is not required and just shows how to send events from a separate thread. This might be handy when you have to poll something
 # in the background or need to handle some other communication. If you don't need one or if you want to keep things simple at the moment just skip this section.
@@ -90,7 +90,7 @@ for p in players:
 #    def run(self):
 #    	level = 0
 #        while (True):
-#			client.emitEvent("125", "event.security.sensortriggered", level, "")
+#			client.emit_event("125", "event.security.sensortriggered", level, "")
 #			if (level == 0):
 #				level = 255
 #			else:

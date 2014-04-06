@@ -36,9 +36,9 @@ def messageHandler(internalid, content):
 
     return result
 
-client.addHandler(messageHandler)
-#devicelist=agoclient.getConfigOption("raspiCamera", "devices", "")
+client.add_handler(messageHandler)
+#devicelist=agoclient.get_config_option("raspiCamera", "devices", "")
 
-client.addDevice("raspiCamera", "camera")
+client.add_device("raspiCamera", "camera")
 
 client.run()

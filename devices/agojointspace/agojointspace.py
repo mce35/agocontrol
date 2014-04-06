@@ -166,7 +166,7 @@ def reportDevice(deviceUUID, type, product):
 		syslog.syslog(syslog.LOG_ERR, 'Error: (reportDevice) ' + e)
 
 # Remove device from resolver
-def removeDevice(deviceUUID):
+def remove_device(deviceUUID):
 	syslog.syslog(syslog.LOG_NOTICE, "Removing " + uuidmap[deviceUUID].name + " from resolver")
 	try:
 		content = {}
@@ -174,7 +174,7 @@ def removeDevice(deviceUUID):
 		message = Message(content=content,subject="event.device.remove")
 		sender.send(message)
 	except SendError, e:
-		syslog.syslog(syslog.LOG_ERR, 'Error: (removeDevice) ' + e)
+		syslog.syslog(syslog.LOG_ERR, 'Error: (remove_device) ' + e)
 
 # Report changed state to resolver
 def sendStateChangedEvent(deviceUUID, level):
@@ -213,7 +213,7 @@ def sendChannelChangedEvent(deviceUUID, channel):
 def scanDeviceTimeouts():
     for deviceUUID, device in uuidmap.items():
 		if (time.time() - device.lastseen > deviceTimeout):
-			removeDevice(deviceUUID)
+			remove_device(deviceUUID)
 			del uuidmap[deviceUUID]
 			updateStore()
 
@@ -500,7 +500,7 @@ while True:
 						elif message.content['command'] == 'off':
 							if set_device_power(d, 'off'):
 								sendStateChangedEvent(deviceUUID, 0)
-								removeDevice(deviceUUID)
+								remove_device(deviceUUID)
 								pass
 							else:
 								syslog.syslog(syslog.LOG_ERR, 'Error executing the power off command for '+d.name)

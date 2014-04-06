@@ -231,10 +231,10 @@ def getErrorString(intErrorNo):
 
     return s
 
-def addDevice():
+def add_device():
     return tdlib.tdAddDevice()
 
-def removeDevice(intDeviceId):
+def remove_device(intDeviceId):
     return tdlib.tdRemoveDevice(intDeviceId)
 
 def setName(intDeviceId, chNewName):
@@ -583,7 +583,7 @@ if __name__ == '__main__':
     print ( 'getDeviceIdFromStr', getDeviceIdFromStr('234'))
 
 
-    devId = addDevice()
+    devId = add_device()
     if devId > 0:
         print ( 'AddDevice', devId)
         print ( 'setName', repr(setName(devId, 'Test')))
@@ -609,10 +609,10 @@ if __name__ == '__main__':
             devId = getDeviceId(i)
             print ( devId, getName(devId), methods(devId))
 
-        print ( 'Remove Device', removeDevice(devId))
+        print ( 'Remove Device', remove_device(devId))
 
     else:
-        print ( 'addDevice returned error', getErrorString(devId))
+        print ( 'add_device returned error', getErrorString(devId))
 
     print ( '\n\nId\tName')
     for i in range(getNumberOfDevices()):

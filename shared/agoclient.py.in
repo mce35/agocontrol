@@ -1,7 +1,7 @@
 """@package agoclient
 This is the agocontrol python client library.
 
-An example device can be found here: 
+An example device can be found here:
 http://wiki.agocontrol.com/index.php/Example_Device
 """
 
@@ -25,7 +25,8 @@ LOCALSTATEDIR = '@LOCALSTATEDIR@'
 
 CONFIG_LOCK = Lock()
 
-def getConfigOption(section, option, default, filename=None):
+
+def get_config_option(section, option, default, filename=None):
     """Read a config option from a .ini style file."""
     config = ConfigParser.ConfigParser()
     CONFIG_LOCK.acquire(True)
@@ -36,13 +37,15 @@ def getConfigOption(section, option, default, filename=None):
             config.read(CONFDIR + '/conf.d/' + section + '.conf')
         value = config.get(section, option)
     except ConfigParser.Error, exception:
-        syslog.syslog(syslog.LOG_WARNING, "Can't parse config file: " + str(exception))
+        syslog.syslog(syslog.LOG_WARNING,
+            "Can't parse config file: " + str(exception))
         value = default
     finally:
         CONFIG_LOCK.release()
     return value
 
-def setConfigOption(section, option, value, filename=None):
+
+def set_config_option(section, option, value, filename=None):
     """Write out a config option to a .ini style file."""
     config = ConfigParser.ConfigParser()
     result = False
@@ -64,11 +67,13 @@ def setConfigOption(section, option, value, filename=None):
         fpw.close()
         result = True
     except ConfigParser.Error, exception:
-        syslog.syslog(syslog.LOG_ERR, "Can't write config file: " + str(exception))
+        syslog.syslog(syslog.LOG_ERR,
+            "Can't write config file: " + str(exception))
         result = False
     finally:
         CONFIG_LOCK.release()
     return result
+
 
 class AgoConnection:
     """This is class will handle the connection to ago control."""
@@ -76,106 +81,123 @@ class AgoConnection:
         """The constructor."""
         self.instance = instance
         syslog.syslog(syslog.LOG_NOTICE, "connecting to broker")
-        broker = getConfigOption("system", "broker", "localhost")
-        username = getConfigOption("system", "username", "agocontrol")
-        password = getConfigOption("system", "password", "letmein")
-        self.connection = Connection(broker, username=username, password=password, reconnect=True)
+        broker = get_config_option("system", "broker", "localhost")
+        username = get_config_option("system", "username", "agocontrol")
+        password = get_config_option("system", "password", "letmein")
+        self.connection = Connection(broker,
+            username=username, password=password, reconnect=True)
         self.connection.open()
         self.session = self.connection.session()
-        self.receiver = self.session.receiver("agocontrol; {create: always, node: {type: topic}}")
-        self.sender = self.session.sender("agocontrol; {create: always, node: {type: topic}}")
+        self.receiver = self.session.receiver(
+            "agocontrol; {create: always, node: {type: topic}}")
+        self.sender = self.session.sender(
+            "agocontrol; {create: always, node: {type: topic}}")
         self.devices = {}
         self.uuids = {}
         self.handler = None
         self.eventhandler = None
-        self.loadUuidMap()
+        self.load_uuid_map()
 
     def __del__(self):
         self.session.acknowledge()
         self.session.close()
         self.connection.close()
 
-    def addHandler(self, handler):
-        """Add a command handler to be called when a command for a local device arrives."""
+    def add_handler(self, handler):
+        """Add a command handler to be called when
+        a command for a local device arrives."""
         self.handler = handler
 
-    def addEventHandler(self, eventhandler):
+    def add_event_handler(self, eventhandler):
         """Add an event handler to be called when an event arrives."""
         self.eventhandler = eventhandler
 
-    def internalIdToUuid(self, internalid):
+    def internal_id_to_uuid(self, internalid):
         """Convert a local (internal) id to an agocontrol UUID."""
         for uuid in self.uuids:
             if (self.uuids[uuid] == internalid):
                 return uuid
 
-    def uuidToInternalId(self, uuid):
+    def uuid_to_internal_id(self, uuid):
         """Convert an agocontrol UUID to a local (internal) id."""
         try:
             return self.uuids[uuid]
-        except KeyError, e:
-            syslog.syslog(syslog.LOG_WARNING, "Cannot translate uuid to internalid: " + str(e))
+        except KeyError, exception:
+            syslog.syslog(syslog.LOG_WARNING,
+                "Cannot translate uuid to internalid: " + str(exception))
             return None
 
-    def storeUuidMap(self):
-        """Store the mapping (dict) of UUIDs to internal ids into a JSON file."""
+    def store_uuid_map(self):
+        """Store the mapping (dict) of UUIDs to
+        internal ids into a JSON file."""
         try:
-            with open(CONFDIR + '/uuidmap/' + self.instance + '.json' , 'w') as outfile:
+            with open(CONFDIR + '/uuidmap/' + self.instance +
+                '.json', 'w') as outfile:
                 simplejson.dump(self.uuids, outfile)
-        except (OSError, IOError) as e:
-            syslog.syslog(syslog.LOG_ERR, "Cannot write uuid map file: " + str(e))
-        except ValueError, e: # includes simplejson error
-            syslog.syslog(syslog.LOG_ERR, "Cannot encode uuid map: " + str(e))
+        except (OSError, IOError) as exception:
+            syslog.syslog(syslog.LOG_ERR,
+                "Cannot write uuid map file: " + str(exception))
+        except ValueError, exception:  # includes simplejson error
+            syslog.syslog(syslog.LOG_ERR,
+                "Cannot encode uuid map: " + str(exception))
 
-    def loadUuidMap(self):
-        """Read the mapping (dict) of UUIDs to internal ids from a JSON file."""
+    def load_uuid_map(self):
+        """Read the mapping (dict) of UUIDs to
+        internal ids from a JSON file."""
         try:
-            with open(CONFDIR + '/uuidmap/' + self.instance + '.json' , 'r') as infile:
+            with open(CONFDIR + '/uuidmap/' + self.instance +
+                '.json', 'r') as infile:
                 self.uuids = simplejson.load(infile)
-        except (OSError, IOError) as e:
-            syslog.syslog(syslog.LOG_ERR, "Cannot load uuid map file: " + str(e))
-        except ValueError, e: # includes simplejson.decoder.JSONDecodeError
-            syslog.syslog(syslog.LOG_ERR, "Cannot decode uuid map: " + str(e))
+        except (OSError, IOError) as exception:
+            syslog.syslog(syslog.LOG_ERR,
+                "Cannot load uuid map file: " + str(exception))
+        except ValueError, exception:  # includes simplejson error
+            syslog.syslog(syslog.LOG_ERR,
+                "Cannot decode uuid map: " + str(exception))
 
-    def emitDeviceAnnounce(self, uuid, device):
-        """Send a device announce event, this will be honored by the resolver component.
-
-        You can find more information regarding the resolver here: http://wiki.agocontrol.com/index.php/Resolver """
+    def emit_device_announce(self, uuid, device):
+        """Send a device announce event, this will
+        be honored by the resolver component.
+        You can find more information regarding the resolver
+        here: http://wiki.agocontrol.com/index.php/Resolver """
         content = {}
-        content["devicetype"]  = device["devicetype"]
-        content["uuid"]  = uuid
-        content["internalid"]  = device["internalid"]
-        content["handled-by"]  = self.instance
-        self.sendMessage("event.device.announce", content)
+        content["devicetype"] = device["devicetype"]
+        content["uuid"] = uuid
+        content["internalid"] = device["internalid"]
+        content["handled-by"] = self.instance
+        self.send_message("event.device.announce", content)
 
-    def emitDeviceRemove(self, uuid):
+    def emit_device_remove(self, uuid):
         """Send a device remove event to the resolver"""
         content = {}
-        content["uuid"]  = uuid
-        self.sendMessage("event.device.remove", content)
+        content["uuid"] = uuid
+        self.send_message("event.device.remove", content)
 
-    def addDevice(self, internalid, devicetype):
-        """Add a device. Announcement to ago control will happen automatically. Commands to this device will be dispatched to the command handler.
+    def add_device(self, internalid, devicetype):
+        """Add a device. Announcement to ago control will happen
+        automatically. Commands to this device will be dispatched
+        to the command handler.
         The devicetype corresponds to an entry in the schema."""
-        if (self.internalIdToUuid(internalid) == None):
-            self.uuids[str(uuid4())]=internalid
-            self.storeUuidMap()
+        if (self.internal_id_to_uuid(internalid) is None):
+            self.uuids[str(uuid4())] = internalid
+            self.store_uuid_map()
         device = {}
         device["devicetype"] = devicetype
         device["internalid"] = internalid
-        self.devices[self.internalIdToUuid(internalid)] = device
-        self.emitDeviceAnnounce(self.internalIdToUuid(internalid), device)
+        self.devices[self.internal_id_to_uuid(internalid)] = device
+        self.emit_device_announce(self.internal_id_to_uuid(internalid), device)
 
-    def removeDevice(self, internalid):
-        if (self.internalIdToUuid(internalid) != None):
-            self.emitDeviceRemove(self.internalIdToUuid(internalid))
-            del self.devices[self.internalIdToUuid(internalid)]
+    def remove_device(self, internalid):
+        """Remove a device."""
+        if (self.internal_id_to_uuid(internalid) is not None):
+            self.emit_device_remove(self.internal_id_to_uuid(internalid))
+            del self.devices[self.internal_id_to_uuid(internalid)]
 
-    def sendMessage(self, content):
+    def send_message(self, content):
         """Send message without subject."""
-        return self.sendMessage(None, content)
+        return self.send_message(None, content)
 
-    def sendMessage(self, subject, content):
+    def send_message(self, subject, content):
         """Method to send an agocontrol message with a subject."""
         _content = content
         _content["instance"] = self.instance
@@ -183,98 +205,109 @@ class AgoConnection:
             message = Message(content=_content, subject=subject)
             self.sender.send(message)
             return True
-        except SendError, e:
-            syslog.syslog(syslog.LOG_ERR, "Can't send message: " + str(e))
+        except SendError, exception:
+            syslog.syslog(syslog.LOG_ERR,
+                "Can't send message: " + str(exception))
             return False
 
-    def sendMessageReply(self, content):
+    def send_message_reply(self, content):
         """Send message and fetch reply."""
         _content = content
         _content["instance"] = self.instance
         try:
             replyuuid = str(uuid4())
-            replyreceiver = self.session.receiver("reply-%s; {create: always, delete: always}" % replyuuid)
+            replyreceiver = self.session.receiver(
+                "reply-%s; {create: always, delete: always}" % replyuuid)
             message = Message(content=_content)
             message.reply_to = 'reply-%s' % replyuuid
             self.sender.send(message)
             replymessage = replyreceiver.fetch(timeout=3)
             self.session.acknowledge()
-        except Empty, e:
+        except Empty:
             replymessage = None
-        except ReceiverError, e:
-            replymessage =  None
-        except SendError, e:
-            replymessage =  False
+        except ReceiverError:
+            replymessage = None
+        except SendError:
+            replymessage = False
         finally:
             replyreceiver.close()
 
         return replymessage
 
-    def getInventory(self):
+    def get_inventory(self):
         """Returns the inventory from the resolver."""
         content = {}
         content["command"] = "inventory"
-        return self.sendMessageReply(content)
+        return self.send_message_reply(content)
 
-    def emitEvent(self, internalId, eventType, level, unit):
+    def emit_event(self, internal_id, event_type, level, unit):
         """This will send an event."""
         content = {}
-        content["uuid"] = self.internalIdToUuid(internalId)
+        content["uuid"] = self.internal_id_to_uuid(internal_id)
         content["level"] = level
         content["unit"] = unit
-        return self.sendMessage(eventType, content)
+        return self.send_message(event_type, content)
 
-    def reportDevices(self):
+    def report_devices(self):
         """Report all our devices."""
         syslog.syslog(syslog.LOG_NOTICE, "reporting child devices")
         for device in self.devices:
-            self.emitDeviceAnnounce(device, self.devices[device])
+            self.emit_device_announce(device, self.devices[device])
 
     def _sendreply(self, addr, content):
+        """Internal used to send a reply."""
         try:
             replysession = self.connection.session()
             replysender = replysession.sender(addr)
             response = Message(content)
             replysender.send(response)
-        except SendError, e:
-            syslog.syslog(syslog.LOG_ERR, "can't send reply: " + str(e))
-        except AttributeError, e:
-            syslog.syslog(syslog.LOG_ERR, "can't send reply: " + str(e))
-        except MessagingError, e:
-            syslog.syslog(syslog.LOG_ERR, "can't send reply message: " + str(e))
+        except SendError, exception:
+            syslog.syslog(syslog.LOG_ERR,
+                "can't send reply: " + str(exception))
+        except AttributeError, exception:
+            syslog.syslog(syslog.LOG_ERR,
+                "can't send reply: " + str(exception))
+        except MessagingError, exception:
+            syslog.syslog(syslog.LOG_ERR,
+                "can't send reply message: " + str(exception))
         finally:
             replysession.close()
 
     def run(self):
-        """This will start command and event handling. Be aware that this is blocking."""
-        # self.reportDevices() # - this is now handled by the addDevice
-        syslog.syslog(syslog.LOG_NOTICE, "startup complete, waiting for messages")
+        """This will start command and event handling.
+        Be aware that this is blocking."""
+        syslog.syslog(syslog.LOG_NOTICE,
+            "startup complete, waiting for messages")
         while (True):
             try:
                 message = self.receiver.fetch()
                 self.session.acknowledge()
-                if message.content and 'command' in message.content:
-                    if message.content['command'] == 'discover':
-                        self.reportDevices()
+                if (message.content and 'command' in message.content):
+                    if (message.content['command'] == 'discover'):
+                        self.report_devices()
                     else:
-                        if 'uuid' in message.content and message.content['uuid'] in self.devices:
+                        if ('uuid' in message.content and
+                            message.content['uuid'] in self.devices):
                             #this is for one of our children
-                            myid = self.uuidToInternalId(message.content["uuid"])
-                            if myid != None and self.handler:
+                            myid = self.uuid_to_internal_id(
+                                message.content["uuid"])
+                            if (myid is not None and self.handler):
                                 returnval = self.handler(myid, message.content)
-                                if message.reply_to:
+                                if (message.reply_to):
                                     replydata = {}
-                                    if isinstance(returnval, dict):
+                                    if (isinstance(returnval, dict)):
                                         replydata = returnval
                                     else:
                                         replydata["result"] = returnval
-                                    self._sendreply(message.reply_to, replydata)
-                if message.subject:
-                    if 'event' in message.subject and self.eventhandler:
+                                    self._sendreply(
+                                        message.reply_to, replydata)
+                if (message.subject):
+                    if ('event' in message.subject and self.eventhandler):
                         self.eventhandler(message.subject, message.content)
-            except Empty, e:
+            except Empty, exception:
                 pass
 
-            except ReceiverError, e:
-                syslog.syslog(syslog.LOG_ERR, "can't receive message: " + str(e))
+            except ReceiverError, exception:
+                syslog.syslog(syslog.LOG_ERR,
+                    "can't receive message: " + str(exception))
                 time.sleep(0.05)

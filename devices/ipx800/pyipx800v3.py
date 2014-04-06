@@ -542,7 +542,7 @@ if __name__ == '__main__':
     console_sh = logging.StreamHandler()
     console_sh.setLevel(logging.DEBUG)
     console_sh.setFormatter(logging.Formatter('%(asctime)s %(name)-20s %(levelname)-8s %(message)s'))
-    logger.addHandler(console_sh)
+    logger.add_handler(console_sh)
 
     mainloop = gobject.MainLoop()
 

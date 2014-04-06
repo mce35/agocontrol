@@ -85,20 +85,20 @@ def off_callback(player_id):
 
 #emit function
 def emit_play(internalid):
-    client.emitEvent(internalid, "event.mediaplayer.statechanged", "play", "")
-    client.emitEvent(internalid, "event.device.mediastatechanged", str(STATE_PLAY), "")
+    client.emit_event(internalid, "event.mediaplayer.statechanged", "play", "")
+    client.emit_event(internalid, "event.device.mediastatechanged", str(STATE_PLAY), "")
 def emit_stop(internalid):
-    client.emitEvent(internalid, "event.mediaplayer.statechanged", "stop", "")
-    client.emitEvent(internalid, "event.device.mediastatechanged", str(STATE_STOP), "")
+    client.emit_event(internalid, "event.mediaplayer.statechanged", "stop", "")
+    client.emit_event(internalid, "event.device.mediastatechanged", str(STATE_STOP), "")
 def emit_pause(internalid):
-    client.emitEvent(internalid, "event.mediaplayer.statechanged", "pause", "")
-    client.emitEvent(internalid, "event.device.mediastatechanged", str(STATE_PAUSE), "")
+    client.emit_event(internalid, "event.mediaplayer.statechanged", "pause", "")
+    client.emit_event(internalid, "event.device.mediastatechanged", str(STATE_PAUSE), "")
 def emit_on(internalid):
-    client.emitEvent(internalid, "event.device.statechanged", str(STATE_ON), "")
+    client.emit_event(internalid, "event.device.statechanged", str(STATE_ON), "")
 def emit_off(internalid):
-    client.emitEvent(internalid, "event.device.statechanged", str(STATE_OFF), "")
+    client.emit_event(internalid, "event.device.statechanged", str(STATE_OFF), "")
 def emit_stream(internalid):
-    client.emitEvent(internalid, "event.device.mediastatechanged", str(STATE_STREAM), "")
+    client.emit_event(internalid, "event.device.mediastatechanged", str(STATE_STREAM), "")
 
 #init
 try:
@@ -106,10 +106,10 @@ try:
     client = agoclient.AgoConnection("squeezebox")
 
     #read configuration
-    host = agoclient.getConfigOption("squeezebox", "host", "127.0.0.1")
-    port = int(agoclient.getConfigOption("squeezebox", "port", "9090"))
-    login = agoclient.getConfigOption("squeezebox", "login", "")
-    passwd = agoclient.getConfigOption("squeezebox", "password", "")
+    host = agoclient.get_config_option("squeezebox", "host", "127.0.0.1")
+    port = int(agoclient.get_config_option("squeezebox", "port", "9090"))
+    login = agoclient.get_config_option("squeezebox", "login", "")
+    passwd = agoclient.get_config_option("squeezebox", "password", "")
     logging.info("Config: %s@%s:%d" % (login, host, port))
     
     #connect to squeezebox server
@@ -195,17 +195,17 @@ def messageHandler(internalid, content):
             else:
                 logging.error('Missing parameters to command DISPLAYMESSAGE')
                 return None
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 #add server
-client.addDevice(host, 'squeezeboxserver')
+client.add_device(host, 'squeezeboxserver')
 
 #add players
 try:
     logging.info('Discovering players:')
     for p in server.get_players():
         logging.info("  Add player : %s[%s]" % (p.name, p.mac))
-        client.addDevice(p.mac, "squeezebox")
+        client.add_device(p.mac, "squeezebox")
 except Exception as e:
     quit('Failed to discover players. Exit now. (%s)' % str(e))
 

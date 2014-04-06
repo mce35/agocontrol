@@ -49,8 +49,8 @@ def messageHandler(internalid, content):
 
 	return result
 
-client.addHandler(messageHandler)
-devicelist=agoclient.getConfigOption("webcam", "devices", "")
+client.add_handler(messageHandler)
+devicelist=agoclient.get_config_option("webcam", "devices", "")
 
 try:
 	devices = map(str, devicelist.split(','))
@@ -60,8 +60,8 @@ else:
 	for device in devices:
 		print "announcing device", device
 		if "rtsp://" in device:
-			client.addDevice(device, "onvifnvt")
+			client.add_device(device, "onvifnvt")
 		else:
-			client.addDevice(device, "camera")
+			client.add_device(device, "camera")
 
 client.run()

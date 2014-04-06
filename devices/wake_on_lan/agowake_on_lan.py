@@ -85,7 +85,7 @@ def messageHandler(internalid, content):
             except ValueError as e:
                 error ("Cannot send WOL package to device=" + str(internalid) + " : " + str(e))
             else:
-                client.emitEvent(internalid, "event.device.statechanged", "255", "")
+                client.emit_event(internalid, "event.device.statechanged", "255", "")
                 if debug:
                     info("Sending WOL package to device " + str(internalid) + " mac=" + computers[internalid])
 
@@ -113,9 +113,9 @@ class pingEvent(threading.Thread):
                 if hosts[x] != '':
                     res = ping (hosts[x])
                     if res==True:
-                        client.emitEvent(x, "event.device.statechanged", "255", "")
+                        client.emit_event(x, "event.device.statechanged", "255", "")
                     else:
-                        client.emitEvent(x, "event.device.statechanged", "0", "")
+                        client.emit_event(x, "event.device.statechanged", "0", "")
             time.sleep (float(self.sleep))
 
 
@@ -125,7 +125,7 @@ info( "+------------------------------------------------------------")
 
 debug=False
 client = agoclient.AgoConnection("wake_on_lan")
-if (agoclient.getConfigOption("wake_on_lan", "debug", "false").lower() == "true"):
+if (agoclient.get_config_option("wake_on_lan", "debug", "false").lower() == "true"):
     debug = True
 
 config = ConfigObj(CONFDIR + "/conf.d/wake_on_lan.conf")
@@ -139,7 +139,7 @@ section = config['Computers']
 computers={}
 hosts={}
 for y in section:
-    client.addDevice(config['Computers'][y]['name'], "computer")
+    client.add_device(config['Computers'][y]['name'], "computer")
     computers[config['Computers'][y]['name']] = config['Computers'][y]['mac']
     try:
         hosts[config['Computers'][y]['name']] = config['Computers'][y]['host']
@@ -147,7 +147,7 @@ for y in section:
         if debug:
             info ("No host for device=" + config['Computers'][y]['name'] + ". Will not report state for this device.")
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 background = pingEvent(pingsleep)
 background.setDaemon(True)

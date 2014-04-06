@@ -26,7 +26,7 @@ client = agoclient.AgoConnection("enigma2")
 
 syslog.syslog(syslog.LOG_NOTICE, "agoenigma2.py startup")
 
-hostsconfig = agoclient.getConfigOption("enigma2", "hosts", "")
+hostsconfig = agoclient.get_config_option("enigma2", "hosts", "")
 
 try:
 	hosts = map(str, hostsconfig.split(','))
@@ -34,7 +34,7 @@ except:
 	syslog.syslog(syslog.LOG_NOTICE, 'no static hosts defined')
 else:
 	for host in hosts:
-		client.addDevice(host, "settopbox")
+		client.add_device(host, "settopbox")
 
 syslog.syslog(syslog.LOG_NOTICE, "discovering devices")
 
@@ -46,7 +46,7 @@ def mycallback(name, host, port):
 			dom1 = minidom.parseString(f.read())
 			e2model = dom1.getElementsByTagName('e2model')[0];
 			print "Found %s on %s\n" % (e2model.childNodes[0].data,str(host))
-			client.addDevice(str(host), "settopbox")
+			client.add_device(str(host), "settopbox")
 		except:
 			print "ERROR: Can't determine enigma version"
 
@@ -196,7 +196,7 @@ def messageHandler(internalid, content):
 			result = epg
 			print result
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 client.run()
 

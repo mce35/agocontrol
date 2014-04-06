@@ -39,13 +39,13 @@ def messageHandler(internalid, content):
 				needs_connection = True
 
 # specify our message handler method
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 
 # get config parameters
-host =  agoclient.getConfigOption("mPower", "host", "127.0.0.1")
-username =  agoclient.getConfigOption("mPower", "username", "ubnt")
-password = agoclient.getConfigOption("mPower", "password", "ubnt")
+host =  agoclient.get_config_option("mPower", "host", "127.0.0.1")
+username =  agoclient.get_config_option("mPower", "username", "ubnt")
+password = agoclient.get_config_option("mPower", "password", "ubnt")
 
 # initial call to mPower device
 mPowerDevice = pyubnt.Device(host, username, password)
@@ -55,7 +55,7 @@ content = mPowerDevice.GetDevices()
 i = 1
 for item in content["value"]:
         if "relay" in item:
-		client.addDevice(str(i), "switch")
+		client.add_device(str(i), "switch")
                 i = i + 1
 
 class mPowerEvent(threading.Thread):
@@ -89,7 +89,7 @@ class mPowerEvent(threading.Thread):
 										if relayState == 1:
 											relayState = 255
 										stringRelayChanged = str(relayState)
-										client.emitEvent(str(x), "event.device.statechanged", stringRelayChanged, "")
+										client.emit_event(str(x), "event.device.statechanged", stringRelayChanged, "")
 								
 								except KeyError:
 									deviceState[x] = relayState

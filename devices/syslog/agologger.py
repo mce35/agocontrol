@@ -20,7 +20,7 @@ client = agoclient.AgoConnection("logger")
 def eventHandler(subject, content):
 	syslog.syslog(syslog.LOG_NOTICE, "%s - %s" % (subject,content))
 
-client.addEventHandler(eventHandler)
+client.add_event_handler(eventHandler)
 
 client.run()
 
