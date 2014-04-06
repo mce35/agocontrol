@@ -135,6 +135,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			std::string zone = content["zone"];
 			qpid::types::Variant::Map zonemap;
 			std::string housemode = securitymap["housemode"];
+			std::cout << "Housemode: " << housemode << " Zone: " << zone << std::endl;
 			if (!(securitymap["zones"].isVoid())) zonemap = securitymap["zones"].asMap();
 			if (!(zonemap[housemode].isVoid())) {
 				if (zonemap[housemode].getType() == qpid::types::VAR_LIST) {
@@ -154,9 +155,17 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 							cout << "alarmthread already running" << endl;
 							returnval["result"] = 0;
 						}
+					} else {
+						returnval["result"] = -1;
+						returnval["error"] = "no such zone in this housemode";
 					}
+				} else {
+					returnval["result"] = -1;
+					returnval["error"] = "invalid map, zonemap[housemode] is not a list!";
 				}	
-
+			} else {
+				returnval["result"] = -1;
+				returnval["error"] = "invalid map, zonemap[housemode] is void!";
 			}
 		} else if (content["command"] == "setzones") {
 			// TODO: this might need some kind of protection
