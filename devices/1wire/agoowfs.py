@@ -119,7 +119,10 @@ class readBus(threading.Thread):
 				if sensor._type == 'DS2406':
 					if sensor.latch_B == '1':
 						sensor.latch_B = '0'
-						sendSensorTriggerEvent(sensor._path, sensor.sensed_B)
+						if sensor.sensed_B == '1':
+							client.emitEvent(sensor._path, "event.security.sensortriggered", 255, "")
+						else:
+							client.emitEvent(sensor._path, "event.security.sensortriggered", 0, "")
 		except ow.exUnknownSensor, e:
 			pass
 		time.sleep(2)
