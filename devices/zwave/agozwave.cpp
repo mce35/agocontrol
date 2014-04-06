@@ -707,6 +707,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		printf("z-wave specific controller command received\n");
 		if (content["command"] == "addnode") {
 			Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_AddDevice, controller_update, NULL, true);
+			result = true;
 		} else if (content["command"] == "removenode") {
 			if (!(content["node"].isVoid())) {
 				int mynode = content["node"];
@@ -714,11 +715,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			} else {
 				Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_RemoveDevice, controller_update, NULL, true);
 			}
+			result = true;
 		} else if (content["command"] == "healnode") {
 			if (!(content["node"].isVoid())) {
 				int mynode = content["node"];
 				Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
 			}
+			result = true;
 		} else if (content["command"] == "getstatistics") {
 			Driver::DriverData data;
 			Manager::Get()->GetDriverStatistics( g_homeId, &data );
@@ -736,12 +739,14 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			statistics["Dropped"] = data.m_dropped;
 			statistics["Retries"] = data.m_retries;
 			returnval["statistics"]=statistics;
+			result = true;
 		} else if (content["command"] == "addassociation") {
 			int mynode = content["node"];
 			int mygroup = content["group"];
 			int mytarget = content["target"];
 			printf("adding association: %i %i %i\n",mynode,mygroup,mytarget);
 			Manager::Get()->AddAssociation(g_homeId, mynode, mygroup, mytarget);
+			result = true;
 		} else if (content["command"] == "getassociations") {
 			qpid::types::Variant::Map associationsmap;
 			int mygroup = content["group"];
@@ -753,26 +758,34 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			}
 			if (numassoc >0) delete associations;
 			returnval["associations"] = associationsmap;
+			result = true;
 		} else if (content["command"] == "removeassociation") {
 			Manager::Get()->RemoveAssociation(g_homeId, content["node"], content["group"], content["target"]);
+			result = true;
 		} else if (content["command"] == "setconfigparam") {
 			int mynode = content["node"];
 			int myparam = content["param"];
 			int myvalue = content["value"];
 			int mysize = content["size"];
 			printf("setting config param: node: %i param: %i size: %i value: %i\n",mynode,myparam,mysize,myvalue);
-			Manager::Get()->SetConfigParam(g_homeId,mynode,myparam,myvalue,mysize); 
+			result = Manager::Get()->SetConfigParam(g_homeId,mynode,myparam,myvalue,mysize); 
 		} else if (content["command"] == "downloadconfig") {
-			Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_ReceiveConfiguration, controller_update, NULL, true);
+			result = true;
+			result = Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_ReceiveConfiguration, controller_update, NULL, true);
 		} else if (content["command"] == "cancel") {
+			result = true;
 			Manager::Get()->CancelControllerCommand(g_homeId);
 		} else if (content["command"] == "saveconfig") {
+			result = true;
 			Manager::Get()->WriteConfig( g_homeId );
 		} else if (content["command"] == "allon") {
+			result = true;
 			Manager::Get()->SwitchAllOn(g_homeId );
 		} else if (content["command"] == "alloff") {
+			result = true;
 			Manager::Get()->SwitchAllOff(g_homeId );
 		} else if (content["command"] == "reset") {
+			result = true;
 			Manager::Get()->ResetController(g_homeId);
 		}
 
