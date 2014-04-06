@@ -71,7 +71,9 @@
                 // Intercept the fnRowCallback function.
                 options.fnRowCallback = cog.utils.intercept(options.fnRowCallback || function (row) { return row; }, function (row, data, displayIndex, displayIndexFull, next) {
                     // Render the row template for this row.
-                    ko.renderTemplate(rowTemplate, bindingContext.createChildContext(data), null, row, "replaceChildren");
+                    window.setTimeout(function() {
+                	ko.renderTemplate(rowTemplate, bindingContext.createChildContext(data), null, row, "replaceChildren");
+                    }, 1);
                     return next(row, data, displayIndex, displayIndexFull);
                 });
             }
