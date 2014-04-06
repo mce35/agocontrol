@@ -287,7 +287,7 @@ client = agoclient.AgoConnection("tellstick")
 if (agoclient.getConfigOption("tellstick", "debug", "false").lower() == "true"):
     debug = True
 
-config = ConfigObj("/etc/opt/agocontrol/conf.d/tellstick.conf")
+config = ConfigObj(CONFDIR + "/conf.d/tellstick.conf")
 #config = ConfigObj("./tellstick.conf")
 try:
     general_delay = float(config['EventDevices']['Delay'])/1000

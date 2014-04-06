@@ -28,7 +28,6 @@ timeSchedules = None #(timestamp, scheduleid)
 scenarioControllerUuid = None
 nowUtc = None
 
-#logging.basicConfig(filename='/opt/agocontrol/agoscheduler.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s : %(message)s")
 
 #=================================

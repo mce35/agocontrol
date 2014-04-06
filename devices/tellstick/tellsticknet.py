@@ -27,18 +27,18 @@ class tellsticknet(tellstickbase):
     """Class used for Tellstick Net devices with direct access to Telldus Live API"""
     def __init__(self):
         debug = True
-        self.config = ConfigObj("/etc/opt/agocontrol/conf.d/tellstick.conf")
+        self.config = ConfigObj(CONFDIR + "/conf.d/tellstick.conf")
 
         try:
             self.PUBLIC_KEY = self.config['keys']['PUBLIC_KEY']
         except KeyError:
-            error ("PUBLIC_KEY missing in config file /etc/opt/agocontrol/conf.d/tellstick.conf Cannot continue.")
+            error ("PUBLIC_KEY missing in config file " + CONFDIR + "/conf.d/tellstick.conf Cannot continue.")
             quit()
 
         try:
             self.PRIVATE_KEY = self.config['keys']['PRIVATE_KEY']
         except KeyError:
-            error ("PRIVATE_KEY missing in config file /etc/opt/agocontrol/conf.d/tellstick.conf Cannot continue.")
+            error ("PRIVATE_KEY missing in config file " + CONFDIR + "/conf.d/tellstick.conf Cannot continue.")
             quit()
 
         self.TELLSTICK_TURNON = 1

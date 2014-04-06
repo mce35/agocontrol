@@ -128,7 +128,7 @@ client = agoclient.AgoConnection("wake_on_lan")
 if (agoclient.getConfigOption("wake_on_lan", "debug", "false").lower() == "true"):
     debug = True
 
-config = ConfigObj("/etc/opt/agocontrol/conf.d/wake_on_lan.conf")
+config = ConfigObj(CONFDIR + "/conf.d/wake_on_lan.conf")
 
 try:
     pingsleep = config['wake_on_lan']['polltime']

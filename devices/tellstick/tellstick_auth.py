@@ -122,18 +122,18 @@ def main(argv):
 
 if __name__ == "__main__":
     debug = True
-    config = ConfigObj("/etc/opt/agocontrol/conf.d/tellstick.conf")
+    config = ConfigObj(CONFDIR + "/conf.d/tellstick.conf")
 
     try:
         PUBLIC_KEY = config['keys']['PUBLIC_KEY']
     except KeyError:
-        error ("PUBLIC_KEY missing in config file /etc/opt/agocontrol/conf.d/tellstick.conf Cannot continue.")
+        error ("PUBLIC_KEY missing in config file " + CONFDIR + "/conf.d/tellstick.conf Cannot continue.")
         quit()
 
     try:
         PRIVATE_KEY = config['keys']['PRIVATE_KEY']
     except KeyError:
-        error ("PRIVATE_KEY missing in config file /etc/opt/agocontrol/conf.d/tellstick.conf Cannot continue.")
+        error ("PRIVATE_KEY missing in config file " + CONFDIR + "/conf.d/tellstick.conf Cannot continue.")
         quit()
 
     main(sys.argv[1:])

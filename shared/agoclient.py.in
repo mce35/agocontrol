@@ -18,6 +18,8 @@ syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
 
 BINDIR = '@BINDIR@'
 CONFDIR = '@CONFDIR@'
+LOCALSTATEDIR = '@LOCALSTATEDIR@'
+
 
 CONFIG_LOCK = Lock()
 

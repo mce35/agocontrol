@@ -14,7 +14,7 @@
 #
 # I am developing this driver on occidentalis distro from adfruit.com
 #
-# /etc/opt/agocontrol/config.ini
+# CONFDIR/conf.d/raspiMCP300xGPIO.ini
 #
 # [raspiMCP300xGPIO]
 #

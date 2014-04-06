@@ -3,7 +3,7 @@
 #
 # ago raspberry pi GPIO device
 #
-#/etc/opt/agocontrol/config.ini
+# CONFDIR/conf.d/raspiGPIO.ini
 #
 #[raspiGPIO]
 #inputs=18,23

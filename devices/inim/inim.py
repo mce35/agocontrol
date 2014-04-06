@@ -3,7 +3,7 @@
 # ago INIM device
 # Copyright (c) 2013 by rages
 #
-#/etc/opt/agocontrol/config.ini
+#CONFDIR/conf.d/inim.ini
 #
 #[INIM]
 #terminal=10

@@ -6,7 +6,7 @@
 # I am developing this driver on occidentalis distro from adfruit.com
 # 
 #
-# /etc/opt/agocontrol/config.ini
+# CONFDIR/conf.d/raspi1wGPIO.ini
 #
 # [raspi1wGPIO]
 # interval=600 # maximum time(seconds) between reports

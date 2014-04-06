@@ -6,7 +6,7 @@
 # The code for this originated from https://github.com/blackairplane/pydetect
 # but was heavily modified for use with Ago Control
 # 
-# Create /etc/opt/agocontrol/conf.d/wifi_device_detect.conf
+# Create CONFDIR/conf.d/wifi_device_detect.conf
 # [wifi_device_detect]
 # phoneaddress=AA:00:BB:11:CC:22,33:DD:44:EE:55:FF
 # devicename=androidphone,iphone

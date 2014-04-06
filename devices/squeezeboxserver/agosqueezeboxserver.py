@@ -66,7 +66,7 @@ client.addHandler(messageHandler)
 # of course you need to tell the client library about the devices you provide. The addDevice call expects a internal id and a device type (you can find all valid types
 # in the schema.yaml configuration file). The internal id is whatever you're using in your code to distinct your devices. Or the pin number of some GPIO output. Or
 # the IP of a networked device. Whatever fits your device specific stuff. The persistent translation to a ago control uuid will be done by the client library. The
-# mapping is stored as a json file in /etc/opt/agocontrol/uuidmap/<instance name>.json
+# mapping is stored as a json file in CONFDIR/uuidmap/<instance name>.json
 # you don't need to worry at all about this, when the messageHandler is called, you'll be passed the internalid for the device that you did specifiy when using addDevice()
 
 # Discover the devices connected

@@ -8,7 +8,7 @@
 # v.2 Fix exception error plus modifications for using yahoo since weather.com not working and only report when values change
 #
 #
-# Create /etc/opt/agocontrol/conf.d/weather.conf
+# Create CONFDIR/conf.d/weather.conf
 # [weather]
 # locations_ID=ITLM2916
 # tempunits = f
