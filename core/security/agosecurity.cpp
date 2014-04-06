@@ -27,7 +27,30 @@ static pthread_t securityThread;
 bool isSecurityThreadRunning = false;
 qpid::types::Variant::Map securitymap;
 
-// example map: {"housemode":"armed","zones":{"armed":[{"zone":"hull","delay":12}]}}
+/* example map: 
+
+{
+    "housemode": "armed",
+    "zones": {
+        "away": [
+            {
+                "delay": 15,
+                "zone": "foyer"
+            }
+        ],
+        "armed": [
+            {
+                "delay": 12,
+                "zone": "hull"
+            },
+            {
+                "delay": 0,
+                "zone": "garden"
+            }
+        ]
+    }
+
+*/
 bool checkPin(std::string _pin) {
 	stringstream pins(getConfigOption("security", "pin", "0815"));
 	string pin;
