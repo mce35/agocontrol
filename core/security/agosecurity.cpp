@@ -49,7 +49,7 @@ qpid::types::Variant::Map securitymap;
             }
         ]
     }
-
+}
 */
 bool checkPin(std::string _pin) {
 	stringstream pins(getConfigOption("security", "pin", "0815"));
