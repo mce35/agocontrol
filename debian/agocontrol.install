@@ -23,7 +23,7 @@ opt/agocontrol/bin/agoscenario
 opt/agocontrol/bin/agoevent
 opt/agocontrol/bin/agolua
 opt/agocontrol/bin/myavahi.py
-opt/agocontrol/bin/agodrain.py
+opt/agocontrol/bin/agodrain
 opt/agocontrol/bin/messagesend
 opt/agocontrol/bin/agotimer
 opt/agocontrol/bin/agorpc
