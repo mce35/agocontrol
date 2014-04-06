@@ -29,6 +29,15 @@ Inventory::Inventory(const char *dbfile) {
 		sqlite3_close(db);
 		return;
 	}
+	/*
+	CREATE TABLE rooms (uuid text, name text, location text);
+	CREATE TABLE devices (uuid text, name text, room text);
+	CREATE TABLE floorplans (uuid text, name text);
+	CREATE TABLE devicesfloorplan (floorplan text, device text, x integer, y integer);
+
+	*/
+	createTableIfNotExist("devices","CREATE TABLE devices (uuid text, name text, room text)");
+	createTableIfNotExist("rooms", "CREATE TABLE rooms (uuid text, name text, location text)");
 	createTableIfNotExist("floorplans", "CREATE TABLE floorplans (uuid text, name text)");
 	createTableIfNotExist("devicesfloorplan", "CREATE TABLE devicesfloorplan (floorplan text, device text, x integer, y integer)");
 	createTableIfNotExist("locations", "CREATE TABLE locations (uuid text, name text, description text)");
@@ -387,6 +396,7 @@ Variant::Map Inventory::getpermissions(string uuid){
 
 
 #ifdef INVENTORY_TEST
+// gcc -DINVENTORY_TEST inventory.cpp -lqpidtypes -lsqlite3
 int main(int argc, char **argv){
 	Inventory inv("inventory.db");
 	cout << inv.setdevicename("1234", "1235") << endl;
