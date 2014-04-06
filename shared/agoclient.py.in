@@ -31,10 +31,10 @@ def get_config_option(section, option, default, filename=None):
     config = ConfigParser.ConfigParser()
     CONFIG_LOCK.acquire(True)
     try:
-        if file:
-            config.read(agoclient.CONFDIR + '/conf.d/' + filename + '.conf')
+        if filename:
+            config.read(CONFDIR + '/conf.d/' + filename + '.conf')
         else:
-            config.read(agoclient.CONFDIR + '/conf.d/' + section + '.conf')
+            config.read(CONFDIR + '/conf.d/' + section + '.conf')
         value = config.get(section, option)
     except ConfigParser.Error, exception:
         syslog.syslog(syslog.LOG_WARNING,
@@ -51,9 +51,9 @@ def set_config_option(section, option, value, filename=None):
     result = False
     CONFIG_LOCK.acquire(True)
     try:
-        path = agoclient.CONFDIR + '/conf.d/' + section + '.conf'
+        path = CONFDIR + '/conf.d/' + section + '.conf'
         if filename:
-            path = agoclient.CONFDIR + '/conf.d/' + filename + '.conf'
+            path = CONFDIR + '/conf.d/' + filename + '.conf'
         #first of all read file
         config.read(path)
         #then update config
@@ -131,7 +131,7 @@ class AgoConnection:
         """Store the mapping (dict) of UUIDs to
         internal ids into a JSON file."""
         try:
-            with open(agoclient.CONFDIR + '/uuidmap/' + self.instance +
+            with open(CONFDIR + '/uuidmap/' + self.instance +
                 '.json', 'w') as outfile:
                 simplejson.dump(self.uuids, outfile)
         except (OSError, IOError) as exception:
@@ -145,7 +145,7 @@ class AgoConnection:
         """Read the mapping (dict) of UUIDs to
         internal ids from a JSON file."""
         try:
-            with open(agoclient.CONFDIR + '/uuidmap/' + self.instance +
+            with open(CONFDIR + '/uuidmap/' + self.instance +
                 '.json', 'r') as infile:
                 self.uuids = simplejson.load(infile)
         except (OSError, IOError) as exception:
