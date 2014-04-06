@@ -1,9 +1,11 @@
 """@package agoclient
 This is the agocontrol python client library.
 
-An example device can be found here: http://wiki.agocontrol.com/index.php/Example_Device
+An example device can be found here: 
+http://wiki.agocontrol.com/index.php/Example_Device
 """
 
+import time
 import syslog
 import sys
 import ConfigParser
@@ -23,32 +25,32 @@ LOCALSTATEDIR = '@LOCALSTATEDIR@'
 
 CONFIG_LOCK = Lock()
 
-def getConfigOption(section, option, default, file=None):
+def getConfigOption(section, option, default, filename=None):
     """Read a config option from a .ini style file."""
     config = ConfigParser.ConfigParser()
     CONFIG_LOCK.acquire(True)
     try:
         if file:
-            config.read(CONFDIR + '/conf.d/' + file + '.conf')
+            config.read(CONFDIR + '/conf.d/' + filename + '.conf')
         else:
             config.read(CONFDIR + '/conf.d/' + section + '.conf')
-        value = config.get(section,option)
-    except ConfigParser.Error, e:
-        syslog.syslog(syslog.LOG_WARNING, "Can't parse config file: " + str(e))
+        value = config.get(section, option)
+    except ConfigParser.Error, exception:
+        syslog.syslog(syslog.LOG_WARNING, "Can't parse config file: " + str(exception))
         value = default
     finally:
         CONFIG_LOCK.release()
     return value
 
-def setConfigOption(section, option, value, file=None):
+def setConfigOption(section, option, value, filename=None):
     """Write out a config option to a .ini style file."""
     config = ConfigParser.ConfigParser()
     result = False
     CONFIG_LOCK.acquire(True)
     try:
         path = CONFDIR + '/conf.d/' + section + '.conf'
-        if file:
-            path = CONFDIR + '/conf.d/' + file + '.conf'
+        if filename:
+            path = CONFDIR + '/conf.d/' + filename + '.conf'
         #first of all read file
         config.read(path)
         #then update config
@@ -61,8 +63,8 @@ def setConfigOption(section, option, value, file=None):
         #finally close it
         fpw.close()
         result = True
-    except ConfigParser.Error, e:
-        syslog.syslog(syslog.LOG_ERR, "Can't write config file: " + str(e))
+    except ConfigParser.Error, exception:
+        syslog.syslog(syslog.LOG_ERR, "Can't write config file: " + str(exception))
         result = False
     finally:
         CONFIG_LOCK.release()
@@ -72,7 +74,7 @@ class AgoConnection:
     """This is class will handle the connection to ago control."""
     def __init__(self, instance):
         """The constructor."""
-        self.instance=instance
+        self.instance = instance
         syslog.syslog(syslog.LOG_NOTICE, "connecting to broker")
         broker = getConfigOption("system", "broker", "localhost")
         username = getConfigOption("system", "username", "agocontrol")
@@ -147,6 +149,7 @@ class AgoConnection:
         self.sendMessage("event.device.announce", content)
 
     def emitDeviceRemove(self, uuid):
+        """Send a device remove event to the resolver"""
         content = {}
         content["uuid"]  = uuid
         self.sendMessage("event.device.remove", content)
@@ -210,15 +213,15 @@ class AgoConnection:
     def getInventory(self):
         """Returns the inventory from the resolver."""
         content = {}
-        content["command"]="inventory"
+        content["command"] = "inventory"
         return self.sendMessageReply(content)
 
     def emitEvent(self, internalId, eventType, level, unit):
         """This will send an event."""
-        content  = {}
-        content["uuid"]=self.internalIdToUuid(internalId)
-        content["level"]=level
-        content["unit"]=unit
+        content = {}
+        content["uuid"] = self.internalIdToUuid(internalId)
+        content["level"] = level
+        content["unit"] = unit
         return self.sendMessage(eventType, content)
 
     def reportDevices(self):
