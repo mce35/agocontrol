@@ -719,6 +719,23 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				int mynode = content["node"];
 				Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
 			}
+		} else if (content["command"] == "getstatistics") {
+			Driver::DriverData data;
+			Manager::Get()->GetDriverStatistics( g_homeId, &data );
+			qpid::types::Variant::Map statistics;
+			statistics["SOF"] = data.m_SOFCnt;
+			statistics["ACK waiting"] = data.m_ACKWaiting;
+			statistics["Read Aborts"] = data.m_readAborts;
+			statistics["Bad Checksums"] = data.m_badChecksum;
+			statistics["Reads"] = data.m_readCnt;
+			statistics["Writes"] = data.m_writeCnt;
+			statistics["CAN"] = data.m_CANCnt;
+			statistics["NAK"] = data.m_NAKCnt;
+			statistics["ACK"] = data.m_ACKCnt;
+			statistics["OOF"] = data.m_OOFCnt;
+			statistics["Dropped"] = data.m_dropped;
+			statistics["Retries"] = data.m_retries;
+			returnval["statistics"]=statistics;
 		} else if (content["command"] == "addassociation") {
 			int mynode = content["node"];
 			int mygroup = content["group"];
