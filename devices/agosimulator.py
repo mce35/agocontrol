@@ -15,24 +15,24 @@ def messageHandler(internalid, content):
 	if "command" in content:
 		if content["command"] == "on":
 			print "switching on: " + internalid
-			client.emitEvent(internalid, "event.device.statechanged", "255", "")
+			client.emit_event(internalid, "event.device.statechanged", "255", "")
 		if content["command"] == "off":
 			print "switching off: " + internalid
-			client.emitEvent(internalid, "event.device.statechanged", "0", "")
+			client.emit_event(internalid, "event.device.statechanged", "0", "")
 		if content["command"] == "push":
 			print "push button: " + internalid
 		if content['command'] == 'setlevel':
 			if 'level' in content:
 				print "device level changed", content["level"]
-				client.emitEvent(internalid, "event.device.statechanged", content["level"], "")
+				client.emit_event(internalid, "event.device.statechanged", content["level"], "")
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
-client.addDevice("123", "dimmer")
-client.addDevice("124", "switch")
-client.addDevice("125", "binarysensor")
-client.addDevice("126", "multilevelsensor")
-client.addDevice("127", "pushbutton")
+client.add_device("123", "dimmer")
+client.add_device("124", "switch")
+client.add_device("125", "binarysensor")
+client.add_device("126", "multilevelsensor")
+client.add_device("127", "pushbutton")
 
 class testEvent(threading.Thread):
     def __init__(self,):
@@ -45,9 +45,9 @@ class testEvent(threading.Thread):
 		if counter > 3:
 			counter = 0
 			temp = random.randint(50,300) / 10
-			client.emitEvent("126", "event.environment.temperaturechanged", temp, "degC");
-			client.emitEvent("126", "event.environment.humiditychanged", random.randint(20, 75), "percent");
-		client.emitEvent("125", "event.security.sensortriggered", level, "")
+			client.emit_event("126", "event.environment.temperaturechanged", temp, "degC");
+			client.emit_event("126", "event.environment.humiditychanged", random.randint(20, 75), "percent");
+		client.emit_event("125", "event.security.sensortriggered", level, "")
 		if (level == 0):
 			level = 255
 		else:

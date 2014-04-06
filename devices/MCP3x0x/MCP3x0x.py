@@ -35,10 +35,10 @@ spi.open(0, 0)
 
 client = agoclient.AgoConnection("MCP3x0x")
 
-vDiv = float(agoclient.getConfigOption("MCP3x0x", "voltage_divider", "1"))
-readInputs = agoclient.getConfigOption("MCP3x0x", "inputs", "0,1")
-interval = int(agoclient.getConfigOption("MCP3x0x", "interval", "60"))
-change = float(agoclient.getConfigOption("MCP3x0x", "change", "0.1"))
+vDiv = float(agoclient.get_config_option("MCP3x0x", "voltage_divider", "1"))
+readInputs = agoclient.get_config_option("MCP3x0x", "inputs", "0,1")
+interval = int(agoclient.get_config_option("MCP3x0x", "interval", "60"))
+change = float(agoclient.get_config_option("MCP3x0x", "change", "0.1"))
 
 inputs = map(int, readInputs.split(','))
 
@@ -47,7 +47,7 @@ deviceconfig = {}
 for adcCh in inputs:
     deviceconfig[(adcCh, 'value')] = 0 
     deviceconfig[(adcCh, 'lastreporttime')] = time.time()
-    client.addDevice(adcCh, "energysensor")
+    client.add_device(adcCh, "energysensor")
 
 def readadc(adcnum):
     read = spi.xfer2([1, 8 + adcnum << 4, 0])
@@ -78,12 +78,12 @@ class readMCP3x0xGPIO(threading.Thread):
                 print "Battery Voltage:", adcCh, volts
                 if abs(deviceconfig[(adcCh, 'value')] - volts) > change:
                     print 'level change:', deviceconfig[(adcCh, 'value')]
-                    client.emitEvent(adcCh , "event.environment.energychanged", volts, "V") 
+                    client.emit_event(adcCh , "event.environment.energychanged", volts, "V") 
                     deviceconfig[(adcCh, 'value')] = volts
                     deviceconfig[(adcCh, 'lastreporttime')] = time.time()
                 if time.time() > deviceconfig[(adcCh, 'lastreporttime')] + interval:
                     print 'interval:', deviceconfig[(adcCh, 'value')]
-                    client.emitEvent(adcCh , "event.environment.energychanged", volts, "V") 
+                    client.emit_event(adcCh , "event.environment.energychanged", volts, "V") 
                     deviceconfig[(adcCh, 'temp')] = volts
                     deviceconfig[(adcCh, 'lastreporttime')] = time.time()
             time.sleep(10)

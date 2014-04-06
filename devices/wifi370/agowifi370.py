@@ -10,14 +10,14 @@ COMMAND_OFF="\xcc\x24\x33"
 # COMMAND_RGB="\x56\xRR\xGG\xBB\xaa"
 COMMAND_STATUS="\xef\x01\x77"
 try:
-	deviceconfig = agoclient.getConfigOption("wifi370", "devices", "192.168.80.44:5577")
+	deviceconfig = agoclient.get_config_option("wifi370", "devices", "192.168.80.44:5577")
 	devices = map(str, deviceconfig.split(','))
 except e:
 	devices = None
 	print "Error, no devices:" + e
 else:
 	for device in devices:
-		client.addDevice(device, "dimmerrgb")
+		client.add_device(device, "dimmerrgb")
 
 def sendcmd(host, port, command):
 	try:
@@ -61,7 +61,7 @@ def messageHandler(internalid, content):
 			sendcmd(host,port,COMMAND_ON)
 			try:
 				(onoff, red, green, blue) = getstatus(host, port)
-				client.emitEvent(internalid, "event.device.statechanged", str(onoff), "")
+				client.emit_event(internalid, "event.device.statechanged", str(onoff), "")
 			except TypeError:
 				print "ERROR: Can't read status"
 		if content["command"] == "off":
@@ -69,7 +69,7 @@ def messageHandler(internalid, content):
 			sendcmd(host,port,COMMAND_OFF)
 			try:
 				(onoff, red, green, blue) = getstatus(host, port)
-				client.emitEvent(internalid, "event.device.statechanged", str(onoff), "")
+				client.emit_event(internalid, "event.device.statechanged", str(onoff), "")
 			except TypeError:
 				print "ERROR: Can't read status"
 		if content["command"] == "setlevel":
@@ -82,12 +82,12 @@ def messageHandler(internalid, content):
 			try:
 				(onoff, red, green, blue) = getstatus(host, port)
 				if onoff == 0:
-					client.emitEvent(internalid, "event.device.statechanged", str(onoff), "")
+					client.emit_event(internalid, "event.device.statechanged", str(onoff), "")
 				else:
-					client.emitEvent(internalid, "event.device.statechanged", str((red + green + blue)*100/3/255), "")
+					client.emit_event(internalid, "event.device.statechanged", str((red + green + blue)*100/3/255), "")
 			except TypeError:
 				print "ERROR: Can't read status"
-			client.emitEvent(internalid, "event.device.statechanged", level, "")
+			client.emit_event(internalid, "event.device.statechanged", level, "")
 		if content["command"] == "setcolor":
 			red = int(content["red"]) * 255 / 100
 			green = int(content["green"]) * 255 / 100
@@ -98,14 +98,14 @@ def messageHandler(internalid, content):
 			try:
 				(onoff, red, green, blue) = getstatus(host, port)
 				if onoff == 0:
-					client.emitEvent(internalid, "event.device.statechanged", str(onoff), "")
+					client.emit_event(internalid, "event.device.statechanged", str(onoff), "")
 				else:
-					client.emitEvent(internalid, "event.device.statechanged", str((red + green + blue)*100/3/255), "")
-					#client.emitEvent(internalid, "event.device.statechanged", str(red) + "/" + str(green) + "/" + str(blue), "")
+					client.emit_event(internalid, "event.device.statechanged", str((red + green + blue)*100/3/255), "")
+					#client.emit_event(internalid, "event.device.statechanged", str(red) + "/" + str(green) + "/" + str(blue), "")
 			except TypeError:
 				print "ERROR: Can't read status"
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 print "Waiting for messages"
 client.run()

@@ -257,7 +257,7 @@ def quit(msg):
 def getScenarioControllerUuid():
     """get scenariocontroller uuid"""
     global client, scenarioControllerUuid
-    inventory = client.getInventory()
+    inventory = client.get_inventory()
     for uuid in inventory.content['devices']:
         if inventory.content['devices'][uuid]['devicetype']=='scenariocontroller':
             scenarioControllerUuid = uuid
@@ -312,7 +312,7 @@ def createSchedule(title, uuidStart, uuidEnd, dateStart, dateEnd, color, repeat)
 def saveSchedules():
     """save schedules to config file"""
     global allSchedules
-    if not agoclient.setConfigOption('agoscheduler', 'all', json.dumps(allSchedules.get_values(itemgetter(1)))):
+    if not agoclient.set_config_option('agoscheduler', 'all', json.dumps(allSchedules.get_values(itemgetter(1)))):
         logging.exception('Unable to load config file')
 
 def loadSchedules():
@@ -322,7 +322,7 @@ def loadSchedules():
     allSchedules = SortedCollection([], itemgetter(0))
     timeSchedules = SortedCollection([], itemgetter(0))
     #get schedules from confif file
-    schedules = agoclient.getConfigOption("agoscheduler", "all", "[]")
+    schedules = agoclient.get_config_option("agoscheduler", "all", "[]")
     schedules = json.loads(schedules)
     #and store them in sorted collection
     for schedule in schedules:
@@ -639,7 +639,7 @@ def eventHandler(event, content):
             #execute scenarios
             for schedule in schedules:
                 logging.info('Execute scenario id "%s"' % schedule['scenario'])
-                client.sendMessage(None, {'uuid':scenarioControllerUuid, 'command':'run', 'internalid':schedule['scenario']})
+                client.send_message(None, {'uuid':scenarioControllerUuid, 'command':'run', 'internalid':schedule['scenario']})
 
             #each new year append yearly recurring schedules
             if currentDtLocal.year!=nowUtc.year:
@@ -701,11 +701,11 @@ try:
     loadSchedules()
 
     #add client handlers
-    client.addHandler(commandHandler)
-    client.addEventHandler(eventHandler)
+    client.add_handler(commandHandler)
+    client.add_event_handler(eventHandler)
 
     #add controller
-    client.addDevice('agoscheduler', 'agoscheduler')
+    client.add_device('agoscheduler', 'agoscheduler')
 
 except Exception as e:
     #init failed

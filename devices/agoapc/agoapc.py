@@ -20,11 +20,11 @@ OIDName = "1,3,6,1,4,1,318,1,1,4,5,2,1,3"	# sPDUOutletName
 OIDLoad = "1,3,6,1,4,1,318,1,1,12,2,3,1,1,2,1"	# rPDULoadStatusLoad
 loadOID = (1,3,6,1,4,1,318,1,1,12,2,3,1,1,2,1)
 
-apchost = agoclient.getConfigOption("apc", "host", "192.168.1.13")
-apcport = int(agoclient.getConfigOption("apc", "port", "161") ) 
-apcvoltage = int(agoclient.getConfigOption("apc", "voltage", "220") ) 
-apccommunityro =  agoclient.getConfigOption("apc", "community_readonly", "public")
-apccommunityrw =  agoclient.getConfigOption("apc", "community_readwrite", "private")
+apchost = agoclient.get_config_option("apc", "host", "192.168.1.13")
+apcport = int(agoclient.get_config_option("apc", "port", "161") ) 
+apcvoltage = int(agoclient.get_config_option("apc", "voltage", "220") ) 
+apccommunityro =  agoclient.get_config_option("apc", "community_readonly", "public")
+apccommunityrw =  agoclient.get_config_option("apc", "community_readwrite", "private")
 
 # route stderr to syslog
 class LogErr:
@@ -114,7 +114,7 @@ class EnergyUsage(threading.Thread):
 				currentPowerA = get_current_power()
 				currentPower = int(float(currentPowerA * apcvoltage))
 				if currentPower != old_currentPower:
-					client.emitEvent("powerusage", "event.environment.powerchanged", currentPower, unit)
+					client.emit_event("powerusage", "event.environment.powerchanged", currentPower, unit)
 					old_currentPower = currentPower
 			except:
 				time.sleep(1)
@@ -126,12 +126,12 @@ def messageHandler(internalid, content):
 			print "device switched on: ", internalid
 			result = set_outlet_state(internalid, 'on')
 			if "on" in result:
-				client.emitEvent(internalid, "event.device.statechanged", "255", "")
+				client.emit_event(internalid, "event.device.statechanged", "255", "")
 		if content["command"] == "off":
 			print "device switched off:", internalid
 			result = set_outlet_state(internalid, 'off')
 			if "off" in result:
-				client.emitEvent(internalid, "event.device.statechanged", "0", "")
+				client.emit_event(internalid, "event.device.statechanged", "0", "")
 
 
 
@@ -145,20 +145,20 @@ __errorIndication, __errorStatus, __errorIndex, varBinds = cmdgen.CommandGenerat
 outletCount = varBinds[0][1]
 
 for outlet in range(1,outletCount+1):
-	client.addDevice(outlet, "switch")
+	client.add_device(outlet, "switch")
         result = get_outlet_status(outlet)
 	if "on" in result:
-		client.emitEvent(outlet, "event.device.statechanged", "255", "")
+		client.emit_event(outlet, "event.device.statechanged", "255", "")
 	if "off" in result:
-		client.emitEvent(outlet, "event.device.statechanged", "0", "")
+		client.emit_event(outlet, "event.device.statechanged", "0", "")
 
-client.addDevice("powerusage", "multilevelsensor")
+client.add_device("powerusage", "multilevelsensor")
 
 
 background = EnergyUsage()
 background.setDaemon(True)
 background.start()
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 client.run()
 

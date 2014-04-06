@@ -35,7 +35,7 @@ sensors = {"AirTemperature":"","AirHumidity":""}
 
 client = agoclient.AgoConnection("MushroomControl")
 
-myport = agoclient.getConfigOption("MushroomControl", "device", "0")
+myport = agoclient.get_config_option("MushroomControl", "device", "0")
 
 s0 = serial.Serial(myport, 9600)
 
@@ -67,19 +67,19 @@ def messageHandler(internalid, content):
 			except KeyError, e:
 				print e
 
-			#client.emitEvent(internalid, "event.device.state", "255", "")
+			#client.emit_event(internalid, "event.device.state", "255", "")
 
 		if content["command"] == "inventory":
 			print "requesting inventory via " + internalid
 			inventory()
-			#client.emitEvent(internalid, "event.device.state", "0", "")
+			#client.emit_event(internalid, "event.device.state", "0", "")
 
 # specify our message handler method
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
-client.addDevice("Controller", "controller")
-client.addDevice("AirTemperatureValue", "binarysensor")
-client.addDevice("AirHumidityValue", "binarysensor")
+client.add_device("Controller", "controller")
+client.add_device("AirTemperatureValue", "binarysensor")
+client.add_device("AirHumidityValue", "binarysensor")
 
 # then we add a background thread. This is not required and just shows how to send events from a separate thread. This might be handy when you have to poll something
 # in the background or need to handle some other communication. If you don't need one or if you want to keep things simple at the moment just skip this section.
@@ -103,29 +103,29 @@ class mushroomEvent(threading.Thread):
 					if "inventory" in message['result']:
 						sensors["AirTemperature"] = message['result']['inventory']['sensors']['AirTemperature']
 						AirTemperatureValue = sensors["AirTemperature"]
-						print "emitEvent AirTemperatureValue: " + str(AirTemperatureValue)
-						client.emitEvent("AirTemperatureValue", "event.environment.temperaturechanged", AirTemperatureValue, "degC")
+						print "emit_event AirTemperatureValue: " + str(AirTemperatureValue)
+						client.emit_event("AirTemperatureValue", "event.environment.temperaturechanged", AirTemperatureValue, "degC")
 
 						sensors["AirHumidity"] = message['result']['inventory']['sensors']['AirHumidity']
 						AirHumidityValue = sensors["AirHumidity"]
-						print "emitEvent AirTemperatureValue: " + str(AirHumidityValue)
-						client.emitEvent("AirHumidityValue", "event.environment.humiditychanged", AirHumidityValue, "percent")
+						print "emit_event AirTemperatureValue: " + str(AirHumidityValue)
+						client.emit_event("AirHumidityValue", "event.environment.humiditychanged", AirHumidityValue, "percent")
 
 				if "content" in message:
 					if "event.environment.temperaturechanged" in message['subject']:
 						sensors["AirTemperature"] = message['content']['level']
 						AirTemperatureValue = sensors["AirTemperature"]
-						print "emitEvent AirTemperatureValue: " + str(AirTemperatureValue)
-						client.emitEvent("AirTemperatureValue", "event.environment.temperaturechanged", AirTemperatureValue, "degC")
+						print "emit_event AirTemperatureValue: " + str(AirTemperatureValue)
+						client.emit_event("AirTemperatureValue", "event.environment.temperaturechanged", AirTemperatureValue, "degC")
 					if "event.environment.humiditychanged" in message['subject']:
 						sensors["AirHumidity"] = message['content']['level']
 						AirHumidityValue = sensors["AirHumidity"]
-						print "emitEvent AirHumidityValue: " + str(AirHumidityValue)
-						client.emitEvent("AirHumidityValue", "event.environment.humiditychanged", AirHumidityValue, message['content']['unit'])
+						print "emit_event AirHumidityValue: " + str(AirHumidityValue)
+						client.emit_event("AirHumidityValue", "event.environment.humiditychanged", AirHumidityValue, message['content']['unit'])
 					if "event.environment.statechanged" in message['subject']:
 						state["state"] = message['content']['state']
-						print "emitEvent State change: " + str(state["state"])
-						client.emitEvent("Controller", "event.environment.statechanged", state["state"], "state")
+						print "emit_event State change: " + str(state["state"])
+						client.emit_event("Controller", "event.environment.statechanged", state["state"], "state")
 
       
 background = mushroomEvent()

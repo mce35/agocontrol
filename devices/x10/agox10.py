@@ -5,8 +5,8 @@ import threading
 import time
 import logging
 
-readInterface = agoclient.getConfigOption("x10","interface","CM11")
-readPort = agoclient.getConfigOption("x10", "device", "/dev/ttyUSB1")
+readInterface = agoclient.get_config_option("x10","interface","CM11")
+readPort = agoclient.get_config_option("x10", "device", "/dev/ttyUSB1")
 
 if (readInterface == "CM11"):
 	from x10.controllers.cm11 import CM11
@@ -49,13 +49,13 @@ class x10send(threading.Thread):
 			x10lock.acquire()
 			dev.actuator(self.id).on()
 			x10lock.release()
-			client.emitEvent(self.id, "event.device.statechanged", "255", "")
+			client.emit_event(self.id, "event.device.statechanged", "255", "")
 		if self.functioncommand == "off":
 			print "switching off: " + self.id
 			x10lock.acquire()
 			dev.actuator(self.id).off()
 			x10lock.release()
-			client.emitEvent(self.id, "event.device.statechanged", "0", "")
+			client.emit_event(self.id, "event.device.statechanged", "0", "")
 
 		if self.functioncommand == "setlevel":
 			x10level=int(self.level * 2.55)	
@@ -63,7 +63,7 @@ class x10send(threading.Thread):
 			x10lock.acquire()
 			dev.actuator(self.id).dim(x10level)
 			x10lock.release()
-			client.emitEvent(self.id, "event.device.statechanged", self.level, "")
+			client.emit_event(self.id, "event.device.statechanged", self.level, "")
 
 
 def messageHandler(internalid, content):
@@ -76,17 +76,17 @@ def messageHandler(internalid, content):
 		background.start()
 
 # specify our message handler method
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 # X10 device configuration
-readSwitches = agoclient.getConfigOption("x10", "switches", "A2,A3,A9,B3,B4,B5,B9,B12") 
+readSwitches = agoclient.get_config_option("x10", "switches", "A2,A3,A9,B3,B4,B5,B9,B12") 
 switches = map(str, readSwitches.split(',')) 
 for switch in switches: 
-	client.addDevice(switch, "switch")
-readDimmers = agoclient.getConfigOption("x10", "dimmers", "D1") 
+	client.add_device(switch, "switch")
+readDimmers = agoclient.get_config_option("x10", "dimmers", "D1") 
 dimmers = map(str, readDimmers.split(',')) 
 for dimmer in dimmers: 
-	client.addDevice(dimmer, "dimmer")
+	client.add_device(dimmer, "dimmer")
 
 # This section is used to monitor for incoming RF signals on the CM11A
 
@@ -139,7 +139,7 @@ class readX10(threading.Thread):
 
 					# Use these values to change device states in Ago Control
 					if (send_x10_command == "0") or (send_x10_command == "255"):
-						client.emitEvent(send_x10_address , "event.device.statechanged", send_x10_command , "");
+						client.emit_event(send_x10_address , "event.device.statechanged", send_x10_command , "");
 					else:
 						print "Unknown command received"
 

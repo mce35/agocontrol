@@ -10,7 +10,7 @@ import agoclient
 
 client = agoclient.AgoConnection("owfs")
 
-device = agoclient.getConfigOption("owfs", "device", "/dev/usbowfs")
+device = agoclient.get_config_option("owfs", "device", "/dev/usbowfs")
 
 # route stderr to syslog
 class LogErr:
@@ -36,23 +36,23 @@ root = ow.Sensor( '/' )
 
 for sensor in root.sensors():
 	if sensor._type == 'DS18S20' or sensor._type == 'DS18B20':
-		client.addDevice(sensor._path, "multilevelsensor");
+		client.add_device(sensor._path, "multilevelsensor");
 	if sensor._type == 'DS2438':
 		try:
 			if ow.owfs_get('%s/MultiSensor/type' % sensor._path) == 'MS-TL':
-				client.addDevice(sensor._path, "multilevelsensor");
+				client.add_device(sensor._path, "multilevelsensor");
 			if ow.owfs_get('%s/MultiSensor/type' % sensor._path) == 'MS-TH':
-				client.addDevice(sensor._path, "multilevelsensor");
+				client.add_device(sensor._path, "multilevelsensor");
 			if ow.owfs_get('%s/MultiSensor/type' % sensor._path) == 'MS-T':
-				client.addDevice(sensor._path, "multilevelsensor");
+				client.add_device(sensor._path, "multilevelsensor");
 		except ow.exUnknownSensor, e:
 			print e
 	if sensor._type == 'DS2406':
 		sensor.PIO_B = '0'
 		sensor.latch_B = '0'
 		sensor.set_alarm = '111'
-		client.addDevice(sensor._path, "switch");
-		client.addDevice(sensor._path, "binarysensor");
+		client.add_device(sensor._path, "switch");
+		client.add_device(sensor._path, "binarysensor");
 
 def messageHandler(internalid, content):
 	for sensor in root.sensors():
@@ -61,13 +61,13 @@ def messageHandler(internalid, content):
 				if content["command"] == "on":
 					print "switching on: ", internalid
 					sensor.PIO_A = '1'
-					client.emitEvent(internalid, "event.device.state", "255", "")
+					client.emit_event(internalid, "event.device.state", "255", "")
 				if content["command"] == "off":
 					print "switching off: ", internalid
 					sensor.PIO_A = '0'
-					client.emitEvent(internalid, "event.device.state", "0", "")
+					client.emit_event(internalid, "event.device.state", "0", "")
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 					
 class readBus(threading.Thread):
     def __init__(self,):
@@ -83,10 +83,10 @@ class readBus(threading.Thread):
 					if sensor._path in sensors:
 						if 'temp' in sensors[sensor._path]:
 							if abs(sensors[sensor._path]['temp'] - temp) > 0.5:
-								client.emitEvent( sensor._path, "event.environment.temperaturechanged", temp, "degC")
+								client.emit_event( sensor._path, "event.environment.temperaturechanged", temp, "degC")
 								sensors[sensor._path]['temp'] = temp
 					else:
-						client.emitEvent( sensor._path, "event.environment.temperaturechanged", temp, "degC")
+						client.emit_event( sensor._path, "event.environment.temperaturechanged", temp, "degC")
 						sensors[sensor._path]={}
 						sensors[sensor._path]['temp'] = temp
 				if sensor._type == 'DS2438':
@@ -98,10 +98,10 @@ class readBus(threading.Thread):
 							lightlevel = int(round(20*rawvalue))
 							if 'light' in sensors[sensor._path]:
 								if abs(sensors[sensor._path]['light'] - lightlevel) > 5:
-									client.emitEvent( sensor._path, "event.environment.brightnesschanged", lightlevel, "percent")
+									client.emit_event( sensor._path, "event.environment.brightnesschanged", lightlevel, "percent")
 									sensors[sensor._path]['light'] = lightlevel
 							else:
-								client.emitEvent( sensor._path, "event.environment.brightnesschanged", lightlevel, "percent")
+								client.emit_event( sensor._path, "event.environment.brightnesschanged", lightlevel, "percent")
 								sensors[sensor._path]['light'] = lightlevel
 						if ow.owfs_get('%s/MultiSensor/type' % sensor._path) == 'MS-TH':
 							
@@ -109,10 +109,10 @@ class readBus(threading.Thread):
 							humidity = round(float(humraw))
 							if 'hum' in sensors[sensor._path]:
 								if abs(sensors[sensor._path]['hum'] - humidity) > 2:
-									client.emitEvent( sensor._path, "event.environment.humiditychanged", humidity, "percent")
+									client.emit_event( sensor._path, "event.environment.humiditychanged", humidity, "percent")
 									sensors[sensor._path]['hum'] = humidity
 							else:
-								client.emitEvent( sensor._path, "event.environment.humiditychanged", humidity, "percent")
+								client.emit_event( sensor._path, "event.environment.humiditychanged", humidity, "percent")
 								sensors[sensor._path]['hum'] = humidity
 					except ow.exUnknownSensor, e:
 						print e
@@ -120,9 +120,9 @@ class readBus(threading.Thread):
 					if sensor.latch_B == '1':
 						sensor.latch_B = '0'
 						if sensor.sensed_B == '1':
-							client.emitEvent(sensor._path, "event.security.sensortriggered", 255, "")
+							client.emit_event(sensor._path, "event.security.sensortriggered", 255, "")
 						else:
-							client.emitEvent(sensor._path, "event.security.sensortriggered", 0, "")
+							client.emit_event(sensor._path, "event.security.sensortriggered", 0, "")
 		except ow.exUnknownSensor, e:
 			pass
 		time.sleep(2)
