@@ -1047,7 +1047,7 @@ function eventConfig() {
 
 		    if (cmd.parameters[param].type == 'option') {
 			var select = document.createElement("select");
-			select.name = cmd.parameters[param].name;
+			select.name = param;
 			select.className = "cmdParam";
 			select.id = cmd.parameters[param].name;
 			for ( var i = 0; i < cmd.parameters[param].options.length; i++)
