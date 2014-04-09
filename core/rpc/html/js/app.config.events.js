@@ -318,7 +318,8 @@ function eventConfig() {
 		    if (nameRes.result && nameRes.result.returncode == "0") {
 			self.events.push({
 			    name : cnt.name,
-			    uuid : res.result.event
+			    uuid : res.result.event,
+			    action: ""
 			});
 			self.initBuilder();
 		    }
