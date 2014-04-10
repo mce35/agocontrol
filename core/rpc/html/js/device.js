@@ -329,4 +329,18 @@ function device(obj, uuid) {
 	};
     }
 
+    //update device content
+    self.update = function(obj) {
+        for ( var k in obj) {
+            if( typeof(this[k])==="function" )
+            {
+                //should be an observable
+                this[k](obj[k]);
+            }
+            else
+            {
+                this[k] = obj[k];
+            }
+        }
+    };
 }
