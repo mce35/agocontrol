@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 2.6)
 
 # only set these variables if you actually have the files
 # set (my_device_schema "example.yaml")
-# set (my_device_service "example.service")
-# set (my_device_config "example.conf")
+# set (my_device_service "example.service.in")
+# set (my_device_config "example.conf.in")
 
 # include this after you set your device variables to
 # automatically configure the files and install into
