@@ -83,7 +83,7 @@ def messageHandler(internalid, content):
                 #res = t.getErrorString(resCode)
                 error("tellstick.py error turning on device. res=" + resCode)
             else:
-                client.emit_event(internalid, "event.device.statechanged", "255", "")
+                client.emit_event(internalid, "event.device.statechanged", 255, "")
             if debug:
                 info("Turning on device:  " + str(internalid) + " res=" + resCode)
 
@@ -104,7 +104,7 @@ def messageHandler(internalid, content):
                 error("tellstick.py error turning off device. res=" + resCode)
             else:
                 #res = 'Success'
-                client.emit_event(internalid, "event.device.statechanged", "0", "")
+                client.emit_event(internalid, "event.device.statechanged", 0, "")
             if debug:
                 info("Turning off device: " + str(internalid) + " res="+ resCode)
 
@@ -155,12 +155,12 @@ def agoDeviceEvent(deviceId, method, data, callbackId):
 
         #print "method=" + str(method)
         if (method == t.TELLSTICK_TURNON):
-            client.emit_event(deviceId, "event.device.statechanged", "255", "")
+            client.emit_event(deviceId, "event.device.statechanged", 255, "")
             if debug:
                 info ("emit_event statechanged " + str(deviceId) + " ON 255")
 
         if (method == t.TELLSTICK_TURNOFF):
-            client.emit_event(deviceId, "event.device.statechanged", "0", "")
+            client.emit_event(deviceId, "event.device.statechanged", 0, "")
             if debug:
                 info ("emit_event statechanged " + str(deviceId) + " OFF 0")
         # if (method == t.TELLSTICK_DIM): #Hmm, not sure if this can happen?!?
