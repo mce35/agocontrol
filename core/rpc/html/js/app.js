@@ -89,7 +89,14 @@ function buildfloorPlanList(model) {
 	model.floorPlans.push({
 	    uuid : k,
 	    name : floorPlans[k].name,
-	    action : '' // dummy for table
+	    action : '', // dummy for table
+	    showFloorplan : function(data, event){
+		if(getPage() !== 'floorplan')
+		    return true; // Let href act instead
+
+		setFloorPlan(this.uuid);
+		return false;
+	    }
 	});
     }
 }
@@ -365,14 +372,7 @@ function handleInventory(response) {
 	}
     }
 
-    for ( var k in floorPlans) {
-	if (k == fp) {
-	    var tmp;
-	    tmp = floorPlans[k];
-	    tmp.uuid = k;
-	    currentFloorPlan(tmp);
-	}
-    }
+    setFloorPlan(fp, getPage() !== 'floorplan');
 
     var inventory = cleanInventory(response.result.devices);
     var found;
@@ -471,6 +471,51 @@ function handleInventory(response) {
 	}
     }
 }
+
+function setFloorPlan(fp, dontPushState) {
+    for ( var k in floorPlans) {
+	if (k == fp) {
+	    var tmp;
+	    tmp = floorPlans[k];
+	    tmp.uuid = k;
+	    currentFloorPlan(tmp);
+	    break;
+	}
+    }
+
+/*XXX: Doesnt work pretty now; handleInventory is called from
+misc places and actually handles page-state rather than just inventory logic.
+This means we get all sorts of stuff pushed...
+    if(dontPushState)
+	return;
+
+    // HTML5 push/pop-state support
+    try {
+	if(history && history.pushState) {
+	    console.log("pushstate", fp);
+	    history.pushState({page:'floorplan',fp:fp},
+		document.title,
+		'?floorplan&fp='+fp);
+	}
+    }catch(e) {
+	console.error(e);
+    }
+    */
+}
+
+/* If HTML5 history state is available, this will trigger when user
+ * navigates back/forth. If a history.pushState event has been executed,
+ * we can find out what page to render.
+ * Currently only supports floorplan */
+
+/*
+window.onpopstate = function(event){
+    console.log("on popstate", event.state);
+    if(event.state && event.state.page === 'floorplan') {
+	setFloorPlan(event.state.fp, true);
+    }
+};
+*/
 
 function getInventory() {
     var content = {};
