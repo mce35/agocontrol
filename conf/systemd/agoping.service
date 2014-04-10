@@ -1,0 +1,14 @@
+[Unit]
+Description=ago control Host pinger
+
+[Service]
+ExecStart=/opt/agocontrol/bin/ping.py
+WorkingDirectory=/opt/agocontrol/bin
+StandardOutput=syslog
+StandardError=syslog
+Restart=always
+RestartSec=2
+User=root
+
+[Install]
+WantedBy=multi-user.target
