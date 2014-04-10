@@ -2,8 +2,8 @@
 Description=ago control Host pinger
 
 [Service]
-ExecStart=/opt/agocontrol/bin/ping.py
-WorkingDirectory=/opt/agocontrol/bin
+ExecStart=@BINDIR@/agoping.py
+WorkingDirectory=@BINDIR@
 StandardOutput=syslog
 StandardError=syslog
 Restart=always
