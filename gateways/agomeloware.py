@@ -106,21 +106,28 @@ class ClientThread ( threading.Thread ):
 			print e
 
 		print "received data:", message
-		for id, device in message.content["inventory"].iteritems():
+		for id, device in message.content["devices"].iteritems():
 			state = 0
 			state=float(device['state'])
+			roomuuid = device['room']
 			try:
-				if device['devicetype'] == "switch":
-					# print device['description']
-					self.conn.send("DEVICE~%s~%s~%d~BinarySwitch\n" % (device['name'],id,state ))  # echo
-				if device['devicetype'] == "dimmer":
-					# print device['description']
-					self.conn.send("DEVICE~%s~%s~%d~MultilevelSwitch\n" % (device['name'],id,state ))  # echo
-				if device['devicetype'] == "drapes":
-					# print device['description']
-					self.conn.send("DEVICE~%s~%s~%d~WindowCovering\n" % (device['name'],id,state ))  # echo
+				roomname = message.content["rooms"][roomuuid]["name"]
 			except KeyError, e:
-				print e
+				roomname = "none"
+			name = roomname + "-" + device['name']
+			if device['name'] != "":
+				try:
+					if device['devicetype'] == "switch":
+						# print device['description']
+						self.conn.send("DEVICE~%s~%s~%d~BinarySwitch\n" % (name,id,state ))  # echo
+					if device['devicetype'] == "dimmer":
+						# print device['description']
+						self.conn.send("DEVICE~%s~%s~%d~MultilevelSwitch\n" % (name,id,state ))  # echo
+					if device['devicetype'] == "drapes":
+						# print device['description']
+						self.conn.send("DEVICE~%s~%s~%d~WindowCovering\n" % (name,id,state ))  # echo
+				except KeyError, e:
+					print e
 		# self.conn.send('DEVICE~RPCState~0~0~STATUS\n')  # echo
 		# self.conn.send('DEVICE~Temper~0~27~THERMOMETER\n')  # echo
 		# self.conn.send('DEVICE~Sensor~0~1~SENSOR\n')  # echo
