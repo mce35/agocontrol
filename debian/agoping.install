@@ -1,0 +1,4 @@
+lib/systemd/system/agoping.service
+opt/agocontrol/bin/agoping.py
+opt/agocontrol/bin/configobj.py
+opt/agocontrol/bin/pinger.py
