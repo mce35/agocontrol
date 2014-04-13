@@ -48,14 +48,15 @@ function floorPlan() {
 	}
     };
 
-    /* Load the floorplan data into the grid */
-    this.devSubscription = 0;
-    this.devSubscription = this.devices.subscribe(function() {
+    /* Load the floorplan data into the grid.
+     * This is meant to refresh whenever currentFloorPlan changes,
+     * and only when we have devices */
+    this.fpdevSubscription = ko.computed(function(){
 	if (self.devices().length == 0) {
 	    return;
 	}
 	var list = currentFloorPlan();
-	var result = self.placedDevices();
+	var result = [];
 	for ( var k in list) {
 	    if (k == "name" || k == "uuid") {
 		continue;
@@ -72,8 +73,6 @@ function floorPlan() {
 	}
 	self.placedDevices([]);
 	self.placedDevices(result);
-	self.devSubscription.dispose();
-	self.devSubscription = 0;
     });
 
     this.placedDevices = ko.observable([]);
@@ -141,6 +140,15 @@ function floorPlan() {
 	content.x = x;
 	content.y = y;
 	sendCommand(content);
+
+	// Update local floorplan too
+	var fp = floorPlans[content.floorplan];
+	if(x === -1 && y === -1)
+	   delete fp[uuid];
+	else {
+	   fp[uuid].x = x;
+	   fp[uuid].y = y;
+	}
     };
 
     this.postRender = function() {

@@ -8,8 +8,8 @@
 	</div>
 	<ko opts="foreach: floorPlans">
 	<div class="pretty medium primary btn btn-full icon-left icon-list">
-		<a href="?floorPlan"
-			data-bind="text: name, attr: {href: '?floorplan&amp;fp=' + uuid}"></a>
+		<a href="?floorPlan" 
+			data-bind="text: name, attr: {href: '?floorplan&amp;fp=' + uuid}, click: showFloorplan" ></a>
 	</div>
 	</ko>
 	<hr />
