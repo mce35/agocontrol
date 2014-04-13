@@ -9,6 +9,9 @@ function securityConfig() {
 
     this.zoneMap = ko.observable([]);
 
+    this.housemode = ko.observable("");
+    this.housemodeNames = ko.observableArray([]);
+    
     this.housemodes = ko.observableArray([]);
     this.zones = ko.observableArray([]);
 
@@ -39,6 +42,20 @@ function securityConfig() {
     };
 
     /**
+     * Gets the currently active housemode
+     */
+    this.getHouseMode = function() {
+	var content = {};
+	content.command = "gethousemode";
+	content.uuid = self.securityController.uuid;
+	sendCommand(content, function(res) {
+	    if (res.result.result == 0 && res.result.housemode) {
+		self.housemode(res.result.housemode);
+	    }
+	});
+    };
+
+    /**
      * Wait for the securityController and build the zone map
      */
     this.devices.subscribe(function() {
@@ -51,6 +68,7 @@ function securityConfig() {
 	}
 
 	self.getZones();
+	self.getHouseMode();
     });
 
     this.zoneMap.subscribe(function() {
@@ -63,6 +81,9 @@ function securityConfig() {
 	var zones = [];
 	// Zone names to index mapping
 	var zoneIdx = {};
+	
+	// Housemode names
+	var modeNames = [];
 
 	/* Build list of zones and index mapping */
 	for ( var mode in zoneMap) {
@@ -89,10 +110,12 @@ function securityConfig() {
 		name : mode,
 		delays : delays
 	    });
+	    modeNames.push(mode);
 	}
 
 	self.zones(zones);
 	self.housemodes(modes);
+	self.housemodeNames(modeNames);
     });
 
     /**
@@ -100,12 +123,12 @@ function securityConfig() {
      */
     this.addHouseMode = function() {
 	var name = $("#modeName").val();
-	
+
 	if ($.trim(name) == "") {
 	    notif.error("#emptyMode");
 	    return;
 	}
-	
+
 	var modes = self.housemodes();
 	self.housemodes([]);
 	var delays = [];
@@ -127,17 +150,17 @@ function securityConfig() {
      */
     this.addZone = function() {
 	var name = $("#zoneName").val();
-	
+
 	if (self.housemodes().length == 0) {
 	    notif.error("#modeFirst");
 	    return;
 	}
-	
+
 	if ($.trim(name) == "") {
 	    notif.error("#emptyZone");
 	    return;
 	}
-	
+
 	self.zones.push({
 	    name : name
 	});
@@ -198,6 +221,29 @@ function securityConfig() {
 	    self.getZones();
 	});
 
+    };
+
+    /**
+     * Changes the current house mode
+     * this requires the user to enter the pin
+     */
+    this.changeHouseMode = function() {
+	var content = {};
+	var pin = window.prompt("PIN:");
+	if (pin) {
+	    content.command = "sethousemode";
+	    content.uuid = self.securityController.uuid;
+	    content.mode = $('#selectedMode').val();
+	    content.pin = pin;
+	    sendCommand(content, function(res) {
+		if (res.result.error) {
+		    notif.error(res.result.error);
+		}
+		else {
+    		    self.getHouseMode();
+		}
+	    });
+	}
     };
 
 }

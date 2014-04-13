@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-13 12:46+0200\n"
+"POT-Creation-Date: 2014-04-13 19:05+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -539,14 +539,18 @@ msgid "Add housemode"
 msgstr "Hausmodus hinzufügen"
 
 #: ../templates/configuration/security.xml.in.h:8
+msgid "Change housemode"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../templates/configuration/security.xml.in.h:9
 msgid "Please enter a zone name."
 msgstr "Bitte Zonen Namen eingeben"
 
-#: ../templates/configuration/security.xml.in.h:9
+#: ../templates/configuration/security.xml.in.h:10
 msgid "Please enter a housemode name."
 msgstr "Bitte Name des Hausmodus angeben"
 
-#: ../templates/configuration/security.xml.in.h:10
+#: ../templates/configuration/security.xml.in.h:11
 msgid "You must create a housemode before you can add any zones."
 msgstr ""
 "Sie müssen zuerst einen Hausmodus erstellen bevor Sie zonen anlegen können"

@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 10:00+0200\n"
+"POT-Creation-Date: 2014-04-13 19:05+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: nl\n"
 
 #: ../templates/configuration.xml.in.h:1
 msgid "ago control Configuration"
@@ -125,11 +125,15 @@ msgid "Cloud"
 msgstr "Cloud"
 
 #: ../templates/navigation/configuration.xml.in.h:8
+msgid "Security"
+msgstr ""
+
+#: ../templates/navigation/configuration.xml.in.h:9
 #: ../templates/configuration/plugins.xml.in.h:1
 msgid "Plugins"
 msgstr "Invoeg toepassingen"
 
-#: ../templates/navigation/configuration.xml.in.h:9
+#: ../templates/navigation/configuration.xml.in.h:10
 msgid "System"
 msgstr "Systeem"
 
@@ -312,6 +316,7 @@ msgstr "Bewerk Scenario"
 
 #: ../templates/configuration/scenarios.xml.in.h:17
 #: ../templates/configuration/events.xml.in.h:13
+#: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:16
 msgid "Save"
@@ -504,6 +509,50 @@ msgstr "Versie"
 #: ../templates/configuration/plugins.xml.in.h:4
 msgid "Description"
 msgstr "Omschrijving"
+
+#: ../templates/configuration/security.xml.in.h:1
+#, fuzzy
+msgid "Security Configuration"
+msgstr "Scenario Configuratie"
+
+#: ../templates/configuration/security.xml.in.h:3
+#, fuzzy
+msgid "Add new zone"
+msgstr "Voeg nieuwe variabele toe"
+
+#: ../templates/configuration/security.xml.in.h:4
+#, fuzzy
+msgid "Input zone name"
+msgstr "Geef gebeurtenis naam"
+
+#: ../templates/configuration/security.xml.in.h:5
+#, fuzzy
+msgid "Add zone"
+msgstr "Voeg Commando toe"
+
+#: ../templates/configuration/security.xml.in.h:6
+msgid "Add new housemode"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:7
+msgid "Add housemode"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:8
+msgid "Change housemode"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:9
+msgid "Please enter a zone name."
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:10
+msgid "Please enter a housemode name."
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:11
+msgid "You must create a housemode before you can add any zones."
+msgstr ""
 
 #: ../templates/devices/multilevelsensor.xml.in.h:1
 msgid "GRAPH"

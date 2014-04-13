@@ -46,6 +46,18 @@
  </ul>
 </div>
 
+<hr />
+
+<_h3 data-translateable="true">Change housemode</_h3>
+<div class="row">
+ <ul class="ten columns">
+  <li class="append field">
+   <select class="wide input" id="selectedMode" data-bind="options: housemodeNames, value: housemode"></select>
+   <div class="medium primary btn"><_a href="#" data-translateable="true" data-bind="click: changeHouseMode">Change housemode</_a></div>
+  </li>
+ </ul>
+</div>
+
 <_p id="emptyZone" style="display:none">Please enter a zone name.</_p>
 <_p id="emptyMode" style="display:none">Please enter a housemode name.</_p>
 <_p id="modeFirst" style="display:none">You must create a housemode before you can add any zones.</_p>
