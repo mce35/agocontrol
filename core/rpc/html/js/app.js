@@ -276,7 +276,23 @@ if (sessionStorage.supported_devices) {
 
 // --- AGO --- //
 
+var securityPromted = false;
+
 function handleEvent(response) {
+    if (response.result.event == "event.security.countdown" && !securityPromted) {
+	securityPromted = true;
+	var pin = window.prompt("Alarm please entry pin:");
+	var content = {};
+	content.command = "cancel";
+	content.uuid = response.result.uuid;
+	content.pin = pin;
+	sendCommand(content, function(res) {
+	   if (res.result.error) {
+	       notif.error(res.result.error);
+	   }
+	   securityPromted = false;
+	});
+    }
     for ( var i = 0; i < deviceMap.length; i++) {
 	if (deviceMap[i].uuid == response.result.uuid && response.result.level !== undefined) {
 	    // update custom device member

@@ -95,27 +95,6 @@ function securityConfig() {
 	self.housemodes(modes);
     });
 
-    /***
-     * Just a test
-     * XXX: Remove
-     */
-    this.testTrigger = function() {
-	var content = {};
-	content.command = "sethousemode";
-	content.uuid = self.securityController.uuid;
-	content.mode = "armed";
-	content.pin = "0815";
-	sendCommand(content, function() {
-	    var content = {};
-	    content.command = "triggerzone";
-	    content.uuid = self.securityController.uuid;
-	    content.zone = "hull";
-	    sendCommand(content, function(x) {
-		console.log(x);
-	    });
-	});
-    };
-
     /**
      * Adds a new housemode
      */
@@ -202,7 +181,7 @@ function securityConfig() {
 	    for ( var i = 0; i < numDelays; i++) {
 		if (delayList[i] != -1) {
 		    list.push({
-			delay : delayList[i],
+			delay : parseInt(delayList[i]),
 			zone : idx2zone[i]
 		    });
 		}
