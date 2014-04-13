@@ -93,8 +93,7 @@ commands:
     parameters:
       mode:
         name: house mode
-        type: option
-        options: ["unarmed", "armed_athome", "armed_away", "entertaining", "sleeping", "armed_extendedaway"]
+        type: string
       pin:
         name: security pin
         type: integer
