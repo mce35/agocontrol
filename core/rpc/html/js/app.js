@@ -296,9 +296,7 @@ function handleEvent(response) {
 		var values = deviceMap[i].values();
 		/* We have no values so reload from inventory */
 		if (values[response.result.quantity] === undefined) {
-		    var content = {};
-		    content.command = "inventory";
-		    sendCommand(content, function(inv) {
+		    getInventory(function(inv) {
 			var tmpInv = cleanInventory(inv.result.devices);
 			if (tmpInv[response.result.uuid] !== undefined) {
 			    if (tmpInv[response.result.uuid].values) {
@@ -518,10 +516,11 @@ window.onpopstate = function(event){
 };
 */
 
-function getInventory() {
+function getInventory(customCb) {
+    var cb = customCb || handleInventory;
     var content = {};
     content.command = "inventory";
-    sendCommand(content, handleInventory);
+    sendCommand(content, cb);
 }
 
 function unsubscribe() {
