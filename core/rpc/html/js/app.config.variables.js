@@ -41,7 +41,6 @@ function variablesConfig() {
 	content.command = 'setvariable';
 	content.uuid = agoController;
 	sendCommand(content, function(res) {
-	    console.log(res);
 	    if (res.result && res.result.returncode == 0) {
 		self.variables.push({
 		    variable : content.variable,

@@ -167,9 +167,7 @@ function securityConfig() {
 	var modes = self.housemodes();
 	self.housemodes([]);
 	for ( var i = 0; i < modes.length; i++) {
-	    console.log(modes[i].delays);
 	    modes[i].delays.push("-1");
-	    console.log(modes[i].delays);
 	}
 	self.housemodes(modes);
 	$("#zoneName").val("");

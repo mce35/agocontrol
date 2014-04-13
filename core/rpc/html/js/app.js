@@ -388,7 +388,6 @@ function cleanInventory(data) {
 var initialized = false;
 
 function handleInventory(response) {
-    console.log(response);
     if (response != null && response.result.match !== undefined && response.result.match(/^exception/)) {
 	notif.error("RPC ERROR: " + response.result);
 	return;

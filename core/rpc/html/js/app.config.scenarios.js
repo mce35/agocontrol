@@ -114,7 +114,6 @@ function scenarioConfig() {
 	content.scenariomap = self.buildScenarioMap("scenarioBuilder");
 
 	sendCommand(content, function(res) {
-	    console.log(res);
 	    if (res.result && res.result.scenario) {
 		var cnt = {};
 		cnt.uuid = agoController;
@@ -143,8 +142,6 @@ function scenarioConfig() {
      */
     this.addCommand = function(containerID, defaultValues) {
 	var row = document.createElement("div");
-
-	console.log(schema);
 
 	if (!containerID) {
 	    containerID = "scenarioBuilder";
@@ -356,7 +353,6 @@ function scenarioConfig() {
 	content.uuid = scenarioController;
 	content.command = 'getscenario';
 	sendCommand(content, function(res) {
-	    console.log(res);
 	    // Build command list
 	    for ( var idx in res.result.scenariomap) {
 		self.addCommand("scenarioBuilderEdit", res.result.scenariomap[idx]);
@@ -388,7 +384,6 @@ function scenarioConfig() {
 	content.uuid = scenarioController;
 	content.scenario = self.openScenario;
 	content.scenariomap = self.buildScenarioMap("scenarioBuilderEdit");
-	console.log(content);
 	sendCommand(content, function(res) {
 	    if (res.result && res.result.scenario) {
 		$("#editScenarioDialog").dialog("close");

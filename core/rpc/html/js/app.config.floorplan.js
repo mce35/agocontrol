@@ -59,7 +59,6 @@ function floorPlanConfig() {
 	content.uuid = agoController;
 	content.command = 'deletefloorplan';
 	sendCommand(content, function(res) {
-	    console.log(res);
 	    if (res.result && res.result.returncode == 0) {
 		self.floorplans.remove(function(e) {
 		    return e.uuid == item.uuid;
