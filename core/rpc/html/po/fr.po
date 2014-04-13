@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 10:00+0200\n"
+"POT-Creation-Date: 2014-04-13 12:31+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -126,11 +126,15 @@ msgid "Cloud"
 msgstr "Cloud"
 
 #: ../templates/navigation/configuration.xml.in.h:8
+msgid "Security"
+msgstr ""
+
+#: ../templates/navigation/configuration.xml.in.h:9
 #: ../templates/configuration/plugins.xml.in.h:1
 msgid "Plugins"
 msgstr "Extensions"
 
-#: ../templates/navigation/configuration.xml.in.h:9
+#: ../templates/navigation/configuration.xml.in.h:10
 msgid "System"
 msgstr "Système"
 
@@ -966,8 +970,8 @@ msgid ""
 "Recurring schedules are linked each others. If you update one of them, all "
 "will be updated too."
 msgstr ""
-"Les tâches répétées sont liées entre elles. Si vous mettez à jour l'une"
-"d'entre elles, les autres seront mise à jour automatiquement."
+"Les tâches répétées sont liées entre elles. Si vous mettez à jour "
+"l'uned'entre elles, les autres seront mise à jour automatiquement."
 
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:19
 msgid "Schedule's color"
