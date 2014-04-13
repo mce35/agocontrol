@@ -79,9 +79,9 @@ class WatchInputs(threading.Thread):
 				event, module, state = str(data).split(',')
 				if 'statechange' in event:
 					if '0' in state:
-						client.emitEvent("%s/%s" % (self.addr, module), "event.device.statechanged", 255, "")
+						client.emit_event("%s/%s" % (self.addr, module), "event.device.statechanged", 255, "")
 					else:
-						client.emitEvent("%s/%s" % (self.addr, module), "event.device.statechanged", 0, "")
+						client.emit_event("%s/%s" % (self.addr, module), "event.device.statechanged", 0, "")
 			except ValueError, e:
 				print "value error", e, data
 		s.close()
@@ -97,11 +97,11 @@ for addr in devices:
 			dev, module, type = device.split(',')
 			if '3 RELAY' in type:
 				for x in range(1, 4):
-					client.addDevice("%s/%s:%i" % (addr, module, x), "switch")
+					client.add_device("%s/%s:%i" % (addr, module, x), "switch")
 			if '3 IR' in type:
 				for x in range(1, 4):
 					if 'SENSOR_NOTIFY' in getir(addr, GC100_COMM_PORT, "%s:%i" % (module, x)):
-						client.addDevice("%s/%s:%i" % (addr, module, x), "binarysensor")
+						client.add_device("%s/%s:%i" % (addr, module, x), "binarysensor")
 		except ValueError, e:
 			print "value error", e, device
 
@@ -118,15 +118,15 @@ def messageHandler(internalid, content):
 			# state,3:1,1
 			name, tmpconn, state = reply.split(',')
 			if "1" in state:
-				client.emitEvent(internalid, "event.device.statechanged", "255", "")
+				client.emit_event(internalid, "event.device.statechanged", "255", "")
 		if content["command"] == "off":
 			print "switching off: " + internalid
 			reply =  setstate(addr, GC100_COMM_PORT, connector, 0)
 			name, tmpconn, state = reply.split(',')
 			if "0" in state:
-				client.emitEvent(internalid, "event.device.statechanged", "0", "")
+				client.emit_event(internalid, "event.device.statechanged", "0", "")
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 print "Waiting for messages"
 client.run()

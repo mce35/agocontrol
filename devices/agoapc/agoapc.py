@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# APC Switched Rack PDU Device
+""" APC Switched Rack PDU Device """
 
 import sys
 import syslog
@@ -12,153 +12,166 @@ import time
 
 import agoclient
 
-client = agoclient.AgoConnection("apc")
+CLIENT = agoclient.AgoConnection("apc")
 
-OIDOutletCount = "1,3,6,1,4,1,318,1,1,4,5,1,0"	# sPDUOutletConfigTableSize
-OIDStatus = "1,3,6,1,4,1,318,1,1,4,4,2,1,3"	# sPDUOutletCtl
-OIDName = "1,3,6,1,4,1,318,1,1,4,5,2,1,3"	# sPDUOutletName
-OIDLoad = "1,3,6,1,4,1,318,1,1,12,2,3,1,1,2,1"	# rPDULoadStatusLoad
-loadOID = (1,3,6,1,4,1,318,1,1,12,2,3,1,1,2,1)
+OIDOUTLETCOUNT = "1,3,6,1,4,1,318,1,1,4,5,1,0"  # sPDUOutletConfigTableSize
+OIDSTATUS = "1,3,6,1,4,1,318,1,1,4,4,2,1,3"     # sPDUOutletCtl
+OIDNAME = "1,3,6,1,4,1,318,1,1,4,5,2,1,3"       # sPDUOutletName
+OIDLOAD = "1,3,6,1,4,1,318,1,1,12,2,3,1,1,2,1"  # rPDULoadStatusLoad
+LOADOID = (1, 3, 6, 1, 4, 1, 318, 1, 1, 12, 2, 3, 1, 1, 2, 1)
 
-apchost = agoclient.getConfigOption("apc", "host", "192.168.1.13")
-apcport = int(agoclient.getConfigOption("apc", "port", "161") ) 
-apcvoltage = int(agoclient.getConfigOption("apc", "voltage", "220") ) 
-apccommunityro =  agoclient.getConfigOption("apc", "community_readonly", "public")
-apccommunityrw =  agoclient.getConfigOption("apc", "community_readwrite", "private")
+APCHOST = agoclient.get_config_option("apc", "host", "192.168.1.13")
+APCPORT = int(agoclient.get_config_option("apc", "port", "161"))
+APCVOLTAGE = int(agoclient.get_config_option("apc", "voltage", "220"))
+APCCOMMUNITYRO = agoclient.get_config_option("apc", "community_readonly",
+    "public")
+APCCOMMUNITYRW = agoclient.get_config_option("apc", "community_readwrite",
+    "private")
+
 
 # route stderr to syslog
 class LogErr:
-        def write(self, data):
-                syslog.syslog(syslog.LOG_ERR, data)
+    """Log errors."""
+    def write(self, data):
+        """Log errors."""
+        syslog.syslog(syslog.LOG_ERR, data)
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
 # sys.stderr = LogErr()
 
 
-
 def set_outlet_state(internalid, command):
-	#new_state = 1 # 1=enable; 2=disable
-	if "on" in command:
-		new_state = 1
-	else:
-		new_state = 2
+    """XXX"""
+    #new_state = 1 # 1=enable; 2=disable
+    if "on" in command:
+        new_state = 1
+    else:
+        new_state = 2
 
-	myoid = eval(str(OIDStatus) + "," + str(internalid))
-	__errorIndication, __errorStatus, __errorIndex, __varBinds = cmdgen.CommandGenerator().setCmd(
-		cmdgen.CommunityData('my-agent', apccommunityrw, 1),
-		cmdgen.UdpTransportTarget((apchost, apcport)),
-		(myoid, rfc1902.Integer(new_state)))
-	
-	status = get_outlet_status(internalid)
-	return(status)
+    myoid = eval(str(OIDSTATUS) + "," + str(internalid))
+    cmdgen.CommandGenerator().setCmd(
+        cmdgen.CommunityData('my-agent', APCCOMMUNITYRW, 1),
+        cmdgen.UdpTransportTarget((APCHOST, APCPORT)),
+        (myoid, rfc1902.Integer(new_state)))
+
+    status = get_outlet_status(internalid)
+    return(status)
 
 
 def get_outlet_status(internalid):
+    """XXX"""
 
-	myoid = eval(str(OIDStatus) + "," + str(internalid))
-	__errorIndication, __errorStatus, __errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
-		cmdgen.CommunityData('my-agent', apccommunityro, 0),
-		cmdgen.UdpTransportTarget((apchost, apcport)), myoid)
-	output = varBinds[0][1]
+    myoid = eval(str(OIDSTATUS) + "," + str(internalid))
+    var_binds = cmdgen.CommandGenerator().getCmd(
+        cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
+        cmdgen.UdpTransportTarget((APCHOST, APCPORT)), myoid)
+    output = var_binds[0][1]
 
-	if output == 1:
-		status = "on"
-	if output == 2:
-		status = "off"
-	if output == 4:
-		status = "unknown"
+    if output == 1:
+        status = "on"
+    if output == 2:
+        status = "off"
+    if output == 4:
+        status = "unknown"
 
-        return(status)
+    return(status)
+
 
 def get_outlet_name(internalid):
+    """XXX"""
 
-	myoid = eval(str(OIDName) + "," + str(internalid))
-	__errorIndication, __errorStatus, __errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
-		cmdgen.CommunityData('my-agent', apccommunityro, 0),
-		cmdgen.UdpTransportTarget((apchost, apcport)), myoid)
-	output = varBinds[0][1]
+    myoid = eval(str(OIDNAME) + "," + str(internalid))
+    var_binds = cmdgen.CommandGenerator().getCmd(
+        cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
+        cmdgen.UdpTransportTarget((APCHOST, APCPORT)), myoid)
+    output = var_binds[0][1]
 
-        return(output)
+    return(output)
+
 
 def get_current_power():
+    """XXX"""
 
-	myoid = eval(str(OIDLoad))
-	errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
-    		cmdgen.CommunityData('my-agent', apccommunityro, 0),
-    		cmdgen.UdpTransportTarget((apchost, apcport)),
-    		myoid
-		)
-	myload = varBinds[0][1]
+    myoid = eval(str(OIDLOAD))
+    var_binds = cmdgen.CommandGenerator().getCmd(
+            cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
+            cmdgen.UdpTransportTarget((APCHOST, APCPORT)),
+            myoid
+        )
+    myload = var_binds[0][1]
 
-	if myload == "-1":
-        	return int(-1)
-	result = float(float(int(myload)) / 10)
+    if myload == "-1":
+        return int(-1)
+    result = float(float(int(myload)) / 10)
 
-	return(result)
-
+    return(result)
 
 
 syslog.syslog(syslog.LOG_NOTICE, "agoapc.py startup")
 
+
 # thread to poll energy level
 class EnergyUsage(threading.Thread):
-	def __init__(self,):
-		threading.Thread.__init__(self)
-	def run(self):
+    """XXX"""
+    def __init__(self,):
+        threading.Thread.__init__(self)
 
-		old_currentPower = 0
-		unit = "Wh"
-		while (True):
-			try:
-				time.sleep (5)	
-				currentPowerA = get_current_power()
-				currentPower = int(float(currentPowerA * apcvoltage))
-				if currentPower != old_currentPower:
-					client.emitEvent("powerusage", "event.environment.powerchanged", currentPower, unit)
-					old_currentPower = currentPower
-			except:
-				time.sleep(1)
-			
-
-def messageHandler(internalid, content):
-	if "command" in content:
-		if content["command"] == "on":
-			print "device switched on: ", internalid
-			result = set_outlet_state(internalid, 'on')
-			if "on" in result:
-				client.emitEvent(internalid, "event.device.statechanged", "255", "")
-		if content["command"] == "off":
-			print "device switched off:", internalid
-			result = set_outlet_state(internalid, 'off')
-			if "off" in result:
-				client.emitEvent(internalid, "event.device.statechanged", "0", "")
+    def run(self):
+        old_current_power = 0
+        unit = "Wh"
+        while (True):
+            try:
+                time.sleep(5)
+                current_power_a = get_current_power()
+                current_power = int(float(current_power_a * APCVOLTAGE))
+                if current_power != old_current_power:
+                    CLIENT.emit_event("powerusage",
+                        "event.environment.powerchanged", current_power, unit)
+                    old_current_power = current_power
+            except:
+                time.sleep(1)
 
 
-
-# get outlets from apc 
-myoid = eval(str(OIDOutletCount))
-__errorIndication, __errorStatus, __errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
-	cmdgen.CommunityData('my-agent', apccommunityro, 0),
-	cmdgen.UdpTransportTarget((apchost, apcport)),
-	myoid )
-
-outletCount = varBinds[0][1]
-
-for outlet in range(1,outletCount+1):
-	client.addDevice(outlet, "switch")
-        result = get_outlet_status(outlet)
-	if "on" in result:
-		client.emitEvent(outlet, "event.device.statechanged", "255", "")
-	if "off" in result:
-		client.emitEvent(outlet, "event.device.statechanged", "0", "")
-
-client.addDevice("powerusage", "multilevelsensor")
+def message_handler(internalid, content):
+    """XXX"""
+    if "command" in content:
+        if content["command"] == "on":
+            print "device switched on: ", internalid
+            result = set_outlet_state(internalid, 'on')
+            if "on" in result:
+                CLIENT.emit_event(internalid,
+                    "event.device.statechanged", "255", "")
+        if content["command"] == "off":
+            print "device switched off:", internalid
+            result = set_outlet_state(internalid, 'off')
+            if "off" in result:
+                CLIENT.emit_event(internalid,
+                    "event.device.statechanged", "0", "")
 
 
-background = EnergyUsage()
-background.setDaemon(True)
-background.start()
+# get outlets from apc
+MYOID = eval(str(OIDOUTLETCOUNT))
+VARBINDS = cmdgen.CommandGenerator().getCmd(
+    cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
+    cmdgen.UdpTransportTarget((APCHOST, APCPORT)),
+    MYOID)
 
-client.addHandler(messageHandler)
-client.run()
+OUTLETCOUNT = VARBINDS[0][1]
 
+for OUTLET in range(1, OUTLETCOUNT + 1):
+    CLIENT.add_device(OUTLET, "switch")
+    _result = get_outlet_status(OUTLET)
+    if "on" in _result:
+        CLIENT.emit_event(OUTLET, "event.device.statechanged", "255", "")
+    if "off" in _result:
+        CLIENT.emit_event(OUTLET, "event.device.statechanged", "0", "")
+
+CLIENT.add_device("powerusage", "multilevelsensor")
+
+
+BACKGROUND = EnergyUsage()
+BACKGROUND.setDaemon(True)
+BACKGROUND.start()
+
+CLIENT.add_handler(message_handler)
+CLIENT.run()

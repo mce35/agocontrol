@@ -79,9 +79,9 @@ class AgoAlert(threading.Thread):
         """return if module is configured or not"""
         raise NotImplementedError('configured method must be implemented')
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         """send message"""
-        raise NotImplementedError('_sendMessage method must be implemented')
+        raise NotImplementedError('_send_message method must be implemented')
 
     def run(self):
         """main process"""
@@ -91,7 +91,7 @@ class AgoAlert(threading.Thread):
                 message = self.__queue.get()
                 logging.info('send message: %s' % str(message))
                 try:
-                    self._sendMessage(message)
+                    self._send_message(message)
                 except Exception as e:
                     logging.exception('Unable to send message:')
             #pause
@@ -106,7 +106,7 @@ class Dummy(AgoAlert):
     def getConfig(self):
         return {'configured':0}
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         pass
 
 class SMS12voip(AgoAlert):
@@ -119,10 +119,10 @@ class SMS12voip(AgoAlert):
         self.name = '12voip'
         if username and len(username)>0 and password and len(password)>0:
             self.__configured = True
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_SMS_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_SMS_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_SMS_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_SMS_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -137,13 +137,13 @@ class SMS12voip(AgoAlert):
         if not username or len(username)==0 or not password or len(password)==0:
             logging.error('SMS12voip: invalid parameters')
             return False
-        if not agoclient.setConfigOption('12voip', 'username', username, 'alert') or not agoclient.setConfigOption('12voip', 'password', password, 'alert'):
+        if not agoclient.set_config_option('12voip', 'username', username, 'alert') or not agoclient.set_config_option('12voip', 'password', password, 'alert'):
             logging.error('SMS12voip: unable to save config')
             return False
         self.username = username
         self.password = password
         self.__configured = True
-        client.emitEvent('alertcontroller', "event.device.statechanged", STATE_SMS_NOT_CONFIGURED, "")
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_SMS_NOT_CONFIGURED, "")
         return True
 
     def addSMS(self, to, text):
@@ -166,7 +166,7 @@ class SMS12voip(AgoAlert):
             logging.error('SMS12voip: unable to add SMS because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         """url format:
            https://www.12voip.com/myaccount/sendsms.php?username=xxxxxxxxxx&password=xxxxxxxxxx&from=xxxxxxxxxx&to=xxxxxxxxxx&text=xxxxxxxxxx""" 
         params = {'username':self.username, 'password':self.password, 'from':self.username, 'to':message['to'], 'text':message['text']}
@@ -187,10 +187,10 @@ class GTalk(AgoAlert):
         self.name = 'gtalk'
         if username and len(username)>0 and password and len(password)>0:
             self.__configured = True
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_GTALK_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_GTALK_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_GTALK_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_GTALK_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -206,13 +206,13 @@ class GTalk(AgoAlert):
         if not username or len(username)==0 or not password or len(password)==0:
             logging.error('GTalk: Unable to add SMS because all parameters are mandatory')
             return False
-        if not agoclient.setConfigOption('gtalk', 'username', username, 'alert') or not agoclient.setConfigOption('gtalk', 'password', password, 'alert'):
+        if not agoclient.set_config_option('gtalk', 'username', username, 'alert') or not agoclient.set_config_option('gtalk', 'password', password, 'alert'):
             logging.error('GTalk: unable to save config')
             return False
         self.username = username
         self.password = password
         self.__configured = True
-        client.emitEvent('alertcontroller', "event.device.statechanged", STATE_GTALK_CONFIGURED, "")
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_GTALK_CONFIGURED, "")
         return True
 
     def addMessage(self, to, message):
@@ -229,7 +229,7 @@ class GTalk(AgoAlert):
             logging.error('GTalk: unable to add message because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
        jid = xmpp.protocol.JID( self.username )
        connection = xmpp.Client('gmail.com', debug=[])
        #connection = xmpp.Client('gmail.com', debug=[]) #no debug
@@ -252,10 +252,10 @@ class Twitter(AgoAlert):
         self.secret = secret
         if key and len(key)>0 and secret and len(secret)>0:
             self.__configured = True
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_TWITTER_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_TWITTER_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_TWITTER_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_TWITTER_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -277,9 +277,9 @@ class Twitter(AgoAlert):
                 self.key = token.key
                 self.secret = token.secret
                 #save token in config file
-                if agoclient.setConfigOption('twitter', 'key', self.key, 'alert') and agoclient.setConfigOption('twitter', 'secret', self.secret, 'alert'):
+                if agoclient.set_config_option('twitter', 'key', self.key, 'alert') and agoclient.set_config_option('twitter', 'secret', self.secret, 'alert'):
                     self.__configured = True
-                    client.emitEvent('alertcontroller', "event.device.statechanged", STATE_TWITTER_CONFIGURED, "")
+                    client.emit_event('alertcontroller', "event.device.statechanged", STATE_TWITTER_CONFIGURED, "")
                     return {'error':0, 'msg':''}
                 else:
                     return {'error':0, 'msg':'Unable to save Twitter token in config file.'}
@@ -320,7 +320,7 @@ class Twitter(AgoAlert):
             logging.error('Twitter: unable to add tweet because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         #connect using OAuth auth (basic auth deprecated)
         auth = tweepy.OAuthHandler(self.consumerKey, self.consumerSecret)
         auth.secure = True
@@ -345,10 +345,10 @@ class Mail(AgoAlert):
         self.name = 'mail'
         if smtp and len(smtp)>0 and sender and len(sender)>0:
             self.__configured = True
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_MAIL_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_MAIL_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_MAIL_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_MAIL_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -366,7 +366,7 @@ class Mail(AgoAlert):
         if not smtp or len(smtp)==0 or not sender or len(sender)==0:
             logging.error('Mail: all parameters are mandatory')
             return False
-        if not agoclient.setConfigOption('mail', 'smtp', smtp, 'alert') or not agoclient.setConfigOption('mail', 'sender', sender, 'alert') or not agoclient.setConfigOption('mail', 'login', login, 'alert') or not agoclient.setConfigOption('mail', 'password', password, 'alert') or not agoclient.setConfigOption('mail', 'tls', tls, 'alert'):
+        if not agoclient.set_config_option('mail', 'smtp', smtp, 'alert') or not agoclient.set_config_option('mail', 'sender', sender, 'alert') or not agoclient.set_config_option('mail', 'login', login, 'alert') or not agoclient.set_config_option('mail', 'password', password, 'alert') or not agoclient.set_config_option('mail', 'tls', tls, 'alert'):
             logging.error('Mail: unable to save config')
             return False
         self.smtp = smtp
@@ -377,7 +377,7 @@ class Mail(AgoAlert):
         if tls=='1':
             self.tls = True
         self.__configured = True
-        client.emitEvent('alertcontroller', "event.device.statechanged", STATE_MAIL_CONFIGURED, "")
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_MAIL_CONFIGURED, "")
         return True
 
     def addMail(self, tos, subject, content):
@@ -399,7 +399,7 @@ class Mail(AgoAlert):
             logging.error('Mail: unable to add mail because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         mails = smtplib.SMTP(self.smtp)
         if self.tls:
             mails.starttls()
@@ -431,10 +431,10 @@ class Pushover(AgoAlert):
         self.pushTitle = 'Agocontrol'
         if userid and len(userid)>0:
             self.__configured = True
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -448,12 +448,12 @@ class Pushover(AgoAlert):
         if not userid or len(userid)==0:
             logging.error('Pushover: all parameters are mandatory')
             return False
-        if not agoclient.setConfigOption('push','provider','pushover','alert') or not agoclient.setConfigOption('pushover', 'userid', userid, 'alert'):
+        if not agoclient.set_config_option('push','provider','pushover','alert') or not agoclient.set_config_option('pushover', 'userid', userid, 'alert'):
             logging.error('Pushover: unable to save config')
             return False
         self.userid = userid
         self.__configured = True
-        client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
         return True
 
     def addPush(self, message, priority='0'):
@@ -471,7 +471,7 @@ class Pushover(AgoAlert):
             logging.error('Pushover: unable to add message because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         conn = httplib.HTTPSConnection("api.pushover.net:443")
         conn.request("POST", "/1/messages.json",
         urllib.urlencode({
@@ -515,10 +515,10 @@ class Pushbullet(AgoAlert):
         if apikey and len(apikey)>0 and devices and len(devices)>0:
             self.__configured = True
             self.pushbullet = PushBullet(self.apikey)
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -554,7 +554,7 @@ class Pushbullet(AgoAlert):
         if not apikey or len(apikey)==0 or not devices or len(devices)==0:
             logging.error('Pushbullet: all parameters are mandatory')
             return False
-        if not agoclient.setConfigOption('push', 'provider', 'pushbullet','alert') or not agoclient.setConfigOption('pushbullet', 'apikey', apikey, 'alert') or not agoclient.setConfigOption('pushbullet', 'devices', json.dumps(devices), 'alert'):
+        if not agoclient.set_config_option('push', 'provider', 'pushbullet','alert') or not agoclient.set_config_option('pushbullet', 'apikey', apikey, 'alert') or not agoclient.set_config_option('pushbullet', 'devices', json.dumps(devices), 'alert'):
             logging.error('Pushbullet: unable to save config')
             return False
         self.apikey = apikey
@@ -562,7 +562,7 @@ class Pushbullet(AgoAlert):
         self.pbdevices = {}
         self.pushbullet = PushBullet(self.apikey)
         self.__configured = True
-        client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
         return True
 
     def addPush(self, message, file=None):
@@ -590,7 +590,7 @@ class Pushbullet(AgoAlert):
             logging.error('Pushover: unable to add message because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         #get devices from pushbullet if necessary
         if len(self.pbdevices)==0:
             self.getPushbulletDevices()
@@ -624,10 +624,10 @@ class Notifymyandroid(AgoAlert):
         self.pushTitle = 'Agocontrol'
         if apikeys and len(apikeys)>0:
             self.__configured = True
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
         else:
             self.__configured = False
-            client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_NOT_CONFIGURED, "")
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_NOT_CONFIGURED, "")
 
     def getConfig(self):
         configured = 0
@@ -641,12 +641,12 @@ class Notifymyandroid(AgoAlert):
         if not apikeys or len(apikeys)==0:
             logging.error('Notifymyandroid: all parameters are mandatory')
             return False
-        if not agoclient.setConfigOption('push','provider','notifymyandroid','alert') or not agoclient.setConfigOption('notifymyandroid', 'apikeys', json.dumps(apikeys) , 'alert'):
+        if not agoclient.set_config_option('push','provider','notifymyandroid','alert') or not agoclient.set_config_option('notifymyandroid', 'apikeys', json.dumps(apikeys) , 'alert'):
             logging.error('Notifymyandroid: unable to save config')
             return False
         self.apikeys = apikeys
         self.__configured = True
-        client.emitEvent('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_PUSH_CONFIGURED, "")
         return True
 
     def addPush(self, message, priority='0'):
@@ -664,7 +664,7 @@ class Notifymyandroid(AgoAlert):
             logging.error('Notifymyandroid: unable to add message because not configured')
             return False
 
-    def _sendMessage(self, message):
+    def _send_message(self, message):
         for apikey in self.apikeys:
             conn = httplib.HTTPSConnection("www.notifymyandroid.com:443")
             conn.request("POST", "/publicapi/notify",
@@ -1025,7 +1025,7 @@ def eventHandler(event, content):
     #get uuid
     if content.has_key('uuid'):
         uuid = content['uuid']
-        internalid = client.uuidToInternalId(uuid)
+        internalid = client.uuid_to_internal_id(uuid)
     
     if uuid and uuid in client.uuids:
         #uuid belongs to this handler
@@ -1042,22 +1042,22 @@ try:
     client = agoclient.AgoConnection('alert')
 
     #load config
-    configMailSmtp = agoclient.getConfigOption("mail", "smtp", "", 'alert')
-    configMailSender = agoclient.getConfigOption("mail", "sender", "", 'alert')
-    configMailLogin = agoclient.getConfigOption("mail", "login", "", 'alert')
-    configMailPassword = agoclient.getConfigOption("mail", "password", "", 'alert')
-    configMailTls = agoclient.getConfigOption("mail", "tls", "", 'alert')
-    configTwitterKey = agoclient.getConfigOption("twitter", "key", "", 'alert')
-    configTwitterSecret = agoclient.getConfigOption("twitter", "secret", "", 'alert')
-    configGTalkUsername = agoclient.getConfigOption("gtalk", "username", "", 'alert')
-    configGTalkPassword = agoclient.getConfigOption("gtalk", "password", "", 'alert')
-    configSmsUsername = agoclient.getConfigOption("12voip", "username", "", 'alert')
-    configSmsPassword = agoclient.getConfigOption("12voip", "password", "", 'alert')
-    configPushProvider = agoclient.getConfigOption('push', 'provider', '', 'alert')
-    configPushbulletApikey = agoclient.getConfigOption('pushbullet', 'apikey', '', 'alert')
-    configPushbulletDevices = agoclient.getConfigOption('pushbullet', 'devices', '', 'alert')
-    configPushoverUserid = agoclient.getConfigOption('pushover', 'userid', '', 'alert')
-    configNotifymyandroidApikeys = agoclient.getConfigOption('notifymyandroid', 'apikeys', '', 'alert')
+    configMailSmtp = agoclient.get_config_option("mail", "smtp", "", 'alert')
+    configMailSender = agoclient.get_config_option("mail", "sender", "", 'alert')
+    configMailLogin = agoclient.get_config_option("mail", "login", "", 'alert')
+    configMailPassword = agoclient.get_config_option("mail", "password", "", 'alert')
+    configMailTls = agoclient.get_config_option("mail", "tls", "", 'alert')
+    configTwitterKey = agoclient.get_config_option("twitter", "key", "", 'alert')
+    configTwitterSecret = agoclient.get_config_option("twitter", "secret", "", 'alert')
+    configGTalkUsername = agoclient.get_config_option("gtalk", "username", "", 'alert')
+    configGTalkPassword = agoclient.get_config_option("gtalk", "password", "", 'alert')
+    configSmsUsername = agoclient.get_config_option("12voip", "username", "", 'alert')
+    configSmsPassword = agoclient.get_config_option("12voip", "password", "", 'alert')
+    configPushProvider = agoclient.get_config_option('push', 'provider', '', 'alert')
+    configPushbulletApikey = agoclient.get_config_option('pushbullet', 'apikey', '', 'alert')
+    configPushbulletDevices = agoclient.get_config_option('pushbullet', 'devices', '', 'alert')
+    configPushoverUserid = agoclient.get_config_option('pushover', 'userid', '', 'alert')
+    configNotifymyandroidApikeys = agoclient.get_config_option('notifymyandroid', 'apikeys', '', 'alert')
 
     #create objects
     mail = Mail(configMailSmtp, configMailSender, configMailLogin, configMailPassword, configMailTls)
@@ -1082,11 +1082,11 @@ try:
     push.start()
 
     #add client handlers
-    client.addHandler(commandHandler)
+    client.add_handler(commandHandler)
 
     #add controller
     logging.info('Add controller')
-    client.addDevice('alertcontroller', 'alertcontroller')
+    client.add_device('alertcontroller', 'alertcontroller')
 
 
 except Exception as e:

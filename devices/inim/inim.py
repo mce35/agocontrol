@@ -3,7 +3,7 @@
 # ago INIM device
 # Copyright (c) 2013 by rages
 #
-#/etc/opt/agocontrol/config.ini
+#CONFDIR/conf.d/inim.ini
 #
 #[INIM]
 #terminal=10
@@ -22,14 +22,14 @@ import serial
 
 client = agoclient.AgoConnection("INIM")
 
-port = agoclient.getConfigOption("INIM", "port", "/dev/ttyS0")
-terminal = int(agoclient.getConfigOption("INIM", "terminal", "10"))
-outputs = agoclient.getConfigOption("INIM", "outputs", "3")
+port = agoclient.get_config_option("INIM", "port", "/dev/ttyS0")
+terminal = int(agoclient.get_config_option("INIM", "terminal", "10"))
+outputs = agoclient.get_config_option("INIM", "outputs", "3")
 
 # add devices for terminals
 for i in range(terminal):
 	id = i+1
-	client.addDevice("%d" % (id), "binarysensor")
+	client.add_device("%d" % (id), "binarysensor")
 
 
 ser = serial.Serial(port, 57600, parity=serial.PARITY_EVEN, stopbits=1, timeout=1)
@@ -58,10 +58,10 @@ class requestZoneStatus(threading.Thread):
 			 			print "zone", zn, "in short"
 					elif z1 == "01":
 						print "zone", zn, "retired"
-						client.emitEvent(zn, "event.security.sensortriggered", 0, "")
+						client.emit_event(zn, "event.security.sensortriggered", 0, "")
 					elif z1 == "10":
 						print "zone", zn, "in alarm"
-						client.emitEvent(zn, "event.security.sensortriggered", 255, "")
+						client.emit_event(zn, "event.security.sensortriggered", 255, "")
 					else :
 						print "zone", zn, "sabotage"
 

@@ -8,12 +8,12 @@ import smtplib
 import string
 
 client = agoclient.AgoConnection("smtp")
-smtpserver = agoclient.getConfigOption("smtp", "server", "mx.mail.com")
-smtpport = agoclient.getConfigOption("smtp", "port", "25")
-smtpfrom = agoclient.getConfigOption("smtp", "from", "agoman@agocontrol.com")
-smtpauthrequired = agoclient.getConfigOption("smtp", "authrequired", "0")
-smtpuser = agoclient.getConfigOption("smtp", "user", "")
-smtppassword = agoclient.getConfigOption("smtp", "password", "")
+smtpserver = agoclient.get_config_option("smtp", "server", "mx.mail.com")
+smtpport = agoclient.get_config_option("smtp", "port", "25")
+smtpfrom = agoclient.get_config_option("smtp", "from", "agoman@agocontrol.com")
+smtpauthrequired = agoclient.get_config_option("smtp", "authrequired", "0")
+smtpuser = agoclient.get_config_option("smtp", "user", "")
+smtppassword = agoclient.get_config_option("smtp", "password", "")
 
 def messageHandler(internalid, content):
 	if "command" in content:
@@ -46,9 +46,9 @@ def messageHandler(internalid, content):
 				print "error sending email, check your config"
 				return -1
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
-client.addDevice("smtp", "smtpgateway")
+client.add_device("smtp", "smtpgateway")
 
 client.run()
 

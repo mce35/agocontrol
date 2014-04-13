@@ -318,7 +318,8 @@ function eventConfig() {
 		    if (nameRes.result && nameRes.result.returncode == "0") {
 			self.events.push({
 			    name : cnt.name,
-			    uuid : res.result.event
+			    uuid : res.result.event,
+			    action: ""
 			});
 			self.initBuilder();
 		    }
@@ -1054,7 +1055,7 @@ function eventConfig() {
 			commandParams.appendChild(select);
 		    } else {
 			var input = document.createElement("input");
-			input.name = cmd.parameters[param].name;
+			input.name = param;
 			input.id = cmd.parameters[param].name;
 			input.className = "cmdParam";
 			if (defaults && defaults[cmd.parameters[param].name]) {

@@ -83,7 +83,7 @@ def messageHandler(internalid, content):
                 #res = t.getErrorString(resCode)
                 error("tellstick.py error turning on device. res=" + resCode)
             else:
-                client.emitEvent(internalid, "event.device.statechanged", "255", "")
+                client.emit_event(internalid, "event.device.statechanged", "255", "")
             if debug:
                 info("Turning on device:  " + str(internalid) + " res=" + resCode)
 
@@ -104,7 +104,7 @@ def messageHandler(internalid, content):
                 error("tellstick.py error turning off device. res=" + resCode)
             else:
                 #res = 'Success'
-                client.emitEvent(internalid, "event.device.statechanged", "0", "")
+                client.emit_event(internalid, "event.device.statechanged", "0", "")
             if debug:
                 info("Turning off device: " + str(internalid) + " res="+ resCode)
 
@@ -117,7 +117,7 @@ def messageHandler(internalid, content):
                 error( "tellstick.py error dimming device. res=" + resCode)
             else:
                 #res = 'Success'
-                client.emitEvent(internalid, "event.device.statechanged", content["level"], "")
+                client.emit_event(internalid, "event.device.statechanged", content["level"], "")
 
             if debug:
                 info("Dimming device=" + str(internalid) + " res=" + resCode + " level=" + str(content["level"]))
@@ -155,21 +155,21 @@ def agoDeviceEvent(deviceId, method, data, callbackId):
 
         #print "method=" + str(method)
         if (method == t.TELLSTICK_TURNON):
-            client.emitEvent(deviceId, "event.device.statechanged", "255", "")
+            client.emit_event(deviceId, "event.device.statechanged", "255", "")
             if debug:
-                info ("emitEvent statechanged " + str(deviceId) + " ON 255")
+                info ("emit_event statechanged " + str(deviceId) + " ON 255")
 
         if (method == t.TELLSTICK_TURNOFF):
-            client.emitEvent(deviceId, "event.device.statechanged", "0", "")
+            client.emit_event(deviceId, "event.device.statechanged", "0", "")
             if debug:
-                info ("emitEvent statechanged " + str(deviceId) + " OFF 0")
+                info ("emit_event statechanged " + str(deviceId) + " OFF 0")
         # if (method == t.TELLSTICK_DIM): #Hmm, not sure if this can happen?!?
         #     level = int(100 * int(data))/255
         #     if int(data) > 0 and int(data) < 255:
         #         level = level +1
-        #     client.emitEvent(deviceId, "event.device.statechanged", str(level), "")
+        #     client.emit_event(deviceId, "event.device.statechanged", str(level), "")
         #     if debug:
-        #         info ("emitEvent statechanged DIM " + str(level))
+        #         info ("emit_event statechanged DIM " + str(level))
 
 
 #def agoDeviceChangeEvent(deviceId, changeEvent, changeType, callbackId):
@@ -208,12 +208,12 @@ def emitTempChanged(devId, temp):
         tempF = 9.0/5.0 * tempC + 32.0
         if tempF != float(sensors[devId]["lastTemp"]):
             sensors[devId]["lastTemp"] = tempF
-            client.emitEvent(devId, "event.environment.temperaturechanged", str(tempF), "degF")
+            client.emit_event(devId, "event.environment.temperaturechanged", str(tempF), "degF")
     else:
         #print "devId=" + str(devId)
         if tempC != float(sensors[devId]["lastTemp"]):
             sensors[devId]["lastTemp"] = tempC
-            client.emitEvent(devId, "event.environment.temperaturechanged", str(tempC), "degC")
+            client.emit_event(devId, "event.environment.temperaturechanged", str(tempC), "degC")
 
 def emitHumidityChanged(devId, humidity):
     global sensors
@@ -222,7 +222,7 @@ def emitHumidityChanged(devId, humidity):
 
     if humidity != float(sensors[devId]["lastHumidity"]):
         sensors[devId]["lastHumidity"] = humidity
-        client.emitEvent(devId, "event.environment.humiditychanged", str(humidity), "%")
+        client.emit_event(devId, "event.environment.humiditychanged", str(humidity), "%")
 
 def listNewSensors():
     global sensors
@@ -232,7 +232,7 @@ def listNewSensors():
             value["new"] = False
             devId = str(id)
             if value["isMultiLevel"]:
-                client.addDevice (devId, "multilevelsensor")
+                client.add_device (devId, "multilevelsensor")
                 if value["isTempSensor"]:
                     emitTempChanged(devId, float(value["temp"]))
                 if value["isHumiditySensor"]:
@@ -240,17 +240,17 @@ def listNewSensors():
 
             else:
                 if value["isTempSensor"]:
-                    client.addDevice(devId, "temperaturesensor")
+                    client.add_device(devId, "temperaturesensor")
                     emitTempChanged(devId, float(value["temp"]))
 
                 if value["isHumiditySensor"]:
-                    client.addDevice (devId, "multilevelsensor")
+                    client.add_device (devId, "multilevelsensor")
                     emitHumidityChanged(devId, float(value["humidity"]))
 
 def reportSensorEvent(deviceId): #Add SensorData to parameters
     if debug:
         info ("Reporting sensor event")
-    #client.emitEvent(deviceId, "event.device.statechanged", "255", "") # Wrong event, check which to use for a sensor
+    #client.emit_event(deviceId, "event.device.statechanged", "255", "") # Wrong event, check which to use for a sensor
 
 def agoSensorEvent(protocol, model, id, dataType, value, timestamp, callbackId):
     global sensors
@@ -270,12 +270,12 @@ def agoSensorEvent(protocol, model, id, dataType, value, timestamp, callbackId):
         # tempC = value
         # if TempUnits == 'F':
         #     tempF = 9.0/5.0 * tempC + 32.0
-        #     client.emitEvent(str(devId), "event.environment.temperaturechanged", tempF, "degF")
+        #     client.emit_event(str(devId), "event.environment.temperaturechanged", tempF, "degF")
         # else:
-        #     client.emitEvent(str(devId), "event.environment.temperaturechanged", tempC, "degC")
+        #     client.emit_event(str(devId), "event.environment.temperaturechanged", tempC, "degC")
     if "humidity" in model and dataType & t.TELLSTICK_HUMIDITY == t.TELLSTICK_HUMIDITY:
         emitHumidityChanged(devId, float(value))
-        #client.emitEvent(str(devId), "event.environment.humiditychanged", float(value), "%")
+        #client.emit_event(str(devId), "event.environment.humiditychanged", float(value), "%")
 
 
 info( "+------------------------------------------------------------")
@@ -283,11 +283,11 @@ info( "+ Tellstick.py startup. Version=" + AGO_TELLSTICK_VERSION)
 info( "+------------------------------------------------------------")
 
 client = agoclient.AgoConnection("tellstick")
-#device = (agoclient.getConfigOption("tellstick", "device", "/dev/usbxxxx")
-if (agoclient.getConfigOption("tellstick", "debug", "false").lower() == "true"):
+#device = (agoclient.get_config_option("tellstick", "device", "/dev/usbxxxx")
+if (agoclient.get_config_option("tellstick", "debug", "false").lower() == "true"):
     debug = True
 
-config = ConfigObj("/etc/opt/agocontrol/conf.d/tellstick.conf")
+config = ConfigObj(agoclient.CONFDIR + "/conf.d/tellstick.conf")
 #config = ConfigObj("./tellstick.conf")
 try:
     general_delay = float(config['EventDevices']['Delay'])/1000
@@ -303,7 +303,7 @@ except KeyError:
     pass
 
 
-units = agoclient.getConfigOption("system", "units", "SI")
+units = agoclient.get_config_option("system", "units", "SI")
 TempUnits = "C"
 if units.lower() == "us":
     TempUnits = "F"
@@ -324,10 +324,10 @@ else:
 
 t.init(SensorPollDelay, TempUnits)
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 # Get inventory, required to set names on new devices
-inventory = client.getInventory().content
+inventory = client.get_inventory().content
 agoController = None
 for uuid in inventory['devices'].keys():
     d = inventory['devices'][uuid]
@@ -350,7 +350,7 @@ def setNameIfNecessary(deviceUUID, name):
         content["device"] = deviceUUID
         content["name"] = name
         message = Message(content=content)
-        client.sendMessage (None, content)
+        client.send_message (None, content)
         info ("'setdevicename' message sent. name=" + name)
 
 # Get devices from Telldus, announce to Ago Control
@@ -371,11 +371,11 @@ for devId, dev in switches.iteritems():
 
     #if ("selflearning-switch" in model or model == "switch"):
     if dev["isDimmer"]:
-        client.addDevice(devId, "dimmer")
+        client.add_device(devId, "dimmer")
     else:
-        client.addDevice(devId, "switch")
+        client.add_device(devId, "switch")
 
-    deviceUUID = client.internalIdToUuid (devId)
+    deviceUUID = client.internal_id_to_uuid (devId)
     #info ("deviceUUID=" + deviceUUID + " name=" + t.getName(devId))
     #info("Switch Name=" + dev.name + " protocol=" + dev.protocol + " model=" + dev.model)
     #if ("selflearning-dimmer" in model or model == "dimmer"):
@@ -391,8 +391,8 @@ for devId, dev in remotes.iteritems():
     info("devId=" + str(devId) + " name=" + name + " model=" + model)
 
     if not "codeswitch" in model:
-        client.addDevice(devId, "binarysensor")
-        deviceUUID = client.internalIdToUuid (devId)
+        client.add_device(devId, "binarysensor")
+        deviceUUID = client.internal_id_to_uuid (devId)
 
         #found = True
         "devId=" + str(devId) + " model " + model

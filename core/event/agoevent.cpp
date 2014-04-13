@@ -99,6 +99,9 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 		}
 		if (event["event"] == subject) {
 			// cout << "found matching event: " << event << endl;
+			// check if the event is disabled
+			if ((!(event["disabled"].isVoid())) && (event["disabled"].asBool() == true)) return;
+
 			qpid::types::Variant::Map criteria; // this holds the criteria evaluation results for each criteria
 			std::string nesting = event["nesting"].asString();
 			if (!event["criteria"].isVoid()) for (qpid::types::Variant::Map::const_iterator crit = event["criteria"].asMap().begin(); crit!= event["criteria"].asMap().end(); crit++) {

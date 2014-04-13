@@ -14,7 +14,7 @@
 #
 # I am developing this driver on occidentalis distro from adfruit.com
 #
-# /etc/opt/agocontrol/config.ini
+# CONFDIR/conf.d/raspiMCP300xGPIO.ini
 #
 # [raspiMCP300xGPIO]
 #
@@ -40,14 +40,14 @@ import RPi.GPIO as GPIO
 
 client = agoclient.AgoConnection("raspiMCP3xxxGPIO")
 
-SPIMOSI = int(agoclient.getConfigOption("raspiMCP3xxxGPIO", "SPIMOSI", "10"))
-SPIMISO = int(agoclient.getConfigOption("raspiMCP3xxxGPIO", "SPIMISO", "9"))
-SPICLK = int(agoclient.getConfigOption("raspiMCP3xxxGPIO", "SPICLK", "11"))
-SPICS = int(agoclient.getConfigOption("raspiMCP3xxxGPIO", "SPICS", "8"))
-vDiv = float(agoclient.getConfigOption("raspiMCP3xxxGPIO", "voltage_divider", "1"))
-readInputs = agoclient.getConfigOption("raspiMCP3xxxGPIO", "inputs", "0,1")
-interval = int(agoclient.getConfigOption("raspiMCP3xxxGPIO", "interval", "60"))
-change = float(agoclient.getConfigOption("raspiMCP3xxxGPIO", "change", "0.1"))
+SPIMOSI = int(agoclient.get_config_option("raspiMCP3xxxGPIO", "SPIMOSI", "10"))
+SPIMISO = int(agoclient.get_config_option("raspiMCP3xxxGPIO", "SPIMISO", "9"))
+SPICLK = int(agoclient.get_config_option("raspiMCP3xxxGPIO", "SPICLK", "11"))
+SPICS = int(agoclient.get_config_option("raspiMCP3xxxGPIO", "SPICS", "8"))
+vDiv = float(agoclient.get_config_option("raspiMCP3xxxGPIO", "voltage_divider", "1"))
+readInputs = agoclient.get_config_option("raspiMCP3xxxGPIO", "inputs", "0,1")
+interval = int(agoclient.get_config_option("raspiMCP3xxxGPIO", "interval", "60"))
+change = float(agoclient.get_config_option("raspiMCP3xxxGPIO", "change", "0.1"))
 
 inputs = map(int, readInputs.split(','))
 
@@ -56,7 +56,7 @@ deviceconfig = {}
 for adcCh in inputs:
     deviceconfig[(adcCh, 'value')] = 0 
     deviceconfig[(adcCh, 'lastreporttime')] = time.time()
-    client.addDevice(adcCh, "energysensor")
+    client.add_device(adcCh, "energysensor")
     
 def readadc(adcCh, clockpin, mosipin, misopin, cspin):
     if ((adcCh > 1) or (adcCh < 0)):
@@ -113,12 +113,12 @@ class readMCP300xGPIO(threading.Thread):
                 #print "Battery Voltage:", adcCh, volts
                 if abs(deviceconfig[(adcCh, 'value')] - volts) > change:
                     #print 'level change:', deviceconfig[(adcCh, 'value')]
-                    client.emitEvent(adcCh , "event.environment.energychanged", volts, "V") 
+                    client.emit_event(adcCh , "event.environment.energychanged", volts, "V") 
                     deviceconfig[(adcCh, 'value')] = volts
                     deviceconfig[(adcCh, 'lastreporttime')] = time.time()
                 if time.time() > deviceconfig[(adcCh, 'lastreporttime')] + interval:
                     #print 'interval:', deviceconfig[(adcCh, 'value')]
-                    client.emitEvent(adcCh , "event.environment.energychanged", volts, "V") 
+                    client.emit_event(adcCh , "event.environment.energychanged", volts, "V") 
                     deviceconfig[(adcCh, 'temp')] = volts
                     deviceconfig[(adcCh, 'lastreporttime')] = time.time()
             time.sleep(3)

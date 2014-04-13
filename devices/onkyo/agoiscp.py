@@ -25,7 +25,7 @@ devices = {}
 def discovery(timeout=3):
 	avrs = eISCP.discover(timeout)
 	for avr in avrs:
-		client.addDevice("%s:%s" % (avr.host, avr.port), "avreceiver")
+		client.add_device("%s:%s" % (avr.host, avr.port), "avreceiver")
 		# reportdevice("%s:%s" % (avr.host, avr.port), product=avr.info['model_name']);
 
 syslog.syslog(syslog.LOG_NOTICE, "agoiscp.py startup")
@@ -75,7 +75,7 @@ def messageHandler(internalid, content):
 	result["result"] = 0;
 	return result
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 client.run()
 

@@ -43,7 +43,7 @@ import time, sys
 #import agoclient
 
 config = ConfigParser.ConfigParser()
-config.read('/etc/opt/agocontrol/config.ini')
+config.read(agoclient.CONFDIR + '/conf.d/config.ini')
 
 try:
     username = config.get("system", "username")
@@ -201,7 +201,7 @@ class LogErr:
 syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
 sys.stderr = LogErr()
 
-config = ConfigObj("/etc/opt/agocontrol/conf.d/weatherreporter.conf")
+config = ConfigObj(agoclient.CONFDIR + "/conf.d/weatherreporter.conf")
 general_delay = 120
 
 section = config['Services']

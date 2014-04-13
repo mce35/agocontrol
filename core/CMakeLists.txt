@@ -8,7 +8,7 @@ configure_file (
     @ONLY
 )
 
-install (PROGRAMS agodrain.py myavahi.py agoctrl.sh DESTINATION ${BINDIR})
+install (PROGRAMS myavahi.py agoctrl.sh DESTINATION ${BINDIR})
 install (DIRECTORY DESTINATION ${CONFDIR}/schema.d)
 install (DIRECTORY DESTINATION ${CONFDIR}/maps)
 

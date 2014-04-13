@@ -125,7 +125,7 @@ function loadPlugin() {
 	    async : true,
 	}).done(function(result) {
 	    var plugin = result.filter(function(p) {
-		return p.name.toLowerCase() == name.toLowerCase();
+		return p._name.toLowerCase() == name.toLowerCase();
 	    })[0];
 	    templatePath = "../plugins/" + name + "/templates/";
 	    /* Load the plugins resources if any */
@@ -361,7 +361,12 @@ function cleanInventory(data) {
 var initialized = false;
 
 function handleInventory(response) {
-
+    console.log(response);
+    if (response != null && response.result.match !== undefined && response.result.match(/^exception/)) {
+	notif.error("RPC ERROR: " + response.result);
+	return;
+    }
+    
     if (response == null) {
 	response = {
 	    result : JSON.parse(localStorage.inventoryCache)
@@ -395,6 +400,7 @@ function handleInventory(response) {
     }
 
     var inventory = cleanInventory(response.result.devices);
+    var newDeviceMap = [];
     for ( var uuid in inventory) {
 	if (inventory[uuid].room !== undefined && inventory[uuid].room) {
 	    inventory[uuid].roomUID = inventory[uuid].room;
@@ -407,8 +413,11 @@ function handleInventory(response) {
 	} else {
 	    inventory[uuid].room = "";
 	}
-	deviceMap.push(new device(inventory[uuid], uuid));
+    newDeviceMap.push(new device(inventory[uuid], uuid));
     }
+    //overwrite global deviceMap
+    delete deviceMap;
+    deviceMap = newDeviceMap;
 
     if (deferredInit && !initialized) {
 	deferredInit();

@@ -110,9 +110,9 @@ class tempEvent(threading.Thread):
                                 self.lastTempC = tempC
                                 if (TempUnits == 'f' or TempUnits == 'F'):
                                         tempF = 9.0/5.0 * tempC + 32.0
-                                        client.emitEvent(devId, "event.environment.temperaturechanged", tempF, "degF")
+                                        client.emit_event(devId, "event.environment.temperaturechanged", tempF, "degF")
                                 else:
-                                        client.emitEvent(devId, "event.environment.temperaturechanged", tempC, "degC")
+                                        client.emit_event(devId, "event.environment.temperaturechanged", tempC, "degC")
                         time.sleep (readWaitTime)
 
 
@@ -121,24 +121,24 @@ info( "+ temperaturnu.py startup. Version=" + AGO_TEMPERATURNU_VERSION)
 info( "+------------------------------------------------------------")
 
 client = agoclient.AgoConnection("temperaturnu")
-if (agoclient.getConfigOption("temperaturnu", "debug", "false").lower() == "true"):
+if (agoclient.get_config_option("temperaturnu", "debug", "false").lower() == "true"):
     debug = True
 
-lat = agoclient.getConfigOption("system","lat","0")
-lon = agoclient.getConfigOption("system","lon","0")
-mailadress = agoclient.getConfigOption("system","mailadress","none")
-units = agoclient.getConfigOption("system","units","SI")
+lat = agoclient.get_config_option("system","lat","0")
+lon = agoclient.get_config_option("system","lon","0")
+mailadress = agoclient.get_config_option("system","mailadress","none")
+units = agoclient.get_config_option("system","units","SI")
 
 TempUnits = "C"
 if units.lower() == "us":
     TempUnits = "F"
 
-readWaitTime = int(agoclient.getConfigOption("temperaturnu","waittime","300"))
+readWaitTime = int(agoclient.get_config_option("temperaturnu","waittime","300"))
 
 if readWaitTime < 300: #Used to guarantie minumum 5 minutes between API calls
     readWaitTime  = 300
 
-client.addDevice(devId, "temperaturesensor")
+client.add_device(devId, "temperaturesensor")
 
 background = tempEvent(lat,lon,mailadress)
 background.setDaemon(True)

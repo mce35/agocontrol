@@ -13,7 +13,7 @@ def messageHandler(internalid, content):
 		if content["command"] == "getvideoframe":
 			print "nada"
 
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
 # do a web service discovery to search for ONVIF NVTs
 wsd = WSDiscovery()
@@ -28,7 +28,7 @@ for service in ret:
 	print "Device: " + service.getEPR() + ":"
 	print "Address information: " + str(service.getXAddrs())
 	print "Scopes: " + str(service.getScopes())
-	client.addDevice(service.getXAddrs()[0],"camera")
+	client.add_device(service.getXAddrs()[0],"camera")
 
 wsd.stop()
 

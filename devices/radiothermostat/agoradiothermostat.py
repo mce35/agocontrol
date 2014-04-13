@@ -26,13 +26,13 @@ def messageHandler(internalid, content):
 			if tstatMode == "Heat":
 				print "set heat pont: " + content["temperature"]
 				t.setHeatPoint(float(content["temperature"]))
-	                	client.emitEvent(internalid, "event.environment.temperaturechanged", content["temperature"], "")
+	                	client.emit_event(internalid, "event.environment.temperaturechanged", content["temperature"], "")
 			elif tstatMode =="Cool":
 				t.setCoolPoint(float(content["temperature"]))
-				client.emitEvent(internalid, "event.environment.temperaturechanged", content["temperature"], "")
+				client.emit_event(internalid, "event.environment.temperaturechanged", content["temperature"], "")
 	      	if content["command"] == "setthermostatmode":
 	                print "set thermostat mode: " + internalid
-	                #client.emitEvent(internalid, "event.device.statechanged", "0", "")
+	                #client.emit_event(internalid, "event.device.statechanged", "0", "")
     		if content["command"] == "setthermostatfanmode":
 			print "set radio thermostat fan mode: " + internalid
 		if content["command"] == "setthermostathold":
@@ -41,16 +41,16 @@ def messageHandler(internalid, content):
 
 	
 # specify our message handler method
-client.addHandler(messageHandler)
+client.add_handler(messageHandler)
 
-ipAddress =  agoclient.getConfigOption("radiothermostat", "ipaddress", "0.0.0.0")
-tempUnit = agoclient.getConfigOption("system", "units", "SI")
+ipAddress =  agoclient.get_config_option("radiothermostat", "ipaddress", "0.0.0.0")
+tempUnit = agoclient.get_config_option("system", "units", "SI")
 #print "IP: ", ipAddress
 #print "UNIT: ", tempUnit
 t = TStat(ipAddress)
 t.setCacheExpiry(15)
 
-client.addDevice(ipAddress, "thermostat")
+client.add_device(ipAddress, "thermostat")
 
 #TODO implement thread here for polling
 # in the background or need to handle some other communication. If you don't need one or if you want to keep things simple at the moment just skip this section.
@@ -73,7 +73,7 @@ class readThermostat(threading.Thread):
 			if (tempUnit == "SI"):
 				tTemp = round((tTemp - 32.0) / (9.0/5.0),1)
       			if (tTemp != currentTemp):
-				client.emitEvent(ipAddress, "event.environment.temperaturechanged", str(tTemp), tempUnit)
+				client.emit_event(ipAddress, "event.environment.temperaturechanged", str(tTemp), tempUnit)
 				currentTemp = tTemp
 			time.sleep (30)
       

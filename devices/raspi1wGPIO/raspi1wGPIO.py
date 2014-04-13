@@ -6,7 +6,7 @@
 # I am developing this driver on occidentalis distro from adfruit.com
 # 
 #
-# /etc/opt/agocontrol/config.ini
+# CONFDIR/conf.d/raspi1wGPIO.ini
 #
 # [raspi1wGPIO]
 # interval=600 # maximum time(seconds) between reports
@@ -25,10 +25,10 @@ os.system('modprobe w1-therm')
 
 client = agoclient.AgoConnection("raspi1wGPIO")
 
-readInterval = agoclient.getConfigOption("raspi1wGPIO", "interval", "600")
+readInterval = agoclient.get_config_option("raspi1wGPIO", "interval", "600")
 interval = int(readInterval)
 
-change = float(agoclient.getConfigOption("raspi1wGPIO", "change", "0.2"))
+change = float(agoclient.get_config_option("raspi1wGPIO", "change", "0.2"))
 
 
 
@@ -49,8 +49,8 @@ for device in readDevices:
     devices.append(device)
     sensordata[(device, 'temp')] = 0
     sensordata[(device, 'lastreporttime')] = time.time()
-    #print 'addDevice', device
-    client.addDevice(device, "temperaturesensor")
+    #print 'add_device', device
+    client.add_device(device, "temperaturesensor")
 
 print devices
 
@@ -88,12 +88,12 @@ class read1WGPIO(threading.Thread):
                         #print device, temperature
                         if abs(sensordata[(device, 'temp')] - temperature) > change:
                             #print 'level change:', sensordata[(device, 'temp')]
-                            client.emitEvent(device, "event.environment.temperaturechanged", temperature, "degC") 
+                            client.emit_event(device, "event.environment.temperaturechanged", temperature, "degC") 
                             sensordata[(device, 'temp')] = temperature
                             sensordata[(device, 'lastreporttime')] = time.time()
                         if time.time() > sensordata[(device, 'lastreporttime')] + interval:
                             #print 'interval:', sensordata[(device, 'temp')]
-                            client.emitEvent(device, "event.environment.temperaturechanged", temperature, "degC") 
+                            client.emit_event(device, "event.environment.temperaturechanged", temperature, "degC") 
                             sensordata[(device, 'temp')] = temperature
                             sensordata[(device, 'lastreporttime')] = time.time()
                         crcok = True

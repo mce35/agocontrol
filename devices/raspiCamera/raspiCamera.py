@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 
 # raspiCamera device
 #
@@ -25,7 +25,7 @@ def messageHandler(internalid, content):
             print "raspiCamera getting video frame"
             stream = io.BytesIO()
             with picamera.PiCamera() as camera:
-                camera.resolution = (256, 188)
+                camera.resolution = (200, 140)
                 camera.quality = (20)
                 camera.start_preview()
                 time.sleep(0.1)
@@ -36,9 +36,9 @@ def messageHandler(internalid, content):
 
     return result
 
-client.addHandler(messageHandler)
-#devicelist=agoclient.getConfigOption("raspiCamera", "devices", "")
+client.add_handler(messageHandler)
+#devicelist=agoclient.get_config_option("raspiCamera", "devices", "")
 
-client.addDevice("raspiCamera", "camera")
+client.add_device("raspiCamera", "camera")
 
 client.run()

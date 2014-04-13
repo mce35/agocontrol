@@ -4,6 +4,8 @@ lib/systemd/system/agoscenario.service
 lib/systemd/system/agotimer.service
 lib/systemd/system/agorpc.service
 lib/systemd/system/agodatalogger.service
+lib/systemd/system/agolua.service
+lib/systemd/system/agosecurity.service
 etc/opt/agocontrol/conf.d/system.conf
 etc/opt/agocontrol/conf.d/rpc.conf
 etc/opt/agocontrol/schema.yaml
@@ -21,7 +23,7 @@ opt/agocontrol/bin/agoscenario
 opt/agocontrol/bin/agoevent
 opt/agocontrol/bin/agolua
 opt/agocontrol/bin/myavahi.py
-opt/agocontrol/bin/agodrain.py
+opt/agocontrol/bin/agodrain
 opt/agocontrol/bin/messagesend
 opt/agocontrol/bin/agotimer
 opt/agocontrol/bin/agorpc
@@ -31,6 +33,3 @@ opt/agocontrol/bin/agoctrl.sh
 opt/agocontrol/bin/agodatalogger
 opt/agocontrol/bin/agososreport.sh
 opt/agocontrol/html
-opt/agocontrol/bin/convert-event.py
-opt/agocontrol/bin/convert-scenario.py
-opt/agocontrol/bin/convert-config.py

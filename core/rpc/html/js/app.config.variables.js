@@ -45,7 +45,8 @@ function variablesConfig() {
 	    if (res.result && res.result.returncode == 0) {
 		self.variables.push({
 		    variable : content.variable,
-		    value : content.value
+		    value : content.value,
+		    action: ""
 		});
 	    } else {
 		alert("Error while creating variable!");

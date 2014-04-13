@@ -640,7 +640,7 @@ def parseEnvelope(data):
     elif soapAction == ACTION_HELLO:
         return parseHelloMessage(dom)
 
-def sendMessage(sock, addr, port, data):
+def send_message(sock, addr, port, data):
     sock.sendto(data, (addr, port))
 
 def createMessage(env):
@@ -923,7 +923,7 @@ class MessageSenderThread(threading.Thread):
             if msg.canSend():
                 data = createMessage(msg.getEnv())
 
-                sendMessage(self.__sock, msg.getAddr(), msg.getPort(), data)
+                send_message(self.__sock, msg.getAddr(), msg.getPort(), data)
                 msg.refresh()
                 if not (msg.isFinished()):
                     self.__queue.append(msg)
