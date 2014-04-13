@@ -277,7 +277,6 @@ if (sessionStorage.supported_devices) {
 // --- AGO --- //
 
 function handleEvent(response) {
-    console.log(response.result.event);
     for ( var i = 0; i < deviceMap.length; i++) {
 	if (deviceMap[i].uuid == response.result.uuid && response.result.level !== undefined) {
 	    // update custom device member
