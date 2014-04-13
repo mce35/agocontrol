@@ -72,6 +72,7 @@ var rooms = {};
 var floorPlans = {};
 var systemvar = {};
 var variables = {};
+var inventory = ko.observable({});
 var currentFloorPlan = ko.observable({});
 
 var agoController = null;
@@ -90,9 +91,11 @@ function buildfloorPlanList(model) {
 	    uuid : k,
 	    name : floorPlans[k].name,
 	    action : '', // dummy for table
+
+	    /* Called from link onClick in navigation/main.html */
 	    showFloorplan : function(data, event){
 		if(getPage() !== 'floorplan')
-		    return true; // Let href act instead
+		    return true; // Let href act instead; no support for reloading page-script
 
 		setFloorPlan(this.uuid);
 		return false;
@@ -203,6 +206,25 @@ function initGUI() {
     } else if (page == "plugin") {
 	deferredInit = loadPlugin;
     }
+
+    /* Parse floorplan uuid */
+    var fp = window.location.search.substring(1);
+    var tmp = fp.split("&");
+    for ( var i = 0; i < tmp.length; i++) {
+	if (tmp[i].indexOf("fp=") == 0) {
+	    fp = tmp[i].split("=")[1];
+	}
+    }
+
+    // When inventory is ready, assign initial floorplan
+    if(!fp)
+	return;
+
+    var obs = inventory.subscribe(function(inv) {
+	// Never push state on page-load
+	setFloorPlan(fp, true);
+	obs.dispose();
+    });
 }
 
 function getStartJSFile() {
@@ -361,45 +383,37 @@ function handleInventory(response) {
     floorPlans = response.result.floorplans;
     variables = response.result.variables;
 
-    /* Parse floorplan uuid */
-    var fp = window.location.search.substring(1);
-    var tmp = fp.split("&");
-    for ( var i = 0; i < tmp.length; i++) {
-	if (tmp[i].indexOf("fp=") == 0) {
-	    fp = tmp[i].split("=")[1];
-	}
-    }
-
-    setFloorPlan(fp, getPage() !== 'floorplan');
-
-    var inventory = cleanInventory(response.result.devices);
+    var inv = cleanInventory(response.result.devices);
     var found;
-    for ( var uuid in inventory) {
-	if (inventory[uuid].room !== undefined && inventory[uuid].room) {
-	    inventory[uuid].roomUID = inventory[uuid].room;
-	    if (rooms[inventory[uuid].room] !== undefined) {
-		inventory[uuid].room = rooms[inventory[uuid].room].name;
+    for ( var uuid in inv) {
+	if (inv[uuid].room !== undefined && inv[uuid].room) {
+	    inv[uuid].roomUID = inv[uuid].room;
+	    if (rooms[inv[uuid].room] !== undefined) {
+		inv[uuid].room = rooms[inv[uuid].room].name;
 	    } else {
-		inventory[uuid].room = "";
+		inv[uuid].room = "";
 	    }
 
 	} else {
-	    inventory[uuid].room = "";
+	    inv[uuid].room = "";
 	}
 
 	found = false;
 	for( var i=0; i<deviceMap.length; i++ ) {
 	    if( deviceMap[i].uuid===uuid ) {
 		//device already exists in deviceMap array. Update its content
-		deviceMap[i].update(inventory[uuid], uuid);
+		deviceMap[i].update(inv[uuid], uuid);
 		found = true;
 		break;
 	    }
 	}
 	if( !found ) {
-	    deviceMap.push(new device(inventory[uuid], uuid));
+	    deviceMap.push(new device(inv[uuid], uuid));
 	}
     }
+
+    // Notify global observable about new inventory
+    inventory(inv);
 
     if (deferredInit && !initialized) {
 	deferredInit();
@@ -471,7 +485,20 @@ function handleInventory(response) {
     }
 }
 
-function setFloorPlan(fp, dontPushState) {
+/**
+ * Lookup floorplan by uuid, and assign currentFloorPlan observable.
+ * Also tries to set HTML5 history state object for re-navigation.
+ *
+ * Parameter replaceState can have the following values:
+ *  - undefined/false to use pushState (new page navigation)
+ *  - true to use replaceState (fresh page load, where we just want to assign a state object to the current view)
+ *  - null to not do any state management (i.e. after called from onpopstate)
+ */
+function setFloorPlan(fp, replaceState) {
+    // No change?
+    if(currentFloorPlan().uuid === fp)
+	return;
+
     for ( var k in floorPlans) {
 	if (k == fp) {
 	    var tmp;
@@ -482,39 +509,31 @@ function setFloorPlan(fp, dontPushState) {
 	}
     }
 
-/*XXX: Doesnt work pretty now; handleInventory is called from
-misc places and actually handles page-state rather than just inventory logic.
-This means we get all sorts of stuff pushed...
-    if(dontPushState)
+    if(replaceState === null)
 	return;
 
     // HTML5 push/pop-state support
     try {
-	if(history && history.pushState) {
-	    console.log("pushstate", fp);
-	    history.pushState({page:'floorplan',fp:fp},
+	if(history && history.pushState && history.replaceState) {
+	    var fn = replaceState ? history.replaceState : history.pushState;
+	    fn.apply(history, [{page:'floorplan',fp:fp},
 		document.title,
-		'?floorplan&fp='+fp);
+		'?floorplan&fp='+fp]);
 	}
     }catch(e) {
 	console.error(e);
     }
-    */
 }
 
 /* If HTML5 history state is available, this will trigger when user
  * navigates back/forth. If a history.pushState event has been executed,
  * we can find out what page to render.
  * Currently only supports floorplan */
-
-/*
 window.onpopstate = function(event){
-    console.log("on popstate", event.state);
     if(event.state && event.state.page === 'floorplan') {
-	setFloorPlan(event.state.fp, true);
+	setFloorPlan(event.state.fp, null);
     }
 };
-*/
 
 function getInventory(customCb) {
     var cb = customCb || handleInventory;
