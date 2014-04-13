@@ -121,6 +121,12 @@ function securityConfig() {
      */
     this.addHouseMode = function() {
 	var name = $("#modeName").val();
+	
+	if ($.trim(name) == "") {
+	    notif.error("#emptyMode");
+	    return;
+	}
+	
 	var modes = self.housemodes();
 	self.housemodes([]);
 	var delays = [];
@@ -134,6 +140,7 @@ function securityConfig() {
 	    delays : delays
 	});
 	self.housemodes(modes);
+	$("#modeName").val("");
     };
 
     /**
@@ -141,6 +148,17 @@ function securityConfig() {
      */
     this.addZone = function() {
 	var name = $("#zoneName").val();
+	
+	if (self.housemodes().length == 0) {
+	    notif.error("#modeFirst");
+	    return;
+	}
+	
+	if ($.trim(name) == "") {
+	    notif.error("#emptyZone");
+	    return;
+	}
+	
 	self.zones.push({
 	    name : name
 	});
@@ -152,6 +170,7 @@ function securityConfig() {
 	    console.log(modes[i].delays);
 	}
 	self.housemodes(modes);
+	$("#zoneName").val("");
     };
 
     /**
@@ -162,22 +181,12 @@ function securityConfig() {
 	var zoneMap = self.zoneMap();
 	var zones = self.zones();
 
-	// Zone names to index mapping
-	var zoneIdx = {};
+	// Index to zone map
 	var idx2zone = [];
 
-	/* Build list of zones and index mapping */
-	for ( var mode in zoneMap) {
-	    for ( var i = 0; i < zoneMap[mode].length; i++) {
-		if (zoneIdx[zoneMap[mode][i].zone] === undefined) {
-		    zones.push({
-			name : zoneMap[mode][i].zone
-		    });
-		    zoneIdx[zoneMap[mode][i].zone] = i;
-		    idx2zone[i] = zoneMap[mode][i].zone;
-		}
-	    }
-	}
+	$('.zoneKey').each(function(idx, e) {
+	    idx2zone[idx] = $(e).text();
+	});
 
 	var newMap = {};
 	var delayList = [];

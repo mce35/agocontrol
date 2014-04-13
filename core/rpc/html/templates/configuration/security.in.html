@@ -6,7 +6,7 @@
                 	<tr>
                 	<th style="font-weight: 700" />     
                     <ko opts="foreach: zones">
-                        <th style="font-weight: 700" data-translateable="true" data-bind="text: name"></th>
+                        <th class="zoneKey" style="font-weight: 700" data-translateable="true" data-bind="text: name"></th>
                     </ko>     
                     </tr>
                 </thead>
@@ -23,7 +23,7 @@
    </div>
 <br/>
 <div style="text-align: right">
-<div class="medium primary btn"  ><a href="#" data-translateable="true" data-bind="click: save">Save</a></div>
+<div class="medium primary btn" data-bind="visible: housemodes().length > 0"><a href="#" data-translateable="true" data-bind="click: save, visible: housemodes.length > 0 ">Save</a></div>
 </div>
 <br/>
 <h3 data-translateable="true">Add new zone</h3>
@@ -45,6 +45,10 @@
   </li>
  </ul>
 </div>
+
+<p id="emptyZone" style="display:none">Please enter a zone name.</p>
+<p id="emptyMode" style="display:none">Please enter a housemode name.</p>
+<p id="modeFirst" style="display:none">You must create a housemode before you can add any zones.</p>
 
 <!-- <button  data-bind="click: testTrigger">Trigger</button> -->
 </div>
