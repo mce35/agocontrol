@@ -388,18 +388,19 @@ function handleInventory(response) {
 	} else {
 	    inventory[uuid].room = "";
 	}
-    found = false;
-    for( var i=0; i<deviceMap.length; i++ ) {
-        if( deviceMap[i].uuid===uuid ) {
-            //device already exists in deviceMap array. Update its content
-            deviceMap[i].update(inventory[uuid], uuid);
-            found = true;
-            break;
-        }
-    }
-    if( !found ) {
-	deviceMap.push(new device(inventory[uuid], uuid));
-    }
+
+	found = false;
+	for( var i=0; i<deviceMap.length; i++ ) {
+	    if( deviceMap[i].uuid===uuid ) {
+		//device already exists in deviceMap array. Update its content
+		deviceMap[i].update(inventory[uuid], uuid);
+		found = true;
+		break;
+	    }
+	}
+	if( !found ) {
+	    deviceMap.push(new device(inventory[uuid], uuid));
+	}
     }
 
     if (deferredInit && !initialized) {
