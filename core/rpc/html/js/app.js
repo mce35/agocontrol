@@ -292,6 +292,11 @@ function handleEvent(response) {
 	   }
 	   securityPromted = false;
 	});
+	return;
+    }
+    else if (response.result.event == "event.security.intruderalert") {
+	 notif.error("INTRODUCER ALERT!");
+	 return;
     }
     for ( var i = 0; i < deviceMap.length; i++) {
 	if (deviceMap[i].uuid == response.result.uuid && response.result.level !== undefined) {
