@@ -154,7 +154,15 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				returnval["result"] = -1;
 			}
 
-		} else if (content["command"] == "triggerzone") {
+		} else if (content["command"] == "gethousemode") {
+            		if (!(securitymap["housemode"].isVoid())) {
+				returnval["housemode"] = securitymap["housemode"];
+				returnval["result"]=0;
+			} else {
+				returnval["result"] = -1;
+				returnval["error"] = "No housemode set";
+			}
+	  	} else if (content["command"] == "triggerzone") {
 			std::string zone = content["zone"];
 			qpid::types::Variant::Map zonemap;
 			std::string housemode = securitymap["housemode"];

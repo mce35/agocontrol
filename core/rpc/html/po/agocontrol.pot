@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 10:00+0200\n"
+"POT-Creation-Date: 2014-04-13 19:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -115,11 +115,15 @@ msgid "Cloud"
 msgstr ""
 
 #: ../templates/navigation/configuration.xml.in.h:8
+msgid "Security"
+msgstr ""
+
+#: ../templates/navigation/configuration.xml.in.h:9
 #: ../templates/configuration/plugins.xml.in.h:1
 msgid "Plugins"
 msgstr ""
 
-#: ../templates/navigation/configuration.xml.in.h:9
+#: ../templates/navigation/configuration.xml.in.h:10
 msgid "System"
 msgstr ""
 
@@ -299,6 +303,7 @@ msgstr ""
 
 #: ../templates/configuration/scenarios.xml.in.h:17
 #: ../templates/configuration/events.xml.in.h:13
+#: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:16
 msgid "Save"
@@ -486,6 +491,46 @@ msgstr ""
 
 #: ../templates/configuration/plugins.xml.in.h:4
 msgid "Description"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:1
+msgid "Security Configuration"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:3
+msgid "Add new zone"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:4
+msgid "Input zone name"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:5
+msgid "Add zone"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:6
+msgid "Add new housemode"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:7
+msgid "Add housemode"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:8
+msgid "Change housemode"
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:9
+msgid "Please enter a zone name."
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:10
+msgid "Please enter a housemode name."
+msgstr ""
+
+#: ../templates/configuration/security.xml.in.h:11
+msgid "You must create a housemode before you can add any zones."
 msgstr ""
 
 #: ../templates/devices/multilevelsensor.xml.in.h:1

@@ -111,7 +111,7 @@ function buildfloorPlanList(model) {
 var deferredInit = null;
 
 function loadPlugin() {
-    //lock ui
+    // lock uia
     $.blockUI({
 	message : '<div>Please wait ...</div>',
 	css : {
@@ -155,9 +155,9 @@ function loadPlugin() {
 		    yepnope({
 			load : resources,
 			complete : function() {
-			    //here, all resources are really loaded
+			    // here, all resources are really loaded
 			    init_plugin();
-			    //unlock ui
+			    // unlock ui
 			    $.unblockUI();
 			}
 		    });
@@ -197,6 +197,8 @@ function initGUI() {
 	init_eventConfig();
     } else if (page == "scenarioConfig") {
 	init_scenarioConfig();
+    } else if (page == "securityConfig") {
+	init_securityConfig();
     } else if (page == "inventoryView") {
 	deferredInit = init_inventoryView;
     } else if (page == "systemStatus") {
@@ -258,6 +260,8 @@ function getStartJSFile() {
 	return "js/app.systemstatus.js";
     } else if (page == "pluginsConfig") {
 	return "js/app.config.plugins.js";
+    } else if (page == "securityConfig") {
+	return "js/app.config.security.js";
     }
 
     return null;
@@ -301,7 +305,28 @@ if (sessionStorage.supported_devices) {
 
 // --- AGO --- //
 
+var securityPromted = false;
+
 function handleEvent(response) {
+    if (response.result.event == "event.security.countdown" && !securityPromted) {
+	securityPromted = true;
+	var pin = window.prompt("Alarm please entry pin:");
+	var content = {};
+	content.command = "cancel";
+	content.uuid = response.result.uuid;
+	content.pin = pin;
+	sendCommand(content, function(res) {
+	   if (res.result.error) {
+	       notif.error(res.result.error);
+	   }
+	   securityPromted = false;
+	});
+	return;
+    }
+    else if (response.result.event == "event.security.intruderalert") {
+	 notif.error("INTRODUCER ALERT!");
+	 return;
+    }
     for ( var i = 0; i < deviceMap.length; i++) {
 	if (deviceMap[i].uuid == response.result.uuid && response.result.level !== undefined) {
 	    // update custom device member

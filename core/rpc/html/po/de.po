@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-07 20:15+0200\n"
+"POT-Creation-Date: 2014-04-13 19:05+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -129,11 +129,15 @@ msgid "Cloud"
 msgstr "Cloud"
 
 #: ../templates/navigation/configuration.xml.in.h:8
+msgid "Security"
+msgstr "Security"
+
+#: ../templates/navigation/configuration.xml.in.h:9
 #: ../templates/configuration/plugins.xml.in.h:1
 msgid "Plugins"
 msgstr "Plugins"
 
-#: ../templates/navigation/configuration.xml.in.h:9
+#: ../templates/navigation/configuration.xml.in.h:10
 msgid "System"
 msgstr "System"
 
@@ -315,6 +319,7 @@ msgstr "Szenario bearbeiten"
 
 #: ../templates/configuration/scenarios.xml.in.h:17
 #: ../templates/configuration/events.xml.in.h:13
+#: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:16
 msgid "Save"
@@ -509,6 +514,47 @@ msgstr "Version"
 msgid "Description"
 msgstr "Beschreibung"
 
+#: ../templates/configuration/security.xml.in.h:1
+msgid "Security Configuration"
+msgstr "Security Konfiguration"
+
+#: ../templates/configuration/security.xml.in.h:3
+msgid "Add new zone"
+msgstr "Neue Zone hinzufügen"
+
+#: ../templates/configuration/security.xml.in.h:4
+msgid "Input zone name"
+msgstr "Namen der Zone eingeben"
+
+#: ../templates/configuration/security.xml.in.h:5
+msgid "Add zone"
+msgstr "Neue Zone hinzufügen"
+
+#: ../templates/configuration/security.xml.in.h:6
+msgid "Add new housemode"
+msgstr "Neuen Hausmodus hinzufügen"
+
+#: ../templates/configuration/security.xml.in.h:7
+msgid "Add housemode"
+msgstr "Hausmodus hinzufügen"
+
+#: ../templates/configuration/security.xml.in.h:8
+msgid "Change housemode"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../templates/configuration/security.xml.in.h:9
+msgid "Please enter a zone name."
+msgstr "Bitte Zonen Namen eingeben"
+
+#: ../templates/configuration/security.xml.in.h:10
+msgid "Please enter a housemode name."
+msgstr "Bitte Name des Hausmodus angeben"
+
+#: ../templates/configuration/security.xml.in.h:11
+msgid "You must create a housemode before you can add any zones."
+msgstr ""
+"Sie müssen zuerst einen Hausmodus erstellen bevor Sie zonen anlegen können"
+
 #: ../templates/devices/multilevelsensor.xml.in.h:1
 msgid "GRAPH"
 msgstr "GRAPH"
@@ -637,6 +683,7 @@ msgstr "Namen für Script eingeben"
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:1
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:1
 msgid "Internal error"
+<<<<<<< HEAD
 msgstr "Interner Fehler"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:2
@@ -953,7 +1000,6 @@ msgstr "Jeden Monat"
 msgid "Every year"
 msgstr "Jedes Jahr"
 
-#: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:18
 msgid ""
 "Recurring schedules are linked each others. If you update one of them, all "
 "will be updated too."
