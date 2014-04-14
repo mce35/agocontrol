@@ -11,11 +11,11 @@
 using namespace std;
 
 bool Inventory::createTableIfNotExist(std::string tablename, std::string createquery) {
-	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = '" + tablename + "'";
-	if (getfirst(query.c_str(), 0) != tablename) {
+	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
+	if (getfirst(query.c_str(), 1, tablename.c_str()) != tablename) {
 		cout << "Creating missing table '" << tablename << "'" << endl;
 		getfirst(createquery.c_str(), 0);
-		if (getfirst(query.c_str(), 0) != tablename) {
+		if (getfirst(query.c_str(), 1, tablename.c_str()) != tablename) {
 			cerr << "Can't create table '" << tablename << "'" << endl;
 			return false;
 		}
@@ -45,28 +45,28 @@ Inventory::Inventory(const char *dbfile) {
 }
 
 string Inventory::getdevicename (string uuid) {
-	string query = "select name from devices where uuid = '" + uuid + "'";
-	return getfirst(query.c_str(), 0);
+	string query = "select name from devices where uuid = ?";
+	return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
 string Inventory::getdeviceroom (string uuid) {
-	string query = "select room from devices where uuid = '" + uuid + "'";
-	return getfirst(query.c_str(), 0);
+	string query = "select room from devices where uuid = ?";
+	return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
 int Inventory::setdevicename (string uuid, string name) {
 	if (name == "") {
-		string query = "delete from devices where uuid = '" + uuid + "'";
-		getfirst(query.c_str(), 0);
+		string query = "delete from devices where uuid = ?";
+		getfirst(query.c_str(), 1, uuid.c_str());
 		return 0;
 	}
         if (getdevicename(uuid) == "") { // does not exist, create
-                string query = "insert into devices (name, uuid) VALUES ('" + name + "','" + uuid + "')";
+                string query = "insert into devices (name, uuid) VALUES (?, ?)";
                 printf("creating device: %s\n", query.c_str());
-                getfirst(query.c_str(), 0);
+                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
         } else {
-                string query = "update devices set name = '" + name + "' where uuid = '" + uuid + "'";
-                getfirst(query.c_str(), 0);
+                string query = "update devices set name = ? where uuid = ?";
+                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
         }
         if (getdevicename(uuid) == name) {
                 return 0;
@@ -76,18 +76,18 @@ int Inventory::setdevicename (string uuid, string name) {
 } 
 
 string Inventory::getroomname (string uuid) {
-	string query = "select name from rooms where uuid = '" + uuid + "'";
-	return getfirst(query.c_str(), 0);
+	string query = "select name from rooms where uuid = ?";
+	return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
 int Inventory::setroomname (string uuid, string name) { 
 	if (getroomname(uuid) == "") { // does not exist, create
-		string query = "insert into rooms (name, uuid) VALUES ('" + name + "','" + uuid + "')";
+		string query = "insert into rooms (name, uuid) VALUES (?, ?)";
 		printf("creating room: %s\n", query.c_str());
-		getfirst(query.c_str(), 0);
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	} else {
-		string query = "update rooms set name = '" + name + "' where uuid = '" + uuid + "'";
-		getfirst(query.c_str(), 0);
+		string query = "update rooms set name = ? where uuid = ?";
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	}
 	if (getroomname(uuid) == name) {
 		return 0;
@@ -97,8 +97,8 @@ int Inventory::setroomname (string uuid, string name) {
 } 
 
 int Inventory::setdeviceroom (string deviceuuid, string roomuuid) {
-	string query = "update devices set room = '" + roomuuid + "' where uuid = '" + deviceuuid + "'";
-	getfirst(query.c_str(), 0);
+	string query = "update devices set room = ? where uuid = ?";
+	getfirst(query.c_str(), 2, roomuuid.c_str(), deviceuuid.c_str());
 	if (getdeviceroom(deviceuuid) == roomuuid) {
 		return 0;
 	} else {
@@ -107,8 +107,8 @@ int Inventory::setdeviceroom (string deviceuuid, string roomuuid) {
 } 
 
 string Inventory::getdeviceroomname (string uuid) {
-	string query = "select room from devices where uuid = '" + uuid + "'";
-	return getroomname(getfirst(query.c_str(), 0));
+	string query = "select room from devices where uuid = ?";
+	return getroomname(getfirst(query.c_str(), 1, uuid.c_str()));
 } 
 
 Variant::Map Inventory::getrooms() {
@@ -147,10 +147,10 @@ Variant::Map Inventory::getrooms() {
 } 
 int Inventory::deleteroom (string uuid) {
 	getfirst("BEGIN", 0);
-	string query = "update devices set room = '' where room = '" + uuid + "'";
-	getfirst(query.c_str(), 0);
-	query = "delete from rooms where uuid = '" + uuid + "'";
-	getfirst(query.c_str(), 0);
+	string query = "update devices set room = '' where room = ?";
+	getfirst(query.c_str(), 1, uuid.c_str());
+	query = "delete from rooms where uuid = ?";
+	getfirst(query.c_str(), 1, uuid.c_str());
 	if (getroomname(uuid) != "") {
 		getfirst("ROLLBACK", 0);
 		return -1;
@@ -196,18 +196,18 @@ string Inventory::getfirst(const char *query, int n, ...) {
 }
 
 string Inventory::getfloorplanname(std::string uuid) {
-	string query = "select name from floorplans where uuid = '" + uuid + "'";
-	return getfirst(query.c_str(), 0);
+	string query = "select name from floorplans where uuid = ?";
+	return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
 int Inventory::setfloorplanname(std::string uuid, std::string name) {
 	if (getfloorplanname(uuid) == "") { // does not exist, create
-		string query = "insert into floorplans (name, uuid) VALUES ('" + name + "','" + uuid + "')";
+		string query = "insert into floorplans (name, uuid) VALUES (?, ?)";
 		printf("creating floorplan: %s\n", query.c_str());
-		getfirst(query.c_str(), 0);
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	} else {
-		string query = "update floorplans set name = '" + name + "' where uuid = '" + uuid + "'";
-		getfirst(query.c_str(), 0);
+		string query = "update floorplans set name = ? where uuid = ?";
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	}
 	if (getfloorplanname(uuid) == name) {
 		return 0;
@@ -220,17 +220,17 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
 	stringstream xstr, ystr;
 	xstr << x;
 	ystr << y;
-	string query = "select floorplan from devicesfloorplan where floorplan = '" + floorplanuuid + "' and device = '" + deviceuuid + "'";
-	if (getfirst(query.c_str(), 0)==floorplanuuid) {
+	string query = "select floorplan from devicesfloorplan where floorplan = ? and device = ?";
+	if (getfirst(query.c_str(), 2, floorplanuuid.c_str(), deviceuuid.c_str())==floorplanuuid) {
 		// already exists, update
-		query = "update devicesfloorplan set x=" + xstr.str() + ", y=" + ystr.str() + " where floorplan = '" + floorplanuuid + "' and device = '" + deviceuuid + "'";
-		getfirst(query.c_str(), 0);
+        query = "update devicesfloorplan set x=?, y=? where floorplan = ? and device = ?";
+		getfirst(query.c_str(), 4, xstr.str().c_str(), ystr.str().c_str(), floorplanuuid.c_str(), deviceuuid.c_str());
 
 	} else {
 		// create new record
-		query = "insert into devicesfloorplan (x, y, floorplan, device) VALUES (" + xstr.str() + "," + ystr.str() + ", '" + floorplanuuid + "', '" + deviceuuid + "')";
+		query = "insert into devicesfloorplan (x, y, floorplan, device) VALUES (?, ?, ?, ?)";
 		cout << query << endl;
-		getfirst(query.c_str(), 0);
+		getfirst(query.c_str(), 4, xstr.str().c_str(), ystr.str().c_str(), floorplanuuid.c_str(), deviceuuid.c_str());
 	}
 
 	return 0;
@@ -238,10 +238,10 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
 
 int Inventory::deletefloorplan(std::string uuid) {
 	getfirst("BEGIN", 0);
-	string query = "delete from devicesfloorplan where floorplan = '" + uuid + "'";
-	getfirst(query.c_str(), 0);
-	query = "delete from floorplans where uuid = '" + uuid + "'";
-	getfirst(query.c_str(), 0);
+	string query = "delete from devicesfloorplan where floorplan = ?";
+	getfirst(query.c_str(), 1, uuid.c_str());
+	query = "delete from floorplans where uuid = ?";
+	getfirst(query.c_str(), 1, uuid.c_str());
 	if (getfloorplanname(uuid) != "") {
 	    getfirst("ROLLBACK", 0);
 		return -1;
@@ -305,23 +305,23 @@ Variant::Map Inventory::getfloorplans() {
 } 
 
 string Inventory::getlocationname (string uuid) {
-	string query = "select name from locations where uuid = '" + uuid + "'";
-	return getfirst(query.c_str(), 0);
+	string query = "select name from locations where uuid = ?";
+	return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
 string Inventory::getroomlocation(string uuid) {
-	string query = "select location from rooms where uuid = '" + uuid + "'";
-	return getfirst(query.c_str(), 0);
+	string query = "select location from rooms where uuid = ?";
+	return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
 int Inventory::setlocationname(string uuid, string name) {
         if (getlocationname(uuid) == "") { // does not exist, create
-                string query = "insert into locations (name, uuid) VALUES ('" + name + "','" + uuid + "')";
+                string query = "insert into locations (name, uuid) VALUES (?, ?)";
                 printf("creating location: %s\n", query.c_str());
-                getfirst(query.c_str(), 0);
+                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
         } else {
-                string query = "update locations set name = '" + name + "' where uuid = '" + uuid + "'";
-                getfirst(query.c_str(), 0);
+                string query = "update locations set name = ? where uuid = ?";
+                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
         }
         if (getlocationname(uuid) == name) {
                 return 0;
@@ -331,18 +331,18 @@ int Inventory::setlocationname(string uuid, string name) {
 
 }
 int Inventory::setroomlocation(string roomuuid, string locationuuid) {
-	string query = "update rooms set location = '" + locationuuid + "' where uuid = '" + roomuuid + "'";
-	getfirst(query.c_str(), 0);
+	string query = "update rooms set location = ? where uuid = ?";
+	getfirst(query.c_str(), 2, locationuuid.c_str(), roomuuid.c_str());
 	if (getroomlocation(roomuuid) == locationuuid) {
 		return 0;
 	}
 	return -1;
 }
 int Inventory::deletelocation(string uuid) {
-	string query = "update rooms set location = '' where location = '" + uuid + "'";
-	getfirst(query.c_str(), 0);
-	query = "delete from locations where uuid = '" + uuid + "'";
-	getfirst(query.c_str(), 0);
+	string query = "update rooms set location = '' where location = ?";
+	getfirst(query.c_str(), 1, uuid.c_str());
+	query = "delete from locations where uuid = ?";
+	getfirst(query.c_str(), 1, uuid.c_str());
 	if (getlocationname(uuid) == "") {
 		return 0;
 	}
