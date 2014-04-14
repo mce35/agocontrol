@@ -11,7 +11,7 @@ function securityConfig() {
 
     this.housemode = ko.observable("");
     this.housemodeNames = ko.observableArray([]);
-    
+
     this.housemodes = ko.observableArray([]);
     this.zones = ko.observableArray([]);
 
@@ -81,7 +81,7 @@ function securityConfig() {
 	var zones = [];
 	// Zone names to index mapping
 	var zoneIdx = {};
-	
+
 	// Housemode names
 	var modeNames = [];
 
@@ -211,19 +211,26 @@ function securityConfig() {
 	    newMap[$(e).text()] = list;
 	});
 
-	var content = {};
-	content.command = "setzones";
-	content.uuid = self.securityController.uuid;
-	content.zonemap = newMap;
-	sendCommand(content, function(x) {
-	    self.getZones();
-	});
+	var pin = window.prompt("PIN:");
+	if (pin) {
+	    var content = {};
+	    content.command = "setzones";
+	    content.uuid = self.securityController.uuid;
+	    content.zonemap = newMap;
+	    content.pin = pin;
+	    sendCommand(content, function(res) {
+		if (res.result.error) {
+		    notif.error(res.result.error);
+		    return;
+		}
+		self.getZones();
+	    });
+	}
 
     };
 
     /**
-     * Changes the current house mode
-     * this requires the user to enter the pin
+     * Changes the current house mode this requires the user to enter the pin
      */
     this.changeHouseMode = function() {
 	var content = {};
@@ -236,9 +243,8 @@ function securityConfig() {
 	    sendCommand(content, function(res) {
 		if (res.result.error) {
 		    notif.error(res.result.error);
-		}
-		else {
-    		    self.getHouseMode();
+		} else {
+		    self.getHouseMode();
 		}
 	    });
 	}
