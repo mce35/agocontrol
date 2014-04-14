@@ -26,7 +26,6 @@ Inventory::Inventory(const char *dbfile) {
 	int rc = sqlite3_open(dbfile, &db);
 	if( rc != SQLITE_OK ){
 		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		sqlite3_close(db);
 		return;
 	}
 	/*
