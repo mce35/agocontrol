@@ -340,6 +340,7 @@ function scenarioConfig() {
 		self.scenarios.remove(function(e) {
 		    return e.uuid == item.uuid;
 		});
+		delete localStorage.inventoryCache;
 	    } else {
 		alert("Error while deleting scenarios!");
 	    }

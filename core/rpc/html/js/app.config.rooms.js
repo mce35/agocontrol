@@ -89,6 +89,7 @@ function roomConfig() {
 		self.rooms.remove(function(e) {
 		    return e.uuid == item.uuid;
 		});
+		delete localStorage.inventoryCache;
 	    } else {
 		alert("Error while deleting room!");
 	    }
