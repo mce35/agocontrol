@@ -151,23 +151,38 @@ qpid::types::Variant::List agocontrol::jsonToVariantList(Json::Value value) {
 	Variant::List list;
 	try {
 		for (Json::ValueIterator it = value.begin(); it != value.end(); it++) {
-			if ((*it).size() > 0) {
-				// cout << "JSON Type: " << (*it).type() << endl;
-				if ((*it).type() == 6) {
+			switch((*it).type()) {
+				case Json::nullValue:
+					break;
+				case Json::intValue:
+					list.push_back( (*it).asInt());
+					break;
+				case Json::uintValue:
+					list.push_back( (*it).asUInt());
+					break;
+				case Json::realValue:
+					list.push_back( (*it).asDouble());
+					break;
+				case Json::stringValue:
+					list.push_back( (*it).asString());
+					break;
+				case Json::booleanValue:
+					list.push_back( (*it).asBool());
+					break;
+				case Json::arrayValue:
 					list.push_back(jsonToVariantList((*it)));
-				} else if ((*it).type() == 7) {
+					break;
+				case Json::objectValue:
 					list.push_back(jsonToVariantMap((*it)));
-				}
-			} else {
-				if ((*it).isString()) list.push_back( (*it).asString());
-				if ((*it).isBool()) list.push_back( (*it).asBool());
-				if ((*it).isInt()) list.push_back( (*it).asInt());
-				if ((*it).isUInt()) list.push_back( (*it).asUInt());
-				if ((*it).isDouble()) list.push_back( (*it).asDouble());
+					break;
+				default:
+					cout << "WARNING: Unhandled Json::ValueType in jsonToVariantList()" << endl;
+
+
 			}
 		}
 	} catch (const std::exception& error) {
-                cout << "ERROR! Exception during JSON->Variant::Map conversion!" << endl;
+                cout << "ERROR! Exception during JSON->Variant::List conversion!" << endl;
                 stringstream errorstring;
                 errorstring << error.what();
 		cout << "EXCEPTION: " << errorstring.str() << endl;
@@ -180,22 +195,32 @@ qpid::types::Variant::Map agocontrol::jsonToVariantMap(Json::Value value) {
 	Variant::Map map;
 	try {
 		for (Json::ValueIterator it = value.begin(); it != value.end(); it++) {
-			// printf("%s\n",it.key().asString().c_str());
-			// printf("%s\n", (*it).asString().c_str());
-			if ((*it).size() > 0) {
-				// cout << "JSON Type: " << (*it).type() << endl;
-				// cout << "Key: " << it.key().asString() << endl;
-				if ((*it).type() == 6) {
+			switch((*it).type()) {
+				case Json::nullValue:
+					break;
+				case Json::intValue:
+					map[it.key().asString()] = (*it).asInt();
+					break;
+				case Json::uintValue:
+					map[it.key().asString()] = (*it).asUInt();
+					break;
+				case Json::realValue:
+					map[it.key().asString()] = (*it).asDouble();
+					break;
+				case Json::stringValue:
+					map[it.key().asString()] = (*it).asString();
+					break;
+				case Json::booleanValue:
+					map[it.key().asString()] = (*it).asBool();
+					break;
+				case Json::arrayValue:
 					map[it.key().asString()] = jsonToVariantList((*it));
-				} else if ((*it).type() == 7) {
+					break;
+				case Json::objectValue:
 					map[it.key().asString()] = jsonToVariantMap((*it));
-				}
-			} else {
-				if ((*it).isString()) map[it.key().asString()] = (*it).asString();
-				if ((*it).isBool()) map[it.key().asString()] = (*it).asBool();
-				if ((*it).isInt()) map[it.key().asString()] = (*it).asInt();
-				if ((*it).isUInt()) map[it.key().asString()] = (*it).asUInt();
-				if ((*it).isDouble()) map[it.key().asString()] = (*it).asDouble();
+					break;
+				default:
+					cout << "WARNING: Unhandled Json::ValueType in jsonToVariantMap()" << endl;
 			}
 		}	
 	} catch (const std::exception& error) {
