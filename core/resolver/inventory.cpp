@@ -279,12 +279,13 @@ Variant::Map Inventory::getfloorplans() {
 		// for each floorplan now fetch the device coordinates
 		sqlite3_stmt *stmt2;
 		int rc2;
-		string query = "select device, x, y from devicesfloorplan where floorplan = '" + string(uuid) +  "'";
+		string query = "select device, x, y from devicesfloorplan where floorplan = ?";
 		rc2 = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt2, NULL);
 		if (rc2 != SQLITE_OK) {
 			fprintf(stderr, "sql error #%d: %s\n", rc2,sqlite3_errmsg(db));
 			continue;
 		}
+        sqlite3_bind_text(stmt2, 1, uuid, -1, NULL);
 		while (sqlite3_step(stmt2) == SQLITE_ROW) {
 			Variant::Map device;
 			const char *deviceuuid = (const char*)sqlite3_column_text(stmt2, 0);
