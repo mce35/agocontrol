@@ -21,7 +21,7 @@ function securityConfig() {
 
     /* Possible delays, we use a drop down so use a list */
     this.possibleDelays = ko.observableArray([]);
-    this.possibleDelays.push(-1);
+    this.possibleDelays.push("inactive");
     this.possibleDelays.push(0);
     for ( var i = 1; i <= 256; i *= 2) {
 	this.possibleDelays.push(i);
@@ -97,11 +97,11 @@ function securityConfig() {
 	    }
 	}
 
-	/* Build a housemode list with delays, -1 means not set */
+	/* Build a housemode list with delays, "inactive" means not set */
 	for ( var mode in zoneMap) {
 	    var delays = [];
 	    for ( var i = 0; i < zones.length; i++) {
-		delays[i] = "-1";
+		delays[i] = "inactive";
 	    }
 	    for ( var i = 0; i < zoneMap[mode].length; i++) {
 		delays[zoneIdx[zoneMap[mode][i].zone]] = zoneMap[mode][i].delay;
@@ -134,7 +134,7 @@ function securityConfig() {
 	var delays = [];
 	if (modes.length > 0) {
 	    for ( var i = 0; i < modes[0].delays.length; i++) {
-		delays.push("-1");
+		delays.push("inactive");
 	    }
 	}
 	modes.push({
@@ -167,7 +167,7 @@ function securityConfig() {
 	var modes = self.housemodes();
 	self.housemodes([]);
 	for ( var i = 0; i < modes.length; i++) {
-	    modes[i].delays.push("-1");
+	    modes[i].delays.push("inactive");
 	}
 	self.housemodes(modes);
 	$("#zoneName").val("");
@@ -200,7 +200,7 @@ function securityConfig() {
 	$('.housemode').each(function(idx, e) {
 	    var list = [];
 	    for ( var i = 0; i < numDelays; i++) {
-		if (delayList[i] != -1) {
+		if (delayList[i] != "inactive") {
 		    list.push({
 			delay : parseInt(delayList[i]),
 			zone : idx2zone[i]
