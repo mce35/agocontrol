@@ -48,10 +48,11 @@ function floorPlan() {
 	}
     };
 
-    /* Load the floorplan data into the grid.
-     * This is meant to refresh whenever currentFloorPlan changes,
-     * and only when we have devices */
-    this.fpdevSubscription = ko.computed(function(){
+    /*
+     * Load the floorplan data into the grid. This is meant to refresh whenever
+     * currentFloorPlan changes, and only when we have devices
+     */
+    this.fpdevSubscription = ko.computed(function() {
 	if (self.devices().length == 0) {
 	    return;
 	}
@@ -143,11 +144,14 @@ function floorPlan() {
 
 	// Update local floorplan too
 	var fp = floorPlans[content.floorplan];
-	if(x === -1 && y === -1)
-	   delete fp[uuid];
+	if (x === -1 && y === -1)
+	    delete fp[uuid];
 	else {
-	   fp[uuid].x = x;
-	   fp[uuid].y = y;
+	    if (fp[uuid] == undefined) {
+		fp[uuid] = {};
+	    }
+	    fp[uuid].x = x;
+	    fp[uuid].y = y;
 	}
     };
 
@@ -286,6 +290,7 @@ function createFloorPlan() {
 	return;
     }
     sendCommand(content, function(r) {
+	delete localStorage.inventoryCache;
 	document.location.href = "?floorplan&fp=" + r.result.uuid;
     });
 }
