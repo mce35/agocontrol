@@ -199,17 +199,23 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				returnval["error"] = "invalid map, zonemap[housemode] is void!";
 			}
 		} else if (content["command"] == "setzones") {
-			// TODO: this might need some kind of protection
 			try {
 				cout << "setzones request" << endl;
-				qpid::types::Variant::Map newzones = content["zonemap"].asMap();
-				cout << "zone content:" << newzones << endl;
-				securitymap["zones"] = newzones;
-				if (variantMapToJSONFile(securitymap, SECURITYMAPFILE)) {
-					returnval["result"] = 0;
+			
+				if (checkPin(content["pin"].asString())) {
+					qpid::types::Variant::Map newzones = content["zonemap"].asMap();
+					cout << "zone content:" << newzones << endl;
+					securitymap["zones"] = newzones;
+					if (variantMapToJSONFile(securitymap, SECURITYMAPFILE)) {
+						returnval["result"] = 0;
+					} else {
+						returnval["result"] = -1;
+						returnval["error"]="cannot save securitymap";
+					}
 				} else {
+					cout << "ERROR: invalid pin" << endl;
 					returnval["result"] = -1;
-					returnval["error"]="cannot save securitymap";
+					returnval["error"] = "invalid pin";
 				}
 			} catch (qpid::types::InvalidConversion) {
                                 returnval["result"] = -1;
