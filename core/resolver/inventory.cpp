@@ -285,7 +285,7 @@ Variant::Map Inventory::getfloorplans() {
 			fprintf(stderr, "sql error #%d: %s\n", rc2,sqlite3_errmsg(db));
 			continue;
 		}
-        sqlite3_bind_text(stmt2, 1, uuid, -1, NULL);
+		sqlite3_bind_text(stmt2, 1, uuid, -1, NULL);
 		while (sqlite3_step(stmt2) == SQLITE_ROW) {
 			Variant::Map device;
 			const char *deviceuuid = (const char*)sqlite3_column_text(stmt2, 0);
