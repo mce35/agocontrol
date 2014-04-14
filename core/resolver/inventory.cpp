@@ -14,7 +14,7 @@ bool Inventory::createTableIfNotExist(std::string tablename, std::string createq
 	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
 	if (getfirst(query.c_str(), 1, tablename.c_str()) != tablename) {
 		cout << "Creating missing table '" << tablename << "'" << endl;
-		getfirst(createquery.c_str(), 0);
+		getfirst(createquery.c_str());
 		if (getfirst(query.c_str(), 1, tablename.c_str()) != tablename) {
 			cerr << "Can't create table '" << tablename << "'" << endl;
 			return false;
@@ -146,20 +146,23 @@ Variant::Map Inventory::getrooms() {
 	return result;
 } 
 int Inventory::deleteroom (string uuid) {
-	getfirst("BEGIN", 0);
+	getfirst("BEGIN");
 	string query = "update devices set room = '' where room = ?";
 	getfirst(query.c_str(), 1, uuid.c_str());
 	query = "delete from rooms where uuid = ?";
 	getfirst(query.c_str(), 1, uuid.c_str());
 	if (getroomname(uuid) != "") {
-		getfirst("ROLLBACK", 0);
+		getfirst("ROLLBACK");
 		return -1;
 	} else {
-		getfirst("COMMIT", 0);
+		getfirst("COMMIT");
 		return 0;
 	}
-	getfirst("ROLLBACK", 0);
+	getfirst("ROLLBACK");
 	return -1;
+}
+string Inventory::getfirst(const char *query) {
+    return getfirst(query, 0);
 }
 string Inventory::getfirst(const char *query, int n, ...) {
 	sqlite3_stmt *stmt;
@@ -237,19 +240,19 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
 }
 
 int Inventory::deletefloorplan(std::string uuid) {
-	getfirst("BEGIN", 0);
+	getfirst("BEGIN");
 	string query = "delete from devicesfloorplan where floorplan = ?";
 	getfirst(query.c_str(), 1, uuid.c_str());
 	query = "delete from floorplans where uuid = ?";
 	getfirst(query.c_str(), 1, uuid.c_str());
 	if (getfloorplanname(uuid) != "") {
-	    getfirst("ROLLBACK", 0);
+	    getfirst("ROLLBACK");
 		return -1;
 	} else {
-	    getfirst("COMMIT", 0);
+	    getfirst("COMMIT");
 		return 0;
 	}
-	getfirst("ROLLBACK", 0);
+	getfirst("ROLLBACK");
 	return -1;
 }
 

@@ -52,6 +52,7 @@ class Inventory {
 		
 	private:
 		sqlite3 *db;
+		string getfirst(const char *query);
 		string getfirst(const char *query, int n, ...);
 		bool createTableIfNotExist(std::string tablename, std::string createquery);
 };
