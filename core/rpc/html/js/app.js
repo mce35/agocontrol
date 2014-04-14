@@ -81,6 +81,7 @@ var dataLoggerController = null;
 var scenarioController = null;
 var alertControler = null;
 var model = null;
+var initialized = false;
 
 var supported_devices = [];
 
@@ -384,8 +385,6 @@ function cleanInventory(data) {
 
     return data;
 }
-
-var initialized = false;
 
 function handleInventory(response) {
     if (response != null && response.result.match !== undefined && response.result.match(/^exception/)) {
