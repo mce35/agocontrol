@@ -217,6 +217,7 @@ function deviceConfig() {
 		    self.devices.remove(function(e) {
 			return e.uuid == item.uuid;
 		    });
+		    delete localStorage.inventoryCache;
 		    $('#configTable').unblock();
 		});
 	    },

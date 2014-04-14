@@ -89,6 +89,7 @@ function variablesConfig() {
 		self.variables.remove(function(e) {
 		    return e.variable == item.variable;
 		});
+		delete localStorage.inventoryCache;
 	    } else {
 		alert("Error while deleting variable!");
 	    }

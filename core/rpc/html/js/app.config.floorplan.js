@@ -63,8 +63,7 @@ function floorPlanConfig() {
 		self.floorplans.remove(function(e) {
 		    return e.uuid == item.uuid;
 		});
-		$("#floorPlanTable").dataTable().fnDeleteRow(event.target.parentNode.parentNode.parentNode);
-		$("#floorPlanTable").dataTable().fnDraw();
+		delete localStorage.inventoryCache;
 	    } else {
 		alert("Error while deleting floorplan!");
 	    }

@@ -368,6 +368,7 @@ function eventConfig() {
 		self.events.remove(function(e) {
 		    return e.uuid == item.uuid;
 		});
+		delete localStorage.inventoryCache;
 	    } else {
 		alert("Error while deleting event!");
 	    }
