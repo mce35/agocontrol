@@ -25,7 +25,8 @@ values = '{"method":"message","params":{"content":{"command":"setscenario","uuid
 
 # uuid=79403b64-3bb5-482a-a7a6-c44eda724bc8 command=getzones
 
-values = '{"method":"message","params":{"content":{"command":"getzones","uuid":"79403b64-3bb5-482a-a7a6-c44eda724bc8"}},"id":1,"jsonrpc":"2.0"}'
+# values = '{"method":"message","params":{"content":{"command":"setzones","uuid":"3f42226f-efa7-4b9a-93b7-4f4330c7ea4f","zonemap":{"myMode":[{"delay":1,"zone":"testZone"},{"delay":32,"zone":"testZone2"}],"myMode2":[{"delay":2,"zone":"testZone"},{"delay":8,"zone":"testZone2"}],"tst":[]}}},"id":1,"jsonrpc":"2.0"}'
+# values = '{"method":"message","params":{"content":{"command":"getzones","uuid":"79403b64-3bb5-482a-a7a6-c44eda724bc8"}},"id":1,"jsonrpc":"2.0"}'
 req = urllib2.Request(url, values)
 response = urllib2.urlopen(req)
 rawdata = response.read()
