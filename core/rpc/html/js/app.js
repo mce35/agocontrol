@@ -97,7 +97,7 @@ function buildfloorPlanList(model) {
 	    showFloorplan : function(data, event) {
 		if (getPage() !== 'floorplan')
 		    return true; // Let href act instead; no support for
-				    // reloading page-script
+		// reloading page-script
 
 		setFloorPlan(this.uuid);
 		return false;

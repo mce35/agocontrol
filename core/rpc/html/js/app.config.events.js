@@ -1,7 +1,7 @@
 /**
  * Model class
  * 
- * @returns
+ * @returns {eventConfig}
  */
 function eventConfig() {
     this.hasNavigation = ko.observable(true);
@@ -319,7 +319,7 @@ function eventConfig() {
 			self.events.push({
 			    name : cnt.name,
 			    uuid : res.result.event,
-			    action: ""
+			    action : ""
 			});
 			self.initBuilder();
 		    }

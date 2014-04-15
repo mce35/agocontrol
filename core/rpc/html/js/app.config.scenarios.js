@@ -1,7 +1,7 @@
 /**
  * Model class
  * 
- * @returns {deviceConfig}
+ * @returns {scenarioConfig}
  */
 function scenarioConfig() {
     this.devices = ko.observableArray([]);

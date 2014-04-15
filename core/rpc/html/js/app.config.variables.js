@@ -1,7 +1,7 @@
 /**
  * Model class
  * 
- * @returns {roomConfig}
+ * @returns {variablesConfig}
  */
 function variablesConfig() {
     this.hasNavigation = ko.observable(true);
@@ -45,7 +45,7 @@ function variablesConfig() {
 		self.variables.push({
 		    variable : content.variable,
 		    value : content.value,
-		    action: ""
+		    action : ""
 		});
 	    } else {
 		alert("Error while creating variable!");

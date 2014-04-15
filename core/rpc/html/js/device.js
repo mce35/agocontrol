@@ -15,7 +15,7 @@ function device(obj, uuid) {
     this.uuid = uuid;
 
     this.action = ''; // dummy for table
-    
+
     this.handledBy = this['handled-by'];
 
     var currentState = parseInt(this.state);
@@ -330,16 +330,13 @@ function device(obj, uuid) {
 
     //update device content
     self.update = function(obj) {
-        for ( var k in obj) {
-            if( typeof(this[k])==="function" )
-            {
-                //should be an observable
-                this[k](obj[k]);
-            }
-            else
-            {
-                this[k] = obj[k];
-            }
-        }
+	for ( var k in obj) {
+	    if (typeof (this[k]) === "function") {
+		//should be an observable
+		this[k](obj[k]);
+	    } else {
+		this[k] = obj[k];
+	    }
+	}
     };
 }

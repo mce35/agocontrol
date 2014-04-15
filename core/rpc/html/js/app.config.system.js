@@ -1,5 +1,6 @@
 /**
  * Model class
+ * 
  * @returns {systemConfig}
  */
 function systemConfig() {

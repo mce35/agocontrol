@@ -1,7 +1,7 @@
 /**
  * Model class
  * 
- * @returns {roomConfig}
+ * @returns {floorPlanConfig}
  */
 function floorPlanConfig() {
     this.hasNavigation = ko.observable(true);

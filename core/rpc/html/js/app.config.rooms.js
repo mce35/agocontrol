@@ -11,20 +11,20 @@ function roomConfig() {
 
     this.makeEditable = function(row, item) {
 	window.setTimeout(function() {
-        	$(row).find('td.edit_room').editable(function(value, settings) {
-        	    var content = {};
-        	    content.room = item.uuid;
-        	    content.uuid = agoController;
-        	    content.command = "setroomname";
-        	    content.name = value;
-        	    sendCommand(content);
-        	    return value;
-        	}, {
-        	    data : function(value, settings) {
-        		return value;
-        	    },
-        	    onblur : "cancel"
-        	});
+	    $(row).find('td.edit_room').editable(function(value, settings) {
+		var content = {};
+		content.room = item.uuid;
+		content.uuid = agoController;
+		content.command = "setroomname";
+		content.name = value;
+		sendCommand(content);
+		return value;
+	    }, {
+		data : function(value, settings) {
+		    return value;
+		},
+		onblur : "cancel"
+	    });
 	}, 1);
     };
 

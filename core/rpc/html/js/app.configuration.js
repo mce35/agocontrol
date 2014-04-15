@@ -1,5 +1,6 @@
 /**
  * Model class
+ * 
  * @returns {configuration}
  */
 function configuration() {

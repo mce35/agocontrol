@@ -86,8 +86,8 @@ function prepareTemplate(doc) {
 	    killList.push(tag);
 	}
     }
-    
-    for (var i = 0; i < killList.length; i++) {
+
+    for ( var i = 0; i < killList.length; i++) {
 	killList[i].parentNode.removeChild(killList[i]);
     }
 
