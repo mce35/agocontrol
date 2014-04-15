@@ -56,101 +56,100 @@ class Ipx800AgoConnection(agoclient.AgoConnection):
     def __del__(self):
         agoclient.AgoConnection.__del__(self)
 
-    def storeUuidMap(self):
+    def store_uuid_map(self):
         self.__lock.acquire(True)
         try:
-            with open(agoclient.CONFDIR + '/uuidmap/' + self.instance + '.json' , 'w') as outfile:
+            with open(agoclient.CONFDIR + '/uuidmap/' + self.instance + '.json', 'w') as outfile:
                 items = {}
                 for uuid in self.uuids:
                     items[uuid] = {'internalid':self.uuids[uuid], 'state':self.states[uuid], 'duration':self.durations[uuid]}
                 simplejson.dump(items, outfile)
-        except:
-            pass
+        except (OSError, IOError) as exception:
+            syslog.syslog(syslog.LOG_ERR, "Cannot write uuid map file: " + str(exception))
+        except ValueError, exception: # includes simplejson error
+             syslog.syslog(syslog.LOG_ERR, "Cannot encode uuid map: " + str(exception))
         self.__lock.release()
 
-    def loadUuidMap(self):
+    def load_uuid_map(self):
         self.__lock.acquire(True)
         try:
-            path = agoclient.CONFDIR + '/uuidmap/' + self.instance + '.json'
-            if os.path.exists(path):
-                with open(path , 'r') as infile:
-                    items = simplejson.load(infile)
-                    for item in items:
-                        self.uuids[item] = items[item]['internalid']
-                        self.states[item] = items[item]['state']
-                        if items[item].has_key('duration'):
-                            self.durations[item] = items[item]['duration']
-                        else:
-                            self.durations[item] = 0
-            else:
-                f = open(path, 'w')
-                f.close()
-        except Exception as e:
-            logging.exception('Exception on loadUuidMap:')
+            with open(agoclient.CONFDIR + '/uuidmap/' + self.instance + '.json', 'r') as infile:
+                items = simplejson.load(infile)
+                for item in items:
+                    self.uuids[item] = items[item]['internalid']
+                    self.states[item] = items[item]['state']
+                    if items[item].has_key('duration'):
+                        self.durations[item] = items[item]['duration']
+                    else:
+                        self.durations[item] = 0
+        except (OSError, IOError) as exception:
+            syslog.syslog(syslog.LOG_ERR, "Cannot load uuid map file: " + str(exception))
+        except ValueError, exception: # includes simplejson error
+            syslog.syslog(syslog.LOG_ERR, "Cannot decode uuid map: " + str(exception))
         self.__lock.release()
 
-    def removeDevice(self, internalid):
-        uuid = self.internalIdToUuid(internalid)
+    def remove_device(self, internalid):
+        uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
-            #self.emitDeviceRemove(self.internalIdToUuid(internalid))
+            #self.emitDeviceRemove(self.internal_id_to_uuid(internalid))
             del self.devices[uuid]
             #remove uuid from map
             self.uuids.pop(uuid, None)
             #save conf file
             self.storeUuidMap()
 
-    def addDevice(self, internalid, devicetype, devicestate):
-        if (self.internalIdToUuid(internalid) == None):
+    def add_device(self, internalid, devicetype, devicestate):
+        if (self.internal_id_to_uuid(internalid) == None):
             uuid = str(uuid4())
             self.uuids[uuid] = internalid
             self.states[uuid] = devicestate
             self.durations[uuid] = 0
-            self.storeUuidMap()
+            self.store_uuid_map()
         device = {}
         device["devicetype"] = devicetype
         device["internalid"] = internalid
         device["state"] = devicestate
         device["duration"] = 0
-        self.devices[self.internalIdToUuid(internalid)] = device
-        self.emitDeviceAnnounce(self.internalIdToUuid(internalid), device)
+        self.devices[self.internal_id_to_uuid(internalid)] = device
+        self.emit_device_announce(self.internal_id_to_uuid(internalid), device)
         if devicestate!=STATE_UNKNOWN:
-            self.emitEvent(internalid, "event.device.statechanged", str(devicestate), "")
+            self.emit_event(internalid, "event.device.statechanged", str(devicestate), "")
 
-    def updateDeviceState(self, internalid, devicestate):
-        uuid = self.internalIdToUuid(internalid)
+    def update_device_state(self, internalid, devicestate):
+        uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
             self.states[uuid] = devicestate
             self.devices[uuid]['state'] = devicestate
-            self.storeUuidMap()
-            self.emitEvent(internalid, "event.device.statechanged", str(devicestate), "")
+            self.store_uuid_map()
+            self.emit_event(internalid, "event.device.statechanged", str(devicestate), "")
 
-    def updateDeviceDuration(self, internalid, deviceduration):
+    def update_device_duration(self, internalid, deviceduration):
         """update device duration
            @param internalid: device internalid
            @param deviceduration: {start:timestamp, stop:timestamp} """
-        uuid = self.internalIdToUuid(internalid)
+        uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
             dur = deviceduration['stop'] - deviceduration['start']
             if dur!=self.durations[uuid]:
                 self.durations[uuid] = deviceduration['stop'] - deviceduration['start']
                 self.devices[uuid]['duration'] = self.durations[uuid]
-                self.storeUuidMap()
+                self.store_uuid_map()
 
-    def getDeviceState(self, internalid):
-        uuid = self.internalIdToUuid(internalid)
+    def get_device_state(self, internalid):
+        uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
             return self.states[uuid]
         return None
 
-    def getDeviceDuration(self, internalid):
-        uuid = self.internalIdToUuid(internalid)
+    def get_device_duration(self, internalid):
+        uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
             return self.durations[uuid]
         return None
 
-    def updateDeviceValue(self, internalid, devicetype, devicevalue):
+    def update_device_value(self, internalid, devicetype, devicevalue):
         global units
-        uuid = self.internalIdToUuid(internalid)
+        uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
             event = 'event.device.statechanged'
             unit = '&nbsp;'
@@ -179,7 +178,7 @@ class Ipx800AgoConnection(agoclient.AgoConnection):
             else:
                 event = 'event.device.statechanged'
                 unit = None
-            self.emitEvent(internalid, event, str(devicevalue), unit)
+            self.emit_event(internalid, event, str(devicevalue), unit)
                 
 
 
@@ -257,7 +256,7 @@ def buildDevicesList():
     devices.clear()
     for uuid in client.uuids:
         #get device infos
-        internalid = client.uuidToInternalId(uuid)
+        internalid = client.uuid_to_internal_id(uuid)
         if internalid=='ipx800controller':
             #drop controller, it's not a device
             continue
@@ -374,12 +373,12 @@ def ipxCallback(ipxIp, content):
                             if device['state']==STATE_ON:
                                 #off action
                                 logging.info('Switch "%s@%s" turned off' % (ipxIp, device['internalid']))
-                                client.updateDeviceState(device['internalid'], STATE_OFF)
+                                client.update_device_state(device['internalid'], STATE_OFF)
                         elif content[item]==1:
                             if device['state']==STATE_OFF:
                                 #on action
                                 logging.info('Switch "%s@%s" turned on' % (ipxIp, device['internalid']))
-                                client.updateDeviceState(device['internalid'], STATE_ON)
+                                client.update_device_state(device['internalid'], STATE_ON)
                         else:
                             logging.warning('Unknown value received for switch action [%s]' % str(content[item]))
                     elif device['type']==DEVICE_DRAPES:
@@ -391,15 +390,15 @@ def ipxCallback(ipxIp, content):
                                 if device['state']==STATE_OPENING:
                                     #drapes opened
                                     logging.info('Drapes "%s@%s" opened' % (ipxIp, device['internalid']))
-                                    client.updateDeviceState(device['internalid'], STATE_OPENED)
+                                    client.update_device_state(device['internalid'], STATE_OPENED)
                                     durations[device['internalid']]['stop'] = int(time.time())
                                     logging.debug('duration[%s]: start=%d stop=%d' % (device['internalid'], durations[device['internalid']]['start'], durations[device['internalid']]['stop']))
-                                    client.updateDeviceDuration(device['internalid'], durations[device['internalid']])
+                                    client.update_device_duration(device['internalid'], durations[device['internalid']])
                             elif content[item]==1:
                                 if device['state']==STATE_CLOSED:
                                     #drapes is opening
                                     logging.info('Drapes "%s@%s" is opening' % (ipxIp, device['internalid']))
-                                    client.updateDeviceState(device['internalid'], STATE_OPENING)
+                                    client.update_device_state(device['internalid'], STATE_OPENING)
                                     durations[device['internalid']]['start'] = int(time.time())
                             else:
                                 #unknown value
@@ -410,15 +409,15 @@ def ipxCallback(ipxIp, content):
                                 if device['state']==STATE_CLOSING:
                                     #drapes closed
                                     logging.info('Drapes "%s@%s" closed' % (ipxIp, device['internalid']))
-                                    client.updateDeviceState(device['internalid'], STATE_CLOSED)
+                                    client.update_device_state(device['internalid'], STATE_CLOSED)
                                     durations[device['internalid']]['stop'] = int(time.time())
                                     logging.debug('duration[%s]: start=%d stop=%d' % (device['internalid'], durations[device['internalid']]['start'], durations[device['internalid']]['stop']))
-                                    client.updateDeviceDuration(device['internalid'], durations[device['internalid']])
+                                    client.update_device_duration(device['internalid'], durations[device['internalid']])
                             elif content[item]==1:
                                 if device['state']==STATE_OPENED:
                                     #Drapes is closing
                                     logging.info('Drapes "%s@%s" is closing' % (ipxIp, device['internalid']))
-                                    client.updateDeviceState(device['internalid'], STATE_CLOSING)
+                                    client.update_device_state(device['internalid'], STATE_CLOSING)
                                     durations[device['internalid']]['start'] = int(time.time())
                             else:
                                 #unknown value
@@ -446,7 +445,7 @@ def ipxCallback(ipxIp, content):
                 if device:
                     if device['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_LIGHT):
                         logging.info('Update value of analog "%s@%s[%s]" with "%s"' % (ipxIp, device['internalid'], device['type'], str(content[item])))
-                        client.updateDeviceValue(device['internalid'], device['type'], content[item])
+                        client.update_device_value(device['internalid'], device['type'], content[item])
                     else:
                         #TODO manage new device using analogs here
                         pass
@@ -460,7 +459,7 @@ def ipxCallback(ipxIp, content):
                 if device:
                     if device['type']==DEVICE_COUNTER:
                         logging.info('Update value of counter device "%s@%s" with "%s"' % (ipxIp, device['internalid'], str(content[item])))
-                        client.updateDeviceValue(device['internalid'], device['type'], content[item])
+                        client.update_device_value(device['internalid'], device['type'], content[item])
                     else:
                         #TODO manage new device using counters here
                         pass
@@ -479,7 +478,7 @@ def addIpx800v3Board(ipxIp):
     if not devices.has_key(ipxIp):
         #add new ipx800v3 board
         internalid = buildDeviceName(ipxIp, DEVICE_BOARD, [], [], [], [])
-        client.addDevice(internalid, 'ipx800v3board', STATE_UNKNOWN)
+        client.add_device(internalid, 'ipx800v3board', STATE_UNKNOWN)
         #refresh devices list
         #buildDevicesList()
     else:
@@ -489,7 +488,7 @@ def removeIpx800v3Board(ipxIp):
     """remove ipx800v3 board"""
     global client
     if ipxIp and len(ipxIp)>0:
-        client.removeDevice(ipxIp)
+        client.remove_device(ipxIp)
     else:
         logging.error('removeIpx800v3Board: invalid ip address [%s]' % ipxIp)
 
@@ -513,7 +512,7 @@ def addSwitch(ipxIp, outputId):
             return False
         #add device
         internalid = buildDeviceName(ipxIp, DEVICE_SWITCH, [], [outputId], [], [])
-        client.addDevice(internalid, 'switch', STATE_OFF)
+        client.add_device(internalid, 'switch', STATE_OFF)
     else:
         logging.error('addIpx800v3Switch: invalid parameters')
 
@@ -543,7 +542,7 @@ def addDrapes(ipxIp, relayOpen, relayClose):
             return False
         #add device
         internalid = buildDeviceName(ipxIp, DEVICE_DRAPES, [relayOpen], [relayClose], [], [])
-        client.addDevice(internalid, 'drapes', STATE_OPENED)
+        client.add_device(internalid, 'drapes', STATE_OPENED)
     else:
         logging.error('addDrapes: invalid parameters')
 
@@ -579,14 +578,14 @@ def addAnalog(ipxIp, deviceType, analogId):
         #add device
         internalid = buildDeviceName(ipxIp, deviceType, [], [], [analogId], [])
         if deviceType==DEVICE_ANALOG_TEMPERATURE:
-            client.addDevice(internalid, 'temperaturesensor', STATE_UNKNOWN)
+            client.add_device(internalid, 'temperaturesensor', STATE_UNKNOWN)
         elif deviceType==DEVICE_ANALOG_HUMIDITY:
-            client.addDevice(internalid, 'humiditysensor', STATE_UNKNOWN)
+            client.add_device(internalid, 'humiditysensor', STATE_UNKNOWN)
         elif deviceType==DEVICE_ANALOG_VOLT:
-            client.addDevice(internalid, 'energymeter', STATE_UNKNOWN)
+            client.add_device(internalid, 'energymeter', STATE_UNKNOWN)
         elif deviceType==DEVICE_ANALOG_LIGHT:
-            client.addDevice(internalid, 'brightnesssensor', STATE_UNKNOWN)
-        client.updateDeviceValue(internalid, deviceType, value)
+            client.add_device(internalid, 'brightnesssensor', STATE_UNKNOWN)
+        client.update_device_value(internalid, deviceType, value)
     else:
         logging.error('addAnalog: invalid parameters')
         return False
@@ -626,8 +625,8 @@ def addCounter(ipxIp, counterId):
         #add device
         logging.info('4')
         internalid = buildDeviceName(ipxIp, DEVICE_COUNTER, [], [], [], [counterId])
-        client.addDevice(internalid, 'multilevelsensor', STATE_UNKNOWN)
-        client.updateDeviceValue(internalid, DEVICE_COUNTER, value)
+        client.add_device(internalid, 'multilevelsensor', STATE_UNKNOWN)
+        client.update_device_value(internalid, DEVICE_COUNTER, value)
     else:
         logging.error('addCounter: invalid parameters')
         return False
@@ -663,14 +662,14 @@ def stopDrapes(internalid, ipxIp):
         if dev['state']==STATE_OPENING:
             if len(dev['inputs'])==1:
                 ipx800v3.setOutput(ipxIp, dev['inputs'][0], 0)
-                client.updateDeviceState(dev['internalid'], STATE_STOPPED)
+                client.update_device_state(dev['internalid'], STATE_STOPPED)
             else:
                 logging.error('stopDrapes: 1 input expected, %d found' % (len(dev['inputs'])))
                 return False
         elif dev['state']==STATE_CLOSING:
             if len(dev['outputs'])==1:
                 ipx800v3.setOutput(ipxIp, dev['outputs'][0], 0)
-                client.updateDeviceState(dev['internalid'], STATE_STOPPED)
+                client.update_device_state(dev['internalid'], STATE_STOPPED)
             else:
                 logging.error('stopDrapes: 1 output expected, %d found' % (len(dev['outputs'])))
                 return False
@@ -920,17 +919,17 @@ def commandHandler(internalid, content):
             if deviceType==DEVICE_DRAPES:
                 if state=='closed':
                     logging.info('Force drapes "%s@%s" state to CLOSED' % (ipxIp, internalid))
-                    client.updateDeviceState(internalid, STATE_CLOSED)
+                    client.update_device_state(internalid, STATE_CLOSED)
                 else:
                     logging.info('Force drapes "%s@%s" state to OPENED' % (ipxIp, internalid))
-                    client.updateDeviceState(internalid, STATE_OPENED)
+                    client.update_device_state(internalid, STATE_OPENED)
             elif deviceType==DEVICE_SWITCH:
                 if state=='closed':
                     logging.info('Force switch "%s@%s" state to OFF' % (ipxIp, internalid))
-                    client.updateDeviceState(internalid, STATE_OFF)
+                    client.update_device_state(internalid, STATE_OFF)
                 else:
                     logging.info('Force switch "%s@%s" state to ON' % (ipxIp, internalid))
-                    client.updateDeviceState(internalid, STATE_ON)
+                    client.update_device_state(internalid, STATE_ON)
             return {'error':0, 'msg':'Ok'}
         elif command=='getdevices':
             #get drapes devices
@@ -959,13 +958,13 @@ def eventHandler(event, content):
     #get uuid
     if content.has_key('uuid'):
         uuid = content['uuid']
-        internalid = client.uuidToInternalId(uuid)
+        internalid = client.uuid_to_internal_id(uuid)
     
     if uuid and uuid in client.uuids:
         #uuid belongs to this handler
         if event=='event.device.remove':
             logging.info('eventHandler: Removing device %s' % internalid)
-            client.removeDevice(internalid)
+            client.remove_device(internalid)
 
     #update devices list after each event
     buildDevicesList()
@@ -997,26 +996,26 @@ try:
             (ipxIp, deviceType, _, _, _, _) = explodeDeviceName(internalid)
             if len(deviceType)==0:
                 logging.info('  - add board [%s]' % internalid)
-                client.addDevice(internalid, 'ipx800v3board', state)
+                client.add_device(internalid, 'ipx800v3board', state)
             elif deviceType==DEVICE_SWITCH:
                 logging.info('  - add switch [%s]' % internalid)
-                client.addDevice(internalid, 'switch', state)
+                client.add_device(internalid, 'switch', state)
             elif deviceType==DEVICE_DRAPES:
                 logging.info('  - add drapes [%s]' % internalid)
-                client.addDevice(internalid, 'drapes', state)
+                client.add_device(internalid, 'drapes', state)
             elif deviceType in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_LIGHT):
                 logging.info ('  - add analog [%s]' % internalid)
                 if deviceType==DEVICE_ANALOG_TEMPERATURE:
-                    client.addDevice(internalid, 'temperaturesensor', STATE_UNKNOWN)
+                    client.add_device(internalid, 'temperaturesensor', STATE_UNKNOWN)
                 if deviceType==DEVICE_ANALOG_HUMIDITY:
-                    client.addDevice(internalid, 'humiditysensor', STATE_UNKNOWN)
+                    client.add_device(internalid, 'humiditysensor', STATE_UNKNOWN)
                 if deviceType==DEVICE_ANALOG_VOLT:
-                    client.addDevice(internalid, 'energymeter', STATE_UNKNOWN)
+                    client.add_device(internalid, 'energymeter', STATE_UNKNOWN)
                 if deviceType==DEVICE_ANALOG_LIGHT:
-                    client.addDevice(internalid, 'brightnesssensor', STATE_UNKNOWN)
+                    client.add_device(internalid, 'brightnesssensor', STATE_UNKNOWN)
             elif deviceType==DEVICE_COUNTER:
                 logging.info('  - add counter [%s]' % internalid)
-                client.addDevice(internalid, 'multilevelsensor', STATE_UNKNOWN)
+                client.add_device(internalid, 'multilevelsensor', STATE_UNKNOWN)
             else:
                 logging.error('  - add nothing: unknown device type [%s]' % (internalid))
 
@@ -1037,28 +1036,28 @@ try:
                     if len(device['analogs'])==1 and status.has_key('an%d' % device['analogs'][0]):
                         value = status['an%d' % device['analogs'][0]]
                         logging.info('  - value "%s" set to "%s@%s"' % (str(value), ipxIp, device['internalid']))
-                        client.updateDeviceValue(device['internalid'], device['type'], value)
+                        client.update_device_value(device['internalid'], device['type'], value)
                     else:
                         logging.warning('Unable to set current analog value to "%s@%s"' % (ipxIp, device['internalid']))
                         logging.info('key=%s status:%s' % ('an%d' % device['analogs'][0], status))
-                        client.updateDeviceValue(device['internalid'], device['type'], 0.0)
+                        client.update_device_value(device['internalid'], device['type'], 0.0)
                 elif device['type']==DEVICE_COUNTER:
                     if len(device['counters'])==1 and status.has_key('cnt%d' % device['counters'][0]):
                         value = status['cnt%d' % device['counters'][0]]
                         logging.info('  - value "%s" set to "%s@%s"' % (str(value), ipxIp, device['internalid']))
-                        client.updateDeviceValue(device['internalid'], device['type'], value)
+                        client.update_device_value(device['internalid'], device['type'], value)
                     else:
                         logging.warning('Unable to set current counter value to "%s@%s"' % (ipxIp, device['internalid']))
                         logging.info('key=%s status:%s' % ('cnt%d' % device['counters'][0], status))
-                        client.updateDeviceValue(device['internalid'], device['type'], 0)
+                        client.update_device_value(device['internalid'], device['type'], 0)
                 
     #add client handlers
-    client.addHandler(commandHandler)
-    client.addEventHandler(eventHandler)
+    client.add_handler(commandHandler)
+    client.add_event_handler(eventHandler)
 
     #add controller
     logging.info('Add controller')
-    client.addDevice('ipx800controller', 'ipx800controller', STATE_UNKNOWN)
+    client.add_device('ipx800controller', 'ipx800controller', STATE_UNKNOWN)
 
 except Exception as e:
     #init failed
