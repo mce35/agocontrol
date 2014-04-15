@@ -338,6 +338,12 @@ function handleEvent(response) {
 		    deviceMap[i][member](response.result.level);
 		}
 	    }
+	    // Binary sensor has its own event
+	    else if (response.result.event == "event.security.sensortriggered") {
+		if (deviceMap[i]['state'] !== undefined) {
+		    deviceMap[i]['state'](response.result.level);
+		}
+	    }
 	    // update device last seen datetime
 	    deviceMap[i].timeStamp(formatDate(new Date()));
 	    if (response.result.quantity) {
