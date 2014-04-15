@@ -980,7 +980,7 @@ try:
     client = Ipx800AgoConnection('ipx800')
 
     #get system units
-    units = agoclient.getConfigOption("system", "units", "SI")
+    units = agoclient.get_config_option("system", "units", "SI")
     logging.info('System units: %s' % units)
 
     #add known devices
