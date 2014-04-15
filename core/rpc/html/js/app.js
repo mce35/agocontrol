@@ -541,6 +541,11 @@ function setFloorPlan(fp, replaceState) {
     if (replaceState === null)
 	return;
 
+    // Not a floor plan page so don't do anything
+    if (getPage() != "floorplan") {
+	return;
+    }
+
     // HTML5 push/pop-state support
     try {
 	if (history && history.pushState && history.replaceState) {
