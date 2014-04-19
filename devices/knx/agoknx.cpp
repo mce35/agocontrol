@@ -242,6 +242,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		dest = Telegram::stringtogaddr(destGA);
 		level = atoi(content["level"].asString().c_str());
 		tg->setDataFromChar(level);
+	} else if (content["command"] == "settemperature") {
+		float temp = content["temperature"];
+		string destGA = device["settemperature"];
+		dest = Telegram::stringtogaddr(destGA);
+		tg->setDataFromFloat(temp);
 	} else if (content["command"] == "setcolor") {
 		int level=0;
 		Telegram *tg2 = new Telegram();
