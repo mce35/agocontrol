@@ -34,6 +34,7 @@ ELSE (FREEBSD)
 	set (DATADIR /var/opt/agocontrol CACHE STRING "Directory for variable data")
 	set (LOCALSTATEDIR /var/opt/agocontrol CACHE STRING "Directory for state info")
 	set (HTMLDIR /opt/agocontrol/html CACHE STRING "Directory for rpc HTML files")
+	set (CMAKE_EXE_LINKER_FLAGS "-Wl,-z,now")
 ENDIF (FREEBSD)
 
 # configure a header file to pass some of the CMake settings
@@ -100,4 +101,3 @@ OPTION(BUILD_SCRIPTS "Build the scripts" ON)
 if (BUILD_SCRIPTS)
   add_subdirectory (scripts)
 endif()
-
