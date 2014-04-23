@@ -1,0 +1,331 @@
+version: 0.1
+commands:
+  "on":
+    name: turn on
+  "off":
+    name: turn off
+  "run":
+    name: run
+  push:
+    name: push button
+  setvariable:
+    name: set global variable
+    parameters:
+      value:
+         name: value to set
+         type: variant
+      variable:
+         name: name of the variable
+         type: string
+  delvariable:
+    name: delete global variable
+    parameters:
+      variable:
+         name: name of the variable
+         type: string
+  gethousemode:
+    name: gets the active house mode
+  sethousemode:
+    name: set the house mode
+    parameters:
+      mode:
+        name: house mode
+        type: string
+      pin:
+        name: security pin
+        type: integer
+        range: [0, 999999]
+  triggerzone:
+    name: trigger security zone
+    parameters:
+      zone:
+        name: zone to trigger
+        type: string
+  setzones:
+    name: define zones
+    parameters:
+      zonemap:
+        name: zone to housemode mapping
+        type: map
+      pin:
+        name: security pin
+        type: integer
+        range: [0, 999999]
+  cancel:
+    name: cancel operation
+    parameters:
+      pin:
+        name: security pin
+        type: integer
+        range: [0, 999999]
+  getdata:
+    name: get data from datalogger
+    parameters:
+      startdate:
+        name: start date
+        type: string
+      enddate:
+        name: end date
+        type: string
+      deviceid:
+        name: uuid of the device to fetch logger data from
+        type: string
+      env:
+        name: environment
+        type: string
+  inventory:
+    name: fetch the complete inventory
+  getdevice:
+    name: fetch a single device from the inventory
+    parameters:
+      device:
+        name: uuid of the device to fetch
+        type: string
+  getdeviceenvironments:
+    name: get environments for device from datalogger
+  setevent:
+    name: create new event
+    parameters:
+      eventmap:
+        name: event map
+        type: map
+      event:
+        name: uuid for the new event
+        type: string
+  getevent:
+    name: get event
+    parameters:
+      event:
+        name: uuid for the event to fetch
+        type: string
+  delevent:
+    name: delete event
+    parameters:
+      event:
+        name: uuid for the event to delete
+        type: string
+  setscenario:
+    name: create scenario
+    parameters:
+      scenariomap:
+        name: scenario map
+        type: map
+      scenario:
+        name: uuid for the new scenario
+        type: string
+  getscenario:
+    name: get scenario
+    parameters:
+      scenario:
+        name: uuid for the scenario to fetch
+        type: string
+  delscenario:
+    name: delete scenario
+    parameters:
+      scenario:
+        name: uuid of the scenario to delete
+        type: string
+  getscriptlist:
+    name: get list of scripts
+  getscript:
+    name: get script
+    parameters:
+      name:
+        name: name of the script to get
+        type: string
+  setscript:
+    name: set a script
+    parameters:
+      name:
+        name: name of the script to set
+        type: string
+      script:
+        name: script content
+        type: string
+  delscript:
+    name: delete a script
+    parameters:
+      name:
+        name: name of the script to delete
+        type: string
+  setroomname:
+    name: name a room
+    parameters:
+      name:
+        name: name for the room
+        type: string
+      room:
+        name: uuid of the room
+        type: string
+  setdeviceroom:
+    name: assign a device to a room
+    parameters:
+      device:
+        name: device uuid to assign
+        type: string
+      room:
+        name: room uuid for assignment
+        type: string
+  setdevicename:
+    name: name a device
+    parameters:
+      name:
+        name: name for the device
+        type: string
+      device:
+        name: uuid of the device
+        type: string
+  deleteroom:
+    name: delete a room
+    parameters:
+      room:
+        name: uuid of the room to delete
+        type: string
+  setfloorplanname:
+    name: set the name of a floorplan
+    parameters:
+      floorplan:
+        name: uuid of the floorplan
+        type: string
+      name:
+        name: name for the floorplan
+        type: string
+  setdevicefloorplan:
+    name: assign a device to a floorplan
+    parameters:
+      floorplan:
+        name: uuid of the floorplan
+        type: string
+      device:
+        name: uuid of the device
+        type: string
+      x:
+        name: x coordinate
+        type: integer
+      y:
+        name: y coordinate
+        type: integer
+  deletefloorplan:
+    name: delete a floorplan
+    parameters:
+      floorplan:
+        name: uuid of the floorplan
+        type: string
+devicetypes:
+  dataloggercontroller:
+    name: datalogger controller
+    description: internal device to control the datalogger
+    commands: [getdata, getdeviceenvironments]
+  eventcontroller:
+    name: event controller
+    description: internal device to control the events
+    commands: [setevent, getevent, delevent]
+  scenariocontroller:
+    name: scenario controller
+    description: internal device to control the scenarios
+    commands: [setscenario, getscenario, delscenario]
+  agocontroller:
+    name: resolver controller
+    description: internal device to control the resolver
+    commands: [setvariable, delvariable]
+    events: [event.system.roomnamechanged, event.system.devicenamechanged, event.system.roomdeleted, event.system.floorplannamechanged, event.system.floorplandevicechanged, event.system.floorplandeleted]
+  securitycontroller:
+    name: security system
+    description: ago control security system module
+    commands: [gethousemode, sethousemode, triggerzone, setzones]
+  luacontroller:
+    name: lua event scripting
+    description: use lua scripts to act on events
+    commands: [getscriptlist, getscript, setscript, delscript]
+  scenario:
+    name: scene
+    description: execute scenarios
+    commands: ["run"]
+  event:
+    name: event handler
+    description: respond to events
+    commands: []
+values:
+  devicetype:
+    name: device type
+    description: device type
+  uuid:
+    name: uuid
+    description: unique id
+  product:
+    name: product
+    description: product
+  manufacturer:
+    name: manufacturer
+    description: manufacturer
+  unit:
+    name: unit
+    description: unit of a value
+  internalid:
+    name: internal id for a device
+    description: internal id used by interface device
+  handled-by:
+    name: instance name
+    description: instance which handles the device
+  minute:
+    name: minute
+    description: minute
+  hour:
+    name: hour
+    description: hour
+  second:
+    name: second
+    description: second
+  month:
+    name: month
+    description: month
+  day:
+    name: day
+    description: day
+  year:
+    name: year
+    description: year
+  weekday:
+    name: weekday
+    description: day of week
+  yday:
+    name: yday
+    description: nth day of year
+events:
+  event.device.announce:
+    description: announces a device to the resolver
+    parameters: [devicetype, uuid, product, internal-id]
+  event.device.statechanged:
+    description: announces a status change of a device
+    parameters: [level, uuid]
+  event.environment.sunset:
+    description: sun has set
+  event.environment.sunrise:
+    description: sun did rise
+  event.environment.timechanged:
+    description: time did advance
+    parameters: [minute, hour, month, day, year, weekday, yday]
+  event.security.countdown:
+    description: intruder alarm
+    parameters: [zone, delay]
+  event.security.intruderalert:
+    description: intruder alarm
+    parameters: [zone]
+  event.system.roomnamechanged:
+    description: a room name has been changed
+    parameters: [name, uuid]
+  event.system.devicenamechanged:
+    description: a device name has been changed
+    parameters: [name, uuid]
+  event.system.roomdeleted:
+    description: a room has been deleted
+    parameters: [uuid]
+  event.system.floorplannamechanged:
+    description: a floorplan name has been changed
+    parameters: [name, uuid]
+  event.system.floorplandevicechanged:
+    description: a floorplan device association has been changed
+    parameters: [floorplan, uuid, x, y]
+  event.system.floorplandeleted:
+    description: a floorplan has been deleted
+    parameters: [uuid]
