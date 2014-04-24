@@ -87,7 +87,6 @@ void *suntimer(void *param) {
 			if (seconds < (sunrise + sunriseoffset)) {
 				// it is night, we're waiting for the sunrise
 				// set global variable
-				cout << "case 1" << endl;
 				setvariable["value"] = false;
 				agoConnection->sendMessage("", setvariable);
 				// now wait for sunrise
@@ -98,16 +97,18 @@ void *suntimer(void *param) {
 				syslog(LOG_NOTICE, "sending sunrise event");
 				agoConnection->sendMessage("event.environment.sunrise", content);
 			} else if (seconds > (sunset + sunsetoffset)) {
-			    cout << "case 2" << endl;
-				setvariable["value"] = false;
-				agoConnection->sendMessage("", setvariable);
-				syslog(LOG_NOTICE, "minutes to wait for sunrise: %ld\n",(sunrise_tomorrow-seconds + sunriseoffset)/60);
-				printf("sunrise at: %s - minutes to wait for sunrise: %ld\n",asctime(localtime(&sunrise_tomorrow)),(sunrise_tomorrow-seconds+sunriseoffset)/60);
-				sleep(sunrise_tomorrow-seconds + sunriseoffset);
-				syslog(LOG_NOTICE, "sending sunrise event");
-				agoConnection->sendMessage("event.environment.sunrise", content);
+				if (seconds > (sunrise_tomorrow+sunriseoffset)) {
+					syslog(LOG_NOTICE, "sunrise_tomorrow was calculated wrong, recalculating");
+				} else {
+					setvariable["value"] = false;
+					agoConnection->sendMessage("", setvariable);
+					syslog(LOG_NOTICE, "minutes to wait for sunrise: %ld\n",(sunrise_tomorrow-seconds + sunriseoffset)/60);
+					printf("sunrise at: %s - minutes to wait for sunrise: %ld\n",asctime(localtime(&sunrise_tomorrow)),(sunrise_tomorrow-seconds+sunriseoffset)/60);
+					sleep(sunrise_tomorrow-seconds + sunriseoffset);
+					syslog(LOG_NOTICE, "sending sunrise event");
+					agoConnection->sendMessage("event.environment.sunrise", content);
+				}
 			} else {
-			    cout << "case 3" << endl;
 				setvariable["value"] = true;
 				agoConnection->sendMessage("", setvariable);
 				syslog(LOG_NOTICE, "minutes to wait for sunset: %ld\n",(sunset-seconds+ sunsetoffset)/60);
