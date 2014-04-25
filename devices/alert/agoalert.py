@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# IPX800 relay board client
-# http://gce-electronics.com
+# Agoalert
 # copyright (c) 2013 tang
  
 import sys
