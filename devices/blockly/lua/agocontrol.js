@@ -28,11 +28,7 @@ Blockly.Lua['agocontrol_eventAll'] = function(block) {
 };
 
 Blockly.Lua['agocontrol_deviceProperty'] = function(block) {
-    var code = "";
-    if( block.inContent )
-        code = "content." + block.getFieldValue("PROP");
-    else
-        code = block.getFieldValue("PROP");
+    var code = "inventory.devices[\"" + block.lastDevice + "\"]." + block.getFieldValue("PROP");
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 

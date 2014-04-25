@@ -125,6 +125,7 @@ window.BlocklyAgocontrol = {
     //get device properties
     getDeviceProperties: function(deviceType) {
         var props = {};
+        var statePropFound = false;
         if( this.schema.devicetypes[deviceType]!==undefined && this.schema.devicetypes[deviceType].properties!==undefined )
         {
             var prop;
@@ -142,10 +143,15 @@ window.BlocklyAgocontrol = {
                                 content[item] = this.schema.values[prop][item];
                         }
                         props[prop] = content;
+                        if( prop==='state' )
+                            statePropFound = true;
                     }
                 }
             }
         }
+        //add default state property
+        if( !statePropFound )
+            props['state'] = {'name':'state', 'description':'device state', 'type':'integer'};
         return props;
     },
 
@@ -676,6 +682,12 @@ Blockly.Blocks['agocontrol_eventProperty'] = {
         //update event blocks
         window.BlocklyAgocontrol.updateEventBlocks(this);
         
+        //check if block is nested in "content" block
+        if( !this.inContent )
+            this.setWarningText('Property event block MUST be nested in a "content" block (agocontrol->logic->triggered event is)');
+        else
+            this.setWarningText(null);
+            
         //update properties list
         var currentEvent = this.getFieldValue("EVENT");
         if( this.lastEvent!=currentEvent )
@@ -744,10 +756,7 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
         var fields = {};
         for( var i=0; i<this.customFields.length; i++)
         {
-            if( this.customFields[i]!='empty' && this.customFields[i]!='text' )
-            {
-                fields["CUSTOM_"+this.customFields[i]] = this.customFields[i];
-            }
+            fields["CUSTOM_"+this.customFields[i]] = this.customFields[i];
         }
         return fields;
     },
