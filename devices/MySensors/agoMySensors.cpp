@@ -230,7 +230,7 @@ void *receiveFunction(void *param) {
 				case SET_VARIABLE:
 					switch (subType) {
 						case V_TEMP:
-							if (units == "I") {
+							if (units == "M") {
 								agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
 							} else {
 								agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degF");
