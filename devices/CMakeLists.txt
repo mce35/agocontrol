@@ -34,6 +34,7 @@ set (AGODEVICES
   knx
   agodmx
   PLCBUS
+  MySensors
 )
 
 foreach (device ${AGODEVICES})
