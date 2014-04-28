@@ -1,0 +1,14 @@
+[Unit]
+Description=ago control MySensors interface
+
+[Service]
+ExecStart=@BINDIR@/agoMySensors
+WorkingDirectory=@BINDIR@
+StandardOutput=syslog
+StandardError=syslog
+Restart=always
+RestartSec=2
+User=agocontrol
+
+[Install]
+WantedBy=multi-user.target

@@ -189,3 +189,9 @@ Package: agocontrol-ping
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description: Host IP Pinger
+
+Package: agocontrol-mysensors
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0
+Description: MySensors interface driver
+

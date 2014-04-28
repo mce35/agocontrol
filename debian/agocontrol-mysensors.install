@@ -1,0 +1,2 @@
+lib/systemd/system/agomysensors.service
+opt/agocontrol/bin/agoMySensors
