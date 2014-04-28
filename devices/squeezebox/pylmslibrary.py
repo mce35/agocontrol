@@ -392,7 +392,7 @@ if __name__=="__main__":
     console_sh = logging.StreamHandler()
     console_sh.setLevel(logging.DEBUG)
     console_sh.setFormatter(logging.Formatter('%(asctime)s %(name)-20s %(levelname)-8s %(message)s'))
-    logger.add_handler(console_sh)
+    logger.addHandler(console_sh)
     
     try:
         lib = LMSLibrary('192.168.1.53', 9090)

@@ -355,8 +355,9 @@ class LMSServerNotifications(threading.Thread, LMSServer):
         if not player_ids:
             self._player_ids = []
         elif type(player_ids) is list:
-            self.logger.warning('player_ids must be a list')
             self._player_ids = player_ids
+        elif type(player_ids) is string:
+            self._player_ids = [player_ids]
         else:
             self._player_ids = []
 
@@ -412,7 +413,7 @@ if __name__=="__main__":
     console_sh = logging.StreamHandler()
     console_sh.setLevel(logging.DEBUG)
     console_sh.setFormatter(logging.Formatter('%(asctime)s %(name)-20s %(levelname)-8s %(message)s'))
-    logger.add_handler(console_sh)
+    logger.addHandler(console_sh)
     notif = None
 
     def notifications(items):
