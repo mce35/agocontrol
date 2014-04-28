@@ -123,7 +123,7 @@ window.BlocklyAgocontrol = {
     },
 
     //get device properties
-    getDeviceProperties: function(deviceType) {
+    getDeviceProperties: function(deviceType, deviceUuid) {
         var props = {};
         var statePropFound = false;
         if( this.schema.devicetypes[deviceType]!==undefined && this.schema.devicetypes[deviceType].properties!==undefined )
@@ -149,7 +149,46 @@ window.BlocklyAgocontrol = {
                 }
             }
         }
-        //add default state property
+        
+        if( deviceUuid )
+        {
+            //searching for device object
+            var device = null;
+            for( var i=0; i<this.devices.length; i++)
+            {
+                if( this.devices[i].uuid===deviceUuid )
+                {
+                    device = this.devices[i];
+                    break;
+                }
+            }
+
+            //append properties in values array
+            if( device!==null && goog.isFunction(device.valueList) )
+            {
+                var found = false;
+                var name;
+                for ( var k=0; k<device.valueList().length; k++)
+                {
+                    found = false;
+                    name = device.valueList()[k].name.toLowerCase();
+                    for( var prop in props )
+                    {
+                        if( prop.toLowerCase()===name )
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if( !found )
+                    {
+                        props[name] = {'name':name, 'description':name+' value', 'type':'dynamic'};
+                    }
+                }
+            }
+        }
+        
+        //append default state property
         if( !statePropFound )
             props['state'] = {'name':'state', 'description':'device state', 'type':'integer'};
         return props;
@@ -621,7 +660,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
             var props = [];
             if( currentDevice.length>0 )
             {
-                var properties = window.BlocklyAgocontrol.getDeviceProperties(currentType);
+                var properties = window.BlocklyAgocontrol.getDeviceProperties(currentType, currentDevice);
                 for( var prop in properties )
                 {
                     props.push([properties[prop].name, prop]);
