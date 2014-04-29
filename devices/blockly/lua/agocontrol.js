@@ -28,7 +28,25 @@ Blockly.Lua['agocontrol_eventAll'] = function(block) {
 };
 
 Blockly.Lua['agocontrol_deviceProperty'] = function(block) {
-    var code = "inventory.devices[\"" + block.lastDevice + "\"]." + block.getFieldValue("PROP");
+    var selectedProp = block.getFieldValue("PROP");
+    var propType = undefined;
+    for( var prop in block.properties )
+    {
+        if( prop===selectedProp )
+        {
+            propType = block.properties[prop].type;
+            break;
+        }
+    }
+    var code = "";
+    if( propType && propType==="dynamic" )
+    {
+        code = "inventory.devices[\"" + block.lastDevice + "\"].values." + selectedProp + ".level";
+    }
+    else
+    {
+        code = "inventory.devices[\"" + block.lastDevice + "\"]." + selectedProp;
+    }
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 

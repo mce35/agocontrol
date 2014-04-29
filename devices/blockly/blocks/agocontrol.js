@@ -621,6 +621,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
         //members
         this.lastType = undefined;
         this.lastDevice = undefined;
+        this.properties = undefined;
 
         //block definition
         //this.setHelpUrl('TODO');
@@ -660,10 +661,10 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
             var props = [];
             if( currentDevice.length>0 )
             {
-                var properties = window.BlocklyAgocontrol.getDeviceProperties(currentType, currentDevice);
-                for( var prop in properties )
+                this.properties = window.BlocklyAgocontrol.getDeviceProperties(currentType, currentDevice);
+                for( var prop in this.properties )
                 {
-                    props.push([properties[prop].name, prop]);
+                    props.push([this.properties[prop].name, prop]);
                 }
                 if( props.length===0 )
                     props.push(['','']);
