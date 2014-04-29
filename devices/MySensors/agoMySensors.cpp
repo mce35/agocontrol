@@ -238,6 +238,10 @@ void *receiveFunction(void *param) {
 							break;
 						case V_TRIPPED:
 							agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
+							break;
+						case V_HUM:
+							agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
+							break;
 					}
 					break;
 				case VARIABLE_ACK:
