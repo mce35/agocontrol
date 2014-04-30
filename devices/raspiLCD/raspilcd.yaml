@@ -1,0 +1,17 @@
+version: 0.1
+commands:
+  lcdtext:
+    name: Lcd text
+    parameters:
+      text:
+        name: Text
+        type: string
+      line:
+        name: Line
+        type: integer
+
+devicetypes:
+  raspilcd:
+    name: raspi lcd
+    description: lcd display
+    commands: [lcdtext]
