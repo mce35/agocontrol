@@ -12,11 +12,11 @@
 # uses smbus
 #
 #
-# /etc/opt/agocontrol/conf.d/raspiLCD.conf
+# /etc/opt/agocontrol/conf.d/raspilcd.conf
 #
 # [raspiLCD]
-#
-# 
+# lines=4
+# rows=20
 
 import agoclient
 import time
@@ -65,7 +65,6 @@ class clock(threading.Thread):
 def messageHandler(internalid, content):
     if "command" in content:
         if content["command"] == "lcdtext":
-            print "lcdtext: ", content
             if 1 <= int(content["line"]) <= lines:
                 if "clock" in content["text"]:
                     G.clock = int(content["line"])
