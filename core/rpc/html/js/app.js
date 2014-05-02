@@ -70,6 +70,7 @@ var schema = {};
 var deviceMap = [];
 var rooms = {};
 var floorPlans = {};
+var pluginNames = {};
 var systemvar = {};
 var variables = {};
 var inventory = ko.observable({});
@@ -106,6 +107,15 @@ function buildfloorPlanList(model) {
     }
 }
 
+function buildPluginNamesList(model) {
+    model.pluginNames = ko.observableArray([]);
+    for ( var i=0; i<pluginNames.length; i++ ) {
+	model.pluginNames.push({
+	    name : pluginNames[i].name,
+        _name : pluginNames[i]._name
+	});
+    }
+}
 /**
  * This gets set when the GUI needs to be initalized after loading the
  * inventory.
@@ -406,6 +416,14 @@ function handleInventory(response) {
 	localStorage.inventoryCache = JSON.stringify(response.result);
     }
 
+    //load plugins list
+    $.ajax({
+        url : "/cgi-bin/pluginlist.cgi",
+        method : "GET",
+        async : false,
+    }).done(function(result) {
+        pluginNames = result;
+    });
     rooms = response.result.rooms;
     systemvar = response.result.system;
     schema = response.result.schema;

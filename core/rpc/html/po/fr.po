@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-13 19:05+0200\n"
+"POT-Creation-Date: 2014-05-02 08:07+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -106,6 +106,7 @@ msgstr ""
 
 #: ../templates/configuration.xml.in.h:17
 #: ../templates/navigation/configuration.xml.in.h:1
+#: ../templates/navigation/main.xml.in.h:3
 msgid "Floorplans"
 msgstr "Zones"
 
@@ -130,6 +131,7 @@ msgid "Security"
 msgstr ""
 
 #: ../templates/navigation/configuration.xml.in.h:9
+#: ../templates/navigation/main.xml.in.h:4
 #: ../templates/configuration/plugins.xml.in.h:1
 msgid "Plugins"
 msgstr "Extensions"
@@ -146,7 +148,7 @@ msgstr "Statut"
 msgid "Dashboard"
 msgstr "Accueil"
 
-#: ../templates/navigation/main.xml.in.h:3
+#: ../templates/navigation/main.xml.in.h:5
 msgid "Configuration"
 msgstr "Configuration"
 
