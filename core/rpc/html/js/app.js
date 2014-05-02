@@ -417,13 +417,13 @@ function handleInventory(response) {
     }
 
     //load plugins list
-    $.ajax({
+    /*$.ajax({
         url : "/cgi-bin/pluginlist.cgi",
         method : "GET",
         async : false,
     }).done(function(result) {
         pluginNames = result;
-    });
+    });*/
     rooms = response.result.rooms;
     systemvar = response.result.system;
     schema = response.result.schema;
