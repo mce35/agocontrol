@@ -197,8 +197,8 @@ function agoAlertPlugin(deviceMap) {
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
         content.param1 = 'sms';
-        content.param2 = self.smsUsername();
-        content.param3 = self.smsPassword();
+        content.param2 = self.twelvevoipUsername();
+        content.param3 = self.twelvevoipPassword();
         sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
