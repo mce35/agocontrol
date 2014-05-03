@@ -57,7 +57,7 @@ class clock(threading.Thread):
                     display_str = split_str[0] + clock_str + split_str[1]
                     lcd.lcd_display_string(display_str.ljust(rows)[0:rows], G.clock)
             if G.update:
-                for line in G.text:
+                for line in G.text.keys():
                     lcd.lcd_display_string(G.text[line].ljust(rows)[0:rows], line)
                 G.update = False
             time.sleep(0.1)
