@@ -85,6 +85,7 @@ function dashBoard() {
     };
 
     buildfloorPlanList(this);
+    buildPluginNamesList(this);
 }
 
 /**

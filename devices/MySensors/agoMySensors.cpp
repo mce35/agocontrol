@@ -242,6 +242,48 @@ void *receiveFunction(void *param) {
 						case V_HUM:
 							agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
 							break;
+						case V_LIGHT:
+							agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "percent");
+							break;
+						case V_DIMMER:
+							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
+							break;
+						case V_PRESSURE:
+							agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
+							break;
+						case V_FORECAST: break;
+						case V_RAIN: break;
+						case V_RAINRATE: break;
+						case V_WIND: break;
+						case V_GUST: break;
+						case V_DIRECTION: break;
+						case V_UV: break;
+						case V_WEIGHT: break;
+						case V_DISTANCE: break;
+						case V_IMPEDANCE: break;
+						case V_ARMED: break;
+						case V_WATT: break;
+						case V_KWH: break;
+						case V_SCENE_ON: break;
+						case V_SCENE_OFF: break;
+						case V_HEATER: break;
+						case V_HEATER_SW: break;
+						case V_LIGHT_LEVEL: break;
+						case V_VAR1: break;
+						case V_VAR2: break;
+						case V_VAR3: break;
+						case V_VAR4: break;
+						case V_VAR5: break;
+						case V_UP: break;
+						case V_DOWN: break;
+						case V_STOP: break;
+						case V_IR_SEND: break;
+						case V_IR_RECEIVE: break;
+						case V_FLOW: break;
+						case V_VOLUME: break;
+						case V_LOCK_STATUS: break;
+						default:
+							break;
 					}
 					break;
 				case VARIABLE_ACK:

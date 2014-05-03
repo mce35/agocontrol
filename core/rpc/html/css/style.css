@@ -2001,6 +2001,15 @@ ago control Styles
 }
 
 
+/* =Dropdown button
+-----------------------------------------------------------------------------*/
+.btn-dropdown { padding:0px; margin:0px; list-style: none; border:0px; }
+.btn-dropdown ul li { display: block; position: relative; float: left; top:-10px; border-bottom: 1px solid #CCCCCC; text-align:left; padding-left:10px; }
+.btn-dropdown ul { list-style: none; display: none; height:0px; width:100%; z-index:999; padding:0px; margin:0px;  border:0px; }
+.btn-dropdown ul li a { color:#000000; }
+.btn-dropdown:hover ul {   display: block;   position: absolute; }
+.btn-dropdown:hover ul li {  background-color:#FAFAFA;  float: none; } 
+.btn-dropdown:hover ul li:hover { background: #F2F2F2; }
 
 
 /* =Treeview Floorplan
