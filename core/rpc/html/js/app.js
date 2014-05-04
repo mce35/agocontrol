@@ -185,9 +185,21 @@ function loadPlugin() {
     });
 }
 
+function getPluginNames() {  
+    $.ajax({
+        url : "/cgi-bin/pluginlist.cgi",
+        method : "GET",
+        async : false,
+    }).done(function(result) {
+        pluginNames = result;
+    });
+}
+
 function initGUI() {
     var page = getPage();
     if (page == "dashboard") {
+	//load plugin names only in dashboard
+	getPluginNames();
 	deferredInit = init_dashBoard;
     } else if (page == "floorplan") {
 	deferredInit = init_floorPlan;
@@ -416,14 +428,6 @@ function handleInventory(response) {
 	localStorage.inventoryCache = JSON.stringify(response.result);
     }
 
-    //load plugins list
-    /*$.ajax({
-        url : "/cgi-bin/pluginlist.cgi",
-        method : "GET",
-        async : false,
-    }).done(function(result) {
-        pluginNames = result;
-    });*/
     rooms = response.result.rooms;
     systemvar = response.result.system;
     schema = response.result.schema;
