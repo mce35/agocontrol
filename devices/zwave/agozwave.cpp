@@ -400,7 +400,7 @@ void OnNotification
 					//	}
 					break;
 					case COMMAND_CLASS_THERMOSTAT_SETPOINT:
-						if (polling) Manager::Get()->EnablePoll(id);
+						if (polling) Manager::Get()->EnablePoll(id,1);
 					case COMMAND_CLASS_THERMOSTAT_MODE:
 					case COMMAND_CLASS_THERMOSTAT_FAN_MODE:
 					case COMMAND_CLASS_THERMOSTAT_FAN_STATE:
