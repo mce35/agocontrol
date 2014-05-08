@@ -111,12 +111,32 @@ void sendcommand(int radioId, int childId, int messageType, int subType, std::st
 	serialPort.write_some(buffer(command.str()));
 }
 
+void sendcommand(std::string internalid, int messageType, int subType, std::string payload) {
+    std::vector<std::string> items = split(internalid, '/');
+    int radioId = atoi(items[0].c_str());
+    int childId = atoi(items[1].c_str());
+    sendcommand(radioId, childId, messageType, subType, payload);
+}
+
 void newDevice(std::string internalid, std::string devicetype) {
 	qpid::types::Variant::Map device = devicemap["devices"].asMap();
-	device[internalid] = devicetype;
+    qpid::types::Variant::Map infos;
+    infos["type"] = devicetype;
+    infos["value"] = "0";
+	device[internalid] = infos;
 	devicemap["devices"] = device;
 	variantMapToJSONFile(devicemap,DEVICEMAPFILE);
 	agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
+}
+
+qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
+    qpid::types::Variant::Map out;
+	qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+    if( devices.count(internalid)==1 ) {
+        cout << " => found" << devices[internalid].asMap() << endl;
+        return devices[internalid].asMap();
+    }
+    return out;
 }
 
 void *receiveFunction(void *param) {
@@ -133,6 +153,7 @@ void *receiveFunction(void *param) {
 			int messageType = atoi(items[2].c_str());
 			int subType = atoi(items[3].c_str());
 			string payload;
+            qpid::types::Variant::Map infos;
 			if (items.size() ==5) payload = items[4];
 			switch (messageType) {
 				case INTERNAL:
@@ -226,6 +247,16 @@ void *receiveFunction(void *param) {
 					}
 					break;
 				case REQUEST_VARIABLE:
+                    //get device infos
+                    infos = getDeviceInfos(internalid);
+                    if( true ) {
+                        sendcommand(internalid, SET_VARIABLE, subType, infos["value"]);
+                    }
+                    else {
+                        //device not found
+                        //TODO log flood!
+                        cerr  << "Device not found: unable to get its value" << endl;
+                    }
 					break;
 				case SET_VARIABLE:
 					switch (subType) {
@@ -285,6 +316,8 @@ void *receiveFunction(void *param) {
 						default:
 							break;
 					}
+                    //send ack
+                    sendcommand(internalid, VARIABLE_ACK, subType, payload);
 					break;
 				case VARIABLE_ACK:
 					break;
