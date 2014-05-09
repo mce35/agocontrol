@@ -17,6 +17,7 @@ using namespace std;
 using namespace agocontrol;
 using namespace boost::system; 
 using namespace boost::asio; 
+using namespace qpid::types;
 
 AgoConnection *agoConnection;
 
@@ -80,8 +81,67 @@ std::string prettyPrint(std::string message) {
 	return result.str();
 }
 
+qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
+    qpid::types::Variant::Map out;
+	qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+    if( devices.count(internalid)==1 ) {
+        return devices[internalid].asMap();
+    }
+    return out;
+}
+
+void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos) {
+    qpid::types::Variant::Map device = devicemap["devices"].asMap();
+    device[internalid] = (*infos);
+    devicemap["devices"] = device;
+    variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+}
+
+void sendcommand(int radioId, int childId, int messageType, int subType, std::string payload) {
+	stringstream command;
+	command << radioId << ";" << childId << ";" << messageType << ";" << subType << ";" << payload << "\n";
+	cout << "Sending command: " << command.str();
+	serialPort.write_some(buffer(command.str()));
+}
+
+void sendcommand(std::string internalid, int messageType, int subType, std::string payload) {
+    std::vector<std::string> items = split(internalid, '/');
+    int radioId = atoi(items[0].c_str());
+    int childId = atoi(items[1].c_str());
+    sendcommand(radioId, childId, messageType, subType, payload);
+}
+
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
 	qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map infos;
+    std::string deviceType = "";
+    std::string cmd = "";
+    std::string internalid = "";
+    if( command.count("internalid")==1 && command.count("command")==1 ) {
+        //get device infos
+        infos = getDeviceInfos(command["internalid"].asString());
+        cmd = command["command"].asString();
+        internalid = command["internalid"].asString();
+        //check if device found
+        if( infos.size()>0 ) {
+            deviceType = infos["type"].asString();
+            //switch according to specific device type
+            //TODO hard code device types to switch instead of strcmp
+            if( deviceType=="switch" ) {
+                if( cmd=="off" ) {
+                    infos["value"] = "0";
+                    setDeviceInfos(internalid, &infos);
+                    sendcommand(internalid, SET_VARIABLE, V_LIGHT, "0");
+                }
+                else if( cmd=="on" ) {
+                    infos["value"] = "1";
+                    setDeviceInfos(internalid, &infos);
+                    sendcommand(internalid, SET_VARIABLE, V_LIGHT, "1");
+                }
+            }
+            //TODO add more device type here
+        }
+    }
 	return returnval;
 }
 
@@ -104,20 +164,6 @@ std::string readLine() {
 	return result;
 }
 
-void sendcommand(int radioId, int childId, int messageType, int subType, std::string payload) {
-	stringstream command;
-	command << radioId << ";" << childId << ";" << messageType << ";" << subType << ";" << payload << "\n";
-	cout << "Sending command: " << command.str();
-	serialPort.write_some(buffer(command.str()));
-}
-
-void sendcommand(std::string internalid, int messageType, int subType, std::string payload) {
-    std::vector<std::string> items = split(internalid, '/');
-    int radioId = atoi(items[0].c_str());
-    int childId = atoi(items[1].c_str());
-    sendcommand(radioId, childId, messageType, subType, payload);
-}
-
 void newDevice(std::string internalid, std::string devicetype) {
 	qpid::types::Variant::Map device = devicemap["devices"].asMap();
     qpid::types::Variant::Map infos;
@@ -127,16 +173,6 @@ void newDevice(std::string internalid, std::string devicetype) {
 	devicemap["devices"] = device;
 	variantMapToJSONFile(devicemap,DEVICEMAPFILE);
 	agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
-}
-
-qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
-    qpid::types::Variant::Map out;
-	qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-    if( devices.count(internalid)==1 ) {
-        cout << " => found" << devices[internalid].asMap() << endl;
-        return devices[internalid].asMap();
-    }
-    return out;
 }
 
 void *receiveFunction(void *param) {
@@ -187,6 +223,7 @@ void *receiveFunction(void *param) {
 					}
 					break;
 				case PRESENTATION:
+                    cout << "PRESENTATION: " << subType << endl;
 					switch (subType) {
 						case S_DOOR:
 						case S_MOTION:
@@ -259,6 +296,10 @@ void *receiveFunction(void *param) {
                     }
 					break;
 				case SET_VARIABLE:
+                    //save current device value
+                    infos = getDeviceInfos(internalid);
+                    infos["value"] = payload;
+                    setDeviceInfos(internalid, &infos);
 					switch (subType) {
 						case V_TEMP:
 							if (units == "M") {
@@ -274,7 +315,7 @@ void *receiveFunction(void *param) {
 							agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
 							break;
 						case V_LIGHT:
-							agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "percent");
+							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
 							break;
 						case V_DIMMER:
 							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
@@ -320,6 +361,7 @@ void *receiveFunction(void *param) {
                     sendcommand(internalid, VARIABLE_ACK, subType, payload);
 					break;
 				case VARIABLE_ACK:
+                    cout << "VARIABLE_ACK" << endl;
 					break;
 				default:
 					break;
