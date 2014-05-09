@@ -122,11 +122,13 @@ function scenarioConfig() {
 		cnt.name = $("#scenarioName").val();
 		sendCommand(cnt, function(nameRes) {
 		    if (nameRes.result && nameRes.result.returncode == "0") {
-			self.scenarios.push({
+			self.devices.push({
+			    devicetype:'scenario',
 			    name : cnt.name,
 			    uuid : res.result.scenario,
 			    room : "",
 			});
+			delete localStorage.inventoryCache;
 			document.getElementById("scenarioBuilder").innerHTML = "";
 		    }
 		});
@@ -337,7 +339,7 @@ function scenarioConfig() {
 	content.command = 'delscenario';
 	sendCommand(content, function(res) {
 	    if (res.result && res.result.result == 0) {
-		self.scenarios.remove(function(e) {
+		self.devices.remove(function(e) {
 		    return e.uuid == item.uuid;
 		});
 		delete localStorage.inventoryCache;
