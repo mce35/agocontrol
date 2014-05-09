@@ -188,6 +188,7 @@ void *receiveFunction(void *param) {
 			string internalid = items[0] + "/" + items[1];
 			int messageType = atoi(items[2].c_str());
 			int subType = atoi(items[3].c_str());
+            int valid = 0;
 			string payload;
             qpid::types::Variant::Map infos;
 			if (items.size() ==5) payload = items[4];
@@ -296,12 +297,9 @@ void *receiveFunction(void *param) {
                     }
 					break;
 				case SET_VARIABLE:
-                    //save current device value
-                    infos = getDeviceInfos(internalid);
-                    infos["value"] = payload;
-                    setDeviceInfos(internalid, &infos);
 					switch (subType) {
 						case V_TEMP:
+                            valid = 1;
 							if (units == "M") {
 								agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
 							} else {
@@ -309,18 +307,23 @@ void *receiveFunction(void *param) {
 							}
 							break;
 						case V_TRIPPED:
+                            valid = 1;
 							agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
 							break;
 						case V_HUM:
+                            valid = 1;
 							agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
 							break;
 						case V_LIGHT:
+                            valid = 1;
 							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
 							break;
 						case V_DIMMER:
+                            valid = 1;
 							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
 							break;
 						case V_PRESSURE:
+                            valid = 1;
 							agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
 							break;
 						case V_FORECAST: break;
@@ -340,7 +343,10 @@ void *receiveFunction(void *param) {
 						case V_SCENE_OFF: break;
 						case V_HEATER: break;
 						case V_HEATER_SW: break;
-						case V_LIGHT_LEVEL: break;
+						case V_LIGHT_LEVEL:
+                            valid = 1;
+							agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
+                            break;
 						case V_VAR1: break;
 						case V_VAR2: break;
 						case V_VAR3: break;
@@ -357,6 +363,17 @@ void *receiveFunction(void *param) {
 						default:
 							break;
 					}
+
+                    if( valid==1 ) {
+                        //save current device value
+                        infos = getDeviceInfos(internalid);
+                        infos["value"] = payload;
+                        setDeviceInfos(internalid, &infos);
+                    }
+                    else {
+                        cout << "sensor with subType=" << subType << " not supported yet" << endl;
+                    }
+
                     //send ack
                     sendcommand(internalid, VARIABLE_ACK, subType, payload);
 					break;
