@@ -165,14 +165,24 @@ std::string readLine() {
 }
 
 void newDevice(std::string internalid, std::string devicetype) {
+    //init
 	qpid::types::Variant::Map device = devicemap["devices"].asMap();
-    qpid::types::Variant::Map infos;
+    qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+
+    if( infos.size()>0 ) {
+        //internalid already referenced, sensors is probably refurbished
+        //remove it before adding it
+        cout << "Refurbished sensor detected (oldType=" << infos["type"] << " newType=" << devicetype << ")" << endl;
+        agoConnection->removeDevice(internalid.c_str());
+    }
+
+    //add device
     infos["type"] = devicetype;
     infos["value"] = "0";
-	device[internalid] = infos;
+    device[internalid] = infos;
 	devicemap["devices"] = device;
 	variantMapToJSONFile(devicemap,DEVICEMAPFILE);
-	agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
+    agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
 }
 
 void *receiveFunction(void *param) {
@@ -287,7 +297,7 @@ void *receiveFunction(void *param) {
 				case REQUEST_VARIABLE:
                     //get device infos
                     infos = getDeviceInfos(internalid);
-                    if( true ) {
+                    if( infos.size()>0 ) {
                         sendcommand(internalid, SET_VARIABLE, subType, infos["value"]);
                     }
                     else {
@@ -367,10 +377,13 @@ void *receiveFunction(void *param) {
                     if( valid==1 ) {
                         //save current device value
                         infos = getDeviceInfos(internalid);
-                        infos["value"] = payload;
-                        setDeviceInfos(internalid, &infos);
+                        if( infos.size()>0 ) {
+                            infos["value"] = payload;
+                            setDeviceInfos(internalid, &infos);
+                        }
                     }
                     else {
+                        //unsupported sensor
                         cout << "sensor with subType=" << subType << " not supported yet" << endl;
                     }
 
@@ -378,6 +391,7 @@ void *receiveFunction(void *param) {
                     sendcommand(internalid, VARIABLE_ACK, subType, payload);
 					break;
 				case VARIABLE_ACK:
+                    //TODO useless?
                     cout << "VARIABLE_ACK" << endl;
 					break;
 				default:
