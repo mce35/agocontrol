@@ -436,7 +436,9 @@ int main(int argc, char **argv) {
 
 	qpid::types::Variant::Map devices = devicemap["devices"].asMap();
 	for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
-		agoConnection->addDevice(it->first.c_str(), (it->second.asString()).c_str());	
+        qpid::types::Variant::Map infos = it->second.asMap();
+        cout << "register device: " << it->first.c_str() << "-" << infos["type"].asString().c_str() << endl;
+		agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());	
 	}
 	agoConnection->run();
 
