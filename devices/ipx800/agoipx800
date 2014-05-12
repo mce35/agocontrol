@@ -152,7 +152,7 @@ class Ipx800AgoConnection(agoclient.AgoConnection):
         uuid = self.internal_id_to_uuid(internalid)
         if ( uuid!=None ):
             event = 'event.device.statechanged'
-            unit = '&nbsp;'
+            unit = '-'
             if devicetype==DEVICE_ANALOG_TEMPERATURE:
                 event = 'event.environment.temperaturechanged'
                 if units=='SI':
@@ -174,7 +174,7 @@ class Ipx800AgoConnection(agoclient.AgoConnection):
                 unit = 'Lux'
             elif devicetype==DEVICE_COUNTER:
                 event = 'event.environment.counterchanged'
-                unit = '&nbsp;'
+                unit = '-'
             else:
                 event = 'event.device.statechanged'
                 unit = None
