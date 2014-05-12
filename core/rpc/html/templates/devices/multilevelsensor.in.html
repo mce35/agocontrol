@@ -23,11 +23,11 @@
 	    <div class="twelve columns">
 			<div class="prepend append field" data-bind="foreach: valueList">
 				<span class="adjoined wide" data-bind="text: name">{</span>
-				<input class="xnarrow text input" type="text" value="" data-bind="value: level" /> <span
+				<input class="narrow text input" type="text" value="" data-bind="value: level" /> <span
 				class="adjoined xnarrow" data-bind="text: unit">x</span>
 				<div
-					class="small pretty primary btn icon-left entypo icon-chart-area grid-command">
-					<_a data-translateable="true" href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }">GRAPH</_a>
+					class="small pretty primary btn entypo grid-command">
+					<a href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
 				</div>
 				<br />
 			</div>
