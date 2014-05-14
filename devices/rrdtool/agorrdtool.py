@@ -14,7 +14,15 @@ import time
 import logging
 import json
 import rrdtool
-import RRDtool #@doc https://github.com/commx/python-rrdtool/blob/master/RRDtool.py
+import RRDtool
+#from rrdtool import update as rrd_update
+#@doc https://github.com/commx/python-rrdtool/blob/master/RRDtool.py
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+import io
+import cStringIO as StringIO
+from array import array
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 import urlparse
 
@@ -62,6 +70,9 @@ class RrdtoolGraphHandler(BaseHTTPRequestHandler):
                 (_, kind, unit) = rrds[uuid].replace('.rrd','').split('_')
                 colorL = '#000000'
                 colorA = '#A0A0A0'
+                colorMax = '#FF0000'
+                colorMin = '#00FF00'
+                colorAvg = '#0000FF'
                 if kind in ['humidity']:
                     #blue
                     colorL = '#0000FF'
@@ -87,12 +98,18 @@ class RrdtoolGraphHandler(BaseHTTPRequestHandler):
                                 #"--alt-autoscale",
                                 #"--alt-y-grid",
                                 #"--rigid",
-                                "DEF:val=%s:level:AVERAGE" % str(rrds[uuid]),
-                                "AREA:val%s" % colorA,
-                                "LINE2:val%s:%s" % (colorL, str(kind)),
-                                "GPRINT:val:AVERAGE:Avg\: %0.2lf ",
-                                "GPRINT:val:MAX:Max\: %0.2lf ",
-                                "GPRINT:val:MIN:Min\: %0.2lf")
+                                "DEF:level=%s:level:AVERAGE" % str(rrds[uuid]),
+                                "VDEF:levelavg=level,AVERAGE",
+                                "VDEF:levelmax=level,MAXIMUM",
+                                "VDEF:levelmin=level,MINIMUM",
+                                "AREA:level%s" % colorA,
+                                "LINE1:level%s:%s" % (colorL, str(kind)),
+                                "LINE1:levelavg%s:Average:dashes" % colorAvg,
+                                "LINE1:levelmax%s:Maximum:dashes" % colorMax,
+                                "LINE1:levelmin%s:Minimum:dashes" % colorMin,
+                                "GPRINT:level:AVERAGE:Avg\: %0.2lf"+str(unit),
+                                "GPRINT:level:MAX:Max\: %0.2lf"+str(unit),
+                                "GPRINT:level:MIN:Min\: %0.2lf"+str(unit))
             else:
                 #no file
                 error = 404
