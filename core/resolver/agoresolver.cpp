@@ -69,6 +69,7 @@ Variant::Map inventory; // used to hold device registrations
 Variant::Map schema;  
 Variant::Map systeminfo; // holds system information
 Variant::Map variables; // holds global variables
+Variant::Map environment; // holds global environment like position, weather conditions, ..
 
 Inventory *inv;
 unsigned int discoverdelay;
@@ -304,6 +305,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			get_sysinfo();
 			reply["system"] = systeminfo;
 			reply["variables"] = variables;
+			reply["environment"] = environment;
 			reply["returncode"] = 0;
 		}
 	}
