@@ -88,8 +88,8 @@ class RrdtoolGraphHandler(BaseHTTPRequestHandler):
                                 #"--alt-y-grid",
                                 #"--rigid",
                                 "DEF:val=%s:level:AVERAGE" % str(rrds[uuid]),
-                                "LINE2:val%s:%s" % (colorL, str(kind)),
                                 "AREA:val%s" % colorA,
+                                "LINE2:val%s:%s" % (colorL, str(kind)),
                                 "GPRINT:val:AVERAGE:Avg\: %0.2lf ",
                                 "GPRINT:val:MAX:Max\: %0.2lf ",
                                 "GPRINT:val:MIN:Min\: %0.2lf")
