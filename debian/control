@@ -195,3 +195,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0
 Description: MySensors interface driver
 
+Package: agocontrol-rrdtool
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-rrdtool
+Description: agocontrol advanced graphing system based on rrdtool

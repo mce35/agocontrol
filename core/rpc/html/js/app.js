@@ -81,6 +81,7 @@ var eventController = null;
 var dataLoggerController = null;
 var scenarioController = null;
 var alertControler = null;
+var rrdtoolController = null;
 var model = null;
 var initialized = false;
 
@@ -834,18 +835,6 @@ function doShowDetails(device, template, environment) {
 		dialogHeight = 720;
 	    }
 
-	    // detail dialog size
-	    if (device.devicetype == "alertcontroller") {
-		dialogWidth = 800;
-		dialogHeight = 625;
-	    } else if (device.devicetype == "ipx800controller") {
-		dialogWidth = 800;
-		dialogHeight = 325;
-	    } else if (device.devicetype == "ipx800v3board") {
-		dialogWidth = 800;
-		dialogHeight = 600;
-	    }
-
 	    if (document.getElementById("detailsTitle")) {
 		$("#detailsPage").dialog({
 		    title : document.getElementById("detailsTitle").innerHTML,
@@ -890,21 +879,50 @@ function renderGraph(device, environment) {
 	}
     });
 
-    var max_ticks = 25; // User option?
-
     var endDate = new Date($("#end_date").datepicker("getDate").getTime() + 1000 * 3600 * 23 + 60 * 59);
+    var startDate = $("#start_date").datepicker("getDate");
+
+    //check if agorrdtool is installed
+    if( rrdtoolController && renderType!="list" ) {
+        $('#graph').empty();
+        //get agorrdtool port
+        var content = {};
+        var port;
+        content.uuid = rrdtoolController;
+        content.command = "getPort";
+        sendCommand(content, function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply') {
+                //force container style
+                $('#graph').css('margin-left','auto').css('margin-right','auto');
+
+                //insert content
+                src = $(location).attr('protocol')+'//'+$(location).attr('hostname')+':'+res.result.port+'/?uuid='+device.uuid+'&start='+Math.round(startDate.getTime()/1000)+'&end='+Math.round(endDate.getTime()/1000);
+                var img = $('<img src="'+src+'">');
+                $('#graph').append(img);
+            }
+            else {
+                notif.fatal('Error while loading graph!');
+            }
+        	$('#graph').unblock();
+            return;
+        });
+        //do not generate other graph
+        return;
+    }
+
+    var max_ticks = 25; // User option?
 
     var content = {};
     content.uuid = dataLoggerController;
     content.command = "getdata";
     content.deviceid = device.uuid;
-    content.start = $("#start_date").datepicker("getDate").toISOString();
+    content.start = startDate.toISOString();
     content.end = endDate.toISOString();
     content.env = environment.toLowerCase();
 
     sendCommand(content, function(res) {
 	if (!res.result || !res.result.result || !res.result.result.values) {
-	    alert("Error while loading Graph!");
+	    notif.fatal("Error while loading Graph!");
 	    $('#graph').unblock();
 	    return;
 	}

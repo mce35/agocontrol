@@ -40,6 +40,10 @@ function device(obj, uuid) {
 	dataLoggerController = uuid;
     }
 
+    if (this.devicetype == "rrdtoolcontroller") {
+	rrdtoolController = uuid;
+    }
+
     if (this.devicetype == "agocontroller") {
 	agoController = uuid;
     }

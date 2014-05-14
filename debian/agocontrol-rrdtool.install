@@ -1,0 +1,3 @@
+lib/systemd/system/agorrdtool.service
+opt/agocontrol/bin/agorrdtool.py
+opt/agocontrol/bin/RRDtool.py
