@@ -371,6 +371,9 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 		variables["weekday"] = content["weekday"].asString();
 		variables["minute"] = content["minute"].asString();
 		variables["month"] = content["month"].asString();
+	} else if (subject == "event.environment.positionchanged") {
+		environment["latitude"] = content["latitude"];
+		environment["longitude"] = content["longitude"];
 	} else {
 		if (content["uuid"].asString() != "") {
 			string uuid = content["uuid"];
