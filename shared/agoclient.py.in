@@ -248,6 +248,12 @@ class AgoConnection:
         content["unit"] = unit
         return self.send_message(event_type, content)
 
+    def emit_event_raw(self, internal_id, event_type, content):
+        """This will send content as event"""
+        _content = content
+        _content["uuid"] = self.internal_id_to_uuid(internal_id)
+        return self.send_message(event_type, content)
+
     def report_devices(self):
         """Report all our devices."""
         syslog.syslog(syslog.LOG_NOTICE, "reporting child devices")
