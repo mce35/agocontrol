@@ -884,28 +884,16 @@ function renderGraph(device, environment) {
 
     //check if agorrdtool is installed
     if( rrdtoolController && renderType!="list" ) {
+        //fix end date
+        now = new Date();
+        if( endDate.getTime()>now.getTime() )
+           endDate = now;
+        //prepare content
         $('#graph').empty();
-        //get agorrdtool port
-        var content = {};
-        var port;
-        content.uuid = rrdtoolController;
-        content.command = "getPort";
-        sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply') {
-                //force container style
-                $('#graph').css('margin-left','auto').css('margin-right','auto');
-
-                //insert content
-                src = $(location).attr('protocol')+'//'+$(location).attr('hostname')+':'+res.result.port+'/?uuid='+device.uuid+'&start='+Math.round(startDate.getTime()/1000)+'&end='+Math.round(endDate.getTime()/1000);
-                var img = $('<img src="'+src+'">');
-                $('#graph').append(img);
-            }
-            else {
-                notif.fatal('Error while loading graph!');
-            }
-        	$('#graph').unblock();
-            return;
-        });
+        var img = $('<img src="" id="graphRRD" style="display: none"/>');
+        $('#graph').append(img);
+        //get graph
+        device.getRrdGraph(device.uuid, Math.round(startDate.getTime()/1000), Math.round(endDate.getTime()/1000));
         //do not generate other graph
         return;
     }

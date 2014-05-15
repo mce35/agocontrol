@@ -83,6 +83,30 @@ function device(obj, uuid) {
 	    }
 	    return result;
 	});
+   
+        //add function to get rrd graph
+        this.getRrdGraph = function(uuid, start, end) {
+            var content = {};
+            content.command = "getgraph";
+            content.uuid = rrdtoolController;
+            content.deviceUuid = uuid;
+            content.start = start;
+            content.end = end;
+            sendCommand(content, function(res) {
+                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' ) {
+                    if( !res.result.error && document.getElementById("graphRRD") ) {
+                        document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.graph;
+                        $("#graphRRD").show();
+                    }
+                    else {
+                        notif.error('Unable to get graph: '+res.result.msg);
+                    }
+                }
+                else {
+                    notif.error('Unable to get graph: Internal error');
+                }
+            }, 10);
+        };
     }
 
     //TODO add here other mediaplayer type

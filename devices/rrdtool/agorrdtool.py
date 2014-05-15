@@ -14,25 +14,13 @@ import time
 import logging
 import json
 import rrdtool
-import RRDtool
-#from rrdtool import update as rrd_update
-#@doc https://github.com/commx/python-rrdtool/blob/master/RRDtool.py
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
-import io
-import cStringIO as StringIO
-from array import array
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-import urlparse
-
+import RRDtool #@doc https://github.com/commx/python-rrdtool/blob/master/RRDtool.py
+import base64
 from qpid.datatypes import uuid4
 
-HTTP_PORT = 8011
 RRD_PATH = agoclient.LOCALSTATEDIR 
 client = None
 server = None
-server_port = HTTP_PORT
 rrds = {}
 
 #logging.basicConfig(filename='/opt/agocontrol/agoscheduler.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
@@ -41,131 +29,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 #=================================
 #classes
 #=================================
-class RrdtoolGraphHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        #init
-        error = 0
 
-        #parse url then query string
-        url = urlparse.urlparse(self.path)
-        qs = urlparse.parse_qs(url.query)
-
-        #generate graph
-        gfx = None
-        if len(url.query)>0 and qs.has_key('uuid'):
-            #get rrd filename according to uuid
-            uuid = qs['uuid'][0]
-            if rrds.has_key(uuid):
-                #get parameters
-                start = ""
-                if qs.has_key('start') and len(qs['start'])==1 and len(qs['start'][0])>0:
-                    start = qs['start'][0]
-                end = ""
-                if qs.has_key('end') and len(qs['end'])==1 and len(qs['end'][0])>0:
-                    end = qs['end'][0]
-                if len(start)==0 or len(end)==0:
-                    start = '-1d'
-                    end = 'N'
-                #get graph infos
-                (_, kind, unit) = rrds[uuid].replace('.rrd','').split('_')
-                colorL = '#000000'
-                colorA = '#A0A0A0'
-                colorMax = '#FF0000'
-                colorMin = '#00FF00'
-                colorAvg = '#0000FF'
-                if kind in ['humidity']:
-                    #blue
-                    colorL = '#0000FF'
-                    colorA = '#7777FF'
-                elif kind in ['temperature']:
-                    #red
-                    colorL = '#FF0000'
-                    colorA = '#FF8787'
-                elif kind in ['energy']:
-                    #green
-                    colorL = '#007A00'
-                    colorA = '#00BB00'
-                elif kind in ['brightness']:
-                    #orange
-                    colorL = '#CCAA00'
-                    colorA = '#FFD400'
-
-                logging.info('generate graph: uuid=%s start=%s end=%s unit=%s kind=%s' % (uuid, str(start), str(end),str(unit), str(kind)))
-                #generate graph
-                rrd = RRDtool.RRD(str(rrds[uuid]))
-                gfx = rrd.graph( None, "--start", "epoch+%ds" % int(start), "--end", "epoch+%ds" % int(end), "--vertical-label=%s" % str(unit),
-                                "-w 800", "-h 300",
-                                #"--alt-autoscale",
-                                #"--alt-y-grid",
-                                #"--rigid",
-                                "DEF:level=%s:level:AVERAGE" % str(rrds[uuid]),
-                                "VDEF:levelavg=level,AVERAGE",
-                                "VDEF:levelmax=level,MAXIMUM",
-                                "VDEF:levelmin=level,MINIMUM",
-                                "AREA:level%s" % colorA,
-                                "LINE1:level%s:%s" % (colorL, str(kind)),
-                                "LINE1:levelavg%s:Average:dashes" % colorAvg,
-                                "LINE1:levelmax%s:Maximum:dashes" % colorMax,
-                                "LINE1:levelmin%s:Minimum:dashes" % colorMin,
-                                "GPRINT:level:AVERAGE:Avg\: %0.2lf"+str(unit),
-                                "GPRINT:level:MAX:Max\: %0.2lf"+str(unit),
-                                "GPRINT:level:MIN:Min\: %0.2lf"+str(unit))
-            else:
-                #no file
-                error = 404
-        else:
-            #bad request
-            error = 400
-            
-        #generate output
-        if gfx:
-            self.send_response(200)        
-            self.send_header('Content-type', 'image/png')
-            self.send_header('Content-Length', len(gfx))
-            self.end_headers()
-            self.wfile.write(gfx)
-        else:
-            #something failed
-            self.send_error(error)
-        return
-
-    #overwrite log_message to avoid log flood
-    def log_message(self, format, *args):
-        return
-
-class RrdtoolHttpServer(HTTPServer):
-    allow_reuse_address = 1
-    timeout = 1
-    def __init__(self, server_address, RequestHandlerClass):
-        HTTPServer.__init__(self, server_address, RequestHandlerClass)
-
-class RrdtoolDaemon(threading.Thread):
-    def __init__(self, port):
-        threading.Thread.__init__(self)
-        self.logger = logging.getLogger('RrdtoolDaemon')
-        self.port = port
-        self.__server = RrdtoolHttpServer(('', port), RrdtoolGraphHandler)
-        self.__running = True
-
-    def __del__(self):
-        self.stop()
-
-    def run(self):
-        self.logger.info('Serving at localhost:%d' % self.port)
-        try:
-            while self.__running:
-                self.__server.handle_request()
-        except Exception as e:
-            #may be stopped
-            self.logger.exception('Exception in run():')
-
-    def stop(self):
-        """stop server"""
-        self.logger.info('Stop')
-        self.__running = False
-        if self.__server:
-            self.__server.socket.close()
-            #sys.stdin.close()
 
 #=================================
 #utils
@@ -195,7 +59,6 @@ def getScenarioControllerUuid():
     if not scenarioControllerUuid:
         raise Exception('scenariocontroller uuid not found!')
 
-
 def checkContent(content, params):
     """Check if all params are in content"""
     for param in params:
@@ -203,14 +66,80 @@ def checkContent(content, params):
             return False
     return True
 
+def generateGraph(uuid, start, end):
+    #init
+    global rrds
+    gfx = None
+    error = False
+    errorMsg = ''
+
+    #get rrd filename according to uuid
+    try:
+        if rrds.has_key(uuid):
+            #get graph infos
+            (_, kind, unit) = rrds[uuid].replace('.rrd','').split('_')
+            colorL = '#000000'
+            colorA = '#A0A0A0'
+            colorMax = '#FF0000'
+            colorMin = '#00FF00'
+            colorAvg = '#0000FF'
+            if kind in ['humidity']:
+                #blue
+                colorL = '#0000FF'
+                colorA = '#7777FF'
+            elif kind in ['temperature']:
+                #red
+                colorL = '#FF0000'
+                colorA = '#FF8787'
+            elif kind in ['energy']:
+                #green
+                colorL = '#007A00'
+                colorA = '#00BB00'
+            elif kind in ['brightness']:
+                #orange
+                colorL = '#CCAA00'
+                colorA = '#FFD400'
+
+            logging.info('Generate graph: uuid=%s start=%s end=%s unit=%s kind=%s' % (uuid, str(start), str(end),str(unit), str(kind)))
+            #generate graph
+            rrd = RRDtool.RRD(str(rrds[uuid]))
+            gfx = rrd.graph( None, "--start", "epoch+%ds" % int(start), "--end", "epoch+%ds" % int(end), "--vertical-label=%s" % str(unit),
+                                "-w 800", "-h 300",
+                                #"--alt-autoscale",
+                                #"--alt-y-grid",
+                                #"--rigid",
+                                "DEF:level=%s:level:AVERAGE" % str(rrds[uuid]),
+                                "VDEF:levelavg=level,AVERAGE",
+                                "VDEF:levelmax=level,MAXIMUM",
+                                "VDEF:levelmin=level,MINIMUM",
+                                "AREA:level%s" % colorA,
+                                "LINE1:level%s:%s" % (colorL, str(kind)),
+                                "LINE1:levelavg%s:Average:dashes" % colorAvg,
+                                "LINE1:levelmax%s:Maximum:dashes" % colorMax,
+                                "LINE1:levelmin%s:Minimum:dashes" % colorMin,
+                                "GPRINT:level:AVERAGE:Avg\: %0.2lf"+str(unit),
+                                "GPRINT:level:MAX:Max\: %0.2lf"+str(unit),
+                                "GPRINT:level:MIN:Min\: %0.2lf"+str(unit))
+        
+        else:
+            #no file for specified uuid
+            error = True
+            errorMsg = 'No data for specified device'
+    except:
+        logging.exception('Error during graph generation:')
+        error = True
+        errorMsg = 'Internal error'
+            
+    return error, errorMsg, gfx
+
 
 #=================================
 #functions
 #=================================
 def commandHandler(internalid, content):
     """command handler"""
-    logging.info('commandHandler: %s, %s' % (internalid,content))
-    global client, server_port
+    #logging.info('commandHandler: %s, %s' % (internalid,content))
+    global client
     command = None
 
     if content.has_key('command'):
@@ -220,8 +149,13 @@ def commandHandler(internalid, content):
         return None
 
     if internalid=='rrdtoolcontroller':
-        if command=='getPort':
-            return {'error':0, 'msg':'', 'port':server_port}
+        if command=='getgraph' and checkContent(content, ['deviceUuid','start','end']):
+            (error, msg, graph) = generateGraph(content['deviceUuid'], content['start'], content['end'])
+            if not error:
+                return {'error':0, 'msg':'', 'graph':base64.b64encode(graph)}
+            else:
+                return {'error':1, 'msg':msg}
+    logging.warning('Unsupported command received: internalid=%s content=%s' % (internalid, content))
     return None
 
 def eventHandler(event, content):
@@ -230,8 +164,8 @@ def eventHandler(event, content):
 
     #format event.environment.humiditychanged, {u'uuid': '506249e2-1852-4de7-8554-93f5b9354a20', u'unit': '', u'level': 49.8}
     if event.startswith('event.environment.') and checkContent(content, ['level', 'uuid']):
-        #loggable data
-        logging.info('eventHandler: %s, %s' % (event, content))
+        #graphable data
+        #logging.info('eventHandler: %s, %s' % (event, content))
 
         try:
             #generate rrd filename
@@ -243,7 +177,7 @@ def eventHandler(event, content):
 
             #create rrd file if necessary
             if not os.path.exists(rrdfile):
-                logging.info('create rrd file %s' % rrdfile)
+                logging.info('New device detected, create rrd file %s' % rrdfile)
                 ret = rrdtool.create(str(rrdfile), "--step", "60", "--start", "0",
                         "DS:level:GAUGE:3600:U:U",
                         "RRA:AVERAGE:0.5:1:1440",
@@ -264,9 +198,8 @@ def eventHandler(event, content):
                 rrds[content['uuid']] = rrdfile
 
             #update rrd
-            logging.info('level=%f' % content['level'])
+            logging.info('Update rrdfile "%s" with level=%f' % (str(rrdfile), content['level']))
             ret = rrdtool.update(str(rrdfile), 'N:%f' % content['level']);
-            logging.info(rrds)
         except:
             logging.exception('Exception on eventHandler:')
 
@@ -280,9 +213,6 @@ try:
     #connect agoclient
     client = agoclient.AgoConnection('agorrdtool')
 
-    #read config file
-    server_port = agoclient.get_config_option("rrdtool", "port", HTTP_PORT)
-
     #get existing rrd files
     rrdfiles = os.listdir(RRD_PATH)
     for rrdfile in rrdfiles:
@@ -293,11 +223,9 @@ try:
             except:
                 #bad rrd file
                 pass
-    logging.info(rrds)
-
-    #create http server
-    server = RrdtoolDaemon(server_port)
-    server.start()
+    logging.info('Found rrd files:')
+    for rrd in rrds.values():
+        logging.info(' - %s' % rrd)
 
     #add client handlers
     client.add_handler(commandHandler)
