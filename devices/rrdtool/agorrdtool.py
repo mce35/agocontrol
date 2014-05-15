@@ -21,6 +21,7 @@ from qpid.datatypes import uuid4
 RRD_PATH = agoclient.LOCALSTATEDIR 
 client = None
 server = None
+units = {}
 rrds = {}
 
 #logging.basicConfig(filename='/opt/agocontrol/agoscheduler.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
@@ -68,7 +69,7 @@ def checkContent(content, params):
 
 def generateGraph(uuid, start, end):
     #init
-    global rrds
+    global rrds, units
     gfx = None
     error = False
     errorMsg = ''
@@ -99,8 +100,12 @@ def generateGraph(uuid, start, end):
                 #orange
                 colorL = '#CCAA00'
                 colorA = '#FFD400'
-
             logging.info('Generate graph: uuid=%s start=%s end=%s unit=%s kind=%s' % (uuid, str(start), str(end),str(unit), str(kind)))
+
+            #fix unit if necessary
+            if units.has_key(unit):
+                unit = str(units[unit])
+
             #generate graph
             rrd = RRDtool.RRD(str(rrds[uuid]))
             gfx = rrd.graph( None, "--start", "epoch+%ds" % int(start), "--end", "epoch+%ds" % int(end), "--vertical-label=%s" % str(unit),
@@ -114,12 +119,16 @@ def generateGraph(uuid, start, end):
                                 "VDEF:levelmin=level,MINIMUM",
                                 "AREA:level%s" % colorA,
                                 "LINE1:level%s:%s" % (colorL, str(kind)),
-                                "LINE1:levelavg%s:Average:dashes" % colorAvg,
-                                "LINE1:levelmax%s:Maximum:dashes" % colorMax,
-                                "LINE1:levelmin%s:Minimum:dashes" % colorMin,
-                                "GPRINT:level:AVERAGE:Avg\: %0.2lf"+str(unit),
-                                "GPRINT:level:MAX:Max\: %0.2lf"+str(unit),
-                                "GPRINT:level:MIN:Min\: %0.2lf"+str(unit))
+                                "COMMENT:\\n",
+                                "LINE1:levelavg%s:Average \::dashes" % colorAvg,
+                                "GPRINT:level:AVERAGE:%0.2lf"+str(unit),
+                                "COMMENT:\\n",
+                                "LINE1:levelmax%s:Maximum \::dashes" % colorMax,
+                                "GPRINT:level:MAX:%0.2lf"+str(unit),
+                                "COMMENT:\\n",
+                                "LINE1:levelmin%s:Minimum \::dashes" % colorMin,
+                                "GPRINT:level:MIN:%0.2lf"+str(unit),
+                                "COMMENT:\\n")
         
         else:
             #no file for specified uuid
@@ -212,6 +221,11 @@ def eventHandler(event, content):
 try:
     #connect agoclient
     client = agoclient.AgoConnection('agorrdtool')
+
+    #get units
+    inventory = client.get_inventory()
+    for unit in inventory.content['schema']['units']:
+        units[unit] = inventory.content['schema']['units'][unit]['label']
 
     #get existing rrd files
     rrdfiles = os.listdir(RRD_PATH)
