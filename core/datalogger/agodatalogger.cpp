@@ -37,42 +37,64 @@ std::string uuidToName(std::string uuid) {
 }
 
 void eventHandler(std::string subject, qpid::types::Variant::Map content) {
-	sqlite3_stmt *stmt;
+	sqlite3_stmt *stmt = NULL;
 	int rc;
 	string result;
 	// string devicename = uuidToName(content["uuid"].asString());
 	string uuid = content["uuid"].asString();
 	cout << subject << " " << content << endl;
-	if (subject != "" && content["level"].asString() != "") {
-		replaceString(subject, "event.environment.", "");
-		replaceString(subject, "changed", "");
-		replaceString(subject, "event.", "");
-		cout << "environment: " << subject << endl;
-		string level = content["level"].asString();
+	if (subject != "" ) {
+        if( subject=="event.environment.positionchanged" && content["lat"].asString()!="" && content["long"].asString()!="" ) {
+            cout << "specific environment case: position" << endl;
+            string lat = content["lat"].asString();
+            string lon = content["long"].asString();
 
-		string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
-		rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
-		if(rc != SQLITE_OK) {
-			fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
-			return;
-		}
-		
-		sqlite3_bind_text(stmt, 1, uuid.c_str(), -1, NULL);
-		sqlite3_bind_text(stmt, 2, subject.c_str(), -1, NULL);
-		sqlite3_bind_text(stmt, 3, level.c_str(), -1, NULL);
-		sqlite3_bind_int(stmt, 4, time(NULL));
-		
-		rc = sqlite3_step(stmt);
-		switch(rc) {
-			case SQLITE_ERROR:
-				fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
-				break;
-			case SQLITE_ROW:
-				if (sqlite3_column_type(stmt, 0) == SQLITE_TEXT) result =string( (const char*)sqlite3_column_text(stmt, 0));
-				break;
-		}
+            string query = "INSERT INTO position VALUES(null, ?, ?, ?, ?)";
+            rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
+            if(rc != SQLITE_OK) {
+                fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+                return;
+            }
 
-		sqlite3_finalize(stmt);
+            sqlite3_bind_text(stmt, 1, uuid.c_str(), -1, NULL);
+            sqlite3_bind_text(stmt, 2, lat.c_str(), -1, NULL);
+            sqlite3_bind_text(stmt, 3, lon.c_str(), -1, NULL);
+            sqlite3_bind_int(stmt, 4, time(NULL));
+        }
+        else if( content["level"].asString() != "") {
+            replaceString(subject, "event.environment.", "");
+            replaceString(subject, "changed", "");
+            replaceString(subject, "event.", "");
+            cout << "environment: " << subject << endl;
+
+            string level = content["level"].asString();
+
+            string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
+            rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
+            if(rc != SQLITE_OK) {
+                fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+                return;
+            }
+		
+            sqlite3_bind_text(stmt, 1, uuid.c_str(), -1, NULL);
+            sqlite3_bind_text(stmt, 2, subject.c_str(), -1, NULL);
+            sqlite3_bind_text(stmt, 3, level.c_str(), -1, NULL);
+            sqlite3_bind_int(stmt, 4, time(NULL));
+        }
+		
+        if( stmt!=NULL ) {
+            rc = sqlite3_step(stmt);
+            switch(rc) {
+                case SQLITE_ERROR:
+                    fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+                    break;
+                case SQLITE_ROW:
+                    if (sqlite3_column_type(stmt, 0) == SQLITE_TEXT) result =string( (const char*)sqlite3_column_text(stmt, 0));
+                    break;
+            }
+
+            sqlite3_finalize(stmt);
+        }
 	}
 }
 
@@ -90,37 +112,76 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
     replaceString(endDate, "-", "");
     replaceString(endDate, ":", "");
     replaceString(endDate, "Z", "");
+
+    //get environment
+    string environment = content["env"].asString();
+    cout << "GetGraphData:" << environment << endl;
     
     boost::posix_time::ptime base(boost::gregorian::date(1970, 1, 1));
     boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
     boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
 
-    rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ?  AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
-	if(rc != SQLITE_OK) {
-		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
-		return;
-	}
-
-	sqlite3_bind_int(stmt, 1, start.total_seconds());
-	sqlite3_bind_int(stmt, 2, end.total_seconds());
-	sqlite3_bind_text(stmt, 3, content["env"].asString().c_str(), -1, NULL);
-	sqlite3_bind_text(stmt, 4, content["deviceid"].asString().c_str(), -1, NULL);
-    
-    do {
-        rc = sqlite3_step(stmt);
-        switch(rc) {
-			case SQLITE_ERROR:
-				fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
-				break;
-			case SQLITE_ROW:
-			    qpid::types::Variant::Map value;
-			    value["time"] = sqlite3_column_int(stmt, 0);
-			    value["level"] = sqlite3_column_double(stmt, 1);
-			    values.push_back(value);
-				break;
-		}
+    //prepare specific query string
+    if( environment=="position" ) {
+        rc = sqlite3_prepare_v2(db, "SELECT timestamp, lat, long FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
-    while (rc == SQLITE_ROW);
+    else {
+        rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ?  AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
+    }
+
+    //check query
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+        return;
+    }
+
+    //add specific fields
+    if( environment=="position" ) {
+        //fill query
+        sqlite3_bind_int(stmt, 1, start.total_seconds());
+        sqlite3_bind_int(stmt, 2, end.total_seconds());
+        sqlite3_bind_text(stmt, 3, content["deviceid"].asString().c_str(), -1, NULL);
+    
+        do {
+            rc = sqlite3_step(stmt);
+            switch(rc) {
+                case SQLITE_ERROR:
+                    fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+                    break;
+                case SQLITE_ROW:
+                    qpid::types::Variant::Map value;
+                    value["time"] = sqlite3_column_int(stmt, 0);
+                    value["lat"] = sqlite3_column_double(stmt, 1);
+                    value["long"] = sqlite3_column_double(stmt, 2);
+                    values.push_back(value);
+                    break;
+            }
+        }
+        while (rc == SQLITE_ROW);
+    }
+    else {
+        //fill query
+        sqlite3_bind_int(stmt, 1, start.total_seconds());
+        sqlite3_bind_int(stmt, 2, end.total_seconds());
+        sqlite3_bind_text(stmt, 3, environment.c_str(), -1, NULL);
+        sqlite3_bind_text(stmt, 4, content["deviceid"].asString().c_str(), -1, NULL);
+
+        do {
+            rc = sqlite3_step(stmt);
+            switch(rc) {
+                case SQLITE_ERROR:
+                    fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+                    break;
+                case SQLITE_ROW:
+                    qpid::types::Variant::Map value;
+                    value["time"] = sqlite3_column_int(stmt, 0);
+                    value["level"] = sqlite3_column_double(stmt, 1);
+                    values.push_back(value);
+                    break;
+            }
+        }
+        while (rc == SQLITE_ROW);
+    }
     
     sqlite3_finalize(stmt);
     
