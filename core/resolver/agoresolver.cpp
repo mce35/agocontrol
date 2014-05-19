@@ -153,17 +153,34 @@ void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 		(*device)["state"].setEncoding("utf8");
 		saveDevicemap();
 		// (*device)["state"]  = valuesToString(values);
+	} else if (subject == "event.environment.positionchanged") {
+		Variant::Map value;
+		stringstream timestamp;
+
+		value["unit"] = (*content)["unit"];
+		value["latitude"] = (*content)["latitude"];
+		value["longitude"] = (*content)["longitude"];
+
+		timestamp << time(NULL);
+		value["timestamp"] = timestamp.str();
+
+		(*values)["position"] = value;
+		saveDevicemap();
+
 	} else if ((subject.find("event.environment.") != std::string::npos) && (subject.find("changed")!= std::string::npos)) {
 		Variant::Map value;
+		stringstream timestamp;
 		string quantity = subject;
+
 		quantity.erase(quantity.begin(),quantity.begin()+18);
 		quantity.erase(quantity.end()-7,quantity.end());
 
 		value["unit"] = (*content)["unit"];
 		value["level"] = (*content)["level"];
-		stringstream timestamp;
+
 		timestamp << time(NULL);
 		value["timestamp"] = timestamp.str();
+
 		(*values)[quantity] = value;
 		saveDevicemap();
 	}
@@ -371,10 +388,11 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 		variables["weekday"] = content["weekday"].asString();
 		variables["minute"] = content["minute"].asString();
 		variables["month"] = content["month"].asString();
-	} else if (subject == "event.environment.positionchanged") {
-		environment["latitude"] = content["latitude"];
-		environment["longitude"] = content["longitude"];
 	} else {
+		if (subject == "event.environment.positionchanged") {
+			environment["latitude"] = content["latitude"];
+			environment["longitude"] = content["longitude"];
+		}
 		if (content["uuid"].asString() != "") {
 			string uuid = content["uuid"];
 			// see if we have that device in the inventory already, if yes handle the event
