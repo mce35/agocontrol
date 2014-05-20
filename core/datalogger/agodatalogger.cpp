@@ -13,6 +13,8 @@
 
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <jsoncpp/json/writer.h>
+#include <jsoncpp/json/reader.h>
 
 #include "agoclient.h"
 
@@ -44,10 +46,10 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	string uuid = content["uuid"].asString();
 	cout << subject << " " << content << endl;
 	if (subject != "" ) {
-        if( subject=="event.environment.positionchanged" && content["lat"].asString()!="" && content["long"].asString()!="" ) {
+        if( subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" ) {
             cout << "specific environment case: position" << endl;
-            string lat = content["lat"].asString();
-            string lon = content["long"].asString();
+            string lat = content["latitude"].asString();
+            string lon = content["longitude"].asString();
 
             string query = "INSERT INTO position VALUES(null, ?, ?, ?, ?)";
             rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
@@ -123,7 +125,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
 
     //prepare specific query string
     if( environment=="position" ) {
-        rc = sqlite3_prepare_v2(db, "SELECT timestamp, lat, long FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
+        rc = sqlite3_prepare_v2(db, "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
     else {
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ?  AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
@@ -151,8 +153,8 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
                 case SQLITE_ROW:
                     qpid::types::Variant::Map value;
                     value["time"] = sqlite3_column_int(stmt, 0);
-                    value["lat"] = sqlite3_column_double(stmt, 1);
-                    value["long"] = sqlite3_column_double(stmt, 2);
+                    value["latitude"] = sqlite3_column_double(stmt, 1);
+                    value["longitude"] = sqlite3_column_double(stmt, 2);
                     values.push_back(value);
                     break;
             }
