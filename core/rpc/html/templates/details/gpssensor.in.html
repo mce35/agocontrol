@@ -1,0 +1,49 @@
+<div>
+<ko opts="ifnot: name">
+<span id="detailsTitle">Details</span>
+</ko>
+<ko opts="if: name">
+<span id="detailsTitle" data-bind="text: name">Details</span>
+</ko>
+<p>
+        <ko opts="if: room">
+                <_strong data-translateable="true">Room:</_strong> <span data-bind="text: room"></span><br />
+        </ko>
+        <strong>UUID:</strong> <span data-bind="text: uuid"/><br/>
+        <_strong data-translateable="true">Type: </_strong> <span data-bind="text: devicetype"></span><br />
+        <_strong data-translateable="true">Lastseen: </_strong> <span data-bind="text: timeStamp"></span><br />
+<ko opts="foreach: valueList">
+	<strong data-bind="text: name"/><strong>: </strong>
+	<span data-bind="text: latitude"/>,<span data-bind="text: longitude"/>
+	<br/>
+</ko>
+</p>
+<br/>
+<form>
+    <_strong data-translateable="true">Show as:</_strong>
+    <label style="display: inline"><input type="radio" name="displayType" checked="checked" value="map" /><_span data-translateable="true">Map</_span></label>
+    <label style="display: inline"><input type="radio" name="displayType" value="list" /><_span data-translateable="true">List</_span></label>
+</form>
+<div style="width: 100%; height: 380px; margin-bottom: 20px;" id="graph"/>
+<div style="width: 100%;" id="dataList"/>
+<div style="width: 50%; text-align: left; float: left;">
+	<form>
+		<label style="display: inline">
+            <_strong data-translateable="true">From:</_strong>
+			<input type="text" style="opacity: 0; position: absolute; top: 0; left: 0;" id="dummyDate1"/>
+			<input value="" type="text" style="display: inline" size="10" readonly="readonly" id="start_date"/>
+		</label>
+		<label style="display: inline">
+            <_strong data-translateable="true">To:</_strong>
+			<input value="" type="text" style="display: inline" size="10" readonly="readonly" id="end_date"/>
+		</label>
+	</form>
+</div>
+<div style="width: 50%; text-align: right; float: left;">
+	<ko opts="foreach: valueList ">
+		<p class="small pretty primary btn icon-left entypo icon-chart-area">
+		<a style="color: #FFF" href="#" data-bind="text: name, click: function(data, event) { renderGraph($root, data.name) }"/>
+		</p>
+	</ko>
+</div>
+</div>

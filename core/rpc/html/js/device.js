@@ -62,27 +62,33 @@ function device(obj, uuid) {
 	};
     }
 
-    if (this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/)) {
-	this.valueList = ko.computed(function() {
-	    var result = [];
-	    // var i = 0;
-	    for ( var k in self.values()) {
-		var unit = self.values()[k].unit;
-		if (schema.units[self.values()[k].unit] !== undefined) {
-		    unit = schema.units[self.values()[k].unit].label;
-		}
-		result.push({
-		    name : k.charAt(0).toUpperCase() + k.substr(1),
-		    level : self.values()[k].level,
-		    unit : unit
-		});
-		// i++;
-		// if (i == 2) {
-		//    break;
-		//}
-	    }
-	    return result;
-	});
+    if (this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/) ) {
+        //fill values list
+        this.valueList = ko.computed(function() {
+            var result = [];
+            for ( var k in self.values()) {
+                var unit = self.values()[k].unit;
+                if (schema.units[self.values()[k].unit] !== undefined) {
+                    unit = schema.units[self.values()[k].unit].label;
+                }
+                if( self.values()[k].level ) {
+                    result.push({
+                        name : k.charAt(0).toUpperCase() + k.substr(1),
+                        level : self.values()[k].level,
+                        unit : unit
+                    });
+                }
+                else if( self.values()[k].latitude && self.values()[k].longitude ) {
+                    result.push({
+                        name : k.charAt(0).toUpperCase() + k.substr(1),
+                        latitude : self.values()[k].latitude,
+                        longitude : self.values()[k].longitude
+                        //unit : no unit available for gps sensor
+                    });
+                }
+            }
+            return result;
+        });
    
         //add function to get rrd graph
         this.getRrdGraph = function(uuid, start, end) {

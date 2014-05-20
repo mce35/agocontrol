@@ -73,6 +73,7 @@ var floorPlans = {};
 var pluginNames = {};
 var systemvar = {};
 var variables = {};
+var environment = {};
 var inventory = ko.observable({});
 var currentFloorPlan = ko.observable({});
 
@@ -334,62 +335,70 @@ var securityPromted = false;
 
 function handleEvent(response) {
     if (response.result.event == "event.security.countdown" && !securityPromted) {
-	securityPromted = true;
-	var pin = window.prompt("Alarm please entry pin:");
-	var content = {};
-	content.command = "cancel";
-	content.uuid = response.result.uuid;
-	content.pin = pin;
-	sendCommand(content, function(res) {
-	    if (res.result.error) {
-		notif.error(res.result.error);
-	    }
-	    securityPromted = false;
-	});
-	return;
+        securityPromted = true;
+        var pin = window.prompt("Alarm please entry pin:");
+        var content = {};
+        content.command = "cancel";
+        content.uuid = response.result.uuid;
+        content.pin = pin;
+        sendCommand(content, function(res) {
+            if (res.result.error) {
+                notif.error(res.result.error);
+            }
+            securityPromted = false;
+        });
+        return;
     } else if (response.result.event == "event.security.intruderalert") {
-	notif.error("INTRODUCER ALERT!");
-	return;
+        notif.error("INTRODUCER ALERT!");
+        return;
     }
     for ( var i = 0; i < deviceMap.length; i++) {
-	if (deviceMap[i].uuid == response.result.uuid && response.result.level !== undefined) {
-	    // update custom device member
-	    if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1) {
-		// event that update device member
-		var member = response.result.event.replace('event.device.', '').replace('changed', '');
-		if (deviceMap[i][member] !== undefined) {
-		    deviceMap[i][member](response.result.level);
-		}
-	    }
-	    // Binary sensor has its own event
-	    else if (response.result.event == "event.security.sensortriggered") {
-		if (deviceMap[i]['state'] !== undefined) {
-		    deviceMap[i]['state'](response.result.level);
-		}
-	    }
-	    // update device last seen datetime
-	    deviceMap[i].timeStamp(formatDate(new Date()));
-	    if (response.result.quantity) {
-		var values = deviceMap[i].values();
-		/* We have no values so reload from inventory */
-		if (values[response.result.quantity] === undefined) {
-		    getInventory(function(inv) {
-			var tmpInv = cleanInventory(inv.result.devices);
-			if (tmpInv[response.result.uuid] !== undefined) {
-			    if (tmpInv[response.result.uuid].values) {
-				deviceMap[i].values(tmpInv[response.result.uuid].values);
-			    }
-			}
-		    });
-		    break;
-		}
-		values[response.result.quantity].level = response.result.level;
-		deviceMap[i].values(values);
-	    }
-
-	    break;
-	}
-
+    	if (deviceMap[i].uuid == response.result.uuid ) {
+            // update device last seen datetime
+            deviceMap[i].timeStamp(formatDate(new Date()));
+            //update device level
+            if( response.result.level !== undefined) {
+                // update custom device member
+                if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1) {
+                    // event that update device member
+                    var member = response.result.event.replace('event.device.', '').replace('changed', '');
+                    if (deviceMap[i][member] !== undefined) {
+                        deviceMap[i][member](response.result.level);
+                    }
+                }
+                // Binary sensor has its own event
+                else if (response.result.event == "event.security.sensortriggered") {
+                    if (deviceMap[i]['state'] !== undefined) {
+                        deviceMap[i]['state'](response.result.level);
+                    }
+                }
+            }
+            //update quantity
+            if (response.result.quantity) {
+                var values = deviceMap[i].values();
+                /* We have no values so reload from inventory */
+                if (values[response.result.quantity] === undefined) {
+                    getInventory(function(inv) {
+                        var tmpInv = cleanInventory(inv.result.devices);
+                        if (tmpInv[response.result.uuid] !== undefined) {
+                            if (tmpInv[response.result.uuid].values) {
+                                deviceMap[i].values(tmpInv[response.result.uuid].values);
+                            }
+                        }
+                    });
+                    break;
+                }
+                if( response.result.level !== undefined ) {
+                    values[response.result.quantity].level = response.result.level;
+                }
+                else if( response.result.latitude!==undefined && response.result.longitude!==undefined ) {
+                    values[response.result.quantity].latitude = response.result.latitude;
+                    values[response.result.quantity].longitude = response.result.longitude;
+                }
+                deviceMap[i].values(values);
+            }
+            break;
+        }
     }
     getEvent();
 }
@@ -434,6 +443,7 @@ function handleInventory(response) {
     schema = response.result.schema;
     floorPlans = response.result.floorplans;
     variables = response.result.variables;
+    environment = response.result.environment;
 
     var inv = cleanInventory(response.result.devices);
     var found;
@@ -928,75 +938,94 @@ function renderGraph(device, environment) {
 	var data = [];
 	var values = res.result.result.values;
 
-	if (renderType == "list") {
-	    values.sort(function(a, b) {
-		return b.time - a.time;
-	    });
-
-	    for ( var i = 0; i < values.length; i++) {
-		values[i].date = formatDate(new Date(values[i].time * 1000));
-		values[i].value = values[i].level + " " + unit;
-		delete values[i].level;
-	    }
-
-	    ko.renderTemplate("details/datalist", {
-		data : values,
-		environment : environment
-	    }, {}, document.getElementById("dataList"));
-	    $('#graph').unblock();
-	    $("#graph").hide();
-	    $('#dataList').show();
-	    return;
-	}
-    else if( renderType=="map" ) {
-        //clear container
-        $('#graph').empty();
-        OpenLayers.ImgPath = '/js/libs/OpenLayers/img/';
+    if (renderType == "list") {
+        values.sort(function(a, b) {
+            return b.time - a.time;
+        });
 
         if( values.length>0 ) {
-            //create map, layers and projection
-            var map = new OpenLayers.Map('graph');
-            var layer = new OpenLayers.Layer.OSM();
-            var markers = new OpenLayers.Layer.Markers("Markers");
-            var vectors = new OpenLayers.Layer.Vector("Lines");
-            var fromProjection = new OpenLayers.Projection("EPSG:4326");
-            var toProjection = new OpenLayers.Projection("EPSG:900913");
-            var lineStyle = { strokeColor: '#FF0000',
-                              strokeOpacity: 0.5,
-                              strokeWidth: 5 };
-
-            //add layers
-            map.addLayer(layer);
-            map.addLayer(markers);
-            map.addLayer(vectors);
-
-            //add markers
-            var prevPoint = null;
-            var features = [];
-            for( var i=0; i<values.length; i++ ) {
-                var position = new OpenLayers.LonLat(values[i].long, values[i].lat).transform(fromProjection, toProjection);
-                var point = new OpenLayers.Geometry.Point(values[i].long, values[i].lat).transform(fromProjection, toProjection);
-                markers.addMarker(new OpenLayers.Marker(position));
-                if( prevPoint ) {
-                    //join markers
-                    var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
-                    features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
+            if( values[0].level ) {
+                for ( var i = 0; i < values.length; i++) {
+                    values[i].date = formatDate(new Date(values[i].time * 1000));
+                    values[i].value = values[i].level + " " + unit;
+                    delete values[i].level;
                 }
-                prevPoint = point;
             }
-            vectors.addFeatures(features);
+            else if( values[0].latitude && values[0].longitude ) {
+                for ( var i = 0; i < values.length; i++) {
+                    values[i].date = formatDate(new Date(values[i].time * 1000));
+                    values[i].value = values[i].latitude + "," + values[i].longitude;
+                    delete values[i].latitude;
+                    delete values[i].longitude;
+                }
+            }
+        }
 
-            //center map to first position
-            var zoom = 15;
-            map.setCenter( new OpenLayers.LonLat(values[0].long, values[0].lat).transform(fromProjection, toProjection), zoom);
+        ko.renderTemplate("details/datalist", {
+            data : values,
+            environment : environment
+        }, {}, document.getElementById("dataList"));
+        $('#graph').unblock();
+        $("#graph").hide();
+        $('#dataList').show();
+        return;
+    }
+    else if( renderType=="map" ) {
+        //load openlayers lib only when needed
+        yepnope({
+            load : 'js/libs/OpenLayers/OpenLayers.js',
+            complete : function() {
+                //configure openlayers lib
+                OpenLayers.ImgPath = '/js/libs/OpenLayers/img/';
+
+                //clear container
+                $('#graph').empty();
+
+                if( values.length>0 ) {
+                    //create map, layers and projection
+                    var map = new OpenLayers.Map('graph');
+                    var layer = new OpenLayers.Layer.OSM();
+                    var markers = new OpenLayers.Layer.Markers("Markers");
+                    var vectors = new OpenLayers.Layer.Vector("Lines");
+                    var fromProjection = new OpenLayers.Projection("EPSG:4326");
+                    var toProjection = new OpenLayers.Projection("EPSG:900913");
+                    var lineStyle = { strokeColor: '#FF0000',
+                                      strokeOpacity: 0.5,
+                                      strokeWidth: 5 };
         
-            //show map
-    	    $('#graph').unblock();
-            $('#graph').show();
-        }
-        else {
-            notif.error('No data to display');
-        }
+                    //add layers
+                    map.addLayer(layer);
+                    map.addLayer(markers);
+                    map.addLayer(vectors);
+
+                    //add markers
+                    var prevPoint = null;
+                    var features = [];
+                    for( var i=0; i<values.length; i++ ) {
+                        var position = new OpenLayers.LonLat(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
+                        var point = new OpenLayers.Geometry.Point(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
+                        markers.addMarker(new OpenLayers.Marker(position));
+                        if( prevPoint ) {
+                            //join markers
+                            var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
+                            features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
+                        }
+                        prevPoint = point;
+                    }
+                    vectors.addFeatures(features);
+
+                    //center map to first position
+                    var zoom = 13;
+                    map.setCenter( new OpenLayers.LonLat(values[0].longitude, values[0].latitude).transform(fromProjection, toProjection), zoom);
+                }
+                else {
+                    notif.error('No data to display');
+                }
+                //show container
+        	    $('#graph').unblock();
+                $('#graph').show();
+            }
+        });
         return;
     }
 
