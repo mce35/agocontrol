@@ -695,7 +695,7 @@ msgstr "PushBullet apparaat kan niet ververst worden"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:4
 msgid "PushBullet devices retrieved successfully"
-msgstr "PusBullet apparaat ophalen gelukt"
+msgstr "PushBullet apparaat ophalen gelukt"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:5
 msgid "generating url"
