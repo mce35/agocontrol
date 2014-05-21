@@ -78,7 +78,7 @@ def generateGraph(uuid, start, end):
     try:
         if rrds.has_key(uuid):
             #get graph infos
-            (_, kind, unit) = rrds[uuid].replace('.rrd','').split('_')
+            (_, kind, vertical_unit) = rrds[uuid].replace('.rrd','').split('_')
             colorL = '#000000'
             colorA = '#A0A0A0'
             colorMax = '#FF0000'
@@ -100,16 +100,20 @@ def generateGraph(uuid, start, end):
                 #orange
                 colorL = '#CCAA00'
                 colorA = '#FFD400'
-            logging.info('Generate graph: uuid=%s start=%s end=%s unit=%s kind=%s' % (uuid, str(start), str(end),str(unit), str(kind)))
+            logging.info('Generate graph: uuid=%s start=%s end=%s unit=%s kind=%s' % (uuid, str(start), str(end),str(vertical_unit), str(kind)))
 
             #fix unit if necessary
-            if units.has_key(unit):
-                unit = str(units[unit])
+            if units.has_key(vertical_unit):
+                vertical_unit = str(units[vertical_unit])
+            if vertical_unit=='%':
+                unit = '%%'
+            else:
+                unit = vertical_unit
 
             #generate graph
             rrd = RRDtool.RRD(str(rrds[uuid]))
-            gfx = rrd.graph( None, "--start", "epoch+%ds" % int(start), "--end", "epoch+%ds" % int(end), "--vertical-label=%s" % str(unit),
-                                "-w 800", "-h 300",
+            gfx = rrd.graph( None, "--start", "epoch+%ds" % int(start), "--end", "epoch+%ds" % int(end), "--vertical-label=%s" % str(vertical_unit),
+                                "-w 850", "-h 300",
                                 #"--alt-autoscale",
                                 #"--alt-y-grid",
                                 #"--rigid",
