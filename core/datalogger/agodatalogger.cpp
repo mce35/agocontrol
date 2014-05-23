@@ -38,6 +38,42 @@ std::string uuidToName(std::string uuid) {
 	return device["name"].asString() == "" ? uuid : device["name"].asString();
 }
 
+bool createTableIfNotExist(string tablename, list<string> createqueries) {
+    //init
+    sqlite3_stmt *stmt = NULL;
+    int rc;
+    char* sqlError = 0;
+    string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
+
+    //prepare query
+    rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
+    if(rc != SQLITE_OK) {
+        cerr << "Sql error #" << rc << ": " << sqlite3_errmsg(db) << endl;;
+        return false;
+    }
+    sqlite3_bind_text(stmt, 1, tablename.c_str(), -1, NULL);
+
+    //execute query
+    if( stmt!=NULL ) {
+        rc = sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+        if( rc!=SQLITE_ROW ) {
+            //table doesn't exit, create it
+            cout << "Creating missing table '" << tablename << "'" << endl;
+            for( list<string>::iterator it=createqueries.begin(); it!=createqueries.end(); it++ ) {
+                rc = sqlite3_exec(db, (*it).c_str(), NULL, NULL, &sqlError);
+                if(rc != SQLITE_OK) {
+                    cerr << "Sql error #" << rc << ": " << sqlError << endl;
+                    return false;
+                }
+            }
+        }
+    }
+    createqueries.clear();
+
+    return true;
+}
+
 void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	sqlite3_stmt *stmt = NULL;
 	int rc;
@@ -228,17 +264,24 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 
 int main(int argc, char **argv) {
     int rc = sqlite3_open(DBFILE, &db);
-	if( rc != SQLITE_OK){
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		sqlite3_close(db);
-		return 1;
-	}
-	agoConnection = new AgoConnection("datalogger");	
-	agoConnection->addDevice("dataloggercontroller", "dataloggercontroller");
-	agoConnection->addHandler(commandHandler);
-	agoConnection->addEventHandler(eventHandler);
-	inventory = agoConnection->getInventory();
-	agoConnection->run();
+    if( rc != SQLITE_OK){
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
 
-	return 0;
+    list<string> queries;
+    queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
+    queries.push_back("CREATE INDEX timestamp_position_idx ON position(timestamp)");
+    queries.push_back("CREATE INDEX uuid_position_idx ON position(uuid)");
+    createTableIfNotExist("position", queries);
+
+    agoConnection = new AgoConnection("datalogger");	
+    agoConnection->addDevice("dataloggercontroller", "dataloggercontroller");
+    agoConnection->addHandler(commandHandler);
+    agoConnection->addEventHandler(eventHandler);
+    inventory = agoConnection->getInventory();
+    agoConnection->run();
+
+    return 0;
 }
