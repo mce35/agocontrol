@@ -112,10 +112,13 @@ function buildfloorPlanList(model) {
 function buildPluginNamesList(model) {
     model.pluginNames = ko.observableArray([]);
     for ( var i=0; i<pluginNames.length; i++ ) {
-	model.pluginNames.push({
-	    name : pluginNames[i].name,
-        _name : pluginNames[i]._name
-	});
+        //filter plugins that are not accessible from dashboard (using dropdown button)
+        if( pluginNames[i].dashboardAccess===undefined || pluginNames[i].dashboardAccess==true ) {
+            model.pluginNames.push({
+                name : pluginNames[i].name,
+                _name : pluginNames[i]._name
+            });
+        }
     }
 }
 /**
@@ -124,67 +127,70 @@ function buildPluginNamesList(model) {
  */
 var deferredInit = null;
 
-function loadPlugin() {
+function loadPlugin(fromDashboard) {
     // lock uia
     $.blockUI({
-	message : '<div>Please wait ...</div>',
-	css : {
-	    border : '3px solid #a00'
-	}
+        message : '<div>Please wait ...</div>',
+        css : {
+            border : '3px solid #a00'
+        }
     });
 
     /* Get plugin name from query string */
     var name = window.location.search.substring(1);
     var tmp = name.split("&");
     for ( var i = 0; i < tmp.length; i++) {
-	if (tmp[i].indexOf("name=") == 0) {
-	    name = tmp[i].split("=")[1];
-	}
+        if (tmp[i].indexOf("name=") == 0) {
+            name = tmp[i].split("=")[1];
+        }
     }
     name = name.replace(/\//g, "");
     $.getScript("plugins/" + name + "/plugin.js", function() {
-	$.ajax({
+    $.ajax({
 	    url : "/cgi-bin/pluginlist.cgi",
-	    method : "GET",
-	    async : true,
-	}).done(function(result) {
-	    var plugin = result.filter(function(p) {
-		return p._name.toLowerCase() == name.toLowerCase();
-	    })[0];
-	    templatePath = "../plugins/" + name + "/templates/";
-	    /* Load the plugins resources if any */
-	    if (plugin.resources) {
-		var resources = [];
-		if (plugin.resources.css && plugin.resources.css.length > 0) {
-		    for ( var i = 0; i < plugin.resources.css.length; i++) {
-			resources.push("plugins/" + name + "/" + plugin.resources.css[i]);
-		    }
-		}
-		if (plugin.resources.js && plugin.resources.js.length > 0) {
-		    for ( var i = 0; i < plugin.resources.js.length; i++) {
-			resources.push("plugins/" + name + "/" + plugin.resources.js[i]);
-		    }
-		}
-		if (resources.length > 0) {
-		    yepnope({
-			load : resources,
-			complete : function() {
-			    // here, all resources are really loaded
-			    init_plugin();
-			    // unlock ui
-			    $.unblockUI();
-			}
-		    });
-		}
-	    } else {
-		$.unblockUI();
-		init_plugin();
-	    }
-	});
-    }).fail(function() {
-	$.unblockUI();
-	notif.fatal("Error: Failed to load plugin!");
+        method : "GET",
+        async : true,
+    }).done(function(result) {
+        var plugin = result.filter(function(p) {
+            return p._name.toLowerCase() == name.toLowerCase();
+        })[0];
+        templatePath = "../plugins/" + name + "/templates/";
+        /* Load the plugins resources if any */
+        if (plugin.resources) {
+            var resources = [];
+            if (plugin.resources.css && plugin.resources.css.length > 0) {
+                for ( var i = 0; i < plugin.resources.css.length; i++) {
+                    resources.push("plugins/" + name + "/" + plugin.resources.css[i]);
+                }
+            }
+            if (plugin.resources.js && plugin.resources.js.length > 0) {
+                for ( var i = 0; i < plugin.resources.js.length; i++) {
+                    resources.push("plugins/" + name + "/" + plugin.resources.js[i]);
+                }
+            }
+            if (resources.length > 0) {
+                yepnope({
+                    load : resources,
+                    complete : function() {
+                        // here, all resources are really loaded
+                        init_plugin(fromDashboard);
+                        // unlock ui
+                        $.unblockUI();
+                    }
+                });
+            }
+        } else {
+            $.unblockUI();
+            init_plugin(fromDashboard);
+        }
     });
+    }).fail(function() {
+        $.unblockUI();
+        notif.fatal("Error: Failed to load plugin!");
+    });
+}
+function loadPluginDashboard() {
+    loadPlugin(true);
 }
 
 function getPluginNames() {  
@@ -233,6 +239,8 @@ function initGUI() {
 	deferredInit = init_pluginsConfig;
     } else if (page == "plugin") {
 	deferredInit = loadPlugin;
+    } else if (page == "pluginDashboard") {
+	deferredInit = loadPluginDashboard;
     }
 
     /* Parse floorplan uuid */
