@@ -561,7 +561,7 @@ events:
     parameters: [level, uuid]
   event.device.scenechanged:
     description: announces a scene change
-    parameters: [scene]
+    parameters: [scene, uuid]
   event.environment.counterchanged:
     description: counter has changed
     parameters: [level, uuid]
