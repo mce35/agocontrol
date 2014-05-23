@@ -2,6 +2,7 @@
         "name": "blockly",
         "version": "0.0.1",
         "description": "Create events easily using blockly",
+        "dashboardAccess": true,
         "resources": {
             "css": [
                 "prettify/prettify.css"

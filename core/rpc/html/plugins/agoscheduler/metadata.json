@@ -1,13 +1,14 @@
 {
-	"name": "scheduler",
-	"version": "0.0.1",
-	"description": "Schedule scenarios in a calendar",
-	"resources": {
-		"css": [
-			"fullcalendar/fullcalendar.css"
-		],
-		"js" : [
-			"fullcalendar/fullcalendar.min.js"
-		]
-	}
+    "name": "scheduler",
+    "version": "0.0.1",
+    "description": "Schedule scenarios in a calendar",
+    "dashboardAccess": true,
+    "resources": {
+        "css": [
+            "fullcalendar/fullcalendar.css"
+        ],
+        "js" : [
+            "fullcalendar/fullcalendar.min.js"
+        ]
+    }
 }
