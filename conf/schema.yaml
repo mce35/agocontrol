@@ -542,6 +542,10 @@ values:
     description: media device media state
     type: option
     options: ["playing", "stopped", "paused", "streaming"]
+  scene:
+    name: scene
+    description: the scene number
+    type: integer
 events:
   event.telecom.call:
     description: a call is originating
@@ -555,6 +559,9 @@ events:
   event.device.statechanged:
     description: announces a status change of a device
     parameters: [level, uuid]
+  event.device.scenechanged:
+    description: announces a scene change
+    parameters: [scene]
   event.environment.counterchanged:
     description: counter has changed
     parameters: [level, uuid]

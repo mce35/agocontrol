@@ -624,12 +624,14 @@ void OnNotification
                                 tempstream << (int) _notification->GetNodeId();
                                 tempstream << "/1";
                                 string nodeinstance = tempstream.str();
-				string eventtype = "event.device.statechanged";
+				string eventtype = "event.device.scenechanged";
 				ZWaveNode *device;
 				if ((device = devices.findId(nodeinstance)) != NULL) {
 					if (debug) printf("Sending %s for scene %d event from child %s\n",
 						  eventtype.c_str(), scene, device->getId().c_str());
-					agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), scene, "");	
+					qpid::types::Variant::Map content;
+					content["scene"]=scene;
+					agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), content);	
 				} else {
 					cout << "WARNING: no agocontrol device found for scene event" << endl;
 					cout << "Node: " << nodeinstance << " Scene: " << scene << endl;
