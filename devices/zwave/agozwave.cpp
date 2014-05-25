@@ -945,6 +945,11 @@ int main(int argc, char **argv) {
 	Options::Create( "/etc/openzwave/config/", CONFDIR "/ozw/", "" );
 	Options::Get()->AddOptionBool("PerformReturnRoutes", false );
 	Options::Get()->AddOptionBool("ConsoleOutput", false ); 
+	Options::Get()->AddOptionBool("EnableSIS", true ); 
+
+	Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
+	Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
+	Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
 
 	int retryTimeout = atoi(getConfigOption("zwave","retrytimeout","2000").c_str());
 	OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
