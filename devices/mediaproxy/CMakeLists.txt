@@ -14,6 +14,7 @@ include_directories("./BasicUsageEnvironment/include")
 
 set (DEVICE_EXTRA_LIBRARIES
     agoclient
+    pthread
     liveMedia
     groupsock
     BasicUsageEnvironment
