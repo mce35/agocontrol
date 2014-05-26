@@ -1,0 +1,72 @@
+commands:
+  getvideoframe:
+    name: get video frame
+  mute:
+    name: mute audio
+  unmute:
+    name: unmute audio
+  mutetoggle:
+    name: toggle mute
+  vol+:
+    name: volume up
+  vol-:
+    name: volume down
+  chan+:
+    name: next channel
+  chan-:
+    name: previous channel
+  setinput:
+    name: input selector
+    type: option
+    options: ["video1", "video1", "video3", "video4", "video5", "video6", "dvd", "fm", "am", "usb", "net", "up", "down"]
+  play:
+    name: play media
+  pause:
+    name: pause media
+  stop:
+    name: stop
+  getepg:
+    name: get electronic program guide
+devicetypes:
+  camera:
+    name: Camera
+    description: Surveillance camera
+    commands: [getvideoframe]
+  avreceiver:
+    name: AV receiver
+    description: AV receiver
+    commands: ["on", "off", mute, unmute, mutetoggle, vol+, vol-, setinput, setlevel]
+  tv:
+    name: TV
+    description: TV
+    commands: ["on", "off", mute, unmute, vol+, vol-, chan+, chan-, setchannel, setinput, setlevel]
+  squeezebox:
+    name: Squeezebox Player
+    description: Plays music
+    commands: ["on", "off", play, pause, stop, displaymessage]
+    events: [event.device.statechanged, event.device.mediastatechanged]
+    properties: [mediastate]
+  squeezeboxserver:
+    name: Squeezebox Server
+    description: Squeezebox player manager
+    commands: ["allon", "alloff", displaymessage]
+  settopbox:
+    name: Set top box
+    description: Receives TV Service
+    commands: ["on", "off", mute, unmute, mutetoggle, vol+, vol-, setlevel, setchannel, getepg]
+values:
+  channel:
+    name: channel
+    description: channel number
+  mediastate:
+    name: media state
+    description: media device media state
+    type: option
+    options: ["playing", "stopped", "paused", "streaming"]
+events:
+  event.mediaplayer.statechanged:
+    description: mediaplayer changed play state
+    parameters: [mediastate]
+  event.device.mediastatechanged:
+    description: device changed media state
+    parameters: [state]

@@ -1,0 +1,190 @@
+commands:
+  "allon":
+    name: turn all on
+  "alloff":
+    name: turn all off
+  push:
+    name: push button
+  settemperature:
+    name: set temperature
+    parameters:
+      temperature:
+        name: temperature to set
+        type: float
+      mode:
+        name: setpoint mode
+        type: option
+        options: ["auto", "cool", "heat"]
+  setthermostatmode:
+    name: adjust thermostat mode
+    parameters:
+      mode:
+        name: thermostat mode to set
+        type: option
+        options: ["heat", "cool", "auto"]
+  setthermostatfanmode:
+    name: adjust thermostat fan mode
+    parameters:
+      mode:
+        name: fan mode to set
+        type: option
+        options: ["on", "off", "auto"]
+  dial:
+    name: dial number
+    parameters:
+      number:
+        name: number to dial
+        type: string
+  setlevel:
+    name: set level
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 100]
+  setchannel:
+    name: set channel
+    parameters:
+      channel:
+        name: channel to set
+        type: integer
+        range: [0, 9999]
+  setcolor:
+    name: set color
+    parameters:
+      red:
+        name: level for red color
+        type: integer
+        range: [0, 100]
+      green:
+        name: level for green color
+        type: integer
+        range: [0, 100]
+      blue:
+        name: level for blue color
+        type: integer
+        range: [0, 100]
+  sendir:
+    name: send infrared remote code
+    parameters:
+      ircode:
+        name: infrared code to send
+        type: string
+devicetypes:
+  pushbutton:
+    name: Pushbutton
+    description: momentary switch
+    commands: [push]
+  hdmicec:
+    name: HDMI CEC interface
+    description: control devices on the HDMI bus
+    commands: [alloff]
+  infaredblaster:
+    name: infraredblaster
+    description: send infrared remote commands
+    commands: [sendir]
+  phone:
+    name: telephone
+    description: a phone
+    commands: [dial]
+  binarysensor:
+    name: binary sensor
+    description: sensor for on off values
+    commands: []
+  multilevelsensor:
+    name: multilevel sensor
+    description: sensor for multilevel values
+    commands: [reset]
+  smokedetector:
+    name: smoke detector
+    description: smoke detector
+    commands: []
+  dimmerrgb:
+    name: RGB dimmer
+    description: allows to set different colors
+    commands: ["on", "off", setlevel, setcolor]
+  controller:
+    name: controller
+    description: generic controller
+    commands: []
+  thermostat:
+    name: thermostat
+    description: controls temperature
+    commands: [settemperature, setthermostatmode, setthermostatfanmode]
+  drapes:
+    name: drapes
+    description: window drapes or blinds
+    commands: ["on", "off", stop, setlevel]
+  dimmer:
+    name: dimmer
+    description: light dimmmer
+    commands: ["on", "off", setlevel]
+  switch:
+    name: switch
+    description: simple on off switch
+    commands: ["on", "off"]
+  computer:
+    name: General computer (for Wake on LAN)
+    description: A computer
+    commands: ["on"]
+values:
+  level:
+    name: level
+    description: level value
+  callerid:
+    name: caller identity
+    description: the identity of a caller
+  extension:
+    name: phone extension
+    description: extension being called
+  data:
+    name: data
+    description: data field
+  scene:
+    name: scene
+    description: the scene number
+    type: integer
+events:
+  event.telecom.call:
+    description: a call is originating
+    parameters: [uuid, callerid, extension]
+  event.telecom.hangup:
+    description: call hung up
+    parameters: [uuid]
+  event.device.scenechanged:
+    description: announces a scene change
+    parameters: [scene, uuid]
+  event.environment.counterchanged:
+    description: counter has changed
+    parameters: [level, uuid]
+  event.environment.temperaturechanged:
+    description: temperature has changed
+    parameters: [level, unit, uuid]
+  event.environment.brightnesschanged:
+    description: brightness has changed
+    parameters: [level, unit, uuid]
+  event.environment.humiditychanged:
+    description: humidity has changed
+    parameters: [level, unit, uuid]
+  event.security.sensortriggered:
+    description: sensor was triggererd
+    parameters: [level, uuid]
+  event.environment.energychanged:
+    description: energy has changed
+    parameters: [level, uuid]
+  event.proximity.ndef:
+    description: NFC NDEF tag within range
+    parameters: [data]
+units:
+  degC:
+    label: "°C"
+    description: degree celcius
+  degF:
+    label: "°F"
+    description: degree farenheit
+  percent:
+    label: "%"
+    description: percent value
+  lux:
+    label: "lux"
+    description: brighness in lux

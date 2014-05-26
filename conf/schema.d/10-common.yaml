@@ -1,0 +1,13 @@
+commands:
+  displaymessage:
+    name: display a message
+    parameters:
+      duration:
+        name: duration
+        type: integer
+      line2:
+        name: line2
+        type: string
+      line1:
+        name: line1
+        type: string

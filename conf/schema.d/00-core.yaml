@@ -6,8 +6,6 @@ commands:
     name: turn off
   "run":
     name: run
-  push:
-    name: push button
   setvariable:
     name: set global variable
     parameters:

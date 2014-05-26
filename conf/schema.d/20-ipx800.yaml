@@ -1,0 +1,38 @@
+commands:
+  adddevice:
+    name: add device
+    parameters:
+      type:
+        name: device type
+        type: string
+      param1:
+        name: param1
+        type: string
+      param2:
+        name: param2
+        type: string
+      param3:
+        name: param3
+        type: string
+  status:
+    name: get device status
+  forcestate:
+    name: force device state
+    parameters:
+      device:
+        name: device internalid
+        type: string
+      state:
+        name: device state
+        type: string
+  getdevices:
+    name: get all devices
+devicetypes:
+  ipx800controller:
+    name: IPX800 board controller
+    description: Internal device to control IPX800 boards
+    commands: [adddevice]
+  ipx800v3board:
+    name: IPX800v3 relay board
+    description: Ethernet relay board
+    commands: [adddevice, allon, alloff, status, forcestate, getdevices]

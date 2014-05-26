@@ -1,0 +1,70 @@
+commands:
+  addnode:
+    name: add a node
+  removenode:
+    name: remove a node
+  addcontroller:
+    name: add a controller
+  removecontroller:
+    name: remove a controller
+  addassociation:
+    name: add association
+    parameters:
+      node:
+        name: node
+        type: integer
+      group:
+        name: group
+        type: integer
+      target:
+        name: target
+        type: integer
+  healnode:
+    name: heal a zwave node
+    paramters:
+      node:
+        name: node
+        type: integer
+  removeassociation:
+    name: remove association
+    parameters:
+      node:
+        name: node
+        type: integer
+      group:
+        name: group
+        type: integer
+      target:
+        name: target
+        type: integer
+  setconfigparam:
+    name: configure parameter
+    parameters:
+      node:
+        name: node
+        type: integer
+      param:
+        name: parameter number
+        type: integer
+      value:
+        name: value to set
+        type: integer
+      size:
+        name: size of value
+        type: integer
+  downloadconfig:
+    name: receive network
+  cancel:
+    name: cancel operation
+  saveconfig:
+    name: save network config
+  reset:
+    name: reset network info
+    parameters:
+      name: confirm
+      type: boolean
+devicetypes:
+  zwavecontroller:
+    name: z-wave interface
+    description: z-wave interface from agozwave
+    commands: [allon, alloff, addnode, removenode, addcontroller, removecontroller, addassociation, removeassociation, setconfigparam, downloadconfig, cancel, saveconfig, reset, healnode]

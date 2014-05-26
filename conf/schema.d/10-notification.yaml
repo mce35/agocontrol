@@ -1,0 +1,52 @@
+commands:
+  sendmail:
+    name: send an email
+    parameters:
+      to:
+        name: recipient
+        type: string
+      body:
+        name: message body
+        type: string
+      subject:
+        name: message subject
+        type: string
+  sendsms:
+    name: send SMS
+    parameters:
+      text:
+        name: message
+        type: string
+      to:
+        name: recipient
+        type: phonenumber
+  sendgtalk:
+    name: send GTalk message
+    parameters:
+      message:
+        name: message
+        type: string
+      to:
+        name: gtalk username
+        type: string
+  sendtweet:
+    name: send tweet
+    parameters:
+      tweet:
+        name: tweet
+        type: string
+  sendpush:
+    name: push message
+    parameters:
+      message:
+        name: message
+        type: string
+devicetypes:
+  smtpgateway:
+    name: mail gateway
+    description: used to send emails
+    commands: [sendmail]
+  alertcontroller:
+    name: alert controller
+    description: internal device to send alerts
+    commands: [sendsms, sendpush, sendmail, sendtweet, sendgtalk]
