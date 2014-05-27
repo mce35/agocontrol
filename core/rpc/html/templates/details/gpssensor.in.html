@@ -31,12 +31,15 @@
 		<label style="display: inline">
             <_strong data-translateable="true">From:</_strong>
 			<input type="text" style="opacity: 0; position: absolute; top: 0; left: 0;" id="dummyDate1"/>
-			<input value="" type="text" style="display: inline" size="10" readonly="readonly" id="start_date"/>
+			<input value="" type="text" style="display: inline" size="16" readonly="readonly" id="start_date"/>
 		</label>
 		<label style="display: inline">
             <_strong data-translateable="true">To:</_strong>
-			<input value="" type="text" style="display: inline" size="10" readonly="readonly" id="end_date"/>
+			<input value="" type="text" style="display: inline" size="16" readonly="readonly" id="end_date"/>
 		</label>
+        <label style="display: inline">
+            <input type="button" id="get_graph" value="Refresh" />
+        </label>
 	</form>
 </div>
 <div style="width: 50%; text-align: right; float: left;">

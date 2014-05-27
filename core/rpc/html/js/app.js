@@ -749,8 +749,10 @@ function showCommandList(container, device) {
     var commandParams = document.createElement("span");
     commandSelect.id = "commandSelect";
     var type = device.devicetype;
-    for ( var i = 0; i < schema.devicetypes[type].commands.length; i++) {
-	commandSelect.options[i] = new Option(schema.commands[schema.devicetypes[type].commands[i]].name, schema.devicetypes[type].commands[i]);
+    if( type && schema.devicetypes[type] ) {
+        for ( var i = 0; i < schema.devicetypes[type].commands.length; i++) {
+            commandSelect.options[i] = new Option(schema.commands[schema.devicetypes[type].commands[i]].name, schema.devicetypes[type].commands[i]);
+        }
     }
 
     commandSelect.onchange = function() {
@@ -789,6 +791,26 @@ function showCommandList(container, device) {
 }
 
 /**
+ * Convert string under format "d.m.y h:m" to js Date object
+ */
+function stringToDatetime(str) {
+    var dt = str.match(/(\d+).(\d+).(\d+)\s+(\d+):(\d+)/);
+    return new Date(dt[3], parseInt(dt[2])-1, dt[1], dt[4], dt[5]);
+}
+
+/**
+ * Convert datetime js object to string under format "d.m.y h:m"
+ */
+function datetimeToString(dt) {
+    var str = $.datepicker.formatDate('dd.mm.yy', dt);
+    str += ' ';
+    str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
+    str += ':';
+    str += ( dt.getMinutes()<10 ? '0'+dt.getMinutes() : dt.getMinutes() );
+    return str;
+}
+
+/**
  * Shows the detail page of a device
  * 
  * @param device
@@ -811,24 +833,50 @@ function doShowDetails(device, template, environment) {
 	    }
 
 	    if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor")) {
+            //refresh button
+            $('#get_graph').click(function() {
+                renderGraph(device, document.getElementById('graph')._environment);
+            });
+
 		/* Setup start date */
 		var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
-		$("#start_date").datepicker({
-		    dateFormat : "dd.mm.yy",
-		    onSelect : function() {
-			renderGraph(device, document.getElementById('graph')._environment);
-		    }
-		});
-		$("#start_date").datepicker("setDate", start);
+        var startEl = $('#start_date');
+        startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
+        startEl.datetimepicker({
+            closeOnDateSelect: true,
+            //value: $.datepicker.formatDate('dd.mm.yy', start) + ' 00:00',
+            format: 'd.m.Y H:i',
+            onChangeDateTime: function(dp,$input) {
+                //check date
+                var sd = stringToDatetime($('#start_date').val());
+                var ed = stringToDatetime($('#end_date').val());
+                if( sd.getTime()>ed.getTime() ) {
+                    //invalid date
+                    notif.warning('Specified datetime is invalid');
+                    sd = new Date(ed.getTime() - 24 * 3600 * 1000);
+                    $('#start_date').val( datetimeToString(sd) );
+                }
+            }
+        });
 
 		/* Setup end date */
-		$("#end_date").datepicker({
-		    dateFormat : "dd.mm.yy",
-		    onSelect : function() {
-			renderGraph(device, document.getElementById('graph')._environment);
-		    }
-		});
-		$("#end_date").datepicker("setDate", new Date());
+        var endEl = $('#end_date');
+        endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
+        endEl.datetimepicker({
+            closeOnDateSelect: true,
+            format:'d.m.Y H:i',
+            onChangeDateTime: function(dp,$input) {
+                //check date
+                var sd = stringToDatetime($('#start_date').val());
+                var ed = stringToDatetime($('#end_date').val());
+                if( sd.getTime()>ed.getTime() ) {
+                    //invalid date
+                    notif.warning('Specified datetime is invalid');
+                    ed = new Date(sd.getTime() + 24 * 3600 * 1000);
+                    $('#end_date').val( datetimeToString(ed) );
+                }
+            }
+        });
 
 		if (device.devicetype == "binarysensor") {
 		    environment = "device.state";
@@ -897,8 +945,8 @@ function renderGraph(device, environment) {
 	}
     });
 
-    var endDate = new Date($("#end_date").datepicker("getDate").getTime() + 1000 * 3600 * 23 + 60 * 59);
-    var startDate = $("#start_date").datepicker("getDate");
+    var endDate = stringToDatetime($('#end_date').val());
+    var startDate = stringToDatetime($('#start_date').val());
 
     //check if agorrdtool is installed
     if( rrdtoolController && renderType=="graph" ) {
