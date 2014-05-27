@@ -37,6 +37,7 @@ std::map<std::string, T_COMMAND> commandsmap;
 
 io_service ioService; 
 serial_port serialPort(ioService); 
+string device = "";
 
 /**
  * Split specified string
@@ -67,8 +68,8 @@ std::string printDeviceInfos(std::string internalid, qpid::types::Variant::Map i
         result << " - value=" << infos["value"] << endl;
     if( !infos["counter_sent"].isVoid() )
         result << " - counter_sent=" << infos["counter_sent"] << endl;
-    if( !infos["counter_resent"].isVoid() )
-        result << " - counter_resent=" << infos["counter_resent"] << endl;
+    if( !infos["counter_retries"].isVoid() )
+        result << " - counter_retries=" << infos["counter_retries"] << endl;
     if( !infos["counter_received"].isVoid() )
         result << " - counter_received=" << infos["counter_received"] << endl;
     if( !infos["counter_failed"].isVoid() )
@@ -138,6 +139,37 @@ void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos) {
 }
 
 /**
+ * Open serial port
+ */
+bool openSerialPort(string device) {
+    bool result = true;
+    try {
+        serialPort.open(device); 
+        serialPort.set_option(serial_port::baud_rate(115200)); 
+        serialPort.set_option(serial_port::parity(serial_port::parity::none)); 
+        serialPort.set_option(serial_port::character_size(serial_port::character_size(8))); 
+        serialPort.set_option(serial_port::stop_bits(serial_port::stop_bits::one)); 
+        serialPort.set_option(serial_port::flow_control(serial_port::flow_control::none)); 
+    } catch(std::exception const&  ex) {
+        cerr  << "Can't open serial port: " << ex.what() << endl;
+        result = false;
+    }
+    return result;
+}
+
+/**
+ * Close serial port
+ */
+void closeSerialPort() {
+    try {
+        serialPort.close();
+    }
+    catch( std::exception const&  ex) {
+        //cerr  << "Can't close serial port: " << ex.what() << endl;
+    }
+}
+
+/**
  * Send command to MySensor gateway
  */
 void sendcommand(std::string command) {
@@ -190,32 +222,66 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
         //switch to specified command
         if( cmd=="getcounters" ) {
             //return devices counters
+            returnval["error"] = 0;
+            returnval["msg"] = "";
+            qpid::types::Variant::Map counters;
             qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-	        for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
-                returnval[it->first.c_str()] = it->second.asMap();
-        	}
+            for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
+                qpid::types::Variant::Map content = it->second.asMap();
+                content["device"] = it->first.c_str();
+                counters[it->first.c_str()] = content;
+            }
+            returnval["counters"] = counters;
         }
         else if( cmd=="resetcounters" ) {
             //reset all counters
             qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-	        for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
+            for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
                 infos = getDeviceInfos(it->first);
                 if( infos.size()>0 ) {
-                    if( !infos["counter_received"].isVoid() ) {
-                        infos["counter_received"] = 0;
-                    }
-                    if( !infos["counter_sent"].isVoid() ) {
-                        infos["counter_sent"] = 0;
-                    }
-                    if( !infos["counter_resent"].isVoid() ) {
-                        infos["counter_resent"] = 0;
-                    }
-                    if( !infos["counter_failed"].isVoid() ) {
-                        infos["counter_failed"] = 0;
-                    }
+                    infos["counter_received"] = 0;
+                    infos["counter_sent"] = 0;
+                    infos["counter_retries"] = 0;
+                    infos["counter_failed"] = 0;
                     setDeviceInfos(it->first, &infos);
                 }
         	}
+            returnval["error"] = 0;
+            returnval["msg"] = "";
+        }
+        else if( cmd=="getport" ) {
+            //get serial port
+            returnval["error"] = 0;
+            returnval["msg"] = "";
+            returnval["port"] = device;
+        }
+        else if( cmd=="setport" ) {
+            //set serial port
+            if( !command["port"].isVoid() ) {
+                //restart communication
+                closeSerialPort();
+                if( !openSerialPort(command["port"].asString()) ) {
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Unable to open specified port";
+                }
+                else {
+                    //everything looks good, save port
+                    device = command["port"].asString();
+                    if( !setConfigOption("mysensors", "device", device.c_str()) ) {
+                        returnval["error"] = 1;
+                        returnval["msg"] = "Unable to save serial port to config file";
+                    }
+                    else {
+                        returnval["error"] = 0;
+                        returnval["msg"] = "";
+                    }
+                }
+            }
+            else {
+                //port is missing
+                returnval["error"] = 1;
+                returnval["msg"] = "No port specified";
+            }
         }
         else {
             //get device infos
@@ -253,23 +319,28 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
 /**
  * Read line from Serial
  */
-std::string readLine() {
-        char c;
-        std::string result;
-        for(;;)
-        {
-		boost::asio::read(serialPort,boost::asio::buffer(&c,1));
-		switch(c)
-		{
-			case '\r':
-			    break;
-			case '\n':
-			    return result;
-			default:
-			    result+=c;
-		}
+std::string readLine(bool* error) {
+    char c;
+    std::string result;
+    (*error) = false;
+    try {
+        for(;;) {
+            boost::asio::read(serialPort,boost::asio::buffer(&c,1));
+            switch(c) {
+                case '\r':
+                    break;
+                case '\n':
+                    return result;
+                default:
+                    result+=c;
+            }
         }
-	return result;
+    }
+    catch (std::exception& e) {
+        cerr << "Unable to read line: " << e.what() << endl;
+        (*error) = true;
+    }
+    return result;
 }
 
 /**
@@ -280,7 +351,7 @@ void addDevice(std::string internalid, std::string devicetype, qpid::types::Vari
     infos["value"] = "0";
     infos["counter_sent"] = 0;
     infos["counter_received"] = 0;
-    infos["counter_resent"] = 0;
+    infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
     devices[internalid] = infos;
 	devicemap["devices"] = devices;
@@ -331,11 +402,11 @@ void* resendFunction(void* param) {
                 //update counter
                 infos = getDeviceInfos(it->first);
                 if( infos.size()>0 ) {
-                    if( infos["counter_resent"].isVoid() ) {
-                        infos["counter_resent"] = 1;
+                    if( infos["counter_retries"].isVoid() ) {
+                        infos["counter_retries"] = 1;
                     }
                     else {
-                        infos["counter_resent"] = infos["counter_resent"].asUint64()+1;
+                        infos["counter_retries"] = infos["counter_retries"].asUint64()+1;
                     }
                     setDeviceInfos(it->first, &infos);
                 }
@@ -367,10 +438,27 @@ void* resendFunction(void* param) {
  * Serial read function (threaded)
  */
 void *receiveFunction(void *param) {
+    bool error = false;
 	while (1) {
 		pthread_mutex_lock (&serialMutex);
 
-		std::string line = readLine();
+        //read line
+		std::string line = readLine(&error);
+
+        //check errors on serial port
+        if( error ) {
+            //error occured! close port
+            cout << "Reconnecting to serial port" << endl;
+            closeSerialPort();
+            //pause (100ms)
+            usleep(100000);
+            //and reopen it
+            openSerialPort(device);
+
+		    pthread_mutex_unlock (&serialMutex);
+            continue;
+        }
+
         if( DEBUG )
     		cout << " => RECEIVING: " << prettyPrint(line);
 		std::vector<std::string> items = split(line, ';');
@@ -627,8 +715,8 @@ void *receiveFunction(void *param) {
  * main
  */
 int main(int argc, char **argv) {
-    std::string device;
-    device=getConfigOption("mysensors", "device", "/dev/ttyACM0");
+    //get config
+    device = getConfigOption("mysensors", "device", "/dev/ttyACM0");
 
     //get command line parameters
     bool continu = true;
@@ -650,15 +738,8 @@ int main(int argc, char **argv) {
     // determine reply for INTERNAL;I_UNIT message - defaults to "M"etric
     if (getConfigOption("system","units","SI")!="SI") units="I";
 
-    try {
-        serialPort.open(device); 
-        serialPort.set_option(serial_port::baud_rate(115200)); 
-        serialPort.set_option(serial_port::parity(serial_port::parity::none)); 
-        serialPort.set_option(serial_port::character_size(serial_port::character_size(8))); 
-        serialPort.set_option(serial_port::stop_bits(serial_port::stop_bits::one)); 
-        serialPort.set_option(serial_port::flow_control(serial_port::flow_control::none)); 
-    } catch(std::exception const&  ex) {
-        cerr  << "Can't open serial port:" << ex.what() << endl;
+    //open serial port
+    if( !openSerialPort(device) ) {
         exit(1);
     }
 
@@ -678,7 +759,8 @@ int main(int argc, char **argv) {
     cout << "Requesting gateway version: ";
     std::string getVersion = "0;0;4;4;\n";
     serialPort.write_some(buffer(getVersion));
-    cout << readLine() << endl;
+    bool error;
+    cout << readLine(&error) << endl;
 
     //init agocontrol client
     cout << "Initializing MySensor controller" << endl;
