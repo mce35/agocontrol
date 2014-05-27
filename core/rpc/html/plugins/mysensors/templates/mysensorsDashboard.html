@@ -1,0 +1,33 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <span id="nr" data-translateable="true">mysensorscontroller is not responding. Unable to execute action.</span>
+    </div>
+
+    <h3>MySensors device counters</h3>
+    <br/>
+    <table style="width: 100%; margin-top: 15px; margin-bottom: 5px;" data-bind="dataTable: { dataSource:counters, rowTemplate:'rowTemplate', columns:['device','counter_sent','counter_retries','counter_failed','counter_received'], options:{}}">
+        <thead>
+            <tr>
+                <th>Device</th>
+                <th>Sent</th>
+                <th>Retries</th>
+                <th>Failed</th>
+                <th>Received</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script id="rowTemplate" type="text/html">
+        <td data-bind="text: device"></td>
+        <td data-bind="text: counter_sent"></td>
+        <td data-bind="text: counter_retries"></td>
+        <td data-bind="text: counter_failed"></td>
+        <td data-bind="text: counter_received"></td>
+    </script>
+    
+    <br/>
+    <br/>
+</div>
+

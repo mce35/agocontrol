@@ -1,0 +1,25 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <span id="nr" data-translateable="true">mysensorscontroller is not responding. Unable to execute action.</span>
+        <span id="sp" data-translateable="true">Serial port configured successfully.</span>
+        <span id="rc" data-translateable="true">Counters resetted successfully.</span>
+    </div>
+
+    <h3>MySensors configuration</h3>
+    <br/>
+
+    <ul>
+        <li class="prepend append field">
+            <span class="adjoined">Configure serial port</span>
+            <input id="setport" data-bind="value: port" class="normal text input" type="text" placeholder="/dev/ttyACM0" />
+            <div data-bind="event:{mousedown:setPort}" class="pretty medium primary btn"><a href="#">Set</a></div>
+        </li>
+        <li class="append field">
+            <span class="adjoined">Reset all counters</span>
+            <div data-bind="event:{mousedown:resetCounters}" class="pretty medium primary btn"><a href="#">Reset</a></div>
+        </li>
+    </ul>
+
+    <br/>
+</div>
+
