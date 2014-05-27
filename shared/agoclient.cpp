@@ -285,6 +285,66 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	return result;
 }
 
+bool agocontrol::setConfigOption(const char* section, const char* option, const char* value) {
+    bool result = true;
+    std::stringstream filename;
+
+    filename  << CONFIG_FILE_PATH;
+    filename << "/";
+    filename << section;
+    filename << ".conf";
+    CDataFile ExistingDF(filename.str().c_str());
+
+    result = ExistingDF.SetValue(option, value);
+
+    return result;
+}
+
+bool agocontrol::setConfigOption(const char* section, const char* option, const float value) {
+    bool result = true;
+    std::stringstream filename;
+
+    filename  << CONFIG_FILE_PATH;
+    filename << "/";
+    filename << section;
+    filename << ".conf";
+    CDataFile ExistingDF(filename.str().c_str());
+
+    result = ExistingDF.SetFloat(option, value);
+
+    return result;
+}
+
+bool agocontrol::setConfigOption(const char* section, const char* option, const int value) {
+    bool result = true;
+    std::stringstream filename;
+
+    filename  << CONFIG_FILE_PATH;
+    filename << "/";
+    filename << section;
+    filename << ".conf";
+    CDataFile ExistingDF(filename.str().c_str());
+
+    result = ExistingDF.SetInt(option, value);
+
+    return result;
+}
+
+bool agocontrol::setConfigOption(const char* section, const char* option, const bool value) {
+    bool result = true;
+    std::stringstream filename;
+
+    filename  << CONFIG_FILE_PATH;
+    filename << "/";
+    filename << section;
+    filename << ".conf";
+    CDataFile ExistingDF(filename.str().c_str());
+
+    result = ExistingDF.SetBool(option, value);
+
+    return result;
+}
+
 agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	Variant::Map connectionOptions;
 	connectionOptions["username"] = getConfigOption("system", "username", "agocontrol");

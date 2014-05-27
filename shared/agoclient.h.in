@@ -55,6 +55,12 @@ namespace agocontrol {
 	/// fetch a value from the config file.
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 
+    /// save value to the config file
+	bool setConfigOption(const char *section, const char *option, const char* value);
+	bool setConfigOption(const char *section, const char *option, const float value);
+	bool setConfigOption(const char *section, const char *option, const int value);
+	bool setConfigOption(const char *section, const char *option, const bool value);
+
 	/// convert int to std::string.
 	std::string int2str(int i);
 
