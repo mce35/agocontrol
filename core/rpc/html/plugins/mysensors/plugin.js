@@ -16,7 +16,6 @@ function mysensorsConfig(deviceMap) {
             if( deviceMap[i].devicetype=='mysensorscontroller' )
             {
                 self.mysensorsControllerUuid = deviceMap[i].uuid;
-                console.log('uuid='+self.mysensorsControllerUuid);
                 break;
             }
         }
@@ -116,7 +115,6 @@ function mysensorsDashboard(deviceMap) {
             if( deviceMap[i].devicetype=='mysensorscontroller' )
             {
                 self.mysensorsControllerUuid = deviceMap[i].uuid;
-                console.log('uuid='+self.mysensorsControllerUuid);
                 break;
             }
         }
