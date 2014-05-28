@@ -742,6 +742,30 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			statistics["Retries"] = data.m_retries;
 			returnval["statistics"]=statistics;
 			result = true;
+		} else if (content["command"] == "getnodes") {
+			qpid::types::Variant::Map nodelist;
+			for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
+			{
+				NodeInfo* nodeInfo = *it;
+				string index;
+				qpid::types::Variant::Map node;
+
+				node["manufacturer"]=Manager::Get()->GetNodeManufacturerName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["version"]=Manager::Get()->GetNodeVersion(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["basic"]=Manager::Get()->GetNodeBasic(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["generic"]=Manager::Get()->GetNodeGeneric(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["specific"]=Manager::Get()->GetNodeSpecific(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["product"]=Manager::Get()->GetNodeProductName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["type"]=Manager::Get()->GetNodeType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["producttype"]=Manager::Get()->GetNodeProductType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+
+				uint8 nodeid = nodeInfo->m_nodeId;
+				index = static_cast<ostringstream*>( &(ostringstream() << nodeid) )->str();
+				nodelist[index.c_str()] = node;
+			//	if( ( nodeInfo->m_homeId == homeId ) && ( nodeInfo->m_nodeId == nodeId ) )
+			}
+			returnval["nodelist"]=nodelist;
+			result = true;
 		} else if (content["command"] == "addassociation") {
 			int mynode = content["node"];
 			int mygroup = content["group"];
