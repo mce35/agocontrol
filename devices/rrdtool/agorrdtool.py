@@ -192,7 +192,7 @@ def eventHandler(event, content):
             if not os.path.exists(rrdfile):
                 logging.info('New device detected, create rrd file %s' % rrdfile)
                 ret = rrdtool.create(str(rrdfile), "--step", "60", "--start", "0",
-                        "DS:level:GAUGE:3600:U:U",
+                        "DS:level:GAUGE:21600:U:U",
                         "RRA:AVERAGE:0.5:1:1440",
                         "RRA:AVERAGE:0.5:5:2016",
                         "RRA:AVERAGE:0.5:30:1488",
