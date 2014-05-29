@@ -8,7 +8,10 @@ lib/systemd/system/agolua.service
 lib/systemd/system/agosecurity.service
 etc/opt/agocontrol/conf.d/system.conf
 etc/opt/agocontrol/conf.d/rpc.conf
-etc/opt/agocontrol/schema.yaml
+etc/opt/agocontrol/schema.d/00-core.yaml
+etc/opt/agocontrol/schema.d/10-automation.yaml
+etc/opt/agocontrol/schema.d/10-common.yaml
+etc/opt/agocontrol/schema.d/10-media.yaml
 var/opt/agocontrol/inventory.sql
 var/opt/agocontrol/datalogger.sql
 etc/opt/agocontrol/rpc/rpc_cert.pem
