@@ -1,5 +1,0 @@
-devicetypes:
-  agoscheduler:
-    name: scheduler controller
-    description: schedule scenario on calendar
-    commands: []
