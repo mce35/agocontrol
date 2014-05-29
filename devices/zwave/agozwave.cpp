@@ -749,7 +749,17 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				NodeInfo* nodeInfo = *it;
 				string index;
 				qpid::types::Variant::Map node;
+				qpid::types::Variant::List neighborsList;
 
+				uint8* neighbors;
+				uint32 numNeighbors = Manager::Get()->GetNodeNeighbors(nodeInfo->m_homeId,nodeInfo->m_nodeId,&neighbors);
+				if (numNeighbors) {
+					for(uint32 i=0; i<numNeighbors; i++) {
+						neighborsList.push_back(neighbors[i]);
+					}
+					delete [] neighbors;
+				}
+				node["neighbors"]=neighborsList;	
 				node["manufacturer"]=Manager::Get()->GetNodeManufacturerName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["version"]=Manager::Get()->GetNodeVersion(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["basic"]=Manager::Get()->GetNodeBasic(nodeInfo->m_homeId,nodeInfo->m_nodeId);
