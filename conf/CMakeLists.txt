@@ -18,9 +18,9 @@ endforeach (infile)
 
 add_subdirectory (systemd)
 add_subdirectory (conf.d)
+add_subdirectory (schema.d)
 add_subdirectory (sysvinit)
 
 install (FILES security-limits.conf DESTINATION ${ETCDIR}/security/limits.d RENAME agocontrol.conf)
 install (FILES sysctl.conf DESTINATION ${ETCDIR}/sysctl.d RENAME agocontrol.conf)
-install (FILES schema.yaml DESTINATION ${CONFDIR})
 install (FILES rpc_cert.pem DESTINATION ${CONFDIR}/rpc)
