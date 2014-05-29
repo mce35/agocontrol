@@ -423,34 +423,47 @@ int main(int argc, char **argv) {
 	agoConnection->addEventHandler(eventHandler);
 	agoConnection->setFilter(false);
 
-	string schemafile;
+	string schemaPrefix;
 
 //	clog << agocontrol::kLogNotice << "starting up" << std::endl;
 
-	schemafile=getConfigOption("system", "schema", CONFDIR "/schema.yaml");
+	schemaPrefix=getConfigOption("system", "schemapath", CONFDIR "/schema.d/");
 	discoverdelay=atoi(getConfigOption("system", "discoverdelay", "300").c_str());
 	if (atoi(getConfigOption("system","devicepersistence", "0").c_str()) != 1) persistence=false;
 
 	systeminfo["uuid"] = getConfigOption("system", "uuid", "00000000-0000-0000-000000000000");
 	systeminfo["version"] = AGOCONTROL_VERSION;
 
-	clog << agocontrol::kLogDebug << "parsing schema file" << std::endl;
-	schema = parseSchema(schemafile.c_str());
-
-	fs::path schemadir(CONFDIR "/schema.d");
+	// generate vector of all schema files
+	std::vector<std::string> schemaArray;
+	fs::path schemadir(schemaPrefix.c_str());
 	if (fs::exists(schemadir)) {
 		fs::recursive_directory_iterator it(schemadir);
 		fs::recursive_directory_iterator endit;
 		while (it != endit) {
 			if (fs::is_regular_file(*it) && (it->path().extension().string() == ".yaml")) {
-				clog << agocontrol::kLogDebug << "parsing additional schema file:" << it->path().filename().string() << std::endl;
-				schema = mergeMap(schema, parseSchema(it->path().c_str()));
+				schemaArray.push_back(it->path().filename().string());
 			}
 			++it;
 		}
 	}
+	if (schemaArray.size() < 1) {
+		clog << agocontrol::kLogEmerg << "Can't read schema, aborting!" << std::endl;
+		exit(1);
+	}
 
-//	clog << agocontrol::kLogDebug << "reading inventory" << std::endl;
+	// load schema files in proper order
+	std::sort(schemaArray.begin(), schemaArray.end());
+	std::string schemaFile = schemaPrefix + schemaArray.front();
+	schema = parseSchema(schemaFile.c_str());
+	clog << agocontrol::kLogDebug << "parsing schema file:" << schemaFile << std::endl;
+	for (int i=1; i < schemaArray.size(); i++) {
+		schemaFile = schemaPrefix + schemaArray[i];
+		clog << agocontrol::kLogDebug << "parsing additional schema file:" << schemaFile << std::endl;
+		schema = mergeMap(schema, parseSchema(schemaFile.c_str()));
+	}
+
+	clog << agocontrol::kLogDebug << "reading inventory" << std::endl;
 	inv = new Inventory(CONFDIR "/db/inventory.db");
 
 	variables = jsonFileToVariantMap(VARIABLESMAPFILE);
@@ -462,7 +475,7 @@ int main(int argc, char **argv) {
 	pthread_create(&discoverThread,NULL,discover,NULL);
 	
 	// discover devices
-//	clog << agocontrol::kLogDebug << "discovering devices" << std::endl;
+	clog << agocontrol::kLogDebug << "discovering devices" << std::endl;
 	agoConnection->run();	
 }
 
