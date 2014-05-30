@@ -72,6 +72,24 @@ static pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
 ZWaveNodes devices;
 
+/*
+class MyLog : public i_LogImpl {
+	virtual void Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args );
+};
+
+void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args ) {
+	char lineBuf[1024] = {};
+	int lineLen = 0;
+	if( _format != NULL && _format[0] != '\0' )
+	{
+		va_list saveargs;
+		va_copy( saveargs, _args );
+		lineLen = vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
+		va_end( saveargs );
+	}
+	cout << string(lineBuf) << endl;
+}
+*/
 const char *controllerErrorStr (Driver::ControllerError err)
 {
 	switch (err) {
@@ -724,6 +742,12 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
 			}
 			result = true;
+		} else if (content["command"] == "refreshnode") {
+			if (!(content["node"].isVoid())) {
+				int mynode = content["node"];
+				Manager::Get()->RefreshNodeInfo(g_homeId, mynode);
+				result = true;
+			}
 		} else if (content["command"] == "getstatistics") {
 			Driver::DriverData data;
 			Manager::Get()->GetDriverStatistics( g_homeId, &data );
@@ -989,6 +1013,10 @@ int main(int argc, char **argv) {
 	OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
 
 	Options::Get()->Lock();
+
+	// MyLog myLog;
+	// Log::SetLoggingClass(myLog);
+
 	Manager::Create();
 	Manager::Get()->AddWatcher( OnNotification, NULL );
 	// Manager::Get()->SetPollInterval(atoi(getConfigOption("zwave", "pollinterval", "300000").c_str()),true);
