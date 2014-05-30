@@ -25,6 +25,12 @@ commands:
       node:
         name: node
         type: integer
+  refreshnode:
+    name: refresh network info about a zwave node
+    paramters:
+      node:
+        name: node
+        type: integer
   removeassociation:
     name: remove association
     parameters:
