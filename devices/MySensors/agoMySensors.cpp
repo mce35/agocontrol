@@ -650,7 +650,10 @@ void *receiveFunction(void *param) {
 						case V_DIRECTION: break;
 						case V_UV: break;
 						case V_WEIGHT: break;
-						case V_DISTANCE: break;
+						case V_DISTANCE: 
+							valid = 1;
+							agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
+							break;
 						case V_IMPEDANCE: break;
 						case V_ARMED: break;
 						case V_WATT: break;
