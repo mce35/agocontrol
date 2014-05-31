@@ -172,7 +172,7 @@ class LMSPlaylist(LMSServerNotifications):
                     if self.__off_callback:
                         self.__off_callback(items[0])
         except Exception as e:
-            self.logger.error('Exception in _process_response: %s' % str(e))
+            self.logger.exception('Exception in _process_response:')
         
     def set_callbacks(self, play_callback, pause_callback, stop_callback, on_callback, off_callback, addtrack_callback, deltrack_callback, movetrack_callback, reload_callback):
         """callbacks:
@@ -206,7 +206,7 @@ class LMSPlaylist(LMSServerNotifications):
         try:
             count = int(self.__server.request('%s playlist tracks ?' % player_id))
         except Exception as e:
-            self.logger.fatal('Failed to get playlist songs count: %s' % str(e))
+            self.logger.exception('Failed to get playlist songs count:')
             count = 0
         self.logger.debug('playlist count=%d' % count)
         
@@ -215,7 +215,7 @@ class LMSPlaylist(LMSServerNotifications):
         try:
             current_song = int(self.__server.request('%s playlist index ?' % player_id))
         except Exception as e:
-            self.logger.fatal('Failed to get current song index: %s' % str(e))
+            self.logger.exception('Failed to get current song index:')
             current_song = 0
         self.logger.debug('current_song=%d' % current_song)
         
@@ -236,7 +236,7 @@ class LMSPlaylist(LMSServerNotifications):
                     playlist.append( song )
             except Exception, e:
                 #problem during song infos retrieving
-                self.logger.error('Unable to get song infos: %s' % str(e))
+                self.logger.exception('Unable to get song infos:')
         
         return playlist
         
@@ -257,7 +257,7 @@ class LMSPlaylist(LMSServerNotifications):
                 self.logger.error('Unable to get current song on player %s' % player_id)
         except Exception as e:
             #problem during song infos retrieving
-            self.logger.error('Unable to get current song infos: %s' % str(e))
+            self.logger.exception('Unable to get current song infos:')
             
         return current
 

@@ -130,7 +130,7 @@ class LMSServer(object):
             resp = None
         except Exception as e:
             #something failed
-            self.logger.error(str(e))
+            self.logger.exception("Exception in response:")
             resp = None
         return resp
 
@@ -186,7 +186,7 @@ class LMSServer(object):
 
         except Exception as e:
             #something failed
-            self.logger.error(str(e))
+            self.logger.exception("Exception in request:")
             result = None
 
         return result
@@ -238,7 +238,7 @@ class LMSServer(object):
 
         except Exception as e:
             #error parsing results (not correct?)
-            self.logger.error('Exception occured in request_with_results: %s' % str(e))
+            self.logger.exception('Exception occured in request_with_results:')
             return 0,[],True
 
         return count, items, False
