@@ -204,6 +204,29 @@ void sendcommand(std::string internalid, int messageType, int subType, std::stri
 }
 
 /**
+ * Delete device
+ */
+bool deleteDevice(string internalid) {
+    //init
+    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+    bool result = true;
+
+    if( !devices[internalid].isVoid() ) {
+        devices.erase(internalid);
+	    devicemap["devices"] = devices;
+	    variantMapToJSONFile(devicemap, DEVICEMAPFILE);
+        cout << "Device '" << internalid << "' removed" << endl;
+    }
+    else {
+        cout << "Internalid '" << internalid << "' not found during device deletion" << endl;
+        result = false;
+    }
+
+    return result;
+}
+
+
+/**
  * Agocontrol command handler
  */
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
@@ -268,7 +291,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                     //everything looks good, save port
                     device = command["port"].asString();
                     if( !setConfigOption("mysensors", "device", device.c_str()) ) {
-                        returnval["error"] = 1;
+                        returnval["error"] = 2;
                         returnval["msg"] = "Unable to save serial port to config file";
                     }
                     else {
@@ -279,8 +302,41 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             }
             else {
                 //port is missing
-                returnval["error"] = 1;
+                returnval["error"] = 3;
                 returnval["msg"] = "No port specified";
+            }
+        }
+        else if( cmd=="getdevices" ) {
+            //return list of devices
+            returnval["error"] = 0;
+            returnval["msg"] = "";
+            qpid::types::Variant::List devicesList;
+            qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+            for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
+                infos = getDeviceInfos(it->first);
+                qpid::types::Variant::Map item;
+                item["internalid"] = it->first.c_str();
+                if( infos.size()>0 && !infos["type"].isVoid() ) {
+                    item["type"] = infos["type"];
+                }
+                else {
+                    item["type"] = "unknown";
+                }
+                devicesList.push_back(item);
+            }
+            returnval["devices"] = devicesList;
+        }
+        else if( cmd=="remove" ) {
+            //remove specified device
+            if( !command["device"].isVoid() ) {
+                deleteDevice(command["device"].asString());
+                returnval["error"] = 0;
+                returnval["msg"] = "";
+            }
+            else {
+                //device id is missing
+                returnval["error"] = 4;
+                returnval["msg"] = "Device is missing";
             }
         }
         else {
@@ -308,7 +364,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             }
             else {
                 //internalid doesn't belong to this controller
-                returnval["error"] = 1;
+                returnval["error"] = 5;
                 returnval["msg"] = "Unmanaged internalid";
             }
         }

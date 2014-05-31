@@ -7,6 +7,8 @@ function mysensorsConfig(deviceMap) {
     self.hasNavigation = ko.observable(false);
     self.mysensorsControllerUuid = null;
     self.port = ko.observable();
+    self.devices = ko.observableArray();
+    self.selectedDevice = ko.observable();
 
     //MySensor controller uuid
     if( deviceMap!==undefined )
@@ -95,8 +97,63 @@ function mysensorsConfig(deviceMap) {
         }
     };
 
+    //get devices list
+    self.getDevices = function() {
+        var content = {
+            uuid: self.mysensorsControllerUuid,
+            command: 'getdevices'
+        }
+
+        sendCommand(content, function(res)
+        {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
+            {
+                self.devices(res.result.devices);
+            }
+            else
+            {
+                notif.fatal('#nr', 0);
+            }
+        });
+    };
+
+    //remove device
+    self.removeDevice = function() {
+        if( confirm('Delete device?') )
+        {
+            var content = {
+                uuid: self.mysensorsControllerUuid,
+                command: 'remove',
+                device: self.selectedDevice()
+            }
+    
+            sendCommand(content, function(res)
+            {
+                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
+                {
+                    if( res.result.error==0 )
+                    {
+                        notif.success('#ds');
+                        //refresh devices list
+                        self.getDevices();
+                    }
+                    else 
+                    {
+                        //error occured
+                        notif.error(res.result.msg);
+                    }
+                }
+                else
+                {
+                    notif.fatal('#nr', 0);
+                }
+            });
+        }
+    };
+
     //init ui
     self.getPort();
+    self.getDevices();
 }
 
 function mysensorsDashboard(deviceMap) {

@@ -3,6 +3,7 @@
         <span id="nr" data-translateable="true">mysensorscontroller is not responding. Unable to execute action.</span>
         <span id="sp" data-translateable="true">Serial port configured successfully.</span>
         <span id="rc" data-translateable="true">Counters resetted successfully.</span>
+        <span id="ds" data-translateable="true">Device removed successfully.</span>
     </div>
 
     <h3>MySensors configuration</h3>
@@ -17,6 +18,12 @@
         <li class="append field">
             <span class="adjoined">Reset all counters</span>
             <div data-bind="event:{mousedown:resetCounters}" class="pretty medium primary btn"><a href="#">Reset</a></div>
+        </li>
+        <li class="field">
+            <div class="picker" style="top:14px;">
+                <select class="padding-right: 10px;" data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedDevice"></select>
+            </div>
+            <div data-bind="event:{mousedown:removeDevice}" class="pretty medium primary btn"><a href="#">Remove device</a></div>
         </li>
     </ul>
 
