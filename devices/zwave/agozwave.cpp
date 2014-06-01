@@ -774,6 +774,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				string index;
 				qpid::types::Variant::Map node;
 				qpid::types::Variant::List neighborsList;
+				qpid::types::Variant::List valuesList;
 
 				uint8* neighbors;
 				uint32 numNeighbors = Manager::Get()->GetNodeNeighbors(nodeInfo->m_homeId,nodeInfo->m_nodeId,&neighbors);
@@ -784,6 +785,15 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					delete [] neighbors;
 				}
 				node["neighbors"]=neighborsList;	
+
+				for (list<ValueID>::iterator it2 = (*it)->m_values.begin(); it2 != (*it)->m_values.end(); it2++ ) {
+					ZWaveNode *device = devices.findValue(*it2);
+					if (device != NULL) {
+						valuesList.push_back(device->getId());
+					}
+				}
+				node["internalids"] = valuesList;
+
 				node["manufacturer"]=Manager::Get()->GetNodeManufacturerName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["version"]=Manager::Get()->GetNodeVersion(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["basic"]=Manager::Get()->GetNodeBasic(nodeInfo->m_homeId,nodeInfo->m_nodeId);
