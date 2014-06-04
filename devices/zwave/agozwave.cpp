@@ -775,6 +775,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				qpid::types::Variant::Map node;
 				qpid::types::Variant::List neighborsList;
 				qpid::types::Variant::List valuesList;
+				qpid::types::Variant::Map status;
 
 				uint8* neighbors;
 				uint32 numNeighbors = Manager::Get()->GetNodeNeighbors(nodeInfo->m_homeId,nodeInfo->m_nodeId,&neighbors);
@@ -793,7 +794,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					}
 				}
 				node["internalids"] = valuesList;
-
+			
 				node["manufacturer"]=Manager::Get()->GetNodeManufacturerName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["version"]=Manager::Get()->GetNodeVersion(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["basic"]=Manager::Get()->GetNodeBasic(nodeInfo->m_homeId,nodeInfo->m_nodeId);
@@ -802,6 +803,10 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				node["product"]=Manager::Get()->GetNodeProductName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["type"]=Manager::Get()->GetNodeType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["producttype"]=Manager::Get()->GetNodeProductType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+
+				status["awake"]=Manager::Get()->IsNodeAwake(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				status["failed"]=Manager::Get()->IsNodeFailed(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				node["status"]=status;
 
 				uint8 nodeid = nodeInfo->m_nodeId;
 				index = static_cast<ostringstream*>( &(ostringstream() << nodeid) )->str();
