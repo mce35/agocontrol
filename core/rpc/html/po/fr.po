@@ -128,7 +128,7 @@ msgstr "Cloud"
 
 #: ../templates/navigation/configuration.xml.in.h:8
 msgid "Security"
-msgstr ""
+msgstr "Sécurité"
 
 #: ../templates/navigation/configuration.xml.in.h:9
 #: ../templates/navigation/main.xml.in.h:4
@@ -514,48 +514,44 @@ msgid "Description"
 msgstr "Description"
 
 #: ../templates/configuration/security.xml.in.h:1
-#, fuzzy
 msgid "Security Configuration"
-msgstr "Configuration du scénario"
+msgstr "Configuration de la sécurité"
 
 #: ../templates/configuration/security.xml.in.h:3
-#, fuzzy
 msgid "Add new zone"
-msgstr "Ajouter une nouvelle variable"
+msgstr "Ajouter une nouvelle zone"
 
 #: ../templates/configuration/security.xml.in.h:4
-#, fuzzy
 msgid "Input zone name"
-msgstr "Entrer le nom de l'évènement"
+msgstr "Entrer le nom de la zone"
 
 #: ../templates/configuration/security.xml.in.h:5
-#, fuzzy
 msgid "Add zone"
-msgstr "Ajouter une nouvelle variable"
+msgstr "Ajouter une zone"
 
 #: ../templates/configuration/security.xml.in.h:6
 msgid "Add new housemode"
-msgstr ""
+msgstr "Ajouter un nouveau mode"
 
 #: ../templates/configuration/security.xml.in.h:7
 msgid "Add housemode"
-msgstr ""
+msgstr "Ajouter un mode"
 
 #: ../templates/configuration/security.xml.in.h:8
 msgid "Change housemode"
-msgstr ""
+msgstr "Changer le mode"
 
 #: ../templates/configuration/security.xml.in.h:9
 msgid "Please enter a zone name."
-msgstr ""
+msgstr "Entrer un nom pour la zone"
 
 #: ../templates/configuration/security.xml.in.h:10
 msgid "Please enter a housemode name."
-msgstr ""
+msgstr "Entrer un nom pour le mode"
 
 #: ../templates/configuration/security.xml.in.h:11
 msgid "You must create a housemode before you can add any zones."
-msgstr ""
+msgstr "Vous devez créer un mode avant d'ajouter des zones"
 
 #: ../templates/devices/multilevelsensor.xml.in.h:1
 msgid "GRAPH"
