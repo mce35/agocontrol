@@ -766,6 +766,19 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			statistics["Retries"] = data.m_retries;
 			returnval["statistics"]=statistics;
 			result = true;
+		} else if (content["command"] == "testnode") {
+			if (!(content["node"].isVoid())) {
+				int mynode = content["node"];
+				int count = 10;
+				if (!(content["count"].isVoid())) count=content["count"];
+                                Manager::Get()->TestNetworkNode(g_homeId, mynode, count);
+                                result = true;
+                        }
+                } else if (content["command"] == "testnetwork") {
+			int count = 10;
+			if (!(content["count"].isVoid())) count=content["count"];
+			Manager::Get()->TestNetwork(g_homeId, count);
+			result = true;
 		} else if (content["command"] == "getnodes") {
 			qpid::types::Variant::Map nodelist;
 			for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
