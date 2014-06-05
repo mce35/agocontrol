@@ -708,7 +708,11 @@ void *receiveFunction(void *param) {
 						case V_WEIGHT: break;
 						case V_DISTANCE: 
 							valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
+							if (units == "M") {
+								agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
+							} else {
+								agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "inch");
+							}
 							break;
 						case V_IMPEDANCE: break;
 						case V_ARMED: break;
