@@ -1,6 +1,6 @@
 {
         "name": "MySensors",
         "version": "0.0.1",
-        "description": "MySensors plugin",
+        "description": "MySensors configuration",
         "dashboardAccess": true
 }
