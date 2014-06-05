@@ -175,6 +175,9 @@ events:
   event.proximity.ndef:
     description: NFC NDEF tag within range
     parameters: [data]
+  event.environment.distancechanged:
+    description: distance from sensor has changed
+    parameters: [level, unit, uuid]
 units:
   degC:
     label: "°C"
@@ -188,3 +191,9 @@ units:
   lux:
     label: "lux"
     description: brighness in lux
+  m:
+    label: "meters"
+    description: distance in meters
+  inch:
+    label: "inches"
+    description: distance in inches
