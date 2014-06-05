@@ -816,8 +816,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				node["product"]=Manager::Get()->GetNodeProductName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["type"]=Manager::Get()->GetNodeType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["producttype"]=Manager::Get()->GetNodeProductType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
-
+				node["numgroups"]=Manager::Get()->GetNumGroups(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				status["querystage"]=Manager::Get()->GetNodeQueryStage(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				status["awake"]=Manager::Get()->IsNodeAwake(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				status["listening"]=Manager::Get()->IsNodeListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) || 
+					Manager::Get()->IsNodeFrequentListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) ? true : false;
 				status["failed"]=Manager::Get()->IsNodeFailed(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["status"]=status;
 
@@ -846,6 +849,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			}
 			if (numassoc >0) delete associations;
 			returnval["associations"] = associationsmap;
+			returnval["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, mygroup);
 			result = true;
 		} else if (content["command"] == "removeassociation") {
 			Manager::Get()->RemoveAssociation(g_homeId, content["node"], content["group"], content["target"]);
@@ -1044,6 +1048,8 @@ int main(int argc, char **argv) {
 
 	// MyLog myLog;
 	// Log::SetLoggingClass(myLog);
+	OpenZWave::Log* pLog = OpenZWave::Log::Create("zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+
 
 	Manager::Create();
 	Manager::Get()->AddWatcher( OnNotification, NULL );
