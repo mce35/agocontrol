@@ -455,7 +455,7 @@ function eventConfig() {
 	var paramList = document.getElementsByClassName("cmdParam");
 	if (paramList) {
 	    for ( var i = 0; i < paramList.length; i++) {
-		self.map.action[paramList[i].id] = paramList[i].value;
+		self.map.action[paramList[i].name] = paramList[i].value;
 	    }
 	}
     };
