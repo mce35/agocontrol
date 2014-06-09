@@ -742,6 +742,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
 			}
 			result = true;
+		} else if (content["command"] == "healnetwork") {
+			Manager::Get()->HealNetwork(g_homeId, true);
+			result = true;
 		} else if (content["command"] == "refreshnode") {
 			if (!(content["node"].isVoid())) {
 				int mynode = content["node"];
@@ -1048,7 +1051,10 @@ int main(int argc, char **argv) {
 
 	// MyLog myLog;
 	// Log::SetLoggingClass(myLog);
-	OpenZWave::Log* pLog = OpenZWave::Log::Create("zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+	OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+        pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
+        pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+
 
 
 	Manager::Create();
