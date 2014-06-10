@@ -36,6 +36,7 @@ set (AGODEVICES
   PLCBUS
   MySensors
   rrdtool
+  zmcam
 )
 
 foreach (device ${AGODEVICES})

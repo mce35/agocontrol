@@ -77,6 +77,8 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			returnval["result"] = -1;
 		}
 	}
+    else
+        returnval["result"] = -1;
 	return returnval;
 }
 
