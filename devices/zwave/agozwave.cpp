@@ -740,8 +740,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			if (!(content["node"].isVoid())) {
 				int mynode = content["node"];
 				Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
+			    result = true;
 			}
-			result = true;
+            else {
+                result = false;
+            }
 		} else if (content["command"] == "healnetwork") {
 			Manager::Get()->HealNetwork(g_homeId, true);
 			result = true;
@@ -751,6 +754,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				Manager::Get()->RefreshNodeInfo(g_homeId, mynode);
 				result = true;
 			}
+            else {
+                result = false;
+            }
 		} else if (content["command"] == "getstatistics") {
 			Driver::DriverData data;
 			Manager::Get()->GetDriverStatistics( g_homeId, &data );
@@ -777,12 +783,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
                                 Manager::Get()->TestNetworkNode(g_homeId, mynode, count);
                                 result = true;
                         }
-                } else if (content["command"] == "testnetwork") {
-			int count = 10;
-			if (!(content["count"].isVoid())) count=content["count"];
-			Manager::Get()->TestNetwork(g_homeId, count);
-			result = true;
-		} else if (content["command"] == "getnodes") {
+        } else if (content["command"] == "testnetwork") {
+            int count = 10;
+            if (!(content["count"].isVoid()))
+                count=content["count"];
+            Manager::Get()->TestNetwork(g_homeId, count);
+            result = true;
+        } else if (content["command"] == "getnodes") {
 			qpid::types::Variant::Map nodelist;
 			for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
 			{
@@ -821,10 +828,10 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				node["producttype"]=Manager::Get()->GetNodeProductType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				node["numgroups"]=Manager::Get()->GetNumGroups(nodeInfo->m_homeId,nodeInfo->m_nodeId);
 				status["querystage"]=Manager::Get()->GetNodeQueryStage(nodeInfo->m_homeId,nodeInfo->m_nodeId);
-				status["awake"]=Manager::Get()->IsNodeAwake(nodeInfo->m_homeId,nodeInfo->m_nodeId);
-				status["listening"]=Manager::Get()->IsNodeListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) || 
-					Manager::Get()->IsNodeFrequentListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) ? true : false;
-				status["failed"]=Manager::Get()->IsNodeFailed(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+				status["awake"]=(Manager::Get()->IsNodeAwake(nodeInfo->m_homeId,nodeInfo->m_nodeId) ? 1 : 0);
+				status["listening"]=(Manager::Get()->IsNodeListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) || 
+					Manager::Get()->IsNodeFrequentListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) ? 1 : 0);
+				status["failed"]=(Manager::Get()->IsNodeFailed(nodeInfo->m_homeId,nodeInfo->m_nodeId) ? 1 : 0);
 				node["status"]=status;
 
 				uint8 nodeid = nodeInfo->m_nodeId;
@@ -882,7 +889,20 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		} else if (content["command"] == "reset") {
 			result = true;
 			Manager::Get()->ResetController(g_homeId);
-		}
+		} else if( content["command"] == "setport" ) {
+            if( !content["port"].isVoid() ) {
+                int port = content["port"];
+                result = setConfigOption("zwave", "device", port);
+            }
+            else {
+                result = false;
+            }
+        }
+        else if( content["command"] == "getport" ) {
+            result = true;
+            //return empty string if not configured
+            returnval["port"] = getConfigOption("zwave", "device", "");
+        }
 
 	} else {
 		ZWaveNode *device = devices.findId(internalid);
