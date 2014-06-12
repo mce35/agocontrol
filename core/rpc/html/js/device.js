@@ -222,11 +222,11 @@ function device(obj, uuid) {
 	    el[0].innerHTML = '';
 	sendCommand(content, function(res) {
 	    if (el !== undefined) {
-		if (res.result.result.error == 0)
+		if (res.result.error == 0)
 		    color = "#00CC00";
 		else
 		    color = "#CC0000";
-		el[0].innerHTML = '<span style="color:' + color + '">' + res.result.result.msg + '</span>';
+		el[0].innerHTML = '<span style="color:' + color + '">' + res.result.msg + '</span>';
 	    }
 	    if (callback !== null)
 		callback(res);
@@ -266,11 +266,11 @@ function device(obj, uuid) {
 	    content.command = 'status';
 	    sendCommand(content, function(res) {
 		el = document.getElementsByClassName("currentoutputs");
-		el[0].innerHTML = res.result.result.outputs;
+		el[0].innerHTML = res.result.outputs;
 		el = document.getElementsByClassName("currentanalogs");
-		el[0].innerHTML = res.result.result.analogs;
+		el[0].innerHTML = res.result.analogs;
 		el = document.getElementsByClassName("currentcounters");
-		el[0].innerHTML = res.result.result.counters;
+		el[0].innerHTML = res.result.counters;
 	    });
 	};
 
@@ -329,7 +329,7 @@ function device(obj, uuid) {
 
 	self.devices = ko.observableArray([]);
 	self.getDevicesCallback = function(res) {
-	    self.devices(res.result.result.devices);
+	    self.devices(res.result.devices);
 	};
 
 	self.selectedDevice = ko.observable();
@@ -343,7 +343,7 @@ function device(obj, uuid) {
 	    content.state = self.selectedDeviceState();
 	    content.device = self.selectedDevice();
 	    sendCommand(content, function(res) {
-		self.forcestateresult(res.result.result.msg);
+		self.forcestateresult(res.result.msg);
 	    });
 	};
     }
