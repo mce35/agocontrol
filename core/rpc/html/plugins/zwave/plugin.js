@@ -1173,7 +1173,8 @@ function zwaveConfig(zwave) {
 
     //reset controller
     self.reset = function() {
-        if( confirm('Reset controller (everything will be lost!)') )
+        var msg = $('#reallyreset').html();
+        if( confirm(msg) )
         {
             zwave.reset();
         }
@@ -1197,7 +1198,8 @@ function zwaveConfig(zwave) {
 
     //remove node
     self.removeNode = function() {
-        if( confirm('Really remove node?') )
+        var msg = $('#reallyremovenode').html();
+        if( confirm(msg) )
         {
             zwave.removeNode(self.selectedNode.id);
         }
@@ -1232,7 +1234,7 @@ function zwaveConfig(zwave) {
 
     //remove association
     self.removeAssociation = function(asso) {
-        var msg = $('#reallydeleteassociation').html();
+        var msg = $('#reallyremoveassociation').html();
         if( confirm(msg) )
         {
             zwave.removeAssociation(asso.node, asso.group, asso.target);

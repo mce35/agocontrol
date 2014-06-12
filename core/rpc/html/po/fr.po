@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 10:58+0200\n"
+"POT-Creation-Date: 2014-06-12 15:56+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -321,7 +321,7 @@ msgstr "Modifier scénario"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:17
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -754,7 +754,7 @@ msgid "To send test tweet on your account, click on button:"
 msgstr "Pour envoyer un tweet de test, cliquer sur le bouton:"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:19
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:31
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
 msgid "Test"
 msgstr "Test"
 
@@ -1054,19 +1054,23 @@ msgstr "La commande d'annulation a été envoyée au contrôleur"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:8
 msgid "Save configuration sent to controller"
-msgstr "La commande de sauvegarde de la configuration a été envoyée au contrôleur"
+msgstr ""
+"La commande de sauvegarde de la configuration a été envoyée au contrôleur"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:9
 msgid "Download config sent to controller"
-msgstr "La commande de téléchargement de la configuration a été envoyée au contrôleur"
+msgstr ""
+"La commande de téléchargement de la configuration a été envoyée au contrôleur"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:10
 msgid "Turn on all nodes command sent to controller"
-msgstr "La commande d'éteignage de tous les périphériques a été envoyée au contrôleur"
+msgstr ""
+"La commande d'éteignage de tous les périphériques a été envoyée au contrôleur"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:11
 msgid "Turn off all nodes command sent to controller"
-msgstr "La commande d'allumage de tous les périphériques a été envoyée au contrôleur"
+msgstr ""
+"La commande d'allumage de tous les périphériques a été envoyée au contrôleur"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:12
 msgid "Test node command sent to controller"
@@ -1097,217 +1101,229 @@ msgid "Association removed successfully"
 msgstr "L'association a été supprimée correctement"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:19
-msgid "Really delete this association?"
+msgid "Really remove this association?"
 msgstr "Confirmer la suppression de cette association?"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:20
+msgid "Really remove this node?"
+msgstr "Confirmer la suppression de ce périphérique?"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:21
+msgid "Reset controller (everything will be lost!)"
+msgstr "Confirmer la remise à zéro du contrôleur"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:22
 msgid "Infos"
 msgstr "Infos"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:21
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:23
 msgid "Status"
 msgstr "Statut"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:22
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
 msgid "Actions"
 msgstr "Actions"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:23
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:25
 msgid "Associations"
 msgstr "Associations"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:26
 msgid "Advanced"
 msgstr "Avancé"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:25
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:27
 msgid "In this tab you can perform some basic actions on selected Z-Wave node"
-msgstr "Dans cet onglet vous pouvez lancer des commands basiques sur le périphérique Z-Wave sélectionné"
+msgstr ""
+"Dans cet onglet vous pouvez lancer des commands basiques sur le périphérique "
+"Z-Wave sélectionné"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:26
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:28
 msgid "Heal this node"
 msgstr "Réparer ce périphérique"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:27
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:29
 msgid "Heal"
 msgstr "Réparer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:28
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:30
 msgid "Refresh node informations"
 msgstr "Mettre à jour les informations du périphérique"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:29
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:31
 msgid "Refresh"
 msgstr "Mettre à jour"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:30
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:32
 msgid "Test this node"
 msgstr "Tester ce périphérique"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:32
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:34
 msgid ""
 "Here you can manage associations for this node. More informations are "
 "available"
 msgstr ""
-"Ici vous pouvez gérer les associations de ce périphérique. Pour plus d'informations "
-"cliquer"
+"Ici vous pouvez gérer les associations de ce périphérique. Pour plus "
+"d'informations cliquer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
 msgid "here"
 msgstr "ici"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:34
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
 msgid "Create new association with"
 msgstr "Créer une association avec"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
 msgid "Create"
 msgstr "Créer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
 msgid "List of existing associations"
 msgstr "Liste des associations existantes"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:39
 msgid "no association"
 msgstr "Aucune association"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:40
 msgid "Add association with"
 msgstr "Ajouter une association avec"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:39
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:41
 msgid "This tab is reserved to experts that knows what they do. Be careful!"
-msgstr "Cet onglet est réservé aux personnes expérimentées qui savent ce qu'elles font!"
+msgstr ""
+"Cet onglet est réservé aux personnes expérimentées qui savent ce qu'elles "
+"font!"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:40
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:42
 msgid "Remove this node from network"
 msgstr "Supprimer ce périphérique du réseau"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:41
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:43
 msgid "Remove"
 msgstr "Supprimer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:42
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:44
 msgid "Set parameter"
 msgstr "Mettre à jour le paramètre"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:43
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:45
 msgid "to"
 msgstr "avec"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:44
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:46
 msgid "Set value"
 msgstr "Mettre à jour"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:45
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:47
 msgid "Outer circle represents devices"
 msgstr "Le cercle extérieur représente les périphériques"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:46
-msgid "Nodes dependencies are displayed inside the circle"
-msgstr "Les dépendances entre les périphériques sont affichées "
-"à l'intérieur du cercle"
-
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:47
-msgid "Double-click on outer circle open selected device details"
-msgstr "Double-cliquer sur le cercle extérieur pour afficher des infos "
-"sur le périphérique sélectionné"
-
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:48
+msgid "Nodes dependencies are displayed inside the circle"
+msgstr ""
+"Les dépendances entre les périphériques sont affichées à l'intérieur du "
+"cercle"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:49
+msgid "Double-click on outer circle open selected device details"
+msgstr ""
+"Double-cliquer sur le cercle extérieur pour afficher des infos sur le "
+"périphérique sélectionné"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
 msgid ""
 "Mouse over a dependency shows relationship between source and target nodes"
 msgstr ""
-"Le passage de la souris sur une dépendance affiche les relations avec "
-"les périphériques"
+"Le passage de la souris sur une dépendance affiche les relations avec les "
+"périphériques"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:49
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
 msgid "Dependencies"
 msgstr "Dépendances"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:52
 msgid "General"
 msgstr "Général"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
 msgid "Statistics"
 msgstr "Statistiques"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:52
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
 msgid "General Z-Wave configuration"
 msgstr "Configuration générale de l'extension Z-Wave"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
 msgid "Configure controller USB port"
 msgstr "Configurer le port USB du contrôleur"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
 msgid "Set"
 msgstr "Sauver"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
 msgid "Basic commands that can be launched on controller"
-msgstr ""
-"Les commandes basiques qui peuvent être exécutées par "
-"le contrôleur"
+msgstr "Les commandes basiques qui peuvent être exécutées par le contrôleur"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
 msgid "Pair node to your network"
 msgstr "Associer le périphérique au réseau"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
 msgid "Pair"
 msgstr "Associer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
 msgid "Unpair node from your network"
 msgstr "Dissocier le périphérique du réseau"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
 msgid "Turn on/off all devices"
 msgstr "Allumer/éteindre tous les périphériques"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
 msgid "On"
 msgstr "On"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
 msgid "Off"
 msgstr "Off"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
 msgid "Test network"
 msgstr "Tester le réseau"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
 msgid "Z-Wave controller reports some statistics displayed below"
 msgstr "Le contrôleur Z-Wave fournit des statistiques afficher plus bas"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
 msgid "Advanced controller commands"
 msgstr "Les commandes avancées du contrôleur"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
 msgid "Cancel running controller command"
 msgstr "Annuler la commande en cours"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
 msgid "Reset"
 msgstr "Remise à zéro"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
 msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
 msgid "Download configuration"
 msgstr "Télécharger la configuration"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
 msgid "Download"
 msgstr "Télécharger"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
 msgid "Save configuration"
 msgstr "Sauvegarder la configuration"
 
