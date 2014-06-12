@@ -1,0 +1,260 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <_span id="nr" data-translateable="true">zwavecontroller is not responding. Unable to execute action.</_span>
+        <_span id="setportok" data-translateable="true">Port configured</_span>
+        <_span id="resetok" data-translateable="true">Z-Wave controller resetted</_span>
+        <_span id="addnodeok" data-translateable="true">Add node command sent to controller</_span>
+        <_span id="removenodeok" data-translateable="true">Remove node command sent to controller</_span>
+        <_span id="testnetworkok" data-translateable="true">Test network command launched</_span>
+        <_span id="cancelok" data-translateable="true">Cancel command sent to controller</_span>
+        <_span id="saveconfigok" data-translateable="true">Save configuration sent to controller</_span>
+        <_span id="downloadconfigok" data-translateable="true">Download config sent to controller</_span>
+        <_span id="allonok" data-translateable="true">Turn on all nodes command sent to controller</_span>
+        <_span id="alloffok" data-translateable="true">Turn off all nodes command sent to controller</_span>
+        <_span id="testnodeok" data-translateable="true">Test node command sent to controller</_span>
+        <_span id="testnodeko" data-translateable="true">Test node command failed</_span>
+        <_span id="healnodeok" data-translateable="true">Heal node command sent to controller</_span>
+        <_span id="setconfigparamok" data-translateable="true">Parameter updated successfully</_span>
+        <_span id="setconfigparamko" data-translateable="true">Unable to update parameter</_span>
+        <_span id="addassociationok" data-translateable="true">Association added successfully</_span>
+        <_span id="removeassociationok" data-translateable="true">Association removed successfully</_span>
+        <_span id="reallydeleteassociation" data-translateable="true">Really delete this association?</_span>
+    </div>
+
+    <h3>Z-Wave configuration</h3>
+    <br/>
+
+    <!-- node details popup -->
+    <div id="nodeDetails" style="display:none;">
+        <div id="nodeDetails-tabs">
+            <ul>
+                <li><_a data-translateable="true" href="#details-infos">Infos</_a></li>
+                <li><_a data-translateable="true" href="#details-status">Status</_a></li>
+                <li><_a data-translateable="true" href="#details-actions">Actions</_a></li>
+                <li><_a data-translateable="true" href="#details-associations">Associations</_a></li>
+                <li><_a data-translateable="true" href="#details-advanced">Advanced</_a></li>
+            </ul>
+            <div id="details-infos">
+                <table class="agoTable" style="width:700px;">
+                    <tbody data-bind="foreach: nodeInfos">
+                    <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                        <td><span data-bind="text: info"/></td>
+                        <td><span data-bind="text: value"/></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="details-status">
+                <table class="agoTable" style="width:700px;">
+                    <tbody data-bind="foreach: nodeStatus">
+                    <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                        <td><span data-bind="text:status"/></td>
+                        <td><span data-bind="text:value"/></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="details-actions">
+                <_span data-translateable="true">In this tab you can perform some basic actions on selected Z-Wave node</_span>
+                <br/><br/>
+                <ul>
+                    <li>
+                        <_span data-translateable="true">Heal this node</_span>
+                        <div data-bind="event:{mousedown:healNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Heal</_a></div>
+                        <div class="ttip" data-tooltip="If you have troubles with this node, heal action can repair and diagnose the problem"><i class="icon-help-circled"></i></div>
+                    </li>
+                    <li>
+                        <_span data-translateable="true">Refresh node informations</_span>
+                        <div data-bind="event:{mousedown:refreshNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Refresh</_a></div>
+                        <div class="ttip" data-tooltip="Force controller to get node informations. This command lasts some time."><i class="icon-help-circled"></i>
+                        </div>
+                    </li>
+                    <li>
+                        <_span data-translateable="true">Test this node</_span>
+                        <div data-bind="event:{mousedown:testNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Test</_a></div>
+                        <div class="ttip" data-tooltip="Launch some test procedures on this node. This command lasts some time!"><i class="icon-help-circled"></i></div>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="details-associations">
+                <_span data-translateable="true">Here you can manage associations for this node. More informations are available </_span><_a data-translateable="true" href="http://z-wave.alsenet.com/index.php/Short_introduction_in_Z-Wave_terminology#Association" target="_blank">here</_a>.
+                <br/>
+                <ul>
+                    <li>
+                        <_span data-translateable="true">Create new association with</_span>
+                        <div class="picker"><select data-bind="options:nodesForAssociation, optionsText:'value', value:selectedNodeForAssociation"></select></div>
+                        <div data-bind="click:createAssociation" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Create</_a></div>
+                    </li>
+                    <li>
+                        <_span data-translateable="true">List of existing associations</_span> :
+                        <ko opts="if: nodeAssociations().length==0">
+                            <_span data-translateable="true" style="font-style:italic">no association</_span>
+                        </ko>
+                    </li>
+                </ul>
+                        <table class="agoTable" style="width:700px;">
+                        <tbody data-bind="foreach: nodeAssociations">
+                        <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                            <td><span data-bind="text:label"/></td>
+                            <td>
+                                <table class="agoTable" style="width:500px;">
+                                <tbody data-bind="foreach: assos">
+                                <tr data-bind="ifnot: add">
+                                    <td><span data-bind="text:asso"/></td>
+                                    <td>
+                                        <div class="pretty medium default btn">
+                                            <i data-translateable="true" data-bind="click: $root.removeAssociation" class="icon-cancel" title="Delete node association" alt="Delete node association"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-bind="if: add">
+                                    <td>
+                                        <_span data-translateable="true">Add association with</_span>
+                                        <!-- node picker style here to make UI smaller -->
+                                        <select data-bind="options:targets, optionsText:'value', value:target"></select>
+                                    </td>
+                                    <td>
+                                        <div class="pretty medium default btn">
+                                            <i data-translateable="true" data-bind="click: $root.addAssociation" class="icon-plus" title="Add association" alt="Add association"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        </tbody>
+                        </table>
+            </div>
+
+            <div id="details-advanced">
+                <_span data-translateable="true">This tab is reserved to experts that knows what they do. Be careful!</_span>
+                <br/><br/>
+                <ul>
+                    <li>
+                        <_span data-translateable="true">Remove this node from network</_span>
+                        <div data-bind="event:{mousedown:removeNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Remove</_a></div>
+                    </li>
+                    <li>
+                        <_span data-translateable="true">Set parameter</_span>
+                        <div class="picker"><select></select></div>
+                        <_span data-translateable="true">to</_span>
+                        <div class="field" style="display:inline;"><input class="xnarrow input" type="text" placeholder="Value"/></div>
+                        <div data-bind="event:{mousedown:setConfigParam}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Set value</_a></div>
+                        <div class="ttip" data-tooltip="Force selected node parameter to specified value"><i class="icon-help-circled"></i></div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- graph help popup -->
+    <div id="help-graph" style="display:none;">
+        <ul>
+            <li><_span data-translateable="true">Outer circle represents devices</_span></li>
+            <li><_span data-translateable="true">Nodes dependencies are displayed inside the circle</_span></li>
+            <li><_span data-translateable="true">Double-click on outer circle open selected device details</_span></li>
+            <li><_span data-translateable="true">Mouse over a dependency shows relationship between source and target nodes</_span></li>
+        </ul>
+    </div>
+
+    <!-- main tabs  -->
+    <div data-bind="jqTabs:{}">
+        <ul>
+            <li><_a data-translateable="true" href="#main-graph">Dependencies</_a></li>
+            <li><_a data-translateable="true" href="#main-general">General</_a></li>
+            <li><_a data-translateable="true" href="#main-actions">Actions</_a></li>
+            <li><_a data-translateable="true" href="#main-stats">Statistics</_a></li>
+            <li><_a data-translateable="true" href="#main-advanced">Advanced</_a></li>
+        </ul>
+        <div id="main-graph">
+            <i class="icon-help-circled" style="cursor:pointer;" data-bind="event:{mousedown:graphHelp}"></i>
+            <div id="nodesDependency" style="width:890px; height:750px;"/>
+        </div>
+
+        <div id="main-general">
+            <_span data-translateable="true">General Z-Wave configuration</_span> :
+            <br/>
+            <ul>
+                <li>
+                    <_span data-translateable="true">Configure controller USB port</_span>
+                    <div class="field" style="display:inline;"><input id="setport" data-bind="value: port" class="normal text input" type="text" placeholder="/dev/ttyACM0"/></div>
+                    <div data-bind="event:{mousedown:setPort}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Set</_a></div>
+                </li>
+            </ul>
+        </div>
+
+        <div id="main-actions">
+            <_span data-translateable="true">Basic commands that can be launched on controller</_span> :
+            <br/>
+            <ul>
+                <li>
+                    <_span data-translateable="true">Pair node to your network</_span>
+                    <div data-bind="event:{mousedown:addNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Pair</_a></div>
+                    <div class="ttip" data-tooltip="Activate pairing mode off your Z-Wave controller"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Unpair node from your network</_span>
+                    <div data-bind="event:{mousedown:removeNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Pair</_a></div>
+                    <div class="ttip" data-tooltip="Remove node from your Z-Wave controller"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Turn on/off all devices</_span>
+                    <div data-bind="event:{mousedown:allOn}" class="pretty medium primary btn"><_a data-translateable="true" href="#">On</_a></div>
+                    <div data-bind="event:{mousedown:allOff}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Off</_a></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Test network</_span>
+                    <div data-bind="event:{mousedown:testNetwork}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Test</_a></div>
+                    <div class="ttip" data-tooltip="Launch some test procedures over all nodes. This command lasts some time!"><i class="icon-help-circled"></i></div>
+                </li>
+            </ul>
+        </div>
+
+        <div id="main-stats">
+            <_span data-translateable="true">Z-Wave controller reports some statistics displayed below</_span> :
+            <table class="agoTable" style="width:850px;">
+                <tbody data-bind="foreach: stats">
+                <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                    <td data-bind="text: stat"></td>
+                    <td data-bind="text: value"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="main-advanced">
+            <_span data-translateable="true">Advanced controller commands</_span> :
+            <br/>
+            <ul>
+                <li>
+                    <_span data-translateable="true">Cancel running controller command</_span>
+                    <div data-bind="event:{mousedown:cancel}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Reset</_a></div>
+                    <div class="ttip" data-tooltip="This action will cancel currently running command"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Reset controller</_span>
+                    <div data-bind="event:{mousedown:reset}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Reset</_a></div>
+                    <div class="ttip" data-tooltip="This action will clear everything from your controller!"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Download configuration</_span>
+                    <div data-bind="event:{mousedown:downloadConfig}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Download</_a></div>
+                    <div class="ttip" data-tooltip="Download network config from primary controller to dongle"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Save configuration</_span>
+                    <div data-bind="event:{mousedown:saveConfig}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Save</_a></div>
+                    <div class="ttip" data-tooltip="????"><i class="icon-help-circled"></i></div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <br/>
+</div>
+

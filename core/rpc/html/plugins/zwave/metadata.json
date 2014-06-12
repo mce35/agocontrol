@@ -1,0 +1,15 @@
+{
+        "name": "Z-Wave",
+        "version": "0.0.1",
+        "description": "Z-Wave configuration",
+        "dashboardAccess": true,
+        "resources": {
+            "js": [
+                "d3.v3.min.js"
+            ],
+            "css": [
+                "zwave.css",
+                "chord.css"
+            ]
+        }
+}

@@ -1,0 +1,27 @@
+/* Force gumby style overwritten by jquery tabs */
+div.btn a {
+    color: white;
+}
+
+.ui-widget-content a { 
+    color: #C03D20
+}
+
+/* Customize some Gumby style to fit our needs */
+.ttip:after {
+    min-width: 300px;
+}
+
+.ttip {
+    display: inline;
+}
+
+.picker {
+    top: 14px;
+}
+
+ul {
+    padding-left: 20px;
+    list-style-type: disc;
+}
+

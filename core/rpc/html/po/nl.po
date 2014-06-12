@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-02 09:14+0200\n"
+"POT-Creation-Date: 2014-06-12 10:58+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -321,6 +321,7 @@ msgstr "Bewerk Scenario"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:17
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
 msgid "Save"
 msgstr "Opslaan"
 
@@ -449,6 +450,7 @@ msgid "Variables Configuration"
 msgstr "Variabelen configuratie"
 
 #: ../templates/configuration/variables.xml.in.h:6
+#: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:3
 msgid "Value"
 msgstr "Waarde"
 
@@ -555,10 +557,6 @@ msgstr ""
 #: ../templates/configuration/security.xml.in.h:11
 msgid "You must create a housemode before you can add any zones."
 msgstr ""
-
-#: ../templates/devices/multilevelsensor.xml.in.h:1
-msgid "GRAPH"
-msgstr "Grafieken"
 
 #: ../templates/details/multilevelsensor.xml.in.h:4
 msgid "Show as:"
@@ -755,6 +753,7 @@ msgid "To send test tweet on your account, click on button:"
 msgstr "Klik op de knop om een test bericht te tweeten:"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:19
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:31
 msgid "Test"
 msgstr "Test"
 
@@ -1018,3 +1017,305 @@ msgstr ""
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:19
 msgid "Schedule's color"
 msgstr "Item kleur"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:1
+#: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:1
+#, fuzzy
+msgid "zwavecontroller is not responding. Unable to execute action."
+msgstr "luacontroller reageert niet. Handeling kan niet worden uitgevoerd."
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:2
+#, fuzzy
+msgid "Port configured"
+msgstr "Push is geconfigureerd"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:3
+msgid "Z-Wave controller resetted"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:4
+msgid "Add node command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:5
+msgid "Remove node command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:6
+msgid "Test network command launched"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:7
+msgid "Cancel command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:8
+msgid "Save configuration sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:9
+msgid "Download config sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:10
+msgid "Turn on all nodes command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:11
+msgid "Turn off all nodes command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:12
+msgid "Test node command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:13
+msgid "Test node command failed"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:14
+msgid "Heal node command sent to controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:15
+#, fuzzy
+msgid "Parameter updated successfully"
+msgstr "Agenda item(s) bijgewerkt."
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:16
+#, fuzzy
+msgid "Unable to update parameter"
+msgstr "Bijwerken mislukt."
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:17
+#, fuzzy
+msgid "Association added successfully"
+msgstr "Script ingeladen."
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:18
+#, fuzzy
+msgid "Association removed successfully"
+msgstr "Script opgeslagen"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:19
+msgid "Really delete this association?"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:20
+msgid "Infos"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:21
+#, fuzzy
+msgid "Status"
+msgstr "Status:"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:22
+#, fuzzy
+msgid "Actions"
+msgstr "Actie"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:23
+#, fuzzy
+msgid "Associations"
+msgstr "Actie"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
+msgid "Advanced"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:25
+msgid "In this tab you can perform some basic actions on selected Z-Wave node"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:26
+msgid "Heal this node"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:27
+msgid "Heal"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:28
+msgid "Refresh node informations"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:29
+#, fuzzy
+msgid "Refresh"
+msgstr "Ververs lijst"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:30
+msgid "Test this node"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:32
+msgid ""
+"Here you can manage associations for this node. More informations are "
+"available"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
+msgid "here"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:34
+msgid "Create new association with"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
+#, fuzzy
+msgid "Create"
+msgstr "Maak Kamer"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
+msgid "List of existing associations"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
+#, fuzzy
+msgid "no association"
+msgstr "Cloud Activering"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
+msgid "Add association with"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:39
+msgid "This tab is reserved to experts that knows what they do. Be careful!"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:40
+msgid "Remove this node from network"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:41
+msgid "Remove"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:42
+msgid "Set parameter"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:43
+msgid "to"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:44
+msgid "Set value"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:45
+msgid "Outer circle represents devices"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:46
+msgid "Nodes dependencies are displayed inside the circle"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:47
+msgid "Double-click on outer circle open selected device details"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:48
+msgid ""
+"Mouse over a dependency shows relationship between source and target nodes"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:49
+msgid "Dependencies"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
+msgid "General"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
+msgid "Statistics"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:52
+#, fuzzy
+msgid "General Z-Wave configuration"
+msgstr "Email configuratie"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
+msgid "Configure controller USB port"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
+msgid "Set"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
+msgid "Basic commands that can be launched on controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
+msgid "Pair node to your network"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
+msgid "Pair"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
+msgid "Unpair node from your network"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
+msgid "Turn on/off all devices"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
+msgid "On"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
+msgid "Off"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
+msgid "Test network"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
+msgid "Z-Wave controller reports some statistics displayed below"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
+msgid "Advanced controller commands"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
+msgid "Cancel running controller command"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
+msgid "Reset"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
+msgid "Reset controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
+#, fuzzy
+msgid "Download configuration"
+msgstr "Kamer Configuratie"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
+msgid "Download"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+#, fuzzy
+msgid "Save configuration"
+msgstr "SMS Configuratie"
+
+#: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
+msgid "Statistic"
+msgstr ""
+
+#~ msgid "GRAPH"
+#~ msgstr "Grafieken"

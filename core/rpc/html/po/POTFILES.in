@@ -19,3 +19,5 @@ templates/devices/thermostat.xml.in
 plugins/agoblockly/templates/agoblockly.xml.in
 plugins/agoalert/templates/agoalert.xml.in
 plugins/agoscheduler/templates/agoscheduler.xml.in
+plugins/zwave/templates/zwaveConfig.xml.in
+plugins/zwave/templates/zwaveDashboard.xml.in
