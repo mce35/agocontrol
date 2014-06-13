@@ -39,6 +39,15 @@ bool ZWaveNode::addValue(std::string label, OpenZWave::ValueID valueID) {
 	return true;
 }
 
+std::string ZWaveNode::toString() {
+	std::stringstream result;
+	result << id << " (" << devicetype << "): ";
+	for (std::map<std::string, OpenZWave::ValueID>::const_iterator it = values.begin(); it != values.end(); ++it) {
+		result << it->first << " ";		
+	}
+	return result.str();
+}
+
 ZWaveNodes::ZWaveNodes() {
 
 }
@@ -78,4 +87,12 @@ bool ZWaveNodes::remove(std::string id) {
 		}
 	}
 	return false;	
+}
+
+std::string ZWaveNodes::toString() {
+	std::stringstream result;
+	for (std::list<ZWaveNode*>::iterator it = nodes.begin(); it!= nodes.end(); it++) {
+		result << (*it)->toString() << std::endl;		
+	}
+	return result.str();
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string>
+#include <sstream>
 #include <list>
 #include <map>
 
@@ -22,6 +23,7 @@ class ZWaveNode {
 		bool hasValue(OpenZWave::ValueID valueID);
 		bool addValue(std::string label, OpenZWave::ValueID valueID);
 		OpenZWave::ValueID *getValueID(std::string label);
+		std::string toString();
 };
 
 class ZWaveNodes {
@@ -31,6 +33,7 @@ class ZWaveNodes {
 		~ZWaveNodes();
 		ZWaveNode *findValue(OpenZWave::ValueID valueID);
 		ZWaveNode *findId(std::string id);
+		std::string toString();
 		bool add(ZWaveNode *node);
 		bool remove(std::string id);
 };

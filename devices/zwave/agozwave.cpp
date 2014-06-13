@@ -292,7 +292,11 @@ void OnNotification
 				tempstream << label;
 				string tempstring = tempstream.str();
 				ZWaveNode *device;
-				if (basic == BASIC_TYPE_CONTROLLER) {
+				if (id.GetGenre() == ValueID::ValueGenre_Config) {
+					printf("CONFIGURATION PARAMETER Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - Label: %s\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),label.c_str());
+
+
+				} else if (basic == BASIC_TYPE_CONTROLLER) {
 					if ((device = devices.findId(nodeinstance)) != NULL) {
 						device->addValue(label, id);
 						device->setDevicetype("remote");
@@ -1055,7 +1059,7 @@ int main(int argc, char **argv) {
 	printf("connection to agocontrol established\n");
 
 	// init open zwave
-	Options::Create( "/etc/openzwave/config/", CONFDIR "/ozw/", "" );
+	Options::Create( "/etc/openzwave/", CONFDIR "/ozw/", "" );
 	Options::Get()->AddOptionBool("PerformReturnRoutes", false );
 	Options::Get()->AddOptionBool("ConsoleOutput", false ); 
 	Options::Get()->AddOptionBool("EnableSIS", true ); 
@@ -1098,7 +1102,8 @@ int main(int argc, char **argv) {
 		printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
 		printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
 
-		printf("agozwave startup complete, starting agoConnection->run()\n");
+		printf("OZW startup complete\n");
+		cout << devices.toString() << endl;
 
 		agoConnection->addDevice("zwavecontroller", "zwavecontroller");
 		agoConnection->addHandler(commandHandler);
