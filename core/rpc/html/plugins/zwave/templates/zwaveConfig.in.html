@@ -174,7 +174,14 @@
             <li><_a data-translateable="true" href="#main-advanced">Advanced</_a></li>
         </ul>
         <div id="main-graph">
-            <i class="icon-help-circled" style="cursor:pointer;" data-bind="event:{mousedown:graphHelp}"></i>
+            <div class="row">
+                <div class="six columns">
+                    <span style="font-style:italic" data-bind="text: nodesCount"/> <span style="font-style:italic">nodes found in your network</span>
+                </div>
+                <div class="six columns" style="text-align:right;">
+                    <i class="icon-help-circled" style="cursor:pointer;" data-bind="event:{mousedown:graphHelp}"></i>
+                </div>
+            </div>
             <div id="nodesDependency" style="width:890px; height:750px;"/>
         </div>
 

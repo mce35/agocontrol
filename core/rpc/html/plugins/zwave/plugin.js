@@ -1015,6 +1015,7 @@ function zwaveConfig(zwave) {
     self.zwave = zwave;
     self.hasNavigation = ko.observable(false);
     self.nodes = [];
+    self.nodesCount = ko.observable(0);
     self.port = ko.observable();
     self.nodeInfos = ko.observableArray([]);
     self.nodeStatus = ko.observableArray([]);
@@ -1167,8 +1168,12 @@ function zwaveConfig(zwave) {
             newNode.id = id;
             self.nodes.push(newNode);
         }
-        zwave.buildChordGraph('#nodesDependency', self.nodes, self.openNodeDetails);
-        //zwave.buildDirectedGraph('#nodesDependency', self.nodes, self.openNodeDetails);
+        self.nodesCount(self.nodes.length);
+        if( self.nodes.length>0 )
+        {
+            zwave.buildChordGraph('#nodesDependency', self.nodes, self.openNodeDetails);
+            //zwave.buildDirectedGraph('#nodesDependency', self.nodes, self.openNodeDetails);
+        }
     });
 
     //reset controller
