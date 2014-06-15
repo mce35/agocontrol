@@ -18,13 +18,15 @@ function Zwave(deviceMap) {
         var height = 750;
         var outerRadius = Math.min(width, height) / 2 - 10;
         var innerRadius = outerRadius - 24;
-        var names = [];
+        var titles = [];
+        var ids = [];
         var matrix = [];
         var count = nodes.length;
         var found;
         for( var i=0; i<count; i++ )
         {
-            names.push(""+nodes[i].type+"("+(i+1)+")");
+            titles.push(""+nodes[i].type+"("+(i+1)+")");
+            ids.push(""+(i+1));
             var deps = [];
             for( var j=0; j<count; j++ )
             {
@@ -87,7 +89,7 @@ function Zwave(deviceMap) {
 
         // Add a mouseover title.
         group.append("title").text(function(d, i) {
-            return names[i];
+            return titles[i];
         });
 
         // Add the group arc.
@@ -105,9 +107,9 @@ function Zwave(deviceMap) {
                  .attr("xlink:href", function(d, i) { 
                      return "#group" + i;
                  })
-                 .text(function(d, i) { return names[i]; });
+                 .text(function(d, i) { return ids[i]; });
 
-        // Remove the labels that don't fit. :(
+        // Replace labels (device type+id) that don't fit with node id only
         groupText.filter(function(d, i) {
             return groupPath[0][i].getTotalLength() / 2 - 16 < this.getComputedTextLength();
         }).remove();
@@ -125,12 +127,12 @@ function Zwave(deviceMap) {
             var out = "";
             if( d.source.index!==d.target.index )
             {
-                out += names[d.source.index];
+                out += titles[d.source.index];
                 if( matrix[d.target.index][d.source.index]==1 )
                     out += "<-";
                 if( matrix[d.source.index][d.target.index]==1 )
                     out += "->";
-                out += names[d.target.index];
+                out += titles[d.target.index];
             }
             else
             {

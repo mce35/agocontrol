@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-12 15:57+0200\n"
+"POT-Creation-Date: 2014-06-15 19:38+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -324,7 +324,7 @@ msgstr "Szenario bearbeiten"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:17
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
 msgid "Save"
 msgstr "Speichern"
 
@@ -1240,78 +1240,86 @@ msgid "Statistics"
 msgstr "Statistiken"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
+msgid "nodes found in your network"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
+msgid "Building graph..."
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
 msgid "General Z-Wave configuration"
 msgstr "Allgemeine Z-Wave Konfiguration"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
 msgid "Configure controller USB port"
 msgstr "USB Port vom Controller"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
 msgid "Set"
 msgstr "Setzen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
 msgid "Basic commands that can be launched on controller"
 msgstr "Grundlegende Befehle die an den Controller geschickt werden können"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
 msgid "Pair node to your network"
 msgstr "Node ins Netzwerk koppeln"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
 msgid "Pair"
 msgstr "Kopple"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
 msgid "Unpair node from your network"
 msgstr "Node vom Netzwerk entkopplen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
 msgid "Turn on/off all devices"
 msgstr "Schalte alle Geräte ein/aus"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
 msgid "On"
 msgstr "Ein"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
 msgid "Off"
 msgstr "Aus"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
 msgid "Test network"
 msgstr "Teste Netzwerk"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
 msgid "Z-Wave controller reports some statistics displayed below"
 msgstr "Statistiken vom Z-Wave Controller"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
 msgid "Advanced controller commands"
 msgstr "Erweiterte Controller Befehle"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
 msgid "Cancel running controller command"
 msgstr "Laufenden Controller Befehl abbrechen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
 msgid "Reset controller"
 msgstr "Controller Zurücksetzen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
 msgid "Download configuration"
 msgstr "Konfiguration herunterladen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
 msgid "Download"
 msgstr "Herunterladen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
 msgid "Save configuration"
 msgstr "Konfiguration speichern"
 

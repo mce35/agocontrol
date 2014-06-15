@@ -176,7 +176,12 @@
         <div id="main-graph">
             <div class="row">
                 <div class="six columns">
-                    <span style="font-style:italic" data-bind="text: nodesCount"/> <span style="font-style:italic">nodes found in your network</span>
+                    <ko opts="if: nodesCount()>=0">
+                        <span style="font-style:italic" data-bind="text: nodesCount"/> <_span data-translateable="true" style="font-style:italic">nodes found in your network</_span>
+                    </ko>
+                    <ko opts="if: nodesCount()==-1">
+                        <_span data-translateable="true">Building graph...</_span>
+                    </ko>
                 </div>
                 <div class="six columns" style="text-align:right;">
                     <i class="icon-help-circled" style="cursor:pointer;" data-bind="event:{mousedown:graphHelp}"></i>
@@ -204,7 +209,7 @@
                 <li>
                     <_span data-translateable="true">Pair node to your network</_span>
                     <div data-bind="event:{mousedown:addNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Pair</_a></div>
-                    <div class="ttip" data-tooltip="Activate pairing mode off your Z-Wave controller"><i class="icon-help-circled"></i></div>
+                    <div class="ttip" data-translateable="true" data-tooltip="Activate pairing mode off your Z-Wave controller"><i class="icon-help-circled"></i></div>
                 </li>
                 <li>
                     <_span data-translateable="true">Unpair node from your network</_span>
