@@ -1122,7 +1122,7 @@ msgstr "Status"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
 msgid "Actions"
-msgstr "Aktionen"
+msgstr "Befehle"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:25
 msgid "Associations"
@@ -1212,7 +1212,7 @@ msgstr "Setze Wert"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:47
 msgid "Outer circle represents devices"
-msgstr "Äusserer Kreis stellt Geräte da"
+msgstr "Äusserer Kreis stellt Geräte dar"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:48
 msgid "Nodes dependencies are displayed inside the circle"
@@ -1245,7 +1245,7 @@ msgstr "Allgemeine Z-Wave Konfiguration"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
 msgid "Configure controller USB port"
-msgstr "Konfiguration für Controller USB Port"
+msgstr "USB Port vom Controller"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
 msgid "Set"
@@ -1253,7 +1253,7 @@ msgstr "Setzen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
 msgid "Basic commands that can be launched on controller"
-msgstr "Grundlegende Befehle die über den Controller gestartet werden können"
+msgstr "Grundlegende Befehle die an den Controller geschickt werden können"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
 msgid "Pair node to your network"
@@ -1285,7 +1285,7 @@ msgstr "Teste Netzwerk"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
 msgid "Z-Wave controller reports some statistics displayed below"
-msgstr "Z-Wave Controller meldet einige Statistiken die hier angezeigt werden"
+msgstr "Statistiken vom Z-Wave Controller"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
 msgid "Advanced controller commands"
