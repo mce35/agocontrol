@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-15 19:38+0200\n"
+"POT-Creation-Date: 2014-06-16 09:20+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -321,7 +321,7 @@ msgstr "Bewerk Scenario"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:17
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
 msgid "Save"
 msgstr "Opslaan"
 
@@ -753,7 +753,7 @@ msgid "To send test tweet on your account, click on button:"
 msgstr "Klik op de knop om een test bericht te tweeten:"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:19
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
 msgid "Test"
 msgstr "Test"
 
@@ -1145,186 +1145,209 @@ msgid "Heal"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:30
-msgid "Refresh node informations"
+msgid ""
+"If you have troubles with this node, heal action can repair and diagnose the "
+"problem"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:31
+msgid "Refresh node informations"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:32
 #, fuzzy
 msgid "Refresh"
 msgstr "Ververs lijst"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:32
-msgid "Test this node"
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
+msgid ""
+"Force controller to get node informations. This command lasts some time."
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:34
+msgid "Test this node"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
+msgid "Launch some test procedures on this node. This command lasts some time!"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
 msgid ""
 "Here you can manage associations for this node. More informations are "
 "available"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
 msgid "here"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:39
 msgid "Create new association with"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:40
 #, fuzzy
 msgid "Create"
 msgstr "Maak Kamer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:41
 msgid "List of existing associations"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:39
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:42
 #, fuzzy
 msgid "no association"
 msgstr "Cloud Activering"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:40
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:43
 msgid "Add association with"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:41
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:44
 msgid "This tab is reserved to experts that knows what they do. Be careful!"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:42
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:45
 msgid "Remove this node from network"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:43
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:46
 msgid "Remove"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:44
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:47
 msgid "Set parameter"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:45
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:48
 msgid "to"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:46
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:49
 msgid "Set value"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:47
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
+msgid "Force selected node parameter to specified value"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
 msgid "Outer circle represents devices"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:48
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:52
 msgid "Nodes dependencies are displayed inside the circle"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:49
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
 msgid "Double-click on outer circle open selected device details"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
 msgid ""
 "Mouse over a dependency shows relationship between source and target nodes"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
 msgid "Dependencies"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:52
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
 msgid "General"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
 msgid "Statistics"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
 msgid "nodes found in your network"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
 msgid "Building graph..."
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
 #, fuzzy
 msgid "General Z-Wave configuration"
 msgstr "Email configuratie"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:57
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
 msgid "Configure controller USB port"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:58
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
 msgid "Set"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
 msgid "Basic commands that can be launched on controller"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
 msgid "Pair node to your network"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
 msgid "Pair"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
-msgid "Unpair node from your network"
-msgstr ""
-
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:63
-msgid "Turn on/off all devices"
-msgstr ""
-
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:64
-msgid "On"
-msgstr ""
-
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:65
-msgid "Off"
-msgstr ""
-
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:66
-msgid "Test network"
+msgid "Activate pairing mode of your Z-Wave controller"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
-msgid "Z-Wave controller reports some statistics displayed below"
+msgid "Unpair node from your network"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
-msgid "Advanced controller commands"
+msgid "Turn on/off all devices"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
-msgid "Cancel running controller command"
+msgid "On"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
-msgid "Reset"
+msgid "Off"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
-msgid "Reset controller"
+msgid "Test network"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
+msgid "Z-Wave controller reports some statistics displayed below"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
+msgid "Advanced controller commands"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
+msgid "Cancel running controller command"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
+msgid "Reset"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
+msgid "Reset controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:77
 #, fuzzy
 msgid "Download configuration"
 msgstr "Kamer Configuratie"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:78
 msgid "Download"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
 #, fuzzy
 msgid "Save configuration"
 msgstr "SMS Configuratie"
