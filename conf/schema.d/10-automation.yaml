@@ -175,7 +175,7 @@ events:
   event.proximity.ndef:
     description: NFC NDEF tag within range
     parameters: [data]
-  event.environment.distancechanged:
+  event.device.distancechanged:
     description: distance from sensor has changed
     parameters: [level, unit, uuid]
 units:
