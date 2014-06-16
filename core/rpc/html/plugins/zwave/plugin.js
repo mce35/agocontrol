@@ -15,7 +15,7 @@ function Zwave(deviceMap) {
         //code from: http://bl.ocks.org/AndrewRP/7468330
         //click example: http://jsfiddle.net/mdml/K6FHW/
         var width = 890;
-        var height = 750;
+        var height = 890;
         var outerRadius = Math.min(width, height) / 2 - 10;
         var innerRadius = outerRadius - 24;
         var titles = [];
@@ -52,6 +52,10 @@ function Zwave(deviceMap) {
 
         var colors = d3.scale.category20c();
 
+        var zoom = d3.behavior.zoom()
+                     .scaleExtent([1, 10])
+                     .on("zoom", zoomed);
+
         var arc = d3.svg.arc()
                     .innerRadius(innerRadius)
                     .outerRadius(outerRadius);
@@ -69,7 +73,8 @@ function Zwave(deviceMap) {
                     .attr("height", height)
                     .append("g")
                     .attr("id", "circle")
-                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+                    .call(zoom);
 
         svg.append("circle")
            .attr("r", outerRadius);
@@ -78,14 +83,15 @@ function Zwave(deviceMap) {
         layout.matrix(matrix);
 
         // Add a group per neighborhood.
-        var group = svg.selectAll(".group")
-                       .data(layout.groups)
-                       .enter().append("g")
-                       .attr("class", "group")
-                       .on("mouseover", mouseover)
-                       .on("dblclick", function(d){
-                            onNodeDetails(d.index);
-                        });
+        var container = svg.append("g");
+        var group = container.selectAll(".group")
+                    .data(layout.groups)
+                    .enter().append("g")
+                    .attr("class", "group")
+                    .on("mouseover", mouseover)
+                    .on("click", function(d){
+                        onNodeDetails(d.index);
+                    });
 
         // Add a mouseover title.
         group.append("title").text(function(d, i) {
@@ -115,7 +121,7 @@ function Zwave(deviceMap) {
         }).remove();
 
         // Add the chords.
-        var chord = svg.selectAll(".chord")
+        var chord = container.selectAll(".chord")
                        .data(layout.chords)
                        .enter().append("path")
                        .attr("class", "chord")
@@ -145,6 +151,10 @@ function Zwave(deviceMap) {
             chord.classed("fade", function(p) {
                 return p.source.index!=i && p.target.index!=i;
             });
+        }
+
+        function zoomed() {
+            container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
         }
     };
 
