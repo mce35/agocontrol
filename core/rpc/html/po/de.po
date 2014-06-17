@@ -1151,7 +1151,7 @@ msgstr "Heilen"
 msgid ""
 "If you have troubles with this node, heal action can repair and diagnose the "
 "problem"
-msgstr ""
+msgstr "Wenn Du Probleme mit diesem Node hast, dann kann der Heilen Befehl das Problem beheben und analysieren"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:31
 msgid "Refresh node informations"
@@ -1164,7 +1164,7 @@ msgstr "Aktualisieren"
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
 msgid ""
 "Force controller to get node informations. This command lasts some time."
-msgstr ""
+msgstr "Zwinge den Controller die Node Informationen zu holen. Dieser Befehl kann einige Zeit in Anspruch nehmen."
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:34
 msgid "Test this node"
@@ -1172,7 +1172,7 @@ msgstr "Diesen Node testen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
 msgid "Launch some test procedures on this node. This command lasts some time!"
-msgstr ""
+msgstr "Führe einige Testroutinen auf diesen Node aus. Dieser Befehl kann einige Zeit in Anspruch nehmen!"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
 msgid ""
@@ -1232,7 +1232,7 @@ msgstr "Setze Wert"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
 msgid "Force selected node parameter to specified value"
-msgstr ""
+msgstr "Erzwinge den gewählten Wert für den Parameter auf dem ausgefählten Node"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
 msgid "Outer circle represents devices"
@@ -1243,7 +1243,6 @@ msgid "Nodes dependencies are displayed inside the circle"
 msgstr "Node Abhängigkeiten werden innerhalb des Kreises angezeigt"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
-#, fuzzy
 msgid "Click on outer circle open selected device details"
 msgstr ""
 "Doppel-klicke auf den äusseren Kreis um Details vom ausgewählten Gerät "
@@ -1258,7 +1257,7 @@ msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
 msgid "Zoom graph using your mouse wheel"
-msgstr ""
+msgstr "Eine Vergrößerung und Verkleinerung der Darstellung ist mit dem Mausrad möglich"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
 msgid "Dependencies"
@@ -1274,11 +1273,11 @@ msgstr "Statistiken"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:59
 msgid "nodes found in your network"
-msgstr ""
+msgstr "Nodes wurden in Deinem Netzwerk gefunden"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:60
 msgid "Building graph..."
-msgstr ""
+msgstr "Generiere Darstellung..."
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
 msgid "General Z-Wave configuration"
@@ -1306,7 +1305,7 @@ msgstr "Kopple"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:67
 msgid "Activate pairing mode of your Z-Wave controller"
-msgstr ""
+msgstr "Akviviere den Koppel-Modus vom Z-Wave Controller"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:68
 msgid "Unpair node from your network"
