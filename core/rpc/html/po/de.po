@@ -185,7 +185,7 @@ msgstr "Ausführen"
 
 #: ../templates/configuration/floorplan.xml.in.h:1
 msgid "Are you sure that you want to delete this floorplan?"
-msgstr "Sind Sie sicher das Sie diesen Raumplan löschen möchten?"
+msgstr "Sicher, dass dieser Raumplan gelöscht werden soll?"
 
 #: ../templates/configuration/floorplan.xml.in.h:2
 #: ../templates/configuration/rooms.xml.in.h:2
@@ -251,7 +251,7 @@ msgstr "Raumplan erstellen"
 
 #: ../templates/configuration/rooms.xml.in.h:1
 msgid "Are you sure that you want to delete this room?"
-msgstr "Sind Sie sicher das Sie diesen Raum löschen möchten?"
+msgstr "Sicher, dass dieser Raum gelöscht werden soll?"
 
 #: ../templates/configuration/rooms.xml.in.h:4
 msgid "Room Configuration"
@@ -285,7 +285,7 @@ msgstr "Neuen Raum erstellen"
 
 #: ../templates/configuration/scenarios.xml.in.h:1
 msgid "Are you sure that you want to delete this scenario?"
-msgstr "Sind Sie sicher das Sie dieses Szenario löschen möchten?"
+msgstr "Sicher, dass dieses Scenario gelöscht werden soll?"
 
 #: ../templates/configuration/scenarios.xml.in.h:4
 msgid "Scenario Configuration"
@@ -304,8 +304,8 @@ msgid ""
 "To create a scenario press the \"Add Command\" button to add commands. After "
 "you need to give a name and press \"Create Scenario\"."
 msgstr ""
-"Um ein Szenario zu erstellen verwenden Sie bitte den \"Befehl hinzufügen\" "
-"Knopf. Danach ein Name vergeben und dann auf \"Szenario erstellen\" drücken."
+"Um ein Szenario zu erstellen, bitte den \"Befehl hinzufügen\" "
+"Knopf nutzen. Danach einen Name vergeben und dann auf \"Szenario erstellen\" drücken."
 
 #: ../templates/configuration/scenarios.xml.in.h:14
 msgid "Add Command"
@@ -423,7 +423,7 @@ msgstr "Cloud aktivieren"
 
 #: ../templates/configuration/events.xml.in.h:1
 msgid "Are you sure that you want to delete this event?"
-msgstr "Sind Sie sicher das Sie dieses Ereignis löschen möchten?"
+msgstr "Sicher, dass dieses Ereignis gelöscht werden soll?"
 
 #: ../templates/configuration/events.xml.in.h:4
 msgid "Event Configuration"
@@ -447,7 +447,7 @@ msgstr "Ereignis bearbeiten"
 
 #: ../templates/configuration/variables.xml.in.h:1
 msgid "Are you sure that you want to delete this variable?"
-msgstr "Sind Sie sicher das Sie diese Variable löschen möchten?"
+msgstr "Sicher, dass diese Variable gelöscht werden soll?"
 
 #: ../templates/configuration/variables.xml.in.h:4
 msgid "Variables Configuration"
@@ -472,7 +472,7 @@ msgstr "Variable erstellen"
 
 #: ../templates/configuration/devices.xml.in.h:1
 msgid "Are you sure that you want to delete this device?"
-msgstr "Sind Sie sicher das Sie dieses Gerät löschen möchten?"
+msgstr "Sicher, dass dieses Gerät entfernt werden soll?"
 
 #: ../templates/configuration/devices.xml.in.h:4
 msgid "Device Configuration"
@@ -703,7 +703,7 @@ msgstr "generiere URL"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:6
 msgid "authorization url"
-msgstr "Genehmigungs URL"
+msgstr "Genehmigungs-URL"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:7
 msgid "Twitter configuration"
@@ -725,7 +725,7 @@ msgstr "Twitter ist nicht konfiguriert"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:11
 msgid "Follow instructions above to authorize this access:"
-msgstr "Folgen Sie den Anweisungen oben, um diesen Zugriff zu genehmigen:"
+msgstr "Bitte den Anweisungen oben folgen, um diesen Zugriff zu genehmigen:"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:12
 msgid ""
@@ -769,8 +769,7 @@ msgstr "Google Talk Konfiguration"
 msgid ""
 "Agocontrol needs your Google credentials to connect GTalk and send alerts."
 msgstr ""
-"ago control braucht die Google-Anmeldeinformationen um zu GTalk verbinden "
-"und Warnmeldungen zu senden."
+"ago control braucht die Google-Anmeldeinformationen um sich mit GTalk zu verbinden und Warnmeldungen zu senden."
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:22
 msgid "GTalk is configured"
@@ -887,8 +886,7 @@ msgstr "TLS"
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:49
 msgid "To send you a test email, type your email address and click on button"
 msgstr ""
-"Um ein Test E-Mail zu senden gib die E-Mail Adresse an und klicke auf den "
-"Knopf"
+"Um eine Testmail zu senden gib die E-Mail Adresse an und klicke auf den Knopf"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:50
 msgid "Push configuration"
@@ -969,7 +967,7 @@ msgstr "Aufgabe wurde erfolgreich gespeichert."
 
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:6
 msgid "Unable to update schedule(s)."
-msgstr "Kann Aufbage nicht aktualisieren"
+msgstr "Kann Aufgabe nicht aktualisieren"
 
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:7
 msgid "Schedule(s) deleted successfully."
@@ -989,7 +987,7 @@ msgstr "Szenario ausführen"
 
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:11
 msgid "And at"
-msgstr "Und bei"
+msgstr "Und um"
 
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:12
 msgid "Repeat schedule"
