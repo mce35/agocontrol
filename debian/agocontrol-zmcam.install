@@ -1,0 +1,3 @@
+lib/systemd/system/agozmcam.service
+opt/agocontrol/bin/agozmcam
+etc/opt/agocontrol/schema.d/20-zoneminder.yaml
