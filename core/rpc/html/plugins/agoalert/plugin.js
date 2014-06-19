@@ -10,8 +10,11 @@ function agoAlertPlugin(deviceMap) {
     self.gtalkUsername = ko.observable(self.gtalkUsername);
     self.gtalkPassword = ko.observable(self.gtalkPassword);
     self.smsStatus = ko.observable(self.smsStatus);
+    self.selectedSmsProvider = ko.observable(self.selectedSmsProvider);
     self.twelvevoipUsername = ko.observable(self.twelvevoipUsername);
     self.twelvevoipPassword = ko.observable(self.twelvevoipPassword);
+    self.freemobileUser = ko.observable(self.freemobileUser);
+    self.freemobileApikey = ko.observable(self.freemobileApikey);
     self.mailStatus = ko.observable(self.mailStatus);
     self.mailSmtp = ko.observable(self.mailSmtp);
     self.mailLogin = ko.observable(self.mailLogin);
@@ -72,8 +75,17 @@ function agoAlertPlugin(deviceMap) {
                 self.smsStatus(res.result.sms.configured);
                 if (res.result.sms.configured)
                 {
-                    self.twelvevoipUsername(res.result.sms.username);
-                    self.twelvevoipPassword(res.result.sms.password);
+                    self.selectedSmsProvider(res.result.sms.provider);
+                    if( res.result.sms.provider=='12voip' )
+                    {
+                        self.twelvevoipUsername(res.result.sms.username);
+                        self.twelvevoipPassword(res.result.sms.password);
+                    }
+                    else if( res.result.sms.provider=='freemobile' )
+                    {
+                        self.freemobileUser(res.result.sms.user);
+                        self.freemobileApikey(res.result.sms.apikey);
+                    }
                 }
                 self.twitterStatus(res.result.twitter.configured);
                 self.pushStatus(res.result.push.configured);
@@ -197,8 +209,17 @@ function agoAlertPlugin(deviceMap) {
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
         content.param1 = 'sms';
-        content.param2 = self.twelvevoipUsername();
-        content.param3 = self.twelvevoipPassword();
+        content.param2 = self.selectedSmsProvider();
+        if( self.selectedSmsProvider()=='12voip' )
+        {
+            content.param3 = self.twelvevoipUsername();
+            content.param4 = self.twelvevoipPassword();
+        }
+        else if( self.selectedSmsProvider()=='freemobile' )
+        {
+            content.param3 = self.freemobileUser();
+            content.param4 = self.freemobileApikey();
+        }
         sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
