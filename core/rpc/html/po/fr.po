@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-16 14:51+0200\n"
+"POT-Creation-Date: 2014-06-19 22:40+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -320,7 +320,7 @@ msgstr "Modifier scénario"
 #: ../templates/configuration/events.xml.in.h:13
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:17
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:18
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
 msgid "Save"
 msgstr "Enregistrer"
@@ -720,230 +720,304 @@ msgid "Twitter is not configured"
 msgstr "Twitter n'est pas configuré"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:11
-msgid "Follow instructions above to authorize this access:"
+msgid "Follow instructions above to authorize this access"
 msgstr ""
 "Suivre les instructions ci-dessous pour autoriser l'accès à votre compte "
 "Twitter:"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:12
-msgid ""
-"Click <a href=\"#\" data-bind=\"click: twitterUrl\">here</a> to generate an "
-"authorization url"
-msgstr ""
-"Cliquer <a href=\"#\" data-bind=\"click: twitterUrl\">ici</a> pour générer "
-"un lien d'autorisation"
+msgid "Click"
+msgstr "Cliquer"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:13
-msgid "Then click on generated link"
-msgstr "Puis cliquer sur le lien suivant"
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
+msgid "here"
+msgstr "ici"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:14
-msgid "Authorize access on Twitter"
-msgstr "Autoriser l'accès à Twitter"
+msgid "Then click on generated link"
+msgstr "Puis cliquer sur le lien suivant"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:15
 msgid "Type given access code here"
 msgstr "Entrer le code d'accès fournit par Twitter ici"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:16
+msgid "Twitter code"
+msgstr "Code Twitter"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:17
 msgid "Finally click on button to save access code"
 msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:18
-msgid "To send test tweet on your account, click on button:"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:19
+msgid "To send test tweet on your account, click on button"
 msgstr "Pour envoyer un tweet de test, cliquer sur le bouton:"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:19
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:20
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
 msgid "Test"
 msgstr "Test"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:20
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:21
 msgid "Google Talk configuration"
 msgstr "Configuration de Gtalk"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:21
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:22
 msgid ""
 "Agocontrol needs your Google credentials to connect GTalk and send alerts."
 msgstr ""
 "Agocontrol a besoin de vos identifiants Google pour se connecter à Gtalk et "
 "envoyer des alertes"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:22
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:23
 msgid "GTalk is configured"
 msgstr "GTalk configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:23
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:24
 msgid "GTalk is not configured"
 msgstr "GTalk pas encore configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:24
-msgid "If you are using 2-Step verification, generate password"
-msgstr "Si vous utilisez la vérification en 2 étapes, générer un mot de passe"
-
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:25
-msgid "clicking here"
-msgstr "cliquer ici"
+msgid "To connect to service use your usual Google credentials"
+msgstr "Pour vous connecter utiliser vos identifiants Google"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:26
-msgid "Otherwise use your usual Google credentials:"
-msgstr "Sinon utiliser vos identifiants Google:"
-
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:27
 msgid "Username"
 msgstr "Identifiant"
 
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:27
+msgid "Google username"
+msgstr "Identifiant Google"
+
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:28
+msgid "If you are using 2-Step verification, generate password"
+msgstr "Si vous utilisez la vérification en 2 étapes, générer un mot de passe"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:29
+msgid "clicking here"
+msgstr "cliquer ici"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:30
 msgid "Password"
 msgstr "Mot de passe"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:29
-msgid "To send you a test message on GTalk, click on button:"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:31
+msgid "Google password"
+msgstr "Mot de passe Google"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:32
+msgid "To send you a test message on GTalk, click on button"
 msgstr "Pour envoyer un message de test sous GTalk, cliquer sur le bouton:"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:30
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:33
 msgid "SMS configuration"
 msgstr "Configuration SMS"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:31
-msgid "Agocontrol uses"
-msgstr "Agocontrol utilise"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:34
+msgid "Agocontrol can send alert through SMS"
+msgstr "Agocontrol peut envoyer des alertes par SMS"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:32
-msgid "to send SMS alerts."
-msgstr "pour envoyer des alertes par SMS"
-
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:33
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:35
 msgid "SMS is configured"
 msgstr "SMS configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:34
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:36
 msgid "SMS is not yet configured"
 msgstr "SMS pas encore configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:35
-msgid "You need to create an account and add credits to send SMS"
-msgstr ""
-"Pour envoyer des SMS, vous devez créer un compte et acheter des crédits"
-
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:36
-msgid "click here to view SMS rates"
-msgstr "cliquer ici pour voir les tarifs des SMS"
-
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:37
-msgid "12voip credentials:"
-msgstr "Identifiants 12voip:"
+msgid "Choose SMS provider in list"
+msgstr "Choisir votre service Push dans la liste"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:38
+msgid "You need to create an account on"
+msgstr ""
+"Pour envoyer des SMS, vous devez créer un compte"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:39
+msgid "and add credits to send SMS"
+msgstr "et achether des crédits"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:40
+msgid "SMS rates"
+msgstr "tarifs des SMS"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:41
+msgid "12voip credentials"
+msgstr "Identifiants 12voip:"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:42
+msgid "12voip username"
+msgstr "Identifiant 12voip"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:43
+msgid "12voip password"
+msgstr "Mot de passe 12voip"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:44
+msgid ""
+"Free Mobile is a french internet/mobile provider. It offers for free to send "
+"SMS to mobile account owner and only for its number."
+msgstr ""
+"Free Mobile est un fournisseur d'accès internet/mobile français. Il offre la "
+"possibilité d'envoyer gratuitement des SMS au mobile du propriétaire du "
+"compte"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:45
+msgid ""
+"To use it in ago control, activate option in your free account and save "
+"provided apikey"
+msgstr ""
+"Pour l'utiliser dans Agocontrol, activer l'option dans votre compte Free et "
+"sauvegarder la clé d'api fournit"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:46
+msgid "User"
+msgstr "Identifiant"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:47
+msgid "Free user"
+msgstr "Identifiant Free"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:48
+msgid "Apikey"
+msgstr "Apikey"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:49
 msgid "To send you a test SMS, click on button"
 msgstr "Pour tester l'envoi de SMS, cliquer sur le bouton"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:39
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:50
 msgid "Email configuration"
 msgstr "Configuration Mail"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:40
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:51
 msgid "Agocontrol can send alert through email."
 msgstr "Agocontrol peut envoyer des alertes par email"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:41
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:52
 msgid "Mail is configured"
 msgstr "Mail est configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:42
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:53
 msgid "Mail is not yet configured"
 msgstr "Mail n'est pas encore configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:43
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:54
 msgid ""
-"Specify your email SMTP server and a sender email address (* is mandatory):"
+"Specify your email SMTP server and a sender email address (* is mandatory)"
 msgstr ""
 "Configurer votre serveur STMP et l'adresse email de l'expéditeur (* "
 "obligatoire):"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:44
-msgid "SMTP server"
-msgstr "Serveur SMTP"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:55
+msgid "SMTP server* (smtp:port)"
+msgstr "Serveur SMTP (smtp:port)"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:45
-msgid "(could be smtp:port)"
-msgstr "(peut être smtp:port)"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:56
+msgid "smtp"
+msgstr "smtp"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:46
-msgid "Sender email"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:57
+msgid "Sender email*"
 msgstr "Email de l'expéditeur"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:47
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:58
+msgid "email"
+msgstr "email"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:59
 msgid "Login"
 msgstr "Identifiant"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:48
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:60
+msgid "login"
+msgstr "Identifiant"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:61
+msgid "password"
+msgstr "Mot de passe"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:62
 msgid "TLS"
 msgstr "TLS"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:49
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:63
 msgid "To send you a test email, type your email address and click on button"
 msgstr ""
 "Pour tester l'envoi d'un email, entrer votre adresse mail et cliquer sur le "
 "bouton"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:50
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:64
+msgid "email address"
+msgstr "Adresse email"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:65
 msgid "Push configuration"
 msgstr "Configuration Push"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:51
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:66
 msgid "Agocontrol can send alert through push notifications."
 msgstr "Agocontrol peut envoyer des alertes par notifications Push"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:52
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:67
 msgid "Push is configured"
 msgstr "Push est configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:53
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:68
 msgid "Push is not yet configured"
 msgstr "Push n'est pas encore configuré"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:54
-msgid "Choose push provider in list:"
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:69
+msgid "Choose push provider in list"
 msgstr "Choisir votre service Push dans la liste:"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:55
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:70
 msgid "Enter your apikey"
 msgstr "Entrer votre clé d'API"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:56
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:71
 msgid "available here"
 msgstr "disponible ici"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:57
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:72
+msgid "apikey"
+msgstr "apikey"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:73
 msgid "Refresh your devices list clicking on the button"
 msgstr "Rafraichir la liste de vos périphériques en cliquant sur le bouton"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:58
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:74
 msgid "Refresh list"
 msgstr "Rafraichir la liste"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:59
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:75
 msgid "And choose your devices that will be notified"
 msgstr "Et choisir les périphériques qui seront notifiés"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:60
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:76
 msgid "Finally save your settings"
 msgstr "Pour terminer sauvegarder les paramètres"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:61
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:77
 msgid "Enter your userid"
 msgstr "Votre identifiant"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:62
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:78
+msgid "userid"
+msgstr "identifiant"
+
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:79
 msgid "And save your settings"
 msgstr "Et sauvegarder les paramètres"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:63
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:80
 msgid "Enter your apikeys"
 msgstr "Entrer votre clé d'API"
 
-#: ../plugins/agoalert/templates/agoalert.xml.in.h:64
+#: ../plugins/agoalert/templates/agoalert.xml.in.h:81
 msgid "To push you test notification, click on button"
 msgstr "Pour recevoir une notification Push de test, cliquer sur le bouton"
 
@@ -1185,10 +1259,6 @@ msgstr ""
 "Ici vous pouvez gérer les associations de ce périphérique. Pour plus "
 "d'informations cliquer"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
-msgid "here"
-msgstr "ici"
-
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:39
 msgid "Create new association with"
 msgstr "Créer une association avec"
@@ -1252,8 +1322,8 @@ msgstr ""
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:53
 msgid "Click on outer circle open selected device details"
 msgstr ""
-"Cliquer sur le cercle extérieur pour afficher des infos sur le "
-"périphérique sélectionné"
+"Cliquer sur le cercle extérieur pour afficher des infos sur le périphérique "
+"sélectionné"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:54
 msgid ""
@@ -1370,5 +1440,3 @@ msgstr "Sauvegarder la configuration"
 msgid "Statistic"
 msgstr "Statistiques"
 
-#~ msgid "GRAPH"
-#~ msgstr "GRAPHIQUE"
