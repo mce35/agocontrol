@@ -71,6 +71,10 @@ function device(obj, uuid) {
                 if (schema.units[self.values()[k].unit] !== undefined) {
                     unit = schema.units[self.values()[k].unit].label;
                 }
+                //fix unit if nothing specified
+                if( unit.trim().length==0 ) {
+                    unit = '-';
+                }
                 if( self.values()[k].level ) {
                     result.push({
                         name : k.charAt(0).toUpperCase() + k.substr(1),
@@ -115,7 +119,18 @@ function device(obj, uuid) {
         };
     }
 
-    //TODO add here other mediaplayer type
+    if( this.devicetype=="barometersensor" )
+    {
+        if( self.values() && self.values().forecast && typeof self.values().forecast.level==='string' )
+        {
+            self.forecast = ko.observable(self.values().forecast.level);
+        }
+        else
+        {
+            self.forecast = ko.observable(-1);
+        }
+    }
+
     if (this.devicetype == "squeezebox") {
         this.mediastate = ko.observable(''); //string variable
 

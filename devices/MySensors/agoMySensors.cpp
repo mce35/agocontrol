@@ -672,33 +672,36 @@ void *receiveFunction(void *param) {
 					switch (subType) {
 						case V_TEMP:
                             valid = 1;
-							if (units == "M") {
-								agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
-							} else {
-								agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degF");
-							}
-							break;
+                            if (units == "M") {
+                                agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
+                            } else {
+                                agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degF");
+                            }
+                            break;
 						case V_TRIPPED:
                             valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
-							break;
+                            agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
+                            break;
 						case V_HUM:
                             valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
-							break;
+                            agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
+                            break;
 						case V_LIGHT:
                             valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
-							break;
+                            agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
+                            break;
 						case V_DIMMER:
                             valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
-							break;
+                            agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
+                            break;
 						case V_PRESSURE:
                             valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
-							break;
-						case V_FORECAST: break;
+                            agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
+                            break;
+						case V_FORECAST:
+                            valid = 1;
+                            agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
+                            break;
 						case V_RAIN: break;
 						case V_RAINRATE: break;
 						case V_WIND: break;
@@ -724,7 +727,7 @@ void *receiveFunction(void *param) {
 						case V_HEATER_SW: break;
 						case V_LIGHT_LEVEL:
                             valid = 1;
-							agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
+                            agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
                             break;
 						case V_VAR1: break;
 						case V_VAR2: break;

@@ -178,6 +178,9 @@ events:
   event.device.distancechanged:
     description: distance from sensor has changed
     parameters: [level, unit, uuid]
+  event.environment.forecastchanged:
+    description: forecast from sensor has changed
+    parameters: [forecast, uuid]
 units:
   degC:
     label: "°C"

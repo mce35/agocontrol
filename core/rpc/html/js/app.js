@@ -397,6 +397,12 @@ function handleEvent(response) {
                     break;
                 }
                 if( response.result.level !== undefined ) {
+                    if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
+                    {
+                        //update forecast value for barometer sensor only if string specified
+                        deviceMap[i].forecast(response.result.level);
+                    }
+                    //save new level
                     values[response.result.quantity].level = response.result.level;
                 }
                 else if( response.result.latitude!==undefined && response.result.longitude!==undefined ) {
