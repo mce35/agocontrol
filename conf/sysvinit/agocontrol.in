@@ -12,11 +12,13 @@
 
 BIN_PATH=@BINDIR@/
 PID_PATH=/var/run/
+DAEMON_USER=agocontrol
+DAEMON_GROUP=agocontrol
 APPS="agorpc agodatalogger agoevent agoresolver agoscenario agotimer agosqueezebox.py agoalert.py agoipx800 agoscheduler.py agolua agoMySensors agorrdtool.py"
 
 DESC="agocontrol"
 start_module() {
-    start-stop-daemon --start --quiet --background --pidfile "$3" --make-pidfile --exec "$2" -- "$4"
+    start-stop-daemon --start --quiet --background --chuid $DAEMON_USER:$DAEMON_GROUP --pidfile "$3" --make-pidfile --exec "$2" -- "$4"
     if [ $? -ne 0 ]; then
         log_failure_msg "$1"
         exit 1
