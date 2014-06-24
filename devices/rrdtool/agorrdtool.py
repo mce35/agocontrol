@@ -112,7 +112,7 @@ def generateGraph(uuid, start, end):
 
             #generate graph
             rrd = RRDtool.RRD(str(rrds[uuid]))
-            gfx = rrd.graph( None, "--start", "epoch+%ds" % int(start), "--end", "epoch+%ds" % int(end), "--vertical-label=%s" % str(vertical_unit),
+            gfx = rrd.graph( None, "--start", "%d" % int(start), "--end", "%d" % int(end), "--vertical-label=%s" % str(vertical_unit),
                                 "-w 850", "-h 300",
                                 #"--alt-autoscale",
                                 #"--alt-y-grid",
