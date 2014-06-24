@@ -596,7 +596,7 @@ void *receiveFunction(void *param) {
 							newDevice(internalid, "humiditysensor");
 							break;
 						case S_BARO:
-							newDevice(internalid, "barometricsensor");
+							newDevice(internalid, "barometersensor");
 							break;
 						case S_WIND:
 							newDevice(internalid, "windsensor");
