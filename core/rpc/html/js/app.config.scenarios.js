@@ -18,6 +18,7 @@ function scenarioConfig() {
 	if (result.length == 0) {
 	    result = [ {
 		name : "dummy",
+		room : "",
 		uuid : "0",
 		action : ""
 	    } ];
