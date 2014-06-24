@@ -72,7 +72,7 @@ function device(obj, uuid) {
                     unit = schema.units[self.values()[k].unit].label;
                 }
                 //fix unit if nothing specified
-                if( unit.trim().length==0 ) {
+                if( $.trim(unit).length==0 ) {
                     unit = '-';
                 }
                 if( self.values()[k].level ) {
