@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 22:40+0200\n"
+"POT-Creation-Date: 2014-06-24 10:56+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -321,7 +321,7 @@ msgstr "Bewerk Scenario"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:18
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:88
 msgid "Save"
 msgstr "Opslaan"
 
@@ -1394,54 +1394,87 @@ msgid "Unpair node from your network"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
-msgid "Turn on/off all devices"
+msgid "Unpair"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
-msgid "On"
+msgid "Remove node from your Z-Wave controller"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
-msgid "Off"
+msgid "Turn on/off all devices"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
-msgid "Test network"
+msgid "On"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
-msgid "Z-Wave controller reports some statistics displayed below"
+msgid "Off"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
-msgid "Advanced controller commands"
+msgid "Test network"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
-msgid "Cancel running controller command"
+msgid ""
+"Launch some test procedures over all nodes. This command lasts some time!"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
-msgid "Reset"
+msgid "Z-Wave controller reports some statistics displayed below"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:77
-msgid "Reset controller"
+msgid "Advanced controller commands"
 msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:78
+msgid "Cancel running controller command"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
+msgid "Cancel"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
+msgid "This action will cancel currently running command"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
+msgid "Reset controller"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:82
+msgid "Reset"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:83
+msgid "This action will clear everything from your controller!"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:84
 #, fuzzy
 msgid "Download configuration"
 msgstr "Kamer Configuratie"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:85
 msgid "Download"
 msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:86
+msgid "Download network config from primary controller to dongle"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:87
 #, fuzzy
 msgid "Save configuration"
 msgstr "SMS Configuratie"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:89
+msgid "????"
+msgstr ""
 
 #: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
 msgid "Statistic"

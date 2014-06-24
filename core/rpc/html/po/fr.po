@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 22:40+0200\n"
+"POT-Creation-Date: 2014-06-24 10:56+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -321,7 +321,7 @@ msgstr "Modifier scénario"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:18
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:88
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -832,8 +832,7 @@ msgstr "Choisir votre service Push dans la liste"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:38
 msgid "You need to create an account on"
-msgstr ""
-"Pour envoyer des SMS, vous devez créer un compte"
+msgstr "Pour envoyer des SMS, vous devez créer un compte"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:39
 msgid "and add credits to send SMS"
@@ -1389,54 +1388,89 @@ msgid "Unpair node from your network"
 msgstr "Dissocier le périphérique du réseau"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
+msgid "Unpair"
+msgstr "Dissocier"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+msgid "Remove node from your Z-Wave controller"
+msgstr "Supprimer le périphérique Z-Wave"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
 msgid "Turn on/off all devices"
 msgstr "Allumer/éteindre tous les périphériques"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
 msgid "On"
 msgstr "On"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
 msgid "Off"
 msgstr "Off"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
 msgid "Test network"
 msgstr "Tester le réseau"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
-msgid "Z-Wave controller reports some statistics displayed below"
-msgstr "Le contrôleur Z-Wave fournit des statistiques afficher plus bas"
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
+msgid ""
+"Launch some test procedures over all nodes. This command lasts some time!"
+msgstr ""
+"Exécute des procédures de test sur tous les périphériques. Cette commande peut "
+"prendre du temps!"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
+msgid "Z-Wave controller reports some statistics displayed below"
+msgstr "Le contrôleur Z-Wave fournit les statistiques suivantes"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:77
 msgid "Advanced controller commands"
 msgstr "Les commandes avancées du contrôleur"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:78
 msgid "Cancel running controller command"
 msgstr "Annuler la commande en cours"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
-msgid "Reset"
-msgstr "Remise à zéro"
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
+msgid "Cancel"
+msgstr "Annuler"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:77
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
+msgid "This action will cancel currently running command"
+msgstr "Cette action annule la commande en cours d'exécution"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
 msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:78
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:82
+msgid "Reset"
+msgstr "Remise à zéro"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:83
+msgid "This action will clear everything from your controller!"
+msgstr "Cette action supprimera la totalité de la configuration de votre contrôleur"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:84
 msgid "Download configuration"
 msgstr "Télécharger la configuration"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:85
 msgid "Download"
 msgstr "Télécharger"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:86
+msgid "Download network config from primary controller to dongle"
+msgstr ""
+"Télécharge la configuration du réseau du contrôleur principal vers le contrôleur USB"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:87
 msgid "Save configuration"
 msgstr "Sauvegarder la configuration"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:89
+msgid "????"
+msgstr "????"
 
 #: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
 msgid "Statistic"
 msgstr "Statistiques"
-

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 22:40+0200\n"
+"POT-Creation-Date: 2014-06-24 10:56+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -304,8 +304,8 @@ msgid ""
 "To create a scenario press the \"Add Command\" button to add commands. After "
 "you need to give a name and press \"Create Scenario\"."
 msgstr ""
-"Um ein Szenario zu erstellen, bitte den \"Befehl hinzufügen\" "
-"Knopf nutzen. Danach einen Name vergeben und dann auf \"Szenario erstellen\" drücken."
+"Um ein Szenario zu erstellen, bitte den \"Befehl hinzufügen\" Knopf nutzen. "
+"Danach einen Name vergeben und dann auf \"Szenario erstellen\" drücken."
 
 #: ../templates/configuration/scenarios.xml.in.h:14
 msgid "Add Command"
@@ -324,7 +324,7 @@ msgstr "Szenario bearbeiten"
 #: ../templates/configuration/security.xml.in.h:2
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:18
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:88
 msgid "Save"
 msgstr "Speichern"
 
@@ -773,7 +773,8 @@ msgstr "Google Talk Konfiguration"
 msgid ""
 "Agocontrol needs your Google credentials to connect GTalk and send alerts."
 msgstr ""
-"ago control braucht die Google-Anmeldeinformationen um sich mit GTalk zu verbinden und Warnmeldungen zu senden."
+"ago control braucht die Google-Anmeldeinformationen um sich mit GTalk zu "
+"verbinden und Warnmeldungen zu senden."
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:23
 msgid "GTalk is configured"
@@ -1241,7 +1242,9 @@ msgstr "Heilen"
 msgid ""
 "If you have troubles with this node, heal action can repair and diagnose the "
 "problem"
-msgstr "Wenn Du Probleme mit diesem Node hast, dann kann der Heilen Befehl das Problem beheben und analysieren"
+msgstr ""
+"Wenn Du Probleme mit diesem Node hast, dann kann der Heilen Befehl das "
+"Problem beheben und analysieren"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:31
 msgid "Refresh node informations"
@@ -1254,7 +1257,9 @@ msgstr "Aktualisieren"
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:33
 msgid ""
 "Force controller to get node informations. This command lasts some time."
-msgstr "Zwinge den Controller die Node Informationen zu holen. Dieser Befehl kann einige Zeit in Anspruch nehmen."
+msgstr ""
+"Zwinge den Controller die Node Informationen zu holen. Dieser Befehl kann "
+"einige Zeit in Anspruch nehmen."
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:34
 msgid "Test this node"
@@ -1262,7 +1267,9 @@ msgstr "Diesen Node testen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:36
 msgid "Launch some test procedures on this node. This command lasts some time!"
-msgstr "Führe einige Testroutinen auf diesen Node aus. Dieser Befehl kann einige Zeit in Anspruch nehmen!"
+msgstr ""
+"Führe einige Testroutinen auf diesen Node aus. Dieser Befehl kann einige "
+"Zeit in Anspruch nehmen!"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:37
 msgid ""
@@ -1318,7 +1325,8 @@ msgstr "Setze Wert"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:50
 msgid "Force selected node parameter to specified value"
-msgstr "Erzwinge den gewählten Wert für den Parameter auf dem ausgefählten Node"
+msgstr ""
+"Erzwinge den gewählten Wert für den Parameter auf dem ausgefählten Node"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:51
 msgid "Outer circle represents devices"
@@ -1343,7 +1351,9 @@ msgstr ""
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:55
 msgid "Zoom graph using your mouse wheel"
-msgstr "Eine Vergrößerung und Verkleinerung der Darstellung ist mit dem Mausrad möglich"
+msgstr ""
+"Eine Vergrößerung und Verkleinerung der Darstellung ist mit dem Mausrad "
+"möglich"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:56
 msgid "Dependencies"
@@ -1398,52 +1408,90 @@ msgid "Unpair node from your network"
 msgstr "Node vom Netzwerk entkopplen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
+msgid "Unpair"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+#, fuzzy
+msgid "Remove node from your Z-Wave controller"
+msgstr "Akviviere den Koppel-Modus vom Z-Wave Controller"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
 msgid "Turn on/off all devices"
 msgstr "Schalte alle Geräte ein/aus"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
 msgid "On"
 msgstr "Ein"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
 msgid "Off"
 msgstr "Aus"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:72
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
 msgid "Test network"
 msgstr "Teste Netzwerk"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:73
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
+#, fuzzy
+msgid ""
+"Launch some test procedures over all nodes. This command lasts some time!"
+msgstr ""
+"Führe einige Testroutinen auf diesen Node aus. Dieser Befehl kann einige "
+"Zeit in Anspruch nehmen!"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
 msgid "Z-Wave controller reports some statistics displayed below"
 msgstr "Statistiken vom Z-Wave Controller"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:74
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:77
 msgid "Advanced controller commands"
 msgstr "Erweiterte Controller Befehle"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:78
 msgid "Cancel running controller command"
 msgstr "Laufenden Controller Befehl abbrechen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
-msgid "Reset"
-msgstr "Zurücksetzen"
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
+msgid "Cancel"
+msgstr ""
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:77
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
+msgid "This action will cancel currently running command"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
 msgid "Reset controller"
 msgstr "Controller Zurücksetzen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:78
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:82
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:83
+msgid "This action will clear everything from your controller!"
+msgstr ""
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:84
 msgid "Download configuration"
 msgstr "Konfiguration herunterladen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:85
 msgid "Download"
 msgstr "Herunterladen"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:86
+#, fuzzy
+msgid "Download network config from primary controller to dongle"
+msgstr "Konfiguration herunterladen wurde an den Controller geschickt"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:87
 msgid "Save configuration"
 msgstr "Konfiguration speichern"
+
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:89
+msgid "????"
+msgstr ""
 
 #: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
 msgid "Statistic"
