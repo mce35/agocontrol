@@ -203,7 +203,7 @@ class GTalk(AgoAlert):
            @param password: your password or 2-step verification token
            @info generate token here : https://www.google.com/settings/security""" 
         if not username or len(username)==0 or not password or len(password)==0:
-            logging.error('GTalk: Unable to add SMS because all parameters are mandatory')
+            logging.error('GTalk: Unable to add message because all parameters are mandatory')
             return False
         if not agoclient.set_config_option('gtalk', 'username', username, 'alert') or not agoclient.set_config_option('gtalk', 'password', password, 'alert'):
             logging.error('GTalk: unable to save config')
