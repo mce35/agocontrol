@@ -461,6 +461,7 @@ Blockly.Blocks['agocontrol_deviceNo'] = {
 Blockly.Blocks['agocontrol_device'] = {
     init: function() {
         //members
+        this.firstRun = true;
         this.lastType = undefined;
 
         //block definition
@@ -479,6 +480,11 @@ Blockly.Blocks['agocontrol_device'] = {
         if( !this.workspace )
             return;
         var currentType = this.getFieldValue("TYPE");
+        var currentDevice = null;
+        if( this.firstRun )
+        {
+            currentDevice = this.getFieldValue("DEVICE");
+        }
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
@@ -487,7 +493,17 @@ Blockly.Blocks['agocontrol_device'] = {
                 devices.push(['','']);
             this.container.removeField("DEVICE");
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
+            if( currentDevice )
+            {
+                var field = this.getField_("DEVICE");
+                if( field )
+                {
+                    field.setValue(currentDevice);
+                }
+            }
         }
+        
+        this.firstRun = false;
     }
 };
 
@@ -507,6 +523,7 @@ Blockly.Blocks['agocontrol_eventNo'] = {
 Blockly.Blocks['agocontrol_deviceEvent'] = {
     init: function() {
         //members
+        this.firstRun = true;
         this.lastType = undefined;
         this.lastDevice = undefined;
         
@@ -532,6 +549,13 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
         window.BlocklyAgocontrol.updateEventBlocks(this);
         
         var currentType = this.getFieldValue("TYPE");
+        var currentDevice = null;
+        var currentEvent = null;
+        if( this.firstRun )
+        {
+            currentDevice = this.getFieldValue("DEVICE");
+            currentEvent = this.getFieldValue("EVENT");
+        }
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
@@ -540,6 +564,14 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
                 devices.push(['','']);
             this.container.removeField("DEVICE");
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
+            if( currentDevice )
+            {
+                var field = this.getField_("DEVICE");
+                if( field )
+                {
+                    field.setValue(currentDevice);
+                }
+            }
 
             var events = [];
             if( currentType.length>0 )
@@ -556,12 +588,22 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
             this.container.removeField("EVENT");
             this.container.appendField(" ", "SEP");
             this.container.appendField(new Blockly.FieldDropdown(events), "EVENT");
+            if( currentEvent )
+            {
+                var field = this.getField_("EVENT");
+                if( field )
+                {
+                    field.setValue(currentEvent);
+                }
+            }
         }
         var currentDevice = this.getFieldValue("DEVICE");
         if( this.lastDevice!=currentDevice )
         {
             this.lastDevice = currentDevice;
         }
+        
+        this.firstRun = false;
     },
     
     //return current event
@@ -619,6 +661,7 @@ Blockly.Blocks['agocontrol_eventAll'] = {
 Blockly.Blocks['agocontrol_deviceProperty'] = {
     init: function() {
         //members
+        this.firstRun = true;
         this.lastType = undefined;
         this.lastDevice = undefined;
         this.properties = undefined;
@@ -644,6 +687,13 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
 
         //update properties list
         var currentType = this.getFieldValue("TYPE");
+        var currentDevice = null;
+        var currentProp = null;
+        if( this.firstRun )
+        {
+            currentDevice = this.getFieldValue("DEVICE");
+            currentProp = this.getFieldValue("PROP");
+        }
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
@@ -652,9 +702,17 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
                 devices.push(['','']);
             this.container.removeField("DEVICE");
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
+            if( currentDevice )
+            {
+                var field = this.getField_("DEVICE");
+                if( field )
+                {
+                    field.setValue(currentDevice);
+                }
+            }
         }
 
-        var currentDevice = this.getFieldValue("DEVICE");
+        currentDevice = this.getFieldValue("DEVICE");
         if( this.lastDevice!=currentDevice )
         {
             this.lastDevice = currentDevice;
@@ -677,7 +735,17 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
             this.container.removeField("PROP");
             this.container.appendField(" ", "SEP");
             this.container.appendField(new Blockly.FieldDropdown(props), "PROP");
+            if( currentProp )
+            {
+                var field = this.getField_("PROP");
+                if( field )
+                {
+                    field.setValue(currentProp);
+                }
+            }
         }
+        
+        this.firstRun = false;
     }
 };
 
@@ -685,6 +753,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
 Blockly.Blocks['agocontrol_eventProperty'] = {
     init: function() {
         //members
+        this.firstRun = true;
         this.properties = undefined;
         this.lastEvent = undefined;
 
@@ -730,6 +799,11 @@ Blockly.Blocks['agocontrol_eventProperty'] = {
             
         //update properties list
         var currentEvent = this.getFieldValue("EVENT");
+        var currentProp = null;
+        if( this.firstRun )
+        {
+            currentProp = this.getFieldValue("PROP");
+        }
         if( this.lastEvent!=currentEvent )
         {
             this.lastEvent = currentEvent;
@@ -738,7 +812,19 @@ Blockly.Blocks['agocontrol_eventProperty'] = {
                 events.push(['','']);
             this.container.removeField("PROP");
             this.container.appendField(new Blockly.FieldDropdown(events), "PROP");
+            
+            //select property value if necessary
+            if( currentProp )
+            {
+                var field = this.getField_("PROP");
+                if( field )
+                {
+                    field.setValue(currentProp);
+                }
+            }
         }
+        
+        this.firstRun = false;
     }
 };
 
