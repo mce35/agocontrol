@@ -79,7 +79,8 @@ function device(obj, uuid) {
                     result.push({
                         name : k.charAt(0).toUpperCase() + k.substr(1),
                         level : self.values()[k].level,
-                        unit : unit
+                        unit : unit,
+                        levelUnit : ''+self.values()[k].level+unit
                     });
                 }
                 else if( self.values()[k].latitude && self.values()[k].longitude ) {

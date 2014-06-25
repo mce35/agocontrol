@@ -20,39 +20,52 @@
         </div>
     </div>
     <div class="row grid-item-controls">
-            <div class="twelve columns">
-                <div class="prepend append field" data-bind="foreach: valueList">
-                    <ko opts="if: name=='Forecast'">
-                        <span class="adjoined" style="width:125px;" data-bind="text:name"></span>
-                        <input class="wide text input" type="text" value="" data-bind="value: level" />
-                        <ko opts="if: level=='stable'">
-                            <img style="background:#F2F2F2; width:28px; height:28px; position:relative; top:9px; left:1px;" src="img/forecast/stable.png"/>
-                        </ko>
-                        <ko opts="if: level=='sunny'">
-                            <img style="background:#F2F2F2; width:28px; height:28px; position:relative; top:9px; left:1px;" src="img/forecast/sunny.png"/>
-                        </ko>
-                        <ko opts="if: level=='cloudy'">
-                            <img style="background:#F2F2F2; width:28px; height:28px; position:relative; top:9px; left:1px;" src="img/forecast/cloudy.png"/>
-                        </ko>
-                        <ko opts="if: level=='unstable'">
-                            <img style="background:#F2F2F2; width:28px; height:28px; position:relative; top:9px; left:1px;" src="img/forecast/unstable.png"/>
-                        </ko>
-                        <ko opts="if: level=='thunderstorm'">
-                            <img style="background:#F2F2F2; width:28px; height:28px; position:relative; top:9px; left:1px;" src="img/forecast/thunderstorm.png"/>
-                        </ko>
-                        <ko opts="if: level=='unknown'">
-                            <img style="background:#F2F2F2; width:28px; height:28px; position:relative; top:9px; left:1px;" src="img/forecast/unknown.png"/>
-                        </ko>
-                    </ko>
-                    <ko opts="ifnot: name=='Forecast'">
-                        <span class="adjoined wide" data-bind="text: name">{</span>
-                        <input class="narrow text input" type="text" value="" data-bind="value: level" /> <span class="adjoined xnarrow" data-bind="text: unit">x</span>
-                        <div class="small pretty primary btn entypo grid-command">
+        <div class="twelve columns">
+            <ul data-bind="foreach: valueList">
+            <li class="dashboard-line">
+                <ko opts="ifnot: name=='Forecast'">
+                    <div class="five columns dashboard-line-quantity">
+                        <span data-bind="text: name"></span>
+                    </div>
+                    <div class="five columns dashboard-line-level">
+                        <span data-bind="text: levelUnit"></span>
+                    </div>
+                    <div class="two columns">
+                        <div class="small pretty primary btn">
                             <a href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
                         </div>
-                    </ko>
-                    <br />
-                </div>
-            </div>
+                    </div>
+                </ko>
+                <ko opts="if: name=='Forecast'">
+                    <div class="five columns dashboard-line-quantity">
+                        <span data-bind="text: name"></span>
+                    </div>
+                    <div class="five columns dashboard-line-level">
+                        <span data-bind="text: level"></span>
+                    </div>
+                    <div class="two columns dashboard-line-xtra">
+                        <ko opts="if: level=='stable'">
+                            <img src="img/forecast/stable.png"/>
+                        </ko>
+                        <ko opts="if: level=='sunny'">
+                            <img src="img/forecast/sunny.png"/>
+                        </ko>
+                        <ko opts="if: level=='cloudy'">
+                            <img src="img/forecast/cloudy.png"/>
+                        </ko>
+                        <ko opts="if: level=='unstable'">
+                            <img src="img/forecast/unstable.png"/>
+                        </ko>
+                        <ko opts="if: level=='thunderstorm'">
+                            <img src="img/forecast/thunderstorm.png"/>
+                        </ko>
+                        <ko opts="if: level=='unknown'">
+                            <img src="img/forecast/unknown.png"/>
+                        </ko>
+                    </div>
+                </ko>
+            </li>
+            </ul>
+        </div>
     </div>
 </div>
