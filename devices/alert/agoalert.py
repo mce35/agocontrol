@@ -405,7 +405,7 @@ class Mail(AgoAlert):
         if len(self.login)>0:
             mails.login(self.login, self.password)
         mail = MIMEMultipart('alternative')
-        mail['Subject'] = message['content']
+        mail['Subject'] = message['subject']
         mail['From'] = self.sender
         mail['To'] = message['tos'][0]
         text = """%s""" % (message['content'])
