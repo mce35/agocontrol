@@ -108,6 +108,71 @@ class Dummy(AgoAlert):
     def _send_message(self, message):
         pass
 
+class SMSFreeMobile(AgoAlert):
+    """Class to send text message (SMS) using 12voip.com provider"""
+    def __init__(self, user, apikey):
+        """Contructor"""
+        AgoAlert.__init__(self)
+        self.user = user
+        self.apikey = apikey
+        self.name = 'freemobile'
+        if user and len(user)>0 and apikey and len(apikey)>0:
+            self.__configured = True
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_SMS_CONFIGURED, "")
+        else:
+            self.__configured = False
+            client.emit_event('alertcontroller', "event.device.statechanged", STATE_SMS_NOT_CONFIGURED, "")
+
+    def getConfig(self):
+        configured = 0
+        if self.__configured:
+            configured = 1
+        return {'configured':configured, 'user':self.user, 'apikey':self.apikey, 'provider':self.name}
+
+    def setConfig(self, user, apikey):
+        """Set config
+           @param user: freemobile user
+           @param apikey: freemobile apikey"""
+        if not user or len(user)==0 or not apikey or len(apikey)==0:
+            logging.error('SMSFreeMobile: invalid parameters')
+            return False
+        if not agoclient.set_config_option('sms', 'provider', self.name, 'alert') or not agoclient.set_config_option(self.name, 'user', user, 'alert') or not agoclient.set_config_option(self.name, 'apikey', apikey, 'alert'):
+            logging.error('SMSFreeMobile: unable to save config')
+            return False
+        self.user = user
+        self.apikey = apikey
+        self.__configured = True
+        client.emit_event('alertcontroller', "event.device.statechanged", STATE_SMS_CONFIGURED, "")
+        return True
+
+    def addSMS(self, to, text):
+        """Add SMS"""
+        if self.__configured:
+            #check parameters
+            if not text or len(text)==0:
+                logging.error('SMSFreeMobile: Unable to add SMS because all parameters are mandatory')
+                return False
+            if len(text)>160:
+                logging.warning('SMSFreeMobile: SMS is too long, message will be truncated')
+                text = text[:159]
+            #queue sms
+            self._addMessage({'to':to, 'text':text})
+            return True
+        else:
+            logging.error('SMSFreeMobile: unable to add SMS because not configured')
+            return False
+
+    def _send_message(self, message):
+        """url format:
+           https://smsapi.free-mobile.fr/sendmsg?user=<user>&pass=<apikey>&msg=<message> """
+        params = {'user':self.user, 'pass':self.apikey, 'msg':message['text']}
+        url = 'https://smsapi.free-mobile.fr/sendmsg?'
+        url += urllib.urlencode(params)
+        req = urllib2.urlopen(url)
+        lines = req.readlines()
+        req.close()
+        logging.debug(url)
+
 class SMS12voip(AgoAlert):
     """Class to send text message (SMS) using 12voip.com provider"""
     def __init__(self, username, password):
@@ -127,7 +192,7 @@ class SMS12voip(AgoAlert):
         configured = 0
         if self.__configured:
             configured = 1
-        return {'configured':configured, 'username':self.username, 'password':self.password}
+        return {'configured':configured, 'username':self.username, 'password':self.password, 'provider':self.name}
 
     def setConfig(self, username, password):
         """Set config
@@ -136,7 +201,7 @@ class SMS12voip(AgoAlert):
         if not username or len(username)==0 or not password or len(password)==0:
             logging.error('SMS12voip: invalid parameters')
             return False
-        if not agoclient.set_config_option('12voip', 'username', username, 'alert') or not agoclient.set_config_option('12voip', 'password', password, 'alert'):
+        if not agoclient.set_config_option('sms', 'provider', self.name, 'alert') or not agoclient.set_config_option(self.name, 'username', username, 'alert') or not agoclient.set_config_option(self.name, 'password', password, 'alert'):
             logging.error('SMS12voip: unable to save config')
             return False
         self.username = username
@@ -205,7 +270,7 @@ class GTalk(AgoAlert):
         if not username or len(username)==0 or not password or len(password)==0:
             logging.error('GTalk: Unable to add message because all parameters are mandatory')
             return False
-        if not agoclient.set_config_option('gtalk', 'username', username, 'alert') or not agoclient.set_config_option('gtalk', 'password', password, 'alert'):
+        if not agoclient.set_config_option(self.name, 'username', username, 'alert') or not agoclient.set_config_option(self.name, 'password', password, 'alert'):
             logging.error('GTalk: unable to save config')
             return False
         self.username = username
@@ -276,7 +341,7 @@ class Twitter(AgoAlert):
                 self.key = token.key
                 self.secret = token.secret
                 #save token in config file
-                if agoclient.set_config_option('twitter', 'key', self.key, 'alert') and agoclient.set_config_option('twitter', 'secret', self.secret, 'alert'):
+                if agoclient.set_config_option(self.name, 'key', self.key, 'alert') and agoclient.set_config_option(self.name, 'secret', self.secret, 'alert'):
                     self.__configured = True
                     client.emit_event('alertcontroller', "event.device.statechanged", STATE_TWITTER_CONFIGURED, "")
                     return {'error':0, 'msg':''}
@@ -365,7 +430,7 @@ class Mail(AgoAlert):
         if not smtp or len(smtp)==0 or not sender or len(sender)==0:
             logging.error('Mail: all parameters are mandatory')
             return False
-        if not agoclient.set_config_option('mail', 'smtp', smtp, 'alert') or not agoclient.set_config_option('mail', 'sender', sender, 'alert') or not agoclient.set_config_option('mail', 'login', login, 'alert') or not agoclient.set_config_option('mail', 'password', password, 'alert') or not agoclient.set_config_option('mail', 'tls', tls, 'alert'):
+        if not agoclient.set_config_option(self.name, 'smtp', smtp, 'alert') or not agoclient.set_config_option(self.name, 'sender', sender, 'alert') or not agoclient.set_config_option(self.name, 'login', login, 'alert') or not agoclient.set_config_option(self.name, 'password', password, 'alert') or not agoclient.set_config_option(self.name, 'tls', tls, 'alert'):
             logging.error('Mail: unable to save config')
             return False
         self.smtp = smtp
@@ -447,7 +512,7 @@ class Pushover(AgoAlert):
         if not userid or len(userid)==0:
             logging.error('Pushover: all parameters are mandatory')
             return False
-        if not agoclient.set_config_option('push','provider','pushover','alert') or not agoclient.set_config_option('pushover', 'userid', userid, 'alert'):
+        if not agoclient.set_config_option('push', 'provider', self.name, 'alert') or not agoclient.set_config_option(self.name, 'userid', userid, 'alert'):
             logging.error('Pushover: unable to save config')
             return False
         self.userid = userid
@@ -553,7 +618,7 @@ class Pushbullet(AgoAlert):
         if not apikey or len(apikey)==0 or not devices or len(devices)==0:
             logging.error('Pushbullet: all parameters are mandatory')
             return False
-        if not agoclient.set_config_option('push', 'provider', 'pushbullet','alert') or not agoclient.set_config_option('pushbullet', 'apikey', apikey, 'alert') or not agoclient.set_config_option('pushbullet', 'devices', json.dumps(devices), 'alert'):
+        if not agoclient.set_config_option('push', 'provider', self.name, 'alert') or not agoclient.set_config_option(self.name, 'apikey', apikey, 'alert') or not agoclient.set_config_option(self.name, 'devices', json.dumps(devices), 'alert'):
             logging.error('Pushbullet: unable to save config')
             return False
         self.apikey = apikey
@@ -640,7 +705,7 @@ class Notifymyandroid(AgoAlert):
         if not apikeys or len(apikeys)==0:
             logging.error('Notifymyandroid: all parameters are mandatory')
             return False
-        if not agoclient.set_config_option('push','provider','notifymyandroid','alert') or not agoclient.set_config_option('notifymyandroid', 'apikeys', json.dumps(apikeys) , 'alert'):
+        if not agoclient.set_config_option('push', 'provider', self.name, 'alert') or not agoclient.set_config_option(self.name, 'apikeys', json.dumps(apikeys) , 'alert'):
             logging.error('Notifymyandroid: unable to save config')
             return False
         self.apikeys = apikeys
@@ -767,13 +832,22 @@ def commandHandler(internalid, content):
             else:
                 logging.error('CommandHandler: failed to tweet')
                 return {'error':1, 'msg':'Failed to tweet'}
+
         elif type=='sms':
             #test sms
-            if sms.addSMS(sms.username, 'agocontrol sms test'):
-                return {'error':0, 'msg':'SMS sent successfully'}
-            else:
-                logging.error('CommandHandler: failed to send SMS [%s, %s]' % (str(content['to']), str(content['text'])))
-                return {'error':1, 'msg':'Failed to send SMS'}
+            if sms.name=='12voip':
+                if sms.addSMS(sms.username, 'agocontrol sms test'):
+                    return {'error':0, 'msg':'SMS sent successfully'}
+                else:
+                    logging.error('CommandHandler: unable to send test SMS')
+                    return {'error':1, 'msg':'Failed to send SMS'}
+            elif sms.name=='freemobile':
+                if sms.addSMS('' ,'agocontrol sms test'):
+                    return {'error':0, 'msg':'SMS sent successfully'}
+                else:
+                    logging.error('CommandHandler: unable to send test SMS')
+                    return {'error':1, 'msg':'Failed to send SMS'}
+
         elif type=='mail':
             #mail test
             if content.has_key('param2'):
@@ -786,6 +860,7 @@ def commandHandler(internalid, content):
             else:
                 logging.error('commandHandler: parameters missing for SMS')
                 return {'error':1, 'msg':'Internal error'}
+
         elif type=='gtalk':
             #test gtalk
             if gtalk.addMessage(gtalk.username, 'agocontrol gtalk test'):
@@ -793,6 +868,7 @@ def commandHandler(internalid, content):
             else:
                 logging.error('CommandHandler: failed to send GTalk message [test]')
                 return {'error':1, 'msg':'Failed to send GTalk message'}
+
         elif type=='push':
             #test push
             if push.name=='pushbullet':
@@ -918,11 +994,41 @@ def commandHandler(internalid, content):
                 return twitter.setAccessCode(accessCode)
         elif type=='sms':
             #set sms config
-            if content.has_key('param2') and content.has_key('param3'):
-                if sms.setConfig(content['param2'], content['param3']):
-                    return {'error':0, 'msg':''}
+            if content.has_key('param2'):
+                provider = content['param2']
+                if provider!=sms.name:
+                    #destroy existing push
+                    sms.stop()
+                    del sms
+                    #create new push
+                    if provider=='freemobile':
+                        sms = SMSFreeMobile('', '')
+                    elif provider=='12voip':
+                        sms = SMS12voip('', '')
+                    else:
+                        #TODO add here new provider
+                        pass
+                if provider=='12voip':
+                    if content.has_key('param3') and content.has_key('param4'):
+                        if sms.setConfig(content['param3'], content['param4']):
+                            return {'error':0, 'msg':''}
+                        else:
+                            return {'error':1, 'msg':'Unable to save config'}
+                    else:
+                        logging.error('commandHandler: parameter missing for %s' % provider)
+                        return {'error':1, 'msg':'Internal error'}
+                elif provider=='freemobile':
+                    if content.has_key('param3') and content.has_key('param4'):
+                        if sms.setConfig(content['param3'], content['param4']):
+                            return {'error':0, 'msg':''}
+                        else:
+                            return {'error':1, 'msg':'Unable to save config'}
+                    else:
+                        logging.error('commandHandler: parameter missing for %s' % provider)
+                        return {'error':1, 'msg':'Internal error'}
                 else:
-                    return {'error':1, 'msg':'Unable to save config'}
+                    #TODO add here new provider
+                    pass
             else:
                 logging.error('commandHandler: parameters missing for SMS config')
                 return {'error':1, 'msg':'Internal error'}
@@ -1041,27 +1147,36 @@ try:
     client = agoclient.AgoConnection('alert')
 
     #load config
-    configMailSmtp = agoclient.get_config_option("mail", "smtp", "", 'alert')
-    configMailSender = agoclient.get_config_option("mail", "sender", "", 'alert')
-    configMailLogin = agoclient.get_config_option("mail", "login", "", 'alert')
-    configMailPassword = agoclient.get_config_option("mail", "password", "", 'alert')
-    configMailTls = agoclient.get_config_option("mail", "tls", "", 'alert')
-    configTwitterKey = agoclient.get_config_option("twitter", "key", "", 'alert')
-    configTwitterSecret = agoclient.get_config_option("twitter", "secret", "", 'alert')
-    configGTalkUsername = agoclient.get_config_option("gtalk", "username", "", 'alert')
-    configGTalkPassword = agoclient.get_config_option("gtalk", "password", "", 'alert')
-    configSmsUsername = agoclient.get_config_option("12voip", "username", "", 'alert')
-    configSmsPassword = agoclient.get_config_option("12voip", "password", "", 'alert')
-    configPushProvider = agoclient.get_config_option('push', 'provider', '', 'alert')
-    configPushbulletApikey = agoclient.get_config_option('pushbullet', 'apikey', '', 'alert')
-    configPushbulletDevices = agoclient.get_config_option('pushbullet', 'devices', '', 'alert')
-    configPushoverUserid = agoclient.get_config_option('pushover', 'userid', '', 'alert')
-    configNotifymyandroidApikeys = agoclient.get_config_option('notifymyandroid', 'apikeys', '', 'alert')
+    configMailSmtp = agoclient.get_config_option("mail", "smtp", "", "alert")
+    configMailSender = agoclient.get_config_option("mail", "sender", "", "alert")
+    configMailLogin = agoclient.get_config_option("mail", "login", "", "alert")
+    configMailPassword = agoclient.get_config_option("mail", "password", "", "alert")
+    configMailTls = agoclient.get_config_option("mail", "tls", "", "alert")
+    configTwitterKey = agoclient.get_config_option("twitter", "key", "", "alert")
+    configTwitterSecret = agoclient.get_config_option("twitter", "secret", "", "alert")
+    configGTalkUsername = agoclient.get_config_option("gtalk", "username", "", "alert")
+    configGTalkPassword = agoclient.get_config_option("gtalk", "password", "", "alert")
+    configSmsProvider = agoclient.get_config_option("sms", "provider", "", "alert")
+    config12VoipUsername = agoclient.get_config_option("12voip", "username", "", "alert")
+    config12VoipPassword = agoclient.get_config_option("12voip", "password", "", "alert")
+    configFreeMobileUser = agoclient.get_config_option("freemobile", "user", "", "alert")
+    configFreeMobileApikey = agoclient.get_config_option("freemobile", "apikey", "", "alert")
+    configPushProvider = agoclient.get_config_option("push", "provider", "", "alert")
+    configPushbulletApikey = agoclient.get_config_option("pushbullet", "apikey", "", "alert")
+    configPushbulletDevices = agoclient.get_config_option("pushbullet", "devices", "", "alert")
+    configPushoverUserid = agoclient.get_config_option("pushover", "userid", "", "alert")
+    configNotifymyandroidApikeys = agoclient.get_config_option("notifymyandroid", "apikeys", "", "alert")
 
     #create objects
     mail = Mail(configMailSmtp, configMailSender, configMailLogin, configMailPassword, configMailTls)
     twitter = Twitter(configTwitterKey, configTwitterSecret)
-    sms = SMS12voip(configSmsUsername, configSmsPassword)
+    if configSmsProvider=='':
+        logging.info('Create dummy sms')
+        sms = Dummy()
+    elif configSmsProvider=='12voip':
+        sms = SMS12voip(config12VoipUsername, config12VoipPassword)
+    elif configSmsProvider=='freemobile':
+        sms = SMSFreeMobile(configFreeMobileUser, configFreeMobileApikey)
     gtalk = GTalk(configGTalkUsername, configGTalkPassword)
     if configPushProvider=='':
         logging.info('Create dummy push')
