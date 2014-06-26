@@ -85,7 +85,7 @@ int luaSendMessage(lua_State *l) {
 	for(int i=0; i<argc; i++) {
 		string name, value;
 		if (nameval(string(lua_tostring(l, lua_gettop(l))),name, value)) {
-			if (name == "subject") {
+			if (name == "_subject") {
 				subject = value;
 			} else {
 				content[name]=value;
@@ -342,7 +342,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 
 void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	if (subject == "event.device.announce") return;
-	content["subject"]=subject;
+	content["_subject"]=subject;
 	commandHandler(content);
 }
 
