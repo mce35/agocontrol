@@ -85,11 +85,10 @@ int luaSendMessage(lua_State *l) {
 	for(int i=0; i<argc; i++) {
 		string name, value;
 		if (nameval(string(lua_tostring(l, lua_gettop(l))),name, value)) {
-			if (name == "_subject") {
+			if (name == "subject") {
 				subject = value;
-			} else {
-				content[name]=value;
 			}
+			content[name]=value;
 		}
 		lua_pop(l, 1);
 	}
@@ -224,6 +223,7 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
 		luaL_requiref(L, lib->name, lib->func, 1);
 		lua_pop(L, 1);
 	}
+    luaL_openlibs(L);
 
 	lua_register(L, "sendMessage", luaSendMessage);
 	lua_register(L, "setVariable", luaSetVariable);
@@ -342,7 +342,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 
 void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	if (subject == "event.device.announce") return;
-	content["_subject"]=subject;
+	content["subject"]=subject;
 	commandHandler(content);
 }
 
