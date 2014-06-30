@@ -41,11 +41,14 @@ Blockly.Lua['agocontrol_deviceProperty'] = function(block) {
     var code = "";
     if( propType && propType==="dynamic" )
     {
-        code = "inventory.devices[\"" + block.lastDevice + "\"].values." + selectedProp + ".level";
+        //dynamic property is typically a sensor value
+        //TODO add possibility to get other value property (quantity, unit, latitude, longitude...) (replace level by specified one)
+        code = "getDeviceInventory(\"" + block.lastDevice + "\",\"" + selectedProp + "\",\"" + "level" + "\")";
     }
     else
     {
-        code = "inventory.devices[\"" + block.lastDevice + "\"]." + selectedProp;
+        //device property
+        code = "getDeviceInventory(\"" + block.lastDevice + "\",\"" + selectedProp + "\",\"\")";
     }
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
@@ -107,7 +110,7 @@ Blockly.Lua['agocontrol_phoneNumber'] = function(block) {
 };
 
 Blockly.Lua['agocontrol_getVariable'] = function(block) {
-    var code = "inventory.variables."+block.getVariable();
+    var code = "getVariable(\"" + block.getVariable() + "\")";
     return [code, Blockly.Lua.ORDER_NONE];
 };
 

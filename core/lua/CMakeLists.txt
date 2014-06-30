@@ -17,6 +17,7 @@ set (LUA_LIBRARIES
     agoclient
 	 boost_filesystem
 	 boost_system
+	 boost_regex
 	 ${LUA}
 )
 
