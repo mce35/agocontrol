@@ -121,7 +121,7 @@ std::string prettyPrint(std::string message) {
  */
 qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
     qpid::types::Variant::Map out;
-	qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
     if( devices.count(internalid)==1 ) {
         return devices[internalid].asMap();
     }
@@ -170,6 +170,37 @@ void closeSerialPort() {
 }
 
 /**
+ * Check internalid
+ */
+bool checkInternalid(std::string internalid)
+{
+    bool result = false;
+    if( internalid.length()>0 )
+    {
+        //format <int>/<int>
+        int radioid = 666;
+        int childid = 666;
+        int read = sscanf(internalid.c_str(), "%d/%d", &radioid, &childid);
+        if( read==2 && radioid>=0 && radioid<=255 && childid>=0 && childid<=254 )
+        {
+            //specified internalid is valid
+            result = true;
+        }
+        else
+        {
+            //error parsing internalid, seems to be invalid
+            result = false;
+        }
+    }
+    else
+    {  
+        //invalid input internalid
+        result = false;
+    }
+    return result;
+}
+
+/**
  * Send command to MySensor gateway
  */
 void sendcommand(std::string command) {
@@ -192,9 +223,9 @@ void sendcommand(std::string internalid, int messageType, int subType, std::stri
         T_COMMAND cmd;
         cmd.command = command.str();
         cmd.attempts = 0;
-		pthread_mutex_lock(&resendMutex);
+        pthread_mutex_lock(&resendMutex);
         commandsmap[internalid] = cmd;
-		pthread_mutex_unlock(&resendMutex);
+        pthread_mutex_unlock(&resendMutex);
     }
 
     //send command
@@ -213,8 +244,8 @@ bool deleteDevice(string internalid) {
 
     if( !devices[internalid].isVoid() ) {
         devices.erase(internalid);
-	    devicemap["devices"] = devices;
-	    variantMapToJSONFile(devicemap, DEVICEMAPFILE);
+        devicemap["devices"] = devices;
+        variantMapToJSONFile(devicemap, DEVICEMAPFILE);
         cout << "Device '" << internalid << "' removed" << endl;
     }
     else {
@@ -230,7 +261,7 @@ bool deleteDevice(string internalid) {
  * Agocontrol command handler
  */
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
-	qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map returnval;
     qpid::types::Variant::Map infos;
     std::string deviceType = "";
     std::string cmd = "";
@@ -369,7 +400,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             }
         }
     }
-	return returnval;
+    return returnval;
 }
 
 /**
@@ -400,9 +431,32 @@ std::string readLine(bool* error) {
 }
 
 /**
+ * Delete device and all associated infos
+ */
+void deleteDevice(std::string internalid, qpid::types::Variant::Map devices)
+{
+    //remove device from uuidmap
+    if( agoConnection->removeDevice(internalid.c_str()) )
+    {
+        //clear all infos
+        devices.erase(internalid);
+        devicemap["devices"] = devices;
+        variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+
+        cout << "Device \"" << internalid << "\" removed successfully" << endl;
+    }
+    else
+    {
+        //unable to remove device
+        cout << "Unable to remove device \"" << internalid << "\"" << endl;
+    }
+}
+
+/**
  * Save all necessary infos for new device and register it to agocontrol
  */
-void addDevice(std::string internalid, std::string devicetype, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos) {
+void addDevice(std::string internalid, std::string devicetype, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos)
+{
     infos["type"] = devicetype;
     infos["value"] = "0";
     infos["counter_sent"] = 0;
@@ -410,8 +464,8 @@ void addDevice(std::string internalid, std::string devicetype, qpid::types::Vari
     infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
     devices[internalid] = infos;
-	devicemap["devices"] = devices;
-	variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+    devicemap["devices"] = devices;
+    variantMapToJSONFile(devicemap,DEVICEMAPFILE);
     agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
 }
 
@@ -420,7 +474,7 @@ void addDevice(std::string internalid, std::string devicetype, qpid::types::Vari
  */
 void newDevice(std::string internalid, std::string devicetype) {
     //init
-	qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
     qpid::types::Variant::Map infos = getDeviceInfos(internalid);
 
     if( infos.size()>0 ) {
@@ -428,7 +482,11 @@ void newDevice(std::string internalid, std::string devicetype) {
         if( infos["type"].asString()!=devicetype ) {
             //sensors is probably reconditioned, remove it before adding it
             cout << "Reconditioned sensor detected (oldType=" << infos["type"] << " newType=" << devicetype << ")" << endl;
-            agoConnection->removeDevice(internalid.c_str());
+            deleteDevice(internalid, devices);
+            //refresh infos
+            devices = devicemap["devices"].asMap();
+            infos = getDeviceInfos(internalid);
+            //and add brand new device
             addDevice(internalid, devicetype, devices, infos);
         }
         else {
@@ -449,7 +507,7 @@ void newDevice(std::string internalid, std::string devicetype) {
 void* resendFunction(void* param) {
     qpid::types::Variant::Map infos;
     while(1) {
-		pthread_mutex_lock(&resendMutex);
+        pthread_mutex_lock(&resendMutex);
         for( std::map<std::string,T_COMMAND>::iterator it=commandsmap.begin(); it!=commandsmap.end(); it++ ) {
             if( it->second.attempts<RESEND_MAX_ATTEMPTS ) {
                 //resend command
@@ -484,7 +542,7 @@ void* resendFunction(void* param) {
                 }
             }
         }
-		pthread_mutex_unlock(&resendMutex);
+        pthread_mutex_unlock(&resendMutex);
         usleep(500000);
     }
     return NULL;
@@ -495,11 +553,11 @@ void* resendFunction(void* param) {
  */
 void *receiveFunction(void *param) {
     bool error = false;
-	while (1) {
-		pthread_mutex_lock (&serialMutex);
+    while (1) {
+        pthread_mutex_lock (&serialMutex);
 
         //read line
-		std::string line = readLine(&error);
+        std::string line = readLine(&error);
 
         //check errors on serial port
         if( error ) {
@@ -511,126 +569,129 @@ void *receiveFunction(void *param) {
             //and reopen it
             openSerialPort(device);
 
-		    pthread_mutex_unlock (&serialMutex);
+            pthread_mutex_unlock (&serialMutex);
             continue;
         }
 
         if( DEBUG )
-    		cout << " => RECEIVING: " << prettyPrint(line);
-		std::vector<std::string> items = split(line, ';');
-		if (items.size() > 3 && items.size() < 6) {
-			int radioId = atoi(items[0].c_str());
-			int childId = atoi(items[1].c_str());
-			string internalid = items[0] + "/" + items[1];
-			int messageType = atoi(items[2].c_str());
-			int subType = atoi(items[3].c_str());
+            cout << " => RECEIVING: " << prettyPrint(line);
+        std::vector<std::string> items = split(line, ';');
+        if (items.size() > 3 && items.size() < 6) {
+            int radioId = atoi(items[0].c_str());
+            int childId = atoi(items[1].c_str());
+            string internalid = items[0] + "/" + items[1];
+            int messageType = atoi(items[2].c_str());
+            int subType = atoi(items[3].c_str());
             int valid = 0;
-			string payload;
+            string payload;
             qpid::types::Variant::Map infos;
             
             //get device infos
             infos = getDeviceInfos(internalid);
 
-			if (items.size() ==5) payload = items[4];
-			switch (messageType) {
-				case INTERNAL:
-					switch (subType) {
-						case I_BATTERY_LEVEL:
-							break; // TODO: emit battery level event
-						case I_TIME:
-							{
-								stringstream timestamp;
-								timestamp << time(NULL);
-								sendcommand(internalid, INTERNAL, I_TIME, timestamp.str());
-							}
-							break;
-						case I_REQUEST_ID:
-							{
-                                //return radio id to sensor
-								stringstream id;
-								int freeid = devicemap["nextid"];
-                                //@info radioId - The unique id (1-254) for this sensor. Default 255 (auto mode).
-                                if( freeid>=254 ) {
-                                    cerr << "FATAL: no radioId available!" << endl;
-                                }
-                                else {
-      								devicemap["nextid"]=freeid+1;
-	    							variantMapToJSONFile(devicemap,DEVICEMAPFILE);
-								    id << freeid;
-    								sendcommand(internalid, INTERNAL, I_REQUEST_ID, id.str());
-                                }
-							}
-							break;
-						case I_PING:
-							sendcommand(internalid, INTERNAL, I_PING_ACK, "");
-							break;
-						case I_UNIT:
-							sendcommand(internalid, INTERNAL, I_UNIT, units);
-							break;
-					}
-					break;
-				case PRESENTATION:
+            if (items.size() ==5) payload = items[4];
+            switch (messageType) {
+                case INTERNAL:
+                    switch (subType)
+                    {
+                        case I_BATTERY_LEVEL:
+                            break; // TODO: emit battery level event
+                        case I_TIME:
+                        {
+                            stringstream timestamp;
+                            timestamp << time(NULL);
+                            sendcommand(internalid, INTERNAL, I_TIME, timestamp.str());
+                            break;
+                        }
+                        case I_REQUEST_ID:
+                        {
+                            //return radio id to sensor
+                            stringstream id;
+                            int freeid = devicemap["nextid"];
+                            //@info radioId - The unique id (1-254) for this sensor. Default 255 (auto mode).
+                            if( freeid>=254 ) {
+                                cerr << "FATAL: no radioId available!" << endl;
+                            }
+                            else
+                            {
+                                devicemap["nextid"]=freeid+1;
+                                variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+                                id << freeid;
+                                sendcommand(internalid, INTERNAL, I_REQUEST_ID, id.str());
+                            }
+                            break;
+                        }
+                        case I_PING:
+                            sendcommand(internalid, INTERNAL, I_PING_ACK, "");
+                            break;
+                        case I_UNIT:
+                            sendcommand(internalid, INTERNAL, I_UNIT, units);
+                            break;
+                    }
+                    break;
+                case PRESENTATION:
                     cout << "PRESENTATION: " << subType << endl;
-					switch (subType) {
-						case S_DOOR:
-						case S_MOTION:
-							newDevice(internalid, "binarysensor");
-							break;
-						case S_SMOKE:
-							newDevice(internalid, "smokedetector");
-							break;
-						case S_LIGHT:
-						case S_HEATER:
-							newDevice(internalid, "switch");
-							break;
-						case S_DIMMER:
-							newDevice(internalid, "dimmer");
-							break;
-						case S_COVER:
-							newDevice(internalid, "drapes");
-							break;
-						case S_TEMP:
-							newDevice(internalid, "temperaturesensor");
-							break;
-						case S_HUM:
-							newDevice(internalid, "humiditysensor");
-							break;
-						case S_BARO:
-							newDevice(internalid, "barometersensor");
-							break;
-						case S_WIND:
-							newDevice(internalid, "windsensor");
-							break;
-						case S_RAIN:
-							newDevice(internalid, "rainsensor");
-							break;
-						case S_UV:
-							newDevice(internalid, "uvsensor");
-							break;
-						case S_WEIGHT:
-							newDevice(internalid, "weightsensor");
-							break;
-						case S_POWER:
-							newDevice(internalid, "powermeter");
-							break;
-						case S_DISTANCE:
-							newDevice(internalid, "distancesensor");
-							break;
-						case S_LIGHT_LEVEL:
-							newDevice(internalid, "brightnesssensor");
-							break;
-						case S_LOCK:
-							newDevice(internalid, "lock");
-							break;
-						case S_IR:
-							newDevice(internalid, "infraredblaster");
-							break;
-						case S_WATER:
-							newDevice(internalid, "watermeter");
-							break;
-					}
-					break;
-				case REQUEST_VARIABLE:
+                    switch (subType)
+                    {
+                        case S_DOOR:
+                        case S_MOTION:
+                            newDevice(internalid, "binarysensor");
+                            break;
+                        case S_SMOKE:
+                            newDevice(internalid, "smokedetector");
+                            break;
+                        case S_LIGHT:
+                        case S_HEATER:
+                            newDevice(internalid, "switch");
+                            break;
+                        case S_DIMMER:
+                            newDevice(internalid, "dimmer");
+                            break;
+                        case S_COVER:
+                            newDevice(internalid, "drapes");
+                            break;
+                        case S_TEMP:
+                            newDevice(internalid, "temperaturesensor");
+                            break;
+                        case S_HUM:
+                            newDevice(internalid, "humiditysensor");
+                            break;
+                        case S_BARO:
+                            newDevice(internalid, "barometricsensor");
+                            break;
+                        case S_WIND:
+                            newDevice(internalid, "windsensor");
+                            break;
+                        case S_RAIN:
+                            newDevice(internalid, "rainsensor");
+                            break;
+                        case S_UV:
+                            newDevice(internalid, "uvsensor");
+                            break;
+                        case S_WEIGHT:
+                            newDevice(internalid, "weightsensor");
+                            break;
+                        case S_POWER:
+                            newDevice(internalid, "powermeter");
+                            break;
+                        case S_DISTANCE:
+                            newDevice(internalid, "distancesensor");
+                            break;
+                        case S_LIGHT_LEVEL:
+                            newDevice(internalid, "brightnesssensor");
+                            break;
+                        case S_LOCK:
+                            newDevice(internalid, "lock");
+                            break;
+                        case S_IR:
+                            newDevice(internalid, "infraredblaster");
+                            break;
+                        case S_WATER:
+                            newDevice(internalid, "watermeter");
+                            break;
+                    }
+                    break;
+                case REQUEST_VARIABLE:
                     if( infos.size()>0 ) {
                         //increase counter
                         if( infos["counter_sent"].isVoid() ) {
@@ -643,19 +704,20 @@ void *receiveFunction(void *param) {
                         //send value
                         sendcommand(internalid, SET_VARIABLE, subType, infos["value"]);
                     }
-                    else {
+                    else
+                    {
                         //device not found
                         //TODO log flood!
                         cerr  << "Device not found: unable to get its value" << endl;
                     }
-					break;
-				case SET_VARIABLE:
+                    break;
+                case SET_VARIABLE:
                     //remove command from map to avoid sending command again
-		            pthread_mutex_lock(&resendMutex);
+                    pthread_mutex_lock(&resendMutex);
                     if( commandsmap.count(internalid)!=0 ) {
                         commandsmap.erase(internalid);
                     }
-            		pthread_mutex_unlock(&resendMutex);
+                    pthread_mutex_unlock(&resendMutex);
 
                     //increase counter
                     if( infos.size()>0 ) {
@@ -669,8 +731,8 @@ void *receiveFunction(void *param) {
                     }
 
                     //do something on received event
-					switch (subType) {
-						case V_TEMP:
+                    switch (subType) {
+                        case V_TEMP:
                             valid = 1;
                             if (units == "M") {
                                 agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
@@ -678,73 +740,73 @@ void *receiveFunction(void *param) {
                                 agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degF");
                             }
                             break;
-						case V_TRIPPED:
+                        case V_TRIPPED:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
                             break;
-						case V_HUM:
+                        case V_HUM:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
                             break;
-						case V_LIGHT:
+                        case V_LIGHT:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
                             break;
-						case V_DIMMER:
+                        case V_DIMMER:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
                             break;
-						case V_PRESSURE:
+                        case V_PRESSURE:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
                             break;
-						case V_FORECAST:
+                        case V_FORECAST:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
                             break;
-						case V_RAIN: break;
-						case V_RAINRATE: break;
-						case V_WIND: break;
-						case V_GUST: break;
-						case V_DIRECTION: break;
-						case V_UV: break;
-						case V_WEIGHT: break;
-						case V_DISTANCE: 
-							valid = 1;
-							if (units == "M") {
-								agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
-							} else {
-								agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "inch");
-							}
-							break;
-						case V_IMPEDANCE: break;
-						case V_ARMED: break;
-						case V_WATT: break;
-						case V_KWH: break;
-						case V_SCENE_ON: break;
-						case V_SCENE_OFF: break;
-						case V_HEATER: break;
-						case V_HEATER_SW: break;
-						case V_LIGHT_LEVEL:
+                        case V_RAIN: break;
+                        case V_RAINRATE: break;
+                        case V_WIND: break;
+                        case V_GUST: break;
+                        case V_DIRECTION: break;
+                        case V_UV: break;
+                        case V_WEIGHT: break;
+                        case V_DISTANCE: 
+                            valid = 1;
+                            if (units == "M") {
+                                agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
+                            } else {
+                                agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "inch");
+                            }
+                            break;
+                        case V_IMPEDANCE: break;
+                        case V_ARMED: break;
+                        case V_WATT: break;
+                        case V_KWH: break;
+                        case V_SCENE_ON: break;
+                        case V_SCENE_OFF: break;
+                        case V_HEATER: break;
+                        case V_HEATER_SW: break;
+                        case V_LIGHT_LEVEL:
                             valid = 1;
                             agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
                             break;
-						case V_VAR1: break;
-						case V_VAR2: break;
-						case V_VAR3: break;
-						case V_VAR4: break;
-						case V_VAR5: break;
-						case V_UP: break;
-						case V_DOWN: break;
-						case V_STOP: break;
-						case V_IR_SEND: break;
-						case V_IR_RECEIVE: break;
-						case V_FLOW: break;
-						case V_VOLUME: break;
-						case V_LOCK_STATUS: break;
-						default:
-							break;
-					}
+                        case V_VAR1: break;
+                        case V_VAR2: break;
+                        case V_VAR3: break;
+                        case V_VAR4: break;
+                        case V_VAR5: break;
+                        case V_UP: break;
+                        case V_DOWN: break;
+                        case V_STOP: break;
+                        case V_IR_SEND: break;
+                        case V_IR_RECEIVE: break;
+                        case V_FLOW: break;
+                        case V_VOLUME: break;
+                        case V_LOCK_STATUS: break;
+                        default:
+                            break;
+                    }
 
                     if( valid==1 ) {
                         //save current device value
@@ -761,20 +823,20 @@ void *receiveFunction(void *param) {
 
                     //send ack
                     sendcommand(internalid, VARIABLE_ACK, subType, payload);
-					break;
-				case VARIABLE_ACK:
+                    break;
+                case VARIABLE_ACK:
                     //TODO useful on controller?
                     cout << "VARIABLE_ACK" << endl;
-					break;
-				default:
-					break;
-			}
+                    break;
+                default:
+                    break;
+            }
 
-		}
-		pthread_mutex_unlock (&serialMutex);
-		
-	}
-	return NULL;
+        }
+        pthread_mutex_unlock (&serialMutex);
+
+    }
+    return NULL;
 }
 
 /**
@@ -851,9 +913,18 @@ int main(int argc, char **argv) {
     qpid::types::Variant::Map devices = devicemap["devices"].asMap();
     for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
         qpid::types::Variant::Map infos = it->second.asMap();
-        cout << " - " << it->first.c_str() << ":" << infos["type"].asString().c_str() << endl;
-        agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());	
+        cout << " - " << it->first.c_str() << ":" << infos["type"].asString().c_str();
+        if( it->first.length()>0 && checkInternalid(it->first) )
+        {
+            agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());	
+        }
+        else
+        {
+            cout << " [INVALID]";
+        }
+        cout << endl;
     }
+    return 0;
 
     //run client
     cout << "Running MySensor controller..." << endl;
