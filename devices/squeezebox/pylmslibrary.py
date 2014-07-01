@@ -92,8 +92,12 @@ class LMSLibrary():
         self.server_port = server_port
         self.__cover_path = os.path.join(os.path.expanduser('~'), '.squeezedesktop', 'cache')
         if not os.path.exists(self.__cover_path):
-            #create cache directory
-            os.makedirs(self.__cover_path)
+            try:
+                #create cache directory
+                os.makedirs(self.__cover_path)
+            except:
+                self.logger.warning('Unable to create ~/.squeezedesktop directory. Cover cache disabled')
+                self.__cover_path = None
         self.__server_infos_path = os.path.join(os.path.expanduser('~'), '.squeezedesktop', 'server.conf')
         self.__albums_count = 0
         self.__artists_count = 0
@@ -312,12 +316,16 @@ class LMSLibrary():
         cover_path = None
         
         if album_id and artwork_track_id:
-            cover_path = os.path.join(self.__cover_path, '%s_%s.png' % (album_id, artwork_track_id))
-            self.logger.debug('Cover path:%s' % cover_path)
-            if not os.path.exists(cover_path):
-                #cover doesn't exists
-                self.logger.debug('Cover doesn\'t exist!')
-                cover_path = None
+            if self.__cover_path!=None:
+                cover_path = os.path.join(self.__cover_path, '%s_%s.png' % (album_id, artwork_track_id))
+                self.logger.debug('Cover path:%s' % cover_path)
+                if not os.path.exists(cover_path):
+                    #cover doesn't exists
+                    self.logger.debug('Cover doesn\'t exist!')
+                    cover_path = None
+            else:
+                #cover cache disabled
+                pass
         
         return cover_path
         
@@ -376,9 +384,10 @@ class LMSLibrary():
         """cache covers for thumbnails"""
         count, albums, error = self.server.request_with_results('albums 0 %d tags:j' % albums_count)
         if not error:
-            self.logger.debug('Updating...')
-            self.cache_covers = CacheCovers(self.server_ip, self.server_port, self.__cover_path, albums)
-            self.cache_covers.start()
+            if self.__cover_path!=None:
+                self.logger.debug('Updating...')
+                self.cache_covers = CacheCovers(self.server_ip, self.server_port, self.__cover_path, albums)
+                self.cache_covers.start()
         else:
             #error
             self.logger.error('Unable to get albums list')
