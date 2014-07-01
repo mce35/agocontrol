@@ -95,7 +95,7 @@ void agolog(int priority,const char *fmt,...)
       t=time(NULL);
       localtime_r(&t,&ltime);
       snprintf(prefix,sizeof(prefix),"%.4i-%.2i-%.2i %.2i:%.2i:%.2i Ago[%i]: ",
-               ltime.tm_year+1900,ltime.tm_mon,ltime.tm_mday,
+               ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,
                ltime.tm_hour,ltime.tm_min,ltime.tm_sec,getpid());
       write(glog_fd,prefix,strlen(prefix));
       switch(priority)
