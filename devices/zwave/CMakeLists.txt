@@ -5,6 +5,7 @@ file (GLOB_RECURSE DEVICE_SOURCE_FILES *.cpp)
 set (DEVICE_EXTRA_LIBRARIES
      openzwave
      agoclient
+     pthread
 )
 
 IF (FREEBSD)
