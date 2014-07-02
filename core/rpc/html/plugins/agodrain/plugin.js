@@ -3,7 +3,6 @@
  * @returns {agodrainPlugin}
  */
 function agodrainPlugin() {
-    this.hasNavigation = ko.observable(true);
     this.rooms = ko.observableArray([]);
 
     var self = this;
@@ -47,9 +46,5 @@ function init_plugin()
 	return templatePath + "agodrain";
     }.bind(model);
 
-    model.navigation = function() {
-        return templatePath + "navigation/plugins";
-    }.bind(model);
-
-    ko.applyBindings(model);
+    return model;
 }

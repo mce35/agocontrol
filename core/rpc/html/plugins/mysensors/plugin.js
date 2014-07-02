@@ -4,7 +4,6 @@
 function mysensorsConfig(deviceMap) {
     //members
     var self = this;
-    self.hasNavigation = ko.observable(false);
     self.mysensorsControllerUuid = null;
     self.port = ko.observable();
     self.devices = ko.observableArray();
@@ -159,7 +158,6 @@ function mysensorsConfig(deviceMap) {
 function mysensorsDashboard(deviceMap) {
     //members
     var self = this;
-    self.hasNavigation = ko.observable(false);
     self.mysensorsControllerUuid = null;
     self.port = ko.observable();
     self.counters = ko.observableArray([]);
@@ -224,6 +222,7 @@ function init_plugin(fromDashboard)
     model.mainTemplate = function() {
         return templatePath + template;
     }.bind(model);
-    ko.applyBindings(model);
+
+    return model;
 }
 

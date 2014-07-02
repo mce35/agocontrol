@@ -5,7 +5,6 @@
 function agoBlocklyPlugin(deviceMap) {
     //members
     var self = this;
-    self.hasNavigation = ko.observable(false);
     self.luaControllerUuid = null;
     self.availableScripts = ko.observableArray([]);
     self.selectedScript = ko.observable('');
@@ -543,5 +542,6 @@ function init_plugin()
     model.mainTemplate = function() {
         return templatePath + "agoblockly";
     }.bind(model);
-    ko.applyBindings(model);
+
+    return model;
 }

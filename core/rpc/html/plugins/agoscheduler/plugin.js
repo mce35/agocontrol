@@ -6,7 +6,6 @@ function agoSchedulerPlugin(deviceMap) {
     //members
     var self = this;
     this.viewDate = ko.observable(new Date());
-    this.hasNavigation = ko.observable(false);
     this.schedules = [];
     this.availableStartScenarios = ko.observableArray([]);
     this.availableEndScenarios = ko.observableArray([]);
@@ -453,7 +452,8 @@ function init_plugin()
 
     model = new agoSchedulerPlugin(deviceMap);
     model.mainTemplate = function() {
-	    return templatePath + "agoscheduler";
+        return templatePath + "agoscheduler";
     }.bind(model);
-    ko.applyBindings(model);
+
+    return model;
 }

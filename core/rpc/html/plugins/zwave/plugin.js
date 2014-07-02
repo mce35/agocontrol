@@ -1025,7 +1025,6 @@ function zwaveConfig(zwave) {
     //members
     var self = this;
     self.zwave = zwave;
-    self.hasNavigation = ko.observable(false);
     self.nodes = [];
     self.nodesCount = ko.observable(0);
     self.port = ko.observable();
@@ -1304,7 +1303,6 @@ function zwaveDashboard(zwave) {
     //members
     var self = this;
     self.zwave = zwave;
-    self.hasNavigation = ko.observable(false);
     self.stats = ko.observableArray([]);
 
     //get and set zwave controller uuid
@@ -1347,6 +1345,7 @@ function init_plugin(fromDashboard)
     model.mainTemplate = function() {
         return templatePath + template;
     }.bind(model);
-    ko.applyBindings(model);
+
+    return model;
 }
 

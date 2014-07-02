@@ -5,7 +5,6 @@
 function agoAlertPlugin(deviceMap) {
     //members
     var self = this;
-    self.hasNavigation = ko.observable(false);
     self.gtalkStatus = ko.observable(self.gtalkStatus);
     self.gtalkUsername = ko.observable(self.gtalkUsername);
     self.gtalkPassword = ko.observable(self.gtalkPassword);
@@ -491,5 +490,6 @@ function init_plugin()
     model.mainTemplate = function() {
 	    return templatePath + "agoalert";
     }.bind(model);
-    ko.applyBindings(model);
+
+    return model;
 }

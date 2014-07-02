@@ -173,15 +173,45 @@ function loadPlugin(fromDashboard) {
                     load : resources,
                     complete : function() {
                         // here, all resources are really loaded
-                        init_plugin(fromDashboard);
+                        var model = init_plugin(fromDashboard);
+                        if( model )
+                        {
+                            if( (!model.hasNavigation || (model.hasNavigation && model.hasNavigation()==true)) && !model.navigation )
+                            {
+                                //force default navigation
+                                model.navigation = function() {
+                                    return "../templates/navigation/configuration";
+                                }.bind(model);
+                                if( !model.hasNavigation )
+                                {
+                                    model.hasNavigation = ko.observable(true);
+                                }
+                            }
+                            ko.applyBindings(model);
+                        }
                         // unlock ui
                         $.unblockUI();
                     }
                 });
             }
         } else {
+            var model = init_plugin(fromDashboard);
+            if( model )
+            {
+                if( (!model.hasNavigation || (model.hasNavigation && model.hasNavigation()==true)) && !model.navigation )
+                {
+                    //force default navigation
+                    model.navigation = function() {
+                        return "../templates/navigation/configuration";
+                    }.bind(model);
+                    if( !model.hasNavigation )
+                    {
+                        model.hasNavigation = ko.observable(true);
+                    }
+                }
+                ko.applyBindings(model);
+            }
             $.unblockUI();
-            init_plugin(fromDashboard);
         }
     });
     }).fail(function() {
