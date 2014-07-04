@@ -61,6 +61,21 @@
         <category name="Math">
             <block type="math_number"></block>
             <block type="math_arithmetic"></block>
+            <block type="agocontrol_range">
+                <value name="MIN">
+                    <block type="math_number">
+                        <title name="NUM">0</title>
+                    </block>
+                </value>
+                <value name="PROP">
+                    <block type="agocontrol_eventProperty"></block>
+                </value>
+                <value name="MAX">
+                    <block type="math_number">
+                        <title name="NUM">100</title>
+                    </block>
+                </value>
+            </block>
             <block type="math_number_property"></block>
             <block type="math_change">
                 <value name="DELTA">
@@ -96,10 +111,18 @@
                 </value>
             </block>
             <block type="math_random_float"></block>
+            <block type="math_modulo"></block>
+        </category>
+        <category name="Colour">
+            <block type="colour_picker"></block>
+            <block type="colour_rgb"></block>
         </category>
         <category name="Text">
             <block type="text_print"></block>
             <block type="text"></block>
+            <block type="agocontrol_email"></block>
+            <block type="agocontrol_phoneNumber"></block>
+            <block type="agocontrol_valueOptions"></block>
             <block type="text_join"></block>
             <block type="text_append">
                 <value name="TEXT">
@@ -108,27 +131,6 @@
             </block>
             <block type="text_length"></block>
             <block type="text_isEmpty"></block>
-            <block type="text_indexOf">
-                <value name="VALUE">
-                    <block type="variables_get">
-                        <title name="VAR">mytext</title>
-                    </block>
-                </value>
-            </block>
-            <block type="text_charAt">
-                <value name="VALUE">
-                    <block type="variables_get">
-                        <title name="VAR">mytext</title>
-                    </block>
-                </value>
-            </block>
-            <block type="text_getSubstring">
-                <value name="STRING">
-                    <block type="variables_get">
-                        <title name="VAR">mytext</title>
-                    </block>
-                </value>
-            </block>
             <block type="text_changeCase"></block>
             <block type="text_trim"></block>
         </category>
@@ -185,17 +187,6 @@
                         </block>
                     </value>
                 </block>
-                <block type="agocontrol_eventPropertyValue">
-                    <value name="PROP">
-                        <block type="agocontrol_eventProperty">
-                        </block>
-                    </value>
-                </block>
-            </category>
-            <category name="Property">
-                <block type="agocontrol_time"></block>
-                <block type="agocontrol_timeOffset"></block>
-                <block type="agocontrol_range"></block>
             </category>
             <category name="Device">
                 <block type="agocontrol_device"></block>
@@ -262,9 +253,9 @@
         }
     };
   
-    var schema = YAML.load('http://www.agocontrol.com/trac/browser/agocontrol.git/conf/schema.yaml?format=txt');
-    var deviceMap = YAML.load('http://192.168.1.1/deviceMap.yaml');
-    var variables = YAML.load('http://www.agocontrol.com/trac/browser/agocontrol.git/devices/blockly/variables.yaml?format=txt');
+    var schema = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/conf/schema.yaml');
+    var deviceMap = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/devices/blockly/deviceMap.yaml');
+    var variables = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/devices/blockly/variables.yaml');
     console.log("schema:");
     console.log(schema);
     console.log("deviceMap:");

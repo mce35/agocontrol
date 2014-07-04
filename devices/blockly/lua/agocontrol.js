@@ -119,9 +119,9 @@ Blockly.Lua['agocontrol_setVariable'] = function(block) {
     var name = block.getVariable();
     if( name.length>0 )
     {
-        code = "setVariable('"+name+"=";
-        code += Blockly.Lua.valueToCode(block, 'VALUE', Blockly.Lua.ORDER_NONE) || 'nil';
-        code += "')\n";
+        code = "setVariable('"+name+"',";
+        code += ("'" +Blockly.Lua.valueToCode(block, 'VALUE', Blockly.Lua.ORDER_NONE)+"'") || 'nil';
+        code += ")\n";
         return code;
     }
     return '';
