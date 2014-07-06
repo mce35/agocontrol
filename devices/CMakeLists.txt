@@ -37,6 +37,7 @@ set (AGODEVICES
   MySensors
   rrdtool
   zmcam
+  ETAtouch
 )
 
 foreach (device ${AGODEVICES})

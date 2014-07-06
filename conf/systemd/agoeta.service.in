@@ -1,0 +1,12 @@
+[Unit]
+Description=ago control ETAtouch service
+	
+[Service]
+ExecStart=@BINDIR@/agoeta.py
+WorkingDirectory=@BINDIR@
+Restart=always
+RestartSec=2
+User=root
+	
+[Install]
+WantedBy=multi-user.target
