@@ -63,10 +63,16 @@ class eta_event(threading.Thread):
 			        tree = ET.parse(request)
 			        root = tree.getroot()
 			        result = root.find("{http://www.eta.co.at/rest/v1}value")
-			        try:
-			            eta_result[key] = float(result.attrib['strValue'].replace(',','.'))
-			        except:
-			            eta_result[key] = result.attrib['strValue']
+
+			        if result.attrib['strValue'] == "0":
+			            eta_result[key] = "0"
+			        elif result.attrib['strValue'] == "---":
+			            eta_result[key] = "0"
+			        else:
+			            try:
+			                eta_result[key] = float(result.attrib['strValue'].replace(',','.'))
+			            except:
+			                eta_result[key] = result.attrib['strValue']
 
 			        # compare results and emit on change
 			        get_diffs(eta_result,eta_result_report)

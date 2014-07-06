@@ -204,3 +204,8 @@ Package: agocontrol-zmcam
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libcurl3
 Description: zmcam device
+
+Package: agocontrol-eta
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Description:  ETAtouch REST API device for ago control
