@@ -37,7 +37,7 @@ static bool handleLastModified(const char *filename) {
 }
 
 int main(int argc, char **argv){
-	cout << "Content-Type: text/plain\r\n";
+	cout << "Content-Type: text/json; charset=UTF-8\r\n";
 	cout << "Cache-Control:public\r\n";
 	std::string querystring = getenv("QUERY_STRING");
 	if (querystring.find("/")!=string::npos) return 0;
