@@ -75,7 +75,7 @@ function device(obj, uuid) {
                 if( $.trim(unit).length==0 ) {
                     unit = '-';
                 }
-                if( self.values()[k].level ) {
+                if( self.values()[k].level!==null && self.values()[k].level!==undefined ) {
                     result.push({
                         name : k.charAt(0).toUpperCase() + k.substr(1),
                         level : self.values()[k].level,
