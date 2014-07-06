@@ -23,7 +23,6 @@ eta_url = {'temperatur_aussen': '48/10241/0/0/12197', 'temperatur_raum': '120/10
 # add the devices
 for key in eta_url:
   client.add_device(key, "multilevelsensor")
-  #print 'added device: ' + key
 
 # emit result value and do checks 
 def emit_result(key):
