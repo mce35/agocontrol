@@ -53,7 +53,6 @@ AgoConnection *agoConnection;
 
 static uint32 g_homeId = 0;
 static bool   g_initFailed = false;
-static bool g_ozwInitialized = true;
 
 typedef struct
 {
@@ -210,7 +209,6 @@ void controller_update(Driver::ControllerState state,  Driver::ControllerError e
 	}
 }
 
-
 //-----------------------------------------------------------------------------
 // <GetNodeInfo>
 // Callback that is triggered when a value, group or node changes
@@ -271,10 +269,6 @@ void OnNotification
 	qpid::types::Variant::Map eventmap;
 	// Must do this inside a critical section to avoid conflicts with the main thread
 	pthread_mutex_lock( &g_criticalSection );
-
-    //check if OZW initialized
-    if( !g_ozwInitialized )
-        return;
 
 	switch( _notification->GetType() )
 	{
@@ -725,85 +719,6 @@ void OnNotification
 	pthread_mutex_unlock( &g_criticalSection );
 }
 
-/**
- * Init OZW Manager
- */
-bool initOzwManager(std::string device)
-{
-    bool result = true;
-
-    pthread_mutex_lock( &g_criticalSection );
-
-    Options::Create( "/etc/openzwave/", CONFDIR "/ozw/", "" );
-    Options::Get()->AddOptionBool("PerformReturnRoutes", false );
-    Options::Get()->AddOptionBool("ConsoleOutput", false );
-    Options::Get()->AddOptionBool("EnableSIS", true );
-
-    Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
-    Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
-    Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
-
-    int retryTimeout = atoi(getConfigOption("zwave","retrytimeout","2000").c_str());
-    OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
-
-    Options::Get()->Lock();
-
-    // MyLog myLog;
-    // Log::SetLoggingClass(myLog);
-    OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
-    pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
-    pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
-
-    Manager::Create();
-    Manager::Get()->AddWatcher( OnNotification, NULL );
-    // Manager::Get()->SetPollInterval(atoi(getConfigOption("zwave", "pollinterval", "300000").c_str()),true);
-    if (getConfigOption("zwave", "polling", "0") == "1")
-        polling=true;
-    Manager::Get()->AddDriver(device);
-    
-    // Now we just wait for the driver to become ready
-    printf("waiting for OZW driver to become ready\n");
-    pthread_cond_wait( &initCond, &initMutex );
-    printf("pthread_cond_wait returned\n");
-
-    if( !g_initFailed )
-    {
-		Manager::Get()->WriteConfig( g_homeId );
-		Driver::DriverData data;
-		Manager::Get()->GetDriverStatistics( g_homeId, &data );
-		printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
-		printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
-		printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
-
-		printf("OZW startup complete\n");
-		cout << devices.toString() << endl;
-
-        result = true;
-        g_ozwInitialized = true;
-    }
-    else
-    {
-        result = false;
-        g_ozwInitialized = false;
-    }
-
-    pthread_mutex_unlock( &g_criticalSection );
-
-    return result;
-}
-
-/**
- * Destroy OZW Manager
- */
-void destroyOzwManager()
-{
-    pthread_mutex_lock( &g_criticalSection );
-
-    Manager::Destroy();
-    g_ozwInitialized = false;
-
-    pthread_mutex_unlock( &g_criticalSection );
-}
 
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
@@ -980,23 +895,10 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			Manager::Get()->ResetController(g_homeId);
 		} else if( content["command"] == "setport" ) {
             if( !content["port"].isVoid() ) {
-                //destroy current OZW manager
-                destroyOzwManager();
-
-                //and try new one
-                std::string device = content["port"].asString();
-                if( initOzwManager(device) )
-                {
-                    result = setConfigOption("zwave", "device", device.c_str());
-                }
-                else
-                {
-                    //failed to init OZW
-                    result = false;
-                }
+                int port = content["port"];
+                result = setConfigOption("zwave", "device", port);
             }
             else {
-                //missing parameter port
                 result = false;
             }
         }
@@ -1135,7 +1037,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 }
 
 int main(int argc, char **argv) {
-    std::string device = getConfigOption("zwave", "device", "/dev/usbzwave");
+	std::string device;
+
+	device=getConfigOption("zwave", "device", "/dev/usbzwave");
 	if (getConfigOption("system", "units", "SI")!="SI") unitsystem=1;
 
 
@@ -1155,8 +1059,51 @@ int main(int argc, char **argv) {
 	printf("connection to agocontrol established\n");
 
 	// init open zwave
-	if( initOzwManager(device) )
+	Options::Create( "/etc/openzwave/", CONFDIR "/ozw/", "" );
+	Options::Get()->AddOptionBool("PerformReturnRoutes", false );
+	Options::Get()->AddOptionBool("ConsoleOutput", false ); 
+	Options::Get()->AddOptionBool("EnableSIS", true ); 
+
+	Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
+	Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
+	Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
+
+	int retryTimeout = atoi(getConfigOption("zwave","retrytimeout","2000").c_str());
+	OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
+
+	Options::Get()->Lock();
+
+	// MyLog myLog;
+	// Log::SetLoggingClass(myLog);
+	OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+        pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
+        pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+
+
+
+	Manager::Create();
+	Manager::Get()->AddWatcher( OnNotification, NULL );
+	// Manager::Get()->SetPollInterval(atoi(getConfigOption("zwave", "pollinterval", "300000").c_str()),true);
+	if (getConfigOption("zwave", "polling", "0") == "1") polling=true;
+	Manager::Get()->AddDriver(device);
+
+	// Now we just wait for the driver to become ready
+	printf("waiting for OZW driver to become ready\n");
+	pthread_cond_wait( &initCond, &initMutex );
+	printf("pthread_cond_wait returned\n");
+
+	if( !g_initFailed )
 	{
+
+		Manager::Get()->WriteConfig( g_homeId );
+		Driver::DriverData data;
+		Manager::Get()->GetDriverStatistics( g_homeId, &data );
+		printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
+		printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
+		printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
+
+		printf("OZW startup complete\n");
+		cout << devices.toString() << endl;
 
 		agoConnection->addDevice("zwavecontroller", "zwavecontroller");
 		agoConnection->addHandler(commandHandler);
@@ -1171,7 +1118,7 @@ int main(int argc, char **argv) {
 	} else {
 		printf("unable to initialize OZW\n");
 	}	
-	destroyOzwManager();
+	Manager::Destroy();
 
 	pthread_mutex_destroy( &g_criticalSection );
 	return 0;
