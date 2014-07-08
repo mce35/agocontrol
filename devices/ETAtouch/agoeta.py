@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # ETAtouch REST API support for ago control
 # More information about ETAtouch: http://www.eta.co.at/255.0.html
 #
