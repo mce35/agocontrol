@@ -1,0 +1,2 @@
+lib/systemd/system/agoeta.service
+opt/agocontrol/bin/agoeta.py
