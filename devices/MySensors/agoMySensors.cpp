@@ -924,7 +924,6 @@ int main(int argc, char **argv) {
         }
         cout << endl;
     }
-    return 0;
 
     //run client
     cout << "Running MySensor controller..." << endl;
