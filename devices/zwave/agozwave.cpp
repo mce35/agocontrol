@@ -1056,7 +1056,7 @@ int main(int argc, char **argv) {
 	
 	AgoConnection _agoConnection = AgoConnection("zwave");		
 	agoConnection = &_agoConnection;
-	printf("connection to agocontrol established\n");
+	// printf("connection to agocontrol established\n");
 
 	// init open zwave
 	Options::Create( "/etc/openzwave/", CONFDIR "/ozw/", "" );
@@ -1090,7 +1090,6 @@ int main(int argc, char **argv) {
 	// Now we just wait for the driver to become ready
 	printf("waiting for OZW driver to become ready\n");
 	pthread_cond_wait( &initCond, &initMutex );
-	printf("pthread_cond_wait returned\n");
 
 	if( !g_initFailed )
 	{
@@ -1098,9 +1097,9 @@ int main(int argc, char **argv) {
 		Manager::Get()->WriteConfig( g_homeId );
 		Driver::DriverData data;
 		Manager::Get()->GetDriverStatistics( g_homeId, &data );
-		printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
-		printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
-		printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
+		// printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
+		// printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
+		// printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
 
 		printf("OZW startup complete\n");
 		cout << devices.toString() << endl;
