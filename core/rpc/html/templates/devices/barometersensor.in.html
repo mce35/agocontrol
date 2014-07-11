@@ -1,71 +1,70 @@
-<div class="four columns grid-item device"  data-bind="attr: {'data-uuid': uuid}">
-    <div class="row">
-        <div class="three columns">
-            <div class="pretty large primary btn grid-item-icon handle">
-                <i class="icon-cloud" data-bind="click: function(data, event) { showDetails(data) }"></i>
-            </div>
-        </div>
-        <div class="nine columns">
-            <div class="grid-item-header">
+<div class="four columns" data-bind="attr: {'data-uuid': uuid}">
+
+    <div class="row dashboard-widget-header">
+        <ul class="two_up tiles" >
+            <li class="dashboard-widget-header-icon">
+                <div class="pretty large primary btn handle">
+                    <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-cloud"></i>
+                </div>
+            </li>
+            <li class="dashboard-widget-header-infos">
+                <div class="row">
                 <ko opts="if: name ">
-                    <h3 data-bind="text: name"></h3>
+                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
                 </ko>
                 <ko opts="ifnot: name ">
-                    <h3 data-bind="text: devicetype"></h3>
+                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
                 </ko>
                 <ko opts="if: room ">
-                    <p class="room"><i class="icon-location"></i><span data-bind="text: room"></span></p>
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-location"/>
+                        <span data-bind="text: room"/>
+                    </div>
                 </ko>
-            </div>
-        </div>
+                </div>
+            </li>
+        </ul>
     </div>
-    <div class="row grid-item-controls">
-        <div class="twelve columns">
-            <ul data-bind="foreach: valueList">
-            <li class="dashboard-line">
-                <ko opts="ifnot: name=='Forecast'">
-                    <div class="five columns dashboard-line-quantity">
-                        <span data-bind="text: name"></span>
-                    </div>
-                    <div class="five columns dashboard-line-level">
-                        <span data-bind="text: levelUnit"></span>
-                    </div>
-                    <div class="two columns">
-                        <div class="small pretty primary btn">
-                            <a href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
-                        </div>
-                    </div>
+
+    <div class="row dashboard-widget-content dashboard-widget-content-values">
+        <ul data-bind="foreach: valueList" class="three_up tiles">
+            <li class="dashboard-widget-content-quantity">
+                <span data-bind="text: name"/>
+            </li>
+            <li class="dashboard-widget-content-unit">
+                <span data-bind="text: level"/>
+            </li>
+            <ko opts="ifnot: name=='Forecast'">
+            <li class="dashboard-widget-content-button">
+                <div class="small pretty primary btn btn-full">
+                    <a href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
+                </div>
+            </li>
+            </ko>
+            <ko opts="if: name=='Forecast'">
+            <li class="dashboard-widget-content-button">
+                <ko opts="if: level=='stable'">
+                <img src="img/forecast/stable.png"/>
                 </ko>
-                <ko opts="if: name=='Forecast'">
-                    <div class="five columns dashboard-line-quantity">
-                        <span data-bind="text: name"></span>
-                    </div>
-                    <div class="five columns dashboard-line-level">
-                        <span data-bind="text: level"></span>
-                    </div>
-                    <div class="two columns dashboard-line-xtra">
-                        <ko opts="if: level=='stable'">
-                            <img src="img/forecast/stable.png"/>
-                        </ko>
-                        <ko opts="if: level=='sunny'">
-                            <img src="img/forecast/sunny.png"/>
-                        </ko>
-                        <ko opts="if: level=='cloudy'">
-                            <img src="img/forecast/cloudy.png"/>
-                        </ko>
-                        <ko opts="if: level=='unstable'">
-                            <img src="img/forecast/unstable.png"/>
-                        </ko>
-                        <ko opts="if: level=='thunderstorm'">
-                            <img src="img/forecast/thunderstorm.png"/>
-                        </ko>
-                        <ko opts="if: level=='unknown'">
-                            <img src="img/forecast/unknown.png"/>
-                        </ko>
-                    </div>
+                <ko opts="if: level=='sunny'">
+                <img src="img/forecast/sunny.png"/>
+                </ko>
+                <ko opts="if: level=='cloudy'">
+                <img src="img/forecast/cloudy.png"/>
+                </ko>
+                <ko opts="if: level=='unstable'">
+                <img src="img/forecast/unstable.png"/>
+                </ko>
+                <ko opts="if: level=='thunderstorm'">
+                <img src="img/forecast/thunderstorm.png"/>
+                </ko>
+                <ko opts="if: level=='unknown'">
+                <img src="img/forecast/unknown.png"/>
                 </ko>
             </li>
-            </ul>
-        </div>
+            </ko>
+        </ul>
     </div>
+
 </div>
+

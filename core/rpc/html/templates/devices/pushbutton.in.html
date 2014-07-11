@@ -1,23 +1,42 @@
-<div class="four columns grid-item device"  data-bind="attr: {'data-uuid': uuid}">
-	<div class="row">
-		<div class="three columns">
-			<div class="pretty large primary btn grid-item-icon handle">
-				<i class="icon-lamp" data-bind="click: showDetails"></i>
-			</div>
-		</div>
-		<div class="nine columns">
-			<div class="grid-item-header">
-				<h3 data-bind="text: name"></h3>
-				<ko opts="if: room ">
-					<p class="room"><i class="icon-location"></i><span data-bind="text: room"></span></p>
-				</ko>
-				<p class="info"><i class="icon-info"></i><span data-bind="text: state"></span></p>
-			</div>
-		</div>
-	</div>
-	<div class="row grid-item-controls">
-		<div class="twelve columns">
-                	<div class="cmd-btn pretty medium primary btn btn-full grid-command" data-bind="click: turnPush" data-value="push">PUSH</div>
-		</div>
-	</div>
+<div class="four columns" data-bind="attr: {'data-uuid': uuid}">
+
+    <div class="row dashboard-widget-header">
+        <ul class="two_up tiles" >
+            <li class="dashboard-widget-header-icon">
+                <div class="pretty large primary btn handle">
+                    <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-lamp"></i>
+                </div>
+            </li>
+            <li class="dashboard-widget-header-infos">
+                <div class="row">
+                <ko opts="if: name ">
+                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
+                </ko>
+                <ko opts="ifnot: name ">
+                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
+                </ko>
+                <ko opts="if: room ">
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-location"/>
+                        <span data-bind="text: room"/>
+                    </div>
+                </ko>
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-info"/>
+                        <span data-bind="text: state"/>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
+        <ul class="one_up">
+            <li class="dashboard-widget-content-button">
+                <div class="pretty medium primary btn btn-full" data-bind="click: turnPush" data-value="push">PUSH</div>
+            </li>
+        </ul>
+    </div>
+
 </div>
+

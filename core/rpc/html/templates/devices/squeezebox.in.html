@@ -1,70 +1,87 @@
-<div data-bind="attr: {'data-uuid': uuid}" class="four columns grid-item device">
-	<div class="row">
-		<div class="three columns">
-			<div class="pretty large primary btn grid-item-icon handle">
-				<i data-bind="click: showDetails" class="icon-note-beamed"/>
-			</div>
-		</div>
-		<div class="nine columns">
-			<div class="grid-item-header">
-				<h3 data-bind="text: name"/>
-				<ko opts="if: room ">
-					<p class="room"><i class="icon-location"/><span data-bind="text: room"/></p>
-				</ko>
-                <p class="info"><i class="icon-info" />
-                    <ko opts="if: state()==0">
+<div class="four columns" data-bind="attr: {'data-uuid': uuid}">
+
+    <div class="row dashboard-widget-header">
+        <ul class="two_up tiles" >
+            <li class="dashboard-widget-header-icon">
+                <div class="pretty large primary btn handle">
+                    <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-note-beamed"></i>
+                </div>
+            </li>
+            <li class="dashboard-widget-header-infos">
+                <div class="row">
+                <ko opts="if: name ">
+                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
+                </ko>
+                <ko opts="ifnot: name ">
+                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
+                </ko>
+                <ko opts="if: room ">
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-location"/>
+                        <span data-bind="text: room"/>
+                    </div>
+                </ko>
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-info"/>
+                        <ko opts="if: state()==0">
                         <span>OFF</span>
-                    </ko>
-                    <ko opts="if: state()==50">
+                        </ko>
+                        <ko opts="if: state()==50">
                         <span>STREAMING</span>
-                    </ko>
-                    <ko opts="if: state()==100">
+                        </ko>
+                        <ko opts="if: state()==100">
                         <span>PLAYING</span>
-                    </ko>
-                    <ko opts="if: state()==150">
+                        </ko>
+                        <ko opts="if: state()==150">
                         <span>STOPPED</span>
-                    </ko>
-                    <ko opts="if: state()==200">
+                        </ko>
+                        <ko opts="if: state()==200">
                         <span>PAUSED</span>
-                    </ko>
-                </p>
-			</div>
-		</div>
-	</div>
-	<div class="row grid-item-controls">
+                        </ko>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
         <ko opts="if: state()!=25">
-		<div class="three columns">
-		    <ko opts="ifnot: state()!=0">
-                <div data-value="on" data-bind="click: turnOn" class="cmd-btn pretty medium primary btn btn-full grid-command">ON</div>
-            </ko>
-            <ko opts="if: state()!=0">
-                <div data-value="on" data-bind="click: turnOn" class="cmd-btn pretty medium default btn btn-full grid-command">ON</div>
-            </ko>
-		</div>
-		<div class="three columns">
-		    <ko opts="if: (state()==0 || state()==50)">
-                <div data-value="off" data-bind="click: turnOff" class="cmd-btn pretty medium default btn btn-full grid-command">OFF</div>
-            </ko>
-            <ko opts="ifnot: (state()==0 || state()==50)">
-                <div data-value="off" data-bind="click: turnOff" class="cmd-btn pretty medium primary btn btn-full grid-command">OFF</div>
-            </ko>
-		</div>
-		<div class="three columns">
-		    <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
-                <div data-value="play" data-bind="click: play" class="cmd-btn pretty medium primary btn btn-full grid-command">PLAY</div>
-            </ko>
-            <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
-                <div data-value="play" data-bind="click: play" class="cmd-btn pretty medium default btn btn-full grid-command">PLAY</div>
-            </ko>
-		</div>
-		<div class="three columns">
-		    <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
-                <div data-value="pause" data-bind="click: pause" class="cmd-btn pretty medium primary btn btn-full grid-command">PAUSE</div>
-            </ko>
-            <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
-                <div data-value="pause" data-bind="click: pause" class="cmd-btn pretty medium default btn btn-full grid-command">PAUSE</div>
-            </ko>
-		</div>
+        <ul data-bind="foreach: valueList" class="four_up tiles">
+            <li class="dashboard-widget-content-button">
+		        <ko opts="ifnot: state()!=0">
+                <div data-value="on" data-bind="click: turnOn" class="pretty medium primary btn btn-full">ON</div>
+                </ko>
+                <ko opts="if: state()!=0">
+                <div data-value="on" data-bind="click: turnOn" class="pretty medium default btn btn-full">ON</div>
+                </ko>
+            </li>
+            <li class="dashboard-widget-content-button">
+		        <ko opts="if: (state()==0 || state()==50)">
+                <div data-value="off" data-bind="click: turnOff" class="pretty medium default btn btn-full">OFF</div>
+                </ko>
+                <ko opts="ifnot: (state()==0 || state()==50)">
+                <div data-value="off" data-bind="click: turnOff" class="pretty medium primary btn btn-full">OFF</div>
+                </ko>
+            </li>
+            <li class="dashboard-widget-content-button">
+		        <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
+                <div data-value="play" data-bind="click: play" class="pretty medium primary btn btn-full">PLAY</div>
+                </ko>
+                <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
+                <div data-value="play" data-bind="click: play" class="pretty medium default btn btn-full">PLAY</div>
+                </ko>
+            </li>
+            <li class="dashboard-widget-content-button">
+		        <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
+                <div data-value="pause" data-bind="click: pause" class="pretty medium primary btn btn-full">PAUSE</div>
+                </ko>
+                <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
+                <div data-value="pause" data-bind="click: pause" class="pretty medium default btn btn-full">PAUSE</div>
+                </ko>
+            </li>
+        </ul>
         </ko>
-	</div>
+    </div>
+
 </div>
+

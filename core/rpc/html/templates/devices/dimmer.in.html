@@ -1,51 +1,63 @@
-<div class="four columns grid-item device"  data-bind="attr: {'data-uuid': uuid}">
-	<div class="row">
-		<div class="three columns">
-			<div class="pretty large primary btn grid-item-icon handle">
-				<i class="icon-adjust" data-bind="click: showDetails"></i>
-			</div>
-		</div>
-		<div class="nine columns">
-			<div class="grid-item-header">
-			    <ko opts="if: name ">
-				    <h3 data-bind="text: name"></h3>
-				</ko>
-				<ko opts="ifnot: name ">
-				    <h3 data-bind="text: devicetype"></h3>
-				</ko>
-				<ko opts="if: room ">
-					<p class="room"><i class="icon-location"></i><span data-bind="text: room"></span></p>
-				</ko>
-                                <p class="info">
-                                        <ko opts="ifnot: state">
-                                                <i class="icon-info"></i><_span data-translateable="true">OFF</_span>
-                                        </ko>
-                                        <ko opts="if: state">
-                                                <i class="icon-info"></i><_span data-translateable="true">ON</_span>
-                                        </ko>
-                                </p>
-			</div>
-		</div>
-	</div>
-	<div class="row grid-item-controls">
-		<div class="six columns">
-		    <ko opts="if: state">
-                <div class="cmd-btn pretty medium default btn btn-full grid-command" data-bind="click: turnOn" data-value="on">ON</div>
-            </ko>
-            <ko opts="ifnot: state">
-                <div class="cmd-btn pretty medium primary btn btn-full grid-command" data-bind="click: turnOn" data-value="on">ON</div>
-            </ko>
-		</div>
-		<div class="six columns">
-		    <ko opts="if: state ">
-		        <div class="cmd-btn pretty medium primary btn btn-full grid-command" data-bind="click: turnOff" data-value="off">OFF</div>
-		    </ko>
-            <ko opts="ifnot: state">
-                <div class="cmd-btn pretty medium default btn btn-full grid-command" data-bind="click: turnOff" data-value="off">OFF</div>
-            </ko> 
-		</div>
-		<div class="twelve columns">
+<div class="four columns" data-bind="attr: {'data-uuid': uuid}">
+
+    <div class="row dashboard-widget-header">
+        <ul class="two_up tiles" >
+            <li class="dashboard-widget-header-icon">
+                <div class="pretty large primary btn handle">
+                    <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-adjust"></i>
+                </div>
+            </li>
+            <li class="dashboard-widget-header-infos">
+                <div class="row">
+                <ko opts="if: name ">
+                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
+                </ko>
+                <ko opts="ifnot: name ">
+                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
+                </ko>
+                <ko opts="if: room ">
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-location"/>
+                        <span data-bind="text: room"/>
+                    </div>
+                </ko>
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-info"/>
+                        <ko opts="ifnot: state">
+                        <_span data-translateable="true">OFF</_span>
+                        </ko>
+                        <ko opts="if: state">
+                        <_span data-translateable="true">ON</_span>
+                        </ko>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
+        <ul class="two_up tiles">
+            <li class="dashboard-widget-content-button">
+		        <ko opts="if: state">
+                <div class="pretty medium default btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
+                </ko>
+                <ko opts="ifnot: state">
+                <div class="pretty medium primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
+                </ko>
+            </li>
+            <li class="dashboard-widget-content-button">
+		        <ko opts="if: state ">
+		        <div class="pretty medium primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
+    		    </ko>
+                <ko opts="ifnot: state">
+                <div class="pretty medium default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
+                </ko> 
+            </li>
+        </ul>
+        <ul class="one_up">
 		    <div class="slider" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}"></div>
-    	</div>
-	</div>
+        </ul>
+    </div>
+
 </div>
+
