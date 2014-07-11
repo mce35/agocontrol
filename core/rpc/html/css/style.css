@@ -2345,6 +2345,14 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         background-color: #4a4d50;
     }
 
+    #col-left {
+        padding: 0 5px;
+    }
+
+    #col-left hr {
+        display:none;
+    }
+
     /* hide floorplan element tree in navigation */
     #col-left div.tree {
         display:none;
