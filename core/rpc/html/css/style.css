@@ -2408,9 +2408,5 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         height:20px;
     }
 
-    /* hide widget button */
-    .dashboard-widget-content ul li.dashboard-widget-content-button div.btn {
-        display:none;
-    }
 }
 
