@@ -2341,6 +2341,16 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
 }
 
 @media only screen and (max-width: 767px) {
+    /* hide floorplan element tree in navigation */
+    #col-left div.tree {
+        display:none;
+    }
+
+    /* hide logo header */
+    #col-right #header {
+        display:none;
+    }
+
     div.dashboard-widget-header ul {
         height: 70px;
     }
