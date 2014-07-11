@@ -724,9 +724,8 @@ msgid "Twitter is not configured"
 msgstr "Twitter ist nicht konfiguriert"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:11
-#, fuzzy
 msgid "Follow instructions above to authorize this access"
-msgstr "Folgen Sie den Anweisungen oben, um diesen Zugriff zu genehmigen:"
+msgstr "Folgen Sie den Anweisungen oben, um diesen Zugriff zu genehmigen"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:12
 msgid "Click"
@@ -746,19 +745,17 @@ msgid "Type given access code here"
 msgstr "Gib den Zugangscode hier ein"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:16
-#, fuzzy
 msgid "Twitter code"
-msgstr "Twitter ist konfiguriert"
+msgstr "Twitter Kode"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:17
 msgid "Finally click on button to save access code"
 msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:19
-#, fuzzy
 msgid "To send test tweet on your account, click on button"
 msgstr ""
-"Um einen Test Tweet auf den Twitter-Konto senden, klicke auf den Button:"
+"Um einen Test Tweet auf den Twitter-Konto senden, klicke auf den Button"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:20
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:35
@@ -785,18 +782,16 @@ msgid "GTalk is not configured"
 msgstr "GTalk ist nicht konfiguriert"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:25
-#, fuzzy
 msgid "To connect to service use your usual Google credentials"
-msgstr "Ansonsten verwende die übliche Google-Anmeldeinformationen:"
+msgstr "Um auf das Service zuzugreifen, verwende deine üblichen Google-Anmeldeinformationen"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:26
 msgid "Username"
 msgstr "Benutzername"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:27
-#, fuzzy
 msgid "Google username"
-msgstr "Dein Benutzername"
+msgstr "Google Benutzername"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:28
 msgid "If you are using 2-Step verification, generate password"
@@ -811,23 +806,20 @@ msgid "Password"
 msgstr "Passwort"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:31
-#, fuzzy
 msgid "Google password"
-msgstr "Dein Passwort"
+msgstr "Google Passwort"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:32
-#, fuzzy
 msgid "To send you a test message on GTalk, click on button"
-msgstr "Um eine Testnachricht auf GTalk zu senden, klicke auf den Button:"
+msgstr "Um eine Testnachricht auf GTalk zu senden, klicke auf den Button"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:33
 msgid "SMS configuration"
 msgstr "SMS Konfiguration"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:34
-#, fuzzy
 msgid "Agocontrol can send alert through SMS"
-msgstr "ago control kann Alarme via E-Mail senden"
+msgstr "ago control kann Alarme via SMS senden"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:35
 msgid "SMS is configured"
@@ -838,65 +830,56 @@ msgid "SMS is not yet configured"
 msgstr "SMS ist nicht konfiguriert"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:37
-#, fuzzy
 msgid "Choose SMS provider in list"
-msgstr "Wähle einen Push Anbieter aus der Liste:"
+msgstr "Wähle einen SMS Anbieter aus der Liste"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:38
-#, fuzzy
 msgid "You need to create an account on"
-msgstr ""
-"Du musst ein Konto erstellen und Guthaben aufladen, um SMS senden zu können"
+msgstr "Erstelle ein Konto erstellen bei"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:39
-#, fuzzy
 msgid "and add credits to send SMS"
-msgstr ""
-"Du musst ein Konto erstellen und Guthaben aufladen, um SMS senden zu können"
+msgstr "und lade Guthaben auf um SMS senden zu können"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:40
 msgid "SMS rates"
-msgstr ""
+msgstr "SMS Traife"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:41
-#, fuzzy
 msgid "12voip credentials"
 msgstr "12voip Zugangsdaten"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:42
-#, fuzzy
 msgid "12voip username"
-msgstr "Dein Benutzername"
+msgstr "12voip Benutzername"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:43
-#, fuzzy
 msgid "12voip password"
-msgstr "Dein Passwort"
+msgstr "12voip Passwort"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:44
 msgid ""
 "Free Mobile is a french internet/mobile provider. It offers for free to send "
 "SMS to mobile account owner and only for its number."
-msgstr ""
+msgstr "Free Mobile ist ein französicher Internet- und Mobilfunkanbieter, der kostenlose SMS nachrichten zu Deiner Mobilnummer anbietet."
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:45
 msgid ""
 "To use it in ago control, activate option in your free account and save "
 "provided apikey"
-msgstr ""
+msgstr "Um es in ago control zu verwenden, aktiviere die Option in Deinem freien Account und speichere den den übermittelten apikey"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:46
-#, fuzzy
 msgid "User"
 msgstr "Benutzername"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:47
 msgid "Free user"
-msgstr ""
+msgstr "Freier Benutzer"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:48
 msgid "Apikey"
-msgstr ""
+msgstr "Apikey"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:49
 msgid "To send you a test SMS, click on button"
@@ -919,7 +902,6 @@ msgid "Mail is not yet configured"
 msgstr "E-Mail ist noch nicht konfiguriert"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:54
-#, fuzzy
 msgid ""
 "Specify your email SMTP server and a sender email address (* is mandatory)"
 msgstr ""
@@ -927,34 +909,30 @@ msgstr ""
 "Pflichtfelder)"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:55
-#, fuzzy
 msgid "SMTP server* (smtp:port)"
-msgstr "SMTP Server"
+msgstr "SMTP Server* (Server:Port)"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:56
 msgid "smtp"
-msgstr ""
+msgstr "SMTP"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:57
-#, fuzzy
 msgid "Sender email*"
-msgstr "E-Mail Adresse des Absenders"
+msgstr "E-Mail Adresse des Absenders*"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:58
 msgid "email"
-msgstr ""
+msgstr "Email"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:59
 msgid "Login"
 msgstr "Benutzer"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:60
-#, fuzzy
 msgid "login"
-msgstr "Benutzer"
+msgstr "Benutzername"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:61
-#, fuzzy
 msgid "password"
 msgstr "Passwort"
 
@@ -989,9 +967,8 @@ msgid "Push is not yet configured"
 msgstr "Push ist nicht konfiguriert"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:69
-#, fuzzy
 msgid "Choose push provider in list"
-msgstr "Wähle einen Push Anbieter aus der Liste:"
+msgstr "Wähle einen Push Anbieter aus der Liste"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:70
 msgid "Enter your apikey"
@@ -1409,12 +1386,11 @@ msgstr "Node vom Netzwerk entkopplen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:69
 msgid "Unpair"
-msgstr ""
+msgstr "Entkoppeln"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:70
-#, fuzzy
 msgid "Remove node from your Z-Wave controller"
-msgstr "Akviviere den Koppel-Modus vom Z-Wave Controller"
+msgstr "Entferne Node vom Z-Wave Controller"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:71
 msgid "Turn on/off all devices"
@@ -1433,11 +1409,10 @@ msgid "Test network"
 msgstr "Teste Netzwerk"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:75
-#, fuzzy
 msgid ""
 "Launch some test procedures over all nodes. This command lasts some time!"
 msgstr ""
-"Führe einige Testroutinen auf diesen Node aus. Dieser Befehl kann einige "
+"Führe einige Testroutinen auf allen Node aus. Dieser Befehl kann einige "
 "Zeit in Anspruch nehmen!"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:76
@@ -1454,11 +1429,11 @@ msgstr "Laufenden Controller Befehl abbrechen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:79
 msgid "Cancel"
-msgstr ""
+msgstr "Abbrechen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:80
 msgid "This action will cancel currently running command"
-msgstr ""
+msgstr "Dieser Befehl wird alle laufenden Befehle abbrechen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:81
 msgid "Reset controller"
@@ -1470,7 +1445,7 @@ msgstr "Zurücksetzen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:83
 msgid "This action will clear everything from your controller!"
-msgstr ""
+msgstr "Diese Aktion wird die geamte Konfiguration vom Z-Wave-Controller löschen!"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:84
 msgid "Download configuration"
@@ -1481,9 +1456,8 @@ msgid "Download"
 msgstr "Herunterladen"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:86
-#, fuzzy
 msgid "Download network config from primary controller to dongle"
-msgstr "Konfiguration herunterladen wurde an den Controller geschickt"
+msgstr "Konfiguration vom primären Controller auf den Dongle laden"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:87
 msgid "Save configuration"
@@ -1491,33 +1465,8 @@ msgstr "Konfiguration speichern"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:89
 msgid "????"
-msgstr ""
+msgstr "????"
 
 #: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
 msgid "Statistic"
 msgstr "Statistik"
-
-#~ msgid "click here to view SMS rates"
-#~ msgstr "Klicke hier um SMS Preise zu sehen"
-
-#~ msgid "(could be smtp:port)"
-#~ msgstr "(kann auch Server:Port sein)"
-
-#~ msgid ""
-#~ "Click <a href=\"#\" data-bind=\"click: twitterUrl\">here</a> to generate "
-#~ "an authorization url"
-#~ msgstr ""
-#~ "Klicke <a href=\"#\" data-bind=\"click: twitterUrl\">hier</a> um eine "
-#~ "Genehmigungs URL zu generieren"
-
-#~ msgid "Authorize access on Twitter"
-#~ msgstr "Genehmige Zugriff auf Twitter"
-
-#~ msgid "Agocontrol uses"
-#~ msgstr "ago control Benutzer"
-
-#~ msgid "to send SMS alerts."
-#~ msgstr "um SMS-Benachrichtigungen zu senden."
-
-#~ msgid "GRAPH"
-#~ msgstr "GRAPH"
