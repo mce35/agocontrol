@@ -1,9 +1,9 @@
-<div class="four columns device" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="four columns">
 
     <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
+        <ul class="two_up tiles">
             <li class="dashboard-widget-header-icon">
-                <div class="pretty large primary btn handle">
+                <div class="pretty large primary btn">
                     <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-gauge"></i>
                 </div>
             </li>
@@ -15,20 +15,20 @@
                 <ko opts="ifnot: name ">
                     <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
                 </ko>
-                    <div class="twelve columns dashboard-widget-header-info" data-bind="foreach: valueList">
+                    <div data-bind="foreach: valueList" class="twelve columns dashboard-widget-header-info">
                         <ko opts="if: name == 'Mode'">
-                        <_span data-translateable="true">Mode</_span>: <span data-bind="text: level"></span>
+                        <_span data-translateable="true">Mode</_span>
                         </ko>
                         <ko opts="if: name == 'Operatingstate'">
-                        <span>- </span><span data-bind="text: level"></span>
+                        <span>- </span><span data-bind="text: level"/>
                         </ko>
                     </div>
-                    <div class="twelve columns dashboard-widget-header-info" data-bind="foreach: valueList">
+                    <div data-bind="foreach: valueList" class="twelve columns dashboard-widget-header-info">
                          <ko opts="if: name == 'Fanmode'">
-                         <_span data-translateable="true">FanMode</_span>: <span data-bind="text: level"></span>
+                         <_span data-translateable="true">FanMode</_span>
                          </ko>
                          <ko opts="if: name == 'Fanstate'">
-                         <span>- </span><span data-bind="text: level"></span>
+                         <span>- </span><span data-bind="text: level"/>
                          </ko>
                     </div>
                 </div>
@@ -37,42 +37,45 @@
     </div>
 
     <div class="row dashboard-widget-content dashboard-widget-content-buttons">
-        <ul class="three_up tiles">
-            <li class="dashboard-widget-content-quantity" style="">
-                <span class="danger label">Heat</span>
+        <ul class="three_up tiles" style="height:22px; margin-bottom:0px; margin-right:5px;">
+            <li style="background-color:#CA3838; color:#FFFFFF;" class="dashboard-widget-content-unit">
+                <span>Heat</span>
             </li>
-            <li>
+            <li style="height:22px;">
             </li>
-            <li class="dashboard-widget-content-quantity" style="">
-                <span class="primary label">Cool</span>
+            <li style="background-color:#3085D6; color:#FFFFFF;" class="dashboard-widget-content-unit">
+                <span>Cool</span>
             </li>
-            <li class="dashboard-widget-content-unit" data-bind="foreach: valueList">
+        </ul>
+        <ul class="three_up tiles" style="height:22px; margin-bottom:0px; margin-right:5px;">
+            <li style="background-color:#FFE1E1;" data-bind="foreach: valueList" class="dashboard-widget-content-unit">
                 <ko opts="if: name == 'Heatsetpoint'">
-                    <span class="light label" data-bind="text: levelUnit"/>
+                    <span data-bind="text: levelUnit"/>
                 </ko>
             </li>
-            <li class="dashboard-widget-content-unit" data-bind="foreach: valueList">
+            <li style="background-color:transparent;" data-bind="foreach: valueList" class="dashboard-widget-content-unit">
                 <ko opts="if: name == 'Temperature'">
-                    <span style="font-size:40px;" data-bind="text: levelUnit"/>
+                    <span style="font-size:22px;" data-bind="text: levelUnit"/>
                 </ko>
             </li>
-            <li class="dashboard-widget-content-unit" data-bind="foreach: valueList">
+            <li style="background-color:#A0BBD3;" data-bind="foreach: valueList" class="dashboard-widget-content-unit">
                 <ko opts="if: name == 'Coolsetpoint'">
-                    <span class="light label" data-bind="text: levelUnit"/>
+                    <span data-bind="text: levelUnit"/>
                 </ko>
             </li>
-            <li class="dashboard-widget-content-button">
-                <button data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'heat', temperature:'+1'} ) }">+</button>
-                <button data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'heat', temperature:'-1'} ) }">-</button>
+        </ul>
+        <ul class="three_up tiles" style="height:22px; margin-bottom:0px; margin-right:5px;">
+            <li style="background-color:#FFE1E1;" class="dashboard-widget-content-button">
+                <button style="height:18px; width:35px;" data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'heat', temperature:'+1'} ) }">+</button>
+                <button style="height:18px; width:35px;" data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'heat', temperature:'-1'} ) }">-</button>
             </li>
-            <li>
+            <li style="height:22px;">
             </li>
-            <li class="dashboard-widget-content-button">
-                <button data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'cool', temperature:'+1'} ) }">+</button>
-                <button data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'cool', temperature:'-1'} ) }">-</button>
+            <li style="background-color:#A0BBD3;" class="dashboard-widget-content-button">
+                <button style="height:18px; width:35px;" data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'cool', temperature:'+1'} ) }">+</button>
+                <button style="height:18px; width:35px;" data-bind="click: function(data, event) { customCommand({command:'settemperature', mode:'cool', temperature:'-1'} ) }">-</button>
             </li>
         </ul>
     </div>
 
 </div>
-
