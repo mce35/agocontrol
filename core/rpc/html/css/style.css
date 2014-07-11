@@ -2341,18 +2341,26 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
 }
 
 @media only screen and (max-width: 767px) {
+    body {
+        background-color: #4a4d50;
+    }
+
     /* hide floorplan element tree in navigation */
     #col-left div.tree {
         display:none;
     }
 
-    body {
-        background-color: #4a4d50;
-    }
-
     /* hide logo header */
     #col-right #header {
         display:none;
+    }
+
+    #col-right #grid .row {
+        margin-bottom: 0px;
+    }
+
+    #col-right #grid .four {
+        margin-top: 10px;
     }
 
     div.dashboard-widget-header ul {
@@ -2372,7 +2380,7 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         width:30px;
     }
     div.dashboard-widget-header ul li.dashboard-widget-header-infos {
-        width:180px;
+        width:240px;
     }
     .dashboard-widget-header-infos h3 {
         font-size:26px;
@@ -2390,6 +2398,11 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
     .dashboard-widget-header-info span {
         font-size:12px;
         height:20px;
+    }
+
+    /* hide widget button */
+    .dashboard-widget-content ul li.dashboard-widget-content-button div.btn {
+        display:none;
     }
 }
 
