@@ -2346,6 +2346,10 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         display:none;
     }
 
+    body {
+        background-color: #4a4d50;
+    }
+
     /* hide logo header */
     #col-right #header {
         display:none;
