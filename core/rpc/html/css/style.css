@@ -2298,7 +2298,7 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
 }
 
 @media only screen and (min-width:1101px) and (max-width: 1274px) {
-    div.dashboard-widget-header ul li.dashboard-widget-header-info {
+    div.dashboard-widget-header ul li.dashboard-widget-header-infos {
         width: 180px;
     }
 }
