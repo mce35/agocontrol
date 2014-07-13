@@ -219,13 +219,18 @@ void sendcommand(std::string internalid, int messageType, int subType, std::stri
     command << radioId << ";" << childId << ";" << messageType << ";" << subType << ";" << payload << "\n";
 
     //save command if device is an actuator and message type is SET_VARIABLE
-    if( infos.size()>0 && infos["type"]=="switch" && messageType==SET_VARIABLE ) {
-        T_COMMAND cmd;
-        cmd.command = command.str();
-        cmd.attempts = 0;
-        pthread_mutex_lock(&resendMutex);
-        commandsmap[internalid] = cmd;
-        pthread_mutex_unlock(&resendMutex);
+    if( infos.size()>0 && infos["type"]=="switch" && messageType==SET_VARIABLE )
+    {
+        //check if internalid has no command pending
+        if( commandsmap.count(internalid)==0 )
+        {
+            T_COMMAND cmd;
+            cmd.command = command.str();
+            cmd.attempts = 0;
+    		pthread_mutex_lock(&resendMutex);
+            commandsmap[internalid] = cmd;
+		    pthread_mutex_unlock(&resendMutex);
+        }
     }
 
     //send command
@@ -377,16 +382,29 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             if( infos.size()>0 ) {
                 deviceType = infos["type"].asString();
                 //switch according to specific device type
-                if( deviceType=="switch" ) {
-                    if( cmd=="off" ) {
-                        infos["value"] = "0";
-                        setDeviceInfos(internalid, &infos);
-                        sendcommand(internalid, SET_VARIABLE, V_LIGHT, "0");
+                if( deviceType=="switch" )
+                {
+                    if( cmd=="off" )
+                    {
+                        if( infos["value"].asString()=="1" )
+                        {
+                            sendcommand(internalid, SET_VARIABLE, V_LIGHT, "0");
+                        }
+                        else
+                        {
+                            if( DEBUG ) cout << " -> Command dropped" << endl;
+                        }
                     }
-                    else if( cmd=="on" ) {
-                        infos["value"] = "1";
-                        setDeviceInfos(internalid, &infos);
-                        sendcommand(internalid, SET_VARIABLE, V_LIGHT, "1");
+                    else if( cmd=="on" )
+                    {
+                        if( infos["value"].asString()=="0" )
+                        {
+                            sendcommand(internalid, SET_VARIABLE, V_LIGHT, "1");
+                        }
+                        else 
+                        {
+                            if( DEBUG ) cout << " -> Command dropped" << endl;
+                        }
                     }
                 }
                 //TODO add more device type here
