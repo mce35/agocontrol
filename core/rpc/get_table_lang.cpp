@@ -31,7 +31,12 @@ static bool handleLastModified(const char *filename) {
 		}
 	}
 
-	cout << "Last-Modified: " << buffer << "\r\n\r\n";
+	if (!needs_output) {
+		cout << "Last-Modified: " << buffer << "\r\n\r\n";
+	}
+	else {
+		cout << "\r\n";
+	}
 
 	return needs_output;
 }
