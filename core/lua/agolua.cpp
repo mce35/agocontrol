@@ -260,6 +260,15 @@ int luaGetDeviceInventory(lua_State *L)
 	return 1;
 }
 
+/**
+ * Force getting inventory manually
+ */
+int luaGetInventory(lua_State *L) {
+    inventory = agoConnection->getInventory();
+    refreshInventory = false;
+	return 1;
+}
+
 void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) {
 	lua_createtable(L, 0, 0);
 	for (qpid::types::Variant::Map::const_iterator it=content.begin(); it!=content.end(); it++) {
@@ -484,6 +493,7 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
         lua_register(L, "setVariable", luaSetVariable);
         lua_register(L, "getVariable", luaGetVariable);
         lua_register(L, "getDeviceInventory", luaGetDeviceInventory);
+        lua_register(L, "getInventory", luaGetInventory);
         // lua_register(L, "addDevice", luaAddDevice);
 
         pushTableFromMap(L, content);
