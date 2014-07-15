@@ -73,6 +73,97 @@ std::string get_file_contents(const char *filename) {
 	throw(errno);
 }
 
+void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) {
+	lua_createtable(L, 0, 0);
+	for (qpid::types::Variant::Map::const_iterator it=content.begin(); it!=content.end(); it++) {
+		switch (it->second.getType()) {
+			case qpid::types::VAR_INT8:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asInt8());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_INT16:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asInt16());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_INT32:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asInt32());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_INT64:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asInt64());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_UINT8:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asUint8());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_UINT16:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asUint16());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_UINT32:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asUint32());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_UINT64:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asUint64());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_FLOAT:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asFloat());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_DOUBLE:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnumber(L,it->second.asDouble());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_STRING:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushstring(L,it->second.asString().c_str());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_UUID:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushstring(L,it->second.asString().c_str());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_MAP:
+				lua_pushstring(L,it->first.c_str());
+				pushTableFromMap(L,it->second.asMap());
+				lua_settable(L, -3);
+				break;
+			case qpid::types::VAR_LIST:
+				// TODO: push list
+				break;
+			case qpid::types::VAR_BOOL:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushboolean(L,it->second.asBool());
+                                lua_settable(L, -3);
+                                break;
+			case qpid::types::VAR_VOID:
+				lua_pushstring(L,it->first.c_str());
+				lua_pushnil(L);
+                                lua_settable(L, -3);
+                                break;
+			//default:
+				//lua_pushstring(L,it->first.c_str());
+				//lua_pushstring(L,"unhandled");
+				//cout << "undhandled type: " << it->second.getType() << endl;
+				//lua_settable(L, -3);
+		}
+	}	
+}
+
 int luaAddDevice(lua_State *l) { // DRAFT
 	int argc = lua_gettop(l);
 	if (argc != 2) return 0;
@@ -266,98 +357,8 @@ int luaGetDeviceInventory(lua_State *L)
 int luaGetInventory(lua_State *L) {
     inventory = agoConnection->getInventory();
     refreshInventory = false;
-	return 1;
-}
-
-void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) {
-	lua_createtable(L, 0, 0);
-	for (qpid::types::Variant::Map::const_iterator it=content.begin(); it!=content.end(); it++) {
-		switch (it->second.getType()) {
-			case qpid::types::VAR_INT8:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asInt8());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_INT16:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asInt16());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_INT32:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asInt32());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_INT64:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asInt64());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_UINT8:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asUint8());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_UINT16:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asUint16());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_UINT32:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asUint32());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_UINT64:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asUint64());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_FLOAT:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asFloat());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_DOUBLE:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnumber(L,it->second.asDouble());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_STRING:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushstring(L,it->second.asString().c_str());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_UUID:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushstring(L,it->second.asString().c_str());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_MAP:
-				lua_pushstring(L,it->first.c_str());
-				pushTableFromMap(L,it->second.asMap());
-				lua_settable(L, -3);
-				break;
-			case qpid::types::VAR_LIST:
-				// TODO: push list
-				break;
-			case qpid::types::VAR_BOOL:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushboolean(L,it->second.asBool());
-                                lua_settable(L, -3);
-                                break;
-			case qpid::types::VAR_VOID:
-				lua_pushstring(L,it->first.c_str());
-				lua_pushnil(L);
-                                lua_settable(L, -3);
-                                break;
-			//default:
-				//lua_pushstring(L,it->first.c_str());
-				//lua_pushstring(L,"unhandled");
-				//cout << "undhandled type: " << it->second.getType() << endl;
-				//lua_settable(L, -3);
-		}
-	}	
+    pushTableFromMap(L, inventory);
+    return 1;
 }
 
 /**
