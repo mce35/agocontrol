@@ -133,6 +133,13 @@ int luaSetVariable(lua_State *L) {
         lua_pushnumber(L,0);
     }
 
+    //refresh inventory only once (performance optimization)
+    if( refreshInventory )
+    {
+        inventory = agoConnection->getInventory();
+        refreshInventory = false;
+    }
+
     //update current inventory to reflect changes without reloading it (too long!!)
     qpid::types::Variant::Map variables = inventory["variables"].asMap();
     if( !variables[content["variable"]].isVoid() )
