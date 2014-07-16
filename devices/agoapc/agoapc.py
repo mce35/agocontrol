@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python
 """ APC Switched Rack PDU Device """
 
 import sys
@@ -20,7 +20,7 @@ OIDNAME = "1,3,6,1,4,1,318,1,1,4,5,2,1,3"       # sPDUOutletName
 OIDLOAD = "1,3,6,1,4,1,318,1,1,12,2,3,1,1,2,1"  # rPDULoadStatusLoad
 LOADOID = (1, 3, 6, 1, 4, 1, 318, 1, 1, 12, 2, 3, 1, 1, 2, 1)
 
-APCHOST = agoclient.get_config_option("apc", "host", "192.168.1.13")
+APCHOST = agoclient.get_config_option("apc", "host", "127.0.0.1")
 APCPORT = int(agoclient.get_config_option("apc", "port", "161"))
 APCVOLTAGE = int(agoclient.get_config_option("apc", "voltage", "220"))
 APCCOMMUNITYRO = agoclient.get_config_option("apc", "community_readonly",
@@ -62,7 +62,7 @@ def get_outlet_status(internalid):
     """XXX"""
 
     myoid = eval(str(OIDSTATUS) + "," + str(internalid))
-    var_binds = cmdgen.CommandGenerator().getCmd(
+    errorIndication, errorStatus, errorIndex, var_binds = cmdgen.CommandGenerator().getCmd(
         cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
         cmdgen.UdpTransportTarget((APCHOST, APCPORT)), myoid)
     output = var_binds[0][1]
@@ -81,7 +81,7 @@ def get_outlet_name(internalid):
     """XXX"""
 
     myoid = eval(str(OIDNAME) + "," + str(internalid))
-    var_binds = cmdgen.CommandGenerator().getCmd(
+    errorIndication, errorStatus, errorIndex, var_binds = cmdgen.CommandGenerator().getCmd(
         cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
         cmdgen.UdpTransportTarget((APCHOST, APCPORT)), myoid)
     output = var_binds[0][1]
@@ -93,7 +93,7 @@ def get_current_power():
     """XXX"""
 
     myoid = eval(str(OIDLOAD))
-    var_binds = cmdgen.CommandGenerator().getCmd(
+    errorIndication, errorStatus, errorIndex, var_binds = cmdgen.CommandGenerator().getCmd(
             cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
             cmdgen.UdpTransportTarget((APCHOST, APCPORT)),
             myoid
@@ -140,18 +140,18 @@ def message_handler(internalid, content):
             result = set_outlet_state(internalid, 'on')
             if "on" in result:
                 CLIENT.emit_event(internalid,
-                    "event.device.statechanged", "255", "")
+                    "event.device.statechanged", 255, "")
         if content["command"] == "off":
             print "device switched off:", internalid
             result = set_outlet_state(internalid, 'off')
             if "off" in result:
                 CLIENT.emit_event(internalid,
-                    "event.device.statechanged", "0", "")
+                    "event.device.statechanged", 0, "")
 
 
 # get outlets from apc
 MYOID = eval(str(OIDOUTLETCOUNT))
-VARBINDS = cmdgen.CommandGenerator().getCmd(
+errorIndication, errorStatus, errorIndex, VARBINDS = cmdgen.CommandGenerator().getCmd(
     cmdgen.CommunityData('my-agent', APCCOMMUNITYRO, 0),
     cmdgen.UdpTransportTarget((APCHOST, APCPORT)),
     MYOID)
