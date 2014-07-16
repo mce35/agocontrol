@@ -16,7 +16,7 @@ function init_systemStatus() {
     model = new systemStatus();
     $.ajax({
 	type : "GET",
-	url : "/cgi-bin/system.cgi",
+	url : "cgi-bin/system.cgi",
 	success : function(result) {
 	    model.data(JSON.parse(result));
 
@@ -33,7 +33,7 @@ function init_systemStatus() {
 	    window.setInterval(function() {
 		$.ajax({
 		    type : "GET",
-		    url : "/cgi-bin/system.cgi",
+		    url : "cgi-bin/system.cgi",
 		    success : function(res) {
 			model.data(JSON.parse(res));
 		    }

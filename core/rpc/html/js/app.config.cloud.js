@@ -37,7 +37,7 @@ function cloudConfig() {
 	    self.openDialog = null;
 	};
 
-	var url = "/cgi-bin/activate.cgi?action=activate&username=" + cloudUsername + "&password=" + cloudPassword + "&pin=" + cloudPIN;
+	var url = "cgi-bin/activate.cgi?action=activate&username=" + cloudUsername + "&password=" + cloudPassword + "&pin=" + cloudPIN;
 	$.ajax({
 	    type : 'POST',
 	    url : url,
