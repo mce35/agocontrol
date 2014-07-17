@@ -309,6 +309,26 @@ function agoBlocklyPlugin(deviceMap) {
         });
     };
 
+    //Add default blocks
+    self.addDefaultBlocks = function() {
+        //create blocks
+        var ifBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'controls_if');
+        ifBlock.initSvg();
+        var contentBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'agocontrol_content');
+        contentBlock.initSvg();
+        var eventBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'agocontrol_eventAll');
+        eventBlock.initSvg();
+
+        //connect each others
+        ifBlock.getInput('IF0').connection.connect(contentBlock.outputConnection);
+        contentBlock.getInput('EVENT').connection.connect(eventBlock.outputConnection);
+
+        //render blocks
+        ifBlock.render();
+        contentBlock.render();
+        eventBlock.render();
+    };
+
     //============================
     //ui events
     //============================
@@ -320,6 +340,7 @@ function agoBlocklyPlugin(deviceMap) {
             Blockly.mainWorkspace.clear();
             self.scriptName('untitled');
             self.scriptSaved(true);
+            self.addDefaultBlocks();
         }
     };
 
@@ -501,7 +522,8 @@ function agoBlocklyPlugin(deviceMap) {
 
     //view model
     this.blocklyViewModel = new ko.blockly.viewModel({
-        onWorkspaceChanged: self.onWorkspaceChanged
+        onWorkspaceChanged: self.onWorkspaceChanged,
+        addDefaultBlocks: self.addDefaultBlocks
     });
 }
 
@@ -513,6 +535,7 @@ function init_plugin()
     ko.blockly = {
         viewModel: function(config) {
             this.onWorkspaceChanged = config.onWorkspaceChanged;
+            this.addDefaultBlocks = config.addDefaultBlocks;
         }
     };
 
@@ -535,6 +558,8 @@ function init_plugin()
             {
                 notif.error('Unable to configure Blockly! Event builder shouldn\'t work.');
             }
+            //init blocks
+            viewmodel().addDefaultBlocks();
         }
     };
 
