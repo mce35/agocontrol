@@ -18,12 +18,12 @@ Blockly.Lua['agocontrol_eventNo'] = function(block) {
 };
 
 Blockly.Lua['agocontrol_deviceEvent'] = function(block) {
-    var code = block.getFieldValue('EVENT');
+    var code = "'" + block.getFieldValue('EVENT') + "'";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
 Blockly.Lua['agocontrol_eventAll'] = function(block) {
-    var code = block.getFieldValue('EVENT');
+    var code = "'" + block.getFieldValue('EVENT') + "'";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
@@ -55,9 +55,9 @@ Blockly.Lua['agocontrol_deviceProperty'] = function(block) {
 
 Blockly.Lua['agocontrol_eventProperty'] = function(block) {
     var code = "";
-    if( block.inContent )
+    /*if( block.inContent )
         code = "content." + block.getFieldValue("PROP");
-    else
+    else*/
         code = block.getFieldValue("PROP");
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
@@ -92,6 +92,11 @@ Blockly.Lua['agocontrol_content'] = function(block) {
         code += Blockly.Lua.valueToCode(block, 'PROP'+i, Blockly.Lua.ORDER_NONE) || '';
     }
     return [code, Blockly.Lua.ORDER_NONE];
+};
+
+Blockly.Lua['agocontrol_contentProperty'] = function(block) {
+    var code = "content." + block.getFieldValue("PROP");
+    return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
 Blockly.Lua['agocontrol_fixedItemsList'] = function(block) {
