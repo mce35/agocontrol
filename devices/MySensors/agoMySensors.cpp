@@ -830,12 +830,7 @@ void *receiveFunction(void *param) {
                         else {
                             infos["counter_received"] = infos["counter_received"].asUint64()+1;
                         }
-                        if( infos["last_timestamp"].isVoid() ) {
-                            infos["last_timestamp"] = 0;
-                        }
-                        else {
-                            infos["last_timestamp"] = (int)(time(NULL));
-                        }
+                        infos["last_timestamp"] = (int)(time(NULL));
                         setDeviceInfos(internalid, &infos);
                     }
 
