@@ -27,7 +27,8 @@
     </div>
 
     <div class="row dashboard-widget-content dashboard-widget-content-values">
-        <ul data-bind="foreach: valueList" class="four_up tiles">
+        <ko opts="foreach: valueList">
+        <ul class="four_up tiles">
             <li class="dashboard-widget-content-quantity">
                 <span data-bind="text: name"/>
             </li>
@@ -43,6 +44,7 @@
                 </div>
             </li>
         </ul>
+        </ko>
     </div>
 
 </div>
