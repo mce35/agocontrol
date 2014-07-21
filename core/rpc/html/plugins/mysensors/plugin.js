@@ -7,7 +7,8 @@ function mysensorsConfig(deviceMap) {
     self.mysensorsControllerUuid = null;
     self.port = ko.observable();
     self.devices = ko.observableArray();
-    self.selectedDevice = ko.observable();
+    self.selectedRemoveDevice = ko.observable();
+    self.selectedCountersDevice = ko.observable();
 
     //MySensor controller uuid
     if( deviceMap!==undefined )
@@ -73,13 +74,37 @@ function mysensorsConfig(deviceMap) {
         });
     };
 
-    //reset counters
-    self.resetCounters = function() {
+    //reset all counters
+    self.resetAllCounters = function() {
         if( confirm("Reset all counters?") )
         {
             var content = {
                 uuid: self.mysensorsControllerUuid,
-                command: 'resetcounters'
+                command: 'resetallcounters'
+            }
+    
+            sendCommand(content, function(res)
+            {
+                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
+                {
+                    notif.success('#rc');
+                }
+                else
+                {
+                    notif.fatal('#nr', 0);
+                }
+            });
+        }
+    };
+
+    //reset counters
+    self.resetCounters = function() {
+        if( confirm("Reset counters of selected device?") )
+        {
+            var content = {
+                uuid: self.mysensorsControllerUuid,
+                command: 'resetcounters',
+                device: self.selectedCountersDevice()
             }
     
             sendCommand(content, function(res)
@@ -123,7 +148,7 @@ function mysensorsConfig(deviceMap) {
             var content = {
                 uuid: self.mysensorsControllerUuid,
                 command: 'remove',
-                device: self.selectedDevice()
+                device: self.selectedRemoveDevice()
             }
     
             sendCommand(content, function(res)
