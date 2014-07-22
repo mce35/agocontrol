@@ -358,7 +358,7 @@ int luaGetInventory(lua_State *L) {
     inventory = agoConnection->getInventory();
     refreshInventory = false;
     pushTableFromMap(L, inventory);
-    return 1;
+	return 1;
 }
 
 /**
@@ -594,11 +594,41 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					returnval["result"]=-1;
 				}
 			}
+		} else if (content["command"] == "renscript") {
+            if (content["oldname"].asString()!="" && content["newname"].asString()!="" )
+            {
+                try {
+                    // if a path is passed, strip it for security reasons
+                    fs::path input(content["oldname"]);
+                    string scriptInput = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
+                    fs::path target(scriptInput);
+
+                    fs::path output(content["newname"]);
+                    string scriptOutput = LUA_SCRIPT_DIR + output.stem().string() + ".lua";
+                    fs::path destination(scriptOutput);
+
+                    //check if destination file already exists
+                    if( !fs::exists(destination) )
+                    {
+                        //rename script
+                        fs::rename(target, destination);
+						returnval["result"]=0;
+                    }
+                    else
+                    {
+                        returnval["error"]="Destination script name already exists";
+                        returnval["result"]=-1;
+                    }
+                } catch( const exception& e ) {
+                    cout << "Exception during file renaming" << e.what() << endl;
+                    returnval["error"]="Unable to rename script";
+                    returnval["result"]=-1;
+                }
+            }
 		} else {
 			returnval["error"]="invalid command";
 			returnval["result"]=-1;
 		}
-		return returnval;
 	} else {
 		fs::path scriptdir(LUA_SCRIPT_DIR);
 		if (fs::exists(scriptdir)) {

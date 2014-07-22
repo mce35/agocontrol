@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-24 10:56+0200\n"
+"POT-Creation-Date: 2014-07-22 23:26+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -319,7 +319,7 @@ msgstr "Bewerk Scenario"
 #: ../templates/configuration/scenarios.xml.in.h:17
 #: ../templates/configuration/events.xml.in.h:13
 #: ../templates/configuration/security.xml.in.h:2
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:14
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:18
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:88
 msgid "Save"
@@ -594,14 +594,6 @@ msgstr "Mode"
 msgid "FanMode"
 msgstr "VentilatorMode"
 
-#: ../templates/devices/thermostat.xml.in.h:3
-msgid "Heat"
-msgstr "Verwarm"
-
-#: ../templates/devices/thermostat.xml.in.h:4
-msgid "Cool"
-msgstr "Koel"
-
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:1
 msgid "luacontroller is not responding. Unable to execute action."
 msgstr "luacontroller reageert niet. Handeling kan niet worden uitgevoerd."
@@ -646,37 +638,55 @@ msgstr "Script verwijderd"
 msgid "Unable to delete script"
 msgstr "Verwijderen van script mislukt"
 
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
+#, fuzzy
+msgid "Script renamed successfully"
+msgstr "Script opgeslagen"
+
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:13
+#, fuzzy
+msgid "Script not renamed"
+msgstr "Script niet opgeslagen"
+
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:15
 msgid "Load"
 msgstr "Laden"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:14
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:16
 msgid "Check"
 msgstr "Controleer"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:15
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:17
 msgid "View"
 msgstr "Bekijk"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:16
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:18
 msgid "Clear"
 msgstr "Wissen"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:17
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:19
 msgid "Script saved"
 msgstr "Script opgeslagen"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:18
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:20
 msgid "Script modified"
 msgstr "Script gewijzigd"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:19
-msgid "script(s) available"
-msgstr "script(s) beschikbaar"
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:21
+#, fuzzy
+msgid "Script"
+msgstr "Script opgeslagen"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:20
-msgid "Enter script name"
-msgstr "Geef script naam"
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:22
+#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
+#, fuzzy
+msgid "Actions"
+msgstr "Actie"
+
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:23
+#, fuzzy
+msgid "Script name"
+msgstr "Script opgeslagen"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:1
 msgid "Agoalert is not responding"
@@ -1209,11 +1219,6 @@ msgstr ""
 msgid "Status"
 msgstr "Status:"
 
-#: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
-#, fuzzy
-msgid "Actions"
-msgstr "Actie"
-
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:25
 #, fuzzy
 msgid "Associations"
@@ -1479,6 +1484,18 @@ msgstr ""
 #: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
 msgid "Statistic"
 msgstr ""
+
+#~ msgid "Heat"
+#~ msgstr "Verwarm"
+
+#~ msgid "Cool"
+#~ msgstr "Koel"
+
+#~ msgid "script(s) available"
+#~ msgstr "script(s) beschikbaar"
+
+#~ msgid "Enter script name"
+#~ msgstr "Geef script naam"
 
 #~ msgid "click here to view SMS rates"
 #~ msgstr "klik hier om SMS kosten te bekijken"

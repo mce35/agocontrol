@@ -12,6 +12,8 @@
         <_span data-translateable="true" id="cd">Delete selected script?</_span>
         <_span data-translateable="true" id="sd">Script deleted successfully</_span>
         <_span data-translateable="true" id="nd">Unable to delete script</_span>
+        <_span data-translateable="true" id="rss">Script renamed successfully</_span>
+        <_span data-translateable="true" id="rsf">Script not renamed</_span>
     </div>
 
     <!-- blockly configuration -->
@@ -217,7 +219,7 @@
         <div class="pretty medium info btn icon-left icon-install"><a href="#" title="Save your script" data-bind="click:save"><_span data-translateable="true">Save</_span> <span data-bind="text:scriptName" style="font-style:bold;"></span></a></div>
         <div class="pretty medium info btn icon-left icon-up"><_a href="#" data-translateable="true" title="Load existing script" data-bind="click:load">Load</_a></div>
         <div class="pretty medium info btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Check blocks" data-bind="click:check">Check</_a></div>
-        <div class="pretty medium info btn icon-left icon-search"><_a data-translateable="true" href="#" title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
+        <div class="pretty medium info btn icon-left icon-eye"><_a data-translateable="true" href="#" title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
         <div class="pretty medium info btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
         <div style="margin-left:20px; display: inline-block;">
             <ko opts="if:scriptSaved">
@@ -236,14 +238,32 @@
     </div>
 
     <!-- load dialog -->
-    <div id="loadDialog" style="display:none;">
-        <span data-bind="text:scriptsCount"></span> <_span data-translateable="true">script(s) available</_span>
-        <select data-bind="options:availableScripts, value:selectedScript" size="10" style="width:100%; height:240px;"></select>
+    <div style="display:none;" id="loadDialog">
+        <table style="width: 100%; margin-top: 15px; margin-bottom: 5px;" data-bind="dataTable: { dataSource:availableScripts, rowTemplate:'rowTemplate', columns:['name'], options:{fnRowCallback:uiRenameScript}}">
+        <thead>
+        <tr>
+            <_th data-translateable="true">Script</_th>
+            <_th data-translateable="true">Actions</_th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        </table>
     </div>
+    <script id="rowTemplate" type="text/html">
+        <td class="rename_script" data-bind="attr: {'data-oldname': name}, text: name"></td>
+        <td>
+            <button data-bind="click: $root.uiLoadScript.bind($data,name)">Load</button>
+            <button data-bind="click: $root.uiDeleteScript.bind($data,name)">Delete</button>
+        </td>
+    </script>
 
     <!-- save dialog -->
     <div id="saveDialog" style="display:none;">
-        <_span data-translateable="true">Enter script name</_span>:<input data-bind="value:scriptName"></input>
+        <_span data-translateable="true">Script name</_span>:
+        <div class="field">
+            <input class="input" data-bind="value:scriptName"></input>
+        </div>
     </div>
 </div>
 
