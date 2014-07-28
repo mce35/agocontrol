@@ -250,6 +250,14 @@ int luaGetVariable(lua_State *L)
     //init
     std::string variableName = "";
 
+    //refresh inventory only once (performance optimization)
+    if( refreshInventory )
+    {
+        inventory = agoConnection->getInventory();
+        refreshInventory = false;
+    }
+    qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+
     //get variable name
     variableName = std::string(lua_tostring(L,1));
 
