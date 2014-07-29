@@ -214,9 +214,10 @@ function loadPlugin(fromDashboard) {
             $.unblockUI();
         }
     });
-    }).fail(function() {
+    }).fail(function(jqXHR, textStatus, errorThrown) {
         $.unblockUI();
         notif.fatal("Error: Failed to load plugin!");
+        console.log("Unable to load plugin: ["+textStatus+"] "+errorThrown.message);
     });
 }
 function loadPluginDashboard() {
