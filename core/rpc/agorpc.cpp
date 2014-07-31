@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <math.h>
 
 #include <termios.h>
 #ifndef __FreeBSD__
@@ -659,44 +660,36 @@ static void *serve_webserver(void *server)
 }
 
 int main(int argc, char **argv) {
-	string broker;
-	string port; int iport;
-	string htdocs;
-	string certificate;
-	string numthreads;
-	string domainname;
-	bool useSSL;
+    string broker;
+    Variant::List ports;
+    string port;
+    string split;
+    string htdocs;
+    string certificate;
+    string numthreads;
+    string domainname;
+    bool useSSL;
 
     //get parameters
-	Variant::Map connectionOptions;
-	broker=getConfigOption("system", "broker", "localhost:5672");
-	connectionOptions["username"]=getConfigOption("system", "username", "agocontrol");
-	connectionOptions["password"]=getConfigOption("system", "password", "letmein");
-	port=getConfigOption("rpc", "ports", "8008");
-	htdocs=getConfigOption("rpc", "htdocs", HTMLDIR);
-	certificate=getConfigOption("rpc", "certificate", CONFDIR "/rpc/rpc_cert.pem");
-	numthreads=getConfigOption("rpc", "numthreads", "30");
-	domainname=getConfigOption("rpc", "domainname", "agocontrol");
+    Variant::Map connectionOptions;
+    broker=getConfigOption("system", "broker", "localhost:5672");
+    connectionOptions["username"]=getConfigOption("system", "username", "agocontrol");
+    connectionOptions["password"]=getConfigOption("system", "password", "letmein");
+    port=getConfigOption("rpc", "ports", "8008,8009s");
+    htdocs=getConfigOption("rpc", "htdocs", HTMLDIR);
+    certificate=getConfigOption("rpc", "certificate", CONFDIR "/rpc/rpc_cert.pem");
+    numthreads=getConfigOption("rpc", "numthreads", "30");
+    domainname=getConfigOption("rpc", "domainname", "agocontrol");
 
-    //port + SSL
-    if( port.find(',')!=std::string::npos )
+    //ports
+    while( port.find(',')!=std::string::npos )
     {
-        //keep first port!
         std::size_t pos = port.find(',');
-        port = port.substr(0, pos);
+        split = port.substr(0, pos);
+        port = port.substr(pos+1);
+        ports.push_back(split);
     }
-	useSSL = port.find('s') != std::string::npos;
-    cout << "SSL support: ";
-    if( useSSL )
-        cout << "yes" << endl;
-    else
-        cout << "no" << endl;
-    if( useSSL )
-    {
-        //remove "s" from port
-        port.replace(port.find("s"), sizeof("s")-1, "");
-    }
-    cout << "Port: " << port << endl;
+    ports.push_back(port);
 
     //auth
     stringstream auth;
@@ -721,100 +714,126 @@ int main(int argc, char **argv) {
         cout << "Auth support: no" << endl;
     }
 
-	pthread_mutex_init(&mutexSubscriptions, NULL);
+    pthread_mutex_init(&mutexSubscriptions, NULL);
 
-	// start web server
+    // start webservers
     struct mg_server *firstServer = NULL;
     char serverId[3] = "";
     int maxthreads;
     sscanf(numthreads.c_str(), "%d", &maxthreads);
-    cout << "Starting webserver (" << maxthreads << " threads)" << endl;
-    for( int i=0; i<maxthreads; i++ )
+    int numThreadsPerPort = ceil((int)maxthreads/(int)ports.size());
+    while( !ports.empty() )
     {
-        struct mg_server *server;
-        sprintf(serverId, "%d", i);
-        server = mg_create_server((void*)serverId, event_handler);
-        mg_set_option(server, "listening_port", port.c_str()); 
-        mg_set_option(server, "document_root", htdocs.c_str()); 
-        mg_set_option(server, "auth_domain", domainname.c_str()); 
+        //get port
+        port = ports.front().asString();
+        ports.pop_front();
+
+        //SSL
+        useSSL = port.find('s') != std::string::npos;
         if( useSSL )
-            mg_set_option(server, "ssl_certificate", certificate.c_str()); 
-        if( firstServer==NULL )
         {
-            firstServer = server;
+            //remove "s" from port
+            port.replace(port.find("s"), sizeof("s")-1, "");
         }
-        else
+        
+        //start webserver threads
+        cout << "Starting webserver (" << numThreadsPerPort << " threads) on port " << port;
+        if( useSSL )
+            cout << " using SSL";
+        cout << endl;
+        for( int i=0; i<numThreadsPerPort; i++ )
         {
-            mg_set_listening_socket(server, mg_get_listening_socket(firstServer));
+            struct mg_server *server;
+            sprintf(serverId, "%d", i);
+            server = mg_create_server((void*)serverId, event_handler);
+            mg_set_option(server, "listening_port", port.c_str()); 
+            mg_set_option(server, "document_root", htdocs.c_str()); 
+            mg_set_option(server, "auth_domain", domainname.c_str()); 
+            if( useSSL )
+                mg_set_option(server, "ssl_certificate", certificate.c_str()); 
+            if( firstServer==NULL )
+            {
+                firstServer = server;
+            }
+            else
+            {
+                mg_set_listening_socket(server, mg_get_listening_socket(firstServer));
+            }
+            mg_start_thread(serve_webserver, server);
         }
-        mg_start_thread(serve_webserver, server);
+
+        //reset flags
+        firstServer = NULL;
+        useSSL = false;
+        port = "";
+    }
+    return(0);
+
+    connectionOptions["reconnect"] = "true";
+
+    connection = new Connection(broker, connectionOptions);
+    try {
+        connection->open(); 
+        session = connection->createSession(); 
+        receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}"); 
+        sender = session.createSender("agocontrol; {create: always, node: {type: topic}}"); 
+    } catch(const std::exception& error) {
+        std::cerr << error.what() << std::endl;
+        connection->close();
+        printf("could not startup\n");
+        return 1;
     }
 
-	connectionOptions["reconnect"] = "true";
 
-	connection = new Connection(broker, connectionOptions);
-	try {
-		connection->open(); 
-		session = connection->createSession(); 
-		receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}"); 
-		sender = session.createSender("agocontrol; {create: always, node: {type: topic}}"); 
-	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
-		connection->close();
-		printf("could not startup\n");
-		return 1;
-	}
+    while (true) {
+        try{
+            Variant::Map content;
+            string subject;
+            Message message = receiver.fetch(Duration::SECOND * 3);
+            session.acknowledge(message);
 
+            subject = message.getSubject();
 
-	while (true) {
-		try{
-			Variant::Map content;
-			string subject;
-			Message message = receiver.fetch(Duration::SECOND * 3);
-			session.acknowledge(message);
+            // test if it is an event
+            if (subject.size()>0) {
+                // don't flood clients with unneeded events
+                if (subject == "event.environment.timechanged") continue;
 
-			subject = message.getSubject();
+                //printf("received event: %s\n", subject.c_str());	
+                // workaround for bug qpid-3445
+                if (message.getContent().size() < 4) {
+                    throw qpid::messaging::EncodingException("message too small");
+                }
 
-			// test if it is an event
-			if (subject.size()>0) {
-				// don't flood clients with unneeded events
-				if (subject == "event.environment.timechanged") continue;
+                decode(message, content);
+                content["event"] = subject;
+                if ((subject.find("event.environment.") != std::string::npos) && (subject.find("changed")!= std::string::npos)) {
+                    string quantity = subject;
+                    quantity.erase(quantity.begin(),quantity.begin()+18);
+                    quantity.erase(quantity.end()-7,quantity.end());	
+                    content["quantity"] = quantity;
+                }
+                pthread_mutex_lock(&mutexSubscriptions);	
+                for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
+                    if (it->second.queue.size() > 100) {
+                        // this subscription seems to be abandoned, let's remove it to save resources
+                        printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
+                        Subscriber *sub = &(it->second);
+                        subscriptions.erase(it++);
+                    } else {
+                        it->second.queue.push_back(content);
+                        ++it;
+                    }
+                }
+                pthread_mutex_unlock(&mutexSubscriptions);	
+            }	
 
-				//printf("received event: %s\n", subject.c_str());	
-				// workaround for bug qpid-3445
-				if (message.getContent().size() < 4) {
-					throw qpid::messaging::EncodingException("message too small");
-				}
+        } catch(const NoMessageAvailable& error) {
 
-				decode(message, content);
-				content["event"] = subject;
-				if ((subject.find("event.environment.") != std::string::npos) && (subject.find("changed")!= std::string::npos)) {
-					string quantity = subject;
-					quantity.erase(quantity.begin(),quantity.begin()+18);
-					quantity.erase(quantity.end()-7,quantity.end());	
-					content["quantity"] = quantity;
-				}
-				pthread_mutex_lock(&mutexSubscriptions);	
-				for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
-					if (it->second.queue.size() > 100) {
-						// this subscription seems to be abandoned, let's remove it to save resources
-						printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
-						Subscriber *sub = &(it->second);
-						subscriptions.erase(it++);
-					} else {
-						it->second.queue.push_back(content);
-						++it;
-					}
-				}
-				pthread_mutex_unlock(&mutexSubscriptions);	
-			}	
-
-		} catch(const NoMessageAvailable& error) {
-			
-		} catch(const std::exception& error) {
-			std::cerr << error.what() << std::endl;
-			usleep(50);
-		}
-	}
+        } catch(const std::exception& error) {
+            std::cerr << error.what() << std::endl;
+            usleep(50);
+        }
+    }
 
 }
