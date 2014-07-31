@@ -372,77 +372,80 @@ if (sessionStorage.supported_devices) {
 
 var securityPromted = false;
 
-function handleEvent(response) {
-    if (response.result.event == "event.security.countdown" && !securityPromted) {
-        securityPromted = true;
-        var pin = window.prompt("Alarm please entry pin:");
-        var content = {};
-        content.command = "cancel";
-        content.uuid = response.result.uuid;
-        content.pin = pin;
-        sendCommand(content, function(res) {
-            if (res.result.error) {
-                notif.error(res.result.error);
-            }
-            securityPromted = false;
-        });
-        return;
-    } else if (response.result.event == "event.security.intruderalert") {
-        notif.error("INTRODUCER ALERT!");
-        return;
-    }
-    for ( var i = 0; i < deviceMap.length; i++) {
-    	if (deviceMap[i].uuid == response.result.uuid ) {
-            // update device last seen datetime
-            deviceMap[i].timeStamp(formatDate(new Date()));
-            //update device level
-            if( response.result.level !== undefined) {
-                // update custom device member
-                if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1) {
-                    // event that update device member
-                    var member = response.result.event.replace('event.device.', '').replace('changed', '');
-                    if (deviceMap[i][member] !== undefined) {
-                        deviceMap[i][member](response.result.level);
-                    }
+function handleEvent(requestSucceed, response) {
+    if( requestSucceed )
+    {
+        if (response.result.event == "event.security.countdown" && !securityPromted) {
+            securityPromted = true;
+            var pin = window.prompt("Alarm please entry pin:");
+            var content = {};
+            content.command = "cancel";
+            content.uuid = response.result.uuid;
+            content.pin = pin;
+            sendCommand(content, function(res) {
+                if (res.result.error) {
+                    notif.error(res.result.error);
                 }
-                // Binary sensor has its own event
-                else if (response.result.event == "event.security.sensortriggered") {
-                    if (deviceMap[i]['state'] !== undefined) {
-                        deviceMap[i]['state'](response.result.level);
-                    }
-                }
-            }
-            //update quantity
-            if (response.result.quantity) {
-                var values = deviceMap[i].values();
-                /* We have no values so reload from inventory */
-                if (values[response.result.quantity] === undefined) {
-                    getInventory(function(inv) {
-                        var tmpInv = cleanInventory(inv.result.devices);
-                        if (tmpInv[response.result.uuid] !== undefined) {
-                            if (tmpInv[response.result.uuid].values) {
-                                deviceMap[i].values(tmpInv[response.result.uuid].values);
-                            }
+                securityPromted = false;
+            });
+            return;
+        } else if (response.result.event == "event.security.intruderalert") {
+            notif.error("INTRODUCER ALERT!");
+            return;
+        }
+        for ( var i = 0; i < deviceMap.length; i++) {
+        	if (deviceMap[i].uuid == response.result.uuid ) {
+                // update device last seen datetime
+                deviceMap[i].timeStamp(formatDate(new Date()));
+                //update device level
+                if( response.result.level !== undefined) {
+                    // update custom device member
+                    if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1) {
+                        // event that update device member
+                        var member = response.result.event.replace('event.device.', '').replace('changed', '');
+                        if (deviceMap[i][member] !== undefined) {
+                            deviceMap[i][member](response.result.level);
                         }
-                    });
-                    break;
-                }
-                if( response.result.level !== undefined ) {
-                    if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
-                    {
-                        //update forecast value for barometer sensor only if string specified
-                        deviceMap[i].forecast(response.result.level);
                     }
-                    //save new level
-                    values[response.result.quantity].level = response.result.level;
+                    // Binary sensor has its own event
+                    else if (response.result.event == "event.security.sensortriggered") {
+                        if (deviceMap[i]['state'] !== undefined) {
+                            deviceMap[i]['state'](response.result.level);
+                        }
+                    }
                 }
-                else if( response.result.latitude!==undefined && response.result.longitude!==undefined ) {
-                    values[response.result.quantity].latitude = response.result.latitude;
-                    values[response.result.quantity].longitude = response.result.longitude;
+                //update quantity
+                if (response.result.quantity) {
+                    var values = deviceMap[i].values();
+                    /* We have no values so reload from inventory */
+                    if (values[response.result.quantity] === undefined) {
+                        getInventory(function(inv) {
+                            var tmpInv = cleanInventory(inv.result.devices);
+                            if (tmpInv[response.result.uuid] !== undefined) {
+                                if (tmpInv[response.result.uuid].values) {
+                                    deviceMap[i].values(tmpInv[response.result.uuid].values);
+                                }
+                            }
+                        });
+                        break;
+                    }
+                    if( response.result.level !== undefined ) {
+                        if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
+                        {
+                            //update forecast value for barometer sensor only if string specified
+                            deviceMap[i].forecast(response.result.level);
+                        }
+                        //save new level
+                        values[response.result.quantity].level = response.result.level;
+                    }
+                    else if( response.result.latitude!==undefined && response.result.longitude!==undefined ) {
+                        values[response.result.quantity].latitude = response.result.latitude;
+                        values[response.result.quantity].longitude = response.result.longitude;
+                    }
+                    deviceMap[i].values(values);
                 }
-                deviceMap[i].values(values);
+                break;
             }
-            break;
         }
     }
     getEvent();
@@ -456,16 +459,43 @@ function getEvent() {
     request.id = 1;
     request.jsonrpc = "2.0";
 
-    $.post(url, JSON.stringify(request), handleEvent, "json");
+    $.post(url, JSON.stringify(request), null, "json")
+        .done( function(data, textStatus, jqXHR) {
+            //request succeed
+            if( data.error!==undefined )
+            {
+                //but error in request
+                //check retries count (see agorpc)
+                if( data.retries!==undefined && data.retries===0 )
+                {
+                    //something was wrong with webserver, stop polling
+                    notif.fatal('Webserver internal error, please reload page.');
+                }
+                else
+                {
+                    //request timeout (server side), continue polling
+                    handleEvent(false, data);
+                }
+            }
+            else
+            {
+                handleEvent(true, data);
+            }
+        })
+        .fail(function(data, textStatus, jqXHR) {
+            //request failed
+            handleEvent(false, data);
+        });
 }
 
 function cleanInventory(data) {
-    for ( var k in data) {
-	if (!data[k]) {
-	    delete data[k];
-	}
+    for ( var k in data)
+    {
+        if (!data[k])
+        {
+            delete data[k];
+        }
     }
-
     return data;
 }
 
