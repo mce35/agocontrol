@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-22 23:26+0200\n"
+"POT-Creation-Date: 2014-07-31 15:00+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -234,6 +234,7 @@ msgstr "Bearbeiten"
 #: ../templates/configuration/events.xml.in.h:8
 #: ../templates/configuration/variables.xml.in.h:8
 #: ../templates/configuration/devices.xml.in.h:15
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:25
 msgid "Delete"
 msgstr "Löschen"
 
@@ -675,16 +676,28 @@ msgid "Script modified"
 msgstr "Script geändert"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:21
+msgid "Existing scripts"
+msgstr ""
+
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:22
 #, fuzzy
 msgid "Script"
 msgstr "Script gespeichert"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:22
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:23
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
 msgid "Actions"
 msgstr "Befehle"
 
-#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:23
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:24
+msgid "Import script"
+msgstr ""
+
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:26
+msgid "Export"
+msgstr ""
+
+#: ../plugins/agoblockly/templates/agoblockly.xml.in.h:27
 #, fuzzy
 msgid "Script name"
 msgstr "Script gespeichert"
