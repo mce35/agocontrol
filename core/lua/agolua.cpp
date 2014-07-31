@@ -366,6 +366,7 @@ int luaGetInventory(lua_State *L) {
     inventory = agoConnection->getInventory();
     refreshInventory = false;
     pushTableFromMap(L, inventory);
+    //lua_setglobal(L, "inventory");
 	return 1;
 }
 
@@ -603,28 +604,28 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				}
 			}
 		} else if (content["command"] == "renscript") {
-            if (content["oldname"].asString()!="" && content["newname"].asString()!="" )
+            if ( !content["oldname"].isVoid() && content["oldname"].asString()!="" && !content["newname"].isVoid() && content["newname"].asString()!="" )
             {
                 try {
                     // if a path is passed, strip it for security reasons
                     fs::path input(content["oldname"]);
                     string scriptInput = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
-                    fs::path target(scriptInput);
+                    fs::path source(scriptInput);
 
                     fs::path output(content["newname"]);
                     string scriptOutput = LUA_SCRIPT_DIR + output.stem().string() + ".lua";
-                    fs::path destination(scriptOutput);
+                    fs::path target(scriptOutput);
 
                     //check if destination file already exists
-                    if( !fs::exists(destination) )
+                    if( !fs::exists(target) )
                     {
                         //rename script
-                        fs::rename(target, destination);
+                        fs::rename(source, target);
 						returnval["result"]=0;
                     }
                     else
                     {
-                        returnval["error"]="Destination script name already exists";
+                        returnval["error"]="Script with new name already exists. Script not renamed";
                         returnval["result"]=-1;
                     }
                 } catch( const exception& e ) {
@@ -632,6 +633,96 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
                     returnval["error"]="Unable to rename script";
                     returnval["result"]=-1;
                 }
+            }
+        } else if (content["command"] == "uploadfile") {
+            //import script
+            if( !content["filepath"].isVoid() && content["filepath"].asString()!="" && !content["filename"].isVoid() && content["filename"].asString()!="" )
+            {
+                //check file
+                fs::path source(content["filepath"]);
+                if( fs::is_regular_file(status(source)) && source.extension().string()==".lua" )
+                {
+                    try {
+                        std::stringstream output;
+                        output << LUA_SCRIPT_DIR;
+                        if( content["filename"].asString().find("blockly_")!=0 )
+                        {
+                            //append "blockly_" string
+                            output << "blockly_";
+                        }
+                        output << content["filename"].asString();
+                        fs::path target(output.str());
+
+                        //check if desination file already exists
+                        if( !fs::exists(target) )
+                        {
+                            //move file
+                            cout << "import " << source << " to " << target << endl;
+                            fs::copy_file(source, target);
+                            returnval["error"] = "";
+                            returnval["result"] = 0;
+                        }
+                        else
+                        {
+                            cout << "Script already exists, nothing overwritten" << endl;
+                            returnval["error"] = "Script already exists. Script not imported";
+                            returnval["result"] = -1;
+                        }
+                    } catch( const exception& e ) {
+                        cout << "Exception during script import" << e.what() << endl;
+                        returnval["error"] = "Unable to import script";
+                        returnval["result"] = -1;
+                    }
+                }
+                else
+                {
+                    //invalid file, reject it
+                    cout << "Unsupported file uploaded" << endl;
+                    returnval["error"] = "Unsupported file";
+                    returnval["result"] = -1;
+                }
+            }
+            else
+            {
+                //invalid request
+                cout << "Invalid file upload request" << endl;
+                returnval["error"] = "Invalid request";
+                returnval["result"] = -1;
+            }
+        } else if (content["command"] == "downloadfile") {
+            cout << "download file command received!" << endl;
+            cout << content << endl;
+            //export script
+            if( !content["filename"].isVoid() && content["filename"].asString()!="" )
+            {
+                std::stringstream file;
+                file << LUA_SCRIPT_DIR << "blockly_" << content["filename"].asString() << ".lua";
+                fs::path target(file.str());
+                cout << "file to download " << target << endl;
+
+                //check if file exists
+                if( fs::exists(target) )
+                {
+                    //file exists, return full path
+                    cout << "Send fullpath of file to download " << target << endl;
+                    returnval["error"] = "";
+                    returnval["filepath"] = file.str();
+                    returnval["result"] = 0;
+                }
+                else
+                {
+                    //requested file doesn't exists
+                    cout << "File to download doesn't exist" << endl;
+                    returnval["error"] = "File doesn't exist";
+                    returnval["result"] = -1;
+                }
+            }
+            else
+            {
+                //invalid request
+                cout << "Invalid file upload request" << endl;
+                returnval["error"]="Invalid request";
+                returnval["result"]=-1;
             }
 		} else {
 			returnval["error"]="invalid command";

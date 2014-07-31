@@ -457,6 +457,47 @@ function agoBlocklyPlugin(deviceMap) {
 
     //load code
     self.load = function() {
+        //init upload
+        $('#fileupload').fileupload({
+            dataType: 'json',
+            formData: { 
+                uuid: self.luaControllerUuid
+            },
+            done: function (e, data) {
+                if( data.result && data.result.result )
+                {
+                    if( data.result.result.error.len>0 )
+                    {
+                        notif.error('Unable to import script');
+                        console.log('Unable to upload script: '+data.result.result.error);
+                    }
+                    else
+                    {
+                        if( data.result.result.count>0 )
+                        {
+                            $.each(data.result.result.files, function (index, file) {
+                                notif.success('Script "'+file.name+'" imported successfully');
+                            });
+                            self.loadScripts();
+                        }
+                        else
+                        {
+                            //no file uploaded
+                            notif.error('Script import failed: '+data.result.result.error);
+                        }
+                    }
+                }
+                else
+                {
+                    notif.fatal('Unable to import script: internal error');
+                }
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .bar').css('width', progress+'%');
+            }
+        });
+
         //load scripts
         self.loadScripts(function()
         {
@@ -464,7 +505,7 @@ function agoBlocklyPlugin(deviceMap) {
             $( "#loadDialog" ).dialog({
                 modal: true,
                 title: "Load script",
-                height: 500,
+                height: 700,
                 width: 700,
                 buttons: {
                     Close: function() {
@@ -557,6 +598,12 @@ function agoBlocklyPlugin(deviceMap) {
                 self.loadScripts();
             });
         }
+    };
+
+    //export script
+    self.uiExportScript = function(script) {
+        downloadurl = location.protocol + "//" + location.hostname + (location.port && ":" + location.port) + "/download?filename="+script+"&uuid="+self.luaControllerUuid;
+        window.open(downloadurl, '_blank');
     };
 
     //view model

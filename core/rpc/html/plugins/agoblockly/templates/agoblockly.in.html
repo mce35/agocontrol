@@ -223,10 +223,10 @@
         <div class="pretty medium info btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
         <div style="margin-left:20px; display: inline-block;">
             <ko opts="if:scriptSaved">
-            <_li data-translateable="true" class="default badge">Script saved</_li>
+            <_li data-translateable="true" class="default label">Script saved</_li>
             </ko>
             <ko opts="ifnot:scriptSaved">
-            <_li data-translateable="true" class="warning badge">Script modified</_li>
+            <_li data-translateable="true" class="warning label">Script modified</_li>
             </ko>
         </div>
     </div>
@@ -239,22 +239,33 @@
 
     <!-- load dialog -->
     <div style="display:none;" id="loadDialog">
-        <table style="width: 100%; margin-top: 15px; margin-bottom: 5px;" data-bind="dataTable: { dataSource:availableScripts, rowTemplate:'rowTemplate', columns:['name'], options:{fnRowCallback:uiRenameScript}}">
-        <thead>
-        <tr>
-            <_th data-translateable="true">Script</_th>
-            <_th data-translateable="true">Actions</_th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-        </table>
+        <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px;">
+            <legend><_span data-translateable="true" style="font-weight:bold;">Existing scripts</_span></legend>
+                <table style="width: 100%; margin-top: 15px; margin-bottom: 5px;" data-bind="dataTable: { dataSource:availableScripts, rowTemplate:'rowTemplate', columns:['name'], options:{fnRowCallback:uiRenameScript}}">
+                <thead>
+                <tr>
+                    <_th data-translateable="true">Script</_th>
+                    <_th data-translateable="true">Actions</_th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                </table>
+        </fieldset>
+        <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px; margin-top:10px;">
+            <legend><_span data-translateable="true" style="font-weight:bold;">Import script</_span></legend>
+            <input id="fileupload" type="file" name="files" data-url="/upload"/>
+            <div id="progress" style="width:100%; border:1px solid #ddd; padding:1px; border-radius:3px; margin-top:10px;">
+                <div class="bar" style="width:0%; height:10px; background:#72D940; border-radius:3px;"></div>
+            </div>
+        </fieldset>
     </div>
     <script id="rowTemplate" type="text/html">
         <td class="rename_script" data-bind="attr: {'data-oldname': name}, text: name"></td>
         <td>
-            <button data-bind="click: $root.uiLoadScript.bind($data,name)">Load</button>
-            <button data-bind="click: $root.uiDeleteScript.bind($data,name)">Delete</button>
+            <_button data-translateable="true" data-bind="click: $root.uiLoadScript.bind($data,name)">Load</_button>
+            <_button data-translateable="true" data-bind="click: $root.uiDeleteScript.bind($data,name)">Delete</_button>
+            <_button data-translateable="true" data-bind="click: $root.uiExportScript.bind($data,name)">Export</_button>
         </td>
     </script>
 

@@ -1,7 +1,7 @@
 {
         "name": "blockly",
         "version": "0.0.1",
-        "description": "Create events easily using construction blocks",
+        "description": "Create events easily using blockly",
         "dashboardAccess": true,
         "resources": {
             "css": [
@@ -15,7 +15,10 @@
                 "blockly/lua_compressed.js",
                 "blockly/msg/js/en.js",
                 "prettify/lang-lua.js",
-                "base64v1_0.js"
+                "base64v1_0.js",
+                "jQuery-File-Upload/js/vendor/jquery.ui.widget.js",
+                "jQuery-File-Upload/js/jquery.iframe-transport.js",
+                "jQuery-File-Upload/js/jquery.fileupload.js"
             ]
         }
 }
