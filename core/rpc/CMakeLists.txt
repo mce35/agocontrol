@@ -6,6 +6,8 @@ ENDIF(COMMAND cmake_policy)
 
 set (RPC_LIBRARIES
     agoclient
+    boost_filesystem
+    boost_system
     pthread
 )
 
