@@ -44,7 +44,7 @@ if error:
                 result.append(tmp)
                 if units.has_key(proc.name):
                     units[proc.name] = True
-            elif 'python' in proc.name and 'ago' in proc.cmdline[1]:
+            elif 'python' in proc.name and len(proc.cmdline)>0 and 'ago' in proc.cmdline[1]:
                 tmp = {}
                 tmp['name'] = basename(proc.cmdline[1])
                 tmp['state'] = proc.is_running()
