@@ -669,6 +669,10 @@ int main(int argc, char **argv) {
     string numthreads;
     string domainname;
     bool useSSL;
+    struct mg_server *firstServer = NULL;
+    char serverId[3] = "";
+    int maxthreads;
+    int threadId = 0;
 
     //get parameters
     Variant::Map connectionOptions;
@@ -717,9 +721,6 @@ int main(int argc, char **argv) {
     pthread_mutex_init(&mutexSubscriptions, NULL);
 
     // start webservers
-    struct mg_server *firstServer = NULL;
-    char serverId[3] = "";
-    int maxthreads;
     sscanf(numthreads.c_str(), "%d", &maxthreads);
     int numThreadsPerPort = ceil((int)maxthreads/(int)ports.size());
     while( !ports.empty() )
@@ -730,11 +731,6 @@ int main(int argc, char **argv) {
 
         //SSL
         useSSL = port.find('s') != std::string::npos;
-        if( useSSL )
-        {
-            //remove "s" from port
-            port.replace(port.find("s"), sizeof("s")-1, "");
-        }
         
         //start webserver threads
         cout << "Starting webserver (" << numThreadsPerPort << " threads) on port " << port;
@@ -744,13 +740,16 @@ int main(int argc, char **argv) {
         for( int i=0; i<numThreadsPerPort; i++ )
         {
             struct mg_server *server;
-            sprintf(serverId, "%d", i);
+            sprintf(serverId, "%d", threadId);
             server = mg_create_server((void*)serverId, event_handler);
             mg_set_option(server, "listening_port", port.c_str()); 
             mg_set_option(server, "document_root", htdocs.c_str()); 
             mg_set_option(server, "auth_domain", domainname.c_str()); 
             if( useSSL )
+            {
+                cout << "set certificate:" << certificate << endl;
                 mg_set_option(server, "ssl_certificate", certificate.c_str()); 
+            }
             if( firstServer==NULL )
             {
                 firstServer = server;
@@ -766,8 +765,8 @@ int main(int argc, char **argv) {
         firstServer = NULL;
         useSSL = false;
         port = "";
+        threadId++;
     }
-    return(0);
 
     connectionOptions["reconnect"] = "true";
 
