@@ -747,7 +747,6 @@ int main(int argc, char **argv) {
             mg_set_option(server, "auth_domain", domainname.c_str()); 
             if( useSSL )
             {
-                cout << "set certificate:" << certificate << endl;
                 mg_set_option(server, "ssl_certificate", certificate.c_str()); 
             }
             if( firstServer==NULL )
