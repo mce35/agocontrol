@@ -66,11 +66,8 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol; 
 
-// qpid session and sender/receiver
-Receiver receiver;
-Sender sender;
-Session session;
-Connection *connection;
+//agoclient
+AgoConnection *agoConnection;
 
 //auth
 FILE* authFile = NULL;
@@ -142,80 +139,10 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 	mg_printf_data(conn, "}");
 }
 
-/**
- * Send command and return response
- * @return true if send succeed
- */
-bool sendCommand(Variant::Map content, Variant::Map* responseMap, std::string* responseString, bool* isResponseMap)
-{
-    //init
-    bool bSucceed = false;
-    Message message;
-    Address responseQueue("#response-queue; {create:always, delete:always}");
-    Receiver responseReceiver = session.createReceiver(responseQueue);
-
-    encode(content, message);
-    message.setReplyTo(responseQueue);
-
-    sender.send(message);
-	
-    try {
-        Message response = responseReceiver.fetch(Duration::SECOND * 3);
-        if (response.getContentType() == "amqp/map") {
-            (*isResponseMap) = true;
-            decode(response, (*responseMap));
-        } else  {
-            (*isResponseMap) = false;
-            (*responseString) = std::string(response.getContent());
-        }
-        session.acknowledge(response);
-        bSucceed = true;
-    } catch (qpid::messaging::NoMessageAvailable) {
-        bSucceed = false;
-        cout << "WARNING, no reply message to fetch" << endl;
-    } catch(const std::exception& error) {
-        bSucceed = false;
-        cerr << "EXCEPTION, " << error.what() << endl;
-    }
-
-    try {
-        responseReceiver.close();
-    } catch(const std::exception& error) {
-        cerr << error.what() << std::endl;
-    }
-    return bSucceed;
-}
-
-static void update (struct mg_connection *conn) {
-	mg_printf_data(conn, "%s", "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n");
-	Receiver myReceiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}");
-
-	while(true) {
-		try {
-			Message receiveMessage = myReceiver.fetch(Duration::SECOND * 3);
-			session.acknowledge(receiveMessage);
-			if (receiveMessage.getContentSize() > 3) {	
-				Variant::Map receiveMap;
-				decode(receiveMessage,receiveMap);
-				mg_printmap(conn, receiveMap);
-				mg_printf_data(conn, "\r\n");
-			} else  {
-				mg_printf_data(conn, "%s:%s", receiveMessage.getSubject().c_str(),receiveMessage.getContent().c_str());
-			}
-
-		} catch (qpid::messaging::NoMessageAvailable) {
-			printf("WARNING, no reply message to fetch\n");
-		}
-	}
-
-}
-
 static void command (struct mg_connection *conn) {
     char uuid[1024], command[1024], level[1024];
     Variant::Map agocommand;
     Variant::Map responseMap;
-    string responseString;
-    bool isResponseMap = false;
 
     if (mg_get_var(conn, "uuid", uuid, sizeof(uuid)) > 0) agocommand["uuid"] = uuid;
     if (mg_get_var(conn, "command", command, sizeof(command)) > 0) agocommand["command"] = command;
@@ -223,16 +150,10 @@ static void command (struct mg_connection *conn) {
 
     //send command and write ajax response
     mg_printf_data(conn, "%s", "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n");
-    if( sendCommand(agocommand, &responseMap, &responseString, &isResponseMap) )
+    responseMap = agoConnection->sendMessageReply("", agocommand);   
+    if( responseMap.size()>0 )
     {
-        if( isResponseMap )
-        {
-            mg_printmap(conn, responseMap);
-        }
-        else
-        {
-            mg_printf_data(conn, "%s", responseString.c_str());
-        }
+        mg_printmap(conn, responseMap);
     }
 }
 
@@ -248,78 +169,32 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
 	if (version == "2.0") {
 		const Json::Value params = request.get("params", Json::Value());
 		if (method == "message" ) {
-			if (params.isObject()) {
-				Session tmpSession;
-				Sender tmpSender;
-				try {
-					tmpSession = connection->createSession();
-					tmpSender = tmpSession.createSender("agocontrol; {create: always, node: {type: topic}}"); 
-				} catch ( qpid::messaging::MessagingException) {
-					cout << "ERROR: Can't create session/sender" << endl;
-					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"exception: %s\", \"id\": %s}","qpid::messaging::MessagingException",myId.c_str());
-					return false;		
-				}
-				Json::Value content = params["content"];
-				Json::Value subject = params["subject"];
-				Json::Value replytimeout = params["replytimeout"];
-				qpid::messaging::Duration timeout = Duration::SECOND * 3;
-				if (replytimeout.isInt()) {
-					timeout = Duration::SECOND * replytimeout.asInt();
-				}
-					
-				Variant::Map command = jsonToVariantMap(content);
-				Variant::Map responseMap;
-				Message message;
-				encode(command, message);
+			if (params.isObject())
+            {
+                //prepare message
+                Json::Value content = params["content"];
+                Json::Value subject = params["subject"];
+                Variant::Map command = jsonToVariantMap(content);
 
-				Address responseQueue("#response-queue; {create:always, delete:always}");
-				Receiver responseReceiver = tmpSession.createReceiver(responseQueue);
-				message.setReplyTo(responseQueue);
-				if (subject.isString()) message.setSubject(subject.asString());
+                //send message and handle response
+                Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
+                if( responseMap.size()>0 && !id.isNull() ) // only send reply when id is not null
+                {
+                    cout << "Response: " << responseMap << endl;
+                    mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
+                    mg_printmap(conn, responseMap);
+                    mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
+                }
+                else
+                {
+                    //no response
+                    printf("WARNING, no reply message to fetch\n");
+                    mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"no-reply\", \"id\": %s}",myId.c_str());
+                }
 
-				tmpSender.send(message);
-				try {
-					Message response = responseReceiver.fetch(timeout);
-					cout << "Response received" << endl;
-					tmpSession.acknowledge();
-					responseReceiver.close();
-					cout << "Response acknowledged, receiver closed" << endl;
-					if (!(id.isNull())) { // only send reply when id is not null
-						result = true;
-						cout << "sending json-rpc response" << endl;
-						if (!firstElem) mg_printf_data(conn, ",");
-						if (response.getContentSize() > 3) {	
-							cout << "decoding message into map" << endl;
-							decode(response,responseMap);
-							cout << "Response: " << responseMap << endl;
-							mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
-							mg_printmap(conn, responseMap);
-							mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
-						} else  {
-							cout << "Response: " << response.getContent() << endl;
-							mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"");
-							mg_printf_data(conn, "%s", response.getContent().c_str());
-							mg_printf_data(conn, "\", \"id\": %s}",myId.c_str());
-						}
-					} else {
-						cout << "No id given, not sending response" << endl;
-						result = false;
-					}
-
-				} catch (qpid::messaging::NoMessageAvailable) {
-					printf("WARNING, no reply message to fetch\n");
-					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"no-reply\", \"id\": %s}",myId.c_str());
-				} catch ( const std::exception& error) {
-					stringstream errorstring;
-					errorstring << error.what();
-					cout << "EXCEPTION: " << errorstring.str() << endl;
-					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"exception: %s\", \"id\": %s}",errorstring.str().c_str(),myId.c_str());
-				}
-				tmpSession.close();
-				
-			} else {
-				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params\"}, \"id\": %s}",myId.c_str());
-			}
+            } else {
+                mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params\"}, \"id\": %s}",myId.c_str());
+            }
 		
 		} else if (method == "subscribe") {
 			string subscriberName = generateUuid();
@@ -438,9 +313,6 @@ static void uploadFiles(struct mg_connection *conn)
     Variant::List files;
     char posted_var[1024] = "";
     std::string uuid = "";
-    Variant::Map responseMap;
-    string responseString;
-    bool isResponseMap = false;
     string uploadError = "";
 
     //upload files
@@ -471,7 +343,9 @@ static void uploadFiles(struct mg_connection *conn)
                 content["filepath"] = path;
                 content["filename"] = std::string(file_name);
                 content["filesize"] = data_len;
-                if( !sendCommand(content, &responseMap, &responseString, &isResponseMap) )
+
+                Variant::Map responseMap = agoConnection->sendMessageReply("", content);
+                if( responseMap.size()==0 )
                 {
                     //command failed, drop file
                     fs::remove(filepath);
@@ -479,7 +353,8 @@ static void uploadFiles(struct mg_connection *conn)
                     uploadError = "Internal error";
                     continue;
                 }
-                if( isResponseMap && !responseMap["result"].isVoid() && responseMap["result"].asInt16()!=0 )
+
+                if( !responseMap["result"].isVoid() && responseMap["result"].asInt16()!=0 )
                 {
                     //file rejected, drop it
                     fs::remove(filepath);
@@ -491,7 +366,8 @@ static void uploadFiles(struct mg_connection *conn)
                     {
                         uploadError = "File rejected";
                     }
-                    cout << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
+                    cerr << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
+                    uploadError = "File rejected: no handler available";
                     continue;
                 }
 
@@ -547,8 +423,6 @@ static bool downloadFile(struct mg_connection *conn)
     char param[1024];
     Variant::Map content;
     Variant::Map responseMap;
-    string responseString;
-    bool isResponseMap;
     string downloadError = "";
     string filepath = "";
 
@@ -562,10 +436,11 @@ static bool downloadFile(struct mg_connection *conn)
     if( !content["filename"].isVoid() && !content["uuid"].isVoid() )
     {
         //send command
-        if( sendCommand(content, &responseMap, &responseString, &isResponseMap) )
+        responseMap = agoConnection->sendMessageReply("", content);
+        if( responseMap.size()>0 )
         {
             //command sent successfully
-            if( isResponseMap && !responseMap["filepath"].isVoid() && responseMap["filepath"].asString().length()>0 )
+            if( !responseMap["filepath"].isVoid() && responseMap["filepath"].asString().length()>0 )
             {
                 //all seems valid
                 filepath = responseMap["filepath"].asString();
@@ -605,6 +480,9 @@ static bool downloadFile(struct mg_connection *conn)
     }
 }
 
+/**
+ * Mongoose event handler
+ */
 static int event_handler(struct mg_connection *conn, enum mg_event event) {
     if (event == MG_REQUEST) {
         if (strcmp(conn->uri, "/command") == 0) {
@@ -612,9 +490,6 @@ static int event_handler(struct mg_connection *conn, enum mg_event event) {
             return MG_TRUE;
         } else if (strcmp(conn->uri, "/jsonrpc") == 0) {
             jsonrpc(conn);
-            return MG_TRUE;
-        } else if (strcmp(conn->uri, "/update") == 0) {
-            update(conn);
             return MG_TRUE;
         } else if( strcmp(conn->uri, "/upload") == 0) {
             uploadFiles(conn);
@@ -648,6 +523,47 @@ static int event_handler(struct mg_connection *conn, enum mg_event event) {
 }
 
 /**
+ * Agoclient event handler
+ */
+void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
+{
+    // don't flood clients with unneeded events
+    if( subject=="event.environment.timechanged")
+        return;
+
+    //remove empty command from content
+    Variant::Map::iterator it = content.find("command");
+    if( it!=content.end() && content["command"].isVoid() )
+    {
+        content.erase("command");
+    }
+
+    //prepare event content
+    content["event"] = subject;
+    if( subject.find("event.environment.")!=std::string::npos && subject.find("changed")!= std::string::npos )
+    {
+        string quantity = subject;
+        quantity.erase(quantity.begin(),quantity.begin()+18);
+        quantity.erase(quantity.end()-7,quantity.end());
+        content["quantity"] = quantity;
+    }
+
+    pthread_mutex_lock(&mutexSubscriptions);
+    for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
+        if (it->second.queue.size() > 100) {
+            // this subscription seems to be abandoned, let's remove it to save resources
+            printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
+            Subscriber *sub = &(it->second);
+            subscriptions.erase(it++);
+        } else {
+            it->second.queue.push_back(content);
+            ++it;
+        }
+    }
+    pthread_mutex_unlock(&mutexSubscriptions);	
+}
+
+/**
  * Webserver process (threaded)
  */
 static void *serve_webserver(void *server)
@@ -673,6 +589,9 @@ int main(int argc, char **argv) {
     char serverId[3] = "";
     int maxthreads;
     int threadId = 0;
+
+    //create agoclient
+    agoConnection = new AgoConnection("rpc");
 
     //get parameters
     Variant::Map connectionOptions;
@@ -767,71 +686,8 @@ int main(int argc, char **argv) {
         threadId++;
     }
 
-    connectionOptions["reconnect"] = "true";
-
-    connection = new Connection(broker, connectionOptions);
-    try {
-        connection->open(); 
-        session = connection->createSession(); 
-        receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}"); 
-        sender = session.createSender("agocontrol; {create: always, node: {type: topic}}"); 
-    } catch(const std::exception& error) {
-        std::cerr << error.what() << std::endl;
-        connection->close();
-        printf("could not startup\n");
-        return 1;
-    }
-
-
-    while (true) {
-        try{
-            Variant::Map content;
-            string subject;
-            Message message = receiver.fetch(Duration::SECOND * 3);
-            session.acknowledge(message);
-
-            subject = message.getSubject();
-
-            // test if it is an event
-            if (subject.size()>0) {
-                // don't flood clients with unneeded events
-                if (subject == "event.environment.timechanged") continue;
-
-                //printf("received event: %s\n", subject.c_str());	
-                // workaround for bug qpid-3445
-                if (message.getContent().size() < 4) {
-                    throw qpid::messaging::EncodingException("message too small");
-                }
-
-                decode(message, content);
-                content["event"] = subject;
-                if ((subject.find("event.environment.") != std::string::npos) && (subject.find("changed")!= std::string::npos)) {
-                    string quantity = subject;
-                    quantity.erase(quantity.begin(),quantity.begin()+18);
-                    quantity.erase(quantity.end()-7,quantity.end());	
-                    content["quantity"] = quantity;
-                }
-                pthread_mutex_lock(&mutexSubscriptions);	
-                for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
-                    if (it->second.queue.size() > 100) {
-                        // this subscription seems to be abandoned, let's remove it to save resources
-                        printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
-                        Subscriber *sub = &(it->second);
-                        subscriptions.erase(it++);
-                    } else {
-                        it->second.queue.push_back(content);
-                        ++it;
-                    }
-                }
-                pthread_mutex_unlock(&mutexSubscriptions);	
-            }	
-
-        } catch(const NoMessageAvailable& error) {
-
-        } catch(const std::exception& error) {
-            std::cerr << error.what() << std::endl;
-            usleep(50);
-        }
-    }
+    //configure and run agoclient
+    agoConnection->addEventHandler(ago_event_handler);
+    agoConnection->run();
 
 }
