@@ -49,6 +49,9 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
 
+#include <signal.h>
+#include <sys/wait.h>
+
 #include "agoclient.h"
 
 //mongoose close idle connection after 30 seconds (timeout)
@@ -575,6 +578,27 @@ static void *serve_webserver(void *server)
     return NULL;
 }
 
+/**
+ * Mongoose signal handler
+ * @info code from https://github.com/cesanta/mongoose/blob/master/examples/server.c#L101
+ */
+static void signal_handler(int sig_num) {
+    // Reinstantiate signal handler
+    signal(sig_num, signal_handler);
+
+    // Do not do the trick with ignoring SIGCHLD, cause not all OSes (e.g. QNX)
+    // reap zombies if SIGCHLD is ignored. On QNX, for example, waitpid()
+    // fails if SIGCHLD is ignored, making system() non-functional.
+    if (sig_num == SIGCHLD)
+    {
+        do {} while (waitpid(-1, &sig_num, WNOHANG) > 0);
+    }
+    else
+    {
+        //nothing to do
+    }
+}
+
 int main(int argc, char **argv) {
     string broker;
     Variant::List ports;
@@ -685,6 +709,9 @@ int main(int argc, char **argv) {
         port = "";
         threadId++;
     }
+
+    //avoid cgi zombies
+    signal(SIGCHLD, signal_handler);
 
     //configure and run agoclient
     agoConnection->addEventHandler(ago_event_handler);
