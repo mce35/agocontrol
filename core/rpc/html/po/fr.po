@@ -1371,7 +1371,7 @@ msgstr "Construction des dépendances..."
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:61
 msgid "General Z-Wave configuration"
-msgstr "Configuration générale de l'extension Z-Wave"
+msgstr "Configuration Z-Wave"
 
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:62
 msgid "Configure controller USB port"
