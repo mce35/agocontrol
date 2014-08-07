@@ -667,7 +667,6 @@ int main(int argc, char **argv) {
 
     // start webservers
     sscanf(numthreads.c_str(), "%d", &maxthreads);
-    int numThreadsPerPort = ceil((int)maxthreads/(int)ports.size());
     while( !ports.empty() )
     {
         //get port
@@ -678,11 +677,11 @@ int main(int argc, char **argv) {
         useSSL = port.find('s') != std::string::npos;
         
         //start webserver threads
-        cout << "Starting webserver (" << numThreadsPerPort << " threads) on port " << port;
+        cout << "Starting webserver on port " << port;
         if( useSSL )
             cout << " using SSL";
         cout << endl;
-        for( int i=0; i<numThreadsPerPort; i++ )
+        for( int i=0; i<maxthreads; i++ )
         {
             struct mg_server *server;
             sprintf(serverId, "%d", threadId);
