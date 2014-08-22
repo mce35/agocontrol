@@ -86,11 +86,13 @@ map<string,Subscriber> subscriptions;
 pthread_mutex_t mutexSubscriptions;
 
 // helper to determine last element
+#ifndef _LIBCPP_ITERATOR
 template <typename Iter>
 Iter next(Iter iter)
 {
     return ++iter;
 }
+#endif
 
 // json-print qpid Variant Map and List via mongoose
 void mg_printmap(struct mg_connection *conn, Variant::Map map);
