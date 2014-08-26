@@ -3,6 +3,7 @@
 'use strict';
 
 goog.provide('Blockly.Msg.en');
+
 goog.require('Blockly.Msg');
 
 Blockly.Msg.ADD_COMMENT = "Add Comment";
@@ -60,7 +61,7 @@ Blockly.Msg.CONTROLS_REPEAT_TITLE = "repeat %1 times";
 Blockly.Msg.CONTROLS_REPEAT_TITLE_REPEAT = "repeat";
 Blockly.Msg.CONTROLS_REPEAT_TITLE_TIMES = "times";
 Blockly.Msg.CONTROLS_REPEAT_TOOLTIP = "Do some statements several times.";
-Blockly.Msg.CONTROLS_WHILEUNTIL_HELPURL = "https://code.google.com/p/blockly/wiki/Repeat";
+Blockly.Msg.CONTROLS_WHILEUNTIL_HELPURL = "https://code.google.com/p/blockly/wiki/Loops#repeat";
 Blockly.Msg.CONTROLS_WHILEUNTIL_OPERATOR_UNTIL = "repeat until";
 Blockly.Msg.CONTROLS_WHILEUNTIL_OPERATOR_WHILE = "repeat while";
 Blockly.Msg.CONTROLS_WHILEUNTIL_TOOLTIP_UNTIL = "While a value is false, then do some statements.";
@@ -155,7 +156,7 @@ Blockly.Msg.LOGIC_COMPARE_TOOLTIP_GTE = "Return true if the first input is great
 Blockly.Msg.LOGIC_COMPARE_TOOLTIP_LT = "Return true if the first input is smaller than the second input.";
 Blockly.Msg.LOGIC_COMPARE_TOOLTIP_LTE = "Return true if the first input is smaller than or equal to the second input.";
 Blockly.Msg.LOGIC_COMPARE_TOOLTIP_NEQ = "Return true if both inputs are not equal to each other.";
-Blockly.Msg.LOGIC_NEGATE_HELPURL = "https://code.google.com/p/blockly/wiki/Not";
+Blockly.Msg.LOGIC_NEGATE_HELPURL = "https://en.wikipedia.org/wiki/Negation";
 Blockly.Msg.LOGIC_NEGATE_TITLE = "not %1";
 Blockly.Msg.LOGIC_NEGATE_TOOLTIP = "Returns true if the input is false.  Returns false if the input is true.";
 Blockly.Msg.LOGIC_NULL = "null";
@@ -255,15 +256,18 @@ Blockly.Msg.MATH_TRIG_TOOLTIP_ATAN = "Return the arctangent of a number.";
 Blockly.Msg.MATH_TRIG_TOOLTIP_COS = "Return the cosine of a degree (not radian).";
 Blockly.Msg.MATH_TRIG_TOOLTIP_SIN = "Return the sine of a degree (not radian).";
 Blockly.Msg.MATH_TRIG_TOOLTIP_TAN = "Return the tangent of a degree (not radian).";
+Blockly.Msg.ME = "Me";
 Blockly.Msg.NEW_VARIABLE = "New variable...";
 Blockly.Msg.NEW_VARIABLE_TITLE = "New variable name:";
 Blockly.Msg.ORDINAL_NUMBER_SUFFIX = "";
+Blockly.Msg.PROCEDURES_ALLOW_STATEMENTS = "allow statements";
 Blockly.Msg.PROCEDURES_BEFORE_PARAMS = "with:";
 Blockly.Msg.PROCEDURES_CALLNORETURN_CALL = "";
 Blockly.Msg.PROCEDURES_CALLNORETURN_HELPURL = "https://en.wikipedia.org/wiki/Procedure_%28computer_science%29";
 Blockly.Msg.PROCEDURES_CALLNORETURN_TOOLTIP = "Run the user-defined function '%1'.";
 Blockly.Msg.PROCEDURES_CALLRETURN_HELPURL = "https://en.wikipedia.org/wiki/Procedure_%28computer_science%29";
 Blockly.Msg.PROCEDURES_CALLRETURN_TOOLTIP = "Run the user-defined function '%1' and use its output.";
+Blockly.Msg.PROCEDURES_CALL_BEFORE_PARAMS = "with:";
 Blockly.Msg.PROCEDURES_CREATE_DO = "Create '%1'";
 Blockly.Msg.PROCEDURES_DEFNORETURN_DO = "";
 Blockly.Msg.PROCEDURES_DEFNORETURN_HELPURL = "https://en.wikipedia.org/wiki/Procedure_%28computer_science%29";
@@ -378,5 +382,3 @@ Blockly.Msg.CONTROLS_WHILEUNTIL_INPUT_DO = Blockly.Msg.CONTROLS_REPEAT_INPUT_DO;
 Blockly.Msg.CONTROLS_IF_ELSEIF_TITLE_ELSEIF = Blockly.Msg.CONTROLS_IF_MSG_ELSEIF;
 Blockly.Msg.TEXT_APPEND_VARIABLE = Blockly.Msg.VARIABLES_DEFAULT_NAME;
 Blockly.Msg.CONTROLS_IF_ELSE_TITLE_ELSE = Blockly.Msg.CONTROLS_IF_MSG_ELSE;
-
-
