@@ -580,6 +580,8 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					file.open(script.c_str());
 					file << content["script"].asString();
 					file.close();
+					returnval["error"]="";
+					returnval["result"]=0;
 				} catch(...) {
 					returnval["error"]="can't write script";
 					returnval["result"]=-1;
