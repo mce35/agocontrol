@@ -13,11 +13,13 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 
 // helper to determine last element
+#ifndef _LIBCPP_ITERATOR
 template <typename Iter>
 Iter next(Iter iter)
 {
     return ++iter;
 }
+#endif
 
 bool agocontrol::nameval(const std::string& in, std::string& name, std::string& value) {
 	std::string::size_type i = in.find("=");
