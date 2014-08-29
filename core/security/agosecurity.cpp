@@ -122,6 +122,8 @@ void *alarmthread(void *param) {
 	cout << "sending alarm event" << endl;
 	agoConnection->emitEvent("securitycontroller", "event.security.intruderalert", content);
 	isSecurityThreadRunning = false;
+
+	return NULL;
 }
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
