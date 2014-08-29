@@ -1,4 +1,4 @@
-infuser.defaults.templateUrl = "/templates";
+infuser.defaults.templateUrl = "templates";
 
 Array.prototype.chunk = function(chunkSize) {
     var array = this;
@@ -64,7 +64,7 @@ function getPage() {
 }
 
 var subscription = null;
-var url = "/jsonrpc";
+var url = "jsonrpc";
 
 var schema = {};
 var deviceMap = [];
@@ -147,7 +147,7 @@ function loadPlugin(fromDashboard) {
     name = name.replace(/\//g, "");
     $.getScript("plugins/" + name + "/plugin.js", function() {
     $.ajax({
-	    url : "/cgi-bin/pluginlist.cgi",
+	    url : "cgi-bin/pluginlist.cgi",
         method : "GET",
         async : true,
     }).done(function(result) {
@@ -226,7 +226,7 @@ function loadPluginDashboard() {
 
 function getPluginNames() {  
     $.ajax({
-        url : "/cgi-bin/pluginlist.cgi",
+        url : "cgi-bin/pluginlist.cgi",
         method : "GET",
         async : false,
     }).done(function(result) {
@@ -363,7 +363,7 @@ if (sessionStorage.supported_devices) {
     loadInterface(JSON.parse(sessionStorage.supported_devices));
 } else {
     $.ajax({
-	url : "/cgi-bin/listing.cgi?devices=1",
+	url : "cgi-bin/listing.cgi?devices=1",
 	type : "GET"
     }).done(loadInterface);
 }
@@ -1099,7 +1099,7 @@ function renderGraph(device, environment) {
             load : 'js/libs/OpenLayers/OpenLayers.js',
             complete : function() {
                 //configure openlayers lib
-                OpenLayers.ImgPath = '/js/libs/OpenLayers/img/';
+                OpenLayers.ImgPath = 'js/libs/OpenLayers/img/';
 
                 //clear container
                 $('#graph').empty();

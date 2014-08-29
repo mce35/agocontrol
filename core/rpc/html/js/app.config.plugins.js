@@ -22,7 +22,7 @@ function init_pluginsConfig() {
     }.bind(model);
 
     $.ajax({
-	url : "/cgi-bin/pluginlist.cgi",
+	url : "cgi-bin/pluginlist.cgi",
 	method : "GET",
 	async : true,
     }).done(function(result) {
