@@ -759,7 +759,7 @@ agocontrol::Log::Log(std::string ident, int facility) {
 
 int agocontrol::Log::sync() {
     if (buffer_.length()) {
-        syslog(priority_, buffer_.substr(0,buffer_.length()-1).c_str());
+        syslog(priority_, "%s", buffer_.substr(0,buffer_.length()-1).c_str());
         buffer_.erase();
         priority_ = LOG_DEBUG; // default to debug for each message
     }
