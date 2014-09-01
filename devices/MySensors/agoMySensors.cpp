@@ -878,9 +878,9 @@ void *receiveFunction(void *param) {
                         case V_DISTANCE: 
                             valid = 1;
                             if (units == "M") {
-                                agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
+                                agoConnection->emitEvent(internalid.c_str(), "event.device.distancechanged", payload.c_str(), "cm");
                             } else {
-                                agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "inch");
+                                agoConnection->emitEvent(internalid.c_str(), "event.device.distancechanged", payload.c_str(), "inch");
                             }
                             break;
                         case V_IMPEDANCE: break;
