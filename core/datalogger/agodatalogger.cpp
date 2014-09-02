@@ -28,6 +28,7 @@ using namespace agocontrol;
 AgoConnection *agoConnection;
 sqlite3 *db;
 qpid::types::Variant::Map inventory;
+bool logAllEvents = 1;
 
 std::string uuidToName(std::string uuid) {
 	qpid::types::Variant::Map devices = inventory["inventory"].asMap();
@@ -78,6 +79,14 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	sqlite3_stmt *stmt = NULL;
 	int rc;
 	string result;
+
+    //log all events?
+    if( !logAllEvents )
+    {
+        //events log deactivated
+        return;
+    }
+
 	// string devicename = uuidToName(content["uuid"].asString());
 	string uuid = content["uuid"].asString();
 	cout << subject << " " << content << endl;
@@ -281,6 +290,11 @@ int main(int argc, char **argv) {
     agoConnection->addHandler(commandHandler);
     agoConnection->addEventHandler(eventHandler);
     inventory = agoConnection->getInventory();
+
+    //read config
+    std::string optString = getConfigOption("datalogger", "logAllEvents", "1");
+    sscanf(optString.c_str(), "%d", &logAllEvents);
+
     agoConnection->run();
 
     return 0;
