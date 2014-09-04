@@ -28,8 +28,6 @@ set (AGOCLIENT_LIBRARIES
 )
 
 target_link_libraries (agoclient ${AGOCLIENT_LIBRARIES})
-include_directories("/usr/include/libxml2")
-
 
 # Install instructions for this target
 install (TARGETS agoclient LIBRARY DESTINATION ${LIBDIR})

@@ -52,6 +52,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_BINARY_DIR}/shared")
 include_directories("${PROJECT_SOURCE_DIR}/shared")
 
+# fix augeas bug
+include_directories("/usr/include/libxml2")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 

@@ -16,6 +16,7 @@
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
+using namespace std;
 
 
 using std::stringstream;
