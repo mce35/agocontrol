@@ -1,4 +1,6 @@
 #include <string>
+#include <sstream>
+#include <fstream>
 
 #ifndef __FreeBSD__
 #include <malloc.h>
@@ -18,8 +20,7 @@
 #include <jsoncpp/json/value.h>
 
 #include <uuid/uuid.h>
-
-#include "CDataFile.h"
+#include <augeas.h>
 
 #define BINDIR "@BINDIR@"
 #define CONFDIR "@CONFDIR@"
@@ -52,6 +53,7 @@ namespace agocontrol {
 	/// helper to generate a string containing a uuid.
 	std::string generateUuid();
 
+	augeas *augeas;
 	/// fetch a value from the config file.
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 
@@ -78,8 +80,8 @@ namespace agocontrol {
 			qpid::types::Variant::Map uuidMap; // this holds the permanent uuid to internal id mapping
 			bool storeUuidMap(); // stores the map on disk
 			bool loadUuidMap(); // loads it
-			string uuidMapFile;
-			string instance;
+			std::string uuidMapFile;
+			std::string instance;
 			std::string uuidToInternalId(std::string uuid); // lookup in map
 			std::string internalIdToUuid(std::string internalId); // lookup in map
 			void reportDevices();
@@ -95,7 +97,7 @@ namespace agocontrol {
 			bool addDevice(const char *internalId, const char *deviceType);
 			bool addDevice(const char *internalId, const char *deviceType, bool passuuid);
 			bool removeDevice(const char *internalId);
-			string getDeviceType(const char *internalId);
+			std::string getDeviceType(const char *internalId);
 			bool addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map));
 			bool addEventHandler(void (*eventHandler)(std::string, qpid::types::Variant::Map));
 			bool setFilter(bool filter);
