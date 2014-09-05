@@ -10,7 +10,7 @@
 
 . /lib/lsb/init-functions
 
-BIN_PATH=@BINDIR@/
+BIN_PATH=/opt/agocontrol/bin/
 PID_PATH=/var/run/
 DAEMON_USER=agocontrol
 DAEMON_GROUP=agocontrol
