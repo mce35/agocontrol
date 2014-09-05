@@ -341,7 +341,20 @@ static void uploadFiles(struct mg_connection *conn)
             FILE* fp = fopen(path.c_str(), "wb");
             if( fp )
             {
-                //send command
+                //write file first
+                cout << "Upload file to \"" << path << "\"" << endl;
+                int written = fwrite(data, sizeof(char), data_len, fp);
+                fclose(fp);
+                if( written!=data_len )
+                {
+                    //error writting file, drop it
+                    fs::remove(filepath);
+                    cerr << "Uploaded file \"" << path << "\" not fully written (no space left?)" << endl;
+                    uploadError = "Unable to write file (no space left?)";
+                    continue;
+                }
+
+                //then send command
                 content.clear();
                 content["uuid"] = std::string(uuid);
                 content["command"] = "uploadfile";
@@ -373,19 +386,6 @@ static void uploadFiles(struct mg_connection *conn)
                     }
                     cerr << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
                     uploadError = "File rejected: no handler available";
-                    continue;
-                }
-
-                //write file
-                cout << "Upload file to \"" << path << "\"" << endl;
-                int written = fwrite(data, sizeof(char), data_len, fp);
-                fclose(fp);
-                if( written!=data_len )
-                {
-                    //error writting file, drop it
-                    fs::remove(filepath);
-                    cerr << "Uploaded file \"" << path << "\" not fully written (no space left?)" << endl;
-                    uploadError = "Unable to write file (no space left?)";
                     continue;
                 }
 
