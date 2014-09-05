@@ -464,27 +464,16 @@ function getEvent() {
             //request succeed
             if( data.error!==undefined )
             {
-                //but error in request
-                //check retries count (see agorpc)
-                if( data.retries!==undefined && data.retries===0 )
-                {
-                    //something was wrong with webserver, stop polling
-                    notif.fatal('Webserver internal error, please reload page.');
-                }
-                else
-                {
-                    //request timeout (server side), continue polling
-                    handleEvent(false, data);
-                }
+                //request timeout (server side), continue polling
+                handleEvent(false, data);
             }
             else
             {
                 handleEvent(true, data);
             }
         })
-        .fail(function(data, textStatus, jqXHR) {
+        .fail(function(jqXHR, textStatus, errorThrown) {
             //request failed
-            handleEvent(false, data);
         });
 }
 
