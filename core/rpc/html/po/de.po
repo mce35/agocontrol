@@ -642,14 +642,12 @@ msgid "Unable to delete script"
 msgstr "Kann Script nicht löschen"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:12
-#, fuzzy
 msgid "Script renamed successfully"
-msgstr "Script wurde erfolgreich gespeichert."
+msgstr "Script wurde erfolgreich umbenannt."
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:13
-#, fuzzy
 msgid "Script not renamed"
-msgstr "Script wurde nicht gespeichert"
+msgstr "Script wurde nicht umbenannt"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:15
 msgid "Load"
@@ -677,12 +675,11 @@ msgstr "Script geändert"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:21
 msgid "Existing scripts"
-msgstr ""
+msgstr "Vorhandenes Script"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:22
-#, fuzzy
 msgid "Script"
-msgstr "Script gespeichert"
+msgstr "Script"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:23
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:24
@@ -691,20 +688,19 @@ msgstr "Befehle"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:24
 msgid "Import script"
-msgstr ""
+msgstr "Script importieren"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:26
 msgid "Export"
-msgstr ""
+msgstr "Exportieren"
 
 #: ../plugins/agoblockly/templates/agoblockly.xml.in.h:27
-#, fuzzy
 msgid "Script name"
-msgstr "Script gespeichert"
+msgstr "Script Name"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:1
 msgid "Agoalert is not responding"
-msgstr ""
+msgstr "agoalert reagiert nicht"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:2
 #: ../plugins/agoscheduler/templates/agoscheduler.xml.in.h:1
@@ -751,7 +747,7 @@ msgstr "Folgen Sie den Anweisungen oben, um diesen Zugriff zu genehmigen"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:12
 msgid "Click"
-msgstr ""
+msgstr "Klicke"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:13
 #: ../plugins/zwave/templates/zwaveConfig.xml.in.h:38
@@ -974,9 +970,8 @@ msgstr ""
 "Um eine Testmail zu senden gib die E-Mail Adresse an und klicke auf den Knopf"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:64
-#, fuzzy
 msgid "email address"
-msgstr "Deine E-Mail Adresse"
+msgstr "E-Mail Adresse"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:65
 msgid "Push configuration"
@@ -1008,7 +1003,7 @@ msgstr "hier verfügbar"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:72
 msgid "apikey"
-msgstr ""
+msgstr "API Key"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:73
 msgid "Refresh your devices list clicking on the button"
@@ -1032,7 +1027,7 @@ msgstr "Benutzername eingeben"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:78
 msgid "userid"
-msgstr ""
+msgstr "Benutzer ID"
 
 #: ../plugins/agoalert/templates/agoalert.xml.in.h:79
 msgid "And save your settings"
@@ -1495,15 +1490,3 @@ msgstr "????"
 #: ../plugins/zwave/templates/zwaveDashboard.xml.in.h:2
 msgid "Statistic"
 msgstr "Statistik"
-
-#~ msgid "Heat"
-#~ msgstr "Heizen"
-
-#~ msgid "Cool"
-#~ msgstr "Kühlen"
-
-#~ msgid "script(s) available"
-#~ msgstr "Script(s) verfügbar"
-
-#~ msgid "Enter script name"
-#~ msgstr "Namen für Script eingeben"
