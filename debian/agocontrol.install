@@ -36,3 +36,4 @@ opt/agocontrol/bin/agoctrl.sh
 opt/agocontrol/bin/agodatalogger
 opt/agocontrol/bin/agososreport.sh
 opt/agocontrol/html
+usr/share/augeas/lenses/agocontrol.aug

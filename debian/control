@@ -20,19 +20,19 @@ Description: debug info for agocontrol
 Package: libagoclient1.0
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqpidmessaging2, libqpidtypes1, libqpidclient2, libqpidcommon2, libuuid1, libjsoncpp0
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqpidmessaging2, libqpidtypes1, libqpidclient2, libqpidcommon2, libuuid1, libjsoncpp0, libaugeas0
 Description: client routines and utility functions for ago control device interfaces
 
 Package: libagoclient1.0-dev
 Section: libdevel
-Depends: ${misc:Depends}, libagoclient1.0
+Depends: ${misc:Depends}, libagoclient1.0, libaugeas-dev
 Architecture: any
 Description: Development header files for the agocontrol client library
 
 Package: python-agoclient
 Section: libs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-qpid, python-simplejson
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-qpid, python-simplejson, python-augeas
 Description: python client routines and utility functions for ago control device interfaces
 
 Package: agocontrol-owfs
