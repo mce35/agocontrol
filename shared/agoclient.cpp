@@ -21,6 +21,21 @@ Iter next(Iter iter)
 }
 #endif
 
+bool agocontrol::augeas_init()  {
+	std::stringstream path;
+	path << CONFIG_FILE_PATH;
+	path << "/conf.d/*.conf";
+	augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
+	if (augeas == NULL) {
+		cerr << "Error: Can't initalize augeas" << endl;
+		return false;
+	}
+	aug_set(augeas, "/augeas/load/Agocontrol/lens", "agocontrol.lns");
+	aug_set(augeas, "/augeas/load/Agocontrol/incl", path.str().c_str());
+	if (aug_load(augeas) == 0) return true;
+	return false;
+}
+
 bool agocontrol::nameval(const std::string& in, std::string& name, std::string& value) {
 	std::string::size_type i = in.find("=");
         if (i == std::string::npos) {
@@ -281,7 +296,7 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	valuepath << section;
 	valuepath << "/";
 	valuepath << option;
-	if (augeas==NULL) augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP);
+	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
 		cerr << "ERROR: cannot initialize augeas" << endl;
 		result << defaultvalue;
@@ -310,7 +325,7 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	valuepath << "/";
 	valuepath << option;
 
-	if (augeas==NULL) augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP);
+	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
 		cerr << "ERROR: cannot initialize augeas" << endl;
 		return false;
