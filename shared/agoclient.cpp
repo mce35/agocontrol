@@ -272,6 +272,7 @@ std::string agocontrol::generateUuid() {
 std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
 	std::stringstream result;
 	std::stringstream valuepath;
+	valuepath << "/files";
 	valuepath  << CONFIG_FILE_PATH;
 	valuepath << "/";
 	valuepath << section;
@@ -282,12 +283,12 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	valuepath << option;
 	if (augeas==NULL) augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP);
 	if (augeas == NULL) {
-		cerr << "cannot initialize augeas" << endl;
+		cerr << "ERROR: cannot initialize augeas" << endl;
 		result << defaultvalue;
 		return result.str();
 	}
-	const char **value;
-	int ret =  aug_get(augeas, valuepath.str().c_str(), value);
+	const char *value;
+	int ret =  aug_get(augeas, valuepath.str().c_str(), &value);
 	if (ret != 1) {
 		result << defaultvalue;
 	} else {
@@ -299,6 +300,7 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 bool agocontrol::setConfigOption(const char* section, const char* option, const char* value) {
 	bool result = true;
 	std::stringstream valuepath;
+	valuepath << "/files";
 	valuepath  << CONFIG_FILE_PATH;
 	valuepath << "/";
 	valuepath << section;
@@ -309,6 +311,10 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	valuepath << option;
 
 	if (augeas==NULL) augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP);
+	if (augeas == NULL) {
+		cerr << "ERROR: cannot initialize augeas" << endl;
+		return false;
+	}
 	if (aug_set(augeas, valuepath.str().c_str(), value) == -1) {
 		cerr << "Could not set value!" << endl;
 		return false;
