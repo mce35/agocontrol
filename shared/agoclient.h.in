@@ -53,7 +53,7 @@ namespace agocontrol {
 	/// helper to generate a string containing a uuid.
 	std::string generateUuid();
 
-	augeas *augeas;
+	augeas *augeas = NULL;
 	/// fetch a value from the config file.
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 

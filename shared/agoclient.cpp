@@ -281,6 +281,11 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	valuepath << "/";
 	valuepath << option;
 	if (augeas==NULL) augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP);
+	if (augeas == NULL) {
+		cerr << "cannot initialize augeas" << endl;
+		result << defaultvalue;
+		return result.str();
+	}
 	const char **value;
 	int ret =  aug_get(augeas, valuepath.str().c_str(), value);
 	if (ret != 1) {
