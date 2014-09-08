@@ -23,6 +23,7 @@ set (AGOCLIENT_LIBRARIES
     qpidmessaging
     qpidtypes
     uuid
+    augeas
     ${JSONCPP_LIBRARIES}
 )
 

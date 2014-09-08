@@ -8,8 +8,8 @@ http://wiki.agocontrol.com/index.php/Example_Device
 import time
 import syslog
 import sys
-import ConfigParser
 import simplejson
+import augeas
 from threading import Lock
 
 from qpid.messaging import *
@@ -22,51 +22,40 @@ BINDIR = '@BINDIR@'
 CONFDIR = '@CONFDIR@'
 LOCALSTATEDIR = '@LOCALSTATEDIR@'
 
-
+augeas =  augeas.Augeas()
 CONFIG_LOCK = Lock()
 
 
 def get_config_option(section, option, default, filename=None):
     """Read a config option from a .ini style file."""
-    config = ConfigParser.ConfigParser()
     CONFIG_LOCK.acquire(True)
     try:
         if filename:
-            config.read(CONFDIR + '/conf.d/' + filename + '.conf')
+            value = augeas.get("/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + section + '/' + option)
         else:
-            config.read(CONFDIR + '/conf.d/' + section + '.conf')
-        value = config.get(section, option)
-    except ConfigParser.Error, exception:
-        syslog.syslog(syslog.LOG_WARNING,
-            "Can't parse config file: " + str(exception))
-        value = default
+            value = augeas.get("/files" + CONFDIR + '/conf.d/' + section + '.conf/' + section + '/' + option)
+    except:
+        syslog.syslog(syslog.LOG_WARNING, "Can't parse config file")
     finally:
         CONFIG_LOCK.release()
+	if not value:
+            value = default
     return value
 
 
 def set_config_option(section, option, value, filename=None):
     """Write out a config option to a .ini style file."""
-    config = ConfigParser.ConfigParser()
     result = False
     CONFIG_LOCK.acquire(True)
     try:
-        path = CONFDIR + '/conf.d/' + section + '.conf'
+        path = "/files" + CONFDIR + '/conf.d/' + section + '.conf/' + option
         if filename:
-            path = CONFDIR + '/conf.d/' + filename + '.conf'
-        #first of all read file
-        config.read(path)
-        #then update config
-        if not config.has_section(section):
-            config.add_section(section)
-        config.set(section, option, str(value))
-        #then write new file
-        fpw = open(path, 'w')
-        config.write(fpw)
-        #finally close it
-        fpw.close()
+            path = "/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + option
+        print path
+        augeas.set(path, value)
+        augeas.save()
         result = True
-    except ConfigParser.Error, exception:
+    except IOError, exception:
         syslog.syslog(syslog.LOG_ERR,
             "Can't write config file: " + str(exception))
         result = False

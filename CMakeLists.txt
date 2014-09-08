@@ -25,6 +25,7 @@ IF (FREEBSD)
 	set (DATADIR /usr/local/share/agocontrol CACHE STRING "Directory for variable data")
 	set (LOCALSTATEDIR /usr/local/var/agocontrol CACHE STRING "Directory for state info")
 	set (HTMLDIR /usr/local/share/agocontrol/html CACHE STRING "Directory for rpc HTML files")
+	set (AUGEASLENSEDIR /usr/share/augeas/lenses CACHE STRING "Directory for augeas lenses")
 ELSE (FREEBSD)
 	set (BINDIR /opt/agocontrol/bin CACHE STRING "Directory to store Binaries")
 	set (ETCDIR /etc CACHE STRING "Directory for system-wide settings")
@@ -34,6 +35,7 @@ ELSE (FREEBSD)
 	set (DATADIR /var/opt/agocontrol CACHE STRING "Directory for variable data")
 	set (LOCALSTATEDIR /var/opt/agocontrol CACHE STRING "Directory for state info")
 	set (HTMLDIR /opt/agocontrol/html CACHE STRING "Directory for rpc HTML files")
+	set (AUGEASLENSEDIR /usr/share/augeas/lenses CACHE STRING "Directory for augeas lenses")
 	set (CMAKE_EXE_LINKER_FLAGS "-Wl,-z,now")
 ENDIF (FREEBSD)
 
@@ -52,6 +54,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_BINARY_DIR}/shared")
 include_directories("${PROJECT_SOURCE_DIR}/shared")
 
+# fix augeas bug
+include_directories("/usr/include/libxml2")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
