@@ -176,13 +176,13 @@ def eventHandler(event, content):
     global client, rrds
 
     #format event.environment.humiditychanged, {u'uuid': '506249e2-1852-4de7-8554-93f5b9354a20', u'unit': '', u'level': 49.8}
-    if event.startswith('event.environment.') and checkContent(content, ['level', 'uuid']):
+    if (event=='event.device.batterylevelchanged' or event.startswith('event.environment.')) and checkContent(content, ['level', 'uuid']):
         #graphable data
         #logging.info('eventHandler: %s, %s' % (event, content))
 
         try:
             #generate rrd filename
-            kind = event.replace('event.environment.', '').replace('changed', '')
+            kind = event.replace('event.environment.', '').replace('event.device.').replace('changed', '')
             unit = ''
             if content.has_key('unit'):
                 unit = content['unit']

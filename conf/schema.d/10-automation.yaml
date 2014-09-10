@@ -181,6 +181,9 @@ events:
   event.environment.forecastchanged:
     description: forecast from sensor has changed
     parameters: [forecast, uuid]
+  event.device.batterylevelchanged:
+    description: battery level has changed
+    parameters: [level, unit, uuid]
 units:
   degC:
     label: "°C"

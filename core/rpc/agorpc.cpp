@@ -551,6 +551,13 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
         quantity.erase(quantity.end()-7,quantity.end());
         content["quantity"] = quantity;
     }
+    else if( subject=="event.device.batterylevelchanged" )
+    {
+        string quantity = subject;
+        quantity.erase(quantity.begin(),quantity.begin()+13);
+        quantity.erase(quantity.end()-7,quantity.end());
+        content["quantity"] = quantity;
+    }
 
     pthread_mutex_lock(&mutexSubscriptions);
     for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {

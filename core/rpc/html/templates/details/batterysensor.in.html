@@ -1,0 +1,43 @@
+<div>
+<span id="detailsTitle">Details</span>
+<strong>UUID: </strong><span style="color: darkorange" data-bind="text: uuid"/><br/>
+<ko opts="if: name ">
+<strong>Name:</strong><span style="color: darkorange" data-bind="text: name"/><br/>
+</ko>
+<strong>Type:</strong><span style="color: darkorange" data-bind="text: devicetype"/><br/>
+<ko opts="if: room ">
+<strong>Room:</strong><span style="color: darkorange" data-bind="text: room"/><br/>
+</ko>
+<strong>Lastseen:</strong><span style="color: darkorange" data-bind="text: timeStamp"/><br/>
+<br/>
+<ko opts="foreach: valueList ">
+	<strong data-bind="text: name"/><strong>: </strong>
+	<span style="color: darkorange" data-bind="text: level"/>
+	<span style="color: darkorange" data-bind="text: unit"/>
+	<br/>
+</ko>
+<br/>
+<form>
+	<strong>Show as:</strong>
+	<label style="display: inline"><input value="graph" type="radio" name="displayType" checked="checked"/><span>Graph</span></label>
+	<label style="display: inline"><input value="list" type="radio" name="displayType"/><span>List</span></label>
+</form>
+<div style="width: 100%; height: 380px; margin-bottom: 20px;" id="graph"/>
+<div style="width: 100%;" id="dataList"/>
+<div style="width: 50%; text-align: left; float: left;">
+	<form>
+		<label style="display: inline">
+			<strong>From:</strong>
+			<input type="text" style="opacity: 0; position: absolute; top: 0; left: 0;" id="dummyDate1"/>
+			<input value="" type="text" style="display: inline" size="16" readonly="readonly" id="start_date"/>
+		</label>
+		<label style="display: inline">
+			<strong>To:</strong>
+			<input value="" type="text" style="display: inline" size="16" readonly="readonly" id="end_date"/>
+		</label>
+        <label style="display: inline">
+            <input value="Refresh" type="button" id="get_graph"/>
+        </label>
+	</form>
+</div>
+</div>

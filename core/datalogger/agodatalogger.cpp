@@ -110,6 +110,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
         }
         else if( content["level"].asString() != "") {
             replaceString(subject, "event.environment.", "");
+            replaceString(subject, "event.device.", "");
             replaceString(subject, "changed", "");
             replaceString(subject, "event.", "");
             cout << "environment: " << subject << endl;

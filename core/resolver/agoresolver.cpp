@@ -169,13 +169,24 @@ void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 		(*values)["position"] = value;
 		saveDevicemap();
 
-	} else if ((subject.find("event.environment.") != std::string::npos) && (subject.find("changed")!= std::string::npos)) {
+	} else if ( ((subject.find("event.environment.")!=std::string::npos) && (subject.find("changed")!=std::string::npos))
+            || (subject=="event.device.batterylevelchanged") ) {
 		Variant::Map value;
 		stringstream timestamp;
 		string quantity = subject;
 
-		quantity.erase(quantity.begin(),quantity.begin()+18);
-		quantity.erase(quantity.end()-7,quantity.end());
+        //remove useless part of event (changed, event, environment ...)
+        if( subject.find("event.environment.")!=std::string::npos )
+        {
+            //event.environment.XXXchanged
+    		quantity.erase(quantity.begin(),quantity.begin()+18);
+	    	quantity.erase(quantity.end()-7,quantity.end());
+        }
+        else if( subject=="event.device.batterylevelchanged" )
+        {
+            quantity.erase(quantity.begin(), quantity.begin()+13);
+            quantity.erase(quantity.end()-7, quantity.end());
+        }
 
 		value["unit"] = (*content)["unit"];
 		value["level"] = (*content)["level"];
