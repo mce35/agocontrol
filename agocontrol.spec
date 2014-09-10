@@ -1,3 +1,4 @@
+# this is deprecated
 %define version 1.0
 
 Name: agocontrol
