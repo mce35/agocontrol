@@ -58,7 +58,7 @@ string device = "";
 /**
  * Traceback stack
  */
-void my_terminate(void);
+/*void my_terminate(void);
 
 namespace {
     // invoke set_terminate as part of global constant initialization
@@ -139,7 +139,7 @@ void my_terminate() {
     free(messages);
 
     abort();
-}
+}*/
 
 /**
  * Split specified string
@@ -1748,14 +1748,14 @@ void *receiveFunction(void *param) {
 int main(int argc, char **argv)
 {
     //exception handling (trace back)
-    struct sigaction sigact;
+    /*struct sigaction sigact;
     sigact.sa_sigaction = crit_err_hdlr;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
     if (sigaction(SIGABRT, &sigact, (struct sigaction *)NULL) != 0)
     {
         std::cerr << "error setting handler for signal " << SIGABRT << " (" << strsignal(SIGABRT) << ")\n";
         exit(EXIT_FAILURE);
-    }
+    }*/
 
     //get config
     device = getConfigOption("mysensors", "device", "/dev/ttyACM0");
