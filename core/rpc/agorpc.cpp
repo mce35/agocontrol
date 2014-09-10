@@ -272,7 +272,6 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
 			} else {
 				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
 			}
-
 		} else {
 			mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32601,\"message\":\"Method not found\"}, \"id\": %s}",myId.c_str());
 		}
@@ -282,7 +281,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
 	return result;
 }
 
-static void jsonrpc (struct mg_connection *conn) {
+static void jsonrpc(struct mg_connection *conn) {
 	Json::Value root;
 	Json::Reader reader;
 
@@ -686,20 +685,23 @@ int main(int argc, char **argv) {
             struct mg_server *server;
             sprintf(serverId, "%d", threadId);
             server = mg_create_server((void*)serverId, event_handler);
-            mg_set_option(server, "listening_port", port.c_str()); 
             mg_set_option(server, "document_root", htdocs.c_str()); 
-            mg_set_option(server, "auth_domain", domainname.c_str()); 
+            mg_set_option(server, "auth_domain", domainname.c_str());
             if( useSSL )
             {
                 mg_set_option(server, "ssl_certificate", certificate.c_str()); 
             }
             if( firstServer==NULL )
             {
-                firstServer = server;
+                mg_set_option(server, "listening_port", port.c_str()); 
             }
             else
             {
                 mg_set_listening_socket(server, mg_get_listening_socket(firstServer));
+            }
+            if( firstServer==NULL )
+            {
+                firstServer = server;
             }
             mg_start_thread(serve_webserver, server);
         }
