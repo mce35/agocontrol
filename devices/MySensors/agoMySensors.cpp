@@ -266,7 +266,6 @@ std::string prettyPrint(std::string message)
     std::stringstream result;
     std::string internalid = "";
     qpid::types::Variant::Map infos;
-    std::string protocol = "0.0";
 
     std::vector<std::string> items = split(message, ';');
     if ( items.size()<4 || items.size()>6 )
@@ -280,123 +279,87 @@ std::string prettyPrint(std::string message)
         internalid = items[0] + "/" + items[1];
         result << internalid << ";";
 
-        //get protocol version according to internalid
-        if( internalid=="0/0" )
+        if( gateway_protocol_version=="1.4" )
         {
-            //its the gateway
-            protocol = gateway_protocol_version;
-        }
-        else
-        {
-            //get infos from devicemap
-            infos = getDeviceInfos(internalid);
-            if( infos.size()>0 && !infos["protocol"].isVoid() )
-            {
-                protocol = infos["protocol"].asString();
-            }
-        }
+            //protocol v1.4
 
-        if( protocol=="0.0" )
-        {
-            //no protocol found yet, check if message type is PRESENTATION
-            if( atoi(items[2].c_str())==0 )
-            {
-                //PRESENTATION, get protocol from last field (payload)
-                protocol = items[items.size()-1];
-            }
-            else
-            {
-                result.str("");
-                result << "ERROR, unknown protocol version '" << protocol << "' for '" << internalid << "'. Please restart device." << endl;
-            }
-        }
-        
-        if( protocol!="0.0" )
-        {
-            if( protocol=="1.4" )
-            {
-                //protocol v1.4
-
-                //message type
-                result << getMsgTypeNameV14((msgTypeV14)atoi(items[2].c_str())) << ";";
-                //ack
-                result << items[3] << ";";
-                //message subtype
-                switch (atoi(items[2].c_str())) {
-                    case PRESENTATION_V14:
-                        //device type
-                        result << getDeviceTypeNameV14((deviceTypesV14)atoi(items[4].c_str())) << ";";
-                        //protocol version (payload)
-                        result << items[5] << endl;;
-                        break;
-                    case SET_V14:
-                    case REQ_V14:
-                        //variable type
-                        result << getVariableTypeNameV14((varTypesV14)atoi(items[4].c_str())) << ";";
+            //message type
+            result << getMsgTypeNameV14((msgTypeV14)atoi(items[2].c_str())) << ";";
+            //ack
+            result << items[3] << ";";
+            //message subtype
+            switch (atoi(items[2].c_str())) {
+                case PRESENTATION_V14:
+                    //device type
+                    result << getDeviceTypeNameV14((deviceTypesV14)atoi(items[4].c_str())) << ";";
+                    //protocol version (payload)
+                    result << items[5] << endl;;
+                    break;
+                case SET_V14:
+                case REQ_V14:
+                    //variable type
+                    result << getVariableTypeNameV14((varTypesV14)atoi(items[4].c_str())) << ";";
+                    //value (payload)
+                    result << items[5] << endl;
+                    break;
+                case INTERNAL_V14:
+                    //internal message type
+                    if( atoi(items[4].c_str())==I_LOG_MESSAGE_V14 && !DEBUG_GW )
+                    {
+                        //filter gateway log message
+                        result.str("");
+                    }
+                    else
+                    {
+                        result << getInternalTypeNameV14((internalTypesV14)atoi(items[4].c_str())) << ";";
                         //value (payload)
-                        result << items[5] << endl;
-                        break;
-                    case INTERNAL_V14:
-                        //internal message type
-                        if( atoi(items[4].c_str())==I_LOG_MESSAGE_V14 && !DEBUG_GW )
-                        {
-                            //filter gateway log message
-                            result.str("");
-                        }
+                        if( items.size()==6 )
+                            result << items[5] << endl;
                         else
-                        {
-                            result << getInternalTypeNameV14((internalTypesV14)atoi(items[4].c_str())) << ";";
-                            //value (payload)
-                            if( items.size()==6 )
-                                result << items[5] << endl;
-                            else
-                                result << endl;
-                        }
-                        break;
-                    case STREAM_V14:
-                        //stream message
-                        //TODO when fully implemented in MySensors
-                        result << "STREAM (not implemented!)" << endl;
-                        break;
-                    default:
-                        result << items[3] << endl;;
-                }
+                            result << endl;
+                    }
+                    break;
+                case STREAM_V14:
+                    //stream message
+                    //TODO when fully implemented in MySensors
+                    result << "STREAM (not implemented!)" << endl;
+                    break;
+                default:
+                    result << items[3] << endl;;
             }
-            else if( protocol=="1.3" )
-            {
-                //protocol v1.3
+        }
+        else if( gateway_protocol_version=="1.3" )
+        {
+            //protocol v1.3
 
-                if (items.size() == 5)
-                    payload=items[4];
-                result << items[0] << "/" << items[1] << ";" << getMsgTypeNameV13((msgTypeV13)atoi(items[2].c_str())) << ";";
-                switch (atoi(items[2].c_str())) {
-                    case PRESENTATION_V13:
-                        result << getDeviceTypeNameV13((deviceTypesV13)atoi(items[3].c_str()));
-                        break;
-                    case SET_VARIABLE_V13:
-                        result << getVariableTypeNameV13((varTypesV13)atoi(items[3].c_str()));
-                        break;
-                    case REQUEST_VARIABLE_V13:
-                        result << getVariableTypeNameV13((varTypesV13)atoi(items[3].c_str()));
-                        break;
-                    case VARIABLE_ACK_V13:
-                        result << getVariableTypeNameV13((varTypesV13)atoi(items[3].c_str()));
-                        break;
-                    case INTERNAL_V13:
-                        result << getInternalTypeNameV13((internalTypesV13)atoi(items[3].c_str()));
-                        break;
-                    default:
-                        result << items[3];
-                }
-                result <<  ";" << payload << endl;
+            if (items.size() == 5)
+                payload=items[4];
+            result << items[0] << "/" << items[1] << ";" << getMsgTypeNameV13((msgTypeV13)atoi(items[2].c_str())) << ";";
+            switch (atoi(items[2].c_str())) {
+                case PRESENTATION_V13:
+                    result << getDeviceTypeNameV13((deviceTypesV13)atoi(items[3].c_str()));
+                    break;
+                case SET_VARIABLE_V13:
+                    result << getVariableTypeNameV13((varTypesV13)atoi(items[3].c_str()));
+                    break;
+                case REQUEST_VARIABLE_V13:
+                    result << getVariableTypeNameV13((varTypesV13)atoi(items[3].c_str()));
+                    break;
+                case VARIABLE_ACK_V13:
+                    result << getVariableTypeNameV13((varTypesV13)atoi(items[3].c_str()));
+                    break;
+                case INTERNAL_V13:
+                    result << getInternalTypeNameV13((internalTypesV13)atoi(items[3].c_str()));
+                    break;
+                default:
+                    result << items[3];
             }
-            else
-            {
-                cout << "ERROR, unsupported protocol version '" << protocol << "'" << endl;
-            }
+            result <<  ";" << payload << endl;
         }
         else
         {
+            result.str("");
+            result << "ERROR, unsupported protocol version '" << gateway_protocol_version << "'" << endl;
         }
     }
     return result.str();
@@ -517,7 +480,7 @@ bool checkInternalid(std::string internalid)
         int nodeId = 666;
         int childId = 666;
         int read = sscanf(internalid.c_str(), "%d/%d", &nodeId, &childId);
-        if( read==2 && nodeId>=0 && nodeId<=255 && childId>=0 && childId<=254 )
+        if( read==2 && nodeId>=0 && nodeId<=255 && childId>=0 && childId<=255 )
         {
             //specified internalid is valid
             result = true;
@@ -1343,7 +1306,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                         variantMapToJSONFile(devicemap,DEVICEMAPFILE);
                         pthread_mutex_unlock(&devicemapMutex);
                         id << freeid;
-                        sendcommandV14(internalid, INTERNAL_V14, 0, I_ID_REQUEST_V14, id.str());
+                        sendcommandV14(internalid, INTERNAL_V14, 0, I_ID_RESPONSE_V14, id.str());
                     }
                     break;
                 case I_LOG_MESSAGE_V14:
@@ -1640,7 +1603,8 @@ void *receiveFunction(void *param) {
         std::string line = readLine(&error);
 
         //check errors on serial port
-        if( error ) {
+        if( error )
+        {
             //error occured! close port
             cout << "Reconnecting to serial port" << endl;
             closeSerialPort();
@@ -1653,7 +1617,8 @@ void *receiveFunction(void *param) {
             continue;
         }
 
-        if( DEBUG ) {
+        if( DEBUG )
+        {
             log = prettyPrint(line);
             if( log.size()>0 )
             {
@@ -1671,51 +1636,13 @@ void *receiveFunction(void *param) {
             int messageType = atoi(items[2].c_str());
             int subType;
             qpid::types::Variant::Map infos;
-            string protocol = "0.0";
             std::string payload = "";
 
-            //check if device is not a node
-            if( childId==255 )
-            {
-                if( DEBUG )
-                    cout << "Node device, useless under agocontrol. Drop message." << endl;
-                pthread_mutex_unlock (&serialMutex);
-                continue;
-            }
-            
             //get device infos
             infos = getDeviceInfos(internalid);
 
-            //get protocol version
-            if( internalid=="0/0" )
-            {
-                //its the gateway
-                protocol = gateway_protocol_version;
-            }
-            else if( infos["protocol"].isVoid() || (!infos["protocol"].isVoid() && infos["protocol"].asString()=="0.0") )
-            {
-                //no protocol version found for current device
-                if( messageType==0 )
-                {
-                    //PRESENTATION message, get protocol version from last field
-                    if( DEBUG )
-                        cout << "PRESENTATION message. Get protocol version." << endl;
-                    protocol = std::string(items[items.size()-1].c_str());
-                }
-                else
-                {
-                    //not PRESENTATION message. Unable to do something :(
-                    cout << "No protocol version found for device '" << internalid << "'. Please reboot the device" << endl;
-                }
-            }
-            else
-            {
-                protocol = infos["protocol"].asString();
-            }
-            //if( DEBUG ) cout << "Found protocol for the device '" << internalid << "': " << protocol << endl;
-
             //process message
-            if( protocol=="1.4" )
+            if( gateway_protocol_version=="1.4" )
             {
                 int ack = atoi(items[3].c_str());
                 subType = atoi(items[4].c_str());
@@ -1723,7 +1650,7 @@ void *receiveFunction(void *param) {
                     payload = items[5];
                 processMessageV14(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
             }
-            else if( protocol=="1.3" )
+            else if( gateway_protocol_version=="1.3" )
             {
                 subType = atoi(items[3].c_str());
                 if( items.size()==5 )
@@ -1733,6 +1660,7 @@ void *receiveFunction(void *param) {
             else
             {
                 //protocol not supported
+                cout << "Error: protocol version '" << gateway_protocol_version << "' not supported" << endl;
             }
         }
 
