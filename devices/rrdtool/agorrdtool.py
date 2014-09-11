@@ -182,7 +182,7 @@ def eventHandler(event, content):
 
         try:
             #generate rrd filename
-            kind = event.replace('event.environment.', '').replace('event.device.').replace('changed', '')
+            kind = event.replace('event.environment.', '').replace('event.device.', '').replace('changed', '')
             unit = ''
             if content.has_key('unit'):
                 unit = content['unit']
