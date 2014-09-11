@@ -179,13 +179,13 @@ void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
         if( subject.find("event.environment.")!=std::string::npos )
         {
             //event.environment.XXXchanged
-    		quantity.erase(quantity.begin(),quantity.begin()+18);
-	    	quantity.erase(quantity.end()-7,quantity.end());
+            replaceString(quantity, "event.environment.", "");
+            replaceString(quantity, "changed", "");
         }
         else if( subject=="event.device.batterylevelchanged" )
         {
-            quantity.erase(quantity.begin(), quantity.begin()+13);
-            quantity.erase(quantity.end()-7, quantity.end());
+            replaceString(quantity, "event.device.", "");
+            replaceString(quantity, "changed", "");
         }
 
 		value["unit"] = (*content)["unit"];
