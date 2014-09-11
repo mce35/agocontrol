@@ -154,7 +154,7 @@ static void command (struct mg_connection *conn) {
     if (mg_get_var(conn, "level", level, sizeof(level)) > 0) agocommand["level"] = level;
 
     //send command and write ajax response
-    mg_printf_data(conn, "%s", "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n");
+    mg_send_header(conn, "Content-Type", "application/json");
     responseMap = agoConnection->sendMessageReply("", agocommand);   
     if( responseMap.size()>0 )
     {
@@ -282,24 +282,27 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
 }
 
 static void jsonrpc(struct mg_connection *conn) {
-	Json::Value root;
-	Json::Reader reader;
+    Json::Value root;
+    Json::Reader reader;
 
-	if ( reader.parse(conn->content, conn->content + conn->content_len, root, false) ) {
-		if (root.isArray()) {
-			bool firstElem = true;
-			mg_printf_data(conn, "[");
-			for (unsigned int i = 0; i< root.size(); i++) {
-				bool result = jsonrpcRequestHandler(conn, root[i], firstElem);
-				if (result) firstElem = false; 
-			}
-			mg_printf_data(conn, "]");
-		} else {
-			jsonrpcRequestHandler(conn, root, true);
-		}
-	} else {
-		mg_printf_data(conn, "%s", "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32700,\"message\":\"Parse error\"}, \"id\": null}");
-	}
+    //add header
+    mg_send_header(conn, "Content-Type", "application/json");
+
+    if ( reader.parse(conn->content, conn->content + conn->content_len, root, false) ) {
+        if (root.isArray()) {
+            bool firstElem = true;
+            mg_printf_data(conn, "[");
+            for (unsigned int i = 0; i< root.size(); i++) {
+                bool result = jsonrpcRequestHandler(conn, root[i], firstElem);
+                if (result) firstElem = false; 
+            }
+            mg_printf_data(conn, "]");
+        } else {
+            jsonrpcRequestHandler(conn, root, true);
+        }
+    } else {
+        mg_printf_data(conn, "%s", "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32700,\"message\":\"Parse error\"}, \"id\": null}");
+    }
 }
 
 /**
@@ -411,6 +414,7 @@ static void uploadFiles(struct mg_connection *conn)
     }
 
     //prepare request answer
+    mg_send_header(conn, "Content-Type", "application/json");
     mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": {\"files\": ");
     mg_printlist(conn, files);
     mg_printf_data(conn, ", \"count\": %d", files.size());
@@ -478,6 +482,7 @@ static bool downloadFile(struct mg_connection *conn)
     }
     else
     {
+        mg_send_header(conn, "Content-Type", "application/json");
         mg_printf_data(conn, "{\"jsonrpc\": \"2.0\"");
         mg_printf_data(conn, ", \"error\": \"%s\"}", downloadError.c_str());
         return false;
