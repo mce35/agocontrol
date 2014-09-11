@@ -305,8 +305,10 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	const char *value;
 	int ret =  aug_get(augeas, valuepath.str().c_str(), &value);
 	if (ret != 1) {
+		cout << "AUGEAS: using default value: " << defaultvalue << endl;
 		result << defaultvalue;
 	} else {
+		cout << "AUGEAS: using config value: " << value << endl;
 		result << value;
 	}
 	return result.str();
