@@ -410,7 +410,7 @@ bool deleteDevice(std::string internalid)
 /**
  * Save all necessary infos for new device and register it to agocontrol
  */
-void addDevice(std::string internalid, std::string devicetype, std::string protocol, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos)
+void addDevice(std::string internalid, std::string devicetype, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos)
 {
     pthread_mutex_lock(&devicemapMutex);
     infos["type"] = devicetype;
@@ -420,7 +420,7 @@ void addDevice(std::string internalid, std::string devicetype, std::string proto
     infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
     infos["last_timestamp"] = 0;
-    infos["protocol"] = protocol;
+    infos["protocol"] = gateway_protocol_version;
     devices[internalid] = infos;
     devicemap["devices"] = devices;
     variantMapToJSONFile(devicemap, DEVICEMAPFILE);
@@ -850,7 +850,7 @@ std::string readLine(bool* error) {
 /**
  * Create new device (called during init or when PRESENTATION message is received from MySensors gateway)
  */
-void newDevice(std::string internalid, std::string devicetype, std::string protocol)
+void newDevice(std::string internalid, std::string devicetype)
 {
     //init
     qpid::types::Variant::Map devices = devicemap["devices"].asMap();
@@ -868,30 +868,30 @@ void newDevice(std::string internalid, std::string devicetype, std::string proto
             infos = getDeviceInfos(internalid);
             //and add brand new device
             devices = devicemap["devices"].asMap();
-            addDevice(internalid, devicetype, protocol, devices, infos);
+            addDevice(internalid, devicetype, devices, infos);
         }
-        else if( infos["protocol"].asString()!=protocol )
+        else if( infos["protocol"].asString()!=gateway_protocol_version )
         {
             //sensors code was updated to different protocol
-            cout << "Sensor protocol changed (" << infos["protocol"] << "=>" << protocol << ")" << endl;
+            cout << "Sensor protocol changed (" << infos["protocol"] << "=>" << gateway_protocol_version << ")" << endl;
             //refresh infos
             infos = getDeviceInfos(internalid);
             if( infos.size()>0 )
             {
-                infos["protocol"] = protocol;
+                infos["protocol"] = gateway_protocol_version;
                 setDeviceInfos(internalid, &infos);
             }
         }
         else
         {
             //sensor has just rebooted
-            addDevice(internalid, devicetype, protocol, devices, infos);
+            addDevice(internalid, devicetype, devices, infos);
         }
     }
     else
     {
         //add new device
-        addDevice(internalid, devicetype, protocol, devices, infos);
+        addDevice(internalid, devicetype, devices, infos);
     }
 }
 
@@ -982,7 +982,13 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
             switch (subType)
             {
                 case I_BATTERY_LEVEL_V13:
-                    // TODO: emit battery level event
+                    if( infos.size()==0 )
+                    {
+                        //create device
+                        newDevice(internalid, "batterysensor");
+                    }
+                    //emit battery level
+                    agoConnection->emitEvent(internalid.c_str(), "event.device.batterylevelchanged", payload.c_str(), "percent");
                     break;
                 case I_TIME_V13:
                     timestamp << time(NULL);
@@ -1022,59 +1028,59 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
             {
                 case S_DOOR_V13:
                 case S_MOTION_V13:
-                    newDevice(internalid, "binarysensor", payload);
+                    newDevice(internalid, "binarysensor");
                     break;
                 case S_SMOKE_V13:
-                    newDevice(internalid, "smokedetector", payload);
+                    newDevice(internalid, "smokedetector");
                     break;
                 case S_LIGHT_V13:
                 case S_HEATER_V13:
-                    newDevice(internalid, "switch", payload);
+                    newDevice(internalid, "switch");
                     break;
                 case S_DIMMER_V13:
-                    newDevice(internalid, "dimmer", payload);
+                    newDevice(internalid, "dimmer");
                     break;
                 case S_COVER_V13:
-                    newDevice(internalid, "drapes", payload);
+                    newDevice(internalid, "drapes");
                     break;
                 case S_TEMP_V13:
-                    newDevice(internalid, "temperaturesensor", payload);
+                    newDevice(internalid, "temperaturesensor");
                     break;
                 case S_HUM_V13:
-                    newDevice(internalid, "humiditysensor", payload);
+                    newDevice(internalid, "humiditysensor");
                     break;
                 case S_BARO_V13:
-                    newDevice(internalid, "barometricsensor", payload);
+                    newDevice(internalid, "barometricsensor");
                     break;
                 case S_WIND_V13:
-                    newDevice(internalid, "windsensor", payload);
+                    newDevice(internalid, "windsensor");
                     break;
                 case S_RAIN_V13:
-                    newDevice(internalid, "rainsensor", payload);
+                    newDevice(internalid, "rainsensor");
                     break;
                 case S_UV_V13:
-                    newDevice(internalid, "uvsensor", payload);
+                    newDevice(internalid, "uvsensor");
                     break;
                 case S_WEIGHT_V13:
-                    newDevice(internalid, "weightsensor", payload);
+                    newDevice(internalid, "weightsensor");
                     break;
                 case S_POWER_V13:
-                    newDevice(internalid, "powermeter", payload);
+                    newDevice(internalid, "powermeter");
                     break;
                 case S_DISTANCE_V13:
-                    newDevice(internalid, "distancesensor", payload);
+                    newDevice(internalid, "distancesensor");
                     break;
                 case S_LIGHT_LEVEL_V13:
-                    newDevice(internalid, "brightnesssensor", payload);
+                    newDevice(internalid, "brightnesssensor");
                     break;
                 case S_LOCK_V13:
-                    newDevice(internalid, "lock", payload);
+                    newDevice(internalid, "lock");
                     break;
                 case S_IR_V13:
-                    newDevice(internalid, "infraredblaster", payload);
+                    newDevice(internalid, "infraredblaster");
                     break;
                 case S_WATER_V13:
-                    newDevice(internalid, "watermeter", payload);
+                    newDevice(internalid, "watermeter");
                     break;
                 default:
                     cout << "PRESENTATION subtype '" << subType << "' not supported (protocol v1.3)" << endl;
@@ -1285,7 +1291,13 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
             switch (subType)
             {
                 case I_BATTERY_LEVEL_V14:
-                    // TODO: emit battery level event
+                    if( infos.size()==0 )
+                    {
+                        //create device
+                        newDevice(internalid, "batterysensor");
+                    }
+                    //emit battery level
+                    agoConnection->emitEvent(internalid.c_str(), "event.device.batterylevelchanged", payload.c_str(), "percent");
                     break;
                 case I_TIME_V14:
                     timestamp << time(NULL);
@@ -1322,68 +1334,68 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
             {
                 case S_DOOR_V14:
                 case S_MOTION_V14:
-                    newDevice(internalid, "binarysensor", payload);
+                    newDevice(internalid, "binarysensor");
                     break;
                 case S_SMOKE_V14:
-                    newDevice(internalid, "smokedetector", payload);
+                    newDevice(internalid, "smokedetector");
                     break;
                 case S_LIGHT_V14:
                 case S_HEATER_V14:
-                    newDevice(internalid, "switch", payload);
+                    newDevice(internalid, "switch");
                     break;
                 case S_DIMMER_V14:
-                    newDevice(internalid, "dimmer", payload);
+                    newDevice(internalid, "dimmer");
                     break;
                 case S_COVER_V14:
-                    newDevice(internalid, "drapes", payload);
+                    newDevice(internalid, "drapes");
                     break;
                 case S_TEMP_V14:
-                    newDevice(internalid, "temperaturesensor", payload);
+                    newDevice(internalid, "temperaturesensor");
                     break;
                 case S_HUM_V14:
-                    newDevice(internalid, "humiditysensor", payload);
+                    newDevice(internalid, "humiditysensor");
                     break;
                 case S_BARO_V14:
-                    newDevice(internalid, "barometricsensor", payload);
+                    newDevice(internalid, "barometricsensor");
                     break;
                 case S_WIND_V14:
-                    newDevice(internalid, "windsensor", payload);
+                    newDevice(internalid, "windsensor");
                     break;
                 case S_RAIN_V14:
-                    newDevice(internalid, "rainsensor", payload);
+                    newDevice(internalid, "rainsensor");
                     break;
                 case S_UV_V14:
-                    newDevice(internalid, "uvsensor", payload);
+                    newDevice(internalid, "uvsensor");
                     break;
                 case S_WEIGHT_V14:
-                    newDevice(internalid, "weightsensor", payload);
+                    newDevice(internalid, "weightsensor");
                     break;
                 case S_POWER_V14:
-                    newDevice(internalid, "powermeter", payload);
+                    newDevice(internalid, "powermeter");
                     break;
                 case S_DISTANCE_V14:
-                    newDevice(internalid, "distancesensor", payload);
+                    newDevice(internalid, "distancesensor");
                     break;
                 case S_LIGHT_LEVEL_V14:
-                    newDevice(internalid, "brightnesssensor", payload);
+                    newDevice(internalid, "brightnesssensor");
                     break;
                 case S_LOCK_V14:
-                    newDevice(internalid, "lock", payload);
+                    newDevice(internalid, "lock");
                     break;
                 case S_IR_V14:
-                    newDevice(internalid, "infraredblaster", payload);
+                    newDevice(internalid, "infraredblaster");
                     break;
                 case S_AIR_QUALITY_V14:
-                    newDevice(internalid, "airsensor", payload);
+                    newDevice(internalid, "airsensor");
                     break;
                 case S_CUSTOM_V14:
                     cout << "Device type 'CUSTOM' cannot be implemented in agocontrol" << endl;
                     break;
                 case S_DUST_V14:
-                    newDevice(internalid, "dustsensor", payload);
+                    newDevice(internalid, "dustsensor");
                     break;
                 case S_SCENE_CONTROLLER_V14:
-                    newDevice(internalid, "scenecontroller", payload);
+                    newDevice(internalid, "scenecontroller");
                     break;
                 default:
                     cout << "PRESENTATION subtype '" << subType << "' not supported (protocol v1.4)" << endl;
