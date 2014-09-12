@@ -24,7 +24,7 @@ Iter next(Iter iter)
 bool agocontrol::augeas_init()  {
 	std::stringstream path;
 	path << CONFIG_FILE_PATH;
-	path << "/conf.d/*.conf";
+	path << "/*.conf";
 	augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
 	if (augeas == NULL) {
 		cerr << "Error: Can't initalize augeas" << endl;
@@ -305,10 +305,10 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	const char *value;
 	int ret =  aug_get(augeas, valuepath.str().c_str(), &value);
 	if (ret != 1) {
-		cout << "AUGEAS: using default value: " << defaultvalue << endl;
+		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
 		result << defaultvalue;
 	} else {
-		cout << "AUGEAS: using config value: " << value << endl;
+		// cout << "AUGEAS: using config value: " << value << endl;
 		result << value;
 	}
 	return result.str();
