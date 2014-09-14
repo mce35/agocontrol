@@ -92,7 +92,7 @@ def generateGraph(uuid, start, end):
                 #red
                 colorL = '#FF0000'
                 colorA = '#FF8787'
-            elif kind in ['energy']:
+            elif kind in ['energy', 'batterylevel']:
                 #green
                 colorL = '#007A00'
                 colorA = '#00BB00'
