@@ -401,7 +401,19 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 		variables["weekday"] = content["weekday"].asString();
 		variables["minute"] = content["minute"].asString();
 		variables["month"] = content["month"].asString();
-	} else {
+    }
+    else if( subject=="event.device.stale" )
+    {
+        Variant::Map *device;
+        string uuid = content["uuid"];
+        if (!inventory[uuid].isVoid())
+        {
+            device = &inventory[uuid].asMap();
+            (*device)["stale"] = content["stale"].asInt8();
+            saveDevicemap();
+        }
+    }
+    else {
 		if (subject == "event.environment.positionchanged") {
 			environment["latitude"] = content["latitude"];
 			environment["longitude"] = content["longitude"];

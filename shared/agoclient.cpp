@@ -502,20 +502,45 @@ bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const
 	return true;
 } 
 
-bool agocontrol::AgoConnection::emitDeviceRemove(const char *internalId) {
-	Variant::Map content;
-	Message event;
+/**
+ * Emit stale state
+ */
+bool agocontrol::AgoConnection::emitDeviceStale(const char* internalId, const int stale)
+{
+    Variant::Map content;
+    Message event;
 
-	content["uuid"] = internalIdToUuid(internalId);
-	encode(content, event);
-	event.setSubject("event.device.remove");
-	try {
-		sender.send(event);
-	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
-		return false;
-	} 
-	return true;
+    content["internalid"] = internalId;
+    content["stale"] = stale;
+    content["uuid"] = internalIdToUuid(internalId);
+    encode(content, event);
+    event.setSubject("event.device.stale");
+    try
+    {
+        sender.send(event);
+    }
+    catch(const std::exception& error)
+    {
+        std::cerr << error.what() << std::endl;
+        return false;
+    } 
+    return true;
+}
+
+bool agocontrol::AgoConnection::emitDeviceRemove(const char *internalId) {
+    Variant::Map content;
+    Message event;
+
+    content["uuid"] = internalIdToUuid(internalId);
+    encode(content, event);
+    event.setSubject("event.device.remove");
+    try {
+        sender.send(event);
+    } catch(const std::exception& error) {
+        std::cerr << error.what() << std::endl;
+        return false;
+    } 
+    return true;
 } 
 
 bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *deviceType, bool passuuid) {
@@ -535,6 +560,7 @@ bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *de
 	Variant::Map device;
 	device["devicetype"] = deviceType;
 	device["internalid"] = internalId;
+    device["stale"] = 0;
 	deviceMap[internalIdToUuid(internalId)] = device;
 	emitDeviceAnnounce(internalId, deviceType);
 	return true;
@@ -550,6 +576,49 @@ bool agocontrol::AgoConnection::removeDevice(const char *internalId) {
 	} else return false;
 }
 
+/**
+ * Suspend device (set stale flag)
+ * Staled device are not announced during a discover command
+ */
+bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
+{
+    if( internalIdToUuid(internalId).size()!=0 )
+    {
+        Variant::Map::const_iterator it = deviceMap.find(internalIdToUuid(internalId));
+        if( it!=deviceMap.end() )
+        {
+            Variant::Map device = it->second.asMap();
+            device["stale"] = 1;
+            emitDeviceStale(internalId, 1);
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/**
+ * Resume device (reset stale flag)
+ * Staled device are not announced during a discover command
+ */
+bool agocontrol::AgoConnection::resumeDevice(const char* internalId)
+{
+    if( internalIdToUuid(internalId).size()!=0 )
+    {
+        Variant::Map::const_iterator it = deviceMap.find(internalIdToUuid(internalId));
+        if( it!=deviceMap.end() )
+        {
+            Variant::Map device = it->second.asMap();
+            device["stale"] = 0;
+            emitDeviceStale(internalId, 0);
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
 std::string agocontrol::AgoConnection::uuidToInternalId(std::string uuid) {
 	return uuidMap[uuid].asString();
 } 
@@ -563,16 +632,20 @@ std::string agocontrol::AgoConnection::internalIdToUuid(std::string internalId) 
 }
 
 void agocontrol::AgoConnection::reportDevices() {
-	for (Variant::Map::const_iterator it = deviceMap.begin(); it != deviceMap.end(); ++it) {
-		Variant::Map device;
-		Variant::Map content;
-		Message event;
+    for (Variant::Map::const_iterator it = deviceMap.begin(); it != deviceMap.end(); ++it) {
+        Variant::Map device;
+        Variant::Map content;
+        Message event;
 
-		// printf("uuid: %s\n", it->first.c_str());
-		device = it->second.asMap();
-		// printf("devicetype: %s\n", device["devicetype"].asString().c_str());
-		emitDeviceAnnounce(device["internalid"].asString().c_str(), device["devicetype"].asString().c_str());
-	}
+        // printf("uuid: %s\n", it->first.c_str());
+        device = it->second.asMap();
+        // printf("devicetype: %s\n", device["devicetype"].asString().c_str());
+        // do not announce staled devices
+        if( device["stale"].asInt8()==0 )
+        {
+            emitDeviceAnnounce(device["internalid"].asString().c_str(), device["devicetype"].asString().c_str());
+        }
+    }
 }
 
 bool agocontrol::AgoConnection::storeUuidMap() {
@@ -619,34 +692,34 @@ bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Va
 }
 
 qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, qpid::types::Variant::Map content) {
-        Message message;
-	qpid::types::Variant::Map responseMap;
-	Receiver responseReceiver;
-        try {
-                encode(content, message);
-                message.setSubject(subject);
-		Address responseQueue("#response-queue; {create:always, delete:always}");
-		responseReceiver = session.createReceiver(responseQueue);
-		message.setReplyTo(responseQueue);
-		sender.send(message);
-                Message response = responseReceiver.fetch(Duration::SECOND * 3);
-		session.acknowledge();
-                if (response.getContentSize() > 3) {
-                        decode(response,responseMap);
-                } else {
-			responseMap["response"] = response.getContent();
-		}
-        } catch (qpid::messaging::NoMessageAvailable) {
-                printf("WARNING, no reply message to fetch\n");
-        } catch(const std::exception& error) {
-                std::cerr << error.what() << std::endl;
+    Message message;
+    qpid::types::Variant::Map responseMap;
+    Receiver responseReceiver;
+    try {
+        encode(content, message);
+        message.setSubject(subject);
+        Address responseQueue("#response-queue; {create:always, delete:always}");
+        responseReceiver = session.createReceiver(responseQueue);
+        message.setReplyTo(responseQueue);
+        sender.send(message);
+        Message response = responseReceiver.fetch(Duration::SECOND * 3);
+        session.acknowledge();
+        if (response.getContentSize() > 3) {
+            decode(response,responseMap);
+        } else {
+            responseMap["response"] = response.getContent();
         }
-	try {
-		responseReceiver.close();
-        } catch(const std::exception& error) {
-                std::cerr << error.what() << std::endl;
-        }
-        return responseMap;
+    } catch (qpid::messaging::NoMessageAvailable) {
+        printf("WARNING, no reply message to fetch\n");
+    } catch(const std::exception& error) {
+        std::cerr << error.what() << std::endl;
+    }
+    try {
+        responseReceiver.close();
+    } catch(const std::exception& error) {
+        std::cerr << error.what() << std::endl;
+    }
+    return responseMap;
 }
 
 
@@ -694,6 +767,24 @@ string agocontrol::AgoConnection::getDeviceType(const char *internalId) {
 	} else return "";
 
 }
+
+/**
+ * Return device stale state
+ */
+int agocontrol::AgoConnection::isDeviceStaled(const char* internalId)
+{
+    string uuid = internalIdToUuid(internalId);
+    if (uuid.size() > 0)
+    {
+        Variant::Map device = deviceMap[internalIdToUuid(internalId)].asMap();
+        return device["stale"].asInt8();
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 bool agocontrol::AgoConnection::setFilter(bool filter) {
 	filterCommands = filter;
 	return filterCommands;

@@ -23,6 +23,7 @@ function device(obj, uuid) {
 
     this.values = ko.observable(this.values);
 
+    this.stale = ko.observable(this.stale);
     this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
 
     if (this.devicetype == "dimmer" || this.devicetype == "dimmerrgb") {

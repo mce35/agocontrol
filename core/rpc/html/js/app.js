@@ -414,6 +414,12 @@ function handleEvent(requestSucceed, response) {
                         }
                     }
                 }
+                //update device stale
+                if( response.result.event=="event.device.stale" && response.result.stale!==undefined )
+                {
+                    console.log('device '+response.result.internalid+' stale='+response.result.stale);
+                    deviceMap[i]['stale'](response.result.stale);
+                }
                 //update quantity
                 if (response.result.quantity) {
                     var values = deviceMap[i].values();
