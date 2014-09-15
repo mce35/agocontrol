@@ -582,15 +582,11 @@ bool agocontrol::AgoConnection::removeDevice(const char *internalId) {
  */
 bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
 {
-    if( internalIdToUuid(internalId).size()!=0 )
+    string uuid = internalIdToUuid(internalId);
+    if( uuid.size()>0 && !deviceMap[uuid].isVoid() )
     {
-        Variant::Map::const_iterator it = deviceMap.find(internalIdToUuid(internalId));
-        if( it!=deviceMap.end() )
-        {
-            Variant::Map device = it->second.asMap();
-            device["stale"] = 1;
-            emitDeviceStale(internalId, 1);
-        }
+        deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 1;
+        emitDeviceStale(internalId, 1);
     }
     else
     {
@@ -604,15 +600,11 @@ bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
  */
 bool agocontrol::AgoConnection::resumeDevice(const char* internalId)
 {
-    if( internalIdToUuid(internalId).size()!=0 )
+    string uuid = internalIdToUuid(internalId);
+    if( uuid.size()>0 && !deviceMap[uuid].isVoid() )
     {
-        Variant::Map::const_iterator it = deviceMap.find(internalIdToUuid(internalId));
-        if( it!=deviceMap.end() )
-        {
-            Variant::Map device = it->second.asMap();
-            device["stale"] = 0;
-            emitDeviceStale(internalId, 0);
-        }
+        deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 0;
+        emitDeviceStale(internalId, 0);
     }
     else
     {
