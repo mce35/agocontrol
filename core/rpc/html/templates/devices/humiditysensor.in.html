@@ -3,9 +3,16 @@
     <div class="row dashboard-widget-header">
         <ul class="two_up tiles" >
             <li class="dashboard-widget-header-icon">
-                <div class="pretty large primary btn handle">
-                    <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-water"></i>
-                </div>
+                <ko opts="if: stale">
+                    <div class="pretty large danger btn handle">
+                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-water"></i>
+                    </div>
+                </ko>
+                <ko opts="ifnot: stale">
+                    <div class="pretty large primary btn handle">
+                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-water"></i>
+                    </div>
+                </ko>
             </li>
             <li class="dashboard-widget-header-infos">
                 <div class="row">
