@@ -54,6 +54,7 @@ std::string gateway_protocol_version = "1.4";
 io_service ioService; 
 serial_port serialPort(ioService); 
 string device = "";
+int staleThreshold = 86400;
 
 /**
  * Traceback stack
@@ -987,6 +988,22 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                         //create device
                         newDevice(internalid, "batterysensor");
                     }
+
+                    //increase counter
+                    if( infos.size()>0 )
+                    {
+                        if( infos["counter_received"].isVoid() )
+                        {
+                            infos["counter_received"] = 1;
+                        }
+                        else
+                        {
+                            infos["counter_received"] = infos["counter_received"].asUint64()+1;
+                        }
+                        infos["last_timestamp"] = (int)(time(NULL));
+                        setDeviceInfos(internalid, &infos);
+                    }
+
                     //emit battery level
                     agoConnection->emitEvent(internalid.c_str(), "event.device.batterylevelchanged", payload.c_str(), "percent");
                     break;
@@ -1296,6 +1313,22 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                         //create device
                         newDevice(internalid, "batterysensor");
                     }
+
+                    //increase counter
+                    if( infos.size()>0 )
+                    {
+                        if( infos["counter_received"].isVoid() )
+                        {
+                            infos["counter_received"] = 1;
+                        }
+                        else
+                        {
+                            infos["counter_received"] = infos["counter_received"].asUint64()+1;
+                        }
+                        infos["last_timestamp"] = (int)(time(NULL));
+                        setDeviceInfos(internalid, &infos);
+                    }
+
                     //emit battery level
                     agoConnection->emitEvent(internalid.c_str(), "event.device.batterylevelchanged", payload.c_str(), "percent");
                     break;
@@ -1683,6 +1716,53 @@ void *receiveFunction(void *param) {
 }
 
 /**
+ * Device stale checking thread
+ * Check stale state every minutes
+ */
+void *checkStale(void *param)
+{
+    while(true)
+    {
+        //get current time
+        time_t now = time(NULL);
+
+        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+        for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+        {
+            qpid::types::Variant::Map infos = it->second.asMap();
+            std::string internalid = (std::string)it->first;
+            if( !infos["last_timestamp"].isVoid() )
+            {
+                if( !agoConnection->isDeviceStaled(internalid.c_str()) )
+                {
+                    if( (int)now>(infos["last_timestamp"].asInt32()+staleThreshold) )
+                    {
+                        //device is stalled
+                        //cout << "suspend device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
+                        //cout << "isstaled? " << agoConnection->isDeviceStaled(internalid.c_str()) << endl;
+                        agoConnection->suspendDevice(internalid.c_str());
+                    }
+                }
+                else
+                {
+                    if( infos["last_timestamp"].asInt32()>=((int)now-staleThreshold) )
+                    {
+                        //device woke up
+                        //cout << "resume device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
+                        agoConnection->resumeDevice(internalid.c_str());
+                    }
+                }
+            }
+        }
+
+        //pause (1min)
+        sleep(60);
+    }
+
+    return NULL;
+}
+
+/**
  * main
  */
 int main(int argc, char **argv)
@@ -1699,6 +1779,7 @@ int main(int argc, char **argv)
 
     //get config
     device = getConfigOption("mysensors", "device", "/dev/ttyACM0");
+    staleThreshold = atoi(getConfigOption("mysensors", "staleThreshold", "86400").c_str());
 
     //get command line parameters
     bool continu = true;
@@ -1819,6 +1900,10 @@ int main(int argc, char **argv)
         }
         cout << endl;
     }
+
+    //run check stale thread
+    static pthread_t checkStaleThread;
+    pthread_create(&checkStaleThread, NULL, checkStale, NULL);
 
     //run client
     cout << "Running MySensors controller..." << endl;
