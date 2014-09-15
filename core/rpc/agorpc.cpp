@@ -55,7 +55,8 @@
 #include "agoclient.h"
 
 //mongoose close idle connection after 30 seconds (timeout)
-#define GETEVENT_MAX_RETRIES 140 //0.2s*140=28 seconds
+#define MONGOOSE_POLLING 1000 //in ms, mongoose polling time
+#define GETEVENT_MAX_RETRIES 28 //mongoose poll every seconds (see MONGOOSE_POLLING)
 
 //upload file path
 #define UPLOAD_PATH "/tmp/"
@@ -82,8 +83,17 @@ struct Subscriber
 	time_t lastAccess;
 };
 
+struct getEventState
+{
+    char content[1024];
+    char myId[256];
+    time_t lastPoll;
+    int retries;
+};
+
 map<string,Subscriber> subscriptions;
 pthread_mutex_t mutexSubscriptions;
+
 
 // helper to determine last element
 #ifndef _LIBCPP_ITERATOR
@@ -162,13 +172,71 @@ static void command (struct mg_connection *conn) {
     }
 }
 
-bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool firstElem) {
-	Json::StyledWriter writer;
-	string myId;
-	const Json::Value id = request.get("id", Json::Value());
-	const string method = request.get("method", "message").asString();
+/**
+ * Handle getEvent polling request
+ * Return true if an event wasn't found to say to mongoose request is not over (return MG_MORE).
+ * Return false if an event is found to say to mongoose request is over (return MG_TRUE) then app.js
+ * will request again getEvent().
+ * Connection parameters are stored directly into mg_connection object inside connection_param variable.
+ * Thanks to this variable its possible to call many times getEventRequest.
+ * connection_param->retries determines number of done polling. This variable is used to close
+ * connection properly (MG_TRUE) even if no event is found.
+ * Keep in mind that mongoose closes automatically client connection after 30 seconds (hard coded), so
+ * default number of retries is computed according to timeout duration and polling duration.
+ */
+bool getEventRequest(struct mg_connection *conn)
+{
+    int result = true;
+    Variant::Map event;
+    bool eventFound = false;
+
+    //get request content
+    struct getEventState* state = (struct getEventState*)conn->connection_param;
+    std:string myId(state->myId);
+    std::string content(state->content);
+
+    //look for available event
+    pthread_mutex_lock(&mutexSubscriptions);	
+    map<string,Subscriber>::iterator it = subscriptions.find(content);
+    if( it!=subscriptions.end() && it->second.queue.size()>=1 )
+    {
+        //event found
+        event = it->second.queue.front();
+        it->second.queue.pop_front();
+        pthread_mutex_unlock(&mutexSubscriptions);	
+        mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
+        mg_printmap(conn, event);
+        mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
+
+        eventFound = true;
+        result = false;
+    }
+    pthread_mutex_unlock(&mutexSubscriptions);	
+
+    //handle retries
+    if( !eventFound )
+    {
+        if( state->retries>=GETEVENT_MAX_RETRIES )
+        {
+            //close connection now (before mongoose close connection)
+            mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"retries\": %d, \"error\": {\"code\":-32602,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", state->retries, myId.c_str());
+            result = false;
+        }
+        else
+        {
+            state->retries++;
+        }
+    }
+
+    return result;
+}
+
+bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
+    Json::StyledWriter writer;
+    string myId;
+    const Json::Value id = request.get("id", Json::Value());
+    const string method = request.get("method", "message").asString();
 	const string version = request.get("jsonrpc", "unspec").asString();
-	bool result;
 
 	myId = writer.write(id);
 	if (version == "2.0") {
@@ -185,7 +253,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
                 Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
                 if( responseMap.size()>0 && !id.isNull() ) // only send reply when id is not null
                 {
-                    cout << "Response: " << responseMap << endl;
+                    //cout << "Response: " << responseMap << endl;
                     mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
                     mg_printmap(conn, responseMap);
                     mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
@@ -242,33 +310,24 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
 		} else if (method == "getevent") {
 			if (params.isObject()) {
 				Json::Value content = params["uuid"];
-				if (content.isString()) {
-					Variant::Map event;
-					pthread_mutex_lock(&mutexSubscriptions);	
-					map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
-                    int retries = 0;
-					while( (it!=subscriptions.end()) && (it->second.queue.size()<1) && (retries<GETEVENT_MAX_RETRIES) ) {
-						pthread_mutex_unlock(&mutexSubscriptions);	
-						usleep(200000);
-						pthread_mutex_lock(&mutexSubscriptions);	
-						// we need to search again, subscription might have been deleted during lock release
-						it = subscriptions.find(content.asString());
-                        retries++;
-                    }
-                    if( it!=subscriptions.end() && it->second.queue.size()>=1 ) {
-    					event = it->second.queue.front();
-	    				it->second.queue.pop_front();
-		    			pthread_mutex_unlock(&mutexSubscriptions);	
-			    		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
-				    	mg_printmap(conn, event);
-           			    mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
-		    		} else {
-			    		pthread_mutex_unlock(&mutexSubscriptions);	
-				    	mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"retries\": %d, \"error\": {\"code\":-32602,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", retries,  myId.c_str());
-				    }  
-				} else {
+				if (content.isString())
+                {
+                    //add connection param (used to get connection param when polling see MG_POLL)
+                    struct getEventState* state;                    
+                    state = (struct getEventState*)malloc(sizeof(*state));
+                    conn->connection_param = state;
+                    strncpy(state->content, content.asString().c_str(), 1024);
+                    strncpy(state->myId, myId.c_str(), 256);
+                    state->lastPoll = time(NULL);
+                    state->retries = 0;
+
+                    return getEventRequest(conn);
+				}
+                else
+                {
 					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
 				}
+                //return false;
 			} else {
 				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
 			}
@@ -278,31 +337,41 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request, bool
 	} else {
 		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32600,\"message\":\"Invalid Request\"}, \"id\": %s}",myId.c_str());
 	}
-	return result;
+
+	return false;
 }
 
-static void jsonrpc(struct mg_connection *conn) {
+static bool jsonrpc(struct mg_connection *conn)
+{
     Json::Value root;
     Json::Reader reader;
+    bool result = false;
 
     //add header
     mg_send_header(conn, "Content-Type", "application/json");
 
-    if ( reader.parse(conn->content, conn->content + conn->content_len, root, false) ) {
-        if (root.isArray()) {
-            bool firstElem = true;
+    if ( reader.parse(conn->content, conn->content + conn->content_len, root, false) )
+    {
+        if (root.isArray())
+        {
             mg_printf_data(conn, "[");
-            for (unsigned int i = 0; i< root.size(); i++) {
-                bool result = jsonrpcRequestHandler(conn, root[i], firstElem);
-                if (result) firstElem = false; 
+            for (unsigned int i = 0; i< root.size(); i++)
+            {
+                result = jsonrpcRequestHandler(conn, root[i]);
             }
             mg_printf_data(conn, "]");
-        } else {
-            jsonrpcRequestHandler(conn, root, true);
         }
-    } else {
+        else
+        {
+            result = jsonrpcRequestHandler(conn, root);
+        }
+    }
+    else
+    {
         mg_printf_data(conn, "%s", "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32700,\"message\":\"Parse error\"}, \"id\": null}");
     }
+
+    return result;
 }
 
 /**
@@ -387,7 +456,7 @@ static void uploadFiles(struct mg_connection *conn)
                         uploadError = "File rejected";
                     }
                     cerr << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
-                    uploadError = "File rejected: no handler available";
+                    //uploadError = "File rejected: no handler available";
                     continue;
                 }
 
@@ -492,43 +561,83 @@ static bool downloadFile(struct mg_connection *conn)
 /**
  * Mongoose event handler
  */
-static int event_handler(struct mg_connection *conn, enum mg_event event) {
-    if (event == MG_REQUEST) {
-        if (strcmp(conn->uri, "/command") == 0) {
+static int event_handler(struct mg_connection *conn, enum mg_event event)
+{
+    int result = MG_FALSE;
+
+    if (event == MG_REQUEST)
+    {
+        if (strcmp(conn->uri, "/command") == 0)
+        {
             command(conn);
-            return MG_TRUE;
-        } else if (strcmp(conn->uri, "/jsonrpc") == 0) {
-            jsonrpc(conn);
-            return MG_TRUE;
-        } else if( strcmp(conn->uri, "/upload") == 0) {
-            uploadFiles(conn);
-            return MG_TRUE;
-        } else if( strcmp(conn->uri, "/download") == 0) {
-            if( downloadFile(conn) )
-                return MG_MORE;
+            result = MG_TRUE;
+        }
+        else if (strcmp(conn->uri, "/jsonrpc") == 0)
+        {
+            if( jsonrpc(conn) )
+                result = MG_MORE;
             else
-                return MG_TRUE;
-        } else {
+                result = MG_TRUE;
+        }
+        else if( strcmp(conn->uri, "/upload") == 0)
+        {
+            uploadFiles(conn);
+            result = MG_TRUE;
+        }
+        else if( strcmp(conn->uri, "/download") == 0)
+        {
+            if( downloadFile(conn) )
+                result = MG_MORE;
+            else
+                result = MG_TRUE;
+        }
+        else
+        {
             // No suitable handler found, mark as not processed. Mongoose will
             // try to serve the request.
-            return MG_FALSE;
+            result = MG_FALSE;
         }
-    } else if (event == MG_AUTH) {
+    }
+    else if( event==MG_POLL )
+    {
+        if( conn->connection_param )
+        {
+            time_t now = time(NULL);
+            struct getEventState* state = (struct getEventState*)conn->connection_param;
+            if ( state!=NULL && now>state->lastPoll )
+            {
+                if( !getEventRequest(conn) )
+                {
+                    //event found. Stop polling request
+                    result = MG_TRUE;
+                }
+            }
+            state->lastPoll = (int)now;
+        }
+    }
+    else if( event==MG_CLOSE )
+    {
+        if( conn->connection_param )
+        {
+            free(conn->connection_param);
+            conn->connection_param = NULL;
+        }
+    }
+    else if (event == MG_AUTH)
+    {
         if( authFile!=NULL )
         {
             //check auth
-            return mg_authorize_digest(conn, authFile);
+            result = mg_authorize_digest(conn, authFile);
         }
         else
         {
             //no auth
-            return MG_TRUE;
+            result = MG_TRUE;
         }
-    } else {
-        return MG_FALSE;
     }
 
-    return MG_FALSE;
+    return result;
 }
 
 /**
@@ -586,7 +695,7 @@ static void *serve_webserver(void *server)
 {
     for (;;)
     {
-        mg_poll_server((struct mg_server *) server, 1000);
+        mg_poll_server((struct mg_server *) server, MONGOOSE_POLLING);
     }
     return NULL;
 }
