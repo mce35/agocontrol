@@ -117,6 +117,12 @@ void mg_printlist(struct mg_connection *conn, Variant::List list) {
 			case VAR_STRING:
 				mg_printf_data(conn, "\"%s\"", it->asString().c_str());	
 				break;
+            case VAR_BOOL:
+                if( it->asBool() )
+                    mg_printf_data(conn, "1");	
+                else
+                    mg_printf_data(conn, "0");	
+                break;
 			default:
 				if (it->asString().size() != 0) {
 					mg_printf_data(conn, "%s", it->asString().c_str());	
@@ -142,6 +148,12 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 			case VAR_STRING:
 				mg_printf_data(conn, "\"%s\"", it->second.asString().c_str());	
 				break;
+            case VAR_BOOL:
+                if( it->second.asBool() )
+                    mg_printf_data(conn, "1");
+                else
+                    mg_printf_data(conn, "0");
+                break;
 			default:
 				if (it->second.asString().size() != 0) {
 					mg_printf_data(conn, "%s", it->second.asString().c_str());	
