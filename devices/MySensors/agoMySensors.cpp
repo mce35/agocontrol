@@ -1733,13 +1733,13 @@ void *checkStale(void *param)
             std::string internalid = (std::string)it->first;
             if( !infos["last_timestamp"].isVoid() )
             {
-                if( !agoConnection->isDeviceStaled(internalid.c_str()) )
+                if( !agoConnection->isDeviceStale(internalid.c_str()) )
                 {
                     if( (int)now>(infos["last_timestamp"].asInt32()+staleThreshold) )
                     {
                         //device is stalled
                         //cout << "suspend device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
-                        //cout << "isstaled? " << agoConnection->isDeviceStaled(internalid.c_str()) << endl;
+                        //cout << "isstale? " << agoConnection->isDeviceStale(internalid.c_str()) << endl;
                         agoConnection->suspendDevice(internalid.c_str());
                     }
                 }

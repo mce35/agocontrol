@@ -102,7 +102,7 @@ namespace agocontrol {
             bool suspendDevice(const char* internalId);
             bool resumeDevice(const char* internalId);
 			std::string getDeviceType(const char *internalId);
-            int isDeviceStaled(const char *internalId);
+            int isDeviceStale(const char *internalId);
 			bool addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map));
 			bool addEventHandler(void (*eventHandler)(std::string, qpid::types::Variant::Map));
 			bool setFilter(bool filter);

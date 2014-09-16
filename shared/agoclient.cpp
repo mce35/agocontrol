@@ -578,7 +578,7 @@ bool agocontrol::AgoConnection::removeDevice(const char *internalId) {
 
 /**
  * Suspend device (set stale flag)
- * Staled device are not announced during a discover command
+ * Stale device are not announced during a discover command
  */
 bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
 {
@@ -596,7 +596,7 @@ bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
 
 /**
  * Resume device (reset stale flag)
- * Staled device are not announced during a discover command
+ * Stale device are not announced during a discover command
  */
 bool agocontrol::AgoConnection::resumeDevice(const char* internalId)
 {
@@ -632,7 +632,7 @@ void agocontrol::AgoConnection::reportDevices() {
         // printf("uuid: %s\n", it->first.c_str());
         device = it->second.asMap();
         // printf("devicetype: %s\n", device["devicetype"].asString().c_str());
-        // do not announce staled devices
+        // do not announce stale devices
         if( device["stale"].asInt8()==0 )
         {
             emitDeviceAnnounce(device["internalid"].asString().c_str(), device["devicetype"].asString().c_str());
@@ -763,7 +763,7 @@ string agocontrol::AgoConnection::getDeviceType(const char *internalId) {
 /**
  * Return device stale state
  */
-int agocontrol::AgoConnection::isDeviceStaled(const char* internalId)
+int agocontrol::AgoConnection::isDeviceStale(const char* internalId)
 {
     string uuid = internalIdToUuid(internalId);
     if (uuid.size() > 0)
