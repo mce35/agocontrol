@@ -1059,8 +1059,8 @@ function eventConfig() {
 			input.name = param;
 			input.id = cmd.parameters[param].name;
 			input.className = "cmdParam";
-			if (defaults && defaults[cmd.parameters[param].name]) {
-			    input.value = defaults[cmd.parameters[param].name];
+			if (defaults && defaults[param]) {
+			    input.value = defaults[param];
 			}
 			commandParams.appendChild(input);
 		    }
