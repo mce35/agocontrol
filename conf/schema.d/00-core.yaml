@@ -292,7 +292,7 @@ values:
 events:
   event.device.announce:
     description: announces a device to the resolver
-    parameters: [devicetype, uuid, product, internal-id]
+    parameters: [devicetype, uuid, handled-by, internalid]
   event.device.statechanged:
     description: announces a status change of a device
     parameters: [level, uuid]
@@ -327,3 +327,6 @@ events:
   event.system.floorplandeleted:
     description: a floorplan has been deleted
     parameters: [uuid]
+  event.device.stale:
+    description: announce stale status of a device has changed
+    parameters: [uuid, internalid, stale]
