@@ -162,6 +162,13 @@ class AgoConnection:
         content["uuid"] = uuid
         self.send_message("event.device.remove", content)
 
+    def emit_device_stale(self, uuid, stale):
+        """Send a device stale event to the resolver"""
+        content = {}
+        content["uuid"] = uuid
+        content["stale"] = stale
+        self.send_message("event.device.stale", content)
+
     def add_device(self, internalid, devicetype):
         """Add a device. Announcement to ago control will happen
         automatically. Commands to this device will be dispatched
@@ -173,6 +180,7 @@ class AgoConnection:
         device = {}
         device["devicetype"] = devicetype
         device["internalid"] = internalid
+        device["stale"] = 0
         self.devices[self.internal_id_to_uuid(internalid)] = device
         self.emit_device_announce(self.internal_id_to_uuid(internalid), device)
 
@@ -181,6 +189,31 @@ class AgoConnection:
         if (self.internal_id_to_uuid(internalid) is not None):
             self.emit_device_remove(self.internal_id_to_uuid(internalid))
             del self.devices[self.internal_id_to_uuid(internalid)]
+
+    def suspend_device(self, internalid):
+        """suspend a device"""
+        uuid = self.internal_id_to_uuid(internalid)
+        if uuid:
+            self.devices[uuid]["stale"] = 1
+            self.emit_device_stale(uuid, 1)
+
+    def resume_device(self, internalid):
+        """resume a device"""
+        uuid = self.internal_id_to_uuid(internalid)
+        if uuid:
+            self.devices[uuid]["stale"] = 0
+            self.emit_device_stale(uuid, 0)
+
+    def is_device_stale(self, internalid):
+        """return True if a device is stale"""
+        uuid = self.internal_id_to_uuid(internalid)
+        if uuid:
+            if self.devices[uuid]["stale"]==0:
+                return False
+            else:
+                return True
+        else:
+            return False
 
     def send_message(self, content):
         """Send message without subject."""
@@ -247,7 +280,9 @@ class AgoConnection:
         """Report all our devices."""
         syslog.syslog(syslog.LOG_NOTICE, "reporting child devices")
         for device in self.devices:
-            self.emit_device_announce(device, self.devices[device])
+            #only report not stale device
+            if device["stale"]==0:
+                self.emit_device_announce(device, self.devices[device])
 
     def _sendreply(self, addr, content):
         """Internal used to send a reply."""
