@@ -281,7 +281,9 @@ class AgoConnection:
         syslog.syslog(syslog.LOG_NOTICE, "reporting child devices")
         for device in self.devices:
             #only report not stale device
-            if device["stale"]==0:
+            if not self.devices[device].has_key("stale"):
+                self.devices[device]["stale"] = 0
+            if self.devices[device]["stale"]==0:
                 self.emit_device_announce(device, self.devices[device])
 
     def _sendreply(self, addr, content):
