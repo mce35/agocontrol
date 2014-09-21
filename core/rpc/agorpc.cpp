@@ -623,7 +623,6 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
         {
             time_t now = time(NULL);
             struct getEventState* state = (struct getEventState*)conn->connection_param;
-	    cout << "in MG_POLL, now="<<now<<", lastPoll="<< state->lastPoll << endl;
             if ( state!=NULL && now>state->lastPoll )
             {
                 if( !getEventRequest(conn) )
@@ -631,7 +630,6 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
                     //event found. Stop polling request
                     result = MG_TRUE;
                 }else
-		    cout<<"No event found, reties " << state->retries<<endl;
             }
             state->lastPoll = (int)now;
         }
