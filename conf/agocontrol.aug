@@ -8,7 +8,7 @@ let record  = IniFile.record title entry
 
 let lns     = IniFile.lns record comment
 
-let filter = (incl "/etc/opt/agocontrol/conf.d/*.conf")
+let filter = (incl "/etc/opt/agocontrol/conf.d/*.conf") . (incl "/usr/local/etc/agocontrol/conf.d/*.conf")
 
 let xfm = transform lns filter
 
