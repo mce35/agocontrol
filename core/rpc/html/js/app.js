@@ -470,7 +470,7 @@ function getEvent() {
             //request succeed
             if( data.error!==undefined )
             {
-		if(data.error.code == -32601) {
+		if(data.error.code == -32603) {
 		    // Subscription not found, server restart or we've been gone
 		    // for too long. Setup new subscription
 		    subscribe();
