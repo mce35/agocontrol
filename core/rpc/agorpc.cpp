@@ -210,12 +210,19 @@ bool getEventRequest(struct mg_connection *conn)
     //look for available event
     pthread_mutex_lock(&mutexSubscriptions);	
     map<string,Subscriber>::iterator it = subscriptions.find(content);
-    if( it!=subscriptions.end() && it->second.queue.size()>=1 )
+	if(it == subscriptions.end()) {
+        pthread_mutex_unlock(&mutexSubscriptions);
+		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32603,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", myId.c_str());
+		return false;
+	}
+
+    if(it->second.queue.size() >= 1 )
     {
         //event found
         event = it->second.queue.front();
         it->second.queue.pop_front();
         pthread_mutex_unlock(&mutexSubscriptions);	
+
         mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
         mg_printmap(conn, event);
         mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
@@ -228,10 +235,10 @@ bool getEventRequest(struct mg_connection *conn)
     //handle retries
     if( !eventFound )
     {
-        if( state->retries>=GETEVENT_MAX_RETRIES )
+        if( state->retries >= GETEVENT_MAX_RETRIES )
         {
             //close connection now (before mongoose close connection)
-            mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"retries\": %d, \"error\": {\"code\":-32602,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", state->retries, myId.c_str());
+            mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"retries\": %d, \"error\": {\"code\":-32602,\"message\":\"Invalid params: no messages for subscription\"}, \"id\": %s}", state->retries, myId.c_str());
             result = false;
         }
         else
@@ -616,13 +623,15 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
         {
             time_t now = time(NULL);
             struct getEventState* state = (struct getEventState*)conn->connection_param;
+	    cout << "in MG_POLL, now="<<now<<", lastPoll="<< state->lastPoll << endl;
             if ( state!=NULL && now>state->lastPoll )
             {
                 if( !getEventRequest(conn) )
                 {
                     //event found. Stop polling request
                     result = MG_TRUE;
-                }
+                }else
+		    cout<<"No event found, reties " << state->retries<<endl;
             }
             state->lastPoll = (int)now;
         }

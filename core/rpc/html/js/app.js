@@ -470,7 +470,14 @@ function getEvent() {
             //request succeed
             if( data.error!==undefined )
             {
-                //request timeout (server side), continue polling
+		if(data.error.code == -32601) {
+		    // Subscription not found, server restart or we've been gone
+		    // for too long. Setup new subscription
+		    subscribe();
+		    return;
+		}
+
+                // request timeout (server side), continue polling
                 handleEvent(false, data);
             }
             else
@@ -479,7 +486,10 @@ function getEvent() {
             }
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
-            //request failed
+            //request failed, retry in a bit
+	    setTimeout(function(){
+		getEvent();
+	    }, 1000);
         });
 }
 
