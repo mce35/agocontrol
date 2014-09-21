@@ -7,8 +7,8 @@
 #include <qpid/messaging/Address.h>
 
 
+#include "schema.h"
 #include <fstream>
-#include "yaml-cpp/yaml.h"
 #include <string>
 
 using namespace std;
@@ -48,8 +48,6 @@ qpid::types::Variant::Map mergeMap(qpid::types::Variant::Map a, qpid::types::Var
 
 }
 
-
-Variant::List sequenceToVariantList(const YAML::Node &node);
 
 Variant::Map mapToVariantMap(const YAML::Node &node) {
 	Variant::Map output;

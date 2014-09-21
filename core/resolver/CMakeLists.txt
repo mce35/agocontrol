@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 2.6)
 file (GLOB_RECURSE AGORESOLVER_SOURCE_FILES *.cpp)
 
 set (RESOLVER_LIBRARIES
-    yaml-cpp
     jsoncpp
     sqlite3
     agoclient
@@ -11,6 +10,12 @@ set (RESOLVER_LIBRARIES
     boost_system
     boost_filesystem
 )
+
+IF (FREEBSD)
+	set (RESOLVER_LIBRARIES ${RESOLVER_LIBRARIES} yaml-cpp03)
+ELSE(FREEBSD)
+	set (RESOLVER_LIBRARIES ${RESOLVER_LIBRARIES} yaml-cpp)
+ENDIF(FREEBSD)
 
 # add the executable
 add_executable (agoresolver ${AGORESOLVER_SOURCE_FILES})

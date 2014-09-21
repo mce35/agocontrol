@@ -1,15 +1,10 @@
-
-#include <qpid/messaging/Connection.h>
-#include <qpid/messaging/Message.h>
-#include <qpid/messaging/Receiver.h>
-#include <qpid/messaging/Sender.h>
-#include <qpid/messaging/Session.h>
-#include <qpid/messaging/Address.h>
-
-
-#include <fstream>
+#ifdef __FreeBSD__
+/* YAML-CPP 0.3 is required, FreeBSD port devel/yaml-cpp03 installs this in
+ * a custom location to allow setups with both 0.3 and 0.5 */
+#include "yaml-cpp03/yaml.h"
+#else
 #include "yaml-cpp/yaml.h"
-#include <string>
+#endif
 
 using namespace std;
 using namespace qpid::messaging;
