@@ -9,23 +9,27 @@ set (AGOCONTROL_VERSION 0.1)
 # that non-base libs/includes are located in /usr/local.
 IF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
 	set (FREEBSD YES)
-	include_directories("/usr/local/include")
-	LINK_DIRECTORIES(/usr/local/lib)
+	set (LOCALDIR /usr/local)
+	include_directories("${LOCALDIR}/include")
+	LINK_DIRECTORIES(${LOCALDIR}/lib)
+ELSE (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+	set (LOCALDIR /usr)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+
 
 # some configurable values
 IF (FREEBSD)
-	set (BINDIR /usr/local/bin CACHE STRING "Directory to store Binaries")
-	set (ETCDIR /usr/local/etc CACHE STRING "Directory for system-wide settings")
+	set (BINDIR ${LOCALDIR}/bin CACHE STRING "Directory to store Binaries")
+	set (ETCDIR ${LOCALDIR}/etc CACHE STRING "Directory for system-wide settings")
 	set (LIBDIR /usr/lib CACHE STRING "Directory for libraries")
 	set (CONFDIR ${ETCDIR}/agocontrol CACHE STRING "Directory for agocontrol settings")
-	set (INCDIR /usr/local/include/agocontrol CACHE STRING "Directory for include files")
+	set (INCDIR ${LOCALDIR}/include/agocontrol CACHE STRING "Directory for include files")
 	# XXX: Not sure what "variable" data is, but only .sql files are installed currently,
 	# and those should be stored in share.
-	set (DATADIR /usr/local/share/agocontrol CACHE STRING "Directory for variable data")
-	set (LOCALSTATEDIR /usr/local/var/agocontrol CACHE STRING "Directory for state info")
-	set (HTMLDIR /usr/local/share/agocontrol/html CACHE STRING "Directory for rpc HTML files")
-	set (AUGEASLENSEDIR /usr/share/augeas/lenses CACHE STRING "Directory for augeas lenses")
+	set (DATADIR ${LOCALDIR}/share/agocontrol CACHE STRING "Directory for variable data")
+	set (LOCALSTATEDIR ${LOCALDIR}/var/agocontrol CACHE STRING "Directory for state info")
+	set (HTMLDIR ${LOCALDIR}/share/agocontrol/html CACHE STRING "Directory for rpc HTML files")
+	set (AUGEASLENSEDIR ${LOCALDIR}/share/augeas/lenses CACHE STRING "Directory for augeas lenses")
 ELSE (FREEBSD)
 	set (BINDIR /opt/agocontrol/bin CACHE STRING "Directory to store Binaries")
 	set (ETCDIR /etc CACHE STRING "Directory for system-wide settings")
@@ -55,18 +59,13 @@ include_directories("${PROJECT_BINARY_DIR}/shared")
 include_directories("${PROJECT_SOURCE_DIR}/shared")
 
 # fix augeas bug
-include_directories("/usr/include/libxml2")
+include_directories("${LOCALDIR}/include/libxml2")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # JSONCpp is used globally (agoclient.h)
-IF (FREEBSD)
-	set (JSONCPP_ROOT_DIR "/usr/local/lib")
-	set (JSONCPP_INCLUDE_DIR "/usr/local/include/jsoncpp")
-ELSE (FREEBSD)
-	set (JSONCPP_ROOT_DIR "/usr/lib")
-	set (JSONCPP_INCLUDE_DIR "/usr/include/jsoncpp")
-ENDIF (FREEBSD)
+set (JSONCPP_ROOT_DIR "${LOCALDIR}/lib")
+set (JSONCPP_INCLUDE_DIR "${LOCALDIR}/include/jsoncpp")
 
 find_package (JsonCpp REQUIRED)
 if (JSONCPP_FOUND)
