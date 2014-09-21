@@ -629,7 +629,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
                 {
                     //event found. Stop polling request
                     result = MG_TRUE;
-                }else
+                }
             }
             state->lastPoll = (int)now;
         }
