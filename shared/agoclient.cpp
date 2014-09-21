@@ -308,8 +308,10 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
 		result << defaultvalue;
 	} else {
-		// cout << "AUGEAS: using config value: " << value << endl;
-		result << value;
+		if(value != NULL) {
+			// cout << "AUGEAS: using config value: " << value << endl;
+			result << value;
+		}
 	}
 	return result.str();
 }
