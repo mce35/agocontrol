@@ -712,7 +712,7 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
 
     // Wake servers to let pending getEvent trigger
     last_event = time(NULL);
-    for(list<mg_server*>::const_iterator i = all_servers.cbegin(); i !=  all_servers.cend(); i++) {
+    for(list<mg_server*>::iterator i = all_servers.begin(); i !=  all_servers.end(); i++) {
         mg_wakeup_server(*i);
     }
 }

@@ -19,6 +19,14 @@ include_directories("/usr/include/openzwave/value_classes")
 include_directories("/usr/include/openzwave/platform")
 include_directories("/usr/include/openzwave/platform/unix")
 
+# Johanhack
+include_directories("/usr/home/johan/dev/openzwave-inst/usr/local/include")
+include_directories("/usr/home/johan/dev/openzwave-inst/usr/local/include/openzwave")
+include_directories("/usr/home/johan/dev/openzwave-inst/usr/local/include/openzwave/value_classes")
+include_directories("/usr/home/johan/dev/openzwave-inst/usr/local/include/openzwave/platform")
+include_directories("/usr/home/johan/dev/openzwave-inst/usr/local/include/openzwave/platform/unix")
+LINK_DIRECTORIES(/usr/home/johan/dev/openzwave-inst/usr/local/lib)
+
 set (DEVICE "agozwave")
 
 # add the executable

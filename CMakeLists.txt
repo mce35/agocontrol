@@ -72,6 +72,10 @@ if (JSONCPP_FOUND)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 endif (JSONCPP_FOUND)
 
+# XXX: Johan hack for apiqd..
+include_directories("/home/johan/dev/qpid-git/qpid/cpp/include")
+LINK_DIRECTORIES(/home/johan/dev/qpid-git/qpid/cpp/bld/src)
+
 set (ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIBDIR}")
 set (LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIBDIR}")
 set (RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BINDIR}")
