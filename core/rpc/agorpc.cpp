@@ -79,8 +79,8 @@ FILE* authFile = NULL;
 // struct and map for json-rpc event subscriptions
 struct Subscriber
 {
-	deque<Variant::Map> queue;
-	time_t lastAccess;
+    deque<Variant::Map> queue;
+    time_t lastAccess;
 };
 
 struct getEventState
@@ -93,6 +93,9 @@ struct getEventState
 
 map<string,Subscriber> subscriptions;
 pthread_mutex_t mutexSubscriptions;
+
+list<mg_server*> all_servers;
+time_t last_event;
 
 
 // helper to determine last element
@@ -208,20 +211,20 @@ bool getEventRequest(struct mg_connection *conn)
     std::string content(state->content);
 
     //look for available event
-    pthread_mutex_lock(&mutexSubscriptions);	
+    pthread_mutex_lock(&mutexSubscriptions);
     map<string,Subscriber>::iterator it = subscriptions.find(content);
-	if(it == subscriptions.end()) {
+    if(it == subscriptions.end()) {
         pthread_mutex_unlock(&mutexSubscriptions);
-		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32603,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", myId.c_str());
-		return false;
-	}
+        mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32603,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", myId.c_str());
+        return false;
+    }
 
     if(it->second.queue.size() >= 1 )
     {
         //event found
         event = it->second.queue.front();
         it->second.queue.pop_front();
-        pthread_mutex_unlock(&mutexSubscriptions);	
+        pthread_mutex_unlock(&mutexSubscriptions);
 
         mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
         mg_printmap(conn, event);
@@ -230,7 +233,9 @@ bool getEventRequest(struct mg_connection *conn)
         eventFound = true;
         result = false;
     }
-    pthread_mutex_unlock(&mutexSubscriptions);	
+    else {
+        pthread_mutex_unlock(&mutexSubscriptions);
+    }
 
     //handle retries
     if( !eventFound )
@@ -621,9 +626,8 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
     {
         if( conn->connection_param )
         {
-            time_t now = time(NULL);
             struct getEventState* state = (struct getEventState*)conn->connection_param;
-            if ( state!=NULL && now>state->lastPoll )
+            if (last_event >= state->lastPoll)
             {
                 if( !getEventRequest(conn) )
                 {
@@ -631,7 +635,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
                     result = MG_TRUE;
                 }
             }
-            state->lastPoll = (int)now;
+            state->lastPoll = time(NULL);
         }
     }
     else if( event==MG_CLOSE )
@@ -704,7 +708,13 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
             ++it;
         }
     }
-    pthread_mutex_unlock(&mutexSubscriptions);	
+    pthread_mutex_unlock(&mutexSubscriptions);
+
+    // Wake servers to let pending getEvent trigger
+    last_event = time(NULL);
+    for(list<mg_server*>::const_iterator i = all_servers.cbegin(); i !=  all_servers.cend(); i++) {
+        mg_wakeup_server(*i);
+    }
 }
 
 /**
@@ -844,6 +854,7 @@ int main(int argc, char **argv) {
                 firstServer = server;
             }
             mg_start_thread(serve_webserver, server);
+            all_servers.push_back(server);
         }
 
         //reset flags
