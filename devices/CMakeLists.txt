@@ -42,7 +42,7 @@ set (AGODEVICES
 
 foreach (device ${AGODEVICES})
     # options what to build
-	 OPTION(BUILD_DEVICE_${device} "Build the device ${device}" OFF)
+    OPTION(BUILD_DEVICE_${device} "Build the device ${device}" ON)
     if (BUILD_DEVICE_${device})
         add_subdirectory(${device})
     endif()

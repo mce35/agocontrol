@@ -39,7 +39,7 @@ class LogErr:
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
 
-logging.basicConfig(filename='/tmp/agotellstick.log', format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO) #level=logging.DEBUG
+logging.basicConfig(filename='/var/log/tellstick.log', format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO) #level=logging.DEBUG
 #logging.setLevel( logging.INFO )
 
 timers = {} # List of timers
@@ -72,7 +72,6 @@ def warning(text):
         print ("WRN " + text + "\n")
 
 def messageHandler(internalid, content):
-    print "Command: ", content
     if "command" in content:
         #
         #   On

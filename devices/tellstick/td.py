@@ -23,7 +23,7 @@ import time
 from datetime import datetime
 from ctypes import c_int, c_ubyte, c_void_p, c_char_p, POINTER, string_at, create_string_buffer, byref
 
-debug = True
+debug = False
 
 #platform specific imports and CFUNC definitions:
 if (platform.system() == 'Windows'):
