@@ -188,10 +188,7 @@ static void oregon_process_measurement(OregonData *data,
                                        tmp_val, "%");
             }
           snprintf(tmp_val, sizeof(tmp_val), "%d", data->battery[channel]);
-          if(data->battery[channel] == 0)
-            agoConnection->emitEvent(bat_intid, "event.device.batterylevelchanged", tmp_val, " (bad)");
-          else
-            agoConnection->emitEvent(bat_intid, "event.device.batterylevelchanged", tmp_val, " (good)");
+          agoConnection->emitEvent(bat_intid, "event.device.batterylevelchanged", tmp_val, "");
 
           if(DEBUG != 0)
             printf("oregon plugin: value channel %i: %.1f°C %d%% %d\n", channel,
