@@ -16,6 +16,7 @@ import json
 import rrdtool
 import RRDtool #@doc https://github.com/commx/python-rrdtool/blob/master/RRDtool.py
 import base64
+import colorsys
 from qpid.datatypes import uuid4
 
 RRD_PATH = agoclient.LOCALSTATEDIR 
@@ -67,39 +68,48 @@ def checkContent(content, params):
             return False
     return True
 
-def generateGraph(uuid, start, end):
+def rainbow_colors(n):
+    HSV_tuples = [(x*1.0/n, 1, 1) for x in range(n)]
+    RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)
+
+    ret = []
+    for t in RGB_tuples:
+        ret.append("%02X%02X%02X" % (t[0] * 255, t[1] * 255, t[2] * 255))
+    return ret
+
+def generateGraph(uuids, start, end):
     #init
     global rrds, units
     gfx = None
     error = False
     errorMsg = ''
 
+    colors = rainbow_colors(len(uuids))
+
     #get rrd filename according to uuid
     try:
-        if rrds.has_key(uuid):
+        rrd_args = [ "--start", "%d" % int(start), "--end", "%d" % int(end), #"--vertical-label=%s" % str(vertical_unit),
+                     "-w 850", "-h 300",
+                     #"--alt-autoscale",
+                     #"--alt-y-grid",
+                     #"--rigid"
+                     ]
+        rrd_lines = []
+        graph_nb = 0
+        inventory = client.get_inventory()
+        colorMax = '#FF0000'
+        colorMin = '#00FF00'
+        colorAvg = '#0000FF'
+
+        for uuid in uuids:
+            if not rrds.has_key(uuid):
+                continue
             #get graph infos
             (_, kind, vertical_unit) = rrds[uuid].replace('.rrd','').split('_')
-            colorL = '#000000'
-            colorA = '#A0A0A0'
-            colorMax = '#FF0000'
-            colorMin = '#00FF00'
-            colorAvg = '#0000FF'
-            if kind in ['humidity']:
-                #blue
-                colorL = '#0000FF'
-                colorA = '#7777FF'
-            elif kind in ['temperature']:
-                #red
-                colorL = '#FF0000'
-                colorA = '#FF8787'
-            elif kind in ['energy', 'batterylevel']:
-                #green
-                colorL = '#007A00'
-                colorA = '#00BB00'
-            elif kind in ['brightness']:
-                #orange
-                colorL = '#CCAA00'
-                colorA = '#FFD400'
+
+            colorL = "#%s" % colors[graph_nb]
+            colorA = '#%s10' % colors[graph_nb]
+
             logging.info('Generate graph: uuid=%s start=%s end=%s unit=%s kind=%s' % (uuid, str(start), str(end),str(vertical_unit), str(kind)))
 
             #fix unit if necessary
@@ -109,35 +119,45 @@ def generateGraph(uuid, start, end):
                 unit = '%%'
             else:
                 unit = vertical_unit
+            if graph_nb == 0:
+                rrd_args.append("--vertical-label=%s" % str(vertical_unit))
 
+            uni_name_fixed = inventory.content['devices'][uuid]['name']
+            if(len(uni_name_fixed) > 25):
+                uni_name_fixed = uni_name_fixed[0:24]
+            else:
+                while(len(uni_name_fixed) < 25):
+                    uni_name_fixed += ' '
+            rrd_args.extend([ "DEF:level%d=%s:level:AVERAGE" % (graph_nb,str(rrds[uuid])),
+                              "VDEF:levellast%d=level%d,LAST" % (graph_nb, graph_nb),
+                              "VDEF:levelavg%d=level%d,AVERAGE" % (graph_nb, graph_nb),
+                              "VDEF:levelmax%d=level%d,MAXIMUM" % (graph_nb, graph_nb),
+                              "VDEF:levelmin%d=level%d,MINIMUM" % (graph_nb, graph_nb),
+                              "AREA:level%d%s" % (graph_nb, colorA) ])
+            rrd_lines.append("LINE1:level%d%s:%s" % (graph_nb, colorL, uni_name_fixed.encode('utf8')))
+            if(len(uuids) == 1):
+                rrd_lines.extend([ "LINE1:levelmin%d%s:Min:dashes" % (graph_nb, colorAvg),
+                                   "GPRINT:levelmin%d:%%6.2lf%%s%s" % (graph_nb, unit),
+                                   "LINE1:levelmax%d%s:Max:dashes" % (graph_nb, colorMax),
+                                   "GPRINT:levelmax%d:%%6.2lf%%s%s" % (graph_nb, unit),
+                                   "LINE1:levelavg%d%s:Avg:dashes" % (graph_nb, colorMin),
+                                   "GPRINT:levelavg%d:%%6.2lf%%s%s" % (graph_nb, unit) ])
+            else:
+                rrd_lines.extend([ "GPRINT:levelmin%d: Min %%6.2lf%%s%s" % (graph_nb, unit),
+                                   "GPRINT:levelmax%d: Max %%6.2lf%%s%s" % (graph_nb, unit),
+                                   "GPRINT:levelavg%d: Avg %%6.2lf%%s%s" % (graph_nb, unit) ])
+            rrd_lines.extend([ "GPRINT:levellast%d: Last %%6.2lf%%s%s" % (graph_nb, unit),
+                               "COMMENT:\\n" ])
+            graph_nb += 1
+
+        if(graph_nb > 0):
             #generate graph
             rrd = RRDtool.RRD(str(rrds[uuid]))
-            gfx = rrd.graph( None, "--start", "%d" % int(start), "--end", "%d" % int(end), "--vertical-label=%s" % str(vertical_unit),
-                                "-w 850", "-h 300",
-                                #"--alt-autoscale",
-                                #"--alt-y-grid",
-                                #"--rigid",
-                                "DEF:level=%s:level:AVERAGE" % str(rrds[uuid]),
-                                "VDEF:levelavg=level,AVERAGE",
-                                "VDEF:levelmax=level,MAXIMUM",
-                                "VDEF:levelmin=level,MINIMUM",
-                                "AREA:level%s" % colorA,
-                                "LINE1:level%s:%s" % (colorL, str(kind)),
-                                "COMMENT:\\n",
-                                "LINE1:levelavg%s:Average \::dashes" % colorAvg,
-                                "GPRINT:level:AVERAGE:%0.2lf"+str(unit),
-                                "COMMENT:\\n",
-                                "LINE1:levelmax%s:Maximum \::dashes" % colorMax,
-                                "GPRINT:level:MAX:%0.2lf"+str(unit),
-                                "COMMENT:\\n",
-                                "LINE1:levelmin%s:Minimum \::dashes" % colorMin,
-                                "GPRINT:level:MIN:%0.2lf"+str(unit),
-                                "COMMENT:\\n")
-        
+            gfx = rrd.graph( None, rrd_args, rrd_lines)
         else:
-            #no file for specified uuid
+            #no file for specified uuids
             error = True
-            errorMsg = 'No data for specified device'
+            errorMsg = 'No data for specified device(s)'
     except:
         logging.exception('Error during graph generation:')
         error = True
@@ -163,7 +183,8 @@ def commandHandler(internalid, content):
 
     if internalid=='rrdtoolcontroller':
         if command=='getgraph' and checkContent(content, ['deviceUuid','start','end']):
-            (error, msg, graph) = generateGraph(content['deviceUuid'], content['start'], content['end'])
+            uuids = [ content['deviceUuid'] ]
+            (error, msg, graph) = generateGraph(uuids, content['start'], content['end'])
             if not error:
                 return {'error':0, 'msg':'', 'graph':base64.b64encode(graph)}
             else:
