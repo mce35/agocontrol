@@ -13,7 +13,7 @@ IF (FREEBSD)
 	IF(NOT EXISTS "/usr/include/iconv.h")
 		# Pre 10.0 FreeBSD without globla iconv
 		list(APPEND DEVICE_EXTRA_LIBRARIES iconv)
-	ENDIF (NOT EXISTS)
+	ENDIF ()
 ELSE (FREEBSD)
 	list(APPEND DEVICE_EXTRA_LIBRARIES udev)
 ENDIF (FREEBSD)
