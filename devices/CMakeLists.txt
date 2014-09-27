@@ -40,6 +40,20 @@ set (AGODEVICES
   ETAtouch
 )
 
+IF (FREEBSD)
+	# These does not build on FreeBSD currently
+	list(REMOVE_ITEM AGODEVICES
+	  blinkm
+	  firmata
+	  i2c
+	  irtrans_ethernet
+	  knx
+	  agodmx
+	  PLCBUS
+	  zmcam
+  )
+ENDIF (FREEBSD)
+
 foreach (device ${AGODEVICES})
     # options what to build
     OPTION(BUILD_DEVICE_${device} "Build the device ${device}" ON)
