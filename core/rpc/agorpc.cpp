@@ -88,8 +88,8 @@ struct getEventState
 {
     char content[1024];
     char myId[256];
+	 time_t inited;
     time_t lastPoll;
-    int retries;
 };
 
 map<string,Subscriber> subscriptions;
@@ -220,21 +220,17 @@ static void command (struct mg_connection *conn) {
  * Return true if an event wasn't found to say to mongoose request is not over (return MG_MORE).
  * Return false if an event is found to say to mongoose request is over (return MG_TRUE) then app.js
  * will request again getEvent().
+ *
  * Connection parameters are stored directly into mg_connection object inside connection_param variable.
  * Thanks to this variable its possible to call many times getEventRequest.
- * connection_param->retries determines number of done polling. This variable is used to close
- * connection properly (MG_TRUE) even if no event is found.
- * Keep in mind that mongoose closes automatically client connection after 30 seconds (hard coded), so
- * default number of retries is computed according to timeout duration and polling duration.
  */
-bool getEventRequest(struct mg_connection *conn)
+bool getEventRequest(struct mg_connection *conn, struct getEventState*state)
 {
     int result = true;
     Variant::Map event;
     bool eventFound = false;
 
     //get request content
-    struct getEventState* state = (struct getEventState*)conn->connection_param;
     std::string myId(state->myId);
     std::string content(state->content);
 
@@ -256,28 +252,13 @@ bool getEventRequest(struct mg_connection *conn)
 
         mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
         mg_printmap(conn, event);
-        mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
+        mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
         eventFound = true;
         result = false;
     }
     else {
         pthread_mutex_unlock(&mutexSubscriptions);
-    }
-
-    //handle retries
-    if( !eventFound )
-    {
-        if( state->retries >= GETEVENT_MAX_RETRIES )
-        {
-            //close connection now (before mongoose close connection)
-            mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"retries\": %d, \"error\": {\"code\":-32602,\"message\":\"Invalid params: no messages for subscription\"}, \"id\": %s}", state->retries, myId.c_str());
-            result = false;
-        }
-        else
-        {
-            state->retries++;
-        }
     }
 
     return result;
@@ -361,24 +342,22 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 		} else if (method == "getevent") {
 			if (params.isObject()) {
 				Json::Value content = params["uuid"];
-				if (content.isString())
-                {
-                    //add connection param (used to get connection param when polling see MG_POLL)
-                    struct getEventState* state;                    
-                    state = (struct getEventState*)malloc(sizeof(*state));
-                    conn->connection_param = state;
-                    strncpy(state->content, content.asString().c_str(), 1024);
-                    strncpy(state->myId, myId.c_str(), 256);
-                    state->lastPoll = time(NULL);
-                    state->retries = 0;
+				if (content.isString()) {
+					//add connection param (used to get connection param when polling see MG_POLL)
+					struct getEventState* state;
+					state = (struct getEventState*)malloc(sizeof(*state));
+					conn->connection_param = state;
+					strncpy(state->content, content.asString().c_str(), 1024);
+					strncpy(state->myId, myId.c_str(), 256);
+					state->inited = time(NULL);
+					state->lastPoll = 0;
 
-                    return getEventRequest(conn);
+					return getEventRequest(conn, state);
 				}
 				else
 				{
 					mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
 				}
-                //return false;
 			} else {
 				mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
 			}
@@ -656,13 +635,21 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
             struct getEventState* state = (struct getEventState*)conn->connection_param;
             if (last_event >= state->lastPoll)
             {
-                if( !getEventRequest(conn) )
+                if( !getEventRequest(conn, state) )
                 {
                     //event found. Stop polling request
                     result = MG_TRUE;
                 }
             }
             state->lastPoll = time(NULL);
+
+				if(result == MG_FALSE) {
+					if((state->lastPoll - state->inited) > GETEVENT_MAX_RETRIES) {
+						// close connection now (before mongoose close connection)
+						mg_print_error(conn, -32602, "no messages for subscription", state->myId);
+						result = MG_TRUE;
+					}
+				}
         }
     }
     else if( event==MG_CLOSE )
