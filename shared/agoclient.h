@@ -22,13 +22,6 @@
 #include <uuid/uuid.h>
 #include <augeas.h>
 
-#define BINDIR "@BINDIR@"
-#define CONFDIR "@CONFDIR@"
-#define LOCALSTATEDIR "@LOCALSTATEDIR@"
-#define HTMLDIR "@HTMLDIR@"
-
-#define CONFIG_FILE_PATH CONFDIR "/conf.d"
-
 namespace agocontrol {
 
 	bool nameval(const std::string& in, std::string& name, std::string& value);
@@ -53,9 +46,16 @@ namespace agocontrol {
 	/// helper to generate a string containing a uuid.
 	std::string generateUuid();
 
+	/// Return the full path to the configuration directory, with subpath appended if not NULL
+	std::string getConfigPath(const char *subpath = NULL);
+
+	/// Return the full path to the local-state directory, with subpath appended if not NULL
+	std::string getLocalStatePath(const char *subpath = NULL);
+
 	bool augeas_init();
 	augeas *augeas = NULL;
 	/// fetch a value from the config file.
+	std::string getConfigOption(const char *section, const char *option, std::string defaultvalue);
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 
     /// save value to the config file

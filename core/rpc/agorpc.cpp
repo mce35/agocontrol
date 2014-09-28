@@ -47,7 +47,8 @@
 
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/preprocessor/stringize.hpp>
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -769,8 +770,8 @@ int main(int argc, char **argv) {
 
     //get parameters
     port=getConfigOption("rpc", "ports", "8008,8009s");
-    htdocs=getConfigOption("rpc", "htdocs", HTMLDIR);
-    certificate=getConfigOption("rpc", "certificate", CONFDIR "/rpc/rpc_cert.pem");
+    htdocs=getConfigOption("rpc", "htdocs", BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR));
+    certificate=getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
     numthreads=getConfigOption("rpc", "numthreads", "30");
     domainname=getConfigOption("rpc", "domainname", "agocontrol");
 

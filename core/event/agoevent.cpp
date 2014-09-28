@@ -13,7 +13,7 @@
 #include "bool.h"
 
 #ifndef EVENTMAPFILE
-#define EVENTMAPFILE CONFDIR "/maps/eventmap.json"
+#define EVENTMAPFILE "/maps/eventmap.json"
 #endif
 
 using namespace std;
@@ -242,7 +242,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					cout << "removing ago device" << event << endl;
 					agoConnection->removeDevice(it->first.c_str());
 					eventmap.erase(it);
-					if (variantMapToJSONFile(eventmap, EVENTMAPFILE)) {
+					if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE))) {
 						returnval["result"] = 0;
 					}
 				}
@@ -255,7 +255,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 int main(int argc, char **argv) {
 	agoConnection = new AgoConnection("event");	
 	cout << "parsing eventmap file" << endl;
-	eventmap = jsonFileToVariantMap(EVENTMAPFILE);
+	eventmap = jsonFileToVariantMap(getConfigPath(EVENTMAPFILE));
 	cout << "eventmap: " << eventmap << endl;
 	cout << "adding controller" << endl;
 	agoConnection->addDevice("eventcontroller", "eventcontroller");

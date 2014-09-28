@@ -14,7 +14,7 @@
 #include "agoclient.h"
 
 #ifndef SECURITYMAPFILE
-#define SECURITYMAPFILE CONFDIR "/maps/securitymap.json"
+#define SECURITYMAPFILE "/maps/securitymap.json"
 #endif
 
 using namespace qpid::messaging;
@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
 	openlog(NULL, LOG_PID & LOG_CONS, LOG_DAEMON);
 	agoConnection = new AgoConnection("security");
 
-	securitymap = jsonFileToVariantMap(SECURITYMAPFILE);
+	securitymap = jsonFileToVariantMap(getConfigPath(SECURITYMAPFILE));
 
 	cout << "securitymap: " << securitymap << endl;
 	std::string housemode = securitymap["housemode"];
@@ -292,7 +292,7 @@ int main(int argc, char** argv) {
 	zonemap["armed"] = armedZones;
 
 	securitymap["zones"] = zonemap;
-	variantMapToJSONFile(securitymap, SECURITYMAPFILE);
+	variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE));
 */
 	agoConnection->addDevice("securitycontroller", "securitycontroller");
 	agoConnection->addHandler(commandHandler);

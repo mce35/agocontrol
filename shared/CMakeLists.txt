@@ -1,13 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 
-# configure a header file to pass some of the CMake settings
-# to the source code
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/agoclient.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/agoclient.h"
-    @ONLY
-)
-
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/agoclient.py.in"
     "${CMAKE_CURRENT_BINARY_DIR}/agoclient.py"
@@ -28,6 +20,13 @@ set (AGOCLIENT_LIBRARIES
 )
 
 target_link_libraries (agoclient ${AGOCLIENT_LIBRARIES})
+
+set_property(
+	TARGET agoclient
+	PROPERTY COMPILE_DEFINITIONS
+	DEFAULT_CONFDIR=${CONFDIR}
+	DEFAULT_LOCALSTATEDIR=${LOCALSTATEDIR}
+)
 
 # Install instructions for this target
 install (TARGETS agoclient LIBRARY DESTINATION ${LIBDIR})

@@ -19,7 +19,7 @@
 #include "agoclient.h"
 
 #ifndef DBFILE
-#define DBFILE LOCALSTATEDIR "/datalogger.db"
+#define DBFILE "/datalogger.db"
 #endif
 
 using namespace std;
@@ -273,7 +273,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 }
 
 int main(int argc, char **argv) {
-    int rc = sqlite3_open(DBFILE, &db);
+    int rc = sqlite3_open(getLocalStatePath(DBFILE).c_str(), &db);
     if( rc != SQLITE_OK){
         fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);

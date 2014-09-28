@@ -14,7 +14,7 @@
 #include "agoclient.h"
 
 #ifndef DEVICEMAPFILE
-#define DEVICEMAPFILE CONFDIR "/maps/mysensors.json"
+#define DEVICEMAPFILE "/maps/mysensors.json"
 #endif
 #define RESEND_MAX_ATTEMPTS 30
 
@@ -225,7 +225,7 @@ void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos)
     qpid::types::Variant::Map device = devicemap["devices"].asMap();
     device[internalid] = (*infos);
     devicemap["devices"] = device;
-    variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+    variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
     pthread_mutex_unlock(&devicemapMutex);
 }
 
@@ -385,7 +385,7 @@ bool deleteDevice(std::string internalid)
             pthread_mutex_lock(&devicemapMutex);
             devices.erase(internalid);
             devicemap["devices"] = devices;
-            variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+            variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
             pthread_mutex_unlock(&devicemapMutex);
 
             result = true;
@@ -424,7 +424,7 @@ void addDevice(std::string internalid, std::string devicetype, qpid::types::Vari
     infos["protocol"] = gateway_protocol_version;
     devices[internalid] = infos;
     devicemap["devices"] = devices;
-    variantMapToJSONFile(devicemap, DEVICEMAPFILE);
+    variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
     agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
     pthread_mutex_unlock(&devicemapMutex);
 }
@@ -1022,7 +1022,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                     {
                         pthread_mutex_lock(&devicemapMutex);
                         devicemap["nextid"]=freeid+1;
-                        variantMapToJSONFile(devicemap, DEVICEMAPFILE);
+                        variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
                         pthread_mutex_unlock(&devicemapMutex);
                         id << freeid;
                         sendcommandV13(internalid, INTERNAL_V13, I_REQUEST_ID_V13, id.str());
@@ -1348,7 +1348,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     {
                         pthread_mutex_lock(&devicemapMutex);
                         devicemap["nextid"]=freeid+1;
-                        variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+                        variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
                         pthread_mutex_unlock(&devicemapMutex);
                         id << freeid;
                         sendcommandV14(internalid, INTERNAL_V14, 0, I_ID_RESPONSE_V14, id.str());
@@ -1824,17 +1824,18 @@ int main(int argc, char **argv)
     }
 
     // load map, create sections if empty
-    devicemap = jsonFileToVariantMap(DEVICEMAPFILE);
+    std::string dmf = getConfigPath(DEVICEMAPFILE);
+    devicemap = jsonFileToVariantMap(dmf);
     if (devicemap["nextid"].isVoid())
     {
         devicemap["nextid"]=1;
-        variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+        variantMapToJSONFile(devicemap, dmf);
     }
     if (devicemap["devices"].isVoid())
     {
         qpid::types::Variant::Map devices;
         devicemap["devices"]=devices;
-        variantMapToJSONFile(devicemap,DEVICEMAPFILE);
+        variantMapToJSONFile(devicemap, dmf);
     }
 
     bool error;

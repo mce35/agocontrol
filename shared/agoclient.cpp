@@ -1,9 +1,12 @@
 #include <string>
 #include <string.h>
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sstream>
+
+#include <boost/preprocessor/stringize.hpp>
 
 #include <jsoncpp/json/reader.h>
 #include "agoclient.h"
@@ -21,11 +24,70 @@ Iter next(Iter iter)
 }
 #endif
 
+#define MODULE_CONFDIR "/conf.d"
+
+namespace agocontrol {
+	std::string config_dir;
+	std::string localstate_dir;
+
+	void initDirectorys() {
+		char *envDir ;
+
+		// DEFAULT_CONFDIR, DEFAULT_LOCALSTATEDIR must be set with compiler flag
+		config_dir = BOOST_PP_STRINGIZE(DEFAULT_CONFDIR);
+		localstate_dir = BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR);
+
+		if((envDir = getenv("AGO_CONFDIR")) != NULL) {
+			config_dir = envDir;
+		}
+
+		if((envDir = getenv("AGO_LOCALSTATEDIR")) != NULL) {
+			localstate_dir = envDir;
+		}
+
+		while(config_dir.find_last_of('/') == config_dir.size())
+			config_dir.erase(config_dir.size() - 1, 1);
+
+		while(localstate_dir.find_last_of('/') == localstate_dir.size())
+			config_dir.erase(localstate_dir.size() - 1, 1);
+	}
+}
+
+std::string agocontrol::getConfigPath(const char *sub) {
+	if(sub) {
+		std::string total(config_dir);
+		if(*sub != '/')
+			total+= "/";
+
+		total+= sub;
+		return total;
+	}
+	return config_dir;
+}
+
+std::string agocontrol::getLocalStatePath(const char *sub) {
+	if(sub) {
+		std::string total(localstate_dir);
+		if(*sub != '/')
+			total+= "/";
+
+		total+= sub;
+		return total;
+	}
+	return localstate_dir;
+}
+
+
 bool agocontrol::augeas_init()  {
+	initDirectorys();
+
 	std::stringstream path;
-	path << CONFIG_FILE_PATH;
+	path << getConfigPath(MODULE_CONFDIR);
 	path << "/*.conf";
-	augeas = aug_init(NULL, NULL, AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
+
+	std::string extra_loadpath = getConfigPath();
+
+	augeas = aug_init(NULL, extra_loadpath.c_str(), AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
 	if (augeas == NULL) {
 		cerr << "Error: Can't initalize augeas" << endl;
 		return false;
@@ -284,11 +346,21 @@ std::string agocontrol::generateUuid() {
 	return strUuid;
 }
 
+std::string agocontrol::getConfigOption(const char *section, const char *option, std::string defaultvalue) {
+	return getConfigOption(section, option, defaultvalue.c_str());
+}
+
 std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
+	if (augeas==NULL) augeas_init();
+	if (augeas == NULL) {
+		cerr << "ERROR: cannot initialize augeas" << endl;
+		return defaultvalue;
+	}
+
 	std::stringstream result;
 	std::stringstream valuepath;
 	valuepath << "/files";
-	valuepath  << CONFIG_FILE_PATH;
+	valuepath << getConfigPath(MODULE_CONFDIR);
 	valuepath << "/";
 	valuepath << section;
 	valuepath << ".conf";
@@ -296,12 +368,7 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	valuepath << section;
 	valuepath << "/";
 	valuepath << option;
-	if (augeas==NULL) augeas_init();
-	if (augeas == NULL) {
-		cerr << "ERROR: cannot initialize augeas" << endl;
-		result << defaultvalue;
-		return result.str();
-	}
+
 	const char *value;
 	int ret =  aug_get(augeas, valuepath.str().c_str(), &value);
 	if (ret != 1) {
@@ -318,9 +385,15 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const char* value) {
 	bool result = true;
+	if (augeas==NULL) augeas_init();
+	if (augeas == NULL) {
+		cerr << "ERROR: cannot initialize augeas" << endl;
+		return false;
+	}
+
 	std::stringstream valuepath;
 	valuepath << "/files";
-	valuepath  << CONFIG_FILE_PATH;
+	valuepath  << getConfigPath(MODULE_CONFDIR);
 	valuepath << "/";
 	valuepath << section;
 	valuepath << ".conf";
@@ -329,11 +402,6 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	valuepath << "/";
 	valuepath << option;
 
-	if (augeas==NULL) augeas_init();
-	if (augeas == NULL) {
-		cerr << "ERROR: cannot initialize augeas" << endl;
-		return false;
-	}
 	if (aug_set(augeas, valuepath.str().c_str(), value) == -1) {
 		cerr << "Could not set value!" << endl;
 		return false;
@@ -371,6 +439,7 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 
 agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	Variant::Map connectionOptions;
+	std::string broker = getConfigOption("system", "broker", "localhost:5672");
 	connectionOptions["username"] = getConfigOption("system", "username", "agocontrol");
 	connectionOptions["password"] = getConfigOption("system", "password", "letmein");
 	connectionOptions["reconnect"] = "true";
@@ -380,12 +449,12 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	eventHandler = NULL;
 	instance = interfacename;
 
-	uuidMapFile = CONFDIR "/uuidmap/";
+	uuidMapFile = getConfigPath("uuidmap");
 	uuidMapFile += interfacename;
 	uuidMapFile += ".json";
 	loadUuidMap();
 
-	connection = Connection(getConfigOption("system", "broker", "localhost:5672"),connectionOptions);
+	connection = Connection(broker, connectionOptions);
 	try {
 		connection.open(); 
 		session = connection.createSession(); 

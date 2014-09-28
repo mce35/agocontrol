@@ -45,12 +45,20 @@
 #include "agoclient.h"
 #include "version.h"
 
+#ifndef SCHEMADIR
+#define SCHEMADIR "/schema.d/"
+#endif
+
+#ifndef INVENTORYDBFILE
+#define INVENTORYDBFILE "/db/inventory.db"
+#endif
+
 #ifndef VARIABLESMAPFILE
-#define VARIABLESMAPFILE CONFDIR "/maps/variablesmap.json"
+#define VARIABLESMAPFILE "/maps/variablesmap.json"
 #endif
 
 #ifndef DEVICESMAPFILE
-#define DEVICESMAPFILE CONFDIR "/maps/devices.json"
+#define DEVICESMAPFILE "/maps/devices.json"
 #endif
 
 #include "schema.h"
@@ -76,12 +84,12 @@ unsigned int discoverdelay;
 bool persistence = false;
 
 bool saveDevicemap() {
-	if (persistence) return variantMapToJSONFile(inventory, DEVICESMAPFILE);
+	if (persistence) return variantMapToJSONFile(inventory, getConfigPath(DEVICESMAPFILE));
 	return true;
 }
 
 void loadDevicemap() {
-	inventory = jsonFileToVariantMap(DEVICESMAPFILE);
+	inventory = jsonFileToVariantMap(getConfigPath(DEVICESMAPFILE));
 }
 
 void get_sysinfo() {
@@ -281,7 +289,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		} else if (content["command"] == "setvariable") {
 			if (content["variable"].asString() != "" && content["value"].asString() != "") {
 				variables[content["variable"].asString()] = content["value"].asString();
-				if (variantMapToJSONFile(variables, VARIABLESMAPFILE)) {
+				if (variantMapToJSONFile(variables, getConfigPath(VARIABLESMAPFILE))) {
 					reply["returncode"] = 0;
 				} else {
 					reply["returncode"] = -1;
@@ -294,7 +302,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				Variant::Map::iterator it = variables.find(content["variable"].asString());
 				if (it != variables.end()) {
 					variables.erase(it);
-					if (variantMapToJSONFile(variables, VARIABLESMAPFILE)) {
+					if (variantMapToJSONFile(variables, getConfigPath(VARIABLESMAPFILE))) {
 						reply["returncode"] = 0;
 					} else {
 						reply["returncode"] = -1;
@@ -452,7 +460,7 @@ int main(int argc, char **argv) {
 
 //	clog << agocontrol::kLogNotice << "starting up" << std::endl;
 
-	schemaPrefix=getConfigOption("system", "schemapath", CONFDIR "/schema.d/");
+	schemaPrefix=getConfigOption("system", "schemapath", getConfigPath(SCHEMADIR));
 	discoverdelay=atoi(getConfigOption("system", "discoverdelay", "300").c_str());
 	if (atoi(getConfigOption("system","devicepersistence", "0").c_str()) != 1) persistence=false;
 
@@ -489,9 +497,9 @@ int main(int argc, char **argv) {
 	}
 
 	clog << agocontrol::kLogDebug << "reading inventory" << std::endl;
-	inv = new Inventory(CONFDIR "/db/inventory.db");
+	inv = new Inventory(getConfigPath(INVENTORYDBFILE).c_str());
 
-	variables = jsonFileToVariantMap(VARIABLESMAPFILE);
+	variables = jsonFileToVariantMap(getConfigPath(VARIABLESMAPFILE));
 	if (persistence) loadDevicemap();
 
 	agoConnection->addDevice("agocontroller","agocontroller");

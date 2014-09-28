@@ -12,7 +12,7 @@
 #include "agoclient.h"
 
 #ifndef SCENARIOMAPFILE
-#define SCENARIOMAPFILE CONFDIR "/maps/scenariomap.json"
+#define SCENARIOMAPFILE "/maps/scenariomap.json"
 #endif
 
 using namespace std;
@@ -70,7 +70,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				cout << "scenario uuid:" << scenariouuid << endl;
 				scenariomap[scenariouuid] = newscenario;
 				agoConnection->addDevice(scenariouuid.c_str(), "scenario", true);
-				if (variantMapToJSONFile(scenariomap, SCENARIOMAPFILE)) {
+				if (variantMapToJSONFile(scenariomap, getConfigPath(SCENARIOMAPFILE))) {
 					returnval["result"] = 0;
 					returnval["scenario"] = scenariouuid;
 				} else {
@@ -102,7 +102,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					cout << "removing ago device" << scenario << endl;
 					agoConnection->removeDevice(it->first.c_str());
 					scenariomap.erase(it);
-					if (variantMapToJSONFile(scenariomap, SCENARIOMAPFILE)) {
+					if (variantMapToJSONFile(scenariomap, getConfigPath(SCENARIOMAPFILE))) {
 						returnval["result"] = 0;
 					}
 				}
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 	agoConnection->addDevice("scenariocontroller", "scenariocontroller");
 	agoConnection->addHandler(commandHandler);
 
-	scenariomap = jsonFileToVariantMap(SCENARIOMAPFILE);
+	scenariomap = jsonFileToVariantMap(getConfigPath(SCENARIOMAPFILE));
 	// cout  << scenariomap;
 	for (qpid::types::Variant::Map::const_iterator it = scenariomap.begin(); it!=scenariomap.end(); it++) {
 		cout << "adding scenario:" << it->first << ":" << it->second << endl;	

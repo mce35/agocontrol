@@ -43,6 +43,7 @@ ELSE (FREEBSD)
 	set (CMAKE_EXE_LINKER_FLAGS "-Wl,-z,now")
 ENDIF (FREEBSD)
 
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (

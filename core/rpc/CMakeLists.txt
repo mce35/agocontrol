@@ -29,6 +29,12 @@ add_executable (get_table_lang.cgi get_table_lang.cpp)
 add_executable (rpc-htpasswd rpc-htpasswd.cpp mongoose.c)
 target_link_libraries (rpc-htpasswd ${RPCPASSWD_LIBRARIES})
 
+set_property(
+	TARGET agorpc
+	PROPERTY COMPILE_DEFINITIONS
+	DEFAULT_HTMLDIR=${HTMLDIR}
+)
+
 
 # configure a header file to pass some of the CMake settings
 # to the source code

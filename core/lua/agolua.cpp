@@ -16,7 +16,11 @@
 //#include "boost/filesystem/operations.hpp"
 
 #ifndef SCRIPTSINFOSFILE
-#define SCRIPTSINFOSFILE CONFDIR "/maps/agolua.json"
+#define SCRIPTSINFOSFILE "/maps/agolua.json"
+#endif
+
+#ifndef LUA_SCRIPT_DIR
+#define LUA_SCRIPT_DIR "/lua/"
 #endif
 
 #include "base64.h"
@@ -32,10 +36,6 @@ using namespace agocontrol;
 #include "lua52/lua.hpp"
 #else
 #include "lua5.2/lua.hpp"
-#endif
-
-#ifndef LUA_SCRIPT_DIR
-#define LUA_SCRIPT_DIR CONFDIR "/lua/"
 #endif
 
 qpid::types::Variant::Map inventory;
@@ -453,7 +453,7 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
         infos["events"] = events;
         scripts[script] = infos;
         scriptsInfos["scripts"] = scripts;
-        variantMapToJSONFile(scriptsInfos, SCRIPTSINFOSFILE);
+        variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
     }
 
     //check if current triggered event is caught in script
@@ -731,7 +731,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			returnval["result"]=-1;
 		}
 	} else {
-		fs::path scriptdir(LUA_SCRIPT_DIR);
+		fs::path scriptdir(getConfigPath(LUA_SCRIPT_DIR));
 		if (fs::exists(scriptdir)) {
 			fs::recursive_directory_iterator it(scriptdir);
 			fs::recursive_directory_iterator endit;
