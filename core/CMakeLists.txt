@@ -8,6 +8,11 @@ configure_file (
     @ONLY
 )
 
+set_property( DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-Wall -Werror)
+
 install (PROGRAMS myavahi.py agoctrl.sh DESTINATION ${BINDIR})
 install (DIRECTORY DESTINATION ${CONFDIR}/schema.d)
 install (DIRECTORY DESTINATION ${CONFDIR}/maps)

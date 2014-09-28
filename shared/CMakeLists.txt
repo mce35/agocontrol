@@ -27,6 +27,12 @@ set_property(
 	DEFAULT_CONFDIR=${CONFDIR}
 	DEFAULT_LOCALSTATEDIR=${LOCALSTATEDIR}
 )
+set_property(
+	DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-Wall -Werror)
+
 
 # Install instructions for this target
 install (TARGETS agoclient LIBRARY DESTINATION ${LIBDIR})
