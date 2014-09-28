@@ -751,7 +751,6 @@ static void signal_handler(int sig_num) {
 }
 
 int main(int argc, char **argv) {
-    string broker;
     Variant::List ports;
     string port;
     string split;
@@ -769,10 +768,6 @@ int main(int argc, char **argv) {
     agoConnection = new AgoConnection("rpc");
 
     //get parameters
-    Variant::Map connectionOptions;
-    broker=getConfigOption("system", "broker", "localhost:5672");
-    connectionOptions["username"]=getConfigOption("system", "username", "agocontrol");
-    connectionOptions["password"]=getConfigOption("system", "password", "letmein");
     port=getConfigOption("rpc", "ports", "8008,8009s");
     htdocs=getConfigOption("rpc", "htdocs", HTMLDIR);
     certificate=getConfigOption("rpc", "certificate", CONFDIR "/rpc/rpc_cert.pem");
