@@ -208,7 +208,7 @@ bool getEventRequest(struct mg_connection *conn)
 
     //get request content
     struct getEventState* state = (struct getEventState*)conn->connection_param;
-    std:string myId(state->myId);
+    std::string myId(state->myId);
     std::string content(state->content);
 
     //look for available event
@@ -321,7 +321,6 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					pthread_mutex_lock(&mutexSubscriptions);	
 					map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
 					if (it != subscriptions.end()) {
-						Subscriber *sub = &(it->second);
 						subscriptions.erase(content.asString());
 					}
 					pthread_mutex_unlock(&mutexSubscriptions);	
@@ -702,7 +701,6 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
         if (it->second.queue.size() > 100) {
             // this subscription seems to be abandoned, let's remove it to save resources
             printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
-            Subscriber *sub = &(it->second);
             subscriptions.erase(it++);
         } else {
             it->second.queue.push_back(content);

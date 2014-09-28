@@ -203,8 +203,6 @@ int luaSendMessage(lua_State *l) {
 int luaSetVariable(lua_State *L) {
     qpid::types::Variant::Map content;
     std::string subject;
-    // number of input arguments
-    int argc = lua_gettop(L);
 
     //get input arguments
     content["variable"] = std::string(lua_tostring(L,1));

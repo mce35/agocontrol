@@ -417,21 +417,18 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 }
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const float value) {
-	bool result = true;
 	std::stringstream stringvalue;
 	stringvalue << value;
 	return setConfigOption(section, option, stringvalue.str().c_str());
 }
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const int value) {
-	bool result = true;
 	std::stringstream stringvalue;
 	stringvalue << value;
 	return setConfigOption(section, option, stringvalue.str().c_str());
 }
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const bool value) {
-	bool result = true;
 	std::stringstream stringvalue;
 	stringvalue << value;
 	return setConfigOption(section, option, stringvalue.str().c_str());
