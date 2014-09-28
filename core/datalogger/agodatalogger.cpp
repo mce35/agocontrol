@@ -294,7 +294,10 @@ int main(int argc, char **argv) {
 
     //read config
     std::string optString = getConfigOption("datalogger", "logAllEvents", "1");
-    sscanf(optString.c_str(), "%d", &logAllEvents);
+    int r;
+    if(sscanf(optString.c_str(), "%d", &r) == 1) {
+        logAllEvents = (r == 1);
+    }
 
     agoConnection->run();
 
