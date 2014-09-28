@@ -170,6 +170,33 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 	mg_printf_data(conn, "}");
 }
 
+static void mg_print_error(struct mg_connection *conn, int code, const std::string message, const std::string idJsonStr, const std::string extra="") {
+	mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", "
+			"%s%s"
+			"\"error\": "
+			"{\"code\":%d, "
+			"\"message\":\"%s\"},"
+			" \"id\": %s}",
+			extra.c_str(), extra.empty()?"":", ",
+			code,
+			message.c_str(),
+			idJsonStr.c_str());
+}
+
+
+static void mg_print_error(struct mg_connection *conn, int code, const std::string message, const Json::Value *id) {
+	std::string idJsonStr;
+	if(id) {
+		Json::StyledWriter writer;
+		idJsonStr = writer.write(id);
+	}
+	else {
+		idJsonStr = "null";
+	}
+
+	mg_print_error(conn, code, message, idJsonStr);
+}
+
 static void command (struct mg_connection *conn) {
     char uuid[1024], command[1024], level[1024];
     Variant::Map agocommand;
@@ -216,7 +243,7 @@ bool getEventRequest(struct mg_connection *conn)
     map<string,Subscriber>::iterator it = subscriptions.find(content);
     if(it == subscriptions.end()) {
         pthread_mutex_unlock(&mutexSubscriptions);
-        mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32603,\"message\":\"Invalid params: no current subscription for uuid\"}, \"id\": %s}", myId.c_str());
+        mg_print_error(conn, -32603, "Invalid params: no current subscription for uuid", myId);
         return false;
     }
 
@@ -291,14 +318,14 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
                 }
 
             } else {
-                mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params\"}, \"id\": %s}",myId.c_str());
+                mg_print_error(conn, -32602, "Invalid params", &id);
             }
 		
 		} else if (method == "subscribe") {
 			string subscriberName = generateUuid();
 			if (id.isNull()) {
 				// JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
-				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32600,\"message\":\"Invalid Request\"}, \"id\": %s}",myId.c_str());
+				mg_print_error(conn, -32600, "Invalid Request", &id);
 			} else if (subscriberName != "") {
 				deque<Variant::Map> empty;
 				Subscriber subscriber;
@@ -310,7 +337,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"%s\", \"id\": %s}",subscriberName.c_str(), myId.c_str());
 			} else {
 				// uuid is empty so malloc probably failed, we seem to be out of memory
-				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32000,\"message\":\"Out of memory\"}, \"id\": %s}",myId.c_str());
+				mg_print_error(conn, -32000, "Out of memory", &id);
 			}
 
 		} else if (method == "unsubscribe") {
@@ -326,10 +353,10 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					pthread_mutex_unlock(&mutexSubscriptions);	
 					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"success\", \"id\": %s}",myId.c_str());
 				} else {
-					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
+					mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
 				}
 			} else {
-				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
+				mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
 			}
 		} else if (method == "getevent") {
 			if (params.isObject()) {
@@ -347,19 +374,19 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 
                     return getEventRequest(conn);
 				}
-                else
-                {
-					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
+				else
+				{
+					mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
 				}
                 //return false;
 			} else {
-				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32602,\"message\":\"Invalid params: need uuid parameter\"}, \"id\": %s}",myId.c_str());
+				mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
 			}
 		} else {
-			mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32601,\"message\":\"Method not found\"}, \"id\": %s}",myId.c_str());
+			mg_print_error(conn, -32601, "Method not found", &id);
 		}
 	} else {
-		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32600,\"message\":\"Invalid Request\"}, \"id\": %s}",myId.c_str());
+		mg_print_error(conn, -32600, "Invalid Request", &id);
 	}
 
 	return false;
@@ -392,7 +419,7 @@ static bool jsonrpc(struct mg_connection *conn)
     }
     else
     {
-        mg_printf_data(conn, "%s", "{\"jsonrpc\": \"2.0\", \"error\": {\"code\":-32700,\"message\":\"Parse error\"}, \"id\": null}");
+        mg_print_error(conn, -32700, "Parse error", NULL);
     }
 
     return result;
