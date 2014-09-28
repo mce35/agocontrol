@@ -658,11 +658,9 @@ bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
     {
         deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 1;
         emitDeviceStale(internalId, 1);
+        return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 /**
@@ -676,11 +674,9 @@ bool agocontrol::AgoConnection::resumeDevice(const char* internalId)
     {
         deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 0;
         emitDeviceStale(internalId, 0);
+        return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 std::string agocontrol::AgoConnection::uuidToInternalId(std::string uuid) {
 	return uuidMap[uuid].asString();
