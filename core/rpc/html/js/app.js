@@ -504,6 +504,11 @@ function cleanInventory(data) {
     return data;
 }
 
+/* Mark the local cache as invalid */
+function purgeInventoryCache() {
+	delete localStorage.inventoryCache;
+}
+
 function handleInventory(response) {
     if (response != null && response.result.match !== undefined && response.result.match(/^exception/)) {
 	notif.error("RPC ERROR: " + response.result);

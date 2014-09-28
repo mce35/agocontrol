@@ -6,6 +6,7 @@
 function deviceConfig() {
     var self = this;
     this.devices = ko.observableArray([]);
+    this.rooms = ko.observableArray([]);
     this.hasNavigation = ko.observable(true);
 
     this.roomFilters = ko.observableArray([]);
@@ -62,6 +63,18 @@ function deviceConfig() {
 	self.roomFilters(roomList);
 	self.deviceTypeFilters(devList);
     });
+
+    this.findDevice = function(uuid){
+       var l = self.devices().filter(function(d){return d.uuid==uuid;});
+       if(l.length == 1) return l[0];
+       return null;
+    };
+
+    this.findRoom = function(uuid){
+       var l = self.rooms().filter(function(d){return d.uuid==uuid;});
+       if(l.length == 1) return l[0];
+       return null;
+    };
 
     this.addFilter = function(item) {
 	if (item.type == "device") {
@@ -133,7 +146,12 @@ function deviceConfig() {
 		content.uuid = agoController;
 		content.command = "setdevicename";
 		content.name = value;
-		sendCommand(content);
+		sendCommand(content, function(res){
+		   var d = self.findDevice(item.uuid);
+		   d.name = value;
+		   self.devices.valueHasMutated();
+		   purgeInventoryCache();
+		});
 		return value;
 	    }, {
 		data : function(value, settings) {
@@ -147,9 +165,23 @@ function deviceConfig() {
 		content.device = item.uuid;
 		content.uuid = agoController;
 		content.command = "setdeviceroom";
-		content.room = value == "unset" ? "" : value;
-		sendCommand(content);
-		return value == "unset" ? "unset" : rooms[value].name;
+		value = value == "unset" ? "" : value;
+		content.room = value;
+		sendCommand(content, function(res){
+		   var d = self.findDevice(item.uuid);
+		   if(value == "") {
+		      d.room = d.roomUID = "";
+		   }else{
+		      var room = self.findRoom(value);
+		      if(room) {
+			 d.room = room.name;
+		      }
+		      d.roomUID = value;
+		   }
+		   self.devices.valueHasMutated();
+		   purgeInventoryCache();
+		});
+		return value == "" ? "unset" : rooms[value].name;
 	    }, {
 		data : function(value, settings) {
 		    var list = {};
@@ -217,8 +249,8 @@ function deviceConfig() {
 		    self.devices.remove(function(e) {
 			return e.uuid == item.uuid;
 		    });
-		    delete localStorage.inventoryCache;
 		    $('#configTable').unblock();
+		    purgeInventoryCache();
 		});
 	    },
 	    dataType : "json",
