@@ -11,7 +11,7 @@ configure_file (
 set_property( DIRECTORY
 	APPEND PROPERTY
 	COMPILE_OPTIONS
-	-Wall -Werror)
+	-Werror)
 
 install (PROGRAMS myavahi.py agoctrl.sh DESTINATION ${BINDIR})
 install (DIRECTORY DESTINATION ${CONFDIR}/schema.d)

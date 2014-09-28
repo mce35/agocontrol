@@ -52,6 +52,10 @@ configure_file (
     @ONLY
 )
  
+set_property( DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-Wall)
 
 # add the binary tree to the search path for include files
 # so that we will find version.h and other configured files
