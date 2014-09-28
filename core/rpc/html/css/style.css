@@ -2206,7 +2206,8 @@ div.dashboard-widget-header ul li.dashboard-widget-header-icon div i {
 }
 
 div.dashboard-widget-header ul li.dashboard-widget-header-infos {
-    width:230px;
+    width: auto;
+    max-width: 70%;
     height:75px;
 }
 
@@ -2297,12 +2298,6 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
     color:#FFFFFF;
 }
 
-@media only screen and (min-width:1101px) and (max-width: 1274px) {
-    div.dashboard-widget-header ul li.dashboard-widget-header-infos {
-        width: 180px;
-    }
-}
-
 @media only screen and (min-width:768px) and (max-width: 1100px) {
     div.dashboard-widget-header ul {
         height:60px;
@@ -2318,9 +2313,6 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         font-size:26px;
         height:32px;
         width:32px;
-    }
-    div.dashboard-widget-header ul li.dashboard-widget-header-infos {
-        width:125px;
     }
     .dashboard-widget-header-infos h3 {
         font-size:22px;
@@ -2386,9 +2378,6 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         font-size:28px;
         height:30px;
         width:30px;
-    }
-    div.dashboard-widget-header ul li.dashboard-widget-header-infos {
-        width:240px;
     }
     .dashboard-widget-header-infos h3 {
         font-size:26px;
