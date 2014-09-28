@@ -50,11 +50,11 @@ std::string agocontroller;
 int filterByEvents = 1;
 
 static const luaL_Reg loadedlibs[] = {
-  {"_G", luaopen_base},
-  {LUA_TABLIBNAME, luaopen_table},
-  {LUA_STRLIBNAME, luaopen_string},
-  {LUA_MATHLIBNAME, luaopen_math},
-  {NULL, NULL}
+	{"_G", luaopen_base},
+	{LUA_TABLIBNAME, luaopen_table},
+	{LUA_STRLIBNAME, luaopen_string},
+	{LUA_MATHLIBNAME, luaopen_math},
+	{NULL, NULL}
 };
 
 // read file into string. credits go to "insane coder" - http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
@@ -148,13 +148,13 @@ void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) {
 			case qpid::types::VAR_BOOL:
 				lua_pushstring(L,it->first.c_str());
 				lua_pushboolean(L,it->second.asBool());
-                                lua_settable(L, -3);
-                                break;
+				lua_settable(L, -3);
+				break;
 			case qpid::types::VAR_VOID:
 				lua_pushstring(L,it->first.c_str());
 				lua_pushnil(L);
-                                lua_settable(L, -3);
-                                break;
+				lua_settable(L, -3);
+				break;
 			//default:
 				//lua_pushstring(L,it->first.c_str());
 				//lua_pushstring(L,"unhandled");
@@ -201,43 +201,43 @@ int luaSendMessage(lua_State *l) {
 }
 
 int luaSetVariable(lua_State *L) {
-    qpid::types::Variant::Map content;
-    std::string subject;
+	qpid::types::Variant::Map content;
+	std::string subject;
 
-    //get input arguments
-    content["variable"] = std::string(lua_tostring(L,1));
-    content["value"] = std::string(lua_tostring(L,2));
-    content["command"]="setvariable";
-    content["uuid"]=agocontroller;
-    cout << "Sending message: " << content << endl;
-    qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);
-    //manage result
-    if( !replyMap["returncode"].isVoid() )
-    {
-        lua_pushnumber(L, replyMap["returncode"].asInt32());
-    }
-    else
-    {
-        //sendcommand problem
-        lua_pushnumber(L,0);
-    }
+	//get input arguments
+	content["variable"] = std::string(lua_tostring(L,1));
+	content["value"] = std::string(lua_tostring(L,2));
+	content["command"]="setvariable";
+	content["uuid"]=agocontroller;
+	cout << "Sending message: " << content << endl;
+	qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);
+	//manage result
+	if( !replyMap["returncode"].isVoid() )
+	{
+		lua_pushnumber(L, replyMap["returncode"].asInt32());
+	}
+	else
+	{
+		//sendcommand problem
+		lua_pushnumber(L,0);
+	}
 
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
+	//refresh inventory only once (performance optimization)
+	if( refreshInventory )
+	{
+		inventory = agoConnection->getInventory();
+		refreshInventory = false;
+	}
 
-    //update current inventory to reflect changes without reloading it (too long!!)
-    qpid::types::Variant::Map variables = inventory["variables"].asMap();
-    if( !variables[content["variable"]].isVoid() )
-    {
-        variables[content["variable"]] = content["value"];
-        inventory["variables"] = variables;
-    }
+	//update current inventory to reflect changes without reloading it (too long!!)
+	qpid::types::Variant::Map variables = inventory["variables"].asMap();
+	if( !variables[content["variable"]].isVoid() )
+	{
+		variables[content["variable"]] = content["value"];
+		inventory["variables"] = variables;
+	}
 
-    return 1;
+	return 1;
 }
 
 /**
@@ -245,40 +245,40 @@ int luaSetVariable(lua_State *L) {
  */
 int luaGetVariable(lua_State *L)
 {
-    //init
-    std::string variableName = "";
+	//init
+	std::string variableName = "";
 
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
-    qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+	//refresh inventory only once (performance optimization)
+	if( refreshInventory )
+	{
+		inventory = agoConnection->getInventory();
+		refreshInventory = false;
+	}
+	qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
 
-    //get variable name
-    variableName = std::string(lua_tostring(L,1));
+	//get variable name
+	variableName = std::string(lua_tostring(L,1));
 
-    if( variableName.length()>0 )
-    {
-        qpid::types::Variant::Map variables = inventory["variables"].asMap();
-        if( !variables[variableName].isVoid() )
-        {
-            lua_pushstring(L, variables[variableName].asString().c_str());
-        }
-        else
-        {
-            //unknown variable
-            lua_pushnil(L);
-        }
-    }
-    else
-    {
-        //bad parameter
-        lua_pushnil(L);
-    }
+	if( variableName.length()>0 )
+	{
+		qpid::types::Variant::Map variables = inventory["variables"].asMap();
+		if( !variables[variableName].isVoid() )
+		{
+			lua_pushstring(L, variables[variableName].asString().c_str());
+		}
+		else
+		{
+			//unknown variable
+			lua_pushnil(L);
+		}
+	}
+	else
+	{
+		//bad parameter
+		lua_pushnil(L);
+	}
 
-    return 1;
+	return 1;
 }
 
 /**
@@ -287,73 +287,73 @@ int luaGetVariable(lua_State *L)
  */
 int luaGetDeviceInventory(lua_State *L)
 {
-    //init
+	//init
 	std::string uuid = "";
-    std::string attribute = "";
-    std::string subAttribute = "";
-    
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
-    qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
-    
+	std::string attribute = "";
+	std::string subAttribute = "";
+
+	//refresh inventory only once (performance optimization)
+	if( refreshInventory )
+	{
+		inventory = agoConnection->getInventory();
+		refreshInventory = false;
+	}
+	qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+
 	// number of input arguments
 	int argc = lua_gettop(L);
 
 	// print input arguments
 	for(int i=1; i<=argc; ++i)
-    {
-        switch(i)
-        {
-            case 1:
-                uuid = std::string(lua_tostring(L,i));
-                break;
-            case 2:
-                attribute = std::string(lua_tostring(L,i));
-                break;
-            case 3:
-                subAttribute = std::string(lua_tostring(L,i));
-                break;
-            default:
-                //unmanaged parameter
-                break;
-        }
+	{
+		switch(i)
+		{
+			case 1:
+				uuid = std::string(lua_tostring(L,i));
+				break;
+			case 2:
+				attribute = std::string(lua_tostring(L,i));
+				break;
+			case 3:
+				subAttribute = std::string(lua_tostring(L,i));
+				break;
+			default:
+				//unmanaged parameter
+				break;
+		}
 	}
 	cout << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
-    if( subAttribute.length()>0 )
-    {
-        cout << "[" << subAttribute << "]";
-    }
-    cout << endl;
-    if( !deviceInventory[uuid].isVoid() )
-    {
-        qpid::types::Variant::Map attributes = deviceInventory[uuid].asMap();
-        if( !attributes[attribute].isVoid() )
-        {
-            //return main device attribute
-    	    lua_pushstring(L, attributes[attribute].asString().c_str());
-        }
-        else
-        {
-            //search attribute in device values
-            qpid::types::Variant::Map values = attributes["values"].asMap();
-            for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
-            {
-                //TODO return device value property (quantity, unit, latitude, longitude...)
-                qpid::types::Variant::Map value = it->second.asMap();
-    	        lua_pushstring(L, value[subAttribute].asString().c_str());
-            }
-	        //lua_pushnil(L);
-        }
-    }
-    else
-    {
-        //device not found
-	    lua_pushnil(L);
-    }
+	if( subAttribute.length()>0 )
+	{
+		cout << "[" << subAttribute << "]";
+	}
+	cout << endl;
+	if( !deviceInventory[uuid].isVoid() )
+	{
+		qpid::types::Variant::Map attributes = deviceInventory[uuid].asMap();
+		if( !attributes[attribute].isVoid() )
+		{
+			//return main device attribute
+			lua_pushstring(L, attributes[attribute].asString().c_str());
+		}
+		else
+		{
+			//search attribute in device values
+			qpid::types::Variant::Map values = attributes["values"].asMap();
+			for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
+			{
+				//TODO return device value property (quantity, unit, latitude, longitude...)
+				qpid::types::Variant::Map value = it->second.asMap();
+				lua_pushstring(L, value[subAttribute].asString().c_str());
+			}
+			//lua_pushnil(L);
+		}
+	}
+	else
+	{
+		//device not found
+		lua_pushnil(L);
+	}
 	return 1;
 }
 
@@ -361,10 +361,10 @@ int luaGetDeviceInventory(lua_State *L)
  * Force getting inventory manually
  */
 int luaGetInventory(lua_State *L) {
-    inventory = agoConnection->getInventory();
-    refreshInventory = false;
-    pushTableFromMap(L, inventory);
-    //lua_setglobal(L, "inventory");
+	inventory = agoConnection->getInventory();
+	refreshInventory = false;
+	pushTableFromMap(L, inventory);
+	//lua_setglobal(L, "inventory");
 	return 1;
 }
 
@@ -376,41 +376,41 @@ int luaGetInventory(lua_State *L) {
  */
 void searchEvents(const char* scriptPath, qpid::types::Variant::List* foundEvents)
 {
-    //get script content
-    std::string content = get_file_contents(scriptPath);
-    
-    //parse content
-    std::string::const_iterator start, end;
-    start = content.begin();
-    end = content.end();
-    boost::match_results<std::string::const_iterator> what;
-    boost::match_flag_type flags = boost::match_default;
-    std::string lua = "";
-    lua = content; //make non blockly script parseable
-    while(boost::regex_search(start, end, what, exprAll, flags))
-    {
-        // what[0] contains the whole string
-        // what[1] contains xml
-        // what[2] contains lua
-        lua = std::string(what[2]);
-        // update search position:
-        start = what[0].second;
-        // update flags:
-        flags |= boost::match_prev_avail;
-        flags |= boost::match_not_bob;
-    }
+	//get script content
+	std::string content = get_file_contents(scriptPath);
 
-    start = lua.begin();
-    end = lua.end();
-    while(boost::regex_search(start, end, what, exprEvent, flags))
-    {
-        foundEvents->push_back(std::string(what[1]));
-        // update search position:
-        start = what[0].second;
-        // update flags:
-        flags |= boost::match_prev_avail;
-        flags |= boost::match_not_bob;
-    }
+	//parse content
+	std::string::const_iterator start, end;
+	start = content.begin();
+	end = content.end();
+	boost::match_results<std::string::const_iterator> what;
+	boost::match_flag_type flags = boost::match_default;
+	std::string lua = "";
+	lua = content; //make non blockly script parseable
+	while(boost::regex_search(start, end, what, exprAll, flags))
+	{
+		// what[0] contains the whole string
+		// what[1] contains xml
+		// what[2] contains lua
+		lua = std::string(what[2]);
+		// update search position:
+		start = what[0].second;
+		// update flags:
+		flags |= boost::match_prev_avail;
+		flags |= boost::match_not_bob;
+	}
+
+	start = lua.begin();
+	end = lua.end();
+	while(boost::regex_search(start, end, what, exprEvent, flags))
+	{
+		foundEvents->push_back(std::string(what[1]));
+		// update search position:
+		start = what[0].second;
+		// update flags:
+		flags |= boost::match_prev_avail;
+		flags |= boost::match_not_bob;
+	}
 }
 
 /**
@@ -418,118 +418,118 @@ void searchEvents(const char* scriptPath, qpid::types::Variant::List* foundEvent
  */
 void purgeScripts()
 {
-    //TODO walk through all scripts in scriptsInfos and remove non existing entries
+	//TODO walk through all scripts in scriptsInfos and remove non existing entries
 }
 
 bool runScript(qpid::types::Variant::Map content, const char *script) {
-    //check if file modified
-    qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
-    qpid::types::Variant::Map infos;
-    std::time_t updated = boost::filesystem::last_write_time(script);
-    bool parseScript = false;
-    if( scripts[script].isVoid() )
-    {
-        //force script parsing
-        parseScript = true;
-    }
-    else
-    {
-        //script already referenced, check last modified date
-        infos = scripts[script].asMap();
-        if( infos["updated"].asInt32()!=updated )
-        {
-            //script modified, parse again content
-            parseScript = true;
-        }
-    }
-    if( parseScript )
-    {
-        //cout << "Update script infos (" << script << ")" << endl;
-        infos["updated"] = (int32_t)updated;
-        qpid::types::Variant::List events;
-        searchEvents(script, &events);
-        infos["events"] = events;
-        scripts[script] = infos;
-        scriptsInfos["scripts"] = scripts;
-        variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
-    }
+	//check if file modified
+	qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
+	qpid::types::Variant::Map infos;
+	std::time_t updated = boost::filesystem::last_write_time(script);
+	bool parseScript = false;
+	if( scripts[script].isVoid() )
+	{
+		//force script parsing
+		parseScript = true;
+	}
+	else
+	{
+		//script already referenced, check last modified date
+		infos = scripts[script].asMap();
+		if( infos["updated"].asInt32()!=updated )
+		{
+			//script modified, parse again content
+			parseScript = true;
+		}
+	}
+	if( parseScript )
+	{
+		//cout << "Update script infos (" << script << ")" << endl;
+		infos["updated"] = (int32_t)updated;
+		qpid::types::Variant::List events;
+		searchEvents(script, &events);
+		infos["events"] = events;
+		scripts[script] = infos;
+		scriptsInfos["scripts"] = scripts;
+		variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
+	}
 
-    //check if current triggered event is caught in script
-    bool executeScript = false;
-    if( filterByEvents==1 )
-    {
-        qpid::types::Variant::List events = infos["events"].asList();
-        if( events.size()>0 )
-        {
-            for( qpid::types::Variant::List::iterator it=events.begin(); it!=events.end(); it++ )
-            {
-                if( (*it)==content["subject"] )
-                {
-                    executeScript = true;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            //no events detected in script, trigger it everytime :S
-            executeScript = true;
-        }
-    }
-    else
-    {
-        //config option disable events filtering
-        executeScript = true;
-    }
-    
-    if( executeScript )
-    {
-        cout << "========================================" << endl;
-        cout << "Running " << script << "..." << endl;
-        refreshInventory = true;
-        lua_State *L;    
-        const luaL_Reg *lib;
+	//check if current triggered event is caught in script
+	bool executeScript = false;
+	if( filterByEvents==1 )
+	{
+		qpid::types::Variant::List events = infos["events"].asList();
+		if( events.size()>0 )
+		{
+			for( qpid::types::Variant::List::iterator it=events.begin(); it!=events.end(); it++ )
+			{
+				if( (*it)==content["subject"] )
+				{
+					executeScript = true;
+					break;
+				}
+			}
+		}
+		else
+		{
+			//no events detected in script, trigger it everytime :S
+			executeScript = true;
+		}
+	}
+	else
+	{
+		//config option disable events filtering
+		executeScript = true;
+	}
 
-        L = luaL_newstate();
-        for (lib = loadedlibs; lib->func; lib++) {
-            luaL_requiref(L, lib->name, lib->func, 1);
-            lua_pop(L, 1);
-        }
-        luaL_openlibs(L);
+	if( executeScript )
+	{
+		cout << "========================================" << endl;
+		cout << "Running " << script << "..." << endl;
+		refreshInventory = true;
+		lua_State *L;
+		const luaL_Reg *lib;
 
-        lua_register(L, "sendMessage", luaSendMessage);
-        lua_register(L, "setVariable", luaSetVariable);
-        lua_register(L, "getVariable", luaGetVariable);
-        lua_register(L, "getDeviceInventory", luaGetDeviceInventory);
-        lua_register(L, "getInventory", luaGetInventory);
-        // lua_register(L, "addDevice", luaAddDevice);
+		L = luaL_newstate();
+		for (lib = loadedlibs; lib->func; lib++) {
+			luaL_requiref(L, lib->name, lib->func, 1);
+			lua_pop(L, 1);
+		}
+		luaL_openlibs(L);
 
-        pushTableFromMap(L, content);
-        lua_setglobal(L, "content");
-        //pushTableFromMap(L, inventory);
-        //lua_setglobal(L, "inventory");
+		lua_register(L, "sendMessage", luaSendMessage);
+		lua_register(L, "setVariable", luaSetVariable);
+		lua_register(L, "getVariable", luaGetVariable);
+		lua_register(L, "getDeviceInventory", luaGetDeviceInventory);
+		lua_register(L, "getInventory", luaGetInventory);
+		// lua_register(L, "addDevice", luaAddDevice);
 
-        int status = luaL_loadfile(L, script);
-        int result = 0;
-        if(status == LUA_OK) {
-            result = lua_pcall(L, 0, LUA_MULTRET, 0);
-        } else {
-            std::cout << "-- Could not load the script " << script << std::endl;
-        }
-        if ( result!=0 ) {
-            std::cerr << "-- SCRIPT FAILED: " << lua_tostring(L, -1) << std::endl;
-            lua_pop(L, 1); // remove error message
-        }
-        
-        lua_close(L);
-        cout << "========================================" << endl;
-        return status == 0 ? true : false;
-    }
-    else
-    {
-        //cout << "-- NOT running script " << script << endl;
-    }
-    return true;
+		pushTableFromMap(L, content);
+		lua_setglobal(L, "content");
+		//pushTableFromMap(L, inventory);
+		//lua_setglobal(L, "inventory");
+
+		int status = luaL_loadfile(L, script);
+		int result = 0;
+		if(status == LUA_OK) {
+			result = lua_pcall(L, 0, LUA_MULTRET, 0);
+		} else {
+			std::cout << "-- Could not load the script " << script << std::endl;
+		}
+		if ( result!=0 ) {
+			std::cerr << "-- SCRIPT FAILED: " << lua_tostring(L, -1) << std::endl;
+			lua_pop(L, 1); // remove error message
+		}
+
+		lua_close(L);
+		cout << "========================================" << endl;
+		return status == 0 ? true : false;
+	}
+	else
+	{
+		//cout << "-- NOT running script " << script << endl;
+	}
+	return true;
 }
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
@@ -604,126 +604,126 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				}
 			}
 		} else if (content["command"] == "renscript") {
-            if ( !content["oldname"].isVoid() && content["oldname"].asString()!="" && !content["newname"].isVoid() && content["newname"].asString()!="" )
-            {
-                try {
-                    // if a path is passed, strip it for security reasons
-                    fs::path input(content["oldname"]);
-                    string scriptInput = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
-                    fs::path source(scriptInput);
+			if ( !content["oldname"].isVoid() && content["oldname"].asString()!="" && !content["newname"].isVoid() && content["newname"].asString()!="" )
+			{
+				try {
+					// if a path is passed, strip it for security reasons
+					fs::path input(content["oldname"]);
+					string scriptInput = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
+					fs::path source(scriptInput);
 
-                    fs::path output(content["newname"]);
-                    string scriptOutput = LUA_SCRIPT_DIR + output.stem().string() + ".lua";
-                    fs::path target(scriptOutput);
+					fs::path output(content["newname"]);
+					string scriptOutput = LUA_SCRIPT_DIR + output.stem().string() + ".lua";
+					fs::path target(scriptOutput);
 
-                    //check if destination file already exists
-                    if( !fs::exists(target) )
-                    {
-                        //rename script
-                        fs::rename(source, target);
+					//check if destination file already exists
+					if( !fs::exists(target) )
+					{
+						//rename script
+						fs::rename(source, target);
 						returnval["result"]=0;
-                    }
-                    else
-                    {
-                        returnval["error"]="Script with new name already exists. Script not renamed";
-                        returnval["result"]=-1;
-                    }
-                } catch( const exception& e ) {
-                    cout << "Exception during file renaming" << e.what() << endl;
-                    returnval["error"]="Unable to rename script";
-                    returnval["result"]=-1;
-                }
-            }
-        } else if (content["command"] == "uploadfile") {
-            //import script
-            if( !content["filepath"].isVoid() && content["filepath"].asString()!="" && !content["filename"].isVoid() && content["filename"].asString()!="" )
-            {
-                //check file
-                fs::path source(content["filepath"]);
-                if( fs::is_regular_file(status(source)) && source.extension().string()==".lua" )
-                {
-                    try {
-                        std::stringstream output;
-                        output << LUA_SCRIPT_DIR;
-                        if( content["filename"].asString().find("blockly_")!=0 )
-                        {
-                            //append "blockly_" string
-                            output << "blockly_";
-                        }
-                        output << content["filename"].asString();
-                        fs::path target(output.str());
+					}
+					else
+					{
+						returnval["error"]="Script with new name already exists. Script not renamed";
+						returnval["result"]=-1;
+					}
+				} catch( const exception& e ) {
+					cout << "Exception during file renaming" << e.what() << endl;
+					returnval["error"]="Unable to rename script";
+					returnval["result"]=-1;
+				}
+			}
+		} else if (content["command"] == "uploadfile") {
+			//import script
+			if( !content["filepath"].isVoid() && content["filepath"].asString()!="" && !content["filename"].isVoid() && content["filename"].asString()!="" )
+			{
+				//check file
+				fs::path source(content["filepath"]);
+				if( fs::is_regular_file(status(source)) && source.extension().string()==".lua" )
+				{
+					try {
+						std::stringstream output;
+						output << LUA_SCRIPT_DIR;
+						if( content["filename"].asString().find("blockly_")!=0 )
+						{
+							//append "blockly_" string
+							output << "blockly_";
+						}
+						output << content["filename"].asString();
+						fs::path target(output.str());
 
-                        //check if desination file already exists
-                        if( !fs::exists(target) )
-                        {
-                            //move file
-                            cout << "import " << source << " to " << target << endl;
-                            fs::copy_file(source, target);
-                            returnval["error"] = "";
-                            returnval["result"] = 0;
-                        }
-                        else
-                        {
-                            cout << "Script already exists, nothing overwritten" << endl;
-                            returnval["error"] = "Script already exists. Script not imported";
-                            returnval["result"] = -1;
-                        }
-                    } catch( const exception& e ) {
-                        cout << "Exception during script import" << e.what() << endl;
-                        returnval["error"] = "Unable to import script";
-                        returnval["result"] = -1;
-                    }
-                }
-                else
-                {
-                    //invalid file, reject it
-                    cout << "Unsupported file uploaded" << endl;
-                    returnval["error"] = "Unsupported file";
-                    returnval["result"] = -1;
-                }
-            }
-            else
-            {
-                //invalid request
-                cout << "Invalid file upload request" << endl;
-                returnval["error"] = "Invalid request";
-                returnval["result"] = -1;
-            }
-        } else if (content["command"] == "downloadfile") {
-            cout << "download file command received!" << endl;
-            cout << content << endl;
-            //export script
-            if( !content["filename"].isVoid() && content["filename"].asString()!="" )
-            {
-                std::stringstream file;
-                file << LUA_SCRIPT_DIR << "blockly_" << content["filename"].asString() << ".lua";
-                fs::path target(file.str());
-                cout << "file to download " << target << endl;
+						//check if desination file already exists
+						if( !fs::exists(target) )
+						{
+							//move file
+							cout << "import " << source << " to " << target << endl;
+							fs::copy_file(source, target);
+							returnval["error"] = "";
+							returnval["result"] = 0;
+						}
+						else
+						{
+							cout << "Script already exists, nothing overwritten" << endl;
+							returnval["error"] = "Script already exists. Script not imported";
+							returnval["result"] = -1;
+						}
+					} catch( const exception& e ) {
+						cout << "Exception during script import" << e.what() << endl;
+						returnval["error"] = "Unable to import script";
+						returnval["result"] = -1;
+					}
+				}
+				else
+				{
+					//invalid file, reject it
+					cout << "Unsupported file uploaded" << endl;
+					returnval["error"] = "Unsupported file";
+					returnval["result"] = -1;
+				}
+			}
+			else
+			{
+				//invalid request
+				cout << "Invalid file upload request" << endl;
+				returnval["error"] = "Invalid request";
+				returnval["result"] = -1;
+			}
+		} else if (content["command"] == "downloadfile") {
+			cout << "download file command received!" << endl;
+			cout << content << endl;
+			//export script
+			if( !content["filename"].isVoid() && content["filename"].asString()!="" )
+			{
+				std::stringstream file;
+				file << LUA_SCRIPT_DIR << "blockly_" << content["filename"].asString() << ".lua";
+				fs::path target(file.str());
+				cout << "file to download " << target << endl;
 
-                //check if file exists
-                if( fs::exists(target) )
-                {
-                    //file exists, return full path
-                    cout << "Send fullpath of file to download " << target << endl;
-                    returnval["error"] = "";
-                    returnval["filepath"] = file.str();
-                    returnval["result"] = 0;
-                }
-                else
-                {
-                    //requested file doesn't exists
-                    cout << "File to download doesn't exist" << endl;
-                    returnval["error"] = "File doesn't exist";
-                    returnval["result"] = -1;
-                }
-            }
-            else
-            {
-                //invalid request
-                cout << "Invalid file upload request" << endl;
-                returnval["error"]="Invalid request";
-                returnval["result"]=-1;
-            }
+				//check if file exists
+				if( fs::exists(target) )
+				{
+					//file exists, return full path
+					cout << "Send fullpath of file to download " << target << endl;
+					returnval["error"] = "";
+					returnval["filepath"] = file.str();
+					returnval["result"] = 0;
+				}
+				else
+				{
+					//requested file doesn't exists
+					cout << "File to download doesn't exist" << endl;
+					returnval["error"] = "File doesn't exist";
+					returnval["result"] = -1;
+				}
+			}
+			else
+			{
+				//invalid request
+				cout << "Invalid file upload request" << endl;
+				returnval["error"]="Invalid request";
+				returnval["result"]=-1;
+			}
 		} else {
 			returnval["error"]="invalid command";
 			returnval["result"]=-1;
@@ -772,18 +772,18 @@ int main(int argc, char **argv) {
 		}
 	}
 
-    //get config
-    std::string optString = getConfigOption("lua", "filterByEvents", "1");
-    sscanf(optString.c_str(), "%d", &filterByEvents);
+	//get config
+	std::string optString = getConfigOption("lua", "filterByEvents", "1");
+	sscanf(optString.c_str(), "%d", &filterByEvents);
 
-    //load script infos file
-    scriptsInfos = jsonFileToVariantMap(SCRIPTSINFOSFILE);
-    if (scriptsInfos["scripts"].isVoid())
-    {
-        qpid::types::Variant::Map scripts;
-        scriptsInfos["scripts"] = scripts;
-        variantMapToJSONFile(scriptsInfos, SCRIPTSINFOSFILE);
-    }
+	//load script infos file
+	scriptsInfos = jsonFileToVariantMap(SCRIPTSINFOSFILE);
+	if (scriptsInfos["scripts"].isVoid())
+	{
+		qpid::types::Variant::Map scripts;
+		scriptsInfos["scripts"] = scripts;
+		variantMapToJSONFile(scriptsInfos, SCRIPTSINFOSFILE);
+	}
 
 	agoConnection->addDevice("luacontroller", "luacontroller");
 	agoConnection->addHandler(commandHandler);

@@ -77,9 +77,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					returnval["result"] = -1;
 				}
 			} catch (qpid::types::InvalidConversion) {
-                                returnval["result"] = -1;
-                        } catch (...) {
-                                returnval["result"] = -1;
+				returnval["result"] = -1;
+			} catch (...) {
+				returnval["result"] = -1;
 				returnval["error"] = "exception";
 			}
 		} else if (content["command"] == "getscenario") {
@@ -92,7 +92,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			} catch (qpid::types::InvalidConversion) {
 				returnval["result"] = -1;
 			}
-                } else if (content["command"] == "delscenario") {
+		} else if (content["command"] == "delscenario") {
 			std::string scenario = content["scenario"].asString();
 			cout << "delscenario request:" << scenario << endl;
 			returnval["result"] = -1;
@@ -107,7 +107,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					}
 				}
 			}
-                } 
+		} 
 
 	} else {
 
@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 	agoConnection->addHandler(commandHandler);
 
 	scenariomap = jsonFileToVariantMap(getConfigPath(SCENARIOMAPFILE));
-	// cout  << scenariomap;
+	// cout << scenariomap;
 	for (qpid::types::Variant::Map::const_iterator it = scenariomap.begin(); it!=scenariomap.end(); it++) {
 		cout << "adding scenario:" << it->first << ":" << it->second << endl;	
 		agoConnection->addDevice(it->first.c_str(), "scenario", true);

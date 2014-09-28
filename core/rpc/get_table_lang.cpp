@@ -18,8 +18,8 @@ static bool handleLastModified(const char *filename) {
 	bool needs_output;
 
 	stat(filename, &res);
-        timeinfo = gmtime (&res.st_mtime);
-        strftime(buffer, 100, "%a, %d %b %Y %T GMT", timeinfo);
+	timeinfo = gmtime (&res.st_mtime);
+	strftime(buffer, 100, "%a, %d %b %Y %T GMT", timeinfo);
 	
 	needs_output = true;
 		

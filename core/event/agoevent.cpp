@@ -168,7 +168,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 					} else {
 						criteria[crit->first] = false;
 					}
-					cout << lval << " " << element["comp"] << " " << rval << " : " <<  criteria[crit->first] << endl;
+					cout << lval << " " << element["comp"] << " " << rval << " : " << criteria[crit->first] << endl;
 				} catch ( const std::exception& error) {
 					stringstream errorstring;
 					errorstring << error.what();
@@ -217,9 +217,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					returnval["result"] = -1;
 				}
 			} catch (qpid::types::InvalidConversion) {
-                                returnval["result"] = -1;
-                        } catch (...) {
-                                returnval["result"] = -1;
+				returnval["result"] = -1;
+			} catch (...) {
+				returnval["result"] = -1;
 				returnval["error"] = "exception";
 			}
 		} else if (content["command"] == "getevent") {
@@ -232,7 +232,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			} catch (qpid::types::InvalidConversion) {
 				returnval["result"] = -1;
 			}
-                } else if (content["command"] == "delevent") {
+		} else if (content["command"] == "delevent") {
 			std::string event = content["event"].asString();
 			cout << "delevent request:" << event << endl;
 			returnval["result"] = -1;
@@ -247,7 +247,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					}
 				}
 			}
-                } 
+		} 
 	}
 	return returnval;
 }
@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
 	agoConnection->addHandler(commandHandler);
 	agoConnection->addEventHandler(eventHandler);
 
-	// cout  << eventmap;
+	// cout << eventmap;
 	for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++) {
 		cout << "adding event:" << it->first << ":" << it->second << endl;	
 		agoConnection->addDevice(it->first.c_str(), "event", true);

@@ -158,14 +158,14 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			}
 
 		} else if (content["command"] == "gethousemode") {
-            		if (!(securitymap["housemode"].isVoid())) {
+			if (!(securitymap["housemode"].isVoid())) {
 				returnval["housemode"] = securitymap["housemode"];
 				returnval["result"]=0;
 			} else {
 				returnval["result"] = -1;
 				returnval["error"] = "No housemode set";
 			}
-	  	} else if (content["command"] == "triggerzone") {
+		} else if (content["command"] == "triggerzone") {
 			std::string zone = content["zone"];
 			qpid::types::Variant::Map zonemap;
 			std::string housemode = securitymap["housemode"];
@@ -177,7 +177,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					if (findList(zonemap[housemode].asList(), zone)) {
 						const char *_zone = zone.c_str();
 						// check if there is already an alarmthread running
-						if (isSecurityThreadRunning  == false) {
+						if (isSecurityThreadRunning == false) {
 							if (pthread_create(&securityThread,NULL,alarmthread,(void *)_zone) != 0) {
 								cout << "ERROR: can't start alarmthread!" << endl;
 								returnval["result"] = -1;
@@ -221,10 +221,10 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					returnval["error"] = "invalid pin";
 				}
 			} catch (qpid::types::InvalidConversion) {
-                                returnval["result"] = -1;
+				returnval["result"] = -1;
 				returnval["error"] = "invalid conversion";
-                        } catch (...) {
-                                returnval["result"] = -1;
+			} catch (...) {
+				returnval["result"] = -1;
 				returnval["error"] = "exception";
 			}
 		} else if (content["command"] == "getzones") {

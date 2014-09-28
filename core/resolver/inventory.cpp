@@ -60,19 +60,19 @@ int Inventory::setdevicename (string uuid, string name) {
 		getfirst(query.c_str(), 1, uuid.c_str());
 		return 0;
 	}
-        if (getdevicename(uuid) == "") { // does not exist, create
-                string query = "insert into devices (name, uuid) VALUES (?, ?)";
-                printf("creating device: %s\n", query.c_str());
-                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
-        } else {
-                string query = "update devices set name = ? where uuid = ?";
-                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
-        }
-        if (getdevicename(uuid) == name) {
-                return 0;
-        } else {
-                return -1;
-        }
+	if (getdevicename(uuid) == "") { // does not exist, create
+		string query = "insert into devices (name, uuid) VALUES (?, ?)";
+		printf("creating device: %s\n", query.c_str());
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
+	} else {
+		string query = "update devices set name = ? where uuid = ?";
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
+	}
+	if (getdevicename(uuid) == name) {
+		return 0;
+	} else {
+		return -1;
+	}
 } 
 
 string Inventory::getroomname (string uuid) {
@@ -118,10 +118,10 @@ Variant::Map Inventory::getrooms() {
 
 	rc = sqlite3_prepare_v2(db, "select uuid, name, location from rooms", -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-                fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
-                return result;
-        }
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
+		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		return result;
+	}
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		Variant::Map entry;
 		const char *roomname = (const char*)sqlite3_column_text(stmt, 1);
 		const char *location = (const char*)sqlite3_column_text(stmt, 2);
@@ -161,14 +161,15 @@ int Inventory::deleteroom (string uuid) {
 	getfirst("ROLLBACK");
 	return -1;
 }
+
 string Inventory::getfirst(const char *query) {
-    return getfirst(query, 0);
+	return getfirst(query, 0);
 }
 string Inventory::getfirst(const char *query, int n, ...) {
 	sqlite3_stmt *stmt;
 	int rc, i;
 	string result;
-    va_list args;
+	va_list args;
 
 	rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
@@ -176,11 +177,11 @@ string Inventory::getfirst(const char *query, int n, ...) {
 		return result;
 	}
 
-    va_start(args, n);
-    
-    for(i = 0; i < n; i++) {
-        sqlite3_bind_text(stmt, i + 1, va_arg(args, char*), -1, NULL);
-    }
+	va_start(args, n);
+
+	for(i = 0; i < n; i++) {
+		sqlite3_bind_text(stmt, i + 1, va_arg(args, char*), -1, NULL);
+	}
 
 	rc = sqlite3_step(stmt);
 	switch(rc) {
@@ -192,7 +193,7 @@ string Inventory::getfirst(const char *query, int n, ...) {
 			break;
 	}
 
-    va_end(args);
+	va_end(args);
 	sqlite3_finalize(stmt);
 
 	return result;
@@ -226,7 +227,7 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
 	string query = "select floorplan from devicesfloorplan where floorplan = ? and device = ?";
 	if (getfirst(query.c_str(), 2, floorplanuuid.c_str(), deviceuuid.c_str())==floorplanuuid) {
 		// already exists, update
-        query = "update devicesfloorplan set x=?, y=? where floorplan = ? and device = ?";
+		query = "update devicesfloorplan set x=?, y=? where floorplan = ? and device = ?";
 		getfirst(query.c_str(), 4, xstr.str().c_str(), ystr.str().c_str(), floorplanuuid.c_str(), deviceuuid.c_str());
 
 	} else {
@@ -246,10 +247,10 @@ int Inventory::deletefloorplan(std::string uuid) {
 	query = "delete from floorplans where uuid = ?";
 	getfirst(query.c_str(), 1, uuid.c_str());
 	if (getfloorplanname(uuid) != "") {
-	    getfirst("ROLLBACK");
+		getfirst("ROLLBACK");
 		return -1;
 	} else {
-	    getfirst("COMMIT");
+		getfirst("COMMIT");
 		return 0;
 	}
 	getfirst("ROLLBACK");
@@ -263,10 +264,11 @@ Variant::Map Inventory::getfloorplans() {
 
 	rc = sqlite3_prepare_v2(db, "select uuid, name from floorplans", -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-                fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
-                return result;
-        }
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
+		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		return result;
+	}
+
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		Variant::Map entry;
 		const char *floorplanname = (const char*)sqlite3_column_text(stmt, 1);
 		const char *uuid = (const char*)sqlite3_column_text(stmt, 0);
@@ -319,19 +321,19 @@ string Inventory::getroomlocation(string uuid) {
 }
 
 int Inventory::setlocationname(string uuid, string name) {
-        if (getlocationname(uuid) == "") { // does not exist, create
-                string query = "insert into locations (name, uuid) VALUES (?, ?)";
-                printf("creating location: %s\n", query.c_str());
-                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
-        } else {
-                string query = "update locations set name = ? where uuid = ?";
-                getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
-        }
-        if (getlocationname(uuid) == name) {
-                return 0;
-        } else {
-                return -1;
-        }
+	if (getlocationname(uuid) == "") { // does not exist, create
+		string query = "insert into locations (name, uuid) VALUES (?, ?)";
+		printf("creating location: %s\n", query.c_str());
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
+	} else {
+		string query = "update locations set name = ? where uuid = ?";
+		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
+	}
+	if (getlocationname(uuid) == name) {
+		return 0;
+	} else {
+		return -1;
+	}
 
 }
 int Inventory::setroomlocation(string roomuuid, string locationuuid) {
@@ -359,10 +361,10 @@ Variant::Map Inventory::getlocations() {
 
 	rc = sqlite3_prepare_v2(db, "select uuid, name from locations", -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-                fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
-                return result;
-        }
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
+		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		return result;
+	}
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
 		Variant::Map entry;
 		const char *locationname = (const char*)sqlite3_column_text(stmt, 1);
 		const char *uuid = (const char*)sqlite3_column_text(stmt, 0);

@@ -30,8 +30,8 @@ qpid::types::Variant::Map mergeMap(qpid::types::Variant::Map a, qpid::types::Var
 		if (it_a != result.end()) {
 			if ((it_a->second.getType()==VAR_MAP) && (it->second.getType()==VAR_MAP)) {
 				result[it->first] = mergeMap(it_a->second.asMap(), it->second.asMap());
-                        } else if ((it_a->second.getType()==VAR_LIST) && (it->second.getType()==VAR_LIST)) {
-                                result[it->first] = mergeList(it_a->second.asList(), it->second.asList());
+			} else if ((it_a->second.getType()==VAR_LIST) && (it->second.getType()==VAR_LIST)) {
+				result[it->first] = mergeList(it_a->second.asList(), it->second.asList());
 			} else {
 				qpid::types::Variant::List list;
 				list.push_front(it->second);

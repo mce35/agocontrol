@@ -58,7 +58,7 @@ namespace agocontrol {
 	std::string getConfigOption(const char *section, const char *option, std::string defaultvalue);
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 
-    /// save value to the config file
+	/// save value to the config file
 	bool setConfigOption(const char *section, const char *option, const char* value);
 	bool setConfigOption(const char *section, const char *option, const float value);
 	bool setConfigOption(const char *section, const char *option, const int value);
@@ -91,7 +91,7 @@ namespace agocontrol {
 			void (*eventHandler)(std::string, qpid::types::Variant::Map);
 			bool emitDeviceAnnounce(const char *internalId, const char *deviceType);
 			bool emitDeviceRemove(const char *internalId);
-            bool emitDeviceStale(const char* internalId, const int stale);
+			bool emitDeviceStale(const char* internalId, const int stale);
 		public:
 			AgoConnection(const char *interfacename);
 			~AgoConnection();
@@ -99,10 +99,10 @@ namespace agocontrol {
 			bool addDevice(const char *internalId, const char *deviceType);
 			bool addDevice(const char *internalId, const char *deviceType, bool passuuid);
 			bool removeDevice(const char *internalId);
-            bool suspendDevice(const char* internalId);
-            bool resumeDevice(const char* internalId);
+			bool suspendDevice(const char* internalId);
+			bool resumeDevice(const char* internalId);
 			std::string getDeviceType(const char *internalId);
-            int isDeviceStale(const char *internalId);
+			int isDeviceStale(const char *internalId);
 			bool addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map));
 			bool addEventHandler(void (*eventHandler)(std::string, qpid::types::Variant::Map));
 			bool setFilter(bool filter);
@@ -120,32 +120,32 @@ namespace agocontrol {
 
 
 	enum LogPriority {
-	    kLogEmerg   = LOG_EMERG,   // system is unusable
-	    kLogAlert   = LOG_ALERT,   // action must be taken immediately
-	    kLogCrit    = LOG_CRIT,    // critical conditions
-	    kLogErr     = LOG_ERR,     // error conditions
-	    kLogWarning = LOG_WARNING, // warning conditions
-	    kLogNotice  = LOG_NOTICE,  // normal, but significant, condition
-	    kLogInfo    = LOG_INFO,    // informational message
-	    kLogDebug   = LOG_DEBUG    // debug-level message
+		kLogEmerg	= LOG_EMERG,   // system is unusable
+		kLogAlert	= LOG_ALERT,   // action must be taken immediately
+		kLogCrit		= LOG_CRIT,    // critical conditions
+		kLogErr		= LOG_ERR,     // error conditions
+		kLogWarning = LOG_WARNING, // warning conditions
+		kLogNotice  = LOG_NOTICE,  // normal, but significant, condition
+		kLogInfo		= LOG_INFO,    // informational message
+		kLogDebug	= LOG_DEBUG    // debug-level message
 	};
 
 	std::ostream& operator<< (std::ostream& os, const LogPriority& log_priority);
 
 	class Log : public std::basic_streambuf<char, std::char_traits<char> > {
-	public:
-	    explicit Log(std::string ident, int facility);
+		public:
+			explicit Log(std::string ident, int facility);
 
-	protected:
-	    int sync();
-	    int overflow(int c);
+		protected:
+			int sync();
+			int overflow(int c);
 
-	private:
-	    friend std::ostream& operator<< (std::ostream& os, const LogPriority& log_priority);
-	    std::string buffer_;
-	    int facility_;
-	    int priority_;
-	    char ident_[50];
+		private:
+			friend std::ostream& operator<< (std::ostream& os, const LogPriority& log_priority);
+			std::string buffer_;
+			int facility_;
+			int priority_;
+			char ident_[50];
 	};
 
 }

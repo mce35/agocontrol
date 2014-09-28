@@ -1,13 +1,13 @@
 /*
-     Copyright (C) 2012 Harald Klein <hari@vt100.at>
+	Copyright (C) 2012 Harald Klein <hari@vt100.at>
 
-     This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License.
-     This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-     of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License.
+	This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+	of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-     See the GNU General Public License for more details.
+	See the GNU General Public License for more details.
 
-     this is the core resolver component for ago control 
+	this is the core resolver component for ago control 
 */
 
 #include <iostream>
@@ -74,7 +74,7 @@ namespace fs = ::boost::filesystem;
 AgoConnection *agoConnection;
 
 Variant::Map inventory; // used to hold device registrations
-Variant::Map schema;  
+Variant::Map schema;
 Variant::Map systeminfo; // holds system information
 Variant::Map variables; // holds global variables
 Variant::Map environment; // holds global environment like position, weather conditions, ..
@@ -116,19 +116,19 @@ void get_sysinfo() {
 }
 
 bool emitNameEvent(const char *uuid, const char *eventType, const char *name) {
-        Variant::Map content;
-        content["name"] = name;
-        content["uuid"] = uuid;
-        return agoConnection->sendMessage(eventType, content);
+	Variant::Map content;
+	content["name"] = name;
+	content["uuid"] = uuid;
+	return agoConnection->sendMessage(eventType, content);
 }
 
 bool emitFloorplanEvent(const char *uuid, const char *eventType, const char *floorplan, int x, int y) {
-        Variant::Map content;
-        content["uuid"] = uuid;
-        content["floorplan"] = floorplan;
-        content["x"] = x;
-        content["y"] = y;
-        return agoConnection->sendMessage(eventType, content);
+	Variant::Map content;
+	content["uuid"] = uuid;
+	content["floorplan"] = floorplan;
+	content["x"] = x;
+	content["y"] = y;
+	return agoConnection->sendMessage(eventType, content);
 }
 
 // helper to determine last element
@@ -152,17 +152,17 @@ string valuesToString(Variant::Map *values) {
 // handles events that update the state or values of a device
 void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 	Variant::Map *values;
-	if ((*device)["values"].isVoid())  {
+	if ((*device)["values"].isVoid()) {
 		cout << "error, device[values] is empty in handleEvent()" << endl;
 		return;
 	}
 	values = &(*device)["values"].asMap();
 	if ((subject == "event.device.statechanged") || (subject == "event.security.sensortriggered")) {
 		(*values)["state"] = (*content)["level"];
-		(*device)["state"]  = (*content)["level"];
+		(*device)["state"] = (*content)["level"];
 		(*device)["state"].setEncoding("utf8");
 		saveDevicemap();
-		// (*device)["state"]  = valuesToString(values);
+		// (*device)["state"] = valuesToString(values);
 	} else if (subject == "event.environment.positionchanged") {
 		Variant::Map value;
 		stringstream timestamp;
@@ -178,23 +178,23 @@ void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 		saveDevicemap();
 
 	} else if ( ((subject.find("event.environment.")!=std::string::npos) && (subject.find("changed")!=std::string::npos))
-            || (subject=="event.device.batterylevelchanged") ) {
+			|| (subject=="event.device.batterylevelchanged") ) {
 		Variant::Map value;
 		stringstream timestamp;
 		string quantity = subject;
 
-        //remove useless part of event (changed, event, environment ...)
-        if( subject.find("event.environment.")!=std::string::npos )
-        {
-            //event.environment.XXXchanged
-            replaceString(quantity, "event.environment.", "");
-            replaceString(quantity, "changed", "");
-        }
-        else if( subject=="event.device.batterylevelchanged" )
-        {
-            replaceString(quantity, "event.device.", "");
-            replaceString(quantity, "changed", "");
-        }
+		//remove useless part of event (changed, event, environment ...)
+		if( subject.find("event.environment.")!=std::string::npos )
+		{
+			//event.environment.XXXchanged
+			replaceString(quantity, "event.environment.", "");
+			replaceString(quantity, "changed", "");
+		}
+		else if( subject=="event.device.batterylevelchanged" )
+		{
+			replaceString(quantity, "event.device.", "");
+			replaceString(quantity, "changed", "");
+		}
 
 		value["unit"] = (*content)["unit"];
 		value["level"] = (*content)["level"];
@@ -354,7 +354,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	if (subject == "event.device.announce") {
 		string uuid = content["uuid"];
 		if (uuid != "") {
-			// clog << agocontrol::kLogDebug << "preparing device: uuid="  << uuid << std::endl;
+			// clog << agocontrol::kLogDebug << "preparing device: uuid=" << uuid << std::endl;
 			Variant::Map device;
 			Variant::Map values;
 			device["devicetype"]=content["devicetype"].asString();
@@ -377,26 +377,26 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 				device["state"]="0";
 				device["state"].setEncoding("utf8");
 				device["values"]=values;
-				cout << "adding device: uuid="  << uuid  << " type: " << device["devicetype"].asString() << std::endl;
+				cout << "adding device: uuid=" << uuid << " type: " << device["devicetype"].asString() << std::endl;
 			} else {
 				// device exists, get current values
 				// TODO: use a non-const interator and modify the timestamp in place to avoid the following copying of data
 				qpid::types::Variant::Map olddevice;
-				if (!it->second.isVoid())  {
+				if (!it->second.isVoid()) {
 					olddevice= it->second.asMap();
 					device["state"] = olddevice["state"];
 					device["values"] = olddevice["values"];
 				}
 			}
 				
-			// clog << agocontrol::kLogDebug << "adding device: uuid="  << uuid  << " type: " << device["devicetype"].asString() << std::endl;
+			// clog << agocontrol::kLogDebug << "adding device: uuid=" << uuid << " type: " << device["devicetype"].asString() << std::endl;
 			inventory[uuid] = device;
 			saveDevicemap();
 		}
 	} else if (subject == "event.device.remove") {
 		string uuid = content["uuid"];
 		if (uuid != "") {
-			// clog << agocontrol::kLogDebug << "removing device: uuid="  << uuid  << std::endl;
+			// clog << agocontrol::kLogDebug << "removing device: uuid=" << uuid << std::endl;
 			Variant::Map::iterator it = inventory.find(uuid);
 			if (it != inventory.end()) {
 				inventory.erase(it);
@@ -409,19 +409,19 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 		variables["weekday"] = content["weekday"].asString();
 		variables["minute"] = content["minute"].asString();
 		variables["month"] = content["month"].asString();
-    }
-    else if( subject=="event.device.stale" )
-    {
-        Variant::Map *device;
-        string uuid = content["uuid"];
-        if (!inventory[uuid].isVoid())
-        {
-            device = &inventory[uuid].asMap();
-            (*device)["stale"] = content["stale"].asInt8();
-            saveDevicemap();
-        }
-    }
-    else {
+	}
+	else if( subject=="event.device.stale" )
+	{
+		Variant::Map *device;
+		string uuid = content["uuid"];
+		if (!inventory[uuid].isVoid())
+		{
+			device = &inventory[uuid].asMap();
+			(*device)["stale"] = content["stale"].asInt8();
+			saveDevicemap();
+		}
+	}
+	else {
 		if (subject == "event.environment.positionchanged") {
 			environment["latitude"] = content["latitude"];
 			environment["longitude"] = content["longitude"];

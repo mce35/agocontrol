@@ -20,7 +20,7 @@ using namespace qpid::types;
 template <typename Iter>
 Iter next(Iter iter)
 {
-    return ++iter;
+	return ++iter;
 }
 #endif
 
@@ -100,10 +100,10 @@ bool agocontrol::augeas_init()  {
 
 bool agocontrol::nameval(const std::string& in, std::string& name, std::string& value) {
 	std::string::size_type i = in.find("=");
-        if (i == std::string::npos) {
+	if (i == std::string::npos) {
 		name = in;
 		return false;
-        } else {
+	} else {
 		name = in.substr(0, i);
 		if (i+1 < in.size()) {
 			value = in.substr(i+1);
@@ -111,15 +111,15 @@ bool agocontrol::nameval(const std::string& in, std::string& name, std::string& 
 		} else {
 			return false;
 		}
-        }
+	}
 }
 
 void agocontrol::replaceString(std::string& subject, const std::string& search, const std::string& replace) {
-        size_t pos = 0;
-        while ((pos = subject.find(search, pos)) != std::string::npos) {
-                subject.replace(pos, search.length(), replace);
-                pos += replace.length();
-        }
+	size_t pos = 0;
+	while ((pos = subject.find(search, pos)) != std::string::npos) {
+		subject.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
 }
 
 std::string agocontrol::int2str(int i) {
@@ -261,11 +261,11 @@ qpid::types::Variant::List agocontrol::jsonToVariantList(Json::Value value) {
 			}
 		}
 	} catch (const std::exception& error) {
-                cout << "ERROR! Exception during JSON->Variant::List conversion!" << endl;
-                stringstream errorstring;
-                errorstring << error.what();
+		cout << "ERROR! Exception during JSON->Variant::List conversion!" << endl;
+		stringstream errorstring;
+		errorstring << error.what();
 		cout << "EXCEPTION: " << errorstring.str() << endl;
-        }
+	}
 
 
 	return list;
@@ -323,11 +323,11 @@ qpid::types::Variant::Map agocontrol::jsonStringToVariantMap(std::string jsonstr
 			printf("warning, could not parse json to Variant::Map: %s\n",jsonstring.c_str());
 		}*/
 	} catch (const std::exception& error) {
-                cout << "ERROR! Exception during JSON String->Variant::Map conversion!" << endl;
-                stringstream errorstring;
-                errorstring << error.what();
-                cout << "EXCEPTION: " << errorstring.str() << endl;
-        }
+		cout << "ERROR! Exception during JSON String->Variant::Map conversion!" << endl;
+		stringstream errorstring;
+		errorstring << error.what();
+		cout << "EXCEPTION: " << errorstring.str() << endl;
+	}
 	return result;
 }
 
@@ -413,7 +413,7 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	}
 
 
-    return result;
+	return result;
 }
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const float value) {
@@ -575,40 +575,40 @@ bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const
  */
 bool agocontrol::AgoConnection::emitDeviceStale(const char* internalId, const int stale)
 {
-    Variant::Map content;
-    Message event;
+	Variant::Map content;
+	Message event;
 
-    content["internalid"] = internalId;
-    content["stale"] = stale;
-    content["uuid"] = internalIdToUuid(internalId);
-    encode(content, event);
-    event.setSubject("event.device.stale");
-    try
-    {
-        sender.send(event);
-    }
-    catch(const std::exception& error)
-    {
-        std::cerr << error.what() << std::endl;
-        return false;
-    } 
-    return true;
+	content["internalid"] = internalId;
+	content["stale"] = stale;
+	content["uuid"] = internalIdToUuid(internalId);
+	encode(content, event);
+	event.setSubject("event.device.stale");
+	try
+	{
+		sender.send(event);
+	}
+	catch(const std::exception& error)
+	{
+		std::cerr << error.what() << std::endl;
+		return false;
+	} 
+	return true;
 }
 
 bool agocontrol::AgoConnection::emitDeviceRemove(const char *internalId) {
-    Variant::Map content;
-    Message event;
+	Variant::Map content;
+	Message event;
 
-    content["uuid"] = internalIdToUuid(internalId);
-    encode(content, event);
-    event.setSubject("event.device.remove");
-    try {
-        sender.send(event);
-    } catch(const std::exception& error) {
-        std::cerr << error.what() << std::endl;
-        return false;
-    } 
-    return true;
+	content["uuid"] = internalIdToUuid(internalId);
+	encode(content, event);
+	event.setSubject("event.device.remove");
+	try {
+		sender.send(event);
+	} catch(const std::exception& error) {
+		std::cerr << error.what() << std::endl;
+		return false;
+	} 
+	return true;
 } 
 
 bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *deviceType, bool passuuid) {
@@ -628,7 +628,7 @@ bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *de
 	Variant::Map device;
 	device["devicetype"] = deviceType;
 	device["internalid"] = internalId;
-    device["stale"] = 0;
+	device["stale"] = 0;
 	deviceMap[internalIdToUuid(internalId)] = device;
 	emitDeviceAnnounce(internalId, deviceType);
 	return true;
@@ -650,14 +650,14 @@ bool agocontrol::AgoConnection::removeDevice(const char *internalId) {
  */
 bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
 {
-    string uuid = internalIdToUuid(internalId);
-    if( uuid.size()>0 && !deviceMap[uuid].isVoid() )
-    {
-        deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 1;
-        emitDeviceStale(internalId, 1);
-        return true;
-    }
-    return false;
+	string uuid = internalIdToUuid(internalId);
+	if( uuid.size()>0 && !deviceMap[uuid].isVoid() )
+	{
+		deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 1;
+		emitDeviceStale(internalId, 1);
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -666,14 +666,14 @@ bool agocontrol::AgoConnection::suspendDevice(const char* internalId)
  */
 bool agocontrol::AgoConnection::resumeDevice(const char* internalId)
 {
-    string uuid = internalIdToUuid(internalId);
-    if( uuid.size()>0 && !deviceMap[uuid].isVoid() )
-    {
-        deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 0;
-        emitDeviceStale(internalId, 0);
-        return true;
-    }
-    return false;
+	string uuid = internalIdToUuid(internalId);
+	if( uuid.size()>0 && !deviceMap[uuid].isVoid() )
+	{
+		deviceMap[internalIdToUuid(internalId)].asMap()["stale"] = 0;
+		emitDeviceStale(internalId, 0);
+		return true;
+	}
+	return false;
 }
 std::string agocontrol::AgoConnection::uuidToInternalId(std::string uuid) {
 	return uuidMap[uuid].asString();
@@ -688,20 +688,20 @@ std::string agocontrol::AgoConnection::internalIdToUuid(std::string internalId) 
 }
 
 void agocontrol::AgoConnection::reportDevices() {
-    for (Variant::Map::const_iterator it = deviceMap.begin(); it != deviceMap.end(); ++it) {
-        Variant::Map device;
-        Variant::Map content;
-        Message event;
+	for (Variant::Map::const_iterator it = deviceMap.begin(); it != deviceMap.end(); ++it) {
+		Variant::Map device;
+		Variant::Map content;
+		Message event;
 
-        // printf("uuid: %s\n", it->first.c_str());
-        device = it->second.asMap();
-        // printf("devicetype: %s\n", device["devicetype"].asString().c_str());
-        // do not announce stale devices
-        if( device["stale"].asInt8()==0 )
-        {
-            emitDeviceAnnounce(device["internalid"].asString().c_str(), device["devicetype"].asString().c_str());
-        }
-    }
+		// printf("uuid: %s\n", it->first.c_str());
+		device = it->second.asMap();
+		// printf("devicetype: %s\n", device["devicetype"].asString().c_str());
+		// do not announce stale devices
+		if( device["stale"].asInt8()==0 )
+		{
+			emitDeviceAnnounce(device["internalid"].asString().c_str(), device["devicetype"].asString().c_str());
+		}
+	}
 }
 
 bool agocontrol::AgoConnection::storeUuidMap() {
@@ -748,34 +748,34 @@ bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Va
 }
 
 qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, qpid::types::Variant::Map content) {
-    Message message;
-    qpid::types::Variant::Map responseMap;
-    Receiver responseReceiver;
-    try {
-        encode(content, message);
-        message.setSubject(subject);
-        Address responseQueue("#response-queue; {create:always, delete:always}");
-        responseReceiver = session.createReceiver(responseQueue);
-        message.setReplyTo(responseQueue);
-        sender.send(message);
-        Message response = responseReceiver.fetch(Duration::SECOND * 3);
-        session.acknowledge();
-        if (response.getContentSize() > 3) {
-            decode(response,responseMap);
-        } else {
-            responseMap["response"] = response.getContent();
-        }
-    } catch (qpid::messaging::NoMessageAvailable) {
-        printf("WARNING, no reply message to fetch\n");
-    } catch(const std::exception& error) {
-        std::cerr << error.what() << std::endl;
-    }
-    try {
-        responseReceiver.close();
-    } catch(const std::exception& error) {
-        std::cerr << error.what() << std::endl;
-    }
-    return responseMap;
+	Message message;
+	qpid::types::Variant::Map responseMap;
+	Receiver responseReceiver;
+	try {
+		encode(content, message);
+		message.setSubject(subject);
+		Address responseQueue("#response-queue; {create:always, delete:always}");
+		responseReceiver = session.createReceiver(responseQueue);
+		message.setReplyTo(responseQueue);
+		sender.send(message);
+		Message response = responseReceiver.fetch(Duration::SECOND * 3);
+		session.acknowledge();
+		if (response.getContentSize() > 3) {
+			decode(response,responseMap);
+		} else {
+			responseMap["response"] = response.getContent();
+		}
+	} catch (qpid::messaging::NoMessageAvailable) {
+		printf("WARNING, no reply message to fetch\n");
+	} catch(const std::exception& error) {
+		std::cerr << error.what() << std::endl;
+	}
+	try {
+		responseReceiver.close();
+	} catch(const std::exception& error) {
+		std::cerr << error.what() << std::endl;
+	}
+	return responseMap;
 }
 
 
@@ -829,16 +829,16 @@ string agocontrol::AgoConnection::getDeviceType(const char *internalId) {
  */
 int agocontrol::AgoConnection::isDeviceStale(const char* internalId)
 {
-    string uuid = internalIdToUuid(internalId);
-    if (uuid.size() > 0)
-    {
-        Variant::Map device = deviceMap[internalIdToUuid(internalId)].asMap();
-        return device["stale"].asInt8();
-    }
-    else
-    {
-        return 0;
-    }
+	string uuid = internalIdToUuid(internalId);
+	if (uuid.size() > 0)
+	{
+		Variant::Map device = deviceMap[internalIdToUuid(internalId)].asMap();
+		return device["stale"].asInt8();
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 bool agocontrol::AgoConnection::setFilter(bool filter) {
@@ -872,34 +872,34 @@ qpid::types::Variant::Map agocontrol::AgoConnection::getInventory() {
 	}
 	try {
 		responseReceiver.close();
-        } catch(const std::exception& error) {
-                std::cerr << error.what() << std::endl;
-        }
+	} catch(const std::exception& error) {
+		std::cerr << error.what() << std::endl;
+	}
 	return responseMap;
 }
 
 std::string agocontrol::AgoConnection::getAgocontroller() {
 	std::string agocontroller;
 	int retry = 10;
-        while(agocontroller=="" && retry-- > 0) {
-                qpid::types::Variant::Map inventory = getInventory();
-                if (!(inventory["devices"].isVoid())) {
-                        qpid::types::Variant::Map devices = inventory["devices"].asMap();
-                        qpid::types::Variant::Map::const_iterator it;
-                        for (it = devices.begin(); it != devices.end(); it++) {
-                                if (!(it->second.isVoid())) {
-                                        qpid::types::Variant::Map device = it->second.asMap();
-                                        if (device["devicetype"] == "agocontroller") {
-                                                cout << "Agocontroller: " << it->first << endl;
-                                                agocontroller = it->first;
-                                        }
-                                }
-                        }
-                } else {
+	while(agocontroller=="" && retry-- > 0) {
+		qpid::types::Variant::Map inventory = getInventory();
+		if (!(inventory["devices"].isVoid())) {
+			qpid::types::Variant::Map devices = inventory["devices"].asMap();
+			qpid::types::Variant::Map::const_iterator it;
+			for (it = devices.begin(); it != devices.end(); it++) {
+				if (!(it->second.isVoid())) {
+					qpid::types::Variant::Map device = it->second.asMap();
+					if (device["devicetype"] == "agocontroller") {
+						cout << "Agocontroller: " << it->first << endl;
+						agocontroller = it->first;
+					}
+				}
+			}
+		} else {
 			cout << "unable to resolve agocontroller, retrying" << endl;
 			sleep(1);
 		}
-        }
+	}
 	if (agocontroller == "") cout << "unable to resolve agocontroller, giving up" << endl;
 	return agocontroller;
 }
@@ -918,34 +918,34 @@ bool agocontrol::AgoConnection::setGlobalVariable(std::string variable, qpid::ty
 }
 
 agocontrol::Log::Log(std::string ident, int facility) {
-    facility_ = facility;
-    priority_ = LOG_DEBUG;
-    strncpy(ident_, ident.c_str(), sizeof(ident_));
-    ident_[sizeof(ident_)-1] = '\0';
+	facility_ = facility;
+	priority_ = LOG_DEBUG;
+	strncpy(ident_, ident.c_str(), sizeof(ident_));
+	ident_[sizeof(ident_)-1] = '\0';
 
-    openlog(ident_, LOG_PID, facility_);
+	openlog(ident_, LOG_PID, facility_);
 }
 
 int agocontrol::Log::sync() {
-    if (buffer_.length()) {
-        syslog(priority_, "%s", buffer_.substr(0,buffer_.length()-1).c_str());
-        buffer_.erase();
-        priority_ = LOG_DEBUG; // default to debug for each message
-    }
-    return 0;
+	if (buffer_.length()) {
+		syslog(priority_, "%s", buffer_.substr(0,buffer_.length()-1).c_str());
+		buffer_.erase();
+		priority_ = LOG_DEBUG; // default to debug for each message
+	}
+	return 0;
 }
 
 int agocontrol::Log::overflow(int c) {
-    if (c != EOF) {
-        buffer_ += static_cast<char>(c);
-    } else {
-        sync();
-    }
-    return c;
+	if (c != EOF) {
+		buffer_ += static_cast<char>(c);
+	} else {
+		sync();
+	}
+	return c;
 }
 
 std::ostream& agocontrol::operator<< (std::ostream& os, const agocontrol::LogPriority& log_priority) {
-    static_cast<agocontrol::Log *>(os.rdbuf())->priority_ = (int)log_priority;
-    return os;
+	static_cast<agocontrol::Log *>(os.rdbuf())->priority_ = (int)log_priority;
+	return os;
 }
 
