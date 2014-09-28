@@ -84,12 +84,20 @@ struct Subscriber
     time_t lastAccess;
 };
 
-struct getEventState
+class GetEventState
 {
-    char content[1024];
-    char myId[256];
-	 time_t inited;
-    time_t lastPoll;
+public:
+	std::string subscriptionId;
+	Json::Value rpcRequestId;
+	time_t inited;
+	time_t lastPoll;
+
+	GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_)
+		: subscriptionId(subscriptionId_)
+		, rpcRequestId(rpcRequestId_)
+  		, lastPoll(0) {
+			inited = time(NULL);
+	}
 };
 
 map<string,Subscriber> subscriptions;
@@ -138,6 +146,7 @@ void mg_printlist(struct mg_connection *conn, Variant::List list) {
 	}
 	mg_printf_data(conn, "]");
 }
+
 void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 	mg_printf_data(conn, "{");
 	for (Variant::Map::const_iterator it = map.begin(); it != map.end(); ++it) {
@@ -170,31 +179,78 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 	mg_printf_data(conn, "}");
 }
 
-static void mg_print_error(struct mg_connection *conn, int code, const std::string message, const std::string idJsonStr, const std::string extra="") {
-	mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", "
-			"%s%s"
-			"\"error\": "
-			"{\"code\":%d, "
-			"\"message\":\"%s\"},"
-			" \"id\": %s}",
-			extra.c_str(), extra.empty()?"":", ",
-			code,
-			message.c_str(),
-			idJsonStr.c_str());
+/**
+ * Add JSON-RPC headers (jsonrpc, id) onto the response_root object,
+ * serialize it to JSON, and write it to the mg_connnection
+ *
+ * Note: response_root is modified!
+ */
+static void mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_or_id, Json::Value &response_root)
+{
+	response_root["jsonrpc"] = "2.0";
+
+	Json::Value request_id;
+	if(request_or_id.type() == Json::objectValue) {
+		request_id = request_or_id.get("id", Json::Value());
+	}else
+		request_id = request_or_id;
+
+	if(!request_id.empty())
+		response_root["id"] = request_id;
+
+	Json::FastWriter writer;
+	std::string data(writer.write(response_root));
+
+	mg_send_data(conn, data.c_str(), data.size());
 }
 
+/**
+ * Write a RPC response with one element in the root with the name set in result_key (default "result").
+ */
+static void mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result") {
+	Json::Value root(Json::objectValue);
+	root[result_key] = result;
+	mg_rpc_reply(conn, request_or_id, root);
+}
 
-static void mg_print_error(struct mg_connection *conn, int code, const std::string message, const Json::Value *id) {
-	std::string idJsonStr;
-	if(id) {
-		Json::StyledWriter writer;
-		idJsonStr = writer.write(id);
-	}
-	else {
-		idJsonStr = "null";
-	}
+/**
+ * Write a RPC response with a "result" element whose value is a simple string.
+ */
+static void mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result) {
+	Json::Value r(result);
+	mg_rpc_reply_result(conn, request_or_id, r);
+}
 
-	mg_print_error(conn, code, message, idJsonStr);
+/**
+ * Write a RCP response with an "error" element having the specified code/message.
+ */
+static void mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message) {
+	Json::Value error(Json::objectValue);
+	error["code"] = code;
+	error["message"] = message;
+
+	mg_rpc_reply_result(conn, request_or_id, error, "error");
+}
+
+/**
+ * Write a RPC response with a "result" element being a response map
+ */
+static void mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
+//	Json::Value r(result);
+//	mg_rpc_reply_result(conn, request_or_id, r);
+	Json::Value request_id;
+	if(request_or_id.type() == Json::objectValue) {
+		request_id = request_or_id.get("id", Json::Value());
+	}else
+		request_id = request_or_id;
+	
+	Json::FastWriter writer;
+	std::string request_idstr = writer.write(request_id);
+
+	// XXX: Write without building full JSON
+	mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
+	mg_printmap(conn, responseMap);
+	mg_printf_data(conn, ", \"id\": %s}", request_idstr.c_str());
 }
 
 static void command (struct mg_connection *conn) {
@@ -224,44 +280,42 @@ static void command (struct mg_connection *conn) {
  * Connection parameters are stored directly into mg_connection object inside connection_param variable.
  * Thanks to this variable its possible to call many times getEventRequest.
  */
-bool getEventRequest(struct mg_connection *conn, struct getEventState*state)
+bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 {
-    int result = true;
-    Variant::Map event;
-    bool eventFound = false;
+	int result = true;
+	Variant::Map event;
+	bool eventFound = false;
 
-    //get request content
-    std::string myId(state->myId);
-    std::string content(state->content);
+	//look for available event
+	pthread_mutex_lock(&mutexSubscriptions);
+	map<string,Subscriber>::iterator it = subscriptions.find(state->subscriptionId);
 
-    //look for available event
-    pthread_mutex_lock(&mutexSubscriptions);
-    map<string,Subscriber>::iterator it = subscriptions.find(content);
-    if(it == subscriptions.end()) {
-        pthread_mutex_unlock(&mutexSubscriptions);
-        mg_print_error(conn, -32603, "Invalid params: no current subscription for uuid", myId);
-        return false;
-    }
+	if(it == subscriptions.end()) {
+		pthread_mutex_unlock(&mutexSubscriptions);
+		mg_rpc_reply_error(conn, state->rpcRequestId, -32603, "Invalid params: no current subscription for uuid");
+		return false;
+	}
 
-    if(it->second.queue.size() >= 1 )
-    {
-        //event found
-        event = it->second.queue.front();
-        it->second.queue.pop_front();
-        pthread_mutex_unlock(&mutexSubscriptions);
+	if(it->second.queue.size() >= 1 )
+	{
+		//event found
+		event = it->second.queue.front();
+		it->second.queue.pop_front();
+		pthread_mutex_unlock(&mutexSubscriptions);
 
-        mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
-        mg_printmap(conn, event);
-        mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
+		std::string myId(state->rpcRequestId.toStyledString());
+		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
+		mg_printmap(conn, event);
+		mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
-        eventFound = true;
-        result = false;
-    }
-    else {
-        pthread_mutex_unlock(&mutexSubscriptions);
-    }
+		eventFound = true;
+		result = false;
+	}
+	else {
+		pthread_mutex_unlock(&mutexSubscriptions);
+	}
 
-    return result;
+	return result;
 }
 
 bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
@@ -287,26 +341,24 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
                 if( responseMap.size()>0 && !id.isNull() ) // only send reply when id is not null
                 {
                     //cout << "Response: " << responseMap << endl;
-                    mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
-                    mg_printmap(conn, responseMap);
-                    mg_printf_data(conn, ", \"id\": %s}",myId.c_str());
+						  mg_rpc_reply_map(conn, request, responseMap);
                 }
                 else
                 {
                     //no response
                     printf("WARNING, no reply message to fetch\n");
-                    mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"no-reply\", \"id\": %s}",myId.c_str());
+						  mg_rpc_reply_result(conn, request, std::string("no-reply"));
                 }
 
             } else {
-                mg_print_error(conn, -32602, "Invalid params", &id);
+                mg_rpc_reply_error(conn, request, -32602, "Invalid params");
             }
 		
 		} else if (method == "subscribe") {
 			string subscriberName = generateUuid();
 			if (id.isNull()) {
 				// JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
-				mg_print_error(conn, -32600, "Invalid Request", &id);
+				mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
 			} else if (subscriberName != "") {
 				deque<Variant::Map> empty;
 				Subscriber subscriber;
@@ -315,10 +367,10 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				pthread_mutex_lock(&mutexSubscriptions);	
 				subscriptions[subscriberName] = subscriber;
 				pthread_mutex_unlock(&mutexSubscriptions);	
-				mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"%s\", \"id\": %s}",subscriberName.c_str(), myId.c_str());
+				mg_rpc_reply_result(conn, request, subscriberName);
 			} else {
 				// uuid is empty so malloc probably failed, we seem to be out of memory
-				mg_print_error(conn, -32000, "Out of memory", &id);
+				mg_rpc_reply_error(conn, request, -32000, "Out of memory");
 			}
 
 		} else if (method == "unsubscribe") {
@@ -331,41 +383,36 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					if (it != subscriptions.end()) {
 						subscriptions.erase(content.asString());
 					}
-					pthread_mutex_unlock(&mutexSubscriptions);	
-					mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": \"success\", \"id\": %s}",myId.c_str());
+					pthread_mutex_unlock(&mutexSubscriptions);
+					mg_rpc_reply_result(conn, request, std::string("success"));
 				} else {
-					mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
+					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
 				}
 			} else {
-				mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
+				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
 			}
 		} else if (method == "getevent") {
 			if (params.isObject()) {
 				Json::Value content = params["uuid"];
 				if (content.isString()) {
 					//add connection param (used to get connection param when polling see MG_POLL)
-					struct getEventState* state;
-					state = (struct getEventState*)malloc(sizeof(*state));
-					conn->connection_param = state;
-					strncpy(state->content, content.asString().c_str(), 1024);
-					strncpy(state->myId, myId.c_str(), 256);
-					state->inited = time(NULL);
-					state->lastPoll = 0;
+					GetEventState *state = new GetEventState(content.asString(), id);
 
+					conn->connection_param = state;
 					return getEventRequest(conn, state);
 				}
 				else
 				{
-					mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
+					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
 				}
 			} else {
-				mg_print_error(conn, -32602, "Invalid params: need uuid parameter", &id);
+				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
 			}
 		} else {
-			mg_print_error(conn, -32601, "Method not found", &id);
+			mg_rpc_reply_error(conn, request, -32601, "Method not found");
 		}
 	} else {
-		mg_print_error(conn, -32600, "Invalid Request", &id);
+		mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
 	}
 
 	return false;
@@ -398,7 +445,7 @@ static bool jsonrpc(struct mg_connection *conn)
     }
     else
     {
-        mg_print_error(conn, -32700, "Parse error", NULL);
+        mg_rpc_reply_error(conn, Json::Value(), -32700, "Parse error");
     }
 
     return result;
@@ -632,7 +679,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
     {
         if( conn->connection_param )
         {
-            struct getEventState* state = (struct getEventState*)conn->connection_param;
+            GetEventState* state = (GetEventState*)conn->connection_param;
             if (last_event >= state->lastPoll)
             {
                 if( !getEventRequest(conn, state) )
@@ -646,7 +693,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 				if(result == MG_FALSE) {
 					if((state->lastPoll - state->inited) > GETEVENT_MAX_RETRIES) {
 						// close connection now (before mongoose close connection)
-						mg_print_error(conn, -32602, "no messages for subscription", state->myId);
+						mg_rpc_reply_error(conn, state->rpcRequestId, -32602, "no messages for subscription");
 						result = MG_TRUE;
 					}
 				}
@@ -656,7 +703,8 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
     {
         if( conn->connection_param )
         {
-            free(conn->connection_param);
+            GetEventState* state = (GetEventState*)conn->connection_param;
+            delete state;
             conn->connection_param = NULL;
         }
     }
