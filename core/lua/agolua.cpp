@@ -539,7 +539,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	if (internalid == "luacontroller") {
 		if (content["command"]=="getscriptlist") {
 			qpid::types::Variant::List scriptlist;
-			fs::path scriptdir(LUA_SCRIPT_DIR);
+			fs::path scriptdir(getConfigPath(LUA_SCRIPT_DIR));
 			if (fs::exists(scriptdir)) {
 				fs::recursive_directory_iterator it(scriptdir);
 				fs::recursive_directory_iterator endit;
@@ -557,7 +557,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["name"]);
-					string script = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
+					string script = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
 					string scriptcontent = get_file_contents(script.c_str());
 					cout << "reading script " << script << endl;
 					returnval["script"]=base64_encode(reinterpret_cast<const unsigned char*>(scriptcontent.c_str()), scriptcontent.length());
@@ -573,7 +573,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["name"]);
-					string script = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
+					string script = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
 					std::ofstream file;
 					file.open(script.c_str());
 					file << content["script"].asString();
@@ -590,7 +590,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["name"]);
-					string script = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
+					string script = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
 					fs::path target(script);
 					if (fs::remove (target)) {
 						returnval["result"]=0;
@@ -609,11 +609,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["oldname"]);
-					string scriptInput = LUA_SCRIPT_DIR + input.stem().string() + ".lua";
+					string scriptInput = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
 					fs::path source(scriptInput);
 
 					fs::path output(content["newname"]);
-					string scriptOutput = LUA_SCRIPT_DIR + output.stem().string() + ".lua";
+					string scriptOutput = getConfigPath(LUA_SCRIPT_DIR) + output.stem().string() + ".lua";
 					fs::path target(scriptOutput);
 
 					//check if destination file already exists
@@ -644,7 +644,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				{
 					try {
 						std::stringstream output;
-						output << LUA_SCRIPT_DIR;
+						output << getConfigPath(LUA_SCRIPT_DIR);
 						if( content["filename"].asString().find("blockly_")!=0 )
 						{
 							//append "blockly_" string
@@ -696,7 +696,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			if( !content["filename"].isVoid() && content["filename"].asString()!="" )
 			{
 				std::stringstream file;
-				file << LUA_SCRIPT_DIR << "blockly_" << content["filename"].asString() << ".lua";
+				file << getConfigPath(LUA_SCRIPT_DIR) << "blockly_" << content["filename"].asString() << ".lua";
 				fs::path target(file.str());
 				cout << "file to download " << target << endl;
 
