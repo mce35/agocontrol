@@ -24,6 +24,7 @@ client = None
 server = None
 units = {}
 rrds = {}
+multi = {}
 
 #logging.basicConfig(filename='/opt/agocontrol/agoscheduler.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s : %(message)s")
@@ -77,7 +78,7 @@ def rainbow_colors(n):
         ret.append("%02X%02X%02X" % (t[0] * 255, t[1] * 255, t[2] * 255))
     return ret
 
-def generateGraph(uuids, start, end):
+def generateGraph(uuids, start, end, legend):
     #init
     global rrds, units
     gfx = None
@@ -88,12 +89,14 @@ def generateGraph(uuids, start, end):
 
     #get rrd filename according to uuid
     try:
-        rrd_args = [ "--start", "%d" % int(start), "--end", "%d" % int(end), #"--vertical-label=%s" % str(vertical_unit),
-                     "-w 850", "-h 300",
+        rrd_args = [ "-D", "--start", "%d" % int(start), "--end", "%d" % int(end),
+                     "-w 900", "-h 380",
                      #"--alt-autoscale",
                      #"--alt-y-grid",
                      #"--rigid"
                      ]
+        if legend == False:
+            rrd_args.append("-g")
         rrd_lines = []
         graph_nb = 0
         inventory = client.get_inventory()
@@ -119,7 +122,7 @@ def generateGraph(uuids, start, end):
                 unit = '%%'
             else:
                 unit = vertical_unit
-            if graph_nb == 0:
+            if graph_nb == 0 and legend == True:
                 rrd_args.append("--vertical-label=%s" % str(vertical_unit))
 
             uni_name_fixed = inventory.content['devices'][uuid]['name']
@@ -183,8 +186,11 @@ def commandHandler(internalid, content):
 
     if internalid=='rrdtoolcontroller':
         if command=='getgraph' and checkContent(content, ['deviceUuid','start','end']):
-            uuids = [ content['deviceUuid'] ]
-            (error, msg, graph) = generateGraph(uuids, content['start'], content['end'])
+            if multi.has_key(content['deviceUuid']):
+                uuids = multi[content['deviceUuid']]['uuids']
+            else:
+                uuids = [ content['deviceUuid'] ]
+            (error, msg, graph) = generateGraph(uuids, content['start'], content['end'], True)
             if not error:
                 return {'error':0, 'msg':'', 'graph':base64.b64encode(graph)}
             else:
@@ -272,6 +278,21 @@ try:
 
     #add controller
     client.add_device('rrdtoolcontroller', 'rrdtoolcontroller')
+
+    try:
+        multi_nb = int(agoclient.get_config_option("multi", "nb_multi", "", "rrd"))
+    except ValueError:
+        multi_nb = 0
+    for i in range(multi_nb):
+        key = "multi%d" % i
+        uuids = agoclient.get_config_option("multi", key, "", "rrd")
+        if uuids != "":
+            uuids_list = uuids.split(",")
+            client.add_device(key, 'multisensor')
+            uuid = client.internal_id_to_uuid(key)
+            multi[uuid] = {}
+            multi[uuid]['internalid'] = key
+            multi[uuid]['uuids'] = uuids_list
 
 except Exception as e:
     #init failed

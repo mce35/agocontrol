@@ -904,7 +904,7 @@ function doShowDetails(device, template, environment) {
 		device.getVideoFrame();
 	    }
 
-	    if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor")) {
+	    if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype == "multisensor")) {
             //refresh button
             $('#get_graph').click(function() {
                 renderGraph(device, document.getElementById('graph')._environment);
@@ -952,6 +952,9 @@ function doShowDetails(device, template, environment) {
 
 		if (device.devicetype == "binarysensor") {
 		    environment = "device.state";
+		}
+		if (device.devicetype == "multisensor") {
+		    environment = "none";
 		}
 
 		renderGraph(device, environment ? environment : device.valueList()[0].name);
