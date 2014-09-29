@@ -777,12 +777,12 @@ int main(int argc, char **argv) {
 	sscanf(optString.c_str(), "%d", &filterByEvents);
 
 	//load script infos file
-	scriptsInfos = jsonFileToVariantMap(SCRIPTSINFOSFILE);
+	scriptsInfos = jsonFileToVariantMap(getConfigPath(SCRIPTSINFOSFILE));
 	if (scriptsInfos["scripts"].isVoid())
 	{
 		qpid::types::Variant::Map scripts;
 		scriptsInfos["scripts"] = scripts;
-		variantMapToJSONFile(scriptsInfos, SCRIPTSINFOSFILE);
+		variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
 	}
 
 	agoConnection->addDevice("luacontroller", "luacontroller");

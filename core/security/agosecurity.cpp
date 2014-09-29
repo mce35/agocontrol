@@ -143,7 +143,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					eventcontent["housemode"]= content["mode"].asString();
 					agoConnection->emitEvent("securitycontroller", "event.security.housemodechanged", eventcontent);
 
-					if (variantMapToJSONFile(securitymap, SECURITYMAPFILE)) {
+					if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE))) {
 						returnval["result"] = 0;
 					} else {
 						returnval["result"] = -1;
@@ -209,7 +209,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					qpid::types::Variant::Map newzones = content["zonemap"].asMap();
 					cout << "zone content:" << newzones << endl;
 					securitymap["zones"] = newzones;
-					if (variantMapToJSONFile(securitymap, SECURITYMAPFILE)) {
+					if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE))) {
 						returnval["result"] = 0;
 					} else {
 						returnval["result"] = -1;

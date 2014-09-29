@@ -210,7 +210,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				cout << "event uuid:" << eventuuid << endl;
 				eventmap[eventuuid] = newevent;
 				agoConnection->addDevice(eventuuid.c_str(), "event", true);
-				if (variantMapToJSONFile(eventmap, EVENTMAPFILE)) {
+				if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE))) {
 					returnval["result"] = 0;
 					returnval["event"] = eventuuid;
 				} else {
