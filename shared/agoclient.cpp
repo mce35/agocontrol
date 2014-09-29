@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sstream>
+#include <assert.h>
 
 #include <boost/preprocessor/stringize.hpp>
 
@@ -27,6 +28,8 @@ Iter next(Iter iter)
 #define MODULE_CONFDIR "/conf.d"
 
 namespace agocontrol {
+	bool directories_inited = false;
+
 	std::string config_dir;
 	std::string localstate_dir;
 
@@ -36,6 +39,8 @@ namespace agocontrol {
 		// DEFAULT_CONFDIR, DEFAULT_LOCALSTATEDIR must be set with compiler flag
 		config_dir = BOOST_PP_STRINGIZE(DEFAULT_CONFDIR);
 		localstate_dir = BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR);
+		assert(!config_dir.empty());
+		assert(!localstate_dir.empty());
 
 		if((envDir = getenv("AGO_CONFDIR")) != NULL) {
 			config_dir = envDir;
@@ -50,10 +55,16 @@ namespace agocontrol {
 
 		while(localstate_dir.find_last_of('/') == localstate_dir.size())
 			config_dir.erase(localstate_dir.size() - 1, 1);
+
+		directories_inited = true;
 	}
 }
 
 std::string agocontrol::getConfigPath(const char *sub) {
+	if(!directories_inited) {
+		initDirectorys();
+	}
+
 	if(sub) {
 		std::string total(config_dir);
 		if(*sub != '/')
@@ -66,6 +77,10 @@ std::string agocontrol::getConfigPath(const char *sub) {
 }
 
 std::string agocontrol::getLocalStatePath(const char *sub) {
+	if(!directories_inited) {
+		initDirectorys();
+	}
+
 	if(sub) {
 		std::string total(localstate_dir);
 		if(*sub != '/')
@@ -79,8 +94,6 @@ std::string agocontrol::getLocalStatePath(const char *sub) {
 
 
 bool agocontrol::augeas_init()  {
-	initDirectorys();
-
 	std::stringstream path;
 	path << getConfigPath(MODULE_CONFDIR);
 	path << "/*.conf";
