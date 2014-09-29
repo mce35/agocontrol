@@ -446,7 +446,7 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	eventHandler = NULL;
 	instance = interfacename;
 
-	uuidMapFile = getConfigPath("uuidmap");
+	uuidMapFile = getConfigPath("uuidmap/");
 	uuidMapFile += interfacename;
 	uuidMapFile += ".json";
 	loadUuidMap();
