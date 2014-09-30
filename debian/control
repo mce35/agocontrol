@@ -195,6 +195,11 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0
 Description: MySensors interface driver
 
+Package: agocontrol-atalarm
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0
+Description: MySensors interface driver
+
 Package: agocontrol-rrdtool
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-rrdtool
