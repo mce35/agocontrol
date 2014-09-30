@@ -306,142 +306,153 @@ void OnNotification
 						devices.add(device);
 						agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
 					}
-				} else
-				switch(id.GetCommandClassId()) {
-					case COMMAND_CLASS_SWITCH_MULTILEVEL:
-						if (label == "Level") {
-							if ((device = devices.findId(nodeinstance)) != NULL) {
-								device->addValue(label, id);
-								device->setDevicetype("dimmer");
-							} else {
-								device = new ZWaveNode(nodeinstance, "dimmer");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-							}
-							// Manager::Get()->EnablePoll(id);
-						}
-					break;
-					case COMMAND_CLASS_SWITCH_BINARY:
-						if (label == "Switch") {
-							if ((device = devices.findId(nodeinstance)) != NULL) {
-								device->addValue(label, id);
-							} else {
-								device = new ZWaveNode(nodeinstance, "switch");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-							}
-							// Manager::Get()->EnablePoll(id);
-						}
-					break;
-					case COMMAND_CLASS_SENSOR_BINARY:
-						if (label == "Sensor") {
-							if ((device = devices.findId(tempstring)) != NULL) {
-								device->addValue(label, id);
-							} else {
-								device = new ZWaveNode(tempstring, "binarysensor");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-							}
-							// Manager::Get()->EnablePoll(id);
-						}
-					break;
-					case COMMAND_CLASS_SENSOR_MULTILEVEL:
-						if (label == "Luminance") {
-							device = new ZWaveNode(tempstring, "brightnesssensor");	
-							device->addValue(label, id);
+				} else {
+					switch (generic) {
+						case GENERIC_TYPE_THERMOSTAT:
+							device = new ZWaveNode(nodeinstance, "thermostat");
 							devices.add(device);
-							agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-						} else if (label == "Temperature") {
-							if (generic == GENERIC_TYPE_THERMOSTAT) {
+							break;
+						case GENERIC_TYPE_SWITCH_MULTILEVEL:
+							device = new ZWaveNode(nodeinstance, "dimmer");
+							devices.add(device);
+							break;
+					}
+					switch(id.GetCommandClassId()) {
+						case COMMAND_CLASS_SWITCH_MULTILEVEL:
+							if (label == "Level") {
+								if ((device = devices.findId(nodeinstance)) != NULL) {
+									device->addValue(label, id);
+									// device->setDevicetype("dimmer");
+								} else {
+									device = new ZWaveNode(nodeinstance, "dimmer");	
+									device->addValue(label, id);
+									devices.add(device);
+									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								}
+								// Manager::Get()->EnablePoll(id);
+							}
+						break;
+						case COMMAND_CLASS_SWITCH_BINARY:
+							if (label == "Switch") {
 								if ((device = devices.findId(nodeinstance)) != NULL) {
 									device->addValue(label, id);
 								} else {
-									device = new ZWaveNode(nodeinstance, "thermostat");	
+									device = new ZWaveNode(nodeinstance, "switch");	
+									device->addValue(label, id);
+									devices.add(device);
+									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								}
+								// Manager::Get()->EnablePoll(id);
+							}
+						break;
+						case COMMAND_CLASS_SENSOR_BINARY:
+							if (label == "Sensor") {
+								if ((device = devices.findId(tempstring)) != NULL) {
+									device->addValue(label, id);
+								} else {
+									device = new ZWaveNode(tempstring, "binarysensor");	
+									device->addValue(label, id);
+									devices.add(device);
+									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								}
+								// Manager::Get()->EnablePoll(id);
+							}
+						break;
+						case COMMAND_CLASS_SENSOR_MULTILEVEL:
+							if (label == "Luminance") {
+								device = new ZWaveNode(tempstring, "brightnesssensor");	
+								device->addValue(label, id);
+								devices.add(device);
+								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+							} else if (label == "Temperature") {
+								if (generic == GENERIC_TYPE_THERMOSTAT) {
+									if ((device = devices.findId(nodeinstance)) != NULL) {
+										device->addValue(label, id);
+									} else {
+										device = new ZWaveNode(nodeinstance, "thermostat");	
+										device->addValue(label, id);
+										devices.add(device);
+										agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+									}
+								} else {
+									device = new ZWaveNode(tempstring, "temperaturesensor");	
 									device->addValue(label, id);
 									devices.add(device);
 									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
 								}
 							} else {
-								device = new ZWaveNode(tempstring, "temperaturesensor");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-							}
-						} else {
-							printf("WARNING: unhandled label for SENSOR_MULTILEVEL: %s - adding generic multilevelsensor\n",label.c_str());
-							if ((device = devices.findId(nodeinstance)) != NULL) {
-								device->addValue(label, id);
-							} else {
-								device = new ZWaveNode(nodeinstance, "multilevelsensor");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-							}
-						}
-						// Manager::Get()->EnablePoll(id);
-					break;
-					case COMMAND_CLASS_METER:
-						if (label == "Power") {
-							device = new ZWaveNode(tempstring, "powermeter");	
-							device->addValue(label, id);
-							devices.add(device);
-							agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-						} else if (label == "Energy") {
-							device = new ZWaveNode(tempstring, "energymeter");	
-							device->addValue(label, id);
-							devices.add(device);
-							agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-						} else {
-							printf("WARNING: unhandled label for CLASS_METER: %s - adding generic multilevelsensor\n",label.c_str());
-							if ((device = devices.findId(nodeinstance)) != NULL) {
-								device->addValue(label, id);
-							} else {
-								device = new ZWaveNode(nodeinstance, "multilevelsensor");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-							}
-						}
-						// Manager::Get()->EnablePoll(id);
-					break;
-					case COMMAND_CLASS_BASIC_WINDOW_COVERING:
-						// if (label == "Open") {
-							if ((device = devices.findId(nodeinstance)) != NULL) {
-								device->addValue(label, id);
-								device->setDevicetype("drapes");
-							} else {
-								device = new ZWaveNode(nodeinstance, "drapes");	
-								device->addValue(label, id);
-								devices.add(device);
-								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								printf("WARNING: unhandled label for SENSOR_MULTILEVEL: %s - adding generic multilevelsensor\n",label.c_str());
+								if ((device = devices.findId(nodeinstance)) != NULL) {
+									device->addValue(label, id);
+								} else {
+									device = new ZWaveNode(nodeinstance, "multilevelsensor");	
+									device->addValue(label, id);
+									devices.add(device);
+									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								}
 							}
 							// Manager::Get()->EnablePoll(id);
-					//	}
-					break;
-					case COMMAND_CLASS_THERMOSTAT_SETPOINT:
-						if (polling) Manager::Get()->EnablePoll(id,1);
-					case COMMAND_CLASS_THERMOSTAT_MODE:
-					case COMMAND_CLASS_THERMOSTAT_FAN_MODE:
-					case COMMAND_CLASS_THERMOSTAT_FAN_STATE:
-					case COMMAND_CLASS_THERMOSTAT_OPERATING_STATE:
-						cout << "adding thermostat label: " << label << endl;
-						if ((device = devices.findId(nodeinstance)) != NULL) {
-							device->addValue(label, id);
-							device->setDevicetype("thermostat");
-						} else {
-							device = new ZWaveNode(nodeinstance, "thermostat");	
-							device->addValue(label, id);
-							devices.add(device);
-							agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-						}
-					break;
-					default:
-						printf("Notification: Unassigned Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - Label: %s\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),label.c_str());
-						// printf("Notification: Unassigned Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - ID: %" PRIu64 "\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),id.GetId());
+						break;
+						case COMMAND_CLASS_METER:
+							if (label == "Power") {
+								device = new ZWaveNode(tempstring, "powermeter");	
+								device->addValue(label, id);
+								devices.add(device);
+								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+							} else if (label == "Energy") {
+								device = new ZWaveNode(tempstring, "energymeter");	
+								device->addValue(label, id);
+								devices.add(device);
+								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+							} else {
+								printf("WARNING: unhandled label for CLASS_METER: %s - adding generic multilevelsensor\n",label.c_str());
+								if ((device = devices.findId(nodeinstance)) != NULL) {
+									device->addValue(label, id);
+								} else {
+									device = new ZWaveNode(nodeinstance, "multilevelsensor");	
+									device->addValue(label, id);
+									devices.add(device);
+									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								}
+							}
+							// Manager::Get()->EnablePoll(id);
+						break;
+						case COMMAND_CLASS_BASIC_WINDOW_COVERING:
+							// if (label == "Open") {
+								if ((device = devices.findId(nodeinstance)) != NULL) {
+									device->addValue(label, id);
+									device->setDevicetype("drapes");
+								} else {
+									device = new ZWaveNode(nodeinstance, "drapes");	
+									device->addValue(label, id);
+									devices.add(device);
+									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+								}
+								// Manager::Get()->EnablePoll(id);
+						//	}
+						break;
+						case COMMAND_CLASS_THERMOSTAT_SETPOINT:
+							if (polling) Manager::Get()->EnablePoll(id,1);
+						case COMMAND_CLASS_THERMOSTAT_MODE:
+						case COMMAND_CLASS_THERMOSTAT_FAN_MODE:
+						case COMMAND_CLASS_THERMOSTAT_FAN_STATE:
+						case COMMAND_CLASS_THERMOSTAT_OPERATING_STATE:
+							cout << "adding thermostat label: " << label << endl;
+							if ((device = devices.findId(nodeinstance)) != NULL) {
+								device->addValue(label, id);
+								device->setDevicetype("thermostat");
+							} else {
+								device = new ZWaveNode(nodeinstance, "thermostat");	
+								device->addValue(label, id);
+								devices.add(device);
+								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+							}
+						break;
+						default:
+							printf("Notification: Unassigned Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - Label: %s\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),label.c_str());
+							// printf("Notification: Unassigned Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - ID: %" PRIu64 "\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),id.GetId());
 
+					}
 				}
 			}
 			break;
