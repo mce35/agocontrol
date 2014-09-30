@@ -262,7 +262,6 @@ qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
  */
 std::string prettyPrint(std::string message)
 {
-    int nodeId, childId, messageType, subType;
     std::string payload = "";
     std::string ack = "";
     std::stringstream result;
