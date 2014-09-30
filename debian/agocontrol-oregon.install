@@ -1,0 +1,2 @@
+lib/systemd/system/agooregon.service
+opt/agocontrol/bin/agooregon

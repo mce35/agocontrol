@@ -175,6 +175,11 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description: IPX800 relay boards
 
+Package: agocontrol-oregon
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0
+Description: Oregon interface driver
+
 Package: agocontrol-raspicamera
 Architecture: armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-picamera, python-agoclient
