@@ -93,8 +93,8 @@ Variant::List sequenceToVariantList(const YAML::Node &node) {
 	return output;
 }
 
-Variant::Map parseSchema(const char *file) {
-	std::ifstream fin(file);
+Variant::Map parseSchema(const fs::path &file) {
+	std::ifstream fin(file.c_str());
 	YAML::Parser parser(fin);
 	Variant::Map schema;
 	YAML::Node doc;

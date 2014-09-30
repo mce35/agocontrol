@@ -9,6 +9,7 @@
 #include "inventory.h"
 
 using namespace std;
+namespace fs = ::boost::filesystem;
 
 bool Inventory::createTableIfNotExist(std::string tablename, std::string createquery) {
 	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
@@ -23,12 +24,14 @@ bool Inventory::createTableIfNotExist(std::string tablename, std::string createq
 	return true;
 }
 
-Inventory::Inventory(const char *dbfile) {
-	int rc = sqlite3_open(dbfile, &db);
+Inventory::Inventory(const fs::path &dbfile) {
+	int rc = sqlite3_open(dbfile.c_str(), &db);
 	if( rc != SQLITE_OK ){
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		return;
+		fprintf(stderr, "Can't open database %s: %s\n", dbfile.string().c_str(), sqlite3_errmsg(db));
+		throw std::runtime_error("Cannot open database");
 	}
+	std::cout << "Sccesfully opened database " << dbfile.c_str() << endl;
+
 	/*
 	CREATE TABLE rooms (uuid text, name text, location text);
 	CREATE TABLE devices (uuid text, name text, room text);

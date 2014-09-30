@@ -9,13 +9,18 @@
 
 #include <sqlite3.h>
 
+#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include <boost/filesystem.hpp>
+
 using namespace std;
 using namespace qpid::messaging;
 using namespace qpid::types;
+namespace fs = ::boost::filesystem;
 
 class Inventory {
 	public:
-		Inventory(const char *dbfile);
+		Inventory(const fs::path &dbfile);
 
 		string getdevicename (string uuid);
 		string getdeviceroom (string uuid);

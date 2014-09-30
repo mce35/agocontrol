@@ -45,9 +45,6 @@
 #include <jsoncpp/json/reader.h>
 #include <jsoncpp/json/writer.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#include <boost/filesystem.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
 #include <signal.h>
@@ -346,7 +343,8 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				else
 				{
 					//no response
-					printf("WARNING, no reply message to fetch\n");
+					printf("WARNING, no reply message to fetch. Failed message:\n");
+					std::cout << "subject=" <<subject<<": " << command << endl;
 					mg_rpc_reply_result(conn, request, std::string("no-reply"));
 				}
 
@@ -546,6 +544,8 @@ static void uploadFiles(struct mg_connection *conn)
 				//delete file (it should be processed by sendcommand)
 				//TODO: maybe a purge process could be interesting to implement
 				fs::remove(filepath);
+			}else{
+			   cerr << "Failed to open file " << file_name << " for writing: " << strerror(errno) << endl;
 			}
 		}
 		else
@@ -815,8 +815,8 @@ int main(int argc, char **argv) {
 	Variant::List ports;
 	string port;
 	string split;
-	string htdocs;
-	string certificate;
+	fs::path htdocs;
+	fs::path certificate;
 	string numthreads;
 	string domainname;
 	bool useSSL;
@@ -829,11 +829,11 @@ int main(int argc, char **argv) {
 	agoConnection = new AgoConnection("rpc");
 
 	//get parameters
-	port=getConfigOption("rpc", "ports", "8008,8009s");
-	htdocs=getConfigOption("rpc", "htdocs", BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR));
-	certificate=getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
-	numthreads=getConfigOption("rpc", "numthreads", "30");
-	domainname=getConfigOption("rpc", "domainname", "agocontrol");
+	port = getConfigOption("rpc", "ports", "8008,8009s");
+	htdocs = getConfigOption("rpc", "htdocs", fs::path(BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR)));
+	certificate = getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
+	numthreads = getConfigOption("rpc", "numthreads", "30");
+	domainname = getConfigOption("rpc", "domainname", "agocontrol");
 
 	//ports
 	while( port.find(',')!=std::string::npos )
@@ -846,17 +846,15 @@ int main(int argc, char **argv) {
 	ports.push_back(port);
 
 	//auth
-	stringstream auth;
-	auth << htdocs << "/" << HTPASSWD;
-	fs::path authPath(auth.str());
+	fs::path authPath = htdocs / HTPASSWD;
 	if( fs::exists(authPath) )
 	{
 		//activate auth
-		authFile = fopen(auth.str().c_str(), "r");
+		authFile = fopen(authPath.c_str(), "r");
 		if( authFile==NULL )
 		{
 			//unable to parse auth file
-			cout << "Auth support: error parsing \"" << auth << "\" file. Auth deactivated" << endl;
+			cout << "Auth support: error parsing \"" << authPath.string() << "\" file. Auth deactivated" << endl;
 		}
 		else
 		{
@@ -891,11 +889,11 @@ int main(int argc, char **argv) {
 			struct mg_server *server;
 			sprintf(serverId, "%d", threadId);
 			server = mg_create_server((void*)serverId, event_handler);
-			mg_set_option(server, "document_root", htdocs.c_str());
+			mg_set_option(server, "document_root", htdocs.string().c_str());
 			mg_set_option(server, "auth_domain", domainname.c_str());
 			if( useSSL )
 			{
-				mg_set_option(server, "ssl_certificate", certificate.c_str());
+				mg_set_option(server, "ssl_certificate", certificate.string().c_str());
 			}
 			if( firstServer==NULL )
 			{

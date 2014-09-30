@@ -13,12 +13,13 @@
 #include "bool.h"
 
 #ifndef EVENTMAPFILE
-#define EVENTMAPFILE "/maps/eventmap.json"
+#define EVENTMAPFILE "maps/eventmap.json"
 #endif
 
 using namespace std;
 using namespace agocontrol;
 using namespace qpid::types;
+namespace fs = ::boost::filesystem;
 
 qpid::types::Variant::Map eventmap;
 AgoConnection *agoConnection;
@@ -255,7 +256,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 int main(int argc, char **argv) {
 	agoConnection = new AgoConnection("event");	
 	cout << "parsing eventmap file" << endl;
-	eventmap = jsonFileToVariantMap(getConfigPath(EVENTMAPFILE));
+	fs::path file = ensureParentDirExists(getConfigPath(EVENTMAPFILE));
+
+	eventmap = jsonFileToVariantMap(file);
 	cout << "eventmap: " << eventmap << endl;
 	cout << "adding controller" << endl;
 	agoConnection->addDevice("eventcontroller", "eventcontroller");

@@ -14,7 +14,7 @@
 #include "agoclient.h"
 
 #ifndef SECURITYMAPFILE
-#define SECURITYMAPFILE "/maps/securitymap.json"
+#define SECURITYMAPFILE "maps/securitymap.json"
 #endif
 
 using namespace qpid::messaging;
