@@ -1,0 +1,6 @@
+{
+        "name": "ATAlarm",
+        "version": "0.0.1",
+        "description": "ATAlarm configuration",
+        "dashboardAccess": true
+}

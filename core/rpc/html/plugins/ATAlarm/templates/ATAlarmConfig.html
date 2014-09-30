@@ -1,0 +1,44 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <span id="nr" data-translateable="true">ATAlarmController is not responding. Unable to execute action.</span>
+        <span id="sp" data-translateable="true">Serial port configured successfully.</span>
+        <span id="rc" data-translateable="true">Counters resetted successfully.</span>
+        <span id="msg_tag_rmok" data-translateable="true">Tag removed successfully.</span>
+        <span id="msg_tagok" data-translateable="true">Tag added successfully.</span>
+    </div>
+
+    <h3>ATAlarm configuration</h3>
+    <br/>
+
+    <ul id="atconf">
+        <li class="prepend append field">
+            <span class="adjoined">Configure serial port</span>
+            <input id="setport" data-bind="value: port" class="normal text input" type="text" placeholder="/dev/ttyACM0" />
+            <div data-bind="event:{mousedown:setPort}" class="pretty medium primary btn"><a href="#">Set</a></div>
+        </li>
+        <li class="field">
+            <span class="adjoined">Used contacts</span>
+            <div data-bind="event:{mousedown:setBase(0)}" class="pretty medium default btn"><a href="#">0</a></div>
+            <div data-bind="event:{mousedown:setBase(1)}" class="pretty medium default btn"><a href="#">1</a></div>
+            <div data-bind="event:{mousedown:setBase(2)}" class="pretty medium default btn"><a href="#">2</a></div>
+            <div data-bind="event:{mousedown:setBase(3)}" class="pretty medium default btn"><a href="#">3</a></div>
+            <div data-bind="event:{mousedown:setBase(4)}" class="pretty medium default btn"><a href="#">4</a></div>
+            <div data-bind="event:{mousedown:setBase(5)}" class="pretty medium default btn"><a href="#">5</a></div>
+        </li>
+        <li class="field">
+          <span class="adjoined">Configure Wiegand tags</span>
+          <div class="picker" style="top:14px;">
+            <select class="padding-right: 10px;" data-bind="options:wgtags, optionsText: function(item){ return item.tag; }, value:selectedWGTag"></select>
+          </div>
+          <div data-bind="event:{mousedown:removeWGTag}" class="pretty medium primary btn"><a href="#">Remove tag</a></div>
+        </li>
+        <li class="prepend append field">
+            <span class="adjoined">Add wiegand tag</span>
+            <input id="newtag" class="normal text input" type="text" placeholder="012345678" />
+            <div id="addtagbtn" data-bind="event:{mousedown:setWGTag}" class="pretty medium default btn"><a href="#">Set</a></div>
+        </li>
+    </ul>
+
+    <br/>
+</div>
+

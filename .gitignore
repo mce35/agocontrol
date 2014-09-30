@@ -3,6 +3,7 @@
 *.a
 *.pyc
 *.o
+*~
 CMakeFiles
 cmake_install.cmake
 CMakeCache.txt
