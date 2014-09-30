@@ -54,7 +54,7 @@
 
 //mongoose close idle connection after 30 seconds (timeout)
 #define MONGOOSE_POLLING 1000 //in ms, mongoose polling time
-#define GETEVENT_MAX_RETRIES 28 //mongoose poll every seconds (see MONGOOSE_POLLING)
+#define GETEVENT_DEFAULT_TIMEOUT 28 // mongoose poll every seconds (see MONGOOSE_POLLING)
 
 //upload file path
 #define UPLOAD_PATH "/tmp/"
@@ -88,11 +88,13 @@ public:
 	Json::Value rpcRequestId;
 	time_t inited;
 	time_t lastPoll;
+	int timeout;
 
 	GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_)
 		: subscriptionId(subscriptionId_)
 		, rpcRequestId(rpcRequestId_)
-		, lastPoll(0) {
+		, lastPoll(0)
+		, timeout(GETEVENT_DEFAULT_TIMEOUT)	{
 			inited = time(NULL);
 	}
 };
@@ -396,6 +398,11 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					//add connection param (used to get connection param when polling see MG_POLL)
 					GetEventState *state = new GetEventState(content.asString(), id);
 
+					Json::Value timeout = params["timeout"];
+					if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT) {
+						state->timeout = timeout.asInt();
+					}
+
 					conn->connection_param = state;
 					return getEventRequest(conn, state);
 				}
@@ -696,7 +703,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 			state->lastPoll = time(NULL);
 
 			if(result == MG_FALSE) {
-				if((state->lastPoll - state->inited) > GETEVENT_MAX_RETRIES) {
+				if((state->lastPoll - state->inited) > state->timeout) {
 					// close connection now (before mongoose close connection)
 					mg_rpc_reply_error(conn, state->rpcRequestId, -32602, "no messages for subscription");
 					result = MG_TRUE;
