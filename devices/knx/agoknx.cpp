@@ -30,6 +30,7 @@ using namespace qpid::types;
 using namespace tinyxml2;
 using namespace std;
 using namespace agocontrol;
+namespace fs = ::boost::filesystem;
 
 int polldelay = 0;
 
@@ -44,7 +45,7 @@ AgoConnection *agoConnection;
 /**
  * parses the device XML file and creates a qpid::types::Variant::Map with the data
  */
-bool loadDevices(string filename, Variant::Map& _deviceMap) {
+bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
 	XMLDocument devicesFile;
 	int returncode;
 
@@ -284,7 +285,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 
 int main(int argc, char **argv) {
 	std::string eibdurl;
-	std::string devicesFile;
+	fs::path devicesFile;
 
 	// parse config
 	eibdurl=getConfigOption("knx", "url", "ip:127.0.0.1");
