@@ -459,7 +459,6 @@ static void uploadFiles(struct mg_connection *conn)
 	const char *data;
 	int data_len, ofs = 0;
 	char var_name[100], file_name[100];
-	string path = "";
 	Variant::Map content;
 	Variant::List files;
 	char posted_var[1024] = "";
@@ -472,30 +471,36 @@ static void uploadFiles(struct mg_connection *conn)
 
 		if( strlen(file_name)>0 )
 		{
-			//it's a file
+			// Sanitize filename, it should only be a filename.
+			fs::path orig_fn(file_name);
+			fs::path safe_fn = orig_fn.filename();
+			if(std::string(file_name) != safe_fn.string()){
+				cout << "Rejecting file upload, unsafe path \"" << file_name << "\" " << endl;
+				uploadError = "Invalid filename";
+				break;
+			}
 
 			//check if uuid found
-			if( uuid.size()==0 )
+			if(uuid.size() == 0)
 			{
 				//no uuid found yet, drop file
 				continue;
 			}
 
-			//save file to upload path
-			path = std::string(UPLOAD_PATH) + std::string(file_name);
-			fs::path filepath(path);
-			FILE* fp = fopen(path.c_str(), "wb");
+			// Save file to a temporary path
+			fs::path tempfile = fs::path(UPLOAD_PATH) / fs::unique_path().replace_extension(safe_fn.extension());
+			FILE* fp = fopen(tempfile.c_str(), "wb");
 			if( fp )
 			{
 				//write file first
-				cout << "Upload file to \"" << path << "\"" << endl;
+				cout << "Uploading file \"" << safe_fn.string() << "\" file to " << tempfile << endl;
 				int written = fwrite(data, sizeof(char), data_len, fp);
 				fclose(fp);
 				if( written!=data_len )
 				{
 					//error writting file, drop it
-					fs::remove(filepath);
-					cerr << "Uploaded file \"" << path << "\" not fully written (no space left?)" << endl;
+					fs::remove(tempfile);
+					cerr << "Uploaded file \"" << tempfile.string() << "\" not fully written (no space left?)" << endl;
 					uploadError = "Unable to write file (no space left?)";
 					continue;
 				}
@@ -504,16 +509,16 @@ static void uploadFiles(struct mg_connection *conn)
 				content.clear();
 				content["uuid"] = std::string(uuid);
 				content["command"] = "uploadfile";
-				content["filepath"] = path;
-				content["filename"] = std::string(file_name);
+				content["filepath"] = tempfile.string();
+				content["filename"] = safe_fn.string();
 				content["filesize"] = data_len;
 
 				Variant::Map responseMap = agoConnection->sendMessageReply("", content);
 				if( responseMap.size()==0 )
 				{
 					//command failed, drop file
-					fs::remove(filepath);
-					cout << "Uploaded file \"" << file_name << "\" dropped because command failed" << endl;
+					fs::remove(tempfile);
+					cout << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed" << endl;
 					uploadError = "Internal error";
 					continue;
 				}
@@ -521,7 +526,7 @@ static void uploadFiles(struct mg_connection *conn)
 				if( !responseMap["result"].isVoid() && responseMap["result"].asInt16()!=0 )
 				{
 					//file rejected, drop it
-					fs::remove(filepath);
+					fs::remove(tempfile);
 					if( !responseMap["error"].isVoid() )
 					{
 						uploadError = responseMap["error"].asString();
@@ -530,22 +535,22 @@ static void uploadFiles(struct mg_connection *conn)
 					{
 						uploadError = "File rejected";
 					}
-					cerr << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
+					cerr << "Uploaded file \"" << safe_fn.string() << "\" rejected by recipient: " << uploadError << endl;
 					//uploadError = "File rejected: no handler available";
 					continue;
 				}
 
 				//add file to output
 				Variant::Map file;
-				file["name"] = string(file_name);
+				file["name"] = safe_fn.string();
 				file["size"] = data_len;
 				files.push_back(file);
 
 				//delete file (it should be processed by sendcommand)
 				//TODO: maybe a purge process could be interesting to implement
-				fs::remove(filepath);
+				fs::remove(tempfile);
 			}else{
-			   cerr << "Failed to open file " << file_name << " for writing: " << strerror(errno) << endl;
+			   cerr << "Failed to open file " << tempfile.string() << " for writing: " << strerror(errno) << endl;
 			}
 		}
 		else
@@ -578,7 +583,7 @@ static bool downloadFile(struct mg_connection *conn)
 	Variant::Map content;
 	Variant::Map responseMap;
 	string downloadError = "";
-	string filepath = "";
+	fs::path filepath;
 
 	//get params
 	if( mg_get_var(conn, "filename", param, sizeof(param))>0 )
@@ -597,7 +602,7 @@ static bool downloadFile(struct mg_connection *conn)
 			if( !responseMap["filepath"].isVoid() && responseMap["filepath"].asString().length()>0 )
 			{
 				//all seems valid
-				filepath = responseMap["filepath"].asString();
+				filepath = fs::path(responseMap["filepath"].asString());
 				cout << "Downloading file \"" << filepath << "\"" << endl;
 			}
 			else
