@@ -38,6 +38,7 @@ set (AGODEVICES
   rrdtool
   zmcam
   ETAtouch
+  oregon
 )
 
 IF (FREEBSD)
