@@ -1,0 +1,41 @@
+<div data-bind="attr: {'data-uuid': uuid}" class="four columns device">
+
+    <div class="row dashboard-widget-header">
+        <ul class="two_up tiles">
+            <li class="dashboard-widget-header-icon">
+                <div class="pretty large primary btn handle">
+                    <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-thermometer"/>
+                </div>
+            </li>
+            <li class="dashboard-widget-header-infos">
+                <div class="row">
+                <ko opts="if: name ">
+                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
+                </ko>
+                <ko opts="ifnot: name ">
+                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
+                </ko>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row dashboard-widget-content dashboard-widget-content-values">
+        <ko opts="foreach: valueList">
+        <ul class="three_up tiles">
+            <li class="dashboard-widget-content-quantity">
+                <span data-bind="text: name"/>
+            </li>
+            <li class="dashboard-widget-content-unit">
+                <span data-bind="text: levelUnit"/>
+            </li>
+            <li class="dashboard-widget-content-button">
+                <div class="small pretty primary btn btn-full">
+                    <a href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
+                </div>
+            </li>
+        </ul>
+        </ko>
+    </div>
+
+</div>
