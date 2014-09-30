@@ -62,6 +62,18 @@
 //default auth file
 #define HTPASSWD ".htpasswd"
 
+/* JSON-RPC 2.0 standard error codes
+ * http://www.jsonrpc.org/specification#error_object
+ */
+#define JSONRPC_PARSE_ERROR -32700
+#define JSONRPC_INVALID_REQUEST -32600
+#define JSONRPC_METHOD_NOT_FOUND -32601
+#define JSONRPC_INVALID_PARAMS -32602
+#define JSONRPC_INTERNAL_ERROR -32603
+
+// -32000 to -32099 impl-defined server errors
+#define AGO_JSONRPC_NO_EVENT -32000
+
 namespace fs = ::boost::filesystem;
 using namespace std;
 using namespace qpid::messaging;
@@ -291,7 +303,7 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 
 	if(it == subscriptions.end()) {
 		pthread_mutex_unlock(&mutexSubscriptions);
-		mg_rpc_reply_error(conn, state->rpcRequestId, -32603, "Invalid params: no current subscription for uuid");
+		mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
 		return false;
 	}
 
@@ -351,14 +363,14 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				}
 
 			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params");
 			}
 
 		} else if (method == "subscribe") {
 			string subscriberName = generateUuid();
 			if (id.isNull()) {
 				// JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
-				mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
 			} else if (subscriberName != "") {
 				deque<Variant::Map> empty;
 				Subscriber subscriber;
@@ -370,7 +382,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				mg_rpc_reply_result(conn, request, subscriberName);
 			} else {
 				// uuid is empty so malloc probably failed, we seem to be out of memory
-				mg_rpc_reply_error(conn, request, -32000, "Out of memory");
+				mg_rpc_reply_error(conn, request, JSONRPC_INTERNAL_ERROR, "Out of memory");
 			}
 
 		} else if (method == "unsubscribe") {
@@ -386,10 +398,10 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					pthread_mutex_unlock(&mutexSubscriptions);
 					mg_rpc_reply_result(conn, request, std::string("success"));
 				} else {
-					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+					mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 				}
 			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 			}
 		} else if (method == "getevent") {
 			if (params.isObject()) {
@@ -408,16 +420,16 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				}
 				else
 				{
-					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+					mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 				}
 			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 			}
 		} else {
-			mg_rpc_reply_error(conn, request, -32601, "Method not found");
+			mg_rpc_reply_error(conn, request, JSONRPC_METHOD_NOT_FOUND, "Method not found");
 		}
 	} else {
-		mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
+		mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
 	}
 
 	return false;
@@ -450,7 +462,7 @@ static bool jsonrpc(struct mg_connection *conn)
 	}
 	else
 	{
-		mg_rpc_reply_error(conn, Json::Value(), -32700, "Parse error");
+		mg_rpc_reply_error(conn, Json::Value(), JSONRPC_PARSE_ERROR, "Parse error");
 	}
 
 	return result;
