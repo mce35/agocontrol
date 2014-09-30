@@ -717,7 +717,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 			if(result == MG_FALSE) {
 				if((state->lastPoll - state->inited) > state->timeout) {
 					// close connection now (before mongoose close connection)
-					mg_rpc_reply_error(conn, state->rpcRequestId, -32602, "no messages for subscription");
+					mg_rpc_reply_error(conn, state->rpcRequestId, AGO_JSONRPC_NO_EVENT, "no messages for subscription");
 					result = MG_TRUE;
 				}
 			}
