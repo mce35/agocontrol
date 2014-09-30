@@ -493,8 +493,7 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	instance = interfacename;
 
 	uuidMapFile = getConfigPath("uuidmap");
-	uuidMapFile /= interfacename;
-	uuidMapFile += ".json";
+	uuidMapFile /= (std::string(interfacename) + ".json");
 	ensureParentDirExists(uuidMapFile);
 
 	loadUuidMap();

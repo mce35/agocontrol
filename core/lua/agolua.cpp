@@ -61,8 +61,8 @@ static const luaL_Reg loadedlibs[] = {
 
 static fs::path construct_script_name(fs::path input) {
 	fs::path out = (scriptdir / input);
-	// No native + operator, only +=
-	out += ".lua";
+	// replace == add/append
+	out.replace_extension(".lua");
 	return out;
 }
 
@@ -649,7 +649,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				if( fs::is_regular_file(status(source)) && source.extension().string()==".lua" )
 				{
 					try {
-						fs::path filename;
+						std::string filename;
 						if( content["filename"].asString().find("blockly_")!=0 )
 						{
 							// prepend "blockly_" string
