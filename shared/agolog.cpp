@@ -21,6 +21,7 @@ static int glog_fd=-1;
 static int glog_debug=0;
 static int glog_use_syslog=0;
 static char glog_file[1024]="";
+static char gapp_name[128];
 static pthread_mutex_t glog_mutex;
 
 int agolog_open(const char *app_name,int use_syslog,
@@ -29,6 +30,9 @@ int agolog_open(const char *app_name,int use_syslog,
 {
   glog_debug=log_debug;
   glog_use_syslog=use_syslog;
+
+  strncpy(gapp_name, app_name, sizeof(gapp_name));
+  gapp_name[sizeof(gapp_name)-1]=0;
 
   pthread_mutex_init(&glog_mutex, NULL);
 
@@ -72,6 +76,7 @@ void agolog(int priority,const char *fmt,...)
 {
   char buff[1024];
   va_list list;
+  char *ptr;
 
   if(priority==LOG_DEBUG && glog_debug==0)
     return;
@@ -80,11 +85,14 @@ void agolog(int priority,const char *fmt,...)
   vsnprintf(buff,sizeof(buff),fmt,list);
   va_end(list);
 
+  ptr = buff;
+  while((ptr = strchr(ptr, '\n')) != NULL) *ptr = ' ';
+
   if(glog_use_syslog!=0)
     syslog(LOG_DAEMON|priority,"%s",buff);
   if(glog_fd>=0)
     {
-      static char prefix[512];
+      char prefix[512];
       struct tm ltime;
       time_t t;
       int last_errno;
@@ -94,9 +102,9 @@ void agolog(int priority,const char *fmt,...)
       last_errno=errno;
       t=time(NULL);
       localtime_r(&t,&ltime);
-      snprintf(prefix,sizeof(prefix),"%.4i-%.2i-%.2i %.2i:%.2i:%.2i Ago[%i]: ",
+      snprintf(prefix,sizeof(prefix),"%.4i-%.2i-%.2i %.2i:%.2i:%.2i %s[%i]: ",
                ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,
-               ltime.tm_hour,ltime.tm_min,ltime.tm_sec,getpid());
+               ltime.tm_hour,ltime.tm_min,ltime.tm_sec,gapp_name,getpid());
       write(glog_fd,prefix,strlen(prefix));
       switch(priority)
         {
