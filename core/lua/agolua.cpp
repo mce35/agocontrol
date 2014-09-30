@@ -642,11 +642,12 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			}
 		} else if (content["command"] == "uploadfile") {
 			//import script
-			if( !content["filepath"].isVoid() && content["filepath"].asString()!="" && !content["filename"].isVoid() && content["filename"].asString()!="" )
+			if( !content["filepath"].isVoid() && content["filepath"].asString()!="" &&
+				 !content["filename"].isVoid() && content["filename"].asString()!="" )
 			{
 				//check file
 				fs::path source(content["filepath"]);
-				if( fs::is_regular_file(status(source)) && source.extension().string()==".lua" )
+				if( fs::is_regular_file(status(source)) && source.extension().string()==".lua")
 				{
 					try {
 						std::string filename;
@@ -711,7 +712,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					//file exists, return full path
 					cout << "Send fullpath of file to download " << target << endl;
 					returnval["error"] = "";
-					returnval["filepath"] = file;
+					returnval["filepath"] = target.string();
 					returnval["result"] = 0;
 				}
 				else
