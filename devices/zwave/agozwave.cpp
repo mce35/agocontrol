@@ -309,12 +309,16 @@ void OnNotification
 				} else {
 					switch (generic) {
 						case GENERIC_TYPE_THERMOSTAT:
-							device = new ZWaveNode(nodeinstance, "thermostat");
-							devices.add(device);
+							if ((device = devices.findId(nodeinstance)) == NULL) {
+								device = new ZWaveNode(nodeinstance, "thermostat");
+								devices.add(device);
+							}
 							break;
 						case GENERIC_TYPE_SWITCH_MULTILEVEL:
-							device = new ZWaveNode(nodeinstance, "dimmer");
-							devices.add(device);
+							if ((device = devices.findId(nodeinstance)) == NULL) {
+								device = new ZWaveNode(nodeinstance, "dimmer");
+								devices.add(device);
+							}
 							break;
 					}
 					switch(id.GetCommandClassId()) {
