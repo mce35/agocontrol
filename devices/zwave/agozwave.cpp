@@ -312,12 +312,14 @@ void OnNotification
 							if ((device = devices.findId(nodeinstance)) == NULL) {
 								device = new ZWaveNode(nodeinstance, "thermostat");
 								devices.add(device);
+								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
 							}
 							break;
 						case GENERIC_TYPE_SWITCH_MULTILEVEL:
 							if ((device = devices.findId(nodeinstance)) == NULL) {
 								device = new ZWaveNode(nodeinstance, "dimmer");
 								devices.add(device);
+								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
 							}
 							break;
 					}
