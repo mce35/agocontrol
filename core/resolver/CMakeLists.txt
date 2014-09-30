@@ -7,8 +7,6 @@ set (RESOLVER_LIBRARIES
     sqlite3
     agoclient
     pthread
-    boost_system
-    boost_filesystem
 )
 
 IF (FREEBSD)
