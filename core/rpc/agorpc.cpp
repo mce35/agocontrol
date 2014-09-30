@@ -340,7 +340,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 	if (version == "2.0") {
 		const Json::Value params = request.get("params", Json::Value());
 		if (method == "message" ) {
-			if (params.isObject())
+			if (params.isObject() && !params.empty())
 			{
 				//prepare message
 				Json::Value content = params["content"];
