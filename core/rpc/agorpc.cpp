@@ -295,7 +295,6 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 {
 	int result = true;
 	Variant::Map event;
-	bool eventFound = false;
 
 	//look for available event
 	pthread_mutex_lock(&mutexSubscriptions);
@@ -319,7 +318,6 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 		mg_printmap(conn, event);
 		mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
-		eventFound = true;
 		result = false;
 	}
 	else {
