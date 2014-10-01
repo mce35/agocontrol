@@ -67,10 +67,13 @@ namespace agocontrol {
 
 	bool augeas_init();
 	augeas *augeas = NULL;
+	std::string augeasPathFromSectionOption(const char *section, const char *option);
+
 	/// fetch a value from the config file.
 	std::string getConfigOption(const char *section, const char *option, std::string &defaultvalue);
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 	boost::filesystem::path getConfigOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
+	qpid::types::Variant::Map getConfigTree();
 
 	/// save value to the config file
 	bool setConfigOption(const char *section, const char *option, const char* value);
