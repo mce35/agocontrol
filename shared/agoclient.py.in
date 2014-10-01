@@ -70,9 +70,9 @@ class AgoConnection:
         """The constructor."""
         self.instance = instance
         syslog.syslog(syslog.LOG_NOTICE, "connecting to broker")
-        broker = get_config_option("system", "broker", "localhost")
-        username = get_config_option("system", "username", "agocontrol")
-        password = get_config_option("system", "password", "letmein")
+        broker = str(get_config_option("system", "broker", "localhost"))
+        username = str(get_config_option("system", "username", "agocontrol"))
+        password = str(get_config_option("system", "password", "letmein"))
         self.connection = Connection(broker,
             username=username, password=password, reconnect=True)
         self.connection.open()

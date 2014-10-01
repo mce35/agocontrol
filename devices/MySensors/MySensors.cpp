@@ -14,6 +14,7 @@ const char* getMsgTypeNameV13(enum msgTypeV13 type)
 		case REQUEST_VARIABLE_V13: return "REQUEST_VARIABLE";
 		case VARIABLE_ACK_V13: return "VARIABLE_ACK";
 		case INTERNAL_V13: return "INTERNAL";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -43,6 +44,7 @@ const char* getDeviceTypeNameV13(enum deviceTypesV13 type)
 		case S_LOCK_V13: return "S_LOCK";
 		case S_IR_V13: return "S_IR";
 		case S_WATER_V13: return "S_WATER";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -88,6 +90,7 @@ const char* getVariableTypeNameV13(enum varTypesV13 type)
 		case V_FLOW_V13: return "V_FLOW";
 		case V_VOLUME_V13: return "V_VOLUME";
 		case V_LOCK_STATUS_V13: return "V_LOCK_STATUS";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -108,6 +111,7 @@ const char* getInternalTypeNameV13(enum internalTypesV13 type)
 		case I_UNIT_V13: return "I_UNIT";
 		case I_SKETCH_NAME_V13: return "I_SKETCH_NAME";
 		case I_SKETCH_VERSION_V13: return "I_SKETCH_VERSION";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -125,6 +129,7 @@ const char* getMsgTypeNameV14(enum msgTypeV14 type)
 		case REQ_V14: return "REQ";
 		case INTERNAL_V14: return "INTERNAL";
 		case STREAM_V14: return "STREAM";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -158,6 +163,7 @@ const char* getDeviceTypeNameV14(enum deviceTypesV14 type)
 		case S_CUSTOM_V14: return "S_CUSTOM";
 		case S_DUST_V14: return "S_DUST";
 		case S_SCENE_CONTROLLER_V14: return "S_SCENE_CONTROLLER";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -206,6 +212,7 @@ const char* getVariableTypeNameV14(enum varTypesV14 type)
 		case V_DUST_LEVEL_V14: return "V_DUST_LEVEL";
 		case V_VOLTAGE_V14: return "V_VOLTAGE";
 		case V_CURRENT_V14: return "V_CURRENT";
+        default: return "UNKNOWN";
 	}
 }
 
@@ -228,5 +235,6 @@ const char* getInternalTypeNameV14(enum internalTypesV14 type)
 		case I_SKETCH_VERSION_V14: return "I_SKETCH_VERSION";
 		case I_REBOOT_V14: return "I_REBOOT";
 		case I_GATEWAY_READY_V14: return "I_GATEWAY_READY";
+        default: return "UNKNOWN";
 	}
 }

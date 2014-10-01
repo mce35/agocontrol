@@ -23,6 +23,7 @@ using namespace agocontrol;
 using namespace boost::system; 
 using namespace boost::asio; 
 using namespace qpid::types;
+namespace fs = ::boost::filesystem;
 
 enum flush_type
 {
@@ -261,7 +262,6 @@ qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
  */
 std::string prettyPrint(std::string message)
 {
-    int nodeId, childId, messageType, subType;
     std::string payload = "";
     std::string ack = "";
     std::stringstream result;
@@ -1824,7 +1824,7 @@ int main(int argc, char **argv)
     }
 
     // load map, create sections if empty
-    std::string dmf = getConfigPath(DEVICEMAPFILE);
+    fs::path dmf = getConfigPath(DEVICEMAPFILE);
     devicemap = jsonFileToVariantMap(dmf);
     if (devicemap["nextid"].isVoid())
     {

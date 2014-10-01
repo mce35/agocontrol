@@ -45,9 +45,6 @@
 #include <jsoncpp/json/reader.h>
 #include <jsoncpp/json/writer.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#include <boost/filesystem.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
 #include <signal.h>
@@ -57,13 +54,25 @@
 
 //mongoose close idle connection after 30 seconds (timeout)
 #define MONGOOSE_POLLING 1000 //in ms, mongoose polling time
-#define GETEVENT_MAX_RETRIES 28 //mongoose poll every seconds (see MONGOOSE_POLLING)
+#define GETEVENT_DEFAULT_TIMEOUT 28 // mongoose poll every seconds (see MONGOOSE_POLLING)
 
 //upload file path
 #define UPLOAD_PATH "/tmp/"
 
 //default auth file
 #define HTPASSWD ".htpasswd"
+
+/* JSON-RPC 2.0 standard error codes
+ * http://www.jsonrpc.org/specification#error_object
+ */
+#define JSONRPC_PARSE_ERROR -32700
+#define JSONRPC_INVALID_REQUEST -32600
+#define JSONRPC_METHOD_NOT_FOUND -32601
+#define JSONRPC_INVALID_PARAMS -32602
+#define JSONRPC_INTERNAL_ERROR -32603
+
+// -32000 to -32099 impl-defined server errors
+#define AGO_JSONRPC_NO_EVENT -32000
 
 namespace fs = ::boost::filesystem;
 using namespace std;
@@ -91,11 +100,13 @@ public:
 	Json::Value rpcRequestId;
 	time_t inited;
 	time_t lastPoll;
+	int timeout;
 
 	GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_)
 		: subscriptionId(subscriptionId_)
 		, rpcRequestId(rpcRequestId_)
-		, lastPoll(0) {
+		, lastPoll(0)
+		, timeout(GETEVENT_DEFAULT_TIMEOUT)	{
 			inited = time(NULL);
 	}
 };
@@ -292,7 +303,7 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 
 	if(it == subscriptions.end()) {
 		pthread_mutex_unlock(&mutexSubscriptions);
-		mg_rpc_reply_error(conn, state->rpcRequestId, -32603, "Invalid params: no current subscription for uuid");
+		mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
 		return false;
 	}
 
@@ -329,7 +340,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 	if (version == "2.0") {
 		const Json::Value params = request.get("params", Json::Value());
 		if (method == "message" ) {
-			if (params.isObject())
+			if (params.isObject() && !params.empty())
 			{
 				//prepare message
 				Json::Value content = params["content"];
@@ -346,19 +357,20 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				else
 				{
 					//no response
-					printf("WARNING, no reply message to fetch\n");
+					printf("WARNING, no reply message to fetch. Failed message:\n");
+					std::cout << "subject=" <<subject<<": " << command << endl;
 					mg_rpc_reply_result(conn, request, std::string("no-reply"));
 				}
 
 			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params");
 			}
 
 		} else if (method == "subscribe") {
 			string subscriberName = generateUuid();
 			if (id.isNull()) {
 				// JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
-				mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
 			} else if (subscriberName != "") {
 				deque<Variant::Map> empty;
 				Subscriber subscriber;
@@ -370,7 +382,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 				mg_rpc_reply_result(conn, request, subscriberName);
 			} else {
 				// uuid is empty so malloc probably failed, we seem to be out of memory
-				mg_rpc_reply_error(conn, request, -32000, "Out of memory");
+				mg_rpc_reply_error(conn, request, JSONRPC_INTERNAL_ERROR, "Out of memory");
 			}
 
 		} else if (method == "unsubscribe") {
@@ -386,10 +398,10 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					pthread_mutex_unlock(&mutexSubscriptions);
 					mg_rpc_reply_result(conn, request, std::string("success"));
 				} else {
-					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+					mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 				}
 			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 			}
 		} else if (method == "getevent") {
 			if (params.isObject()) {
@@ -398,21 +410,26 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 					//add connection param (used to get connection param when polling see MG_POLL)
 					GetEventState *state = new GetEventState(content.asString(), id);
 
+					Json::Value timeout = params["timeout"];
+					if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT) {
+						state->timeout = timeout.asInt();
+					}
+
 					conn->connection_param = state;
 					return getEventRequest(conn, state);
 				}
 				else
 				{
-					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+					mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 				}
 			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
+				mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 			}
 		} else {
-			mg_rpc_reply_error(conn, request, -32601, "Method not found");
+			mg_rpc_reply_error(conn, request, JSONRPC_METHOD_NOT_FOUND, "Method not found");
 		}
 	} else {
-		mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
+		mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
 	}
 
 	return false;
@@ -445,7 +462,7 @@ static bool jsonrpc(struct mg_connection *conn)
 	}
 	else
 	{
-		mg_rpc_reply_error(conn, Json::Value(), -32700, "Parse error");
+		mg_rpc_reply_error(conn, Json::Value(), JSONRPC_PARSE_ERROR, "Parse error");
 	}
 
 	return result;
@@ -461,7 +478,6 @@ static void uploadFiles(struct mg_connection *conn)
 	const char *data;
 	int data_len, ofs = 0;
 	char var_name[100], file_name[100];
-	string path = "";
 	Variant::Map content;
 	Variant::List files;
 	char posted_var[1024] = "";
@@ -474,30 +490,36 @@ static void uploadFiles(struct mg_connection *conn)
 
 		if( strlen(file_name)>0 )
 		{
-			//it's a file
+			// Sanitize filename, it should only be a filename.
+			fs::path orig_fn(file_name);
+			fs::path safe_fn = orig_fn.filename();
+			if(std::string(file_name) != safe_fn.string()){
+				cout << "Rejecting file upload, unsafe path \"" << file_name << "\" " << endl;
+				uploadError = "Invalid filename";
+				break;
+			}
 
 			//check if uuid found
-			if( uuid.size()==0 )
+			if(uuid.size() == 0)
 			{
 				//no uuid found yet, drop file
 				continue;
 			}
 
-			//save file to upload path
-			path = std::string(UPLOAD_PATH) + std::string(file_name);
-			fs::path filepath(path);
-			FILE* fp = fopen(path.c_str(), "wb");
+			// Save file to a temporary path
+			fs::path tempfile = fs::path(UPLOAD_PATH) / fs::unique_path().replace_extension(safe_fn.extension());
+			FILE* fp = fopen(tempfile.c_str(), "wb");
 			if( fp )
 			{
 				//write file first
-				cout << "Upload file to \"" << path << "\"" << endl;
+				cout << "Uploading file \"" << safe_fn.string() << "\" file to " << tempfile << endl;
 				int written = fwrite(data, sizeof(char), data_len, fp);
 				fclose(fp);
 				if( written!=data_len )
 				{
 					//error writting file, drop it
-					fs::remove(filepath);
-					cerr << "Uploaded file \"" << path << "\" not fully written (no space left?)" << endl;
+					fs::remove(tempfile);
+					cerr << "Uploaded file \"" << tempfile.string() << "\" not fully written (no space left?)" << endl;
 					uploadError = "Unable to write file (no space left?)";
 					continue;
 				}
@@ -506,16 +528,16 @@ static void uploadFiles(struct mg_connection *conn)
 				content.clear();
 				content["uuid"] = std::string(uuid);
 				content["command"] = "uploadfile";
-				content["filepath"] = path;
-				content["filename"] = std::string(file_name);
+				content["filepath"] = tempfile.string();
+				content["filename"] = safe_fn.string();
 				content["filesize"] = data_len;
 
 				Variant::Map responseMap = agoConnection->sendMessageReply("", content);
 				if( responseMap.size()==0 )
 				{
 					//command failed, drop file
-					fs::remove(filepath);
-					cout << "Uploaded file \"" << file_name << "\" dropped because command failed" << endl;
+					fs::remove(tempfile);
+					cout << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed" << endl;
 					uploadError = "Internal error";
 					continue;
 				}
@@ -523,7 +545,7 @@ static void uploadFiles(struct mg_connection *conn)
 				if( !responseMap["result"].isVoid() && responseMap["result"].asInt16()!=0 )
 				{
 					//file rejected, drop it
-					fs::remove(filepath);
+					fs::remove(tempfile);
 					if( !responseMap["error"].isVoid() )
 					{
 						uploadError = responseMap["error"].asString();
@@ -532,20 +554,22 @@ static void uploadFiles(struct mg_connection *conn)
 					{
 						uploadError = "File rejected";
 					}
-					cerr << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
+					cerr << "Uploaded file \"" << safe_fn.string() << "\" rejected by recipient: " << uploadError << endl;
 					//uploadError = "File rejected: no handler available";
 					continue;
 				}
 
 				//add file to output
 				Variant::Map file;
-				file["name"] = string(file_name);
+				file["name"] = safe_fn.string();
 				file["size"] = data_len;
 				files.push_back(file);
 
 				//delete file (it should be processed by sendcommand)
 				//TODO: maybe a purge process could be interesting to implement
-				fs::remove(filepath);
+				fs::remove(tempfile);
+			}else{
+			   cerr << "Failed to open file " << tempfile.string() << " for writing: " << strerror(errno) << endl;
 			}
 		}
 		else
@@ -578,7 +602,7 @@ static bool downloadFile(struct mg_connection *conn)
 	Variant::Map content;
 	Variant::Map responseMap;
 	string downloadError = "";
-	string filepath = "";
+	fs::path filepath;
 
 	//get params
 	if( mg_get_var(conn, "filename", param, sizeof(param))>0 )
@@ -597,7 +621,7 @@ static bool downloadFile(struct mg_connection *conn)
 			if( !responseMap["filepath"].isVoid() && responseMap["filepath"].asString().length()>0 )
 			{
 				//all seems valid
-				filepath = responseMap["filepath"].asString();
+				filepath = fs::path(responseMap["filepath"].asString());
 				cout << "Downloading file \"" << filepath << "\"" << endl;
 			}
 			else
@@ -691,9 +715,9 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 			state->lastPoll = time(NULL);
 
 			if(result == MG_FALSE) {
-				if((state->lastPoll - state->inited) > GETEVENT_MAX_RETRIES) {
+				if((state->lastPoll - state->inited) > state->timeout) {
 					// close connection now (before mongoose close connection)
-					mg_rpc_reply_error(conn, state->rpcRequestId, -32602, "no messages for subscription");
+					mg_rpc_reply_error(conn, state->rpcRequestId, AGO_JSONRPC_NO_EVENT, "no messages for subscription");
 					result = MG_TRUE;
 				}
 			}
@@ -815,8 +839,8 @@ int main(int argc, char **argv) {
 	Variant::List ports;
 	string port;
 	string split;
-	string htdocs;
-	string certificate;
+	fs::path htdocs;
+	fs::path certificate;
 	string numthreads;
 	string domainname;
 	bool useSSL;
@@ -829,11 +853,11 @@ int main(int argc, char **argv) {
 	agoConnection = new AgoConnection("rpc");
 
 	//get parameters
-	port=getConfigOption("rpc", "ports", "8008,8009s");
-	htdocs=getConfigOption("rpc", "htdocs", BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR));
-	certificate=getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
-	numthreads=getConfigOption("rpc", "numthreads", "30");
-	domainname=getConfigOption("rpc", "domainname", "agocontrol");
+	port = getConfigOption("rpc", "ports", "8008,8009s");
+	htdocs = getConfigOption("rpc", "htdocs", fs::path(BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR)));
+	certificate = getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
+	numthreads = getConfigOption("rpc", "numthreads", "30");
+	domainname = getConfigOption("rpc", "domainname", "agocontrol");
 
 	//ports
 	while( port.find(',')!=std::string::npos )
@@ -846,17 +870,15 @@ int main(int argc, char **argv) {
 	ports.push_back(port);
 
 	//auth
-	stringstream auth;
-	auth << htdocs << "/" << HTPASSWD;
-	fs::path authPath(auth.str());
+	fs::path authPath = htdocs / HTPASSWD;
 	if( fs::exists(authPath) )
 	{
 		//activate auth
-		authFile = fopen(auth.str().c_str(), "r");
+		authFile = fopen(authPath.c_str(), "r");
 		if( authFile==NULL )
 		{
 			//unable to parse auth file
-			cout << "Auth support: error parsing \"" << auth << "\" file. Auth deactivated" << endl;
+			cout << "Auth support: error parsing \"" << authPath.string() << "\" file. Auth deactivated" << endl;
 		}
 		else
 		{
@@ -891,11 +913,11 @@ int main(int argc, char **argv) {
 			struct mg_server *server;
 			sprintf(serverId, "%d", threadId);
 			server = mg_create_server((void*)serverId, event_handler);
-			mg_set_option(server, "document_root", htdocs.c_str());
+			mg_set_option(server, "document_root", htdocs.string().c_str());
 			mg_set_option(server, "auth_domain", domainname.c_str());
 			if( useSSL )
 			{
-				mg_set_option(server, "ssl_certificate", certificate.c_str());
+				mg_set_option(server, "ssl_certificate", certificate.string().c_str());
 			}
 			if( firstServer==NULL )
 			{

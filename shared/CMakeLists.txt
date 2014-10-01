@@ -16,6 +16,8 @@ set (AGOCLIENT_LIBRARIES
     qpidtypes
     uuid
     augeas
+    boost_system
+    boost_filesystem
     ${JSONCPP_LIBRARIES}
 )
 

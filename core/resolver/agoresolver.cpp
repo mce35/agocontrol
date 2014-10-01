@@ -38,27 +38,23 @@
 #include <qpid/messaging/Session.h>
 #include <qpid/messaging/Address.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED 
-#include "boost/filesystem.hpp"
-
 #include "agoclient.h"
 #include "version.h"
 
 #ifndef SCHEMADIR
-#define SCHEMADIR "/schema.d/"
+#define SCHEMADIR "schema.d"
 #endif
 
 #ifndef INVENTORYDBFILE
-#define INVENTORYDBFILE "/db/inventory.db"
+#define INVENTORYDBFILE "db/inventory.db"
 #endif
 
 #ifndef VARIABLESMAPFILE
-#define VARIABLESMAPFILE "/maps/variablesmap.json"
+#define VARIABLESMAPFILE "maps/variablesmap.json"
 #endif
 
 #ifndef DEVICESMAPFILE
-#define DEVICESMAPFILE "/maps/devices.json"
+#define DEVICESMAPFILE "maps/devices.json"
 #endif
 
 #include "schema.h"
@@ -68,7 +64,6 @@ using namespace std;
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
-
 namespace fs = ::boost::filesystem;
 
 AgoConnection *agoConnection;
@@ -456,7 +451,7 @@ int main(int argc, char **argv) {
 	agoConnection->addEventHandler(eventHandler);
 	agoConnection->setFilter(false);
 
-	string schemaPrefix;
+	fs::path schemaPrefix;
 
 //	clog << agocontrol::kLogNotice << "starting up" << std::endl;
 
@@ -468,14 +463,14 @@ int main(int argc, char **argv) {
 	systeminfo["version"] = AGOCONTROL_VERSION;
 
 	// generate vector of all schema files
-	std::vector<std::string> schemaArray;
-	fs::path schemadir(schemaPrefix.c_str());
+	std::vector<fs::path> schemaArray;
+	fs::path schemadir(schemaPrefix);
 	if (fs::exists(schemadir)) {
 		fs::recursive_directory_iterator it(schemadir);
 		fs::recursive_directory_iterator endit;
 		while (it != endit) {
 			if (fs::is_regular_file(*it) && (it->path().extension().string() == ".yaml")) {
-				schemaArray.push_back(it->path().filename().string());
+				schemaArray.push_back(it->path().filename());
 			}
 			++it;
 		}
@@ -487,17 +482,22 @@ int main(int argc, char **argv) {
 
 	// load schema files in proper order
 	std::sort(schemaArray.begin(), schemaArray.end());
-	std::string schemaFile = schemaPrefix + schemaArray.front();
-	schema = parseSchema(schemaFile.c_str());
+	fs::path schemaFile = schemaPrefix / schemaArray.front();
+	schema = parseSchema(schemaFile);
 	clog << agocontrol::kLogDebug << "parsing schema file:" << schemaFile << std::endl;
 	for (int i=1; i < schemaArray.size(); i++) {
-		schemaFile = schemaPrefix + schemaArray[i];
+		schemaFile = schemaPrefix / schemaArray[i];
 		clog << agocontrol::kLogDebug << "parsing additional schema file:" << schemaFile << std::endl;
-		schema = mergeMap(schema, parseSchema(schemaFile.c_str()));
+		schema = mergeMap(schema, parseSchema(schemaFile));
 	}
 
 	clog << agocontrol::kLogDebug << "reading inventory" << std::endl;
-	inv = new Inventory(getConfigPath(INVENTORYDBFILE).c_str());
+	try {
+		inv = new Inventory(ensureParentDirExists(getConfigPath(INVENTORYDBFILE)));
+	}catch(std::exception& e){
+		clog << agocontrol::kLogEmerg << "Failed to load inventory: " << e.what() << endl;
+		return 1;
+	}
 
 	variables = jsonFileToVariantMap(getConfigPath(VARIABLESMAPFILE));
 	if (persistence) loadDevicemap();

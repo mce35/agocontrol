@@ -27,6 +27,7 @@ using namespace qpid::types;
 using namespace tinyxml2;
 using namespace std;
 using namespace agocontrol;
+namespace fs = ::boost::filesystem;
 
 
 Variant::Map channelMap;
@@ -232,13 +233,14 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
 
 
 int main(int argc, char **argv) {
-        std::string channelsFile, ola_server;
+        fs::path channelsFile;
+        std::string ola_server;
 
         channelsFile=getConfigOption("dmx", "channelsfile", getConfigPath("/dmx/channels.xml"));
         ola_server=getConfigOption("dmx", "url", "ip:127.0.0.1");
 
 	// load xml file into map
-	if (!loadChannels(channelsFile, channelMap)) {
+	if (!loadChannels(channelsFile.string(), channelMap)) {
 		printf("ERROR, can't load channel xml\n");
 		exit(-1);
 	}

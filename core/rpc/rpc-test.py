@@ -1,49 +1,215 @@
-import urllib
-import urllib2
+# Execute with
+#
+#   python -m unittest rpc-test
+#
+import unittest
+import os
 import json
+import urllib2
+import random
+import threading
 
-url = 'http://192.168.80.2:8008/jsonrpc'
-# values = '{"jsonrpc" : "2.0", "method" : "message", "params" : {"content":{"command":"inventory"}}, "id":1 }'
-# values = '{"jsonrpc" : "2.0", "method" : "message", "params" : {"content":{"command":"off", "uuid":"0962f27e-99ce-43a4-872b-97d75d61f464"}}, "id":1 }'
-# values = '{"method":"message","params":{"content":{"command":"inventory"}},"id":1,"jsonrpc":"2.0"}'
-# values = '[{"method":"message","params":{"content":{"command":"inventory"}},"id":null,"jsonrpc":"2.0"}, {"jsonrpc" : "2.0", "method" : "message", "params" : {"content":{"command":"off", "uuid":"0962f27e-99ce-43a4-872b-97d75d61f464"}}, "id":2 },{"jsonrpc" : "2.0", "method" : "message", "params" : {"content":{"command":"off", "uuid":"0962f27e-99ce-43a4-872b-97d75d61f464"}}},{"jsonrpc" : "2.0", "method" : "message", "params" : {"content":{"command":"off", "uuid":"0962f27e-99ce-43a4-872b-97d75d61f464"}}, "id":4 },{"method":"message","params":{"content":{"command":"inventory"}},"jsonrpc":"2.0"}]'
-values = '{"method":"message","params":{"content":{"command":"inventory"}},"id":1,"jsonrpc":"2.0"}'
-#values = '{"method":"subscribe","id":1,"jsonrpc":"2.0"}'
-# values = '{"method":"unsubscribe","params":{"uuid": "401ae021-aad3-431e-bff7-dc95549799b6"},"id":1,"jsonrpc":"2.0"}'
-# values = '{"method":"getevent","params":{"uuid": "8ebb77e0-ad9a-4279-9d29-990af0f115c1"},"id":1,"jsonrpc":"2.0"}'
-# values = '{"method":"unsubscribe","id":1,"jsonrpc":"2.0"}'
-# req = urllib2.Request(url, values)
-# response = urllib2.urlopen(req)
-# print response.read()
-# controller = '51f9c2d8-d761-47db-894a-ba5905435142'; # 457991c4-4d3e-4533-82dc-2da65e4b6f27
-# controller = '457991c4-4d3e-4533-82dc-2da65e4b6f27';
-controller = '42b9bbae-4457-483f-94bf-72c27e0b3c38';
+from qpid.messaging import Connection, Message, Empty
 
-values = '{"method":"message","params":{"content":{"command":"setscenario","uuid":"' + controller + '","scenariomap":{"1":{"command":"on","uuid":"c81a868e-e3da-418a-9f4e-fbfa30dfdcb9"},"2":{"command":"scenariosleep","delay":1},"3":{"command":"off","uuid":"c81a868e-e3da-418a-9f4e-fbfa30dfdcb9"}}}},"id":2,"jsonrpc":"2.0"}'
-# values = '{"method":"message","params":{"content":{"command":"setscenario","uuid":"' + controller + '","scenariomap":{"1":{"command":"on","uuid":"c81a868e-e3da-418a-9f4e-fbfa30dfdcb9"},"2":{"command":"scenariosleep","delay":1},"3":{"command":"off","uuid":"c81a868e-e3da-418a-9f4e-fbfa30dfdcb9"}}}},"id":2,"jsonrpc":"2.0"}'
-#print values
+RPC_PARSE_ERROR = -32700
+RPC_INVALID_REQUEST = -32600
+RPC_METHOD_NOT_FOUND = -32601
+RPC_INVALID_PARAMS = -32602
+RPC_INTERNAL_ERROR = -32603
+# -32000 to -32099 impl-defined server errors
+RPC_NO_EVENT = -32000
 
-# uuid=79403b64-3bb5-482a-a7a6-c44eda724bc8 command=getzones
+class RPCTest(unittest.TestCase):
+    longMessage = True
 
-# values = '{"method":"message","params":{"content":{"command":"setzones","uuid":"3f42226f-efa7-4b9a-93b7-4f4330c7ea4f","zonemap":{"myMode":[{"delay":1,"zone":"testZone"},{"delay":32,"zone":"testZone2"}],"myMode2":[{"delay":2,"zone":"testZone"},{"delay":8,"zone":"testZone2"}],"tst":[]}}},"id":1,"jsonrpc":"2.0"}'
-# values = '{"method":"message","params":{"content":{"command":"getzones","uuid":"79403b64-3bb5-482a-a7a6-c44eda724bc8"}},"id":1,"jsonrpc":"2.0"}'
-req = urllib2.Request(url, values)
-response = urllib2.urlopen(req)
-rawdata = response.read()
-print rawdata
-retval = json.loads(rawdata)
-print retval
-# scenario = retval['result']['scenario']
-# print "created scenario:", scenario
-# print "running getscenario:"
-# values = '{"method":"message","params":{"content":{"command":"getscenario","uuid":"' + controller + '","scenario":"' + scenario + '"}},"id":1,"jsonrpc":"2.0"}'
-# print values
-# req = urllib2.Request(url, values)
-# response = urllib2.urlopen(req)
-# print response.read()
-# print "deleting scenario"
-# values = '{"method":"message","params":{"content":{"command":"delscenario","uuid":"' + controller + '","scenario":"' + scenario +'"}},"id":3,"jsonrpc":"2.0"}'
-# print values
-# req = urllib2.Request(url, values)
-# response = urllib2.urlopen(req)
-# print response.read()
+    def setUp(self):
+        self.url = os.environ.get('AGO_URL', 'http://localhost:8008')
+        self.url_jsonrpc = self.url + '/jsonrpc'
+
+        # lazy-inited
+        self._qpid_connection = None
+
+    @property
+    def qpid_connection(self):
+        if not self._qpid_connection:
+            broker = os.environ.get('AGO_BROKER', 'localhost')
+            username = os.environ.get('AGO_USERNAME', 'agocontrol')
+            password = os.environ.get('AGO_PASSWORD', 'letmein')
+
+            self._qpid_connection = Connection(broker,
+                username=username, password=password, reconnect=True)
+            self._qpid_connection.open()
+
+            self._qpid_session = self._qpid_connection.session()
+            self._qpid_sender = self._qpid_session.sender(
+                "agocontrol; {create: always, node: {type: topic}}")
+
+        return self._qpid_connection
+
+    @property
+    def qpid_session(self):
+        if not self._qpid_connection:
+            conn = self.qpid_connection
+        return self._qpid_session
+
+    @property
+    def qpid_sender(self):
+        if not self._qpid_connection:
+            conn = self.qpid_connection
+        return self._qpid_sender
+
+    def testUnknownCommand(self):
+        self.jsonrpc_request('no-real', rpc_error_code = RPC_METHOD_NOT_FOUND)
+
+    def testBusMessage(self):
+        def mock(msg):
+            self.assertIn('command', msg.content)
+            self.assertEquals('some-command', msg.content['command'])
+            self.assertEquals(1234, msg.content['int-param'])
+            return {'result':4321, 'string':'test'}
+
+        qpr = DummyQpidResponder(self.qpid_session, mock)
+        try:
+            qpr.start()
+            rep = self.bus_message('', {'command':'some-command', 'int-param':1234, 'UT-EXP':True})
+            self.assertEquals(4321, rep['result'])
+            self.assertEquals('test', rep['string'])
+        finally:
+            qpr.shutdown()
+
+    def testUnknownBusMessage(self):
+        self.jsonrpc_request('message', None, rpc_error_code = RPC_INVALID_PARAMS)
+        ret = self.bus_message('', {'command':'non-existent'})
+        self.assertEquals("no-reply", ret)
+
+    def testInventory(self):
+        """Executes an inventory request, assumes agoresolver is alive"""
+        rep = self.bus_message('', {'command':'inventory'})
+        dbg_msg = "REP: '%s'" % rep
+        self.assertEquals(dict, type(rep), dbg_msg)
+        self.assertEquals(rep['returncode'], 0, dbg_msg)
+        self.assertTrue('devices' in rep, dbg_msg)
+        self.assertTrue('schema' in rep, dbg_msg)
+        self.assertTrue('rooms' in rep, dbg_msg)
+        self.assertTrue('floorplans' in rep, dbg_msg)
+        self.assertTrue('system' in rep, dbg_msg)
+        self.assertTrue('variables' in rep, dbg_msg)
+        self.assertTrue('environment' in rep, dbg_msg)
+
+    def testGetEventErrors(self):
+        err = self.jsonrpc_request('getevent', None, rpc_error_code= RPC_INVALID_PARAMS)
+        err = self.jsonrpc_request('getevent', {}, rpc_error_code=RPC_INVALID_PARAMS)
+        err = self.jsonrpc_request('getevent', {'uuid':'123'}, rpc_error_code=RPC_INVALID_PARAMS)
+
+    def testSubscribe(self):
+        sub_id = self.jsonrpc_request('subscribe', None)
+        self.assertIn(type(sub_id), (str,unicode))
+        err = self.jsonrpc_request('getevent', {'uuid':sub_id, 'timeout':0}, rpc_error_code = RPC_NO_EVENT)
+        self.assertEquals(err['message'], 'no messages for subscription')
+
+        rep = self.jsonrpc_request('unsubscribe', None, rpc_error_code=RPC_INVALID_PARAMS)
+        rep = self.jsonrpc_request('unsubscribe', {'uuid':None}, rpc_error_code=RPC_INVALID_PARAMS)
+        rep = self.jsonrpc_request('unsubscribe', {'uuid':sub_id})
+        self.assertEquals("success", rep)
+
+
+    def bus_message(self, subject, content, rpc_error_code=None):
+        """Send a Agocontrol qpid Bus message via the RPC interface"""
+        params = {
+            'content': content,
+            'subject': subject
+            }
+
+        return self.jsonrpc_request('message', params, rpc_error_code = rpc_error_code)
+
+    def jsonrpc_request(self, method, params=None, req_id=None, rpc_error_code=None):
+        """Execute a JSON-RPC 2.0 request with the specified method, and specified params
+        dict. If req_id is None, a random ID number is selected.
+        
+        Spec: http://www.jsonrpc.org/specification
+        """
+        if req_id is None:
+            req_id = random.randint(1, 10000)
+
+        msg = {'jsonrpc': '2.0',
+                'id': req_id, 
+                'method': method
+                }
+
+        if params:
+            msg['params'] = params
+
+        req_raw = json.dumps(msg)
+        dbg_msg = "REQ: %s" % req_raw
+
+        http_req = urllib2.Request(self.url_jsonrpc, req_raw)
+        http_rep = urllib2.urlopen(http_req)
+
+        self.assertEquals(200, http_rep.code, dbg_msg)
+        self.assertEquals('application/json', http_rep.info()['Content-Type'], dbg_msg)
+
+        rep_raw = http_rep.read()
+        dbg_msg+= ", REP : %s" % rep_raw
+
+        rep_body = json.loads(rep_raw)
+
+
+        self.assertEquals('2.0', rep_body['jsonrpc'], dbg_msg)
+        self.assertEquals(req_id, rep_body['id'], dbg_msg)
+
+        if rpc_error_code:
+            self.assertTrue('error' in rep_body, dbg_msg)
+            self.assertFalse('result' in rep_body, dbg_msg)
+
+            err = rep_body['error']
+            self.assertTrue('code' in err, dbg_msg)
+            self.assertEquals(rpc_error_code, err['code'], dbg_msg)
+        else:
+            self.assertFalse('error' in rep_body, dbg_msg)
+            self.assertTrue('result' in rep_body, dbg_msg)
+
+
+        if rpc_error_code == None:
+            return rep_body['result']
+        else:
+            return rep_body['error']
+
+
+
+class DummyQpidResponder(threading.Thread):
+    """Simple class which will look for Qpid messages, and
+    execute a handler fn which the test can use to generate a response.
+
+    Only reacts to messages with key 'UT-EXP' in content!
+    """
+    def __init__(self, session, handler):
+        super(DummyQpidResponder, self).__init__()
+        self.session = session
+        self.receiver = session.receiver(
+            "agocontrol; {create: always, node: {type: topic}}")
+        self.sender = session.sender(
+                "agocontrol; {create: always, node: {type: topic}}")
+        self.handler = handler
+
+    def run(self):
+        self.stop = False
+        while not self.stop:
+            try:
+                msg = self.receiver.fetch(timeout=0.1)
+                self.session.acknowledge()
+                if not 'UT-EXP' in msg.content:
+                    # Ignore other spurious msgs
+                    continue
+
+                rep = self.handler(msg)
+                if rep:
+                    #print "Got msg %s, replying with %s" % (msg.content, rep)
+                    snd = self.session.sender(msg.reply_to)
+                    snd.send(Message(rep))
+
+            except Empty:
+                continue
+
+    def shutdown(self):
+        self.stop = True
+        #self.join()

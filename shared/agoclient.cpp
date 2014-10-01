@@ -8,6 +8,8 @@
 #include <assert.h>
 
 #include <boost/preprocessor/stringize.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 #include <jsoncpp/json/reader.h>
 #include "agoclient.h"
@@ -15,6 +17,7 @@
 using namespace std;
 using namespace qpid::messaging;
 using namespace qpid::types;
+namespace fs = ::boost::filesystem;
 
 // helper to determine last element
 #ifndef _LIBCPP_ITERATOR
@@ -29,76 +32,101 @@ Iter next(Iter iter)
 
 namespace agocontrol {
 	bool directories_inited = false;
+	fs::path config_dir;
+	fs::path localstate_dir;
 
-	std::string config_dir;
-	std::string localstate_dir;
+	fs::path initDirectory(const char *name, const char *def){
+		const char *tmp;
+		std::string env ("AGO_");
+		env+= name;
+
+		boost::to_upper(env);
+
+		fs::path dir(def);
+		if((tmp = getenv(env.c_str())) != NULL) {
+			dir = tmp;
+		}
+
+		try {
+			if(!fs::exists(dir)) {
+				// Try to create it
+				try{
+					// ensureDirExists will canonical() it
+					dir = ensureDirExists(dir);
+				} catch(const fs::filesystem_error& error) {
+					cerr << "Failed to create " << name << " " << dir.string() << ": " << error.code().message() << endl;
+				}
+			}
+			else {
+				// Exists, canonicalize it ourselfs
+				dir = fs::canonical(dir);
+			}
+		} catch(const fs::filesystem_error& error) {
+			// Canonical failed; does it not exist after all?
+			cerr << "Failed to resolve " << name << " " << dir.string() << ": " << error.code().message() 
+				<< ". Falling back to " << tmp << endl;
+			dir = fs::path(tmp);
+		}
+
+		return dir;
+	}
+
 
 	void initDirectorys() {
-		char *envDir ;
-
 		// DEFAULT_CONFDIR, DEFAULT_LOCALSTATEDIR must be set with compiler flag
-		config_dir = BOOST_PP_STRINGIZE(DEFAULT_CONFDIR);
-		localstate_dir = BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR);
-		assert(!config_dir.empty());
-		assert(!localstate_dir.empty());
-
-		if((envDir = getenv("AGO_CONFDIR")) != NULL) {
-			config_dir = envDir;
-		}
-
-		if((envDir = getenv("AGO_LOCALSTATEDIR")) != NULL) {
-			localstate_dir = envDir;
-		}
-
-		while(config_dir.find_last_of('/') == config_dir.size())
-			config_dir.erase(config_dir.size() - 1, 1);
-
-		while(localstate_dir.find_last_of('/') == localstate_dir.size())
-			config_dir.erase(localstate_dir.size() - 1, 1);
-
+		config_dir = initDirectory("confdir", BOOST_PP_STRINGIZE(DEFAULT_CONFDIR));
+		localstate_dir = initDirectory("localstatedir", BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR));
 		directories_inited = true;
 	}
 }
 
-std::string agocontrol::getConfigPath(const char *sub) {
-	if(!directories_inited) {
-		initDirectorys();
+fs::path agocontrol::ensureDirExists(const boost::filesystem::path &dir) {
+	if(!fs::exists(dir))  {
+		// This will throw if it fails
+		fs::create_directories(dir);
 	}
 
-	if(sub) {
-		std::string total(config_dir);
-		if(*sub != '/')
-			total+= "/";
-
-		total+= sub;
-		return total;
-	}
-	return config_dir;
+	// Normalize the directory; it should exist and should thus not fail
+	return fs::canonical(dir);
 }
 
-std::string agocontrol::getLocalStatePath(const char *sub) {
+fs::path agocontrol::ensureParentDirExists(const boost::filesystem::path &filename) {
+	if(!fs::exists(filename))  {
+		// Ensure parent directory exist
+		fs::path dir = filename.parent_path();
+		ensureDirExists(dir);
+	}
+	return filename;
+}
+
+fs::path agocontrol::getConfigPath(const fs::path &subpath) {
 	if(!directories_inited) {
 		initDirectorys();
 	}
-
-	if(sub) {
-		std::string total(localstate_dir);
-		if(*sub != '/')
-			total+= "/";
-
-		total+= sub;
-		return total;
+	fs::path res(config_dir);
+	if(!subpath.empty()) {
+		res /= subpath;
 	}
-	return localstate_dir;
+	return res;
+}
+
+fs::path agocontrol::getLocalStatePath(const fs::path &subpath) {
+	if(!directories_inited) {
+		initDirectorys();
+	}
+	fs::path res(localstate_dir);
+	if(!subpath.empty()) {
+		res /= subpath;
+	}
+	return res;
 }
 
 
 bool agocontrol::augeas_init()  {
-	std::stringstream path;
-	path << getConfigPath(MODULE_CONFDIR);
-	path << "/*.conf";
+	fs::path path = getConfigPath(fs::path(MODULE_CONFDIR));
+	path /= "*.conf";
 
-	std::string extra_loadpath = getConfigPath();
+	fs::path extra_loadpath = getConfigPath();
 
 	augeas = aug_init(NULL, extra_loadpath.c_str(), AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
 	if (augeas == NULL) {
@@ -106,7 +134,7 @@ bool agocontrol::augeas_init()  {
 		return false;
 	}
 	aug_set(augeas, "/augeas/load/Agocontrol/lens", "agocontrol.lns");
-	aug_set(augeas, "/augeas/load/Agocontrol/incl", path.str().c_str());
+	aug_set(augeas, "/augeas/load/Agocontrol/incl", path.c_str());
 	if (aug_load(augeas) == 0) return true;
 	return false;
 }
@@ -147,7 +175,7 @@ std::string agocontrol::float2str(float f) {
 	return sstream.str();
 }
 
-bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, std::string filename) {
+bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, const fs::path &filename) {
 	ofstream mapfile;
 	try { 
 		mapfile.open(filename.c_str());
@@ -160,7 +188,7 @@ bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, std::string
 	}
 }
 
-qpid::types::Variant::Map agocontrol::jsonFileToVariantMap(std::string filename) {
+qpid::types::Variant::Map agocontrol::jsonFileToVariantMap(const fs::path &filename) {
 	string content;
 	qpid::types::Variant::Map result;
 	ifstream mapfile (filename.c_str());
@@ -359,8 +387,13 @@ std::string agocontrol::generateUuid() {
 	return strUuid;
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *option, std::string defaultvalue) {
+std::string agocontrol::getConfigOption(const char *section, const char *option, std::string &defaultvalue) {
 	return getConfigOption(section, option, defaultvalue.c_str());
+}
+
+fs::path agocontrol::getConfigOption(const char *section, const char *option, const fs::path &defaultvalue) {
+	std::string value = getConfigOption(section, option, defaultvalue.c_str());
+	return fs::path(value);
 }
 
 std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
@@ -373,7 +406,7 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	std::stringstream result;
 	std::stringstream valuepath;
 	valuepath << "/files";
-	valuepath << getConfigPath(MODULE_CONFDIR);
+	valuepath << getConfigPath(MODULE_CONFDIR).string();
 	valuepath << "/";
 	valuepath << section;
 	valuepath << ".conf";
@@ -406,7 +439,7 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 
 	std::stringstream valuepath;
 	valuepath << "/files";
-	valuepath  << getConfigPath(MODULE_CONFDIR);
+	valuepath << getConfigPath(MODULE_CONFDIR).string();
 	valuepath << "/";
 	valuepath << section;
 	valuepath << ".conf";
@@ -459,9 +492,10 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	eventHandler = NULL;
 	instance = interfacename;
 
-	uuidMapFile = getConfigPath("uuidmap/");
-	uuidMapFile += interfacename;
-	uuidMapFile += ".json";
+	uuidMapFile = getConfigPath("uuidmap");
+	uuidMapFile /= (std::string(interfacename) + ".json");
+	ensureParentDirExists(uuidMapFile);
+
 	loadUuidMap();
 
 	connection = Connection(broker, connectionOptions);
