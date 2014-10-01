@@ -81,6 +81,20 @@ commands:
         type: string
   getdeviceenvironments:
     name: get environments for device from datalogger
+  getconfigtree:
+    name: get a tree of config settings
+  setconfig:
+    name: set a config parameter
+    parameters:
+      section:
+        name: config section
+        type: string
+      option:
+        name: config option
+        type: string
+      value:
+        name: value to set
+        type: string
   setevent:
     name: create new event
     parameters:
