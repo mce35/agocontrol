@@ -396,14 +396,7 @@ fs::path agocontrol::getConfigOption(const char *section, const char *option, co
 	return fs::path(value);
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
-	if (augeas==NULL) augeas_init();
-	if (augeas == NULL) {
-		cerr << "ERROR: cannot initialize augeas" << endl;
-		return defaultvalue;
-	}
-
-	std::stringstream result;
+std::string agocontrol::augeasPathFromSectionOption(const char *section, const char *option) {
 	std::stringstream valuepath;
 	valuepath << "/files";
 	valuepath << getConfigPath(MODULE_CONFDIR).string();
@@ -414,9 +407,64 @@ std::string agocontrol::getConfigOption(const char *section, const char *option,
 	valuepath << section;
 	valuepath << "/";
 	valuepath << option;
+	return valuepath.str();
+}
+
+qpid::types::Variant::Map agocontrol::getConfigTree() {
+	qpid::types::Variant::Map tree;
+	if (augeas==NULL) augeas_init();
+	if (augeas == NULL) {
+		cerr << "ERROR: cannot initialize augeas" << endl;
+		return tree;
+	}
+	char **matches;
+	std::stringstream path;
+	path << "/files";
+	path << getConfigPath(MODULE_CONFDIR).string();
+	path << "/";
+	std::string prefix = path.str();
+	path << "/*";
+	int num = aug_match(augeas, path.str().c_str(), &matches);
+	for (int i=0; i < num; i++) {
+		const char *val;
+		aug_get(augeas, matches[i], &val);
+		if (val != NULL) {
+			// TODO: split augeas path into section and option
+			std::string match = matches[i];
+			replaceString(match, prefix, "");
+			size_t pos = match.find(".conf");
+			std::string section = match.substr(0,pos);
+			replaceString(match, section, "");
+			replaceString(match, ".conf/", "");
+			std::string option = match.substr(1); // skip trailing slash
+			if (!(tree[section].isVoid())) {
+				qpid::types::Variant::Map sectionMap = tree[section].asMap();
+				sectionMap[option] = val;
+				tree[section] = sectionMap;
+			} else {
+				qpid::types::Variant::Map sectionMap;
+				sectionMap[option] = val;
+				tree[section] = sectionMap;
+			}
+		}
+		free((void *) matches[i]);
+	}
+	free(matches);
+	return tree;
+
+}
+
+std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
+	if (augeas==NULL) augeas_init();
+	if (augeas == NULL) {
+		cerr << "ERROR: cannot initialize augeas" << endl;
+		return defaultvalue;
+	}
+
+	std::stringstream result;
 
 	const char *value;
-	int ret =  aug_get(augeas, valuepath.str().c_str(), &value);
+	int ret =  aug_get(augeas, augeasPathFromSectionOption(section, option).c_str(), &value);
 	if (ret != 1) {
 		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
 		result << defaultvalue;
@@ -437,18 +485,7 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 		return false;
 	}
 
-	std::stringstream valuepath;
-	valuepath << "/files";
-	valuepath << getConfigPath(MODULE_CONFDIR).string();
-	valuepath << "/";
-	valuepath << section;
-	valuepath << ".conf";
-	valuepath << "/";
-	valuepath << section;
-	valuepath << "/";
-	valuepath << option;
-
-	if (aug_set(augeas, valuepath.str().c_str(), value) == -1) {
+	if (aug_set(augeas, augeasPathFromSectionOption(section, option).c_str(), value) == -1) {
 		cerr << "Could not set value!" << endl;
 		return false;
 	}

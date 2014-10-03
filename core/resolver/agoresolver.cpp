@@ -317,6 +317,16 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			} else {
 				reply["returncode"] = -1;
 			}
+		} else if (content["command"] == "getconfigtree") {
+			reply["config"] = getConfigTree();
+			reply["returncode"] = 0;
+		} else if (content["command"] == "setconfig") {
+			if ((content["section"].asString() != "") && (content["option"].asString() != "") && (content["value"].asString() != "")) {
+				setConfigOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str());
+				reply["returncode"]=0;
+			} else {
+				reply["returncode"]=-1;
+			}
 		}
 	} else {
 		if (content["command"] == "inventory") {
@@ -485,7 +495,7 @@ int main(int argc, char **argv) {
 	fs::path schemaFile = schemaPrefix / schemaArray.front();
 	schema = parseSchema(schemaFile);
 	clog << agocontrol::kLogDebug << "parsing schema file:" << schemaFile << std::endl;
-	for (int i=1; i < schemaArray.size(); i++) {
+	for (int i=1; i < (int)schemaArray.size(); i++) {
 		schemaFile = schemaPrefix / schemaArray[i];
 		clog << agocontrol::kLogDebug << "parsing additional schema file:" << schemaFile << std::endl;
 		schema = mergeMap(schema, parseSchema(schemaFile));
