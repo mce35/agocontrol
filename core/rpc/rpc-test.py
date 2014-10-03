@@ -4,6 +4,7 @@
 #
 import unittest
 import os
+import threading
 import json
 import urllib2
 import random
@@ -107,6 +108,22 @@ class RPCTest(unittest.TestCase):
         err = self.jsonrpc_request('getevent', {'uuid':sub_id, 'timeout':0}, rpc_error_code = RPC_NO_EVENT)
         self.assertEquals(err['message'], 'no messages for subscription')
 
+        # Send a message
+        message = Message(content={'test':1, 'notify':True}, subject='event.something.subject')
+        self.qpid_sender.send(message)
+
+        while True:
+            res = self.jsonrpc_request('getevent', {'uuid':sub_id, 'timeout':1})
+            if res['event'] == 'event.device.announce':
+                # Ignore announce from other devices.
+                # Besides that, nothing shall talk on our test network
+                continue
+
+            self.assertIn('notify', res)
+            self.assertEquals(res['test'],1)
+            self.assertEquals(res['event'],'event.something.subject')
+            break
+
         rep = self.jsonrpc_request('unsubscribe', None, rpc_error_code=RPC_INVALID_PARAMS)
         rep = self.jsonrpc_request('unsubscribe', {'uuid':None}, rpc_error_code=RPC_INVALID_PARAMS)
         rep = self.jsonrpc_request('unsubscribe', {'uuid':sub_id})
@@ -143,7 +160,7 @@ class RPCTest(unittest.TestCase):
         dbg_msg = "REQ: %s" % req_raw
 
         http_req = urllib2.Request(self.url_jsonrpc, req_raw)
-        http_rep = urllib2.urlopen(http_req)
+        http_rep = urllib2.urlopen(http_req, timeout=5)
 
         self.assertEquals(200, http_rep.code, dbg_msg)
         self.assertEquals('application/json', http_rep.info()['Content-Type'], dbg_msg)
