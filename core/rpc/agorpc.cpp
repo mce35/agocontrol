@@ -264,24 +264,6 @@ static void mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
 	mg_printf_data(conn, ", \"id\": %s}", request_idstr.c_str());
 }
 
-static void command (struct mg_connection *conn) {
-	char uuid[1024], command[1024], level[1024];
-	Variant::Map agocommand;
-	Variant::Map responseMap;
-
-	if (mg_get_var(conn, "uuid", uuid, sizeof(uuid)) > 0) agocommand["uuid"] = uuid;
-	if (mg_get_var(conn, "command", command, sizeof(command)) > 0) agocommand["command"] = command;
-	if (mg_get_var(conn, "level", level, sizeof(level)) > 0) agocommand["level"] = level;
-
-	//send command and write ajax response
-	mg_send_header(conn, "Content-Type", "application/json");
-	responseMap = agoConnection->sendMessageReply("", agocommand);
-	if( responseMap.size()>0 )
-	{
-		mg_printmap(conn, responseMap);
-	}
-}
-
 /**
  * Handle getEvent polling request
  * Return true if an event wasn't found to say to mongoose request is not over (return MG_MORE).
@@ -666,12 +648,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 
 	if (event == MG_REQUEST)
 	{
-		if (strcmp(conn->uri, "/command") == 0)
-		{
-			command(conn);
-			result = MG_TRUE;
-		}
-		else if (strcmp(conn->uri, "/jsonrpc") == 0)
+		if (strcmp(conn->uri, "/jsonrpc") == 0)
 		{
 			if( jsonrpc(conn) )
 				result = MG_MORE;
