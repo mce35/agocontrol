@@ -46,6 +46,8 @@
 #include <jsoncpp/json/writer.h>
 
 #include <boost/preprocessor/stringize.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -112,7 +114,7 @@ public:
 };
 
 map<string,Subscriber> subscriptions;
-pthread_mutex_t mutexSubscriptions;
+boost::mutex mutexSubscriptions;
 
 list<mg_server*> all_servers;
 time_t last_event;
@@ -291,11 +293,11 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 	Variant::Map event;
 
 	//look for available event
-	pthread_mutex_lock(&mutexSubscriptions);
+	boost::unique_lock<boost::mutex> lock(mutexSubscriptions);
 	map<string,Subscriber>::iterator it = subscriptions.find(state->subscriptionId);
 
 	if(it == subscriptions.end()) {
-		pthread_mutex_unlock(&mutexSubscriptions);
+		lock.unlock();
 		mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
 		return false;
 	}
@@ -305,7 +307,7 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 		//event found
 		event = it->second.queue.front();
 		it->second.queue.pop_front();
-		pthread_mutex_unlock(&mutexSubscriptions);
+		lock.unlock();
 
 		std::string myId(state->rpcRequestId.toStyledString());
 		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
@@ -313,9 +315,6 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 		mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
 		result = false;
-	}
-	else {
-		pthread_mutex_unlock(&mutexSubscriptions);
 	}
 
 	return result;
@@ -384,9 +383,10 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 		Subscriber subscriber;
 		subscriber.lastAccess=time(0);
 		subscriber.queue = empty;
-		pthread_mutex_lock(&mutexSubscriptions);
-		subscriptions[subscriberName] = subscriber;
-		pthread_mutex_unlock(&mutexSubscriptions);
+		{
+			boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
+			subscriptions[subscriberName] = subscriber;
+		}
 		return mg_rpc_reply_result(conn, request, subscriberName);
 
 	} else if (method == "unsubscribe") {
@@ -400,12 +400,13 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 		}
 
 		cout << "removing subscription: " << content.asString() << endl;
-		pthread_mutex_lock(&mutexSubscriptions);
-		map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
-		if (it != subscriptions.end()) {
-			subscriptions.erase(content.asString());
+		{
+			boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
+			map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
+			if (it != subscriptions.end()) {
+				subscriptions.erase(content.asString());
+			}
 		}
-		pthread_mutex_unlock(&mutexSubscriptions);
 
 		return mg_rpc_reply_result(conn, request, std::string("success"));
 	} else if (method == "getevent") {
@@ -786,19 +787,20 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
 		content["quantity"] = quantity;
 	}
 
-	pthread_mutex_lock(&mutexSubscriptions);
-	//cout << "Incoming notify: " << content << endl;
-	for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
-		if (it->second.queue.size() > 100) {
-			// this subscription seems to be abandoned, let's remove it to save resources
-			printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
-			subscriptions.erase(it++);
-		} else {
-			it->second.queue.push_back(content);
-			++it;
+	{
+		boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
+		//cout << "Incoming notify: " << content << endl;
+		for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
+			if (it->second.queue.size() > 100) {
+				// this subscription seems to be abandoned, let's remove it to save resources
+				printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
+				subscriptions.erase(it++);
+			} else {
+				it->second.queue.push_back(content);
+				++it;
+			}
 		}
 	}
-	pthread_mutex_unlock(&mutexSubscriptions);
 
 	// Wake servers to let pending getEvent trigger
 	last_event = time(NULL);
@@ -894,8 +896,6 @@ int main(int argc, char **argv) {
 	{
 		cout << "Auth support: no" << endl;
 	}
-
-	pthread_mutex_init(&mutexSubscriptions, NULL);
 
 	// start webservers
 	sscanf(numthreads.c_str(), "%d", &maxthreads);
