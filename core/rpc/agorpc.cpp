@@ -405,6 +405,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 		if (it != subscriptions.end()) {
 			subscriptions.erase(content.asString());
 		}
+		pthread_mutex_unlock(&mutexSubscriptions);
 
 		return mg_rpc_reply_result(conn, request, std::string("success"));
 	} else if (method == "getevent") {
