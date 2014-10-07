@@ -429,11 +429,9 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 
 		conn->connection_param = state;
 		return getEventRequest(conn, state);
-	} else {
-		return mg_rpc_reply_error(conn, request, JSONRPC_METHOD_NOT_FOUND, "Method not found");
 	}
 
-	assert(!*"Invalid state");
+	return mg_rpc_reply_error(conn, request, JSONRPC_METHOD_NOT_FOUND, "Method not found");
 }
 
 /**
