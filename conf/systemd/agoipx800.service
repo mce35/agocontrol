@@ -2,7 +2,7 @@
 Description=ago control IPX800
 
 [Service]
-ExecStart=/opt/agocontrol/bin/agoipx800
+ExecStart=/opt/agocontrol/bin/agoipx800.py
 WorkingDirectory=/opt/agocontrol/bin
 StandardOutput=syslog
 StandardError=syslog
