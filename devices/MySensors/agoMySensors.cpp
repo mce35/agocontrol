@@ -1839,11 +1839,10 @@ int main(int argc, char **argv)
     }
 
     bool error;
-    std::string line = readLine(&error);
     cout << "Requesting gateway version...";
     std::string getVersion = "0;0;3;0;2\n";
     serialPort.write_some(buffer(getVersion));
-    line = readLine(&error);
+    std::string line = readLine(&error);
     if( !error )
     {
         std::vector<std::string> items = split(line, ';');
