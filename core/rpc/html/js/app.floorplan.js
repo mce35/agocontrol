@@ -142,6 +142,7 @@ function floorPlan() {
 	content.y = y;
 	sendCommand(content);
 
+	purgeInventoryCache();
 	// Update local floorplan too
 	var fp = floorPlans[content.floorplan];
 	if (x === -1 && y === -1)
@@ -290,7 +291,7 @@ function createFloorPlan() {
 	return;
     }
     sendCommand(content, function(r) {
-	delete localStorage.inventoryCache;
+	purgeInventoryCache();
 	document.location.href = "?floorplan&fp=" + r.result.uuid;
     });
 }

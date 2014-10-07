@@ -149,7 +149,6 @@ function deviceConfig() {
 		sendCommand(content, function(res){
 		   var d = self.findDevice(item.uuid);
 		   d.name = value;
-		   self.devices.valueHasMutated();
 		   purgeInventoryCache();
 		});
 		return value;
@@ -178,7 +177,6 @@ function deviceConfig() {
 		      }
 		      d.roomUID = value;
 		   }
-		   self.devices.valueHasMutated();
 		   purgeInventoryCache();
 		});
 		return value == "" ? "unset" : rooms[value].name;
