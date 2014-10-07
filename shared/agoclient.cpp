@@ -531,7 +531,14 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 
 	uuidMapFile = getConfigPath("uuidmap");
 	uuidMapFile /= (std::string(interfacename) + ".json");
-	ensureParentDirExists(uuidMapFile);
+	try {
+		ensureParentDirExists(uuidMapFile);
+	} catch(const std::exception& error) {
+		//std::cerr << error.what() << std::endl;
+		// These have already been logged
+		printf("FATAL: Couldn't use configuration path\n");
+		_exit(1);
+	}
 
 	loadUuidMap();
 
@@ -543,7 +550,7 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	} catch(const std::exception& error) {
 		std::cerr << error.what() << std::endl;
 		connection.close();
-		printf("could not connect to broker\n");
+		printf("FATAL: could not connect to broker\n");
 		_exit(1);
 	}
 }
