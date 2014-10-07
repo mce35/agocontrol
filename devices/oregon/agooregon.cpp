@@ -174,7 +174,14 @@ static void oregon_process_measurement(OregonData *data,
               agoConnection->addDevice(bat_intid, "batterysensor");
             }
           data->last_update[channel] = time(NULL);
-          data->staled[channel] = false;
+          if(data->staled[channel] == true)
+            {
+              data->staled[channel] = false;
+              agoConnection->resumeDevice(temp_intid);
+              if(data->humidity[channel] > 0)
+                agoConnection->resumeDevice(hum_intid);
+              agoConnection->resumeDevice(bat_intid);
+            }
           data->battery[channel] = ((msg[0] >> 6) & 0x01) ^ 1; // revert battery value -> 0 bad, 1 -> OK
 
           snprintf(tmp_val, sizeof(tmp_val), "%.1f", data->temperature[channel]);
