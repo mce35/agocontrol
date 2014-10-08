@@ -6,7 +6,10 @@ configure_file (
     @ONLY
 )
 
-file(GLOB_RECURSE LIBAGOCLIENT_SOURCE_FILES *.cpp)
+set (LIBAGOCLIENT_SOURCE_FILES agoclient.cpp)
+IF (NOT Boost_LOG_FOUND)
+	list(APPEND LIBAGOCLIENT_SOURCE_FILES agolog.cpp)
+ENDIF()
 
 add_library (agoclient SHARED ${LIBAGOCLIENT_SOURCE_FILES})
 set_target_properties (agoclient PROPERTIES VERSION 1 SOVERSION 1)
@@ -21,6 +24,11 @@ set (AGOCLIENT_LIBRARIES
     ${JSONCPP_LIBRARIES}
 )
 
+
+IF (Boost_LOG_FOUND)
+	LIST(APPEND AGOCLIENT_LIBRARIES ${Boost_LOG_LIBRARY})
+ENDIF()
+
 target_link_libraries (agoclient ${AGOCLIENT_LIBRARIES})
 
 set_property(
@@ -28,6 +36,7 @@ set_property(
 	PROPERTY COMPILE_DEFINITIONS
 	DEFAULT_CONFDIR=${CONFDIR}
 	DEFAULT_LOCALSTATEDIR=${LOCALSTATEDIR}
+	BOOST_LOG_DYN_LINK
 )
 
 set_property(

@@ -23,6 +23,8 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 
+#include "agolog.h"
+
 #include <uuid/uuid.h>
 #include <augeas.h>
 
@@ -96,6 +98,8 @@ namespace agocontrol {
 			qpid::messaging::Session session;
 			qpid::types::Variant::Map deviceMap; // this holds the internal device list
 			qpid::types::Variant::Map uuidMap; // this holds the permanent uuid to internal id mapping
+			AGO_LOGGER_IMPL AGO_LOG_INSTANCE_NAME;
+			void initLog();
 			bool storeUuidMap(); // stores the map on disk
 			bool loadUuidMap(); // loads it
 			boost::filesystem::path uuidMapFile;

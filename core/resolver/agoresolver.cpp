@@ -495,7 +495,7 @@ int main(int argc, char **argv) {
 	fs::path schemaFile = schemaPrefix / schemaArray.front();
 	schema = parseSchema(schemaFile);
 	clog << agocontrol::kLogDebug << "parsing schema file:" << schemaFile << std::endl;
-	for (int i=1; i < (int)schemaArray.size(); i++) {
+	for (size_t i = 1; i < schemaArray.size(); i++) {
 		schemaFile = schemaPrefix / schemaArray[i];
 		clog << agocontrol::kLogDebug << "parsing additional schema file:" << schemaFile << std::endl;
 		schema = mergeMap(schema, parseSchema(schemaFile));

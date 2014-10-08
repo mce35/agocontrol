@@ -231,6 +231,7 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
 	if (getfirst(query.c_str(), 2, floorplanuuid.c_str(), deviceuuid.c_str())==floorplanuuid) {
 		// already exists, update
 		query = "update devicesfloorplan set x=?, y=? where floorplan = ? and device = ?";
+		cout << query << endl;
 		getfirst(query.c_str(), 4, xstr.str().c_str(), ystr.str().c_str(), floorplanuuid.c_str(), deviceuuid.c_str());
 
 	} else {

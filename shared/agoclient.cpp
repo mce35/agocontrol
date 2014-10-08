@@ -19,6 +19,10 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
+#ifdef HAVE_BOOST_LOG
+#include <boost/log/expressions.hpp>
+#endif
+
 // helper to determine last element
 #ifndef _LIBCPP_ITERATOR
 template <typename Iter>
@@ -34,6 +38,9 @@ namespace agocontrol {
 	bool directories_inited = false;
 	fs::path config_dir;
 	fs::path localstate_dir;
+
+	// global log
+	AGO_LOGGER_IMPL AGO_LOG_INSTANCE_NAME;
 
 	fs::path initDirectory(const char *name, const char *def){
 		const char *tmp;
@@ -54,7 +61,8 @@ namespace agocontrol {
 					// ensureDirExists will canonical() it
 					dir = ensureDirExists(dir);
 				} catch(const fs::filesystem_error& error) {
-					cerr << "Failed to create " << name << " " << dir.string() << ": " << error.code().message() << endl;
+					AGO_WARNING() << "Failed to create " << name << " "
+						<< dir.string() << ": " << error.code().message();
 				}
 			}
 			else {
@@ -63,8 +71,8 @@ namespace agocontrol {
 			}
 		} catch(const fs::filesystem_error& error) {
 			// Canonical failed; does it not exist after all?
-			cerr << "Failed to resolve " << name << " " << dir.string() << ": " << error.code().message() 
-				<< ". Falling back to " << tmp << endl;
+			AGO_WARNING() << "Failed to resolve " << name << " " << dir.string() << ": " << error.code().message() 
+				<< ". Falling back to " << tmp;
 			dir = fs::path(tmp);
 		}
 
@@ -130,7 +138,7 @@ bool agocontrol::augeas_init()  {
 
 	augeas = aug_init(NULL, extra_loadpath.c_str(), AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
 	if (augeas == NULL) {
-		cerr << "Error: Can't initalize augeas" << endl;
+		AGO_ERROR() << "Can't initalize augeas";
 		return false;
 	}
 	aug_set(augeas, "/augeas/load/Agocontrol/lens", "agocontrol.lns");
@@ -296,16 +304,13 @@ qpid::types::Variant::List agocontrol::jsonToVariantList(Json::Value value) {
 					list.push_back(jsonToVariantMap((*it)));
 					break;
 				default:
-					cout << "WARNING: Unhandled Json::ValueType in jsonToVariantList()" << endl;
+					AGO_WARNING() << "Unhandled Json::ValueType in jsonToVariantList()";
 
 
 			}
 		}
 	} catch (const std::exception& error) {
-		cout << "ERROR! Exception during JSON->Variant::List conversion!" << endl;
-		stringstream errorstring;
-		errorstring << error.what();
-		cout << "EXCEPTION: " << errorstring.str() << endl;
+		AGO_ERROR() << "Exception during JSON->Variant::List conversion: " << error.what();
 	}
 
 
@@ -340,14 +345,11 @@ qpid::types::Variant::Map agocontrol::jsonToVariantMap(Json::Value value) {
 					map[it.key().asString()] = jsonToVariantMap((*it));
 					break;
 				default:
-					cout << "WARNING: Unhandled Json::ValueType in jsonToVariantMap()" << endl;
+					AGO_WARNING() << "Unhandled Json::ValueType in jsonToVariantMap()";
 			}
 		}	
 	} catch (const std::exception& error) {
-		cout << "ERROR! Exception during JSON->Variant::Map conversion!" << endl;
-		stringstream errorstring;
-		errorstring << error.what();
-		cout << "EXCEPTION: " << errorstring.str() << endl;
+		AGO_ERROR() << "Exception during JSON->Variant::Map conversion: " << error.what();
 	}
 	return map;
 }
@@ -364,10 +366,7 @@ qpid::types::Variant::Map agocontrol::jsonStringToVariantMap(std::string jsonstr
 			printf("warning, could not parse json to Variant::Map: %s\n",jsonstring.c_str());
 		}*/
 	} catch (const std::exception& error) {
-		cout << "ERROR! Exception during JSON String->Variant::Map conversion!" << endl;
-		stringstream errorstring;
-		errorstring << error.what();
-		cout << "EXCEPTION: " << errorstring.str() << endl;
+		AGO_ERROR() << "Exception during JSON String->Variant::Map conversion: " << error.what();
 	}
 	return result;
 }
@@ -414,7 +413,7 @@ qpid::types::Variant::Map agocontrol::getConfigTree() {
 	qpid::types::Variant::Map tree;
 	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
-		cerr << "ERROR: cannot initialize augeas" << endl;
+		AGO_ERROR() << "cannot initialize augeas";
 		return tree;
 	}
 	char **matches;
@@ -457,7 +456,7 @@ qpid::types::Variant::Map agocontrol::getConfigTree() {
 std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
 	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
-		cerr << "ERROR: cannot initialize augeas" << endl;
+		AGO_ERROR() << "cannot initialize augeas";
 		return defaultvalue;
 	}
 
@@ -481,17 +480,17 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	bool result = true;
 	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
-		cerr << "ERROR: cannot initialize augeas" << endl;
+		AGO_ERROR() << "cannot initialize augeas";
 		return false;
 	}
 
 	if (aug_set(augeas, augeasPathFromSectionOption(section, option).c_str(), value) == -1) {
-		cerr << "Could not set value!" << endl;
+		AGO_WARNING() << "Could not set value!";
 		return false;
 	}
 
 	if (aug_save(augeas)==-1) {
-		cerr << "Could not write config file!" << endl;
+		AGO_ERROR() << "Could not write config file!";
 		return false;
 	}
 
@@ -517,7 +516,23 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	return setConfigOption(section, option, stringvalue.str().c_str());
 }
 
+/* Setup boost logging. TODO: Move out from AgoConnection */
+void agocontrol::AgoConnection::initLog(){
+#ifdef HAVE_BOOST_LOG
+	boost::log::add_common_attributes();
+	boost::log::core::get()->set_filter
+	(
+		boost::log::trivial::severity >= boost::log::trivial::info
+	);
+#else
+	(AGO_LOG_INSTANCE_NAME).set_level(::agocontrol::log::debug);
+#endif
+	AGO_INFO() << "Logging initated";
+}
+
 agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
+	initLog();
+
 	Variant::Map connectionOptions;
 	std::string broker = getConfigOption("system", "broker", "localhost:5672");
 	connectionOptions["username"] = getConfigOption("system", "username", "agocontrol");
@@ -531,12 +546,12 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 
 	uuidMapFile = getConfigPath("uuidmap");
 	uuidMapFile /= (std::string(interfacename) + ".json");
+	AGO_INFO() << "Using uuidMapFile " << uuidMapFile;
 	try {
 		ensureParentDirExists(uuidMapFile);
 	} catch(const std::exception& error) {
-		//std::cerr << error.what() << std::endl;
-		// These have already been logged
-		printf("FATAL: Couldn't use configuration path\n");
+		// exception msg has already been logged
+		AGO_FATAL() << "Couldn't use configured path";
 		_exit(1);
 	}
 
@@ -544,22 +559,23 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 
 	connection = Connection(broker, connectionOptions);
 	try {
+		AGO_DEBUG() << "Opening broker connection: " << broker;
 		connection.open(); 
 		session = connection.createSession(); 
 		sender = session.createSender("agocontrol; {create: always, node: {type: topic}}"); 
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_FATAL() << "Failed to connect to broker: " << error.what();
 		connection.close();
-		printf("FATAL: could not connect to broker\n");
 		_exit(1);
 	}
 }
 
 agocontrol::AgoConnection::~AgoConnection() {
 	try {
+		AGO_DEBUG() << "Closing broker connection";
 		connection.close();
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Failed to close broker connection: " << error.what();
 	}
 }
 
@@ -568,8 +584,7 @@ void agocontrol::AgoConnection::run() {
 	try {
 		receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}");
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
-		printf("could not create receiver when connecting to broker\n");
+		AGO_FATAL() << "Failed to create broker receiver: " << error.what();
 		_exit(1);
 	}
 	// reportDevices(); // this is obsolete as it is handled by addDevice 
@@ -585,7 +600,8 @@ void agocontrol::AgoConnection::run() {
 			}
 
 			decode(message, content);
-			// std::cout << content << std::endl;
+			AGO_TRACE() << "Processing message [src=" << message.getReplyTo() <<
+				", sub="<< message.getSubject()<<"]: " << content;
 
 			if (content["command"] == "discover") {
 				reportDevices(); // make resolver happy and announce devices on discover request
@@ -607,7 +623,7 @@ void agocontrol::AgoConnection::run() {
 						// or if it was the special command inventory when the filterCommands was false, that's used by the resolver
 						// to reply to "anonymous" requests not destined to any specific uuid
 						if ((replyaddress && isOurDevice) || (content["command"]=="inventory" && filterCommands==false)) {
-							// std::cout << "sending reply" << std::endl;
+							AGO_TRACE() << "Sending reply " << responsemap;
 							Session replysession = connection.createSession();
 							try {
 								Sender replysender = replysession.createSender(replyaddress);
@@ -617,7 +633,7 @@ void agocontrol::AgoConnection::run() {
 								replysender.send(response);
 								replysession.close();
 							} catch(const std::exception& error) {
-								printf("can't send reply\n");
+								AGO_ERROR() << "Failed to send reply: " << error.what();;
 								replysession.close();
 							}
 						} 
@@ -629,9 +645,9 @@ void agocontrol::AgoConnection::run() {
 		} catch(const NoMessageAvailable& error) {
 			
 		} catch(const std::exception& error) {
-			std::cerr << error.what() << std::endl;
+			AGO_ERROR() << "Exception in message loop: " << error.what();
 			if (session.hasError()) {
-				clog << agocontrol::kLogCrit << "Session has error, recreating" << std::endl;
+				AGO_ERROR() << "Session has error, recreating";
 				session.close();
 				session = connection.createSession(); 
 				receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}"); 
@@ -655,7 +671,7 @@ bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const
 	try {
 		sender.send(event);
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Exception in emitDeviceAnnounce: " << error.what();
 		return false;
 	} 
 	return true;
@@ -680,7 +696,7 @@ bool agocontrol::AgoConnection::emitDeviceStale(const char* internalId, const in
 	}
 	catch(const std::exception& error)
 	{
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Exception in emitDeviceStale: " << error.what();
 		return false;
 	} 
 	return true;
@@ -696,7 +712,7 @@ bool agocontrol::AgoConnection::emitDeviceRemove(const char *internalId) {
 	try {
 		sender.send(event);
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Exception in emitDeviceRemove: " << error.what();
 		return false;
 	} 
 	return true;
@@ -831,7 +847,7 @@ bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Va
 		message.setSubject(subject);
 		sender.send(message);
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Exception in sendMessage: " << error.what();
 		return false;
 	}
 	
@@ -848,6 +864,8 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
 		Address responseQueue("#response-queue; {create:always, delete:always}");
 		responseReceiver = session.createReceiver(responseQueue);
 		message.setReplyTo(responseQueue);
+
+		AGO_TRACE() << "Sending message [sub=" << subject << ", reply=" << responseQueue <<"]" << content;
 		sender.send(message);
 		Message response = responseReceiver.fetch(Duration::SECOND * 3);
 		session.acknowledge();
@@ -856,15 +874,17 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
 		} else {
 			responseMap["response"] = response.getContent();
 		}
+		AGO_TRACE() << "Reply received: " << responseMap;
 	} catch (qpid::messaging::NoMessageAvailable) {
+		AGO_WARNING() << "No reply for message sent to subject " << subject;
 		printf("WARNING, no reply message to fetch\n");
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Exception in sendMessageReply: " << error.what();
 	}
 	try {
 		responseReceiver.close();
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Cleanup error in in sendMessageReply: " << error.what();
 	}
 	return responseMap;
 }
@@ -959,12 +979,12 @@ qpid::types::Variant::Map agocontrol::AgoConnection::getInventory() {
 			decode(response,responseMap);
 		}
 	} catch (qpid::messaging::NoMessageAvailable) {
-		printf("WARNING, no reply message to fetch\n");
+		AGO_WARNING() << "No getInventory response";
 	}
 	try {
 		responseReceiver.close();
 	} catch(const std::exception& error) {
-		std::cerr << error.what() << std::endl;
+		AGO_ERROR() << "Exception in getInventory cleanup: " << error.what();
 	}
 	return responseMap;
 }
@@ -981,17 +1001,19 @@ std::string agocontrol::AgoConnection::getAgocontroller() {
 				if (!(it->second.isVoid())) {
 					qpid::types::Variant::Map device = it->second.asMap();
 					if (device["devicetype"] == "agocontroller") {
-						cout << "Agocontroller: " << it->first << endl;
+						AGO_DEBUG() << "Found Agocontroller: " << it->first;
 						agocontroller = it->first;
 					}
 				}
 			}
 		} else {
-			cout << "unable to resolve agocontroller, retrying" << endl;
+			AGO_WARNING() << "Unable to resolve agocontroller, retrying";
 			sleep(1);
 		}
 	}
-	if (agocontroller == "") cout << "unable to resolve agocontroller, giving up" << endl;
+	if (agocontroller == "")
+		AGO_WARNING() << "Failed to resolve agocontroller, giving up";
+
 	return agocontroller;
 }
 
@@ -1039,4 +1061,5 @@ std::ostream& agocontrol::operator<< (std::ostream& os, const agocontrol::LogPri
 	static_cast<agocontrol::Log *>(os.rdbuf())->priority_ = (int)log_priority;
 	return os;
 }
+
 
