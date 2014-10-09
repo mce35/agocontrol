@@ -33,8 +33,6 @@ set_property(
 	DEFAULT_HTMLDIR=${HTMLDIR}
 )
 
-#set_property(SOURCE mongoose.c PROPERTY COMPILE_DEFINITIONS NS_ENABLE_DEBUG)
-
 
 # configure a header file to pass some of the CMake settings
 # to the source code

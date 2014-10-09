@@ -59,7 +59,6 @@ void *runscenario(void * _scenario) {
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	std::string internalid = content["internalid"].asString();
-				cout << "some request on " << internalid << endl;
 	if (internalid == "scenariocontroller") {
 		if (content["command"] == "setscenario") {
 			try {
