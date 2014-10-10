@@ -87,36 +87,32 @@ void *suntimer(void *param) {
 				setvariable["value"] = false;
 				agoConnection->sendMessage("", setvariable);
 				// now wait for sunrise
-				syslog(LOG_NOTICE, "minutes to wait for sunrise: %ld\n",(sunrise-seconds + sunriseoffset)/60);
-				printf("sunrise at: %s - minutes to wait for sunrise: %ld\n",asctime(localtime(&sunrise)),(sunrise-seconds+sunriseoffset)/60);
-				// printf("sunrise: %s\n",asctime(localtime(&sunrise)));
+				AGO_DEBUG() << "sunrise at: " << asctime(localtime(&sunrise)) << " - minutes to wait for sunrise: " << (sunrise-seconds+sunriseoffset)/60;
 				sleep(sunrise-seconds + sunriseoffset);
-				syslog(LOG_NOTICE, "sending sunrise event");
+				AGO_INFO() << "sending sunrise event";
 				agoConnection->sendMessage("event.environment.sunrise", content);
 			} else if (seconds > (sunset + sunsetoffset)) {
 				if (seconds > (sunrise_tomorrow+sunriseoffset)) {
-					syslog(LOG_NOTICE, "sunrise_tomorrow was calculated wrong, recalculating");
+					AGO_TRACE() << "sunrise_tomorrow was calculated wrong, recalculating";
 				} else {
 					setvariable["value"] = false;
 					agoConnection->sendMessage("", setvariable);
-					syslog(LOG_NOTICE, "minutes to wait for sunrise: %ld\n",(sunrise_tomorrow-seconds + sunriseoffset)/60);
-					printf("sunrise at: %s - minutes to wait for sunrise: %ld\n",asctime(localtime(&sunrise_tomorrow)),(sunrise_tomorrow-seconds+sunriseoffset)/60);
+					AGO_DEBUG() << "sunrise at: " << asctime(localtime(&sunrise_tomorrow)) <<  " - minutes to wait for sunrise: " << (sunrise_tomorrow-seconds+sunriseoffset)/60;
 					sleep(sunrise_tomorrow-seconds + sunriseoffset);
-					syslog(LOG_NOTICE, "sending sunrise event");
+					AGO_INFO() << "sending sunrise event";
 					agoConnection->sendMessage("event.environment.sunrise", content);
 				}
 			} else {
 				setvariable["value"] = true;
 				agoConnection->sendMessage("", setvariable);
-				syslog(LOG_NOTICE, "minutes to wait for sunset: %ld\n",(sunset-seconds+ sunsetoffset)/60);
-				printf("sunset at: %s - minutes to wait for sunset: %ld\n",asctime(localtime(&sunset)),(sunset-seconds+sunsetoffset)/60);
+				AGO_DEBUG() << "sunset at: " << asctime(localtime(&sunset)) << " - minutes to wait for sunset: " << (sunset-seconds+sunsetoffset)/60;
 				sleep(sunset-seconds+sunsetoffset);
-				syslog(LOG_NOTICE, "sending sunset event");
+				AGO_INFO() << "sending sunset event";
 				agoConnection->sendMessage("event.environment.sunset", content);
 			}
 			sleep(120);
 		} else {
-			syslog(LOG_CRIT, "ERROR determining sunrise/sunset time");
+			AGO_FATAL() << "cannot determine sunrise/sunset time";
 			sleep(60);
 		}
 	}
@@ -138,7 +134,7 @@ int main(int argc, char** argv) {
 				if (!(it->second.isVoid())) {
 					qpid::types::Variant::Map device = it->second.asMap();
 					if (device["devicetype"] == "agocontroller") {
-						cout << "Agocontroller: " << it->first << endl;
+						AGO_DEBUG() << "Agocontroller: " << it->first << endl;
 						agocontroller = it->first;
 					}
 				}
