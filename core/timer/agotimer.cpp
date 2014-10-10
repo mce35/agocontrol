@@ -80,11 +80,7 @@ void *suntimer(void *param) {
 		std::string subject;
 		seconds = time(NULL);
 		if (GetSunriseSunset(sunrise,sunset,sunrise_tomorrow,sunset_tomorrow,lat,lon)) {
-		    cout << "Now:" << seconds << endl;
-			cout << "Sunrise: " << sunrise << endl;
-			cout << "Sunset: " << sunset << endl;
-			cout << "SunriseT: " << sunrise_tomorrow << endl;
-			cout << "SunsetT: " << sunrise_tomorrow << endl;
+			AGO_DEBUG() << "Now:" << seconds << " Sunrise: " << sunrise << " Sunset: " << sunset << " SunriseT: " << sunrise_tomorrow << " SunsetT: " << sunrise_tomorrow;
 			if (seconds < (sunrise + sunriseoffset)) {
 				// it is night, we're waiting for the sunrise
 				// set global variable
