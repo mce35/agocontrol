@@ -39,9 +39,6 @@ namespace agocontrol {
 	fs::path config_dir;
 	fs::path localstate_dir;
 
-	// global log
-	AGO_LOGGER_IMPL AGO_LOG_INSTANCE_NAME;
-
 	fs::path initDirectory(const char *name, const char *def){
 		const char *tmp;
 		std::string env ("AGO_");
@@ -516,22 +513,8 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	return setConfigOption(section, option, stringvalue.str().c_str());
 }
 
-/* Setup boost logging. TODO: Move out from AgoConnection */
-void agocontrol::AgoConnection::initLog(){
-#ifdef HAVE_BOOST_LOG
-	boost::log::add_common_attributes();
-	boost::log::core::get()->set_filter
-	(
-		boost::log::trivial::severity >= boost::log::trivial::info
-	);
-#else
-	(AGO_LOG_INSTANCE_NAME).set_level(::agocontrol::log::debug);
-#endif
-	AGO_INFO() << "Logging initated";
-}
-
 agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
-	initLog();
+	::agocontrol::log::log_container::init_default();
 
 	Variant::Map connectionOptions;
 	std::string broker = getConfigOption("system", "broker", "localhost:5672");

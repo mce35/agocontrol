@@ -6,10 +6,7 @@ configure_file (
     @ONLY
 )
 
-set (LIBAGOCLIENT_SOURCE_FILES agoclient.cpp)
-IF (NOT Boost_LOG_FOUND)
-	list(APPEND LIBAGOCLIENT_SOURCE_FILES agolog.cpp)
-ENDIF()
+file(GLOB_RECURSE LIBAGOCLIENT_SOURCE_FILES *.cpp)
 
 add_library (agoclient SHARED ${LIBAGOCLIENT_SOURCE_FILES})
 set_target_properties (agoclient PROPERTIES VERSION 1 SOVERSION 1)
