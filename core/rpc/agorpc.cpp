@@ -351,20 +351,19 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 		Variant::Map command = jsonToVariantMap(content);
 
 		//send message and handle response
-		//cout << "Request: " << command << endl;
+		//AGO_TRACE() << "Request: " << command;
 		Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
 		if(responseMap.size() == 0 || id.isNull() ) // only send reply when id is not null
 		{
 			// no response
 			if(responseMap.size() == 0) {
-				printf("WARNING, no reply message to fetch. Failed message:\n");
-				std::cout << "subject=" <<subject<<": " << command << endl;
+				AGO_ERROR() << "No reply message to fetch. Failed message: " << "subject=" <<subject<<": " << command;
 			}
 
 			return mg_rpc_reply_result(conn, request, std::string("no-reply"));
 		}
 
-		//cout << "Response: " << responseMap << endl;
+		//AGO_TRACE() << "Response: " << responseMap;
 		return mg_rpc_reply_map(conn, request, responseMap);
 
 	} else if (method == "subscribe") {
@@ -399,7 +398,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
 		}
 
-		cout << "removing subscription: " << content.asString() << endl;
+		AGO_DEBUG() << "removing subscription: " << content.asString();
 		{
 			boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
 			map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
@@ -502,7 +501,7 @@ static void uploadFiles(struct mg_connection *conn)
 			fs::path orig_fn(file_name);
 			fs::path safe_fn = orig_fn.filename();
 			if(std::string(file_name) != safe_fn.string()){
-				cout << "Rejecting file upload, unsafe path \"" << file_name << "\" " << endl;
+				AGO_ERROR() << "Rejecting file upload, unsafe path \"" << file_name << "\" ";
 				uploadError = "Invalid filename";
 				break;
 			}
@@ -520,14 +519,14 @@ static void uploadFiles(struct mg_connection *conn)
 			if( fp )
 			{
 				//write file first
-				cout << "Uploading file \"" << safe_fn.string() << "\" file to " << tempfile << endl;
+				AGO_DEBUG() << "Uploading file \"" << safe_fn.string() << "\" file to " << tempfile;
 				int written = fwrite(data, sizeof(char), data_len, fp);
 				fclose(fp);
 				if( written!=data_len )
 				{
 					//error writting file, drop it
 					fs::remove(tempfile);
-					cerr << "Uploaded file \"" << tempfile.string() << "\" not fully written (no space left?)" << endl;
+					AGO_ERROR() << "Uploaded file \"" << tempfile.string() << "\" not fully written (no space left?)";
 					uploadError = "Unable to write file (no space left?)";
 					continue;
 				}
@@ -545,7 +544,7 @@ static void uploadFiles(struct mg_connection *conn)
 				{
 					//command failed, drop file
 					fs::remove(tempfile);
-					cout << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed" << endl;
+					AGO_ERROR() << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed";
 					uploadError = "Internal error";
 					continue;
 				}
@@ -562,7 +561,7 @@ static void uploadFiles(struct mg_connection *conn)
 					{
 						uploadError = "File rejected";
 					}
-					cerr << "Uploaded file \"" << safe_fn.string() << "\" rejected by recipient: " << uploadError << endl;
+					AGO_ERROR() << "Uploaded file \"" << safe_fn.string() << "\" rejected by recipient: " << uploadError;
 					//uploadError = "File rejected: no handler available";
 					continue;
 				}
@@ -577,7 +576,7 @@ static void uploadFiles(struct mg_connection *conn)
 				//TODO: maybe a purge process could be interesting to implement
 				fs::remove(tempfile);
 			}else{
-			   cerr << "Failed to open file " << tempfile.string() << " for writing: " << strerror(errno) << endl;
+			   AGO_ERROR() << "Failed to open file " << tempfile.string() << " for writing: " << strerror(errno);
 			}
 		}
 		else
@@ -630,26 +629,26 @@ static bool downloadFile(struct mg_connection *conn)
 			{
 				//all seems valid
 				filepath = fs::path(responseMap["filepath"].asString());
-				cout << "Downloading file \"" << filepath << "\"" << endl;
+				AGO_DEBUG() << "Downloading file \"" << filepath << "\"";
 			}
 			else
 			{
 				//invalid command response
-				cerr << "Download file, sendCommand returned invalid response (need filepath)" << endl;
+				AGO_ERROR() << "Download file, sendCommand returned invalid response (need filepath)";
 				downloadError = "Internal error";
 			}
 		}
 		else
 		{
 			//command failed
-			cerr << "Download file, sendCommand failed, unable to send file" << endl;
+			AGO_ERROR() << "Download file, sendCommand failed, unable to send file";
 			downloadError = "Internal error";
 		}
 	}
 	else
 	{
 		//missing parameters!
-		cerr << "Download file, missing parameters. Nothing done" << endl;
+		AGO_ERROR() << "Download file, missing parameters. Nothing done";
 		downloadError = "Invalid request parameters";
 	}
 
@@ -787,11 +786,11 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
 
 	{
 		boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
-		//cout << "Incoming notify: " << content << endl;
+		//AGO_TRACE() << "Incoming notify: " << content;
 		for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
 			if (it->second.queue.size() > 100) {
 				// this subscription seems to be abandoned, let's remove it to save resources
-				printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
+				AGO_INFO() << "removing subscription as the queue size exceeds limits: " << it->first.c_str();
 				subscriptions.erase(it++);
 			} else {
 				it->second.queue.push_back(content);
@@ -883,16 +882,16 @@ int main(int argc, char **argv) {
 		if( authFile==NULL )
 		{
 			//unable to parse auth file
-			cout << "Auth support: error parsing \"" << authPath.string() << "\" file. Auth deactivated" << endl;
+			AGO_ERROR() << "Auth support: error parsing \"" << authPath.string() << "\" file. Authentication deactivated";
 		}
 		else
 		{
-			cout << "Auth support: yes" << endl;
+			AGO_INFO() << "Enabling authentication";
 		}
 	}
 	else
 	{
-		cout << "Auth support: no" << endl;
+		AGO_INFO() << "Disabling authentication: file does not exist";
 	}
 
 	// start webservers
@@ -907,10 +906,10 @@ int main(int argc, char **argv) {
 		useSSL = port.find('s') != std::string::npos;
 
 		//start webserver threads
-		cout << "Starting webserver on port " << port;
 		if( useSSL )
-			cout << " using SSL";
-		cout << endl;
+			AGO_INFO() << "Starting webserver on port " << port << " using SSL";
+		else
+			AGO_INFO() << "Starting webserver on port " << port;
 		for( int i=0; i<maxthreads; i++ )
 		{
 			struct mg_server *server;
