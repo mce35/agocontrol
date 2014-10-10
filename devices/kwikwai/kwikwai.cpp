@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include "kwikwai.h"
+#include "agolog.h"
 
 using namespace std;
 
@@ -41,19 +42,22 @@ kwikwai::Kwikwai::Kwikwai(const char *hostname, const char *port) {
 
 	int status = getaddrinfo(hostname, port, &host_info, &host_info_list);
 	if (status != 0) {
-		std::cout << "getaddrinfo error: " << gai_strerror(status) << std::endl;
-		std::cout << "can't get address for " << hostname << " - aborting" << std::endl;
+		AGO_ERROR() << "getaddrinfo error: " << gai_strerror(status);
+		AGO_FATAL() << "can't get address for " << hostname << " - aborting";
+		return;
 	}
 
 	socketfd = socket(host_info_list->ai_family, host_info_list->ai_socktype, host_info_list->ai_protocol);
 	if (socketfd == -1) {
-		std::cout << "socket error" << std::endl ;
+		AGO_FATAL()  << "socket error";
+		return;
 	}
 	
-	std::cout << "Connect()ing..."  << std::endl;
+	AGO_DEBUG() << "Connect()ing...";
 	status = connect(socketfd, host_info_list->ai_addr, host_info_list->ai_addrlen);
 	if (status == -1) {
-		std::cout << "connect error" << std::endl;
+		AGO_FATAL() << "connect error";
+		return;
 	}
 	this->read();
 }
@@ -61,7 +65,7 @@ kwikwai::Kwikwai::Kwikwai(const char *hostname, const char *port) {
 int kwikwai::Kwikwai::write(std::string data) {
 	unsigned int bytes_sent = send(socketfd, data.c_str(), data.size(), 0);
 	if (bytes_sent != data.size()) {
-		std::cout << "error sending data" << std::endl;
+		AGO_ERROR() << "error sending data";
 	} 
 	return bytes_sent;
 } 
@@ -72,11 +76,11 @@ std::string kwikwai::Kwikwai::read() {
 
 	bytes_received  = recv(socketfd, incoming_data_buffer,1000, 0);
 	if (bytes_received == 0) {
-		std::cout << "host shut down." << std::endl ;
+		AGO_ERROR() << "host shut down.";
 		return "";
 	}
 	if (bytes_received == -1) {
-		std::cout << "receive error!" << std::endl ;
+		AGO_ERROR() << "receive error!";
 		return "";
 	}
 	result = string(incoming_data_buffer);
