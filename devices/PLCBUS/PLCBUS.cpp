@@ -252,13 +252,13 @@ int main(int argc, char **argv) {
 	string dimmer;
 	while (getline(dimmers, dimmer, ',')) {
 		agoConnection->addDevice(dimmer.c_str(), "dimmer");
-		cout << "adding code " << dimmer << " as dimmer" << endl;
+		AGO_INFO() << "adding code " << dimmer << " as dimmer";
 	} 
 	stringstream switches(getConfigOption("PLCBUS", "switches", "A2"));
 	string switchdevice;
 	while (getline(switches, switchdevice, ',')) {
 		agoConnection->addDevice(switchdevice.c_str(), "switch");
-		cout << "adding code " << switchdevice << " as switch" << endl;
+		AGO_INFO() << "adding code " << switchdevice << " as switch";
 	} 
 	
 	// B9600 8n1
