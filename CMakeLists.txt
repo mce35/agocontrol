@@ -55,7 +55,7 @@ configure_file (
 set_property( DIRECTORY
 	APPEND PROPERTY
 	COMPILE_OPTIONS
-	-Wall)
+	-Wall -DBOOST_LOG_DYN_LINK)
 
 # add the binary tree to the search path for include files
 # so that we will find version.h and other configured files

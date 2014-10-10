@@ -19,10 +19,6 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
-#ifdef HAVE_BOOST_LOG
-#include <boost/log/expressions.hpp>
-#endif
-
 // helper to determine last element
 #ifndef _LIBCPP_ITERATOR
 template <typename Iter>

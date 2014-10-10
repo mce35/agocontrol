@@ -1,6 +1,11 @@
 #include "agolog.h"
 
-#ifndef HAVE_BOOST_LOG
+#ifdef HAVE_BOOST_LOG
+
+#include <boost/log/expressions.hpp>
+
+#else
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/locks.hpp>
 #include <syslog.h>
