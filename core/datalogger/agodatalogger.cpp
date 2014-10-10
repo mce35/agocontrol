@@ -50,7 +50,7 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
 	//prepare query
 	rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
 	if(rc != SQLITE_OK) {
-		cerr << "Sql error #" << rc << ": " << sqlite3_errmsg(db) << endl;;
+		AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 		return false;
 	}
 	sqlite3_bind_text(stmt, 1, tablename.c_str(), -1, NULL);
@@ -61,11 +61,11 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
 		sqlite3_finalize(stmt);
 		if( rc!=SQLITE_ROW ) {
 			//table doesn't exit, create it
-			cout << "Creating missing table '" << tablename << "'" << endl;
+			AGO_INFO() << "Creating missing table '" << tablename << "'" << endl;
 			for( list<string>::iterator it=createqueries.begin(); it!=createqueries.end(); it++ ) {
 				rc = sqlite3_exec(db, (*it).c_str(), NULL, NULL, &sqlError);
 				if(rc != SQLITE_OK) {
-					cerr << "Sql error #" << rc << ": " << sqlError << endl;
+					AGO_ERROR() << "sql error #" << rc << ": " << sqlError;
 					return false;
 				}
 			}
@@ -90,17 +90,16 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 
 	// string devicename = uuidToName(content["uuid"].asString());
 	string uuid = content["uuid"].asString();
-	cout << subject << " " << content << endl;
 	if (subject != "" ) {
 		if( subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" ) {
-			cout << "specific environment case: position" << endl;
+			AGO_INFO() << "specific environment case: position" << endl;
 			string lat = content["latitude"].asString();
 			string lon = content["longitude"].asString();
 
 			string query = "INSERT INTO position VALUES(null, ?, ?, ?, ?)";
 			rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
 			if(rc != SQLITE_OK) {
-				fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+				AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 				return;
 			}
 
@@ -114,14 +113,14 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 			replaceString(subject, "event.device.", "");
 			replaceString(subject, "changed", "");
 			replaceString(subject, "event.", "");
-			cout << "environment: " << subject << endl;
+			AGO_DEBUG() << "environment: " << subject << endl;
 
 			string level = content["level"].asString();
 
 			string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
 			rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
 			if(rc != SQLITE_OK) {
-				fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+				AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 				return;
 			}
 
@@ -135,7 +134,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 			rc = sqlite3_step(stmt);
 			switch(rc) {
 				case SQLITE_ERROR:
-					fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+					AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
 					break;
 				case SQLITE_ROW:
 					if (sqlite3_column_type(stmt, 0) == SQLITE_TEXT) result =string( (const char*)sqlite3_column_text(stmt, 0));
@@ -164,7 +163,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
 
 	//get environment
 	string environment = content["env"].asString();
-	cout << "GetGraphData:" << environment << endl;
+	AGO_TRACE() << "GetGraphData:" << environment << endl;
 
 	boost::posix_time::ptime base(boost::gregorian::date(1970, 1, 1));
 	boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
@@ -180,7 +179,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
 
 	//check query
 	if(rc != SQLITE_OK) {
-		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 		return;
 	}
 
@@ -195,7 +194,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
 			rc = sqlite3_step(stmt);
 			switch(rc) {
 				case SQLITE_ERROR:
-					fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+					AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
 					break;
 				case SQLITE_ROW:
 					qpid::types::Variant::Map value;
@@ -219,7 +218,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
 			rc = sqlite3_step(stmt);
 			switch(rc) {
 				case SQLITE_ERROR:
-					fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+					AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
 					break;
 				case SQLITE_ROW:
 					qpid::types::Variant::Map value;
@@ -250,7 +249,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			int rc;
 			rc = sqlite3_prepare_v2(db, "SELECT distinct uuid, environment FROM data", -1, &stmt, NULL);
 			if(rc != SQLITE_OK) {
-				fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+				AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 				return returnval;
 			}
 
@@ -258,7 +257,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				rc = sqlite3_step(stmt);
 				switch(rc) {
 					case SQLITE_ERROR:
-						fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+						AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
 						break;
 					case SQLITE_ROW:
 						returnval[string((const char*)sqlite3_column_text(stmt, 0))] = string((const char*)sqlite3_column_text(stmt, 1));
@@ -277,7 +276,7 @@ int main(int argc, char **argv) {
 	fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
 	int rc = sqlite3_open(dbpath.c_str(), &db);
 	if( rc != SQLITE_OK){
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		AGO_FATAL() <<  "Can't open database: " << sqlite3_errmsg(db);
 		sqlite3_close(db);
 		return 1;
 	}
