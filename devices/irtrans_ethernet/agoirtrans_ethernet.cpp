@@ -39,9 +39,9 @@ using namespace agocontrol;
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	int internalid = atoi(content["internalid"].asString().c_str());
-	printf("command: %s internal id: %i\n", content["command"].asString().c_str(), internalid);
+	AGO_TRACE() << "Command: " << content["command"] << " internal id: " << internalid;
 	if (content["command"] == "sendir" ) {
-		printf("sending IR code\n");
+		AGO_DEBUG() << "sending IR code";
 		string udpcommand;
 		udpcommand.assign("sndccf ");
 		udpcommand.append(content["ircode"].asString());
@@ -74,16 +74,11 @@ int main(int argc, char **argv) {
 	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
 	bzero(&(server_addr.sin_zero),8);
 
-
-
 	AgoConnection agoConnection = AgoConnection("irtrans_ethernet");		
-	printf("connection to agocontrol established\n");
 
 	agoConnection.addDevice("1", "infraredblaster");
 	agoConnection.addHandler(commandHandler);
 
-	printf("waiting for messages\n");
 	agoConnection.run();
-
 }
 
