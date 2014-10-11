@@ -82,7 +82,6 @@ var eventController = null;
 var dataLoggerController = null;
 var scenarioController = null;
 var alertControler = null;
-var rrdtoolController = null;
 var model = null;
 var initialized = false;
 
@@ -128,7 +127,7 @@ function buildPluginNamesList(model) {
 var deferredInit = null;
 
 function loadPlugin(fromDashboard) {
-    // lock uia
+    // lock ui
     $.blockUI({
         message : '<div>Please wait ...</div>',
         css : {
@@ -961,13 +960,12 @@ function doShowDetails(device, template, environment) {
 
 		renderGraph(device, environment ? environment : device.valueList()[0].name);
 
-		document.getElementsByName("displayType")[0].onchange = function() {
-		    renderGraph(device, environment ? environment : device.valueList()[0].name);
-		};
-
-		document.getElementsByName("displayType")[1].onchange = function() {
-		    renderGraph(device, environment ? environment : device.valueList()[0].name);
-		};
+        for( var i=0; i<document.getElementsByName("displayType").length; i++ )
+        {
+            document.getElementsByName("displayType")[i].onchange = function() {
+		        renderGraph(device, environment ? environment : device.valueList()[0].name);
+            }
+        }
 
 		var reset = function() {
 		    if (device !== undefined)
@@ -1003,164 +1001,33 @@ function doShowDetails(device, template, environment) {
 }
 
 /**
- * Renders the graph for the given device and environment
- * 
- * @param device
- * @param environment
+ * Render RRDtool graph
  */
-function renderGraph(device, environment) {
+function renderRRDgraph(device, startDate, endDate)
+{
+    //fix end date
+    now = new Date();
+    if( endDate.getTime()>now.getTime() )
+        endDate = now;
 
-    var renderType = $($('input[name="displayType"]:checked')[0]).val();
+    //prepare content
+    $('#graph').empty();
+    var img = $('<img src="" id="graphRRD" style="display: none"/>');
+    $('#graph').append(img);
 
-    $('#graph').show();
-    $('#dataList').hide();
+    //get graph
+    device.getRrdGraph(device.uuid, Math.round(startDate.getTime()/1000), Math.round(endDate.getTime()/1000));
 
-    $('#graph').block({
-	message : '<div>Please wait ...</div>',
-	css : {
-	    border : '3px solid #a00'
-	}
-    });
+    unblockDiv("#graph");
+}
 
-    var endDate = stringToDatetime($('#end_date').val());
-    var startDate = stringToDatetime($('#start_date').val());
-
-    //check if agorrdtool is installed
-    if( rrdtoolController && renderType=="graph" ) {
-        //fix end date
-        now = new Date();
-        if( endDate.getTime()>now.getTime() )
-           endDate = now;
-        //prepare content
-        $('#graph').empty();
-        var img = $('<img src="" id="graphRRD" style="display: none"/>');
-        $('#graph').append(img);
-        //get graph
-        device.getRrdGraph(device.uuid, Math.round(startDate.getTime()/1000), Math.round(endDate.getTime()/1000));
-        //do not generate other graph
-        return;
-    }
-
+/**
+ * Render plots graph
+ */
+function renderPlots(device, environment, unit, data, values, startDate, endDate)
+{
+    //need data to render something else
     var max_ticks = 25; // User option?
-
-    var content = {};
-    content.uuid = dataLoggerController;
-    content.command = "getdata";
-    content.deviceid = device.uuid;
-    content.start = startDate.toISOString();
-    content.end = endDate.toISOString();
-    content.env = environment.toLowerCase();
-
-    sendCommand(content, function(res) {
-	if (!res.result || !res.result.result || !res.result.result.values) {
-	    notif.fatal("Error while loading Graph!");
-	    $('#graph').unblock();
-	    return;
-	}
-
-	/* Get the unit */
-	var unit = "";
-	for ( var k = 0; k < device.valueList().length; k++) {
-	    if (device.valueList()[k].name == environment) {
-		unit = device.valueList()[k].unit;
-		break;
-	    }
-	}
-
-	/* Prepare the data */
-	var data = [];
-	var values = res.result.result.values;
-
-    if (renderType == "list") {
-        values.sort(function(a, b) {
-            return b.time - a.time;
-        });
-
-        if( values.length>0 ) {
-            if( values[0].level ) {
-                for ( var i = 0; i < values.length; i++) {
-                    values[i].date = formatDate(new Date(values[i].time * 1000));
-                    values[i].value = values[i].level + " " + unit;
-                    delete values[i].level;
-                }
-            }
-            else if( values[0].latitude && values[0].longitude ) {
-                for ( var i = 0; i < values.length; i++) {
-                    values[i].date = formatDate(new Date(values[i].time * 1000));
-                    values[i].value = values[i].latitude + "," + values[i].longitude;
-                    delete values[i].latitude;
-                    delete values[i].longitude;
-                }
-            }
-        }
-
-        ko.renderTemplate("details/datalist", {
-            data : values,
-            environment : environment
-        }, {}, document.getElementById("dataList"));
-        $('#graph').unblock();
-        $("#graph").hide();
-        $('#dataList').show();
-        return;
-    }
-    else if( renderType=="map" ) {
-        //load openlayers lib only when needed
-        yepnope({
-            load : 'js/libs/OpenLayers/OpenLayers.js',
-            complete : function() {
-                //configure openlayers lib
-                OpenLayers.ImgPath = 'js/libs/OpenLayers/img/';
-
-                //clear container
-                $('#graph').empty();
-
-                if( values.length>0 ) {
-                    //create map, layers and projection
-                    var map = new OpenLayers.Map('graph');
-                    var layer = new OpenLayers.Layer.OSM();
-                    var markers = new OpenLayers.Layer.Markers("Markers");
-                    var vectors = new OpenLayers.Layer.Vector("Lines");
-                    var fromProjection = new OpenLayers.Projection("EPSG:4326");
-                    var toProjection = new OpenLayers.Projection("EPSG:900913");
-                    var lineStyle = { strokeColor: '#FF0000',
-                                      strokeOpacity: 0.5,
-                                      strokeWidth: 5 };
-        
-                    //add layers
-                    map.addLayer(layer);
-                    map.addLayer(markers);
-                    map.addLayer(vectors);
-
-                    //add markers
-                    var prevPoint = null;
-                    var features = [];
-                    for( var i=0; i<values.length; i++ ) {
-                        var position = new OpenLayers.LonLat(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
-                        var point = new OpenLayers.Geometry.Point(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
-                        markers.addMarker(new OpenLayers.Marker(position));
-                        if( prevPoint ) {
-                            //join markers
-                            var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
-                            features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
-                        }
-                        prevPoint = point;
-                    }
-                    vectors.addFeatures(features);
-
-                    //center map to first position
-                    var zoom = 13;
-                    map.setCenter( new OpenLayers.LonLat(values[0].longitude, values[0].latitude).transform(fromProjection, toProjection), zoom);
-                }
-                else {
-                    notif.error('No data to display');
-                }
-                //show container
-        	    $('#graph').unblock();
-                $('#graph').show();
-            }
-        });
-        return;
-    }
 
 	/* Split the values into buckets */
 	var num_buckets = Math.max(1, Math.floor(values.length / max_ticks));
@@ -1169,16 +1036,18 @@ function renderGraph(device, environment) {
 	var i = 0;
 
 	/*
-	 * Compute averange for each bucket and pick a representative time to
+	 * Compute average for each bucket and pick a representative time to
 	 * display
 	 */
-	for ( var j = 0; j < buckets.length; j++) {
+	for ( var j = 0; j < buckets.length; j++)
+    {
 	    var bucket = buckets[j];
 	    var ts = bucket[0].time + (bucket[bucket.length - 1].time - bucket[0].time) / 2;
 	    labels.push(new Date(Math.floor(ts) * 1000));
 	    var value = 0;
-	    for ( var k = 0; k < bucket.length; k++) {
-		value += bucket[k].level;
+	    for ( var k = 0; k < bucket.length; k++)
+        {
+	    	value += bucket[k].level;
 	    }
 	    data.push([ i, value / k ]);
 	    i++;
@@ -1193,29 +1062,29 @@ function renderGraph(device, environment) {
 	    mode : "time",
 	    yaxis : {
 		tickFormatter : function(x) {
-		    return x + " " + unit;
-		},
+		        return x + " " + unit;
+		    },
 	    },
 	    mouse : {
-		track : true,
-		relative : true,
-
-		trackFormatter : function(o) {
-		    return formatDate(labels[Math.round(o.x)]) + " - " + o.y + " " + unit;
-		}
+		    track : true,
+		    relative : true,
+    		trackFormatter : function(o) {
+	    	    return formatDate(labels[Math.round(o.x)]) + " - " + o.y + " " + unit;
+		    }
 	    },
 	    xaxis : {
-		noTicks : i,
-		labelsAngle : 90,
-		tickDecimals : 0,
-		tickFormatter : function(x) {
-		    return formatDate(labels[x]);
-		}
+		    noTicks : i,
+		    labelsAngle : 90,
+		    tickDecimals : 0,
+		    tickFormatter : function(x) {
+		        return formatDate(labels[x]);
+		    }
 	    }
 	});
 
 	/* We have no data ... */
-	if (data.length == 0) {
+	if (data.length == 0)
+    {
 	    var canvas = document.getElementsByClassName("flotr-overlay")[0];
 	    var context = canvas.getContext("2d");
 	    var x = canvas.width / 2;
@@ -1227,6 +1096,213 @@ function renderGraph(device, environment) {
 	    context.fillText('No data found for given time frame!', x, y);
 	}
 
-	$('#graph').unblock();
-    }, 30);
+    unblockDiv("#graph");
 }
+
+/**
+ * Render data list
+ */
+function renderList(device, environment, unit, data, values, startDate, endDate)
+{
+    values.sort(function(a, b) {
+        return b.time - a.time;
+    });
+
+    if( values.length>0 )
+    {
+        if( values[0].level )
+        {
+            for ( var i = 0; i < values.length; i++)
+            {
+                values[i].date = formatDate(new Date(values[i].time * 1000));
+                values[i].value = values[i].level + " " + unit;
+                delete values[i].level;
+            }
+        }
+        else if( values[0].latitude && values[0].longitude )
+        {
+            for ( var i = 0; i < values.length; i++)
+            {
+                values[i].date = formatDate(new Date(values[i].time * 1000));
+                values[i].value = values[i].latitude + "," + values[i].longitude;
+                delete values[i].latitude;
+                delete values[i].longitude;
+            }
+        }
+    }
+
+    ko.renderTemplate("details/datalist", {
+        data : values,
+        environment : environment
+    }, {}, document.getElementById("dataList"));
+
+    unblockDiv("#dataList");
+}
+
+/*
+ * Render map to display GPS positions
+ */
+function renderMap(values)
+{
+    //load openlayers lib only when needed
+    yepnope({
+        load : 'js/libs/OpenLayers/OpenLayers.js',
+        complete : function() {
+            //configure openlayers lib
+            OpenLayers.ImgPath = 'js/libs/OpenLayers/img/';
+
+            //clear container
+
+            if( values.length>0 )
+            {
+                //create map, layers and projection
+                var map = new OpenLayers.Map('graph');
+                var layer = new OpenLayers.Layer.OSM();
+                var markers = new OpenLayers.Layer.Markers("Markers");
+                var vectors = new OpenLayers.Layer.Vector("Lines");
+                var fromProjection = new OpenLayers.Projection("EPSG:4326");
+                var toProjection = new OpenLayers.Projection("EPSG:900913");
+                var lineStyle = { strokeColor: '#FF0000',
+                                  strokeOpacity: 0.5,
+                                  strokeWidth: 5 };
+
+                //add layers
+                map.addLayer(layer);
+                map.addLayer(markers);
+                map.addLayer(vectors);
+
+                //add markers
+                var prevPoint = null;
+                var features = [];
+                for( var i=0; i<values.length; i++ )
+                {
+                    var position = new OpenLayers.LonLat(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
+                    var point = new OpenLayers.Geometry.Point(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
+                    markers.addMarker(new OpenLayers.Marker(position));
+                    if( prevPoint )
+                    {
+                        //join markers
+                        var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
+                        features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
+                    }
+                    prevPoint = point;
+                }
+                vectors.addFeatures(features);
+
+                //center map to first position
+                var zoom = 13;
+                map.setCenter( new OpenLayers.LonLat(values[0].longitude, values[0].latitude).transform(fromProjection, toProjection), zoom);
+            }
+            else
+            {
+                notif.error('No data to display');
+            }
+            //show container
+            unblockDiv("#graph");
+        }
+    });
+}
+
+/**
+ * Block/unblock specified div
+ */
+function blockDiv(divName)
+{
+    $(divName).empty();
+    $(divName).block({
+        message : '<div>Please wait ...</div>',
+        css : { 
+            border : '3px solid #a00'
+        }
+    });
+}
+function unblockDiv(divName)
+{
+    $(divName).unblock();
+}
+
+/**
+ * Renders the graph for the given device and environment
+ * 
+ * @param device
+ * @param environment
+ */
+function renderGraph(device, environment)
+{
+    var renderType = $($('input[name="displayType"]:checked')[0]).val();
+
+    var endDate = stringToDatetime($('#end_date').val());
+    var startDate = stringToDatetime($('#start_date').val());
+    var renderType = $($('input[name="displayType"]:checked')[0]).val();
+
+    blockDiv("#graph");
+
+    if( renderType=="graph" )
+    {
+        //render rrdtool graph
+        $("#graph").show();
+        $("#dataList").hide();
+        renderRRDgraph(device, startDate, endDate);
+    }
+    else
+    {
+
+        var content = {};
+        content.uuid = dataLoggerController;
+        content.command = "getdata";
+        content.deviceid = device.uuid;
+        content.start = startDate.toISOString();
+        content.end = endDate.toISOString();
+        content.env = environment.toLowerCase();
+
+        sendCommand(content, function(res) {
+            if (!res.result || !res.result.result || !res.result.result.values)
+            {
+                notif.fatal("Error while loading Graph!");
+                unblockDiv('#graph');
+                return;
+            }
+
+            /* Get the unit */
+            var unit = "";
+            for ( var k = 0; k < device.valueList().length; k++)
+            {
+                if (device.valueList()[k].name == environment)
+                {
+                    unit = device.valueList()[k].unit;
+                    break;
+                }
+            }
+    
+            /* Prepare the data */
+            var data = [];
+            var values = res.result.result.values;
+
+            if (renderType == "list")
+            {
+                $("#graph").hide();
+                $("#dataList").show();
+                blockDiv("#dataList");
+                renderList(device, environment, unit, data, values, startDate, endDate);
+                unblockDiv("#dataList");
+            }
+            else if( renderType=="map" )
+            {
+                $("#graph").show();
+                $("#dataList").hide();
+                blockDiv("#graph");
+                renderMap(valuest);
+                unblockDiv("#graph");
+            }
+            else if( renderType=="plots" )
+            {
+                $("#graph").show();
+                $("#dataList").hide();
+                blockDiv("#graph");
+                renderPlots(device, environment, unit, data, values, startDate, endDate);
+                unblockDiv("#graph");
+            }
+        }, 30);
+    }
+}
+
