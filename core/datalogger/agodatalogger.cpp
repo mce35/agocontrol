@@ -16,7 +16,6 @@
 #include <jsoncpp/json/writer.h>
 #include <jsoncpp/json/reader.h>
 #include <boost/algorithm/string/predicate.hpp>
-//#include <memory>
 
 #include <rrd.h>
 #include "base64.h"
@@ -36,7 +35,8 @@ AgoConnection *agoConnection;
 sqlite3 *db;
 qpid::types::Variant::Map inventory;
 qpid::types::Variant::Map units;
-bool logAllEvents = 1;
+bool enableSql = 1;
+bool enableRrd = 1;
 
 std::string uuidToName(std::string uuid) {
     qpid::types::Variant::Map devices = inventory["inventory"].asMap();
@@ -278,7 +278,6 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
         //update rrd
         if( fs::exists(rrdfile) )
         {
-            cout << "update rrdfile " << rrdfile.string() << endl;
             char param[50];
             snprintf(param, 50, "N:%s", content["level"].asString().c_str());
             const char* params[] = {param};
@@ -366,12 +365,15 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
     cout << subject << endl;
     if( subject!="" && !content["uuid"].isVoid() )
     {
-        if( logAllEvents )
+        if( enableSql )
         {
             eventHandlerSQLite(subject, content["uuid"].asString(), content);
         }
 
-        eventHandlerRRDtool(subject, content["uuid"].asString(), content);
+        if( enableRrd )
+        {
+            eventHandlerRRDtool(subject, content["uuid"].asString(), content);
+        }
     }
 }
 
@@ -553,11 +555,23 @@ int main(int argc, char **argv) {
     }
 
     //read config
-    std::string optString = getConfigOption("datalogger", "logAllEvents", "1");
+    std::string optString = getConfigOption("datalogger", "enableSql", "1");
     int r;
     if(sscanf(optString.c_str(), "%d", &r) == 1) {
-        logAllEvents = (r == 1);
+        enableSql = (r == 1);
     }
+    optString = getConfigOption("datalogger", "enableRrd", "1");
+    if(sscanf(optString.c_str(), "%d", &r) == 1) {
+        enableRrd = (r == 1);
+    }
+    if( enableSql )
+        cout << "SQL logging enabled" << endl;
+    else
+        cout << "SQL logging disabled" << endl;
+    if( enableRrd )
+        cout << "RRDtool logging enabled" << endl;
+    else
+        cout << "RRDtool logging disabled" << endl;
 
     agoConnection->run();
 
