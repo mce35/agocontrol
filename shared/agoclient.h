@@ -98,7 +98,6 @@ namespace agocontrol {
 			qpid::messaging::Session session;
 			qpid::types::Variant::Map deviceMap; // this holds the internal device list
 			qpid::types::Variant::Map uuidMap; // this holds the permanent uuid to internal id mapping
-			void initLog();
 			bool storeUuidMap(); // stores the map on disk
 			bool loadUuidMap(); // loads it
 			boost::filesystem::path uuidMapFile;

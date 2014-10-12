@@ -17,20 +17,36 @@
  * implementation.
  */
 
+/* Severity level definition is the same for both implementations */
+namespace agocontrol {
+	namespace log {
+		enum severity_level
+		{
+			trace,
+			debug,
+			info,
+			warning,
+			error,
+			fatal
+		};
+	}
+}
+
+
 #ifdef HAVE_BOOST_LOG
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 
-#define AGO_TRACE() BOOST_LOG_SEV(AGO_GET_LOGGER, boost::log::trivial::trace)
-#define AGO_DEBUG() BOOST_LOG_SEV(AGO_GET_LOGGER, boost::log::trivial::debug)
-#define AGO_INFO() BOOST_LOG_SEV(AGO_GET_LOGGER, boost::log::trivial::info)
-#define AGO_WARNING() BOOST_LOG_SEV(AGO_GET_LOGGER, boost::log::trivial::warning)
-#define AGO_ERROR() BOOST_LOG_SEV(AGO_GET_LOGGER, boost::log::trivial::error)
-#define AGO_FATAL() BOOST_LOG_SEV(AGO_GET_LOGGER, boost::log::trivial::fatal)
+#define AGO_TRACE() BOOST_LOG_SEV(AGO_GET_LOGGER, agocontrol::log::trace)
+#define AGO_DEBUG() BOOST_LOG_SEV(AGO_GET_LOGGER, agocontrol::log::debug)
+#define AGO_INFO() BOOST_LOG_SEV(AGO_GET_LOGGER, agocontrol::log::info)
+#define AGO_WARNING() BOOST_LOG_SEV(AGO_GET_LOGGER, agocontrol::log::warning)
+#define AGO_ERROR() BOOST_LOG_SEV(AGO_GET_LOGGER, agocontrol::log::error)
+#define AGO_FATAL() BOOST_LOG_SEV(AGO_GET_LOGGER, agocontrol::log::fatal)
 
-#define AGO_LOGGER_IMPL  boost::log::sources::severity_logger_mt<boost::log::trivial::severity_level>
+#define AGO_LOGGER_IMPL  boost::log::sources::severity_logger_mt<agocontrol::log::severity_level>
 
 #else
 
@@ -47,16 +63,6 @@
 
 namespace agocontrol {
 	namespace log {
-		enum severity_level
-		{
-			trace,
-			debug,
-			info,
-			warning,
-			error,
-			fatal
-		};
-
 		class simple_logger;
 		class record {
 		friend class simple_logger;
@@ -199,6 +205,8 @@ namespace agocontrol {
 
 #endif
 
+// Global static singleton for obtaining default logger instance,
+// and initing the logger.
 #define AGO_GET_LOGGER (::agocontrol::log::log_container::get())
 namespace agocontrol {
 	namespace log {

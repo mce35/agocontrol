@@ -82,11 +82,13 @@ void log_container::init_default() {
 #else
 
 
+BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", severity_level);
+
 void log_container::init_default() {
 	boost::log::add_common_attributes();
 	boost::log::core::get()->set_filter
 	(
-		boost::log::trivial::severity >= boost::log::trivial::info
+		agocontrol::log::severity >= agocontrol::log::info
 	);
 }
 
