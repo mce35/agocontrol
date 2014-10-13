@@ -200,13 +200,13 @@ bool generateGraph(std::string uuid, int start, int end, unsigned char** img, un
         string DEF = string_format("DEF:level=%s:level:AVERAGE", rrdfile.c_str());
         string GFX_AREA = string_format("AREA:level%s", colorA.c_str());
         string GFX_LINE = string_format("LINE1:level%s:%s", colorL.c_str(), kind.c_str());
-        string MIN_LINE = string_format("LINE1:levelmin%s:Min\\::dashes", colorMin.c_str());
-        string MIN_GPRINT = string_format("GPRINT:levelmin:%%6.2lf%s", unit.c_str());
-        string MAX_LINE = string_format("LINE1:levelmax%s:Max\\::dashes", colorMax.c_str());
-        string MAX_GPRINT = string_format("GPRINT:levelmax:%%6.2lf%s", unit.c_str());
-        string AVG_LINE = string_format("LINE1:levelavg%s:Avg\\::dashes", colorAvg.c_str());
-        string AVG_GPRINT = string_format("GPRINT:levelavg:%%6.2lf%s", unit.c_str());
-        string LAST_GPRINT = string_format("GPRINT:levellast:Last\\:%%6.2lf%s", unit.c_str());
+        string MIN_LINE = string_format("LINE1:levelmin%s::dashes", colorMin.c_str());
+        string MIN_GPRINT = string_format("GPRINT:levelmin:Min\\:%%4.2lf%s", unit.c_str());
+        string MAX_LINE = string_format("LINE1:levelmax%s::dashes", colorMax.c_str());
+        string MAX_GPRINT = string_format("GPRINT:levelmax:Max\\:%%4.2lf%s", unit.c_str());
+        string AVG_LINE = string_format("LINE1:levelavg%s::dashes", colorAvg.c_str());
+        string AVG_GPRINT = string_format("GPRINT:levelavg:Avg\\:%%4.2lf%s", unit.c_str());
+        string LAST_GPRINT = string_format("GPRINT:levellast:Last\\:%%4.2lf%s", unit.c_str());
 
         const char* params[] = {"dummy", "", "--start", START.c_str(), "--end", END.c_str(), "--vertical-label", vertical_unit.c_str(), "--width" ,"850", "--height", "300", DEF.c_str(), "VDEF:levellast=level,LAST", "VDEF:levelavg=level,AVERAGE", "VDEF:levelmax=level,MAXIMUM", "VDEF:levelmin=level,MINIMUM", GFX_AREA.c_str(), GFX_LINE.c_str(), MIN_LINE.c_str(), MIN_GPRINT.c_str(), MAX_LINE.c_str(), MAX_GPRINT.c_str(), AVG_LINE.c_str(), AVG_GPRINT.c_str(), LAST_GPRINT.c_str()};
         int num_params = 26;
