@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <pthread.h>
 
@@ -26,7 +27,6 @@
 #define DBFILE "datalogger.db"
 #endif
 
-
 using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
@@ -37,6 +37,8 @@ qpid::types::Variant::Map inventory;
 qpid::types::Variant::Map units;
 bool enableSql = 1;
 bool enableRrd = 1;
+//const char *colors[] = {"#800080", "#FF00FF", "#000080", "#0000FF", "#008080", "#00FFFF", "#008000", "#00FF00", "#808000", "#FFFF00", "#800000", "#FF0000", "#000000", "#808080", "#C0C0C0"};
+const char* colors[] = {"#800080", "#0000FF", "#008000", "#FF00FF", "#000080", "#FF0000", "#00FF00", "#00FFFF", "#800000", "#808000", "#008080", "#C0C0C0", "#808080", "#000000", "#FFFF00"};
 
 std::string uuidToName(std::string uuid) {
     qpid::types::Variant::Map devices = inventory["inventory"].asMap();
@@ -83,6 +85,9 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
     return true;
 }
 
+/**
+ * Format string to specified format
+ */
 std::string string_format(const std::string fmt, ...) {
     int size = ((int)fmt.size()) * 2 + 50;   // use a rubric appropriate for your code
     std::string str;
@@ -105,16 +110,52 @@ std::string string_format(const std::string fmt, ...) {
 }
 
 /**
- * Generate RRDtool graph
+ * Return real string length
  */
-bool generateGraph(std::string uuid, int start, int end, unsigned char** img, unsigned long* size)
+int string_real_length(const std::string str)
 {
-    bool found = false;
+    int len = 0;
+    const char* s = str.c_str();
+    while(*s)
+    {
+        len += (*s++ & 0xc0) != 0x80;
+    }
+    return len;
+}
 
-    //rrdfile
+/**
+ * Prepend spaces to source string until source size reached
+ */
+std::string string_prepend_spaces(std::string source, size_t newSize)
+{
+    std::string output = source;
+    int max = (int)newSize - string_real_length(output);
+    for( int i=0; i<max; i++ )
+    {
+        output.insert(0, 1, ' ');
+    }
+    return output;
+}
+
+/**
+ * Prepare graph for specified uuid
+ * @param uuid: device uuid
+ * @param multiId: if multigraph specify its index (-1 if not multigraph)
+ * @param data: output map
+ */
+bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data)
+{
+    //check params
+    if( multiId>=15 )
+    {
+        //no more color available
+        cerr << "agodatalogger-RRDtool: no more color available" << endl;
+        return false;
+    }
+
+    //filename
     stringstream filename;
     filename << uuid << ".rrd";
-    fs::path rrdfile = getLocalStatePath(filename.str());
 
     //get device infos from inventory
     qpid::types::Variant::Map devices = inventory["devices"].asMap();
@@ -132,7 +173,23 @@ bool generateGraph(std::string uuid, int start, int end, unsigned char** img, un
     {
         //prepare kind
         string kind = device["devicetype"].asString();
+        string pretty_kind = kind;
         replaceString(kind, "sensor", "");
+        if( multiId>=0 )
+        {
+            //keep first 4 chars
+            pretty_kind.resize(4);
+            //and append device name (or uuid if name not set)
+            if( !device["name"].isVoid() && device["name"].asString().length()>0 )
+            {
+                pretty_kind = device["name"].asString();
+            }
+            else
+            {
+                pretty_kind = uuid + " (" + pretty_kind + ")";
+            }
+        }
+        pretty_kind.resize(20, ' ');
 
         //prepare unit
         string unit = "U";
@@ -169,70 +226,49 @@ bool generateGraph(std::string uuid, int start, int end, unsigned char** img, un
         string colorMax = "#FF0000";
         string colorMin = "#00FF00";
         string colorAvg = "#0000FF";
-        if( device["devicetype"].asString()=="humiditysensor" )
+        if( multiId<0 )
         {
-            //blue
-            colorL = "#0000FF";
-            colorA = "#7777FF";
-        }
-        else if( device["devicetype"].asString()=="temperaturesensor" )
-        {
-            //red
-            colorL = "#FF0000";
-            colorA = "#FF8787";
-        }
-        else if( device["devicetype"].asString()=="energysensor" || device["devicetype"].asString()=="batterysensor" )
-        {
-            //green
-            colorL = "#007A00";
-            colorA = "#00BB00";
-        }
-        else if( device["devicetype"].asString()=="brightnesssensor" )
-        {
-            //orange
-            colorL = "#CCAA00";
-            colorA = "#FFD400";
-        }
-
-        //prepare graph parameters
-        string START = string_format("%d", start);
-        string END = string_format("%d", end);
-        string DEF = string_format("DEF:level=%s:level:AVERAGE", rrdfile.c_str());
-        string GFX_AREA = string_format("AREA:level%s", colorA.c_str());
-        string GFX_LINE = string_format("LINE1:level%s:%s", colorL.c_str(), kind.c_str());
-        string MIN_LINE = string_format("LINE1:levelmin%s::dashes", colorMin.c_str());
-        string MIN_GPRINT = string_format("GPRINT:levelmin:Min\\:%%4.2lf%s", unit.c_str());
-        string MAX_LINE = string_format("LINE1:levelmax%s::dashes", colorMax.c_str());
-        string MAX_GPRINT = string_format("GPRINT:levelmax:Max\\:%%4.2lf%s", unit.c_str());
-        string AVG_LINE = string_format("LINE1:levelavg%s::dashes", colorAvg.c_str());
-        string AVG_GPRINT = string_format("GPRINT:levelavg:Avg\\:%%4.2lf%s", unit.c_str());
-        string LAST_GPRINT = string_format("GPRINT:levellast:Last\\:%%4.2lf%s", unit.c_str());
-
-        const char* params[] = {"dummy", "", "--start", START.c_str(), "--end", END.c_str(), "--vertical-label", vertical_unit.c_str(), "--width" ,"850", "--height", "300", DEF.c_str(), "VDEF:levellast=level,LAST", "VDEF:levelavg=level,AVERAGE", "VDEF:levelmax=level,MAXIMUM", "VDEF:levelmin=level,MINIMUM", GFX_AREA.c_str(), GFX_LINE.c_str(), MIN_LINE.c_str(), MIN_GPRINT.c_str(), MAX_LINE.c_str(), MAX_GPRINT.c_str(), AVG_LINE.c_str(), AVG_GPRINT.c_str(), LAST_GPRINT.c_str()};
-        int num_params = 26;
-
-        rrd_info_t* grinfo = rrd_graph_v(num_params, (char**)params);
-        rrd_info_t* walker;
-        if( grinfo!=NULL )
-        {
-            walker = grinfo;
-            while (walker)
+            if( device["devicetype"].asString()=="humiditysensor" )
             {
-                if (strcmp(walker->key, "image") == 0)
-                {
-                    *img = walker->value.u_blo.ptr;
-                    *size = walker->value.u_blo.size;
-                    found = true;
-                    break;
-                }
-                walker = walker->next;
+                //blue
+                colorL = "#0000FF";
+                colorA = "#7777FF";
+            }
+            else if( device["devicetype"].asString()=="temperaturesensor" )
+            {
+                //red
+                colorL = "#FF0000";
+                colorA = "#FF8787";
+            }
+            else if( device["devicetype"].asString()=="energysensor" || device["devicetype"].asString()=="batterysensor" )
+            {
+                //green
+                colorL = "#007A00";
+                colorA = "#00BB00";
+            }
+            else if( device["devicetype"].asString()=="brightnesssensor" )
+            {
+                //orange
+                colorL = "#CCAA00";
+                colorA = "#FFD400";
             }
         }
         else
         {
-            cerr << "agodatalogger-RRDtool: unable to generate graph [" << rrd_get_error() << "]" << endl;
-            return false;
+            //multi graph (only line color necessary)
+            colorL = colors[multiId];
         }
+
+        //fill output map
+        data["filename"] = filename.str();
+        data["kind" ] = pretty_kind;
+        data["unit"] = unit;
+        data["vertical_unit"] = vertical_unit;
+        data["colorL"] = colorL;
+        data["colorA"] = colorL;
+        data["colorMax"] = colorMax;
+        data["colorMin"] = colorMin;
+        data["colorAvg"] = colorAvg;
     }
     else
     {
@@ -241,12 +277,307 @@ bool generateGraph(std::string uuid, int start, int end, unsigned char** img, un
         return false;
     }
 
-    if( !found) 
+    return true;
+}
+
+/**
+ * Display params (debug purpose)
+ */
+void dumpGraphParams(const char** params, const int num_params)
+{
+    for( int i=0; i<num_params; i++ )
+    {
+        cout << " - " << string(params[i]) << endl;
+    }
+}
+
+/**
+ * Add graph param
+ */
+bool addGraphParam(const std::string& param, char** params, int* index)
+{
+    params[(*index)] = (char*)malloc(sizeof(char)*param.length()+1);
+    if( params[(*index)]!=NULL )
+    {
+        strcpy(params[(*index)], param.c_str());
+        (*index)++;
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Add default and mandatory graph params
+ */
+void addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index)
+{
+    string param = "";
+    
+    //first params
+    addGraphParam("dummy", params, index);
+    addGraphParam("", params, index);
+
+    //start
+    addGraphParam("--start", params, index);
+    addGraphParam(string_format("%d", start), params, index);
+
+    //end
+    addGraphParam("--end", params, index);
+    addGraphParam(string_format("%d", end), params, index);
+
+    //vertical label
+    if( vertical_unit.length()>0 )
+    {
+        addGraphParam("--vertical-label", params, index);
+        addGraphParam(vertical_unit, params, index);
+    }
+
+    //size
+    addGraphParam("--width", params, index);
+    addGraphParam(string_format("%d", width), params, index);
+    addGraphParam("--height", params, index);
+    addGraphParam(string_format("%d", height), params, index);
+}
+
+/**
+ * Add single graph parameters
+ */
+void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+{
+    string param = "";
+
+    //DEF
+    fs::path rrdfile = getLocalStatePath(data["filename"].asString());
+    addGraphParam(string_format("DEF:level=%s:level:AVERAGE", rrdfile.c_str()), params, index);
+
+    //VDEF last
+    addGraphParam("VDEF:levellast=level,LAST", params, index);
+
+    //VDEF average
+    addGraphParam("VDEF:levelavg=level,AVERAGE", params, index);
+
+    //VDEF max
+    addGraphParam("VDEF:levelmax=level,MAXIMUM", params, index);
+
+    //VDEF min
+    addGraphParam("VDEF:levelmin=level,MINIMUM", params, index);
+
+    //GFX AREA
+    addGraphParam(string_format("AREA:level%s", data["colorA"].asString().c_str()), params, index);
+
+    //GFX LINE
+    addGraphParam(string_format("LINE1:level%s:%s", data["colorL"].asString().c_str(), data["kind"].asString().c_str()), params, index);
+
+    //MIN LINE
+    addGraphParam(string_format("LINE1:levelmin%s::dashes", data["colorMin"].asString().c_str()), params, index);
+
+    //MIN GPRINT
+    addGraphParam(string_format("GPRINT:levelmin:     Min %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+
+    //MAX LINE
+    addGraphParam(string_format("LINE1:levelmax%s::dashes", data["colorMax"].asString().c_str()), params, index);
+
+    //MAX GPRINT
+    addGraphParam(string_format("GPRINT:levelmax:     Max %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+
+    //AVG LINE
+    addGraphParam(string_format("LINE1:levelavg%s::dashes", data["colorAvg"].asString().c_str()), params, index);
+
+    //AVG GPRINT
+    addGraphParam(string_format("GPRINT:levelavg:     Avg %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+
+    //LAST GPRINT
+    addGraphParam(string_format("GPRINT:levellast:     Last %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+}
+
+/**
+ * Add multi graph parameters
+ */
+void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+{
+    //keep index value
+    int id = (*index);
+
+    //DEF
+    fs::path rrdfile = getLocalStatePath(data["filename"].asString());
+    addGraphParam(string_format("DEF:level%d=%s:level:AVERAGE", id, rrdfile.c_str()), params, index);
+
+    //VDEF last
+    addGraphParam(string_format("VDEF:levellast%d=level%d,LAST", id, id), params, index);
+
+    //VDEF average
+    addGraphParam(string_format("VDEF:levelavg%d=level%d,AVERAGE", id, id), params, index);
+
+    //VDEF max
+    addGraphParam(string_format("VDEF:levelmax%d=level%d,MAXIMUM", id, id), params, index);
+
+    //VDEF min
+    addGraphParam(string_format("VDEF:levelmin%d=level%d,MINIMUM", id, id), params, index);
+
+    //GFX LINE
+    addGraphParam(string_format("LINE1:level%d%s:%s", id, data["colorL"].asString().c_str(), data["kind"].asString().c_str()), params, index);
+
+    //MIN GPRINT
+    addGraphParam(string_format("GPRINT:levelmin%d:     Min %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+
+    //MAX GPRINT
+    addGraphParam(string_format("GPRINT:levelmax%d:     Max %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+
+    //AVG GRPINT
+    addGraphParam(string_format("GPRINT:levelavg%d:     Avg %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+
+    //LAST GPRINT
+    addGraphParam(string_format("GPRINT:levellast%d:     Last %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+
+    //new line
+    addGraphParam("COMMENT:\\n", params, index);
+}
+
+/**
+ * Generate RRDtool graph
+ */
+bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigned char** img, unsigned long* size)
+{
+    qpid::types::Variant::Map data;
+    char** params;
+    int num_params = 0;
+    int index = 0;
+    int multiId = -1;
+    qpid::types::Variant::List datas;
+
+    //get graph datas
+    for( qpid::types::Variant::List::iterator it=uuids.begin(); it!=uuids.end(); it++ )
+    {
+        //multigraph?
+        if( uuids.size()>1 )
+            multiId++;
+
+        //get data
+        qpid::types::Variant::Map data;
+        if( prepareGraph((*it).asString(), multiId, data) )
+        {
+            datas.push_back(data);
+        }
+    }
+
+    //prepare graph parameters
+    if( datas.size()>1 )
+    {
+        //multigraph
+        //adjust some stuff
+        int defaultNumParam = 12;
+        string vertical_unit = "";
+        string lastUnit = "";
+        size_t maxUnitLength = 0;
+        for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
+        {
+            vertical_unit = (*it).asMap()["vertical_unit"].asString();
+
+            if( (*it).asMap()["unit"].asString().length()>maxUnitLength )
+            {
+                maxUnitLength = (*it).asMap()["unit"].asString().length();
+            }
+
+            if( (*it).asMap()["unit"].asString()!=lastUnit )
+            {
+                if( lastUnit.length()>0 )
+                {
+                    //not the same unit
+                    defaultNumParam = 10;
+                    vertical_unit = "";
+                }
+                else
+                {
+                    lastUnit = (*it).asMap()["unit"].asString();
+                }
+            }
+        }
+        //format unit (add spaces for better display)
+        for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
+        {
+            string unit = (*it).asMap()["unit"].asString();
+            //special case for %%
+            if( unit=="%%" )
+            {
+                (*it).asMap()["unit"] = string_prepend_spaces(unit, maxUnitLength+1);
+            }
+            else
+            {
+                (*it).asMap()["unit"] = string_prepend_spaces(unit, maxUnitLength);
+            }
+        }
+
+        //alloc memory
+        num_params = 11 * datas.size() + defaultNumParam; //11 parameters per datas + 10 default parameters (wo vertical_unit) or 12 (with vertical_unit)
+        params = (char**)malloc(sizeof(char*) * num_params);
+
+        //add graph parameters
+        addDefaultParameters(start, end, vertical_unit, 850, 300, params, &index);
+        for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
+        {
+            data = (*it).asMap();
+            addMultiGraphParameters(data, params, &index);
+        }
+    }
+    else if( datas.size()==1 )
+    {
+        //single graph
+        //alloc memory
+        num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
+        params = (char**)malloc(sizeof(char*) * num_params);
+        data = datas.front().asMap();
+
+        //add graph parameters
+        addDefaultParameters(start, end, data["vertical_unit"], 850, 300, params, &index);
+        addSingleGraphParameters(data, params, &index);
+    }
+    else
+    {
+        //no data
+        cerr << "agodatalogger-RRDtool: no data" << endl;
+        return false;
+    }
+    dumpGraphParams((const char**)params, num_params);
+
+    //build graph
+    bool found = false;
+    rrd_info_t* grinfo = rrd_graph_v(num_params, (char**)params);
+    rrd_info_t* walker;
+    if( grinfo!=NULL )
+    {
+        walker = grinfo;
+        while (walker)
+        {
+            if (strcmp(walker->key, "image") == 0)
+            {
+                *img = walker->value.u_blo.ptr;
+                *size = walker->value.u_blo.size;
+                found = true;
+                break;
+            }
+            walker = walker->next;
+        }
+    }
+    else
+    {
+        cerr << "agodatalogger-RRDtool: unable to generate graph [" << rrd_get_error() << "]" << endl;
+        return false;
+    }
+
+    if( !found ) 
     {
         cerr << "agodatalogger-RRDtool: no image generated by rrd_graph_v command" << endl;
         return false;
     }
-    
+
+    //free memory
+    for( int i=0; i<num_params; i++ )
+    {
+        free(params[i]);
+        params[i] = NULL;
+    }
+    free(params);
+
     return true;
 }
 
@@ -510,7 +841,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
         {
             unsigned char* img = NULL;
             unsigned long size = 0;
-            if( generateGraph(content["device"].asString(), content["start"].asInt32(), content["end"].asInt32(), &img, &size) )
+            if( generateGraph(content["devices"].asList(), content["start"].asInt32(), content["end"].asInt32(), &img, &size) )
             {
                 returnval["error"] = 0;
                 returnval["msg"] = "";
@@ -528,6 +859,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 }
 
 int main(int argc, char **argv) {
+
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     int rc = sqlite3_open(dbpath.c_str(), &db);
     if( rc != SQLITE_OK){
@@ -574,6 +906,5 @@ int main(int argc, char **argv) {
         cout << "RRDtool logging disabled" << endl;
 
     agoConnection->run();
-
     return 0;
 }
