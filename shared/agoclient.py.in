@@ -49,9 +49,10 @@ def set_config_option(section, option, value, filename=None):
     result = False
     CONFIG_LOCK.acquire(True)
     try:
-        path = "/files" + CONFDIR + '/conf.d/' + section + '.conf/' + option
         if filename:
-            path = "/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + option
+            path = "/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + section + '/' + option
+        else:
+            path = "/files" + CONFDIR + '/conf.d/' + section + '.conf/' + section + '/' + option
         print path
         augeas.set(path, value)
         augeas.save()
