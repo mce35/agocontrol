@@ -31,7 +31,7 @@ devicetypes:
   camera:
     name: Camera
     description: Surveillance camera
-    commands: [getvideoframe]
+    commands: [getvideoframe, triggeralarm, clearalarm]
   avreceiver:
     name: AV receiver
     description: AV receiver
