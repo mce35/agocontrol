@@ -7,6 +7,7 @@
 #include <stdarg.h>
 
 #include "inventory.h"
+#include "agolog.h"
 
 using namespace std;
 namespace fs = ::boost::filesystem;
@@ -14,10 +15,10 @@ namespace fs = ::boost::filesystem;
 bool Inventory::createTableIfNotExist(std::string tablename, std::string createquery) {
 	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
 	if (getfirst(query.c_str(), 1, tablename.c_str()) != tablename) {
-		cout << "Creating missing table '" << tablename << "'" << endl;
+		AGO_INFO() << "Creating missing table '" << tablename << "'";
 		getfirst(createquery.c_str());
 		if (getfirst(query.c_str(), 1, tablename.c_str()) != tablename) {
-			cerr << "Can't create table '" << tablename << "'" << endl;
+			AGO_ERROR() << "Can't create table '" << tablename << "'";
 			return false;
 		}
 	}
@@ -27,10 +28,10 @@ bool Inventory::createTableIfNotExist(std::string tablename, std::string createq
 Inventory::Inventory(const fs::path &dbfile) {
 	int rc = sqlite3_open(dbfile.c_str(), &db);
 	if( rc != SQLITE_OK ){
-		fprintf(stderr, "Can't open database %s: %s\n", dbfile.string().c_str(), sqlite3_errmsg(db));
+		AGO_ERROR() << "Can't open database " << dbfile.string() << ": " << sqlite3_errmsg(db);
 		throw std::runtime_error("Cannot open database");
 	}
-	std::cout << "Sccesfully opened database " << dbfile.c_str() << endl;
+	AGO_DEBUG() << "Sccesfully opened database: " << dbfile.c_str();
 
 	/*
 	CREATE TABLE rooms (uuid text, name text, location text);
@@ -65,7 +66,7 @@ int Inventory::setdevicename (string uuid, string name) {
 	}
 	if (getdevicename(uuid) == "") { // does not exist, create
 		string query = "insert into devices (name, uuid) VALUES (?, ?)";
-		printf("creating device: %s\n", query.c_str());
+		AGO_DEBUG() << "creating device: " << query.c_str();
 		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	} else {
 		string query = "update devices set name = ? where uuid = ?";
@@ -86,7 +87,7 @@ string Inventory::getroomname (string uuid) {
 int Inventory::setroomname (string uuid, string name) { 
 	if (getroomname(uuid) == "") { // does not exist, create
 		string query = "insert into rooms (name, uuid) VALUES (?, ?)";
-		printf("creating room: %s\n", query.c_str());
+		AGO_DEBUG() << "creating room: " << query.c_str();
 		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	} else {
 		string query = "update rooms set name = ? where uuid = ?";
@@ -121,7 +122,7 @@ Variant::Map Inventory::getrooms() {
 
 	rc = sqlite3_prepare_v2(db, "select uuid, name, location from rooms", -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 		return result;
 	}
 	while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -176,7 +177,7 @@ string Inventory::getfirst(const char *query, int n, ...) {
 
 	rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 		return result;
 	}
 
@@ -189,7 +190,7 @@ string Inventory::getfirst(const char *query, int n, ...) {
 	rc = sqlite3_step(stmt);
 	switch(rc) {
 		case SQLITE_ERROR:
-			fprintf(stderr, "step error: %s\n",sqlite3_errmsg(db));
+			AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
 			break;
 		case SQLITE_ROW:
 			if (sqlite3_column_type(stmt, 0) == SQLITE_TEXT) result =string( (const char*)sqlite3_column_text(stmt, 0));
@@ -210,7 +211,7 @@ string Inventory::getfloorplanname(std::string uuid) {
 int Inventory::setfloorplanname(std::string uuid, std::string name) {
 	if (getfloorplanname(uuid) == "") { // does not exist, create
 		string query = "insert into floorplans (name, uuid) VALUES (?, ?)";
-		printf("creating floorplan: %s\n", query.c_str());
+		AGO_DEBUG() << "creating floorplan: " << query.c_str();
 		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	} else {
 		string query = "update floorplans set name = ? where uuid = ?";
@@ -236,7 +237,7 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
 	} else {
 		// create new record
 		query = "insert into devicesfloorplan (x, y, floorplan, device) VALUES (?, ?, ?, ?)";
-		cout << query << endl;
+		// AGO_TRACE() << query;
 		getfirst(query.c_str(), 4, xstr.str().c_str(), ystr.str().c_str(), floorplanuuid.c_str(), deviceuuid.c_str());
 	}
 
@@ -267,7 +268,7 @@ Variant::Map Inventory::getfloorplans() {
 
 	rc = sqlite3_prepare_v2(db, "select uuid, name from floorplans", -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 		return result;
 	}
 
@@ -287,7 +288,7 @@ Variant::Map Inventory::getfloorplans() {
 		string query = "select device, x, y from devicesfloorplan where floorplan = ?";
 		rc2 = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt2, NULL);
 		if (rc2 != SQLITE_OK) {
-			fprintf(stderr, "sql error #%d: %s\n", rc2,sqlite3_errmsg(db));
+			AGO_ERROR() << "sql error #" << rc2 << ": " << sqlite3_errmsg(db);
 			continue;
 		}
 		sqlite3_bind_text(stmt2, 1, uuid, -1, NULL);
@@ -326,7 +327,7 @@ string Inventory::getroomlocation(string uuid) {
 int Inventory::setlocationname(string uuid, string name) {
 	if (getlocationname(uuid) == "") { // does not exist, create
 		string query = "insert into locations (name, uuid) VALUES (?, ?)";
-		printf("creating location: %s\n", query.c_str());
+		AGO_DEBUG() << "creating location: " << query.c_str();
 		getfirst(query.c_str(), 2, name.c_str(), uuid.c_str());
 	} else {
 		string query = "update locations set name = ? where uuid = ?";
@@ -364,7 +365,7 @@ Variant::Map Inventory::getlocations() {
 
 	rc = sqlite3_prepare_v2(db, "select uuid, name from locations", -1, &stmt, NULL);
 	if(rc!=SQLITE_OK) {
-		fprintf(stderr, "sql error #%d: %s\n", rc,sqlite3_errmsg(db));
+		AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
 		return result;
 	}
 	while (sqlite3_step(stmt) == SQLITE_ROW) {

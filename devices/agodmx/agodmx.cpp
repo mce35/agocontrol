@@ -42,14 +42,14 @@ bool loadChannels(string filename, Variant::Map& _channelMap) {
 	XMLDocument channelsFile;
 	int returncode;
 
-	printf("trying to open channel file: %s\n", filename.c_str());
+	AGO_INFO() << "trying to open channel file: " << filename;
 	returncode = channelsFile.LoadFile(filename.c_str());
 	if (returncode != XML_NO_ERROR) {
-		printf("error loading XML file, code: %i\n", returncode);
+		AGO_ERROR() << "error loading XML file, code: " << returncode;
 		return false;
 	}
 
-	printf("parsing file\n");
+	AGO_TRACE() << "parsing file";
 	XMLHandle docHandle(&channelsFile);
 	XMLElement* device = docHandle.FirstChildElement( "devices" ).FirstChild().ToElement();
 	if (device) {
@@ -57,8 +57,7 @@ bool loadChannels(string filename, Variant::Map& _channelMap) {
 		while (nextdevice != NULL) {
 			Variant::Map content;
 
-			printf("node: %s - ",nextdevice->Attribute("internalid"));
-			printf("type: %s\n",nextdevice->Attribute("type"));
+			AGO_TRACE() << "node: " << nextdevice->Attribute("internalid") << " type: " << nextdevice->Attribute("type");
 
 			content["internalid"] = nextdevice->Attribute("internalid");
 			content["devicetype"] = nextdevice->Attribute("type");
@@ -67,9 +66,7 @@ bool loadChannels(string filename, Variant::Map& _channelMap) {
 			if (channel) {
 				XMLElement *nextchannel = channel;
 				while (nextchannel != NULL) {
-					printf("channel: %s - ",nextchannel->GetText());
-					printf("type: %s\n",nextchannel->Attribute("type"));
-
+					AGO_DEBUG() << "channel: " << nextchannel->GetText() << " type: " << nextchannel->Attribute("type");
 					content[nextchannel->Attribute("type")]=nextchannel->GetText();
 					nextchannel = nextchannel->NextSiblingElement();
 				}
@@ -93,7 +90,7 @@ bool ola_connect() {
 
 	// Setup the client, this connects to the server
 	if (!ola_client.Setup()) {
-		printf("OLA client setup failed\n");
+		AGO_FATAL() << "OLA client setup failed";
 		return false;
 	}
 	return true;
@@ -112,7 +109,7 @@ void ola_disconnect() {
  * set a channel to off
  */
 void ola_setChannel(int channel, int value) {
-	printf("Setting channel %i to value %i\n", channel, value);
+	AGO_DEBUG() << "Setting channel " << channel << " to value " << value;
 	buffer.SetChannel(channel, value);
 }
 
@@ -121,7 +118,7 @@ void ola_setChannel(int channel, int value) {
  */
 bool ola_send(int universe = 0) {
 	if (!ola_client.SendDmx(universe, buffer)) {
-		printf("Send to dmx failed for universe %i\n", universe);
+		AGO_ERROR() << "Send to dmx failed for universe " << universe;
 		return false;
 	}
 	return true;
@@ -155,7 +152,6 @@ bool setDevice_level(Variant::Map device, int level=0) {
 		int red = (int) ( buffer.Get(atoi(channel_red.c_str())) * level / 100);
 		int green = (int) ( buffer.Get(atoi(channel_green.c_str())) * level / 100);
 		int blue = (int) ( buffer.Get(atoi(channel_blue.c_str())) * level / 100);
-		printf("calculated RGB values for level %i are: red %i, green %i, blue %i\n");
 		return setDevice_color(device, red, green, blue);
 	}
 }
@@ -169,7 +165,7 @@ bool setDevice_strobe(Variant::Map device, int strobe=0) {
 		ola_setChannel(atoi(channel.c_str()), (int) ( 255.0 * strobe / 100 ));
 		return ola_send();
 	} else {
-		printf("Strobe command not supported on device\n");
+		AGO_ERROR() << "Strobe command not supported on device";
                 return false;
 	}
 }
@@ -226,7 +222,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
         }
         if (!handled) {
                 returnval["result"] = 1;
-                printf("ERROR, received undhandled command %s for node %s\n", command["command"].asString().c_str(), internalid); 
+                AGO_ERROR() << "received undhandled command " << command["command"].asString() << " for node " << internalid; 
         }
         return returnval;
 }
@@ -241,25 +237,22 @@ int main(int argc, char **argv) {
 
 	// load xml file into map
 	if (!loadChannels(channelsFile.string(), channelMap)) {
-		printf("ERROR, can't load channel xml\n");
+		AGO_FATAL() << "Can't load channel xml";
 		exit(-1);
 	}
 
 	// connect to OLA
 	if (!ola_connect()) {
-		printf("ERROR, can't connect to OLA\n");
+		AGO_FATAL() << "Can't connect to OLA";
 		exit(-1);
 	}
 
         agoConnection = new AgoConnection("dmx");
 
-        printf("connection to agocontrol established\n");
-
         reportDevices(channelMap);
 
         agoConnection->addHandler(commandHandler);
 
-        printf("waiting for messages\n");
         agoConnection->run();
 
 	ola_disconnect();

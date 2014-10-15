@@ -49,14 +49,14 @@ bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
 	XMLDocument devicesFile;
 	int returncode;
 
-	printf("trying to open device file: %s\n", filename.c_str());
+	AGO_DEBUG() << "trying to open device file: " << filename;
 	returncode = devicesFile.LoadFile(filename.c_str());
 	if (returncode != XML_NO_ERROR) {
-		printf("error loading XML file, code: %i\n", returncode);
+		AGO_ERROR() << "error loading XML file, code: " << returncode;
 		return false;
 	}
 
-	printf("parsing file\n");
+	AGO_TRACE() << "parsing file";
 	XMLHandle docHandle(&devicesFile);
 	XMLElement* device = docHandle.FirstChildElement( "devices" ).FirstChild().ToElement();
 	if (device) {
@@ -64,16 +64,14 @@ bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
 		while (nextdevice != NULL) {
 			Variant::Map content;
 
-			printf("node: %s - ",nextdevice->Attribute("uuid"));
-			printf("type: %s\n",nextdevice->Attribute("type"));
+			AGO_TRACE() << "node: " << nextdevice->Attribute("uuid") << " type: " << nextdevice->Attribute("type");
 
 			content["devicetype"] = nextdevice->Attribute("type");
 			XMLElement *ga = nextdevice->FirstChildElement( "ga" );
 			if (ga) {
 				XMLElement *nextga = ga;
 				while (nextga != NULL) {
-					printf("GA: %s - ",nextga->GetText());
-					printf("type: %s\n",nextga->Attribute("type"));
+					AGO_DEBUG() << "GA: " << nextga->GetText() << " type: " << nextga->Attribute("type");
 
 					content[nextga->Attribute("type")]=nextga->GetText();
 					nextga = nextga->NextSiblingElement();
@@ -95,9 +93,7 @@ void reportDevices(Variant::Map devicemap) {
 		Variant::Map content;
 		Message event;
 
-		// printf("uuid: %s\n", it->first.c_str());
 		device = it->second.asMap();
-		// printf("devicetype: %s\n", device["devicetype"].asString().c_str());
 		agoConnection->addDevice(it->first.c_str(), device["devicetype"].asString().c_str(), true);
 	}
 }
@@ -112,7 +108,7 @@ string uuidFromGA(Variant::Map devicemap, string ga) {
 		device = it->second.asMap();
 		for (Variant::Map::const_iterator itd = device.begin(); itd != device.end(); itd++) {
 			if (itd->second.asString() == ga) {
-				// printf("GA %s belongs to %s\n", itd->second.asString().c_str(), it->first.c_str());
+				// AGO_TRACE() << "GA " << itd->second.asString() << " belongs to " << itd->first;
 				return(it->first);
 			}
 		}
@@ -126,7 +122,7 @@ string uuidFromGA(Variant::Map devicemap, string ga) {
 string typeFromGA(Variant::Map device, string ga) {
 	for (Variant::Map::const_iterator itd = device.begin(); itd != device.end(); itd++) {
 		if (itd->second.asString() == ga) {
-			// printf("GA %s belongs to %s\n", itd->second.asString().c_str(), itd->first.c_str());
+			// AGO_TRACE() << "GA " << itd->second.asString() << " belongs to " << itd->first;
 			return(itd->first);
 		}
 	}
@@ -138,7 +134,7 @@ string typeFromGA(Variant::Map device, string ga) {
 void *listener(void *param) {
 	int received = 0;
 
-	printf("starting listener thread\n");
+	AGO_TRACE() << "starting listener thread";
 	while(true) {
 		string uuid;
 		pthread_mutex_lock (&mutexCon);
@@ -146,7 +142,7 @@ void *listener(void *param) {
 		pthread_mutex_unlock (&mutexCon);
 		switch(received) {
 			case(-1): 
-				printf("ERROR polling bus\n");
+				AGO_FATAL() << "cannot poll bus";
 				exit(-1);
 				break;
 				;;
@@ -159,16 +155,14 @@ void *listener(void *param) {
 				pthread_mutex_lock (&mutexCon);
 				tl.receivefrom(eibcon);
 				pthread_mutex_unlock (&mutexCon);
-				printf("received Telegram from: %s; to: %s; type: %s shortdata %d\n",
-									Telegram::paddrtostring(tl.getSrcAddress()).c_str(),
-									Telegram::gaddrtostring(tl.getGroupAddress()).c_str(),
-									tl.decodeType().c_str(),
-									tl.getShortUserData());
+				AGO_DEBUG() << "received telegram from: " << Telegram::paddrtostring(tl.getSrcAddress()) << " to: " 
+					<< Telegram::gaddrtostring(tl.getGroupAddress()) << " type: " << tl.decodeType() << " shortdata: "
+					<< tl.getShortUserData();
 				uuid = uuidFromGA(deviceMap, Telegram::gaddrtostring(tl.getGroupAddress()));
 				if (uuid != "") {
 					string type = typeFromGA(deviceMap[uuid].asMap(),Telegram::gaddrtostring(tl.getGroupAddress()));
 					if (type != "") {
-						printf("handling telegram, GA from telegram belongs to: %s - type: %s\n",uuid.c_str(),type.c_str());
+						AGO_DEBUG() << "handling telegram, GA from telegram belongs to: " << uuid << " - type: " << type;
 						if(type == "onoff" || type == "onoffstatus") { 
 							agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", tl.getShortUserData()==1 ? 255 : 0, "");
 						} else if (type == "setlevel" || type == "levelstatus") {
@@ -183,7 +177,7 @@ void *listener(void *param) {
 						} else if (type == "energyusage") {
 							unsigned char buffer[4];
 							if (tl.getUserData(buffer,4) == 4) {
-								printf("USER DATA: %x %x %x %x \n", buffer[0],buffer[1],buffer[2],buffer[3]);
+								AGO_DEBUG() << "USER DATA: " << std::hex << buffer[0] << " " << buffer[1] << " " << buffer[2] << buffer[3];
 							}
 							// event.setSubject("event.environment.powerchanged");
 						} else if (type == "binary") {
@@ -202,7 +196,7 @@ void *listener(void *param) {
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	std::string internalid = content["internalid"].asString();
-	printf("received command  %s for device %s\n", content["command"].asString().c_str(), internalid.c_str());
+	AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
 	qpid::types::Variant::Map::const_iterator it = deviceMap.find(internalid);
 	qpid::types::Variant::Map device;
 	if (it != deviceMap.end()) {
@@ -259,9 +253,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		tg3->setDataFromChar(atoi(content["blue"].asString().c_str()));
 		tg3->setGroupAddress(Telegram::stringtogaddr(device["blue"].asString()));
 		pthread_mutex_lock (&mutexCon);
-		printf("sending telegram\n");
+		AGO_TRACE() << "sending telegram";
 		tg2->sendTo(eibcon);
-		printf("sending telegram\n");
+		AGO_TRACE() << "sending telegram";
 		tg3->sendTo(eibcon);
 		pthread_mutex_unlock (&mutexCon);
 
@@ -270,14 +264,14 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	}
 	if (handled) {	
 		tg->setGroupAddress(dest);
-		printf("sending telegram\n");
+		AGO_TRACE() << "sending telegram";
 		pthread_mutex_lock (&mutexCon);
 		bool result = tg->sendTo(eibcon);
 		pthread_mutex_unlock (&mutexCon);
-		printf("Result: %i\n",result);
+		AGO_DEBUG() << "Result: " << result;
 		returnval["result"]=result ? 0 : -1;
 	} else {
-		printf("ERROR, received undhandled command\n");
+		AGO_ERROR() << "received undhandled command";
 		returnval["result"]=-1;
 	}
 	return returnval;
@@ -294,21 +288,21 @@ int main(int argc, char **argv) {
 
 	// load xml file into map
 	if (!loadDevices(devicesFile, deviceMap)) {
-		printf("ERROR, can't load device xml\n");
+		AGO_FATAL() << "can't load device xml";
 		exit(-1);
 	}
 
-	printf("connecting to eibd\n");
+	AGO_INFO() << "connecting to eibd"; 
 	eibcon = EIBSocketURL(eibdurl.c_str());
 	if (!eibcon) {
-		printf("can't connect to url %s\n",eibdurl.c_str());
+		AGO_FATAL() << "can't connect to eibd url:" << eibdurl;
 		exit(-1);
 	}
 
 	if (EIBOpen_GroupSocket (eibcon, 0) == -1)
 	{
 		EIBClose(eibcon);
-		printf("can't open EIB Group Socket\n");
+		AGO_FATAL() << "can't open EIB Group Socket";
 		exit(-1);
 	}
 

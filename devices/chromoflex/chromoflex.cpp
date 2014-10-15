@@ -88,9 +88,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	buf[15] = (usp_crc >> 8);
 	buf[16] = (usp_crc & 0xff);
 
-	printf("sending command...\n");
+	AGO_TRACE() << "sending command";
 	if (write (fd, buf, 17) != 17) {
-		printf ("Write error: %s", strerror(errno ));
+		AGO_ERROR() <<  "Write error: " << strerror(errno);
 		returnval["result"] = -1;
 	} else {
 		returnval["result"] = 0;
@@ -133,17 +133,15 @@ int main(int argc, char **argv) {
 	tcsetattr(fd,TCSANOW,&tio);
 
 	if (write (fd, buf, 11) != 11) {
-		printf("ERROR: can't open device %s:%i\n",devicefile.c_str(),fd);
+		AGO_FATAL() << "cannot open device:" << devicefile << " - error: " << fd;
 		exit (1);
 	}
 
 	AgoConnection agoConnection = AgoConnection("chromoflex");		
-	printf("connection to agocontrol established\n");
 
 	agoConnection.addDevice("0", "dimerrgb");
 	agoConnection.addHandler(commandHandler);
 
-	printf("waiting for messages\n");
 	agoConnection.run();
 
 	close(fd);

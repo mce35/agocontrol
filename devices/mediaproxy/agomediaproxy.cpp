@@ -36,7 +36,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	string internalid = content["internalid"].asString();
 	if (internalid == "controller" && content["command"].asString() == "restart") {
-		printf("restarting proxy\n");
+		AGO_INFO() << "restarting proxy";
 		stopLoop = 1;
 	}
 	returnval["result"]=0;
@@ -97,7 +97,7 @@ void *startProxy(void *params) {
 		for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
 			qpid::types::Variant::Map device = it->second.asMap();
 			if (device["devicetype"] == "onvifnvt") {
-				printf("found ONVIF NVT: %s\n", device["internalid"].asString().c_str());
+				AGO_INFO() << "found ONVIF NVT: " << device["internalid"].asString();
 				std::string streamname = it->first;
 				std::string url = device["internalid"].asString();
 				ServerMediaSession* sms = ProxyServerMediaSession::createNew(*env, rtspServer,
@@ -112,7 +112,7 @@ void *startProxy(void *params) {
 			}
 		}	
 		env->taskScheduler().doEventLoop(&stopLoop); // does not return
-		printf("Exited event loop\n");
+		AGO_DEBUG() << "Exited event loop";
 		stopLoop=0;
 	}
 
@@ -127,7 +127,6 @@ int main(int argc, char** argv) {
 	rtsp_port = atoi(getConfigOption("mediaproxy", "rtsp_port", "554").c_str());
 
 	agoConnection = new AgoConnection("mediaproxy");		
-	printf("connection to agocontrol established\n");
 
 	agoConnection->addDevice("controller", "mediaproxycontroller");
 
@@ -136,7 +135,6 @@ int main(int argc, char** argv) {
 	static pthread_t proxyThread;
 	pthread_create(&proxyThread,NULL,startProxy,&params);
 
-	printf("waiting for messages\n");
 	agoConnection->run();
 
 	return 0; // only to prevent compiler warning

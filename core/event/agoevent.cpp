@@ -64,7 +64,7 @@ double variantToDouble(qpid::types::Variant v) {
 			result = v.asUint64();
 			break;
 		default:
-			cout << "ERROR! No conversion for type:" << v << endl;
+			AGO_ERROR() << "No conversion for type: " << v;
 			result = 0;
 	}
 	return result;
@@ -96,25 +96,25 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 		if (!(it->second.isVoid())) {
 			event = it->second.asMap();
 		} else {
-			cout << "ERROR: eventmap entry is void" << endl;
+			AGO_ERROR() << "Eventmap entry is void";
 		}
 		if (event["event"] == subject) {
-			// cout << "found matching event: " << event << endl;
+			AGO_TRACE() << "Found matching event: " << event;
 			// check if the event is disabled
 			if ((!(event["disabled"].isVoid())) && (event["disabled"].asBool() == true)) return;
 
 			qpid::types::Variant::Map criteria; // this holds the criteria evaluation results for each criteria
 			std::string nesting = event["nesting"].asString();
 			if (!event["criteria"].isVoid()) for (qpid::types::Variant::Map::const_iterator crit = event["criteria"].asMap().begin(); crit!= event["criteria"].asMap().end(); crit++) {
-				// cout << "criteria[" << crit->first << "] - " << crit->second << endl;
+				AGO_TRACE() << "criteria[" << crit->first << "] - " << crit->second;
 				qpid::types::Variant::Map element;
 				if (!(crit->second.isVoid())) {
 					element = crit->second.asMap();
 				} else {
-					cout << "ERROR: criteria element is void" << endl;
+					AGO_ERROR() << "Criteria element is void";
 				}
 				try {
-					// cout << "LVAL: " << element["lval"] << endl;
+					// AGO_TRACE() << "LVAL: " << element["lval"];
 					qpid::types::Variant::Map lvalmap;
 					qpid::types::Variant lval;
 					if (!element["lval"].isVoid()) {
@@ -149,8 +149,8 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 						lval = content[lvalmap["parameter"].asString()];
 					}
 					qpid::types::Variant rval = element["rval"];
-					// cout << "lval: " << lval << " (" << getTypeName(lval.getType()) << ")" << endl;
-					// cout << "rval: " << rval << " (" << getTypeName(rval.getType()) << ")" << endl;
+					AGO_TRACE() << "lval: " << lval << " (" << getTypeName(lval.getType()) << ")";
+					AGO_TRACE() << "rval: " << rval << " (" << getTypeName(rval.getType()) << ")";
 
 					if (element["comp"] == "eq") {
 						if (lval.getType()==qpid::types::VAR_STRING || rval.getType()==qpid::types::VAR_STRING) { // compare as string
@@ -169,11 +169,11 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 					} else {
 						criteria[crit->first] = false;
 					}
-					cout << lval << " " << element["comp"] << " " << rval << " : " << criteria[crit->first] << endl;
+					AGO_TRACE() << lval << " " << element["comp"] << " " << rval << " : " << criteria[crit->first];
 				} catch ( const std::exception& error) {
 					stringstream errorstring;
 					errorstring << error.what();
-					cout << "ERROR, exception occured" << errorstring.str() << endl;
+					AGO_ERROR() << "Exception occured: " << errorstring.str();
 					criteria[crit->first] = false;
 				}
 				// this is for converted legacy scenario maps
@@ -188,8 +188,9 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 			replaceString(nesting, "and", "&");
 			replaceString(nesting, "or", "|");
 			nesting += ";";
-			// cout << "nesting prepared: " << nesting << endl;
+			AGO_TRACE() << "nesting prepared: " << nesting;
 			if (evaluateNesting(nesting)) {
+				AGO_DEBUG() << "sending event action as command";
 				agoConnection->sendMessage(event["action"].asMap());
 			}
 		}	
@@ -203,12 +204,12 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	if (internalid == "eventcontroller") {
 		if (content["command"] == "setevent") {
 			try {
-				cout << "setevent request" << endl;
+				AGO_DEBUG() << "setevent request";
 				qpid::types::Variant::Map newevent = content["eventmap"].asMap();
-				cout << "event content:" << newevent << endl;
+				AGO_TRACE() << "event content:" << newevent;
 				std::string eventuuid = content["event"].asString();
 				if (eventuuid == "") eventuuid = generateUuid();
-				cout << "event uuid:" << eventuuid << endl;
+				AGO_TRACE() << "event uuid:" << eventuuid;
 				eventmap[eventuuid] = newevent;
 				agoConnection->addDevice(eventuuid.c_str(), "event", true);
 				if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE))) {
@@ -226,7 +227,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		} else if (content["command"] == "getevent") {
 			try {
 				std::string event = content["event"].asString();
-				cout << "getevent request:" << event << endl;
+				AGO_DEBUG() << "getevent request:" << event;
 				returnval["result"] = 0;
 				returnval["eventmap"] = eventmap[event].asMap();
 				returnval["event"] = event;
@@ -235,12 +236,12 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			}
 		} else if (content["command"] == "delevent") {
 			std::string event = content["event"].asString();
-			cout << "delevent request:" << event << endl;
+			AGO_DEBUG() << "delevent request:" << event;
 			returnval["result"] = -1;
 			if (event != "") {
 				qpid::types::Variant::Map::iterator it = eventmap.find(event);
 				if (it != eventmap.end()) {
-					cout << "removing ago device" << event << endl;
+					AGO_TRACE() << "removing ago device" << event;
 					agoConnection->removeDevice(it->first.c_str());
 					eventmap.erase(it);
 					if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE))) {
@@ -255,22 +256,17 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 
 int main(int argc, char **argv) {
 	agoConnection = new AgoConnection("event");	
-	cout << "parsing eventmap file" << endl;
+	AGO_DEBUG() << "parsing eventmap file" << endl;
 	fs::path file = ensureParentDirExists(getConfigPath(EVENTMAPFILE));
-
 	eventmap = jsonFileToVariantMap(file);
-	cout << "eventmap: " << eventmap << endl;
-	cout << "adding controller" << endl;
+
 	agoConnection->addDevice("eventcontroller", "eventcontroller");
-	cout << "setting handlers" << endl;
 	agoConnection->addHandler(commandHandler);
 	agoConnection->addEventHandler(eventHandler);
 
-	// cout << eventmap;
 	for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++) {
-		cout << "adding event:" << it->first << ":" << it->second << endl;	
+		AGO_DEBUG() << "adding event:" << it->first << ":" << it->second << endl;	
 		agoConnection->addDevice(it->first.c_str(), "event", true);
 	}
-	cout << "run()" << endl;
 	agoConnection->run();
 }

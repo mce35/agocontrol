@@ -87,7 +87,7 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
 		lineLen = vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
 		va_end( saveargs );
 	}
-	cout << string(lineBuf) << endl;
+	AGO_TRACE() << string(lineBuf);
 }
 */
 const char *controllerErrorStr (Driver::ControllerError err)
@@ -125,32 +125,31 @@ const char *controllerErrorStr (Driver::ControllerError err)
 }
 
 void controller_update(Driver::ControllerState state,  Driver::ControllerError err, void *context) {
-	printf("controller state update:");
 	qpid::types::Variant::Map eventmap;
 	eventmap["statecode"]=state;
 	switch(state) {
 		case Driver::ControllerState_Normal:
-			printf("no command in progress");
+			AGO_INFO() << "controller state update: no command in progress";
 			eventmap["state"]="normal";
 			eventmap["description"]="Normal: No command in progress";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			// nothing to do
 			break;
 		case Driver::ControllerState_Waiting:
-			printf("waiting for user action");
+			AGO_INFO() << "controller state update: waiting for user action";
 			eventmap["state"]="awaitaction";
 			eventmap["description"]="Waiting for user action";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			// waiting for user action
 			break;
 		case Driver::ControllerState_Cancel:
-			printf("command was cancelled");
+			AGO_INFO() << "controller state update: command was cancelled";
 			eventmap["state"]="cancel";
 			eventmap["description"]="Command was cancelled";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 		case Driver::ControllerState_Error:
-			printf("command returned error");
+			AGO_ERROR() << "controller state update: command returned error";
 			eventmap["state"]="error";
 			eventmap["description"]="Command returned error";
 			eventmap["error"] = err;
@@ -158,54 +157,53 @@ void controller_update(Driver::ControllerState state,  Driver::ControllerError e
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 		case Driver::ControllerState_Sleeping:
-			printf("device went to sleep");
+			AGO_INFO() << "controller state update: device went to sleep";
 			eventmap["state"]="sleep";
 			eventmap["description"]="Device went to sleep";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 
 		case Driver::ControllerState_InProgress:
-			printf("communicating with other device");
+			AGO_INFO() << "controller state update: communicating with other device";
 			eventmap["state"]="inprogress";
 			eventmap["description"]="Communication in progress";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			// communicating with device
 			break;
 		case Driver::ControllerState_Completed:
-			printf("command has completed successfully");
+			AGO_INFO() << "controller state update: command has completed successfully";
 			eventmap["state"]="success";
 			eventmap["description"]="Command completed";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 		case Driver::ControllerState_Failed:
-			printf("command has failed");
+			AGO_ERROR() << "controller state update: command has failed";
 			eventmap["state"]="failed";
 			eventmap["description"]="Command failed";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			// houston..
 			break;
 		case Driver::ControllerState_NodeOK:
-			printf("node ok");
+			AGO_INFO() << "controller state update: node ok";
 			eventmap["state"]="nodeok";
 			eventmap["description"]="Node OK";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 		case Driver::ControllerState_NodeFailed:
-			printf("node failed");
+			AGO_ERROR() << "controller state update: node failed";
 			eventmap["state"]="nodefailed";
 			eventmap["description"]="Node failed";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 		default:
-			printf("unknown response");
+			AGO_INFO() << "controller state update: unknown response";
 			eventmap["state"]="unknown";
 			eventmap["description"]="Unknown response";
 			agoConnection->emitEvent("zwavecontroller", "event.zwave.controllerstate", eventmap);
 			break;
 	}
-	printf("\n");
 	if (err != Driver::ControllerError_None)  {
-		printf("%s\n", controllerErrorStr(err));
+		AGO_ERROR() << "Controller error: " << controllerErrorStr(err);
 	}
 }
 
@@ -237,11 +235,10 @@ ValueID* getValueID(int nodeid, int instance, string label) {
         for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
         {
 		for (list<ValueID>::iterator it2 = (*it)->m_values.begin(); it2 != (*it)->m_values.end(); it2++ ) {
-			// printf("Node ID: %3d Value ID: %d\n", (*it)->m_nodeId, (*it2).GetId());
 			if ( ((*it)->m_nodeId == nodeid) && ((*it2).GetInstance() == instance) ) {
 				string valuelabel = Manager::Get()->GetValueLabel((*it2));
 				if (label == valuelabel) {
-					// printf("Found ValueID: %d\n",(*it2).GetId());
+					// AGO_TRACE() << "Found ValueID: " << (*it2).GetId();
 					return &(*it2);
 				}
 			}
@@ -293,7 +290,7 @@ void OnNotification
 				string tempstring = tempstream.str();
 				ZWaveNode *device;
 				if (id.GetGenre() == ValueID::ValueGenre_Config) {
-					printf("CONFIGURATION PARAMETER Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - Label: %s\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),label.c_str());
+					AGO_INFO() << "Configuration parameter Value Added: Home " <<  _notification->GetHomeId() << " Node: " << _notification->GetNodeId() << " Genre: " << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
 
 
 				} else if (basic == BASIC_TYPE_CONTROLLER) {
@@ -387,7 +384,7 @@ void OnNotification
 									agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
 								}
 							} else {
-								printf("WARNING: unhandled label for SENSOR_MULTILEVEL: %s - adding generic multilevelsensor\n",label.c_str());
+								AGO_WARNING() << "unhandled label for SENSOR_MULTILEVEL. Adding generic multilevelsensor for label: " << label;
 								if ((device = devices.findId(nodeinstance)) != NULL) {
 									device->addValue(label, id);
 								} else {
@@ -411,7 +408,7 @@ void OnNotification
 								devices.add(device);
 								agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
 							} else {
-								printf("WARNING: unhandled label for CLASS_METER: %s - adding generic multilevelsensor\n",label.c_str());
+								AGO_WARNING() << "unhandled label for CLASS_METER. Adding generic multilevelsensor for label: " << label;
 								if ((device = devices.findId(nodeinstance)) != NULL) {
 									device->addValue(label, id);
 								} else {
@@ -443,7 +440,7 @@ void OnNotification
 						case COMMAND_CLASS_THERMOSTAT_FAN_MODE:
 						case COMMAND_CLASS_THERMOSTAT_FAN_STATE:
 						case COMMAND_CLASS_THERMOSTAT_OPERATING_STATE:
-							cout << "adding thermostat label: " << label << endl;
+							AGO_DEBUG() << "adding thermostat label: " << label;
 							if ((device = devices.findId(nodeinstance)) != NULL) {
 								device->addValue(label, id);
 								device->setDevicetype("thermostat");
@@ -455,8 +452,7 @@ void OnNotification
 							}
 						break;
 						default:
-							printf("Notification: Unassigned Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - Label: %s\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),label.c_str());
-							// printf("Notification: Unassigned Value Added Home 0x%08x Node %d Genre %d Class %x Instance %d Index %d Type %d - ID: %" PRIu64 "\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType(),id.GetId());
+							AGO_INFO() << "Notification: Unassigned Value Added Home: " << _notification->GetHomeId() << " Node: " << _notification->GetNodeId() << " Genre: " << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
 
 					}
 				}
@@ -489,7 +485,8 @@ void OnNotification
 				// nodeInfo = nodeInfo;
 				ValueID id = _notification->GetValueID();
 				string str;
-				printf("Notification: Value Changed Home 0x%08x Node %d Genre %d Class %d Instance %d Index %d Type %d\n", _notification->GetHomeId(), _notification->GetNodeId(), id.GetGenre(), id.GetCommandClassId(), id.GetInstance(), id.GetIndex(), id.GetType());
+				AGO_INFO() << "Notification: Value Changed Home: " << _notification->GetHomeId() << " Node: " << _notification->GetNodeId() << " Genre: " << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType();
+
 			      if (Manager::Get()->GetValueAsString(id, &str)) {
 					qpid::types::Variant cachedValue;
 					cachedValue.parse(str);
@@ -502,7 +499,7 @@ void OnNotification
 					string eventtype = "";
 					if (str == "True") level="255";
 					if (str == "False") level="0";
-					printf("Value: %s Label: %s Unit: %s\n",str.c_str(),label.c_str(),units.c_str());
+					AGO_DEBUG() << "Value: " << str << " Label: " << label << " Units: " << units;
 					if ((label == "Basic") || (label == "Switch") || (label == "Level")) {
 						eventtype="event.device.statechanged";
 					}
@@ -566,7 +563,7 @@ void OnNotification
 					if (eventtype != "") {	
 						ZWaveNode *device = devices.findValue(id);
 						if (device != NULL) {
-							if (debug) printf("Sending %s event from child %s\n",eventtype.c_str(), device->getId().c_str());
+							AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
 							agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.c_str(), units.c_str());	
 						}
 					}
@@ -643,10 +640,10 @@ void OnNotification
 				string eventtype = "event.device.statechanged";
 				ZWaveNode *device = devices.findValue(id);
 				if (device != NULL) {
-					if (debug) printf("Sending %s event from child %s\n",eventtype.c_str(), device->getId().c_str());
+					AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
 					agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.str().c_str(), "");	
 				} else {
-					cout << "no agocontrol device found for node event - Label: " << label << " Level: " << level << endl;
+					AGO_WARNING() << "no agocontrol device found for node event - Label: " << label << " Level: " << level;
 				}
 
 			}
@@ -666,14 +663,12 @@ void OnNotification
 				string eventtype = "event.device.scenechanged";
 				ZWaveNode *device;
 				if ((device = devices.findId(nodeinstance)) != NULL) {
-					if (debug) printf("Sending %s for scene %d event from child %s\n",
-						  eventtype.c_str(), scene, device->getId().c_str());
+					AGO_DEBUG() << "Sending " << eventtype << " for scene " << scene << " event from child " << device->getId();
 					qpid::types::Variant::Map content;
 					content["scene"]=scene;
 					agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), content);	
 				} else {
-					cout << "WARNING: no agocontrol device found for scene event" << endl;
-					cout << "Node: " << nodeinstance << " Scene: " << scene << endl;
+					AGO_WARNING() << "no agocontrol device found for scene event. Node: " << nodeinstance << " Scene: " << scene;
 				}
 
 			}
@@ -729,7 +724,7 @@ void OnNotification
 		}
 		default:
 		{
-			cout << "WARNING: Unhandled OpenZWave Event: " << _notification->GetType() << endl;
+			AGO_WARNING() << "Unhandled OpenZWave Event: " << _notification->GetType();
 		}
 	}
 
@@ -742,10 +737,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
         qpid::types::Variant::Map returnval;
 	bool result;
 	std::string internalid = content["internalid"].asString();
-	// printf("command: %s internal id: %s\n", content["command"].asString().c_str(), internalid.c_str());
 
 	if (internalid == "zwavecontroller") {
-		printf("z-wave specific controller command received\n");
+		AGO_TRACE() << "z-wave specific controller command received";
 		if (content["command"] == "addnode") {
 			Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_AddDevice, controller_update, NULL, true);
 			result = true;
@@ -762,10 +756,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				int mynode = content["node"];
 				Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
 			    result = true;
+			} else {
+				result = false;
 			}
-            else {
-                result = false;
-            }
 		} else if (content["command"] == "healnetwork") {
 			Manager::Get()->HealNetwork(g_homeId, true);
 			result = true;
@@ -774,10 +767,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				int mynode = content["node"];
 				Manager::Get()->RefreshNodeInfo(g_homeId, mynode);
 				result = true;
+			} else {
+				result = false;
 			}
-            else {
-                result = false;
-            }
 		} else if (content["command"] == "getstatistics") {
 			Driver::DriverData data;
 			Manager::Get()->GetDriverStatistics( g_homeId, &data );
@@ -804,13 +796,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
                                 Manager::Get()->TestNetworkNode(g_homeId, mynode, count);
                                 result = true;
                         }
-        } else if (content["command"] == "testnetwork") {
-            int count = 10;
-            if (!(content["count"].isVoid()))
-                count=content["count"];
-            Manager::Get()->TestNetwork(g_homeId, count);
-            result = true;
-        } else if (content["command"] == "getnodes") {
+		} else if (content["command"] == "testnetwork") {
+			int count = 10;
+			if (!(content["count"].isVoid()))
+				count=content["count"];
+			Manager::Get()->TestNetwork(g_homeId, count);
+			result = true;
+		} else if (content["command"] == "getnodes") {
 			qpid::types::Variant::Map nodelist;
 			for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
 			{
@@ -866,7 +858,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			int mynode = content["node"];
 			int mygroup = content["group"];
 			int mytarget = content["target"];
-			printf("adding association: %i %i %i\n",mynode,mygroup,mytarget);
+			AGO_DEBUG() << "adding association: Node: " << mynode << " Group: " << mygroup << " Target: " << mytarget;
 			Manager::Get()->AddAssociation(g_homeId, mynode, mygroup, mytarget);
 			result = true;
 		} else if (content["command"] == "getassociations") {
@@ -890,7 +882,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			int myparam = content["param"];
 			int myvalue = content["value"];
 			int mysize = content["size"];
-			printf("setting config param: node: %i param: %i size: %i value: %i\n",mynode,myparam,mysize,myvalue);
+			AGO_DEBUG() << "setting config param: node: " << mynode << " param: " << myparam << " size: " << mysize << " value: " << myvalue;
 			result = Manager::Get()->SetConfigParam(g_homeId,mynode,myparam,myvalue,mysize); 
 		} else if (content["command"] == "downloadconfig") {
 			result = true;
@@ -910,28 +902,14 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		} else if (content["command"] == "reset") {
 			result = true;
 			Manager::Get()->ResetController(g_homeId);
-		} else if( content["command"] == "setport" ) {
-            if( !content["port"].isVoid() ) {
-                int port = content["port"];
-                result = setConfigOption("zwave", "device", port);
-            }
-            else {
-                result = false;
-            }
-        }
-        else if( content["command"] == "getport" ) {
-            result = true;
-            //return empty string if not configured
-            returnval["port"] = getConfigOption("zwave", "device", "");
-        }
-
+		} else {
+			result = false;
+		}
 	} else {
 		ZWaveNode *device = devices.findId(internalid);
 		if (device != NULL) {
-			printf("command received for %s\n", internalid.c_str());
-			printf("device type: %s\n", device->getDevicetype().c_str()); 
-
 			string devicetype = device->getDevicetype();
+			AGO_TRACE() << "command received for " << internalid << "(" << devicetype << ")"; 
 			ValueID *tmpValueID;
 
 			if (devicetype == "switch") {
@@ -990,26 +968,26 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					float temp = 0.0;
 					if (content["temperature"] == "-1") {
 						try {
-							cout << "rel temp -1:" << valueCache[*tmpValueID] << endl;
+							AGO_TRACE() << "rel temp -1:" << valueCache[*tmpValueID];
 							temp = atof(valueCache[*tmpValueID].asString().c_str());
 							temp = temp - 1.0;
 						} catch (...) {
-							cout << "can't determine current value for relative temperature change" << endl;
+							AGO_WARNING() << "can't determine current value for relative temperature change";
 							returnval["result"] = -1; return returnval;
 						}
 					} else if (content["temperature"] == "+1") {
 						try {
-							cout << "rel temp +1: " << valueCache[*tmpValueID] << endl;
+							AGO_TRACE() << "rel temp +1: " << valueCache[*tmpValueID];
 							temp = atof(valueCache[*tmpValueID].asString().c_str());
 							temp = temp + 1.0;
 						} catch (...) {
-							cout << "can't determine current value for relative temperature change" << endl;
+							AGO_WARNING() << "can't determine current value for relative temperature change";
 							returnval["result"] = -1; return returnval;
 						}
 					} else {
 						temp = content["temperature"];
 					}
-					cout << "setting temperature: " << temp << endl;
+					AGO_TRACE() << "setting temperature: " << temp;
 					result = Manager::Get()->SetValue(*tmpValueID , temp);
 				} else if (content["command"] == "setthermostatmode") {
 					string mode = content["mode"].asString();
@@ -1041,13 +1019,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					} else {
 						result = Manager::Get()->SetValueListSelection(*tmpValueID , "Auto Low");
 					}
-
 				}
 			}
-
 		}
-			//printf("Type: %i - %s\n",tmpValueID->GetType(), Value::GetTypeNameFromEnum(tmpValueID->GetType()));
-
 	}
 	returnval["result"] = result ? 0 : -1;
 	return returnval;
@@ -1073,7 +1047,6 @@ int main(int argc, char **argv) {
 	
 	AgoConnection _agoConnection = AgoConnection("zwave");		
 	agoConnection = &_agoConnection;
-	// printf("connection to agocontrol established\n");
 
 	// init open zwave
 	Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
@@ -1105,7 +1078,7 @@ int main(int argc, char **argv) {
 	Manager::Get()->AddDriver(device);
 
 	// Now we just wait for the driver to become ready
-	printf("waiting for OZW driver to become ready\n");
+	AGO_INFO() << "waiting for OZW driver to become ready";
 	pthread_cond_wait( &initCond, &initMutex );
 
 	if( !g_initFailed )
@@ -1114,25 +1087,16 @@ int main(int argc, char **argv) {
 		Manager::Get()->WriteConfig( g_homeId );
 		Driver::DriverData data;
 		Manager::Get()->GetDriverStatistics( g_homeId, &data );
-		// printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
-		// printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
-		// printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
 
-		printf("OZW startup complete\n");
-		cout << devices.toString() << endl;
+		AGO_INFO() << "OZW startup complete";
+		AGO_DEBUG() << devices.toString();
 
 		agoConnection->addDevice("zwavecontroller", "zwavecontroller");
 		agoConnection->addHandler(commandHandler);
-		/* for (std::list<ZWaveNode*>::const_iterator it = devices.nodes.begin(); it != devices.nodes.end(); it++) {
-			ZWaveNode *node = *it;
-			printf("adding ago device for value id: %s - type: %s\n", node->getId().c_str(),node->getDevicetype().c_str());
-			agoConnection->addDevice(node->getId().c_str(), node->getDevicetype().c_str());
-
-		}*/
 
 		agoConnection->run();
 	} else {
-		printf("unable to initialize OZW\n");
+		AGO_FATAL() << "unable to initialize OZW";
 	}	
 	Manager::Destroy();
 

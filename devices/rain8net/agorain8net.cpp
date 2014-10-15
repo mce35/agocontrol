@@ -36,21 +36,18 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	int valve = 0;
 	valve = atoi(content["internalid"].asString().c_str());
-	printf("command: %s internal id: %i\n", content["command"].asString().c_str(), valve);
 	if (content["command"] == "on" ) {
 		if (rain8.zoneOn(1,valve) != 0) {
-			printf("can't switch on\n");
+			AGO_ERROR() << "can't switch on";
 			returnval["result"] = -1;
 		} else {
-			printf("switched on\n");
 			returnval["result"] = 0;
 		}
 	} else if (content["command"] == "off") {
 		if (rain8.zoneOff(1,valve) != 0) {
-			printf("can't switch off\n");
+			AGO_ERROR() << "can't switch off";
 			returnval["result"] = -1;
 		} else {
-			printf("switched off\n");
 			returnval["result"] = 0;
 		}
 	}
@@ -63,18 +60,17 @@ int main(int argc, char **argv) {
 	devicefile=getConfigOption("rain8net", "device", "/dev/ttyS_01");
 
 	if (rain8.init(devicefile.c_str()) != 0) {
-		printf("can't open rainnet device %s\n", devicefile.c_str());
+		AGO_FATAL() << "can't open rainnet device " << devicefile;
 		exit(1);
 	}
 	rain8.setTimeout(10000);
 	if ((rc = rain8.comCheck()) != 0) {
-		printf("can't talk to rainnet device %s, comcheck failed: %i\n", devicefile.c_str(),rc);
+		AGO_FATAL() << "can't talk to rainnet device " << devicefile << " - comcheck failed: " << rc;
 		exit(1);
 	}
-	printf("connection to rain8net established\n");
+	AGO_INFO() << "connection to rain8net established";
 
 	AgoConnection agoConnection = AgoConnection("rain8net");		
-	printf("connection to agocontrol established\n");
 
 	for (int i=1; i<9; i++) {
 		std::stringstream valve;
@@ -83,15 +79,15 @@ int main(int argc, char **argv) {
 	}
 	agoConnection.addHandler(commandHandler);
 
-	printf("fetching zone status\n");
+	AGO_DEBUG() << "fetching zone status";
 	unsigned char status;
 	if (rain8.getStatus(1,status) == 0) {
-		printf("can't get zone status, aborting\n");
+		AGO_FATAL() << "can't get zone status, aborting";
 		exit(1);
 	} else {
-		printf("Zone status: 8:%d 7:%d 6:%d 5:%d 4:%d 3:%d 2:%d 1:%d\n", (status & 128)?1:0, (status & 64)?1:0, (status &32)?1:0,(status&16)?1:0,(status&8)?1:0,(status&4)?1:0,(status&2)?1:0,(status&1)?1:0);
+		AGO_INFO() << "Zone status: 8:" << ((status & 128)?1:0) << " 7:" << ((status & 64)?1:0) << " 6:" << ((status &32)?1:0) << " 5:" 
+			<< ((status&16)?1:0) << " 4:" << ((status&8)?1:0) << " 3:" << ((status&4)?1:0) << " 2:" << ((status&2)?1:0) << " 1:" << ((status&1)?1:0);
 	}
-	printf("waiting for messages\n");
 	agoConnection.run();
 
 }

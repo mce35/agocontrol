@@ -167,7 +167,7 @@ void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) {
 			//default:
 				//lua_pushstring(L,it->first.c_str());
 				//lua_pushstring(L,"unhandled");
-				//cout << "undhandled type: " << it->second.getType() << endl;
+				//AGO_TRACE() << "undhandled type: " << it->second.getType();
 				//lua_settable(L, -3);
 		}
 	}	
@@ -203,7 +203,7 @@ int luaSendMessage(lua_State *l) {
 		}
 		lua_pop(l, 1);
 	}
-	cout << "Sending message: " << subject << " " << content << endl;
+	AGO_TRACE() << "Sending message: " << subject << " " << content;
 	qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);	 
 	lua_pushnumber(l, 0);
 	return 1;
@@ -218,7 +218,7 @@ int luaSetVariable(lua_State *L) {
 	content["value"] = std::string(lua_tostring(L,2));
 	content["command"]="setvariable";
 	content["uuid"]=agocontroller;
-	cout << "Sending message: " << content << endl;
+	AGO_TRACE() << "Sending message: " << content;
 	qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);
 	//manage result
 	if( !replyMap["returncode"].isVoid() )
@@ -331,12 +331,11 @@ int luaGetDeviceInventory(lua_State *L)
 				break;
 		}
 	}
-	cout << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
+	AGO_TRACE() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
 	if( subAttribute.length()>0 )
 	{
-		cout << "[" << subAttribute << "]";
+		AGO_TRACE() << "[" << subAttribute << "]";
 	}
-	cout << endl;
 	if( !deviceInventory[uuid].isVoid() )
 	{
 		qpid::types::Variant::Map attributes = deviceInventory[uuid].asMap();
@@ -453,7 +452,7 @@ bool runScript(qpid::types::Variant::Map content, const fs::path &script) {
 	}
 	if( parseScript )
 	{
-		//cout << "Update script infos (" << script << ")" << endl;
+		//AGO_TRACE() << "Update script infos (" << script << ")";
 		infos["updated"] = (int32_t)updated;
 		qpid::types::Variant::List events;
 		searchEvents(script, &events);
@@ -493,8 +492,7 @@ bool runScript(qpid::types::Variant::Map content, const fs::path &script) {
 
 	if( executeScript )
 	{
-		cout << "========================================" << endl;
-		cout << "Running " << script << "..." << endl;
+		AGO_TRACE() << "Running " << script;
 		refreshInventory = true;
 		lua_State *L;
 		const luaL_Reg *lib;
@@ -523,20 +521,19 @@ bool runScript(qpid::types::Variant::Map content, const fs::path &script) {
 		if(status == LUA_OK) {
 			result = lua_pcall(L, 0, LUA_MULTRET, 0);
 		} else {
-			std::cout << "-- Could not load the script " << script << std::endl;
+			AGO_ERROR()<< "Could not load script: " << script;
 		}
 		if ( result!=0 ) {
-			std::cerr << "-- SCRIPT " << script << " FAILED: " << lua_tostring(L, -1) << std::endl;
+			AGO_ERROR() << "Script " << script << " failed: " << lua_tostring(L, -1);
 			lua_pop(L, 1); // remove error message
 		}
 
 		lua_close(L);
-		cout << "========================================" << endl;
 		return status == 0 ? true : false;
 	}
 	else
 	{
-		//cout << "-- NOT running script " << script << endl;
+		//AGO_TRACE() << "-- NOT running script " << script;
 	}
 	return true;
 }
@@ -567,7 +564,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 					fs::path input(content["name"]);
 					fs::path script = construct_script_name(input.stem());
 					string scriptcontent = get_file_contents(script);
-					cout << "reading script " << script << endl;
+					AGO_TRACE() << "reading script " << script;
 					returnval["script"]=base64_encode(reinterpret_cast<const unsigned char*>(scriptcontent.c_str()), scriptcontent.length());
 					returnval["result"]=0;
 					returnval["name"]=content["name"].asString();
@@ -635,7 +632,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 						returnval["result"]=-1;
 					}
 				} catch( const exception& e ) {
-					cout << "Exception during file renaming" << e.what() << endl;
+					AGO_ERROR() << "Exception during file renaming" << e.what();
 					returnval["error"]="Unable to rename script";
 					returnval["result"]=-1;
 				}
@@ -664,19 +661,19 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 						if( !fs::exists(target) )
 						{
 							//move file
-							cout << "import " << source << " to " << target << endl;
+							AGO_DEBUG() << "import " << source << " to " << target;
 							fs::copy_file(source, target);
 							returnval["error"] = "";
 							returnval["result"] = 0;
 						}
 						else
 						{
-							cout << "Script already exists, nothing overwritten" << endl;
+							AGO_DEBUG() << "Script already exists, nothing overwritten";
 							returnval["error"] = "Script already exists. Script not imported";
 							returnval["result"] = -1;
 						}
 					} catch( const exception& e ) {
-						cout << "Exception during script import" << e.what() << endl;
+						AGO_ERROR() << "Exception during script import" << e.what();
 						returnval["error"] = "Unable to import script";
 						returnval["result"] = -1;
 					}
@@ -684,7 +681,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				else
 				{
 					//invalid file, reject it
-					cout << "Unsupported file uploaded" << endl;
+					AGO_ERROR() << "Unsupported file uploaded";
 					returnval["error"] = "Unsupported file";
 					returnval["result"] = -1;
 				}
@@ -692,25 +689,24 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			else
 			{
 				//invalid request
-				cout << "Invalid file upload request" << endl;
+				AGO_ERROR() << "Invalid file upload request";
 				returnval["error"] = "Invalid request";
 				returnval["result"] = -1;
 			}
 		} else if (content["command"] == "downloadfile") {
-			cout << "download file command received!" << endl;
-			cout << content << endl;
+			AGO_TRACE() << "download file command received: " << content;
 			//export script
 			if( !content["filename"].isVoid() && content["filename"].asString()!="" )
 			{
 				std::string file = "blockly_" + content["filename"].asString();
 				fs::path target = construct_script_name(file);
-				cout << "file to download " << target << endl;
+				AGO_DEBUG() << "file to download " << target;
 
 				//check if file exists
 				if( fs::exists(target) )
 				{
 					//file exists, return full path
-					cout << "Send fullpath of file to download " << target << endl;
+					AGO_DEBUG() << "Send fullpath of file to download " << target;
 					returnval["error"] = "";
 					returnval["filepath"] = target.string();
 					returnval["result"] = 0;
@@ -718,7 +714,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				else
 				{
 					//requested file doesn't exists
-					cout << "File to download doesn't exist" << endl;
+					AGO_ERROR() << "File to download doesn't exist";
 					returnval["error"] = "File doesn't exist";
 					returnval["result"] = -1;
 				}
@@ -726,7 +722,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			else
 			{
 				//invalid request
-				cout << "Invalid file upload request" << endl;
+				AGO_ERROR() << "Invalid file upload request";
 				returnval["error"]="Invalid request";
 				returnval["result"]=-1;
 			}
@@ -770,7 +766,7 @@ int main(int argc, char **argv) {
 				if (!(it->second.isVoid())) {
 					qpid::types::Variant::Map device = it->second.asMap();
 					if (device["devicetype"] == "agocontroller") {
-						cout << "Agocontroller: " << it->first << endl;
+						AGO_TRACE() << "Agocontroller: " << it->first;
 						agocontroller = it->first;
 					}
 				}

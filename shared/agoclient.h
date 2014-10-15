@@ -23,6 +23,8 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 
+#include "agolog.h"
+
 #include <uuid/uuid.h>
 #include <augeas.h>
 

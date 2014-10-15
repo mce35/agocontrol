@@ -48,6 +48,9 @@ std::string uuidToName(std::string uuid) {
     qpid::types::Variant::Map device = devices[uuid].asMap();
     return device["name"].asString() == "" ? uuid : device["name"].asString();
 }
+// AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
+// AGO_INFO() << "Creating missing table '" << tablename << "'" << endl;
+// AGO_ERROR() << "sql error #" << rc << ": " << sqlError;
 
 bool createTableIfNotExist(string tablename, list<string> createqueries) {
     //init
