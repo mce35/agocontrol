@@ -173,8 +173,8 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
     {
         //prepare kind
         string kind = device["devicetype"].asString();
-        string pretty_kind = kind;
         replaceString(kind, "sensor", "");
+        string pretty_kind = kind;
         if( multiId>=0 )
         {
             //keep first 4 chars
@@ -265,7 +265,7 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
         data["unit"] = unit;
         data["vertical_unit"] = vertical_unit;
         data["colorL"] = colorL;
-        data["colorA"] = colorL;
+        data["colorA"] = colorA;
         data["colorMax"] = colorMax;
         data["colorMin"] = colorMin;
         data["colorAvg"] = colorAvg;
@@ -372,22 +372,22 @@ void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, in
     addGraphParam(string_format("LINE1:levelmin%s::dashes", data["colorMin"].asString().c_str()), params, index);
 
     //MIN GPRINT
-    addGraphParam(string_format("GPRINT:levelmin:     Min %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmin:   Min %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 
     //MAX LINE
     addGraphParam(string_format("LINE1:levelmax%s::dashes", data["colorMax"].asString().c_str()), params, index);
 
     //MAX GPRINT
-    addGraphParam(string_format("GPRINT:levelmax:     Max %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmax:   Max %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 
     //AVG LINE
     addGraphParam(string_format("LINE1:levelavg%s::dashes", data["colorAvg"].asString().c_str()), params, index);
 
     //AVG GPRINT
-    addGraphParam(string_format("GPRINT:levelavg:     Avg %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelavg:   Avg %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 
     //LAST GPRINT
-    addGraphParam(string_format("GPRINT:levellast:     Last %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levellast:   Last %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 }
 
 /**
