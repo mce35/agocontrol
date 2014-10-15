@@ -561,6 +561,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigne
     else
     {
         cerr << "agodatalogger-RRDtool: unable to generate graph [" << rrd_get_error() << "]" << endl;
+        rrd_clear_error();
         return false;
     }
 
@@ -603,6 +604,7 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
             if( res<0 )
             {
                 cerr << "agodatalogger-RRDtool: unable to create rrdfile [" << rrd_get_error() << "]" << endl;
+                rrd_clear_error();
             }
         }  
 
@@ -616,7 +618,8 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
             int res = rrd_update_r(rrdfile.string().c_str(), "level", 1, params);
             if( res<0 )
             {
-                cerr << "agodatalogger-RRDtool: unable to update data [" << rrd_get_error() << "]" << endl;
+                cerr << "agodatalogger-RRDtool: unable to update data [" << rrd_get_error() << "] with param [" << param << "]" << endl;
+                rrd_clear_error();
             }
         }
     }
