@@ -1840,6 +1840,8 @@ int main(int argc, char **argv)
 
     bool error;
     cout << "Requesting gateway version...";
+    boost::system::error_code flushError;
+    flush_serial_port(serialPort, flush_both, flushError);
     std::string getVersion = "0;0;3;0;2\n";
     serialPort.write_some(buffer(getVersion));
     std::string line = readLine(&error);
