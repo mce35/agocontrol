@@ -72,11 +72,22 @@ static pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
 ZWaveNodes devices;
 
-/*
 class MyLog : public i_LogImpl {
 	virtual void Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args );
+ 	virtual void QueueDump();
+	virtual void QueueClear();
+ 	virtual void SetLoggingState(OpenZWave::LogLevel, OpenZWave::LogLevel, OpenZWave::LogLevel);
+ 	virtual void SetLogFileName(const string&);
 };
 
+void MyLog::QueueDump() {
+}
+void MyLog::QueueClear() {
+}
+void MyLog::SetLoggingState(OpenZWave::LogLevel, OpenZWave::LogLevel, OpenZWave::LogLevel) {
+}
+void MyLog::SetLogFileName(const string&) {
+}
 void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args ) {
 	char lineBuf[1024] = {};
 	int lineLen = 0;
@@ -87,9 +98,9 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
 		lineLen = vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
 		va_end( saveargs );
 	}
-	AGO_TRACE() << string(lineBuf);
+	AGO_INFO() << string(lineBuf);
 }
-*/
+
 const char *controllerErrorStr (Driver::ControllerError err)
 {
 	switch (err) {
@@ -1063,13 +1074,11 @@ int main(int argc, char **argv) {
 
 	Options::Get()->Lock();
 
-	// MyLog myLog;
-	// Log::SetLoggingClass(myLog);
+	// MyLog *myLog = new MyLog;
+	// OpenZWave::Log* pLog = OpenZWave::Log::Create(myLog);
 	OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
         pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
         pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
-
-
 
 	Manager::Create();
 	Manager::Get()->AddWatcher( OnNotification, NULL );
