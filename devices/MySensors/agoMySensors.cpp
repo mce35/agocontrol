@@ -1854,7 +1854,7 @@ int main(int argc, char **argv)
             if( gateway_protocol_version!="1.4" && gateway_protocol_version!="1.3" )
             {
                 //unknown protocol version, exit now
-                cout << "Unknown gateway protocol version. Exit" << endl;
+                cout << "Unknown gateway protocol version. Exit. (received \"" << line  << "\" from gateway)" << endl;
                 exit(1);
             }
             else
