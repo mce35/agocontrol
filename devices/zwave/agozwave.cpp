@@ -290,7 +290,7 @@ void OnNotification
 				string tempstring = tempstream.str();
 				ZWaveNode *device;
 				if (id.GetGenre() == ValueID::ValueGenre_Config) {
-					AGO_INFO() << "Configuration parameter Value Added: Home " <<  _notification->GetHomeId() << " Node: " << _notification->GetNodeId() << " Genre: " << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
+					AGO_INFO() << "Configuration parameter Value Added: Home " << std::hex <<  _notification->GetHomeId() << " Node: " << std::dec <<  _notification->GetNodeId() << " Genre: " << std::hex << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
 
 
 				} else if (basic == BASIC_TYPE_CONTROLLER) {
@@ -452,7 +452,7 @@ void OnNotification
 							}
 						break;
 						default:
-							AGO_INFO() << "Notification: Unassigned Value Added Home: " << _notification->GetHomeId() << " Node: " << _notification->GetNodeId() << " Genre: " << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
+							AGO_INFO() << "Notification: Unassigned Value Added Home: " << std::hex << _notification->GetHomeId() << " Node: " << std::dec << _notification->GetNodeId() << " Genre: " << std::hex << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
 
 					}
 				}
