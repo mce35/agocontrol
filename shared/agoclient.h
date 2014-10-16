@@ -1,3 +1,6 @@
+#ifndef AGOCLIENT_H
+#define AGOCLIENT_H
+
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -68,7 +71,6 @@ namespace agocontrol {
 	boost::filesystem::path ensureParentDirExists(const boost::filesystem::path &filename);
 
 	bool augeas_init();
-	augeas *augeas = NULL;
 	std::string augeasPathFromSectionOption(const char *section, const char *option);
 
 	/// fetch a value from the config file.
@@ -170,3 +172,4 @@ namespace agocontrol {
 }
 
 
+#endif

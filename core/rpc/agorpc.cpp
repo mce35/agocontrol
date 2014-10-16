@@ -53,6 +53,7 @@
 #include <sys/wait.h>
 
 #include "agoclient.h"
+#include "agoapp.h"
 
 //mongoose close idle connection after 30 seconds (timeout)
 #define MONGOOSE_POLLING 1000 //in ms, mongoose polling time

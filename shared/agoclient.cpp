@@ -31,6 +31,8 @@ Iter next(Iter iter)
 #define MODULE_CONFDIR "/conf.d"
 
 namespace agocontrol {
+	augeas *augeas = NULL;
+
 	bool directories_inited = false;
 	fs::path config_dir;
 	fs::path localstate_dir;
