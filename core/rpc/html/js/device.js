@@ -41,10 +41,6 @@ function device(obj, uuid) {
         dataLoggerController = uuid;
     }
 
-    if (this.devicetype == "rrdtoolcontroller") {
-        rrdtoolController = uuid;
-    }
-
     if (this.devicetype == "agocontroller") {
         agoController = uuid;
     }
@@ -100,21 +96,26 @@ function device(obj, uuid) {
         this.getRrdGraph = function(uuid, start, end) {
             var content = {};
             content.command = "getgraph";
-            content.uuid = rrdtoolController;
-            content.deviceUuid = uuid;
+            content.uuid = dataLoggerController;
+            content.devices = [uuid];
             content.start = start;
             content.end = end;
-            sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' ) {
-                    if( !res.result.error && document.getElementById("graphRRD") ) {
+            sendCommand(content, function(res)
+            {
+                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
+                {
+                    if( !res.result.error && document.getElementById("graphRRD") )
+                    {
                         document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.graph;
                         $("#graphRRD").show();
                     }
-                    else {
+                    else
+                    {
                         notif.error('Unable to get graph: '+res.result.msg);
                     }
                 }
-                else {
+                else
+                {
                     notif.error('Unable to get graph: Internal error');
                 }
             }, 10);

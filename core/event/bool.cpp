@@ -12,6 +12,8 @@
 
 #include <iostream>
 
+#include "agolog.h"
+
 namespace qi	= boost::spirit::qi;
 namespace phx	= boost::phoenix;
 
@@ -49,13 +51,10 @@ struct eval : boost::static_visitor<bool>
 	bool operator()(const var& v) const 
 	{ 
 		if (v=="T" || v=="t" || v=="true" || v=="True") {
-			// std::cout << " true ";
 			return true;
 		} else if (v=="F" || v=="f" || v=="false" || v=="False") {
-			// std::cout << " false ";
 			return false;
 		}
-		// std::cout << " lexcast ";
 		return boost::lexical_cast<bool>(v); 
 	}
 
@@ -156,24 +155,17 @@ bool evaluateNesting(std::string nesting) {
 		expr result;
 		bool ok = qi::phrase_parse(f,l,p > ';',qi::space,result);
 		if (!ok)
-			std::cerr << "invalid input\n";
+			AGO_ERROR() << "invalid input for boolean parser";
 		else {
-			std::cout << "result: " << result << "\n";
+			AGO_TRACE() << "result: " << result;
 			bool boolresult = evaluate(result);	
-			std::cout << "evaluated: " << boolresult << "\n";
+			AGO_TRACE() << "evaluated: " << boolresult;
 			assert (boolresult == 1 || boolresult == 0);
 			return boolresult; 
 		}
 	} catch (const qi::expectation_failure<It>& e) {
-		std::cerr << "expectation_failure at '" << std::string(e.first, e.last) << "'\n";
+		AGO_ERROR() << "boolean parser expectation_failure at '" << std::string(e.first, e.last);
 	}
 	return false;
 }
 
-#ifdef BOOLTEST
-int main(int argc, char **argv)  {
-	if (argc > 1) {
-		std::cout << evaluateNesting(argv[1]) << std::endl;
-	}
-}
-#endif

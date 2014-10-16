@@ -8,6 +8,7 @@ http://wiki.agocontrol.com/index.php/Example_Device
 import time
 import syslog
 import sys
+import os
 import simplejson
 import augeas
 from threading import Lock
@@ -19,8 +20,8 @@ from qpid.log import enable, DEBUG, WARN
 syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
 
 BINDIR = '@BINDIR@'
-CONFDIR = '@CONFDIR@'
-LOCALSTATEDIR = '@LOCALSTATEDIR@'
+CONFDIR = os.environ.get('AGO_CONFDIR', '@CONFDIR@')
+LOCALSTATEDIR = os.environ.get('AGO_LOCALSTATEDIR', '@LOCALSTATEDIR@')
 
 augeas =  augeas.Augeas()
 CONFIG_LOCK = Lock()
@@ -38,8 +39,8 @@ def get_config_option(section, option, default, filename=None):
         syslog.syslog(syslog.LOG_WARNING, "Can't parse config file")
     finally:
         CONFIG_LOCK.release()
-	if not value:
-            value = default
+    if not value:
+        value = default
     return value
 
 
@@ -48,9 +49,10 @@ def set_config_option(section, option, value, filename=None):
     result = False
     CONFIG_LOCK.acquire(True)
     try:
-        path = "/files" + CONFDIR + '/conf.d/' + section + '.conf/' + option
         if filename:
-            path = "/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + option
+            path = "/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + section + '/' + option
+        else:
+            path = "/files" + CONFDIR + '/conf.d/' + section + '.conf/' + section + '/' + option
         print path
         augeas.set(path, value)
         augeas.save()

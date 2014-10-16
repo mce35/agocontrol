@@ -1840,6 +1840,8 @@ int main(int argc, char **argv)
 
     bool error;
     cout << "Requesting gateway version...";
+    boost::system::error_code flushError;
+    flush_serial_port(serialPort, flush_both, flushError);
     std::string getVersion = "0;0;3;0;2\n";
     serialPort.write_some(buffer(getVersion));
     std::string line = readLine(&error);
@@ -1854,7 +1856,7 @@ int main(int argc, char **argv)
             if( gateway_protocol_version!="1.4" && gateway_protocol_version!="1.3" )
             {
                 //unknown protocol version, exit now
-                cout << "Unknown gateway protocol version. Exit" << endl;
+                cout << "Unknown gateway protocol version. Exit. (received \"" << line  << "\" from gateway)" << endl;
                 exit(1);
             }
             else

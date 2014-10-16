@@ -1,3 +1,6 @@
+#ifndef AGOCLIENT_H
+#define AGOCLIENT_H
+
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -22,6 +25,8 @@
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
+
+#include "agolog.h"
 
 #include <uuid/uuid.h>
 #include <augeas.h>
@@ -66,7 +71,6 @@ namespace agocontrol {
 	boost::filesystem::path ensureParentDirExists(const boost::filesystem::path &filename);
 
 	bool augeas_init();
-	augeas *augeas = NULL;
 	std::string augeasPathFromSectionOption(const char *section, const char *option);
 
 	/// fetch a value from the config file.
@@ -168,3 +172,4 @@ namespace agocontrol {
 }
 
 
+#endif

@@ -5,6 +5,7 @@ set (DATALOGGER_LIBRARIES
     agoclient
     sqlite3
     boost_date_time
+    rrd
 )
 
 # add the executable

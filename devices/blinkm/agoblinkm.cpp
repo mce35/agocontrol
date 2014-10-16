@@ -18,20 +18,20 @@ string devicefile;
 bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf) {
 	int file = open(device, O_RDWR);
 	if (file < 0) {
-		printf("open %s: error = %d\n", device, file);
+		AGO_ERROR() << "cannot open " << file << " - error: " << file;
 		return false;
 	}
 	else
-		printf("open %s: succeeded.\n", device);
+		AGO_DEBUG() << "device open succeeded"  << device;
 
 	if (ioctl(file, I2C_SLAVE, i2caddr) < 0) {
-		printf("open i2c slave 0x%02x: error = %s\n\n", i2caddr, "dunno");
+		AGO_ERROR() << "cannot open i2c slave: 0x" << std::hex << i2caddr;
 		return false;
 	}
 	else
-		printf("open i2c slave 0x%02x: succeeded.\n\n", i2caddr);
+		AGO_DEBUG() << "open i2c slave succeeded: 0x" << std::hex << i2caddr;
 	int result = i2c_smbus_write_i2c_block_data(file, command, size,buf);
-	printf("result: %d\n",result);
+	AGO_DEBUG() << "result: " << result;
 
 	return true;
 }
@@ -78,9 +78,7 @@ int main(int argc, char** argv) {
 	devicefile=getConfigOption("blinkm", "bus", "/dev/i2c-0");
 	stringstream devices(getConfigOption("blinkm", "devices", "9")); // read blinkm addr from config, default to addr 9
 
-
 	AgoConnection agoConnection = AgoConnection("blinkm");		
-	printf("connection to agocontrol established\n");
 
 	string device;
 	while (getline(devices, device, ',')) {
@@ -89,7 +87,6 @@ int main(int argc, char** argv) {
 	} 
 	agoConnection.addHandler(commandHandler);
 
-	printf("waiting for messages\n");
 	agoConnection.run();
 
 	return 0;
