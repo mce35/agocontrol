@@ -1,7 +1,7 @@
 {
         "name": "blockly",
         "version": "0.0.1",
-        "description": "Create events easily using blockly",
+        "description": "Create events easily using blocks",
         "dashboardAccess": true,
         "resources": {
             "css": [

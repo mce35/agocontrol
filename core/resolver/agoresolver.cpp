@@ -38,27 +38,23 @@
 #include <qpid/messaging/Session.h>
 #include <qpid/messaging/Address.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED 
-#include "boost/filesystem.hpp"
-
 #include "agoclient.h"
 #include "version.h"
 
 #ifndef SCHEMADIR
-#define SCHEMADIR "/schema.d/"
+#define SCHEMADIR "schema.d"
 #endif
 
 #ifndef INVENTORYDBFILE
-#define INVENTORYDBFILE "/db/inventory.db"
+#define INVENTORYDBFILE "db/inventory.db"
 #endif
 
 #ifndef VARIABLESMAPFILE
-#define VARIABLESMAPFILE "/maps/variablesmap.json"
+#define VARIABLESMAPFILE "maps/variablesmap.json"
 #endif
 
 #ifndef DEVICESMAPFILE
-#define DEVICESMAPFILE "/maps/devices.json"
+#define DEVICESMAPFILE "maps/devices.json"
 #endif
 
 #include "schema.h"
@@ -68,7 +64,6 @@ using namespace std;
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
-
 namespace fs = ::boost::filesystem;
 
 AgoConnection *agoConnection;
@@ -101,7 +96,7 @@ void get_sysinfo() {
 	int error;
 	error = sysinfo(&s_info);
 	if(error != 0) {
-		printf("code error = %d\n", error);
+		AGO_ERROR() << "sysinfo error: " << error;
 	} else { /*
 		systeminfo["uptime"] = s_info.uptime;
 		systeminfo["loadavg1"] = s_info.loads[0];
@@ -153,7 +148,7 @@ string valuesToString(Variant::Map *values) {
 void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 	Variant::Map *values;
 	if ((*device)["values"].isVoid()) {
-		cout << "error, device[values] is empty in handleEvent()" << endl;
+		AGO_ERROR() << "device[values] is empty in handleEvent()";
 		return;
 	}
 	values = &(*device)["values"].asMap();
@@ -322,15 +317,25 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			} else {
 				reply["returncode"] = -1;
 			}
+		} else if (content["command"] == "getconfigtree") {
+			reply["config"] = getConfigTree();
+			reply["returncode"] = 0;
+		} else if (content["command"] == "setconfig") {
+			if ((content["section"].asString() != "") && (content["option"].asString() != "") && (content["value"].asString() != "")) {
+				setConfigOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str());
+				reply["returncode"]=0;
+			} else {
+				reply["returncode"]=-1;
+			}
 		}
 	} else {
 		if (content["command"] == "inventory") {
-			// cout << "responding to inventory request" << std::endl;
+			// AGO_TRACE() << "responding to inventory request";
 			for (qpid::types::Variant::Map::iterator it = inventory.begin(); it != inventory.end(); it++) {
 				if (!it->second.isVoid()) {
 					qpid::types::Variant::Map *device = &it->second.asMap();
 					if (time(NULL) - (*device)["lastseen"].asUint64() > 2*discoverdelay) {
-						// cout << "Stale device: " << it->first << endl;
+						// AGO_TRACE() << "Stale device: " << it->first;
 						(*device)["stale"] = 1;
 						saveDevicemap();
 					}
@@ -354,17 +359,17 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	if (subject == "event.device.announce") {
 		string uuid = content["uuid"];
 		if (uuid != "") {
-			// clog << agocontrol::kLogDebug << "preparing device: uuid=" << uuid << std::endl;
+			// AGO_TRACE() << "preparing device: uuid=" << uuid;
 			Variant::Map device;
 			Variant::Map values;
 			device["devicetype"]=content["devicetype"].asString();
 			device["internalid"]=content["internalid"].asString();
 			device["handled-by"]=content["handled-by"].asString();
-			// clog << agocontrol::kLogDebug << "getting name from inventory" << endl;
+			// AGO_TRACE() << "getting name from inventory";
 			device["name"]=inv->getdevicename(content["uuid"].asString());
 			if (device["name"].asString() == "" && device["devicetype"] == "agocontroller") device["name"]="agocontroller";
 			device["name"].setEncoding("utf8");
-			// clog << agocontrol::kLogDebug << "getting room from inventory" << endl;
+			// AGO_TRACE() << "getting room from inventory";
 			device["room"]=inv->getdeviceroom(content["uuid"].asString()); 
 			device["room"].setEncoding("utf8");
 			uint64_t timestamp;
@@ -377,7 +382,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 				device["state"]="0";
 				device["state"].setEncoding("utf8");
 				device["values"]=values;
-				cout << "adding device: uuid=" << uuid << " type: " << device["devicetype"].asString() << std::endl;
+				AGO_INFO() << "adding device: uuid=" << uuid << " type: " << device["devicetype"].asString();
 			} else {
 				// device exists, get current values
 				// TODO: use a non-const interator and modify the timestamp in place to avoid the following copying of data
@@ -388,15 +393,13 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 					device["values"] = olddevice["values"];
 				}
 			}
-				
-			// clog << agocontrol::kLogDebug << "adding device: uuid=" << uuid << " type: " << device["devicetype"].asString() << std::endl;
 			inventory[uuid] = device;
 			saveDevicemap();
 		}
 	} else if (subject == "event.device.remove") {
 		string uuid = content["uuid"];
 		if (uuid != "") {
-			// clog << agocontrol::kLogDebug << "removing device: uuid=" << uuid << std::endl;
+			AGO_INFO() << "removing device: uuid=" << uuid;
 			Variant::Map::iterator it = inventory.find(uuid);
 			if (it != inventory.end()) {
 				inventory.erase(it);
@@ -442,6 +445,7 @@ void *discover(void *param) {
 	discovercmd["command"] = "discover";
 	sleep(2);
 	while (true) {
+		AGO_TRACE() << "Sending discover message";
 		agoConnection->sendMessage("",discovercmd);
 		sleep(discoverdelay);
 	}
@@ -449,16 +453,12 @@ void *discover(void *param) {
 }
 
 int main(int argc, char **argv) {
-//	clog.rdbuf(new agocontrol::Log("agoresolver", LOG_LOCAL0));
-
 	agoConnection = new AgoConnection("resolver");
 	agoConnection->addHandler(commandHandler);
 	agoConnection->addEventHandler(eventHandler);
 	agoConnection->setFilter(false);
 
-	string schemaPrefix;
-
-//	clog << agocontrol::kLogNotice << "starting up" << std::endl;
+	fs::path schemaPrefix;
 
 	schemaPrefix=getConfigOption("system", "schemapath", getConfigPath(SCHEMADIR));
 	discoverdelay=atoi(getConfigOption("system", "discoverdelay", "300").c_str());
@@ -468,36 +468,41 @@ int main(int argc, char **argv) {
 	systeminfo["version"] = AGOCONTROL_VERSION;
 
 	// generate vector of all schema files
-	std::vector<std::string> schemaArray;
-	fs::path schemadir(schemaPrefix.c_str());
+	std::vector<fs::path> schemaArray;
+	fs::path schemadir(schemaPrefix);
 	if (fs::exists(schemadir)) {
 		fs::recursive_directory_iterator it(schemadir);
 		fs::recursive_directory_iterator endit;
 		while (it != endit) {
 			if (fs::is_regular_file(*it) && (it->path().extension().string() == ".yaml")) {
-				schemaArray.push_back(it->path().filename().string());
+				schemaArray.push_back(it->path().filename());
 			}
 			++it;
 		}
 	}
 	if (schemaArray.size() < 1) {
-		clog << agocontrol::kLogEmerg << "Can't read schema, aborting!" << std::endl;
+		AGO_FATAL() << "Can't read schema, aborting!";
 		exit(1);
 	}
 
 	// load schema files in proper order
 	std::sort(schemaArray.begin(), schemaArray.end());
-	std::string schemaFile = schemaPrefix + schemaArray.front();
-	schema = parseSchema(schemaFile.c_str());
-	clog << agocontrol::kLogDebug << "parsing schema file:" << schemaFile << std::endl;
-	for (int i=1; i < schemaArray.size(); i++) {
-		schemaFile = schemaPrefix + schemaArray[i];
-		clog << agocontrol::kLogDebug << "parsing additional schema file:" << schemaFile << std::endl;
-		schema = mergeMap(schema, parseSchema(schemaFile.c_str()));
+	fs::path schemaFile = schemaPrefix / schemaArray.front();
+	schema = parseSchema(schemaFile);
+	AGO_DEBUG() << "parsing schema file:" << schemaFile;
+	for (size_t i = 1; i < schemaArray.size(); i++) {
+		schemaFile = schemaPrefix / schemaArray[i];
+		AGO_DEBUG() << "parsing additional schema file:" << schemaFile;
+		schema = mergeMap(schema, parseSchema(schemaFile));
 	}
 
-	clog << agocontrol::kLogDebug << "reading inventory" << std::endl;
-	inv = new Inventory(getConfigPath(INVENTORYDBFILE).c_str());
+	AGO_TRACE() << "reading inventory";
+	try {
+		inv = new Inventory(ensureParentDirExists(getConfigPath(INVENTORYDBFILE)));
+	}catch(std::exception& e){
+		AGO_FATAL() << "Failed to load inventory: " << e.what();
+		return 1;
+	}
 
 	variables = jsonFileToVariantMap(getConfigPath(VARIABLESMAPFILE));
 	if (persistence) loadDevicemap();
@@ -507,8 +512,6 @@ int main(int argc, char **argv) {
 	static pthread_t discoverThread;
 	pthread_create(&discoverThread,NULL,discover,NULL);
 	
-	// discover devices
-	clog << agocontrol::kLogDebug << "discovering devices" << std::endl;
 	agoConnection->run();	
 }
 

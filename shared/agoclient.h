@@ -1,3 +1,6 @@
+#ifndef AGOCLIENT_H
+#define AGOCLIENT_H
+
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -19,6 +22,12 @@
 
 #include <jsoncpp/json/value.h>
 
+#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include <boost/filesystem.hpp>
+
+#include "agolog.h"
+
 #include <uuid/uuid.h>
 #include <augeas.h>
 
@@ -38,25 +47,37 @@ namespace agocontrol {
 	qpid::types::Variant::List jsonToVariantList(Json::Value value);
 	/// convert a JSON string to a Variant::Map.
 	qpid::types::Variant::Map jsonStringToVariantMap(std::string jsonstring);
+
 	/// convert content of a JSON file containing JSON data.
-	qpid::types::Variant::Map jsonFileToVariantMap(std::string filename);
+	qpid::types::Variant::Map jsonFileToVariantMap(const boost::filesystem::path &filename);
 	// write a Variant::Map to a JSON file.
-	bool variantMapToJSONFile(qpid::types::Variant::Map map, std::string filename);
+	bool variantMapToJSONFile(qpid::types::Variant::Map map, const boost::filesystem::path &filename);
 
 	/// helper to generate a string containing a uuid.
 	std::string generateUuid();
 
 	/// Return the full path to the configuration directory, with subpath appended if not NULL
-	std::string getConfigPath(const char *subpath = NULL);
+	boost::filesystem::path getConfigPath(const boost::filesystem::path &subpath = boost::filesystem::path());
 
 	/// Return the full path to the local-state directory, with subpath appended if not NULL
-	std::string getLocalStatePath(const char *subpath = NULL);
+	boost::filesystem::path getLocalStatePath(const boost::filesystem::path &subpath = boost::filesystem::path());
+
+	/// Ensures that the directory exists
+	/// Note: throws exception if directory creation fails
+	boost::filesystem::path ensureDirExists(const boost::filesystem::path &dir);
+
+	/// Ensures that the parent directory for the specified filename exists
+	/// Note: throws exception if directory creation fails
+	boost::filesystem::path ensureParentDirExists(const boost::filesystem::path &filename);
 
 	bool augeas_init();
-	augeas *augeas = NULL;
+	std::string augeasPathFromSectionOption(const char *section, const char *option);
+
 	/// fetch a value from the config file.
-	std::string getConfigOption(const char *section, const char *option, std::string defaultvalue);
+	std::string getConfigOption(const char *section, const char *option, std::string &defaultvalue);
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
+	boost::filesystem::path getConfigOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
+	qpid::types::Variant::Map getConfigTree();
 
 	/// save value to the config file
 	bool setConfigOption(const char *section, const char *option, const char* value);
@@ -81,7 +102,7 @@ namespace agocontrol {
 			qpid::types::Variant::Map uuidMap; // this holds the permanent uuid to internal id mapping
 			bool storeUuidMap(); // stores the map on disk
 			bool loadUuidMap(); // loads it
-			std::string uuidMapFile;
+			boost::filesystem::path uuidMapFile;
 			std::string instance;
 			std::string uuidToInternalId(std::string uuid); // lookup in map
 			std::string internalIdToUuid(std::string internalId); // lookup in map
@@ -151,3 +172,4 @@ namespace agocontrol {
 }
 
 
+#endif

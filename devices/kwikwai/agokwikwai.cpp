@@ -30,7 +30,6 @@ kwikwai::Kwikwai *myKwikwai;
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	std::string internalid = content["internalid"].asString();
-	printf("command: %s internal id: %s\n", content["command"].asString().c_str(), internalid.c_str());
 	if (internalid == "hdmicec") {
 		if (content["command"] == "alloff" ) {
 			myKwikwai->cecSend("FF:36");
@@ -57,15 +56,13 @@ int main(int argc, char **argv) {
 	
 	kwikwai::Kwikwai _myKwikwai(hostname.c_str(), port.c_str());
 	myKwikwai = &_myKwikwai;
-	printf("Version: %s\n", myKwikwai->getVersion().c_str());
+	AGO_INFO() << "Version: " << myKwikwai->getVersion();
 	AgoConnection agoConnection = AgoConnection("kwikwai");		
-	printf("connection to agocontrol established\n");
+
 	agoConnection.addDevice("hdmicec", "hdmicec");
 	agoConnection.addDevice("tv", "tv");
 	agoConnection.addHandler(commandHandler);
 
-	printf("waiting for messages\n");
 	agoConnection.run();
-
 }
 

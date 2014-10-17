@@ -16,11 +16,11 @@
 //#include "boost/filesystem/operations.hpp"
 
 #ifndef SCRIPTSINFOSFILE
-#define SCRIPTSINFOSFILE "/maps/agolua.json"
+#define SCRIPTSINFOSFILE "maps/agolua.json"
 #endif
 
 #ifndef LUA_SCRIPT_DIR
-#define LUA_SCRIPT_DIR "/lua/"
+#define LUA_SCRIPT_DIR "lua"
 #endif
 
 #include "base64.h"
@@ -49,6 +49,8 @@ AgoConnection *agoConnection;
 std::string agocontroller;
 int filterByEvents = 1;
 
+fs::path scriptdir;
+
 static const luaL_Reg loadedlibs[] = {
 	{"_G", luaopen_base},
 	{LUA_TABLIBNAME, luaopen_table},
@@ -57,9 +59,16 @@ static const luaL_Reg loadedlibs[] = {
 	{NULL, NULL}
 };
 
+static fs::path construct_script_name(fs::path input) {
+	fs::path out = (scriptdir / input);
+	// replace == add/append
+	out.replace_extension(".lua");
+	return out;
+}
+
 // read file into string. credits go to "insane coder" - http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
-std::string get_file_contents(const char *filename) {
-	std::ifstream in(filename, std::ios::in | std::ios::binary);
+static std::string get_file_contents(const fs::path &filename) {
+	std::ifstream in(filename.c_str(), std::ios::in | std::ios::binary);
 	if (in)
 	{
 		std::string contents;
@@ -158,7 +167,7 @@ void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) {
 			//default:
 				//lua_pushstring(L,it->first.c_str());
 				//lua_pushstring(L,"unhandled");
-				//cout << "undhandled type: " << it->second.getType() << endl;
+				//AGO_TRACE() << "undhandled type: " << it->second.getType();
 				//lua_settable(L, -3);
 		}
 	}	
@@ -194,7 +203,7 @@ int luaSendMessage(lua_State *l) {
 		}
 		lua_pop(l, 1);
 	}
-	cout << "Sending message: " << subject << " " << content << endl;
+	AGO_TRACE() << "Sending message: " << subject << " " << content;
 	qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);	 
 	lua_pushnumber(l, 0);
 	return 1;
@@ -209,7 +218,7 @@ int luaSetVariable(lua_State *L) {
 	content["value"] = std::string(lua_tostring(L,2));
 	content["command"]="setvariable";
 	content["uuid"]=agocontroller;
-	cout << "Sending message: " << content << endl;
+	AGO_TRACE() << "Sending message: " << content;
 	qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);
 	//manage result
 	if( !replyMap["returncode"].isVoid() )
@@ -322,12 +331,11 @@ int luaGetDeviceInventory(lua_State *L)
 				break;
 		}
 	}
-	cout << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
+	AGO_TRACE() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
 	if( subAttribute.length()>0 )
 	{
-		cout << "[" << subAttribute << "]";
+		AGO_TRACE() << "[" << subAttribute << "]";
 	}
-	cout << endl;
 	if( !deviceInventory[uuid].isVoid() )
 	{
 		qpid::types::Variant::Map attributes = deviceInventory[uuid].asMap();
@@ -374,7 +382,7 @@ int luaGetInventory(lua_State *L) {
  * @return foundEvents: fill map with found script events
  * @info based on http://www.boost.org/doc/libs/1_31_0/libs/regex/example/snippets/regex_search_example.cpp
  */
-void searchEvents(const char* scriptPath, qpid::types::Variant::List* foundEvents)
+void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents)
 {
 	//get script content
 	std::string content = get_file_contents(scriptPath);
@@ -421,13 +429,13 @@ void purgeScripts()
 	//TODO walk through all scripts in scriptsInfos and remove non existing entries
 }
 
-bool runScript(qpid::types::Variant::Map content, const char *script) {
+bool runScript(qpid::types::Variant::Map content, const fs::path &script) {
 	//check if file modified
 	qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
 	qpid::types::Variant::Map infos;
 	std::time_t updated = boost::filesystem::last_write_time(script);
 	bool parseScript = false;
-	if( scripts[script].isVoid() )
+	if( scripts[script.string()].isVoid() )
 	{
 		//force script parsing
 		parseScript = true;
@@ -435,7 +443,7 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
 	else
 	{
 		//script already referenced, check last modified date
-		infos = scripts[script].asMap();
+		infos = scripts[script.string()].asMap();
 		if( infos["updated"].asInt32()!=updated )
 		{
 			//script modified, parse again content
@@ -444,12 +452,12 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
 	}
 	if( parseScript )
 	{
-		//cout << "Update script infos (" << script << ")" << endl;
+		//AGO_TRACE() << "Update script infos (" << script << ")";
 		infos["updated"] = (int32_t)updated;
 		qpid::types::Variant::List events;
 		searchEvents(script, &events);
 		infos["events"] = events;
-		scripts[script] = infos;
+		scripts[script.string()] = infos;
 		scriptsInfos["scripts"] = scripts;
 		variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
 	}
@@ -484,8 +492,7 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
 
 	if( executeScript )
 	{
-		cout << "========================================" << endl;
-		cout << "Running " << script << "..." << endl;
+		AGO_TRACE() << "Running " << script;
 		refreshInventory = true;
 		lua_State *L;
 		const luaL_Reg *lib;
@@ -509,25 +516,24 @@ bool runScript(qpid::types::Variant::Map content, const char *script) {
 		//pushTableFromMap(L, inventory);
 		//lua_setglobal(L, "inventory");
 
-		int status = luaL_loadfile(L, script);
+		int status = luaL_loadfile(L, script.c_str());
 		int result = 0;
 		if(status == LUA_OK) {
 			result = lua_pcall(L, 0, LUA_MULTRET, 0);
 		} else {
-			std::cout << "-- Could not load the script " << script << std::endl;
+			AGO_ERROR()<< "Could not load script: " << script;
 		}
 		if ( result!=0 ) {
-			std::cerr << "-- SCRIPT FAILED: " << lua_tostring(L, -1) << std::endl;
+			AGO_ERROR() << "Script " << script << " failed: " << lua_tostring(L, -1);
 			lua_pop(L, 1); // remove error message
 		}
 
 		lua_close(L);
-		cout << "========================================" << endl;
 		return status == 0 ? true : false;
 	}
 	else
 	{
-		//cout << "-- NOT running script " << script << endl;
+		//AGO_TRACE() << "-- NOT running script " << script;
 	}
 	return true;
 }
@@ -539,7 +545,6 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	if (internalid == "luacontroller") {
 		if (content["command"]=="getscriptlist") {
 			qpid::types::Variant::List scriptlist;
-			fs::path scriptdir(getConfigPath(LUA_SCRIPT_DIR));
 			if (fs::exists(scriptdir)) {
 				fs::recursive_directory_iterator it(scriptdir);
 				fs::recursive_directory_iterator endit;
@@ -557,9 +562,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["name"]);
-					string script = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
-					string scriptcontent = get_file_contents(script.c_str());
-					cout << "reading script " << script << endl;
+					fs::path script = construct_script_name(input.stem());
+					string scriptcontent = get_file_contents(script);
+					AGO_TRACE() << "reading script " << script;
 					returnval["script"]=base64_encode(reinterpret_cast<const unsigned char*>(scriptcontent.c_str()), scriptcontent.length());
 					returnval["result"]=0;
 					returnval["name"]=content["name"].asString();
@@ -573,8 +578,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["name"]);
-					string script = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
+					fs::path script = construct_script_name(input.stem());
 					std::ofstream file;
+					// XXX: this did not seem to throw even if the directory did not exist...
 					file.open(script.c_str());
 					file << content["script"].asString();
 					file.close();
@@ -590,8 +596,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["name"]);
-					string script = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
-					fs::path target(script);
+					fs::path target = construct_script_name(input.stem());
 					if (fs::remove (target)) {
 						returnval["result"]=0;
 					} else {
@@ -609,12 +614,10 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				try {
 					// if a path is passed, strip it for security reasons
 					fs::path input(content["oldname"]);
-					string scriptInput = getConfigPath(LUA_SCRIPT_DIR) + input.stem().string() + ".lua";
-					fs::path source(scriptInput);
+					fs::path source = construct_script_name(input.stem());
 
 					fs::path output(content["newname"]);
-					string scriptOutput = getConfigPath(LUA_SCRIPT_DIR) + output.stem().string() + ".lua";
-					fs::path target(scriptOutput);
+					fs::path target = construct_script_name(output.stem());
 
 					//check if destination file already exists
 					if( !fs::exists(target) )
@@ -629,47 +632,48 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 						returnval["result"]=-1;
 					}
 				} catch( const exception& e ) {
-					cout << "Exception during file renaming" << e.what() << endl;
+					AGO_ERROR() << "Exception during file renaming" << e.what();
 					returnval["error"]="Unable to rename script";
 					returnval["result"]=-1;
 				}
 			}
 		} else if (content["command"] == "uploadfile") {
 			//import script
-			if( !content["filepath"].isVoid() && content["filepath"].asString()!="" && !content["filename"].isVoid() && content["filename"].asString()!="" )
+			if( !content["filepath"].isVoid() && content["filepath"].asString()!="" &&
+				 !content["filename"].isVoid() && content["filename"].asString()!="" )
 			{
 				//check file
 				fs::path source(content["filepath"]);
-				if( fs::is_regular_file(status(source)) && source.extension().string()==".lua" )
+				if( fs::is_regular_file(status(source)) && source.extension().string()==".lua")
 				{
 					try {
-						std::stringstream output;
-						output << getConfigPath(LUA_SCRIPT_DIR);
+						std::string filename;
 						if( content["filename"].asString().find("blockly_")!=0 )
 						{
-							//append "blockly_" string
-							output << "blockly_";
+							// prepend "blockly_" string
+							filename = "blockly_";
 						}
-						output << content["filename"].asString();
-						fs::path target(output.str());
+						filename += content["filename"].asString();
+
+						fs::path target = scriptdir / filename;
 
 						//check if desination file already exists
 						if( !fs::exists(target) )
 						{
 							//move file
-							cout << "import " << source << " to " << target << endl;
+							AGO_DEBUG() << "import " << source << " to " << target;
 							fs::copy_file(source, target);
 							returnval["error"] = "";
 							returnval["result"] = 0;
 						}
 						else
 						{
-							cout << "Script already exists, nothing overwritten" << endl;
+							AGO_DEBUG() << "Script already exists, nothing overwritten";
 							returnval["error"] = "Script already exists. Script not imported";
 							returnval["result"] = -1;
 						}
 					} catch( const exception& e ) {
-						cout << "Exception during script import" << e.what() << endl;
+						AGO_ERROR() << "Exception during script import" << e.what();
 						returnval["error"] = "Unable to import script";
 						returnval["result"] = -1;
 					}
@@ -677,7 +681,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				else
 				{
 					//invalid file, reject it
-					cout << "Unsupported file uploaded" << endl;
+					AGO_ERROR() << "Unsupported file uploaded";
 					returnval["error"] = "Unsupported file";
 					returnval["result"] = -1;
 				}
@@ -685,34 +689,32 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			else
 			{
 				//invalid request
-				cout << "Invalid file upload request" << endl;
+				AGO_ERROR() << "Invalid file upload request";
 				returnval["error"] = "Invalid request";
 				returnval["result"] = -1;
 			}
 		} else if (content["command"] == "downloadfile") {
-			cout << "download file command received!" << endl;
-			cout << content << endl;
+			AGO_TRACE() << "download file command received: " << content;
 			//export script
 			if( !content["filename"].isVoid() && content["filename"].asString()!="" )
 			{
-				std::stringstream file;
-				file << getConfigPath(LUA_SCRIPT_DIR) << "blockly_" << content["filename"].asString() << ".lua";
-				fs::path target(file.str());
-				cout << "file to download " << target << endl;
+				std::string file = "blockly_" + content["filename"].asString();
+				fs::path target = construct_script_name(file);
+				AGO_DEBUG() << "file to download " << target;
 
 				//check if file exists
 				if( fs::exists(target) )
 				{
 					//file exists, return full path
-					cout << "Send fullpath of file to download " << target << endl;
+					AGO_DEBUG() << "Send fullpath of file to download " << target;
 					returnval["error"] = "";
-					returnval["filepath"] = file.str();
+					returnval["filepath"] = target.string();
 					returnval["result"] = 0;
 				}
 				else
 				{
 					//requested file doesn't exists
-					cout << "File to download doesn't exist" << endl;
+					AGO_ERROR() << "File to download doesn't exist";
 					returnval["error"] = "File doesn't exist";
 					returnval["result"] = -1;
 				}
@@ -720,7 +722,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			else
 			{
 				//invalid request
-				cout << "Invalid file upload request" << endl;
+				AGO_ERROR() << "Invalid file upload request";
 				returnval["error"]="Invalid request";
 				returnval["result"]=-1;
 			}
@@ -729,13 +731,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			returnval["result"]=-1;
 		}
 	} else {
-		fs::path scriptdir(getConfigPath(LUA_SCRIPT_DIR));
 		if (fs::exists(scriptdir)) {
 			fs::recursive_directory_iterator it(scriptdir);
 			fs::recursive_directory_iterator endit;
 			while (it != endit) {
-				if (fs::is_regular_file(*it) && (it->path().extension().string() == ".lua") && (it->path().filename().string() != "helper.lua")) {
-					runScript(content, it->path().c_str());
+				if (fs::is_regular_file(*it) && (it->path().extension().string() == ".lua") &&
+						(it->path().filename().string() != "helper.lua")) {
+					runScript(content, it->path());
 				}
 				++it;
 			}
@@ -764,7 +766,7 @@ int main(int argc, char **argv) {
 				if (!(it->second.isVoid())) {
 					qpid::types::Variant::Map device = it->second.asMap();
 					if (device["devicetype"] == "agocontroller") {
-						cout << "Agocontroller: " << it->first << endl;
+						AGO_TRACE() << "Agocontroller: " << it->first;
 						agocontroller = it->first;
 					}
 				}
@@ -775,6 +777,8 @@ int main(int argc, char **argv) {
 	//get config
 	std::string optString = getConfigOption("lua", "filterByEvents", "1");
 	sscanf(optString.c_str(), "%d", &filterByEvents);
+
+	scriptdir = ensureDirExists(getConfigPath(LUA_SCRIPT_DIR));
 
 	//load script infos file
 	scriptsInfos = jsonFileToVariantMap(getConfigPath(SCRIPTSINFOSFILE));

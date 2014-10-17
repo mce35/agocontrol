@@ -45,10 +45,9 @@
 #include <jsoncpp/json/reader.h>
 #include <jsoncpp/json/writer.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#include <boost/filesystem.hpp>
 #include <boost/preprocessor/stringize.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 
 #include <signal.h>
 #include <sys/wait.h>
@@ -57,7 +56,7 @@
 
 //mongoose close idle connection after 30 seconds (timeout)
 #define MONGOOSE_POLLING 1000 //in ms, mongoose polling time
-#define GETEVENT_MAX_RETRIES 28 //mongoose poll every seconds (see MONGOOSE_POLLING)
+#define GETEVENT_DEFAULT_TIMEOUT 28 // mongoose poll every seconds (see MONGOOSE_POLLING)
 
 //upload file path
 #define UPLOAD_PATH "/tmp/"
@@ -65,11 +64,23 @@
 //default auth file
 #define HTPASSWD ".htpasswd"
 
+/* JSON-RPC 2.0 standard error codes
+ * http://www.jsonrpc.org/specification#error_object
+ */
+#define JSONRPC_PARSE_ERROR -32700
+#define JSONRPC_INVALID_REQUEST -32600
+#define JSONRPC_METHOD_NOT_FOUND -32601
+#define JSONRPC_INVALID_PARAMS -32602
+#define JSONRPC_INTERNAL_ERROR -32603
+
+// -32000 to -32099 impl-defined server errors
+#define AGO_JSONRPC_NO_EVENT -32000
+
 namespace fs = ::boost::filesystem;
 using namespace std;
 using namespace qpid::messaging;
 using namespace qpid::types;
-using namespace agocontrol; 
+using namespace agocontrol;
 
 //agoclient
 AgoConnection *agoConnection;
@@ -91,17 +102,19 @@ public:
 	Json::Value rpcRequestId;
 	time_t inited;
 	time_t lastPoll;
+	int timeout;
 
 	GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_)
 		: subscriptionId(subscriptionId_)
 		, rpcRequestId(rpcRequestId_)
-		, lastPoll(0) {
+		, lastPoll(0)
+		, timeout(GETEVENT_DEFAULT_TIMEOUT)	{
 			inited = time(NULL);
 	}
 };
 
 map<string,Subscriber> subscriptions;
-pthread_mutex_t mutexSubscriptions;
+boost::mutex mutexSubscriptions;
 
 list<mg_server*> all_servers;
 time_t last_event;
@@ -127,17 +140,17 @@ void mg_printlist(struct mg_connection *conn, Variant::List list) {
 				mg_printmap(conn, it->asMap());
 				break;
 			case VAR_STRING:
-				mg_printf_data(conn, "\"%s\"", it->asString().c_str());	
+				mg_printf_data(conn, "\"%s\"", it->asString().c_str());
 				break;
 			case VAR_BOOL:
 				if( it->asBool() )
-					mg_printf_data(conn, "1");	
+					mg_printf_data(conn, "1");
 				else
-					mg_printf_data(conn, "0");	
+					mg_printf_data(conn, "0");
 				break;
 			default:
 				if (it->asString().size() != 0) {
-					mg_printf_data(conn, "%s", it->asString().c_str());	
+					mg_printf_data(conn, "%s", it->asString().c_str());
 				} else {
 					mg_printf_data(conn, "null");
 				}
@@ -159,7 +172,7 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 				mg_printlist(conn, it->second.asList());
 				break;
 			case VAR_STRING:
-				mg_printf_data(conn, "\"%s\"", it->second.asString().c_str());	
+				mg_printf_data(conn, "\"%s\"", it->second.asString().c_str());
 				break;
 			case VAR_BOOL:
 				if( it->second.asBool() )
@@ -169,7 +182,7 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 				break;
 			default:
 				if (it->second.asString().size() != 0) {
-					mg_printf_data(conn, "%s", it->second.asString().c_str());	
+					mg_printf_data(conn, "%s", it->second.asString().c_str());
 				} else {
 					mg_printf_data(conn, "null");
 				}
@@ -184,8 +197,10 @@ void mg_printmap(struct mg_connection *conn, Variant::Map map) {
  * serialize it to JSON, and write it to the mg_connnection
  *
  * Note: response_root is modified!
+ *
+ * Always returns false, to indicate that no more output is to be written.
  */
-static void mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_or_id, Json::Value &response_root)
+static bool mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_or_id, Json::Value &response_root)
 {
 	response_root["jsonrpc"] = "2.0";
 
@@ -202,40 +217,49 @@ static void mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_
 	std::string data(writer.write(response_root));
 
 	mg_send_data(conn, data.c_str(), data.size());
+	return false;
 }
 
 /**
  * Write a RPC response with one element in the root with the name set in result_key (default "result").
+ *
+ * Always returns false, to indicate that no more output is to be written.
  */
-static void mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result") {
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result") {
 	Json::Value root(Json::objectValue);
 	root[result_key] = result;
-	mg_rpc_reply(conn, request_or_id, root);
+	return mg_rpc_reply(conn, request_or_id, root);
 }
 
 /**
  * Write a RPC response with a "result" element whose value is a simple string.
+ *
+ * Always returns false, to indicate that no more output is to be written.
  */
-static void mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result) {
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result) {
 	Json::Value r(result);
-	mg_rpc_reply_result(conn, request_or_id, r);
+	return mg_rpc_reply_result(conn, request_or_id, r);
 }
 
 /**
  * Write a RCP response with an "error" element having the specified code/message.
+ *
+ * Always returns false, to indicate that no more output is to be written.
  */
-static void mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message) {
+static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message) {
 	Json::Value error(Json::objectValue);
 	error["code"] = code;
 	error["message"] = message;
 
-	mg_rpc_reply_result(conn, request_or_id, error, "error");
+	return mg_rpc_reply_result(conn, request_or_id, error, "error");
 }
 
 /**
  * Write a RPC response with a "result" element being a response map
+ *
+ * Always returns false, to indicate that no more output is to be written.
  */
-static void mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
+static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
 //	Json::Value r(result);
 //	mg_rpc_reply_result(conn, request_or_id, r);
 	Json::Value request_id;
@@ -243,7 +267,7 @@ static void mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
 		request_id = request_or_id.get("id", Json::Value());
 	}else
 		request_id = request_or_id;
-	
+
 	Json::FastWriter writer;
 	std::string request_idstr = writer.write(request_id);
 
@@ -251,24 +275,7 @@ static void mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
 	mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
 	mg_printmap(conn, responseMap);
 	mg_printf_data(conn, ", \"id\": %s}", request_idstr.c_str());
-}
-
-static void command (struct mg_connection *conn) {
-	char uuid[1024], command[1024], level[1024];
-	Variant::Map agocommand;
-	Variant::Map responseMap;
-
-	if (mg_get_var(conn, "uuid", uuid, sizeof(uuid)) > 0) agocommand["uuid"] = uuid;
-	if (mg_get_var(conn, "command", command, sizeof(command)) > 0) agocommand["command"] = command;
-	if (mg_get_var(conn, "level", level, sizeof(level)) > 0) agocommand["level"] = level;
-
-	//send command and write ajax response
-	mg_send_header(conn, "Content-Type", "application/json");
-	responseMap = agoConnection->sendMessageReply("", agocommand);
-	if( responseMap.size()>0 )
-	{
-		mg_printmap(conn, responseMap);
-	}
+	return false;
 }
 
 /**
@@ -284,15 +291,14 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 {
 	int result = true;
 	Variant::Map event;
-	bool eventFound = false;
 
 	//look for available event
-	pthread_mutex_lock(&mutexSubscriptions);
+	boost::unique_lock<boost::mutex> lock(mutexSubscriptions);
 	map<string,Subscriber>::iterator it = subscriptions.find(state->subscriptionId);
 
 	if(it == subscriptions.end()) {
-		pthread_mutex_unlock(&mutexSubscriptions);
-		mg_rpc_reply_error(conn, state->rpcRequestId, -32603, "Invalid params: no current subscription for uuid");
+		lock.unlock();
+		mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
 		return false;
 	}
 
@@ -301,23 +307,26 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
 		//event found
 		event = it->second.queue.front();
 		it->second.queue.pop_front();
-		pthread_mutex_unlock(&mutexSubscriptions);
+		lock.unlock();
 
 		std::string myId(state->rpcRequestId.toStyledString());
 		mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
 		mg_printmap(conn, event);
 		mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
-		eventFound = true;
 		result = false;
-	}
-	else {
-		pthread_mutex_unlock(&mutexSubscriptions);
 	}
 
 	return result;
 }
 
+/**
+ * Process a single JSONRPC requests.
+ *
+ * Returns:
+ * 	false if a response has been written,
+ * 	true if further processing is required
+ */
 bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 	Json::StyledWriter writer;
 	string myId;
@@ -326,98 +335,111 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 	const string version = request.get("jsonrpc", "unspec").asString();
 
 	myId = writer.write(id);
-	if (version == "2.0") {
-		const Json::Value params = request.get("params", Json::Value());
-		if (method == "message" ) {
-			if (params.isObject())
-			{
-				//prepare message
-				Json::Value content = params["content"];
-				Json::Value subject = params["subject"];
-				Variant::Map command = jsonToVariantMap(content);
-
-				//send message and handle response
-				Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
-				if( responseMap.size()>0 && !id.isNull() ) // only send reply when id is not null
-				{
-					//cout << "Response: " << responseMap << endl;
-					mg_rpc_reply_map(conn, request, responseMap);
-				}
-				else
-				{
-					//no response
-					printf("WARNING, no reply message to fetch\n");
-					mg_rpc_reply_result(conn, request, std::string("no-reply"));
-				}
-
-			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params");
-			}
-
-		} else if (method == "subscribe") {
-			string subscriberName = generateUuid();
-			if (id.isNull()) {
-				// JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
-				mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
-			} else if (subscriberName != "") {
-				deque<Variant::Map> empty;
-				Subscriber subscriber;
-				subscriber.lastAccess=time(0);
-				subscriber.queue = empty;
-				pthread_mutex_lock(&mutexSubscriptions);	
-				subscriptions[subscriberName] = subscriber;
-				pthread_mutex_unlock(&mutexSubscriptions);	
-				mg_rpc_reply_result(conn, request, subscriberName);
-			} else {
-				// uuid is empty so malloc probably failed, we seem to be out of memory
-				mg_rpc_reply_error(conn, request, -32000, "Out of memory");
-			}
-
-		} else if (method == "unsubscribe") {
-			if (params.isObject()) {
-				Json::Value content = params["uuid"];
-				if (content.isString()) {
-					cout << "removing subscription: " << content.asString() << endl;
-					pthread_mutex_lock(&mutexSubscriptions);	
-					map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
-					if (it != subscriptions.end()) {
-						subscriptions.erase(content.asString());
-					}
-					pthread_mutex_unlock(&mutexSubscriptions);
-					mg_rpc_reply_result(conn, request, std::string("success"));
-				} else {
-					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
-				}
-			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
-			}
-		} else if (method == "getevent") {
-			if (params.isObject()) {
-				Json::Value content = params["uuid"];
-				if (content.isString()) {
-					//add connection param (used to get connection param when polling see MG_POLL)
-					GetEventState *state = new GetEventState(content.asString(), id);
-
-					conn->connection_param = state;
-					return getEventRequest(conn, state);
-				}
-				else
-				{
-					mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
-				}
-			} else {
-				mg_rpc_reply_error(conn, request, -32602, "Invalid params: need uuid parameter");
-			}
-		} else {
-			mg_rpc_reply_error(conn, request, -32601, "Method not found");
-		}
-	} else {
-		mg_rpc_reply_error(conn, request, -32600, "Invalid Request");
+	if (version != "2.0") {
+		return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
 	}
 
-	return false;
+	const Json::Value params = request.get("params", Json::Value());
+	if (method == "message" ) {
+		if (!params.isObject() || params.empty()) {
+			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params");
+		}
+	
+		//prepare message
+		Json::Value content = params["content"];
+		Json::Value subject = params["subject"];
+		Variant::Map command = jsonToVariantMap(content);
+
+		//send message and handle response
+		//AGO_TRACE() << "Request: " << command;
+		Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
+		if(responseMap.size() == 0 || id.isNull() ) // only send reply when id is not null
+		{
+			// no response
+			if(responseMap.size() == 0) {
+				AGO_ERROR() << "No reply message to fetch. Failed message: " << "subject=" <<subject<<": " << command;
+			}
+
+			return mg_rpc_reply_result(conn, request, std::string("no-reply"));
+		}
+
+		//AGO_TRACE() << "Response: " << responseMap;
+		return mg_rpc_reply_map(conn, request, responseMap);
+
+	} else if (method == "subscribe") {
+		string subscriberName = generateUuid();
+		if (id.isNull()) {
+			// JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
+			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
+		}
+
+		if (subscriberName == "") {
+			// uuid is empty so malloc probably failed, we seem to be out of memory
+			return mg_rpc_reply_error(conn, request, JSONRPC_INTERNAL_ERROR, "Out of memory");
+		}
+
+		deque<Variant::Map> empty;
+		Subscriber subscriber;
+		subscriber.lastAccess=time(0);
+		subscriber.queue = empty;
+		{
+			boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
+			subscriptions[subscriberName] = subscriber;
+		}
+		return mg_rpc_reply_result(conn, request, subscriberName);
+
+	} else if (method == "unsubscribe") {
+		if (!params.isObject()) {
+			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
+		}
+
+		Json::Value content = params["uuid"];
+		if (!content.isString()) {
+			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
+		}
+
+		AGO_DEBUG() << "removing subscription: " << content.asString();
+		{
+			boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
+			map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
+			if (it != subscriptions.end()) {
+				subscriptions.erase(content.asString());
+			}
+		}
+
+		return mg_rpc_reply_result(conn, request, std::string("success"));
+	} else if (method == "getevent") {
+		if (!params.isObject()) {
+			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
+		}
+
+		Json::Value content = params["uuid"];
+		if (!content.isString()){
+			return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
+		}
+
+		//add connection param (used to get connection param when polling see MG_POLL)
+		GetEventState *state = new GetEventState(content.asString(), id);
+
+		Json::Value timeout = params["timeout"];
+		if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT) {
+			state->timeout = timeout.asInt();
+		}
+
+		conn->connection_param = state;
+		return getEventRequest(conn, state);
+	}
+
+	return mg_rpc_reply_error(conn, request, JSONRPC_METHOD_NOT_FOUND, "Method not found");
 }
 
+/**
+ * Process one or more JSONRPC requests.
+ *
+ * Returns:
+ * 	false if a response has been written, and no more output is to be written
+ * 	true if further processing is required, and MG_POLL shall continue
+ */
 static bool jsonrpc(struct mg_connection *conn)
 {
 	Json::Value root;
@@ -434,6 +456,8 @@ static bool jsonrpc(struct mg_connection *conn)
 			mg_printf_data(conn, "[");
 			for (unsigned int i = 0; i< root.size(); i++)
 			{
+				// XXX: If any previous jsonrpcRequestHandler returned TRUE,
+				// that request will be silently dropped/unprocessed/not processed properly.
 				result = jsonrpcRequestHandler(conn, root[i]);
 			}
 			mg_printf_data(conn, "]");
@@ -445,7 +469,7 @@ static bool jsonrpc(struct mg_connection *conn)
 	}
 	else
 	{
-		mg_rpc_reply_error(conn, Json::Value(), -32700, "Parse error");
+		mg_rpc_reply_error(conn, Json::Value(), JSONRPC_PARSE_ERROR, "Parse error");
 	}
 
 	return result;
@@ -461,7 +485,6 @@ static void uploadFiles(struct mg_connection *conn)
 	const char *data;
 	int data_len, ofs = 0;
 	char var_name[100], file_name[100];
-	string path = "";
 	Variant::Map content;
 	Variant::List files;
 	char posted_var[1024] = "";
@@ -474,30 +497,36 @@ static void uploadFiles(struct mg_connection *conn)
 
 		if( strlen(file_name)>0 )
 		{
-			//it's a file
+			// Sanitize filename, it should only be a filename.
+			fs::path orig_fn(file_name);
+			fs::path safe_fn = orig_fn.filename();
+			if(std::string(file_name) != safe_fn.string()){
+				AGO_ERROR() << "Rejecting file upload, unsafe path \"" << file_name << "\" ";
+				uploadError = "Invalid filename";
+				break;
+			}
 
 			//check if uuid found
-			if( uuid.size()==0 )
+			if(uuid.size() == 0)
 			{
 				//no uuid found yet, drop file
 				continue;
 			}
 
-			//save file to upload path
-			path = std::string(UPLOAD_PATH) + std::string(file_name);
-			fs::path filepath(path);
-			FILE* fp = fopen(path.c_str(), "wb");
+			// Save file to a temporary path
+			fs::path tempfile = fs::path(UPLOAD_PATH) / fs::unique_path().replace_extension(safe_fn.extension());
+			FILE* fp = fopen(tempfile.c_str(), "wb");
 			if( fp )
 			{
 				//write file first
-				cout << "Upload file to \"" << path << "\"" << endl;
+				AGO_DEBUG() << "Uploading file \"" << safe_fn.string() << "\" file to " << tempfile;
 				int written = fwrite(data, sizeof(char), data_len, fp);
 				fclose(fp);
 				if( written!=data_len )
 				{
 					//error writting file, drop it
-					fs::remove(filepath);
-					cerr << "Uploaded file \"" << path << "\" not fully written (no space left?)" << endl;
+					fs::remove(tempfile);
+					AGO_ERROR() << "Uploaded file \"" << tempfile.string() << "\" not fully written (no space left?)";
 					uploadError = "Unable to write file (no space left?)";
 					continue;
 				}
@@ -506,16 +535,16 @@ static void uploadFiles(struct mg_connection *conn)
 				content.clear();
 				content["uuid"] = std::string(uuid);
 				content["command"] = "uploadfile";
-				content["filepath"] = path;
-				content["filename"] = std::string(file_name);
+				content["filepath"] = tempfile.string();
+				content["filename"] = safe_fn.string();
 				content["filesize"] = data_len;
 
 				Variant::Map responseMap = agoConnection->sendMessageReply("", content);
 				if( responseMap.size()==0 )
 				{
 					//command failed, drop file
-					fs::remove(filepath);
-					cout << "Uploaded file \"" << file_name << "\" dropped because command failed" << endl;
+					fs::remove(tempfile);
+					AGO_ERROR() << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed";
 					uploadError = "Internal error";
 					continue;
 				}
@@ -523,7 +552,7 @@ static void uploadFiles(struct mg_connection *conn)
 				if( !responseMap["result"].isVoid() && responseMap["result"].asInt16()!=0 )
 				{
 					//file rejected, drop it
-					fs::remove(filepath);
+					fs::remove(tempfile);
 					if( !responseMap["error"].isVoid() )
 					{
 						uploadError = responseMap["error"].asString();
@@ -532,20 +561,22 @@ static void uploadFiles(struct mg_connection *conn)
 					{
 						uploadError = "File rejected";
 					}
-					cerr << "Uploaded file \"" << file_name << "\" rejected by system: " << uploadError << endl;
+					AGO_ERROR() << "Uploaded file \"" << safe_fn.string() << "\" rejected by recipient: " << uploadError;
 					//uploadError = "File rejected: no handler available";
 					continue;
 				}
 
 				//add file to output
 				Variant::Map file;
-				file["name"] = string(file_name);
+				file["name"] = safe_fn.string();
 				file["size"] = data_len;
 				files.push_back(file);
 
 				//delete file (it should be processed by sendcommand)
 				//TODO: maybe a purge process could be interesting to implement
-				fs::remove(filepath);
+				fs::remove(tempfile);
+			}else{
+			   AGO_ERROR() << "Failed to open file " << tempfile.string() << " for writing: " << strerror(errno);
 			}
 		}
 		else
@@ -578,7 +609,7 @@ static bool downloadFile(struct mg_connection *conn)
 	Variant::Map content;
 	Variant::Map responseMap;
 	string downloadError = "";
-	string filepath = "";
+	fs::path filepath;
 
 	//get params
 	if( mg_get_var(conn, "filename", param, sizeof(param))>0 )
@@ -597,27 +628,27 @@ static bool downloadFile(struct mg_connection *conn)
 			if( !responseMap["filepath"].isVoid() && responseMap["filepath"].asString().length()>0 )
 			{
 				//all seems valid
-				filepath = responseMap["filepath"].asString();
-				cout << "Downloading file \"" << filepath << "\"" << endl;
+				filepath = fs::path(responseMap["filepath"].asString());
+				AGO_DEBUG() << "Downloading file \"" << filepath << "\"";
 			}
 			else
 			{
 				//invalid command response
-				cerr << "Download file, sendCommand returned invalid response (need filepath)" << endl;
+				AGO_ERROR() << "Download file, sendCommand returned invalid response (need filepath)";
 				downloadError = "Internal error";
 			}
 		}
 		else
 		{
 			//command failed
-			cerr << "Download file, sendCommand failed, unable to send file" << endl;
+			AGO_ERROR() << "Download file, sendCommand failed, unable to send file";
 			downloadError = "Internal error";
 		}
 	}
 	else
 	{
 		//missing parameters!
-		cerr << "Download file, missing parameters. Nothing done" << endl;
+		AGO_ERROR() << "Download file, missing parameters. Nothing done";
 		downloadError = "Invalid request parameters";
 	}
 
@@ -644,12 +675,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 
 	if (event == MG_REQUEST)
 	{
-		if (strcmp(conn->uri, "/command") == 0)
-		{
-			command(conn);
-			result = MG_TRUE;
-		}
-		else if (strcmp(conn->uri, "/jsonrpc") == 0)
+		if (strcmp(conn->uri, "/jsonrpc") == 0)
 		{
 			if( jsonrpc(conn) )
 				result = MG_MORE;
@@ -691,9 +717,9 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 			state->lastPoll = time(NULL);
 
 			if(result == MG_FALSE) {
-				if((state->lastPoll - state->inited) > GETEVENT_MAX_RETRIES) {
+				if((state->lastPoll - state->inited) > state->timeout) {
 					// close connection now (before mongoose close connection)
-					mg_rpc_reply_error(conn, state->rpcRequestId, -32602, "no messages for subscription");
+					mg_rpc_reply_error(conn, state->rpcRequestId, AGO_JSONRPC_NO_EVENT, "no messages for subscription");
 					result = MG_TRUE;
 				}
 			}
@@ -758,18 +784,20 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
 		content["quantity"] = quantity;
 	}
 
-	pthread_mutex_lock(&mutexSubscriptions);
-	for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
-		if (it->second.queue.size() > 100) {
-			// this subscription seems to be abandoned, let's remove it to save resources
-			printf("removing subscription %s as the queue size exceeds limits\n", it->first.c_str());
-			subscriptions.erase(it++);
-		} else {
-			it->second.queue.push_back(content);
-			++it;
+	{
+		boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
+		//AGO_TRACE() << "Incoming notify: " << content;
+		for (map<string,Subscriber>::iterator it = subscriptions.begin(); it != subscriptions.end(); ) {
+			if (it->second.queue.size() > 100) {
+				// this subscription seems to be abandoned, let's remove it to save resources
+				AGO_INFO() << "removing subscription as the queue size exceeds limits: " << it->first.c_str();
+				subscriptions.erase(it++);
+			} else {
+				it->second.queue.push_back(content);
+				++it;
+			}
 		}
 	}
-	pthread_mutex_unlock(&mutexSubscriptions);
 
 	// Wake servers to let pending getEvent trigger
 	last_event = time(NULL);
@@ -815,8 +843,8 @@ int main(int argc, char **argv) {
 	Variant::List ports;
 	string port;
 	string split;
-	string htdocs;
-	string certificate;
+	fs::path htdocs;
+	fs::path certificate;
 	string numthreads;
 	string domainname;
 	bool useSSL;
@@ -829,11 +857,11 @@ int main(int argc, char **argv) {
 	agoConnection = new AgoConnection("rpc");
 
 	//get parameters
-	port=getConfigOption("rpc", "ports", "8008,8009s");
-	htdocs=getConfigOption("rpc", "htdocs", BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR));
-	certificate=getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
-	numthreads=getConfigOption("rpc", "numthreads", "30");
-	domainname=getConfigOption("rpc", "domainname", "agocontrol");
+	port = getConfigOption("rpc", "ports", "8008,8009s");
+	htdocs = getConfigOption("rpc", "htdocs", fs::path(BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR)));
+	certificate = getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
+	numthreads = getConfigOption("rpc", "numthreads", "30");
+	domainname = getConfigOption("rpc", "domainname", "agocontrol");
 
 	//ports
 	while( port.find(',')!=std::string::npos )
@@ -846,29 +874,25 @@ int main(int argc, char **argv) {
 	ports.push_back(port);
 
 	//auth
-	stringstream auth;
-	auth << htdocs << "/" << HTPASSWD;
-	fs::path authPath(auth.str());
+	fs::path authPath = htdocs / HTPASSWD;
 	if( fs::exists(authPath) )
 	{
 		//activate auth
-		authFile = fopen(auth.str().c_str(), "r");
+		authFile = fopen(authPath.c_str(), "r");
 		if( authFile==NULL )
 		{
 			//unable to parse auth file
-			cout << "Auth support: error parsing \"" << auth << "\" file. Auth deactivated" << endl;
+			AGO_ERROR() << "Auth support: error parsing \"" << authPath.string() << "\" file. Authentication deactivated";
 		}
 		else
 		{
-			cout << "Auth support: yes" << endl;
+			AGO_INFO() << "Enabling authentication";
 		}
 	}
 	else
 	{
-		cout << "Auth support: no" << endl;
+		AGO_INFO() << "Disabling authentication: file does not exist";
 	}
-
-	pthread_mutex_init(&mutexSubscriptions, NULL);
 
 	// start webservers
 	sscanf(numthreads.c_str(), "%d", &maxthreads);
@@ -882,20 +906,20 @@ int main(int argc, char **argv) {
 		useSSL = port.find('s') != std::string::npos;
 
 		//start webserver threads
-		cout << "Starting webserver on port " << port;
 		if( useSSL )
-			cout << " using SSL";
-		cout << endl;
+			AGO_INFO() << "Starting webserver on port " << port << " using SSL";
+		else
+			AGO_INFO() << "Starting webserver on port " << port;
 		for( int i=0; i<maxthreads; i++ )
 		{
 			struct mg_server *server;
 			sprintf(serverId, "%d", threadId);
 			server = mg_create_server((void*)serverId, event_handler);
-			mg_set_option(server, "document_root", htdocs.c_str());
+			mg_set_option(server, "document_root", htdocs.string().c_str());
 			mg_set_option(server, "auth_domain", domainname.c_str());
 			if( useSSL )
 			{
-				mg_set_option(server, "ssl_certificate", certificate.c_str());
+				mg_set_option(server, "ssl_certificate", certificate.string().c_str());
 			}
 			if( firstServer==NULL )
 			{

@@ -55,7 +55,7 @@ configure_file (
 set_property( DIRECTORY
 	APPEND PROPERTY
 	COMPILE_OPTIONS
-	-Wall)
+	-Wall -DBOOST_LOG_DYN_LINK)
 
 # add the binary tree to the search path for include files
 # so that we will find version.h and other configured files
@@ -76,6 +76,13 @@ find_package (JsonCpp REQUIRED)
 if (JSONCPP_FOUND)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 endif (JSONCPP_FOUND)
+
+FIND_PACKAGE(Boost COMPONENTS log)
+IF (Boost_LOG_FOUND)
+	ADD_DEFINITIONS(-DHAVE_BOOST_LOG)
+ELSE()
+	FIND_PACKAGE(Boost COMPONENTS REQUIRED date_time)
+ENDIF()
 
 set (ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIBDIR}")
 set (LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIBDIR}")

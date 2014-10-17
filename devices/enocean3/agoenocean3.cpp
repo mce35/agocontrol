@@ -76,14 +76,12 @@ int main(int argc, char **argv) {
 	devicefile=getConfigOption("enocean3", "device", "/dev/ttyAMA0");
 	myESP3 = new esp3::ESP3(devicefile);
 	if (!myESP3->init()) {
-		cerr << "ERROR, cannot initalize enocean ESP3 protocol on device " << devicefile << endl;
+		AGO_FATAL() << "cannot initalize enocean ESP3 protocol on device " << devicefile;
 		exit(-1);
 	}
 
 	AgoConnection _agoConnection = AgoConnection("enocean3");
 	agoConnection = &_agoConnection;
-
-	printf("connection to agocontrol established\n");
 
 	agoConnection->addHandler(commandHandler);
 	agoConnection->addDevice("enoceancontroller", "enoceancontroller");
@@ -92,13 +90,13 @@ int main(int argc, char **argv) {
 	string dimmer;
 	while (getline(dimmers, dimmer, ',')) {
 		agoConnection->addDevice(dimmer.c_str(), "dimmer");
-		cout << "adding rid " << dimmer << " as dimmer" << endl;
+		AGO_DEBUG() << "adding rid " << dimmer << " as dimmer";
 	} 
 	stringstream switches(getConfigOption("enocean3", "switches", "20"));
 	string switchdevice;
 	while (getline(switches, switchdevice, ',')) {
 		agoConnection->addDevice(switchdevice.c_str(), "switch");
-		cout << "adding rid " << switchdevice << " as switch" << endl;
+		AGO_DEBUG() << "adding rid " << switchdevice << " as switch";
 	} 
 
 	agoConnection->run();	

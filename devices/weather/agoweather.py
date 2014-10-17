@@ -82,14 +82,12 @@ class testEvent(threading.Thread):
 					dew = calc_dewpoint(temperatura, umidita)
 					if temperatura != old_temp:
 						if (readTempUnits == 'f' or readTempUnits == 'F'):
-							tempF = round(fahrenheit_to_celsius(temperatura))
+							tempF = round(celsius_to_fahrenheit(temperatura))
 							client.emit_event(temp, "event.environment.temperaturechanged", tempF, "F")
 						else:
        			                 		client.emit_event(temp, "event.environment.temperaturechanged", temperatura, "C")
 					if umidita != old_humidity:
 		       				client.emit_event(humidity, "event.environment.humiditychanged", umidita, "%")
-					if dew != old_dewpoint:
-                                                client.emit_event(dewpoint, "event.environment.dewpointchanged", dew, "%")
 		                        search_Rain = string.find(condizioni, "Rain")
 					search_Drizzle = string.find(condizioni, "Drizzle")
 		                        if (search_Rain >= 0) or (search_Drizzle >=0):

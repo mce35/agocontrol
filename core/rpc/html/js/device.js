@@ -41,10 +41,6 @@ function device(obj, uuid) {
         dataLoggerController = uuid;
     }
 
-    if (this.devicetype == "rrdtoolcontroller") {
-        rrdtoolController = uuid;
-    }
-
     if (this.devicetype == "agocontroller") {
         agoController = uuid;
     }
@@ -100,21 +96,26 @@ function device(obj, uuid) {
         this.getRrdGraph = function(uuid, start, end) {
             var content = {};
             content.command = "getgraph";
-            content.uuid = rrdtoolController;
-            content.deviceUuid = uuid;
+            content.uuid = dataLoggerController;
+            content.devices = [uuid];
             content.start = start;
             content.end = end;
-            sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' ) {
-                    if( !res.result.error && document.getElementById("graphRRD") ) {
+            sendCommand(content, function(res)
+            {
+                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
+                {
+                    if( !res.result.error && document.getElementById("graphRRD") )
+                    {
                         document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.graph;
                         $("#graphRRD").show();
                     }
-                    else {
+                    else
+                    {
                         notif.error('Unable to get graph: '+res.result.msg);
                     }
                 }
-                else {
+                else
+                {
                     notif.error('Unable to get graph: Internal error');
                 }
             }, 10);
@@ -267,111 +268,6 @@ function device(obj, uuid) {
                 callback(res);
         });
     };
-
-    if (this.devicetype == "ipx800controller") {
-        self.ipx800ip = ko.observable();
-        self.addboard = function() {
-            var content = {};
-            content.uuid = uuid;
-            content.command = 'adddevice';
-            content.param1 = self.ipx800ip();
-            self.addDevice(content, null);
-        };
-    } else if (this.devicetype == "ipx800v3board") {
-        self.output = {};
-
-        self.updateUi = function() {
-            self.getIpx800Status();
-            self.getDevices(self.getDevicesCallback);
-        };
-
-        self.getIpx800Status = function() {
-            var content = {};
-            content.uuid = uuid;
-            content.command = 'status';
-            sendCommand(content, function(res) {
-                el = document.getElementsByClassName("currentoutputs");
-                el[0].innerHTML = res.result.outputs;
-                el = document.getElementsByClassName("currentanalogs");
-                el[0].innerHTML = res.result.analogs;
-                el = document.getElementsByClassName("currentcounters");
-                el[0].innerHTML = res.result.counters;
-            });
-        };
-
-        self.dialogopened = function(dialog) {
-            $("#tabs").tabs();
-            self.updateUi();
-        };
-        self.devswitch = ko.observable(true);
-        self.devdrapes = ko.observable(false);
-        self.selectedOutputParam1 = ko.observable();
-        self.selectedOutputParam2 = ko.observable();
-        self.selectedAnalogParam1 = ko.observable();
-        self.selectedCounterParam1 = ko.observable();
-        self.selectedOutputType = ko.observable();
-        self.selectedOutputType.subscribe(function(newVal) {
-            if (newVal == "switch") {
-                self.devswitch(true);
-                self.devdrapes(false);
-            } else if (newVal == "drapes") {
-                self.devswitch(false);
-                self.devdrapes(true);
-            }
-        });
-        self.selectedAnalogType = ko.observable();
-        self.addoutput = function() {
-            var content = {};
-            content.uuid = uuid;
-            content.command = 'adddevice';
-            content.type = self.selectedOutputType();
-            if (content.type == "switch")
-                content.param1 = self.selectedOutputParam1();
-            else if (content.type == "drapes") {
-                content.param1 = self.selectedOutputParam1();
-                content.param2 = self.selectedOutputParam2();
-            }
-            self.addDevice(content, self.getIpx800Status);
-        };
-
-        self.addanalog = function() {
-            var content = {};
-            content.uuid = uuid;
-            content.command = 'adddevice';
-            content.type = self.selectedAnalogType();
-            content.param1 = self.selectedAnalogParam1();
-            self.addDevice(content, self.getIpx800Status);
-        };
-
-        self.addcounter = function() {
-            var content = {};
-            content.uuid = uuid;
-            content.command = 'adddevice';
-            content.type = 'counter';
-            content.param1 = self.selectedCounterParam1();
-            self.addDevice(content, self.getIpx800Status);
-        };
-
-        self.devices = ko.observableArray([]);
-        self.getDevicesCallback = function(res) {
-            self.devices(res.result.devices);
-        };
-
-        self.selectedDevice = ko.observable();
-        self.selectedDeviceState = ko.observable();
-        self.forcestateresult = ko.observable();
-        self.forcestate = function() {
-            self.forcestateresult("");
-            var content = {};
-            content.uuid = uuid;
-            content.command = 'forcestate';
-            content.state = self.selectedDeviceState();
-            content.device = self.selectedDevice();
-            sendCommand(content, function(res) {
-                self.forcestateresult(res.result.msg);
-            });
-        };
-    }
 
     if (this.devicetype == "camera") {
         this.getVideoFrame = function() {

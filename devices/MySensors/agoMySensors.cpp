@@ -23,6 +23,7 @@ using namespace agocontrol;
 using namespace boost::system; 
 using namespace boost::asio; 
 using namespace qpid::types;
+namespace fs = ::boost::filesystem;
 
 enum flush_type
 {
@@ -261,7 +262,6 @@ qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
  */
 std::string prettyPrint(std::string message)
 {
-    int nodeId, childId, messageType, subType;
     std::string payload = "";
     std::string ack = "";
     std::stringstream result;
@@ -1824,7 +1824,7 @@ int main(int argc, char **argv)
     }
 
     // load map, create sections if empty
-    std::string dmf = getConfigPath(DEVICEMAPFILE);
+    fs::path dmf = getConfigPath(DEVICEMAPFILE);
     devicemap = jsonFileToVariantMap(dmf);
     if (devicemap["nextid"].isVoid())
     {
@@ -1839,11 +1839,12 @@ int main(int argc, char **argv)
     }
 
     bool error;
-    std::string line = readLine(&error);
     cout << "Requesting gateway version...";
+    boost::system::error_code flushError;
+    flush_serial_port(serialPort, flush_both, flushError);
     std::string getVersion = "0;0;3;0;2\n";
     serialPort.write_some(buffer(getVersion));
-    line = readLine(&error);
+    std::string line = readLine(&error);
     if( !error )
     {
         std::vector<std::string> items = split(line, ';');
@@ -1855,7 +1856,7 @@ int main(int argc, char **argv)
             if( gateway_protocol_version!="1.4" && gateway_protocol_version!="1.3" )
             {
                 //unknown protocol version, exit now
-                cout << "Unknown gateway protocol version. Exit" << endl;
+                cout << "Unknown gateway protocol version. Exit. (received \"" << line  << "\" from gateway)" << endl;
                 exit(1);
             }
             else
