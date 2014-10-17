@@ -512,7 +512,7 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 }
 
 agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
-	::agocontrol::log::log_container::init_default();
+	::agocontrol::log::log_container::initDefault();
 
 	Variant::Map connectionOptions;
 	std::string broker = getConfigOption("system", "broker", "localhost:5672");
