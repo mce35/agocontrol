@@ -35,25 +35,46 @@ namespace agocontrol {
 	}
 }
 
+#define AGO_DEFAULT_LEVEL ::agocontrol::log::info
+
 #ifdef HAVE_BOOST_LOG
 # include <agolog_boost.h>
 #else
 # include "agolog_basic.h"
 #endif
 
-namespace agocontrol {
-	namespace log {
-		extern const char* const severity_level_str[];
-
 // Global static singleton for obtaining default logger instance,
 // and initing the logger.
 #define AGO_GET_LOGGER (::agocontrol::log::log_container::get())
 
+
+namespace agocontrol {
+	namespace log {
+		extern const char* const severity_level_str[];
+
 		class log_container {
 		public:
 			static AGO_LOGGER_IMPL &get();
-			static void init_default();
-			static void set_level(severity_level lvl);
+			/**
+			 * Inits the logger with default settings (log level INFO, console output)
+			 */
+			static void initDefault();
+
+			/**
+			 * Changes the severity setting of the logger
+			 */
+			static void setLevel(severity_level lvl);
+
+			/**
+			 * Changes to console output
+			 */
+			static void setOutputConsole();
+
+			/**
+			 * Changes to Syslog output.
+			 */
+			static void setOutputSyslog(const char *ident, int facility);
+
 		};
 	}
 }

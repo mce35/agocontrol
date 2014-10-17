@@ -102,7 +102,7 @@ namespace agocontrol {
 			boost::mutex sink_mutex;
 			char ident[255];
 		public:
-			syslog_sink(std::string const &ident);
+			syslog_sink(std::string const &ident, int facility);
 			void output_record(record &rec);
 		};
 
@@ -120,18 +120,18 @@ namespace agocontrol {
 
 		public:
 			simple_logger()
-				: current_level(debug)
+				: current_level(AGO_DEFAULT_LEVEL)
 				, sink( boost::shared_ptr<log_sink>(new console_sink()) )
 			{}
 
 			simple_logger(severity_level severity)
 				: current_level(severity) {}
 
-			void set_level(severity_level severity) {
+			void setLevel(severity_level severity) {
 				current_level = severity;
 			}
 
-			void set_sink(boost::shared_ptr<log_sink> sink_) {
+			void setSink(boost::shared_ptr<log_sink> sink_) {
 				sink = sink_;
 			}
 

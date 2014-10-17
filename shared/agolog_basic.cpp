@@ -12,9 +12,9 @@ namespace log {
 // TODO: Decide on levels. On FreeBSD at least, the LOG_INFO is normally
 // not logged, only notice..
 int sev2syslog[] = {
-	LOG_DEBUG,	// trace
-	LOG_INFO,	// debug
-	LOG_NOTICE, // info 
+	LOG_DEBUG,
+	LOG_DEBUG,
+	LOG_INFO,
 	LOG_WARNING,
 	LOG_ERR,
 	LOG_CRIT
@@ -39,9 +39,10 @@ void console_sink::output_record(record &rec) {
 }
 
 
-syslog_sink::syslog_sink(std::string const &ident) {
+syslog_sink::syslog_sink(std::string const &ident, int facility)
+{
 	strncpy(this->ident, ident.c_str(), sizeof(this->ident));
-	openlog(this->ident, LOG_PID, LOG_DAEMON);
+	openlog(this->ident, LOG_PID, facility);
 }
 
 void syslog_sink::output_record(record &rec) {
@@ -56,13 +57,23 @@ record_pump::~record_pump()
 }
 
 
-void log_container::init_default() {
-	set_level(::agocontrol::log::debug);
-	//get().set_sink( boost::shared_ptr<log_sink>(new syslog_sink("agotest")) );
+
+
+void log_container::setOutputConsole() {
+	get().setSink(boost::shared_ptr<log_sink>( new console_sink() ) );
 }
 
-void log_container::set_level(severity_level lvl) {
-	get().set_level(lvl);
+void log_container::setOutputSyslog(const char *ident, int facility) {
+	get().setSink( boost::shared_ptr<log_sink>(new syslog_sink(ident, facility)) );
+}
+
+void log_container::initDefault() {
+	setLevel(AGO_DEFAULT_LEVEL);
+	// Default inited with console sink
+}
+
+void log_container::setLevel(severity_level lvl) {
+	get().setLevel(lvl);
 }
 
 
