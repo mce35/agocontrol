@@ -136,7 +136,7 @@ namespace agocontrol {
 			}
 
 			record open_record(severity_level severity) {
-				if(severity > current_level) {
+				if(severity >= current_level) {
 					return record(severity);
 				}
 				return record(); // Invalid record
