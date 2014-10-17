@@ -1585,34 +1585,42 @@ static int atalarm_init(ATAlarm *atalarm)
  */
 int main(int argc, char **argv)
 {
-  /*bool continu = true;
+  bool continu = true;
   bool debug = false;
-  bool use_syslog = false;
+  bool use_syslog = true;
 
   do
     {
-      switch(getopt(argc,argv,"ds"))
+      switch(getopt(argc,argv,"dc"))
         {
         case 'd':
           //activate debug
           debug = true;
           break;
-        case 's':
-          //activate syslog
-          use_syslog = true;
+        case 'c':
+          //console output
+          use_syslog = false;
           break;
         default:
           continu = false;
           break;
         }
-        } while(continu);*/
+    } while(continu);
 
+  if(use_syslog != false)
+    agocontrol::log::log_container::setOutputSyslog("agoatalarm", LOG_DAEMON);
+  else
+    agocontrol::log::log_container::setOutputConsole();
   AGO_INFO() << "Initializing ATAlarm controller";
 
   //init agocontrol client
   gatalarm.agoConnection = new AgoConnection("ATAlarm");
   gatalarm.agoConnection->addDevice("ATAlarmController", "ATAlarmController");
   gatalarm.agoConnection->addHandler(commandHandler);
+  if(debug != false)
+    agocontrol::log::log_container::setLevel(agocontrol::log::debug);
+  else
+    agocontrol::log::log_container::setLevel(agocontrol::log::info);
 
   if(atalarm_init(&gatalarm) < 0)
     {
