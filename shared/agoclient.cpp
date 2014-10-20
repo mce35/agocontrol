@@ -546,7 +546,7 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 
 	uuidMapFile = getConfigPath("uuidmap");
 	uuidMapFile /= (std::string(interfacename) + ".json");
-	AGO_INFO() << "Using uuidMapFile " << uuidMapFile;
+	AGO_DEBUG() << "Using uuidMapFile " << uuidMapFile;
 	try {
 		ensureParentDirExists(uuidMapFile);
 	} catch(const std::exception& error) {
@@ -572,8 +572,10 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 
 agocontrol::AgoConnection::~AgoConnection() {
 	try {
-		AGO_DEBUG() << "Closing broker connection";
-		connection.close();
+		if(connection.isOpen()) {
+			AGO_DEBUG() << "Closing broker connection";
+			connection.close();
+		}
 	} catch(const std::exception& error) {
 		AGO_ERROR() << "Failed to close broker connection: " << error.what();
 	}
@@ -658,6 +660,14 @@ void agocontrol::AgoConnection::run() {
 		}
 	}
 }
+
+void agocontrol::AgoConnection::shutdown() {
+	if(connection.isOpen()) {
+		AGO_DEBUG() << "Closing broker connection";
+		connection.close();
+	}
+}
+
 bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const char *deviceType) {
 	Variant::Map content;
 	Message event;

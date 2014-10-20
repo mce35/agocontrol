@@ -121,6 +121,7 @@ namespace agocontrol {
 			AgoConnection(const char *interfacename);
 			~AgoConnection();
 			void run();
+			void shutdown();
 			bool addDevice(const char *internalId, const char *deviceType);
 			bool addDevice(const char *internalId, const char *deviceType, bool passuuid);
 			bool removeDevice(const char *internalId);
