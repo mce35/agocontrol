@@ -9,9 +9,11 @@
 namespace agocontrol {
 namespace log {
 
+static bool inited = false;
+
 // TODO: Decide on levels. On FreeBSD at least, the LOG_INFO is normally
 // not logged, only notice..
-int sev2syslog[] = {
+static int sev2syslog[] = {
 	LOG_DEBUG,
 	LOG_DEBUG,
 	LOG_INFO,
@@ -63,11 +65,15 @@ void log_container::setOutputConsole() {
 	get().setSink(boost::shared_ptr<log_sink>( new console_sink() ) );
 }
 
-void log_container::setOutputSyslog(const char *ident, int facility) {
-	get().setSink( boost::shared_ptr<log_sink>(new syslog_sink(ident, facility)) );
+void log_container::setOutputSyslog(const std::string &ident, int facility) {
+	get().setSink( boost::shared_ptr<log_sink>(new syslog_sink(ident.c_str(), facility)) );
 }
 
 void log_container::initDefault() {
+	if(inited)
+		return;
+	inited = true;
+
 	setLevel(AGO_DEFAULT_LEVEL);
 	// Default inited with console sink
 }
