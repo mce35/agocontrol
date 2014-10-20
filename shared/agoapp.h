@@ -41,13 +41,13 @@ namespace agocontrol {
 		const std::string appName;
 		std::string appShortName;
 
-		AgoConnection *agoConnection;
-
 		bool exit_signaled;
 
 		void signalExit();
 
 	protected:
+		AgoConnection *agoConnection;
+
 		/* Setup will be called prior to appMain being called. This
 		 * normally sets up logging, an AgoConnection, signal handling,
 		 * and finally any app specific setup (setupApp).
@@ -67,6 +67,14 @@ namespace agocontrol {
 		virtual void cleanupApp() { };
 
 		bool isExitSignaled() { return exit_signaled; }
+
+		/* Command handler registered with the agoConncetion; override! */
+		virtual qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+			return qpid::types::Variant::Map();
+		}
+
+		/* Event handler registered with the agoConncetion; override! */
+		virtual void eventHandler(std::string subject, qpid::types::Variant::Map content) {}
 
 		/**
 		 * This is called from a separate thread when the app is

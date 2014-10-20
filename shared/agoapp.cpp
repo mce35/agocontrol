@@ -24,8 +24,8 @@ static void static_sighandler(int signo) {
 
 AgoApp::AgoApp(const char *appName_)
 	: appName(appName_)
-	, agoConnection(NULL)
 	, exit_signaled(false)
+	, agoConnection(NULL)
 {
 	// Keep a "short" name too, trim leading 'Ago' from app name
 	// This will be used for getConfigOption section names
@@ -80,6 +80,8 @@ void AgoApp::setupLogging() {
 
 void AgoApp::setupAgoConnection() {
 	agoConnection = new AgoConnection(appShortName.c_str());
+	agoConnection->addHandler(boost::bind(&AgoApp::commandHandler, this, _1));
+	agoConnection->addEventHandler(boost::bind(&AgoApp::eventHandler, this, _1, _2));
 }
 
 
