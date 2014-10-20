@@ -531,7 +531,9 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	return setConfigOption(section, option, stringvalue.str().c_str());
 }
 
-agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
+agocontrol::AgoConnection::AgoConnection(const char *interfacename)
+	: shutdownSignaled(false)
+{
 	// TODO: Move to AgoApp
 	::agocontrol::log::log_container::initDefault();
 
@@ -589,8 +591,8 @@ void agocontrol::AgoConnection::run() {
 		AGO_FATAL() << "Failed to create broker receiver: " << error.what();
 		_exit(1);
 	}
-	// reportDevices(); // this is obsolete as it is handled by addDevice 
-	while( true ) {
+
+	while( !shutdownSignaled ) {
 		try{
 			Variant::Map content;
 			Message message = receiver.fetch(Duration::SECOND * 3);
@@ -647,6 +649,9 @@ void agocontrol::AgoConnection::run() {
 		} catch(const NoMessageAvailable& error) {
 			
 		} catch(const std::exception& error) {
+			if(shutdownSignaled)
+				break;
+
 			AGO_ERROR() << "Exception in message loop: " << error.what();
 			if (session.hasError()) {
 				AGO_ERROR() << "Session has error, recreating";
@@ -662,6 +667,7 @@ void agocontrol::AgoConnection::run() {
 }
 
 void agocontrol::AgoConnection::shutdown() {
+	shutdownSignaled = true;
 	if(connection.isOpen()) {
 		AGO_DEBUG() << "Closing broker connection";
 		connection.close();
