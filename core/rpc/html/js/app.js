@@ -1005,20 +1005,11 @@ function doShowDetails(device, template, environment)
                     }
                 }
 
-<<<<<<< HEAD
-		if (device.devicetype == "binarysensor") {
-		    environment = "device.state";
-		}
-		if (device.devicetype == "multisensor") {
-		    environment = "none";
-		}
-=======
                 var reset = function()
                 {
                     if (device !== undefined)
                         device.reset();
                 };
->>>>>>> github/develop
 
                 dialogWidth = 1000;
                 dialogHeight = 720;
