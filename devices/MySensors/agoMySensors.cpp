@@ -445,10 +445,10 @@ bool openSerialPort(string device)
         serialPort.set_option(serial_port::stop_bits(serial_port::stop_bits::one)); 
         serialPort.set_option(serial_port::flow_control(serial_port::flow_control::none)); 
         //flush serial content
-        boost::system::error_code error;
-        flush_serial_port(serialPort, flush_both, error);
-        if( DEBUG )
-            cout << "Flushing serial port: " << error.message() << endl;
+        //boost::system::error_code error;
+        //flush_serial_port(serialPort, flush_both, error);
+        //if( DEBUG )
+        //    cout << "Flushing serial port: " << error.message() << endl;
     }
     catch(std::exception const&  ex)
     {
@@ -1842,11 +1842,11 @@ int main(int argc, char **argv)
     bool error;
     cout << "Requesting gateway version...";
     std::string getVersion = "0;0;3;0;2\n";
-    serialPort.write_some(buffer(getVersion));
-    std::string line = readLine(&error);
+    std::string line = "";
     while( !error && !boost::algorithm::starts_with(line, "0;0;3;0;2;") )
     {
         line = readLine(&error);
+        serialPort.write_some(buffer(getVersion));
     }
     if( !error )
     {
