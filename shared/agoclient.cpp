@@ -9,6 +9,7 @@
 
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 
 
 #include <jsoncpp/json/reader.h>
@@ -541,8 +542,6 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	connectionOptions["reconnect"] = "true";
 
 	filterCommands = true; // only pass commands for child devices to handler by default
-	commandHandler = NULL;
-	eventHandler = NULL;
 	instance = interfacename;
 
 	uuidMapFile = getConfigPath("uuidmap");
@@ -615,7 +614,7 @@ void agocontrol::AgoConnection::run() {
 					// lets see if this is for one of our devices
 					bool isOurDevice = (internalid.size() > 0) && (deviceMap.find(internalIdToUuid(internalid)) != deviceMap.end());
 					//  only handle if a command handler is set. In addition it needs to be one of our device when the filter is enabled
-					if ( ( isOurDevice || (!(filterCommands))) && commandHandler != NULL) {
+					if ( ( isOurDevice || (!(filterCommands))) && !commandHandler.empty()) {
 
 						// printf("command for id %s found, calling handler\n", internalid.c_str());
 						if (internalid.size() > 0) content["internalid"] = internalid;
@@ -641,7 +640,7 @@ void agocontrol::AgoConnection::run() {
 							}
 						} 
 					}
-				} else if (eventHandler != NULL) {
+				} else if (!eventHandler.empty()) {
 					eventHandler(message.getSubject(), content);
 				}
 			}
@@ -846,9 +845,27 @@ bool agocontrol::AgoConnection::loadUuidMap() {
 }
 
 bool agocontrol::AgoConnection::addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map)) {
-	commandHandler = handler;
+	commandHandler = boost::bind(handler, _1);
 	return true;
 }
+
+bool agocontrol::AgoConnection::addHandler(boost::function<qpid::types::Variant::Map (qpid::types::Variant::Map)> handler)
+{
+	this->commandHandler = commandHandler;
+	return true;
+}
+
+bool agocontrol::AgoConnection::addEventHandler(void (*handler)(std::string, qpid::types::Variant::Map)) {
+	eventHandler = boost::bind(handler, _1, _2);
+	return true;
+}
+
+bool agocontrol::AgoConnection::addEventHandler(boost::function<void (std::string, qpid::types::Variant::Map)> eventHandler)
+{
+	this->eventHandler = eventHandler;
+	return true;
+}
+
 
 bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Variant::Map content) {
 	Message message;
@@ -966,11 +983,6 @@ int agocontrol::AgoConnection::isDeviceStale(const char* internalId)
 bool agocontrol::AgoConnection::setFilter(bool filter) {
 	filterCommands = filter;
 	return filterCommands;
-}
-
-bool agocontrol::AgoConnection::addEventHandler(void (*handler)(std::string, qpid::types::Variant::Map)) {
-	eventHandler = handler;
-	return true;
 }
 
 qpid::types::Variant::Map agocontrol::AgoConnection::getInventory() {

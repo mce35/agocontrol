@@ -25,6 +25,7 @@
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
+#include <boost/function.hpp>
 
 #include "agolog.h"
 
@@ -109,9 +110,9 @@ namespace agocontrol {
 			boost::filesystem::path uuidMapFile;
 			std::string instance;
 			void reportDevices();
-			qpid::types::Variant::Map (*commandHandler)(qpid::types::Variant::Map);
 			bool filterCommands;
-			void (*eventHandler)(std::string, qpid::types::Variant::Map);
+			boost::function< qpid::types::Variant::Map (qpid::types::Variant::Map) > commandHandler;
+			boost::function< void (std::string, qpid::types::Variant::Map) > eventHandler;
 			bool emitDeviceAnnounce(const char *internalId, const char *deviceType);
 			bool emitDeviceRemove(const char *internalId);
 			bool emitDeviceStale(const char* internalId, const int stale);
@@ -127,8 +128,15 @@ namespace agocontrol {
 			bool resumeDevice(const char* internalId);
 			std::string getDeviceType(const char *internalId);
 			int isDeviceStale(const char *internalId);
+
+			// C-style function pointers
 			bool addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map));
 			bool addEventHandler(void (*eventHandler)(std::string, qpid::types::Variant::Map));
+
+			// C++-style function pointers, permits class references
+			bool addHandler(boost::function<qpid::types::Variant::Map (qpid::types::Variant::Map)> handler);
+			bool addEventHandler(boost::function<void (std::string, qpid::types::Variant::Map)> eventHandler);
+
 			bool setFilter(bool filter);
 			bool sendMessage(const char *subject, qpid::types::Variant::Map content);
 			bool sendMessage(qpid::types::Variant::Map content);
