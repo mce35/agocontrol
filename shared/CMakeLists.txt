@@ -9,6 +9,7 @@ configure_file (
 set(LIBAGOCLIENT_SOURCE_FILES
 	agoclient.cpp
 	agolog.cpp
+	agoapp.cpp
 	base64.cpp
 )
 
@@ -28,6 +29,7 @@ set (AGOCLIENT_LIBRARIES
     augeas
     boost_system
     boost_filesystem
+    boost_thread
     ${JSONCPP_LIBRARIES}
 )
 
