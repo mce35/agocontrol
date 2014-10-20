@@ -158,6 +158,7 @@ int AgoApp::main(int argc, const char **argv) {
 	try {
 		setup();
 	}catch(StartupError &e) {
+		cleanup();
 		return 1;
 	}catch(ConfigurationError &e) {
 		std::cerr << "Failed to start " << appName
@@ -165,6 +166,7 @@ int AgoApp::main(int argc, const char **argv) {
 			<< e.what()
 			<< std::endl;
 
+		cleanup();
 		return 1;
 	}
 
@@ -177,6 +179,7 @@ int AgoApp::main(int argc, const char **argv) {
 	else
 		AGO_WARNING() << "Exiting " << appName << "(code " << ret << ")";
 
+	cleanup();
 	return ret;
 }
 
