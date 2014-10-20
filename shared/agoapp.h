@@ -104,6 +104,13 @@ namespace agocontrol {
 			: runtime_error(std::string(what)) {}
 	};
 
+	/* This can be raised from any setup method, to indicate setup failure.
+	 * Application should log actual error itself!
+	 */
+	class StartupError: public std::runtime_error {
+	public:
+		StartupError(): runtime_error("") {};
+	};
 }
 
 #endif

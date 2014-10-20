@@ -149,6 +149,8 @@ void AgoApp::cleanupAgoConnection() {
 int AgoApp::main(int argc, const char **argv) {
 	try {
 		setup();
+	}catch(StartupError &e) {
+		return 1;
 	}catch(ConfigurationError &e) {
 		std::cerr << "Failed to start " << appName
 			<< " due to configuration error: "
