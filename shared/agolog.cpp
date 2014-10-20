@@ -33,7 +33,9 @@ int log_container::getFacility(const std::string &facility) {
 	if(syslog_facilities.empty()) {
 		syslog_facilities["auth"] = 		LOG_AUTH;
 		syslog_facilities["authpriv"] =	LOG_AUTHPRIV;
+#ifdef LOG_CONSOLE
 		syslog_facilities["console"] =	LOG_CONSOLE;
+#endif
 		syslog_facilities["cron"] =		LOG_CRON;
 		syslog_facilities["daemon"] =		LOG_DAEMON;
 		syslog_facilities["ftp"] =			LOG_FTP;
@@ -41,8 +43,12 @@ int log_container::getFacility(const std::string &facility) {
 		syslog_facilities["lpr"] =			LOG_LPR;
 		syslog_facilities["mail"] =		LOG_MAIL;
 		syslog_facilities["news"] =		LOG_NEWS;
+#ifdef LOG_NTP
 		syslog_facilities["ntp"] =			LOG_NTP;
+#endif
+#ifdef LOG_SECURITY
 		syslog_facilities["security"] =	LOG_SECURITY;
+#endif
 		syslog_facilities["syslog"] =		LOG_SYSLOG;
 		syslog_facilities["user"] =		LOG_USER;
 		syslog_facilities["uucp"] =		LOG_UUCP;
