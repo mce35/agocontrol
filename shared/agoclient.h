@@ -108,8 +108,6 @@ namespace agocontrol {
 			bool loadUuidMap(); // loads it
 			boost::filesystem::path uuidMapFile;
 			std::string instance;
-			std::string uuidToInternalId(std::string uuid); // lookup in map
-			std::string internalIdToUuid(std::string internalId); // lookup in map
 			void reportDevices();
 			qpid::types::Variant::Map (*commandHandler)(qpid::types::Variant::Map);
 			bool filterCommands;
@@ -142,6 +140,8 @@ namespace agocontrol {
 			qpid::types::Variant::Map getInventory();
 			std::string getAgocontroller();
 			bool setGlobalVariable(std::string variable, qpid::types::Variant value);
+			std::string uuidToInternalId(std::string uuid); // lookup in map
+			std::string internalIdToUuid(std::string internalId); // lookup in map
 	};
 
 
