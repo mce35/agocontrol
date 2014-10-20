@@ -95,10 +95,11 @@ namespace agocontrol {
 		int main(int argc, const char **argv);
 
 		/**
-		 * This must be implemented by the application, and contains the 
-		 * application logic.
+		 * By default this calls agoConnection->run(), and blocks until shutdown signal
+		 * arrives.
+		 * This can be overridden if non-standard behavior is required.
 		 */
-		virtual int appMain() = 0;
+		virtual int appMain();
 
 		// Not really public
 		void sighandler(int signo);

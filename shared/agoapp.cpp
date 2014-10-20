@@ -148,6 +148,12 @@ void AgoApp::cleanupAgoConnection() {
 	agoConnection = NULL;
 }
 
+
+int AgoApp::appMain() {
+	agoConnection->run();
+	return 0;
+}
+
 int AgoApp::main(int argc, const char **argv) {
 	try {
 		setup();
