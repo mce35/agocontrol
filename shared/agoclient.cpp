@@ -390,7 +390,15 @@ fs::path agocontrol::getConfigOption(const char *section, const char *option, co
 	return fs::path(value);
 }
 
+std::string agocontrol::getConfigOption(const char *section, const char *option,
+		const char *defaultvalue) {
+	return getConfigOption(section, NULL, option, defaultvalue);
+}
+
 std::string agocontrol::augeasPathFromSectionOption(const char *section, const char *option) {
+	assert(section != NULL);
+	assert(option != NULL);
+
 	std::stringstream valuepath;
 	valuepath << "/files";
 	valuepath << getConfigPath(MODULE_CONFDIR).string();
@@ -448,27 +456,38 @@ qpid::types::Variant::Map agocontrol::getConfigTree() {
 
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
+std::string agocontrol::getConfigOption(const char *section, const char *fallback_section,
+		const char *option, const char *defaultvalue) {
 	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
 		AGO_ERROR() << "cannot initialize augeas";
 		return defaultvalue;
 	}
 
-	std::stringstream result;
-
 	const char *value;
 	int ret =  aug_get(augeas, augeasPathFromSectionOption(section, option).c_str(), &value);
 	if (ret != 1) {
-		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
-		result << defaultvalue;
-	} else {
-		if(value != NULL) {
-			// cout << "AUGEAS: using config value: " << value << endl;
-			result << value;
+		if(fallback_section) {
+			ret =  aug_get(augeas, augeasPathFromSectionOption(fallback_section, option).c_str(), &value);
 		}
 	}
-	return result.str();
+
+	if(ret != 1) {
+		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
+		if(defaultvalue) {
+			return std::string(defaultvalue);
+		}
+	} else {
+		if(value != NULL) {
+			std::stringstream result;
+			// cout << "AUGEAS: using config value: " << value << endl;
+			result << value;
+			return result.str();
+		}
+	}
+
+	// empty
+	return std::string();
 }
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const char* value) {

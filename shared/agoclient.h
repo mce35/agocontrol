@@ -77,6 +77,10 @@ namespace agocontrol {
 	std::string getConfigOption(const char *section, const char *option, std::string &defaultvalue);
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 	boost::filesystem::path getConfigOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
+
+	/// fetch a value from the config file. if it does not exist in designated section, try
+	/// fallback_section before finally falling back on defaultvalue
+	std::string getConfigOption(const char *section, const char *fallback_section, const char *option, const char *defaultvalue);
 	qpid::types::Variant::Map getConfigTree();
 
 	/// save value to the config file
