@@ -13,27 +13,41 @@ using namespace std;
 using namespace qpid::types;
 using namespace qpid::messaging;
 
-#include "agoclient.h"
+#include "agoapp.h"
 using namespace agocontrol;
 
-// qpid session and sender/receiver
-Receiver receiver;
-Sender sender;
-Session session;
-Connection *connection;
+class AgoDrain : public AgoApp {
+private:
+	// qpid session and sender/receiver
+	Receiver receiver;
+	Sender sender;
+	Session session;
+	Connection *connection;
+
+public:
+	AGOAPP_CONSTRUCTOR(AgoDrain);
+
+	// Override, we do not use a AgoConnection in drain
+	void setupAgoConnection() { }
+	void doShutdown() ;
+
+	int appMain();
+
+};
 
 
-int main(int argc, char **argv) {
-	string broker;
+int AgoDrain::appMain() {
+	std::string broker;
 
 	Variant::Map connectionOptions;
-	broker=getConfigOption("system", "broker", "localhost:5672");
+	broker = getConfigOption("system", "broker", "localhost:5672");
 	connectionOptions["username"]=getConfigOption("system", "username", "agocontrol");
 	connectionOptions["password"]=getConfigOption("system", "password", "letmein");
 
 	connectionOptions["reconnect"] = "true";
 
 	connection = new Connection(broker, connectionOptions);
+
 	try {
 		connection->open(); 
 		session = connection->createSession(); 
@@ -47,7 +61,7 @@ int main(int argc, char **argv) {
 	}
 
 
-	while (true) {
+	while (!isExitSignaled()) {
 		try{
 			Message message = receiver.fetch(Duration::SECOND * 3);
 			std::cout << "Message(properties=" << message.getProperties() << ", content='" ;
@@ -69,4 +83,16 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	return 0;
 }
+
+void AgoDrain::doShutdown() {
+	try {
+		// Trigger fetch() abort
+		connection->close();
+	} catch(std::exception &e) {
+	}
+}
+
+AGOAPP_ENTRY_POINT(AgoDrain);
+

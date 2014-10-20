@@ -86,6 +86,8 @@ var model = null;
 var initialized = false;
 
 var supported_devices = [];
+var deferredThumbsLoading = [];
+var thumbs = [];
 
 function buildfloorPlanList(model) {
     model.floorPlans = ko.observableArray([]);
@@ -508,18 +510,19 @@ function purgeInventoryCache() {
 	delete localStorage.inventoryCache;
 }
 
-function handleInventory(response) {
+function handleInventory(response)
+{
     if (response != null && response.result.match !== undefined && response.result.match(/^exception/)) {
-	notif.error("RPC ERROR: " + response.result);
-	return;
+        notif.error("RPC ERROR: " + response.result);
+        return;
     }
 
     if (response == null) {
-	response = {
-	    result : JSON.parse(localStorage.inventoryCache)
-	};
+        response = {
+            result : JSON.parse(localStorage.inventoryCache)
+        };
     } else {
-	localStorage.inventoryCache = JSON.stringify(response.result);
+        localStorage.inventoryCache = JSON.stringify(response.result);
     }
 
     rooms = response.result.rooms;
@@ -531,103 +534,128 @@ function handleInventory(response) {
 
     var inv = cleanInventory(response.result.devices);
     var found;
-    for ( var uuid in inv) {
-	if (inv[uuid].room !== undefined && inv[uuid].room) {
-	    inv[uuid].roomUID = inv[uuid].room;
-	    if (rooms[inv[uuid].room] !== undefined) {
-		inv[uuid].room = rooms[inv[uuid].room].name;
-	    } else {
-		inv[uuid].room = "";
-	    }
+    for ( var uuid in inv)
+    {
+        if (inv[uuid].room !== undefined && inv[uuid].room)
+        {
+            inv[uuid].roomUID = inv[uuid].room;
+            if (rooms[inv[uuid].room] !== undefined)
+            {
+                inv[uuid].room = rooms[inv[uuid].room].name;
+            }
+            else
+            {
+                inv[uuid].room = "";
+            }
+        }
+        else
+        {
+            inv[uuid].room = "";
+        }
 
-	} else {
-	    inv[uuid].room = "";
-	}
-
-	found = false;
-	for ( var i = 0; i < deviceMap.length; i++) {
-	    if (deviceMap[i].uuid === uuid) {
-		// device already exists in deviceMap array. Update its content
-		deviceMap[i].update(inv[uuid], uuid);
-		found = true;
-		break;
-	    }
-	}
-	if (!found) {
-	    deviceMap.push(new device(inv[uuid], uuid));
-	}
+        found = false;
+        for ( var i = 0; i < deviceMap.length; i++)
+        {
+            if (deviceMap[i].uuid === uuid)
+            {
+                // device already exists in deviceMap array. Update its content
+                deviceMap[i].update(inv[uuid], uuid);
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            deviceMap.push(new device(inv[uuid], uuid));
+        }
     }
 
     // Notify global observable about new inventory
     inventory(inv);
 
-    if (deferredInit && !initialized) {
-	deferredInit();
-	initialized = true;
+    if (deferredInit && !initialized)
+    {
+        deferredInit();
+        initialized = true;
     }
 
-    if (!model) {
-	return;
+    if (!model)
+    {
+        return;
     }
 
-    if (model.deviceCount !== undefined) {
-	if (deviceMap.length != model.deviceCount()) {
-	    model.deviceCount(deviceMap.length);
-	}
+    if (model.deviceCount !== undefined)
+    {
+        if (deviceMap.length != model.deviceCount())
+        {
+            model.deviceCount(deviceMap.length);
+        }
     }
 
-    if (model.devices !== undefined) {
-	if (JSON.stringify(deviceMap) != JSON.stringify(model.devices())) {
-	    model.devices(deviceMap);
-	}
+    if (model.devices !== undefined)
+    {
+        if (JSON.stringify(deviceMap) != JSON.stringify(model.devices()))
+        {
+            model.devices(deviceMap);
+        }
     }
 
-    if (model.inventory !== undefined) {
-	if (JSON.stringify(response.result) != JSON.stringify(model.inventory())) {
-	    model.inventory(response.result);
-	}
+    if (model.inventory !== undefined)
+    {
+        if (JSON.stringify(response.result) != JSON.stringify(model.inventory()))
+        {
+            model.inventory(response.result);
+        }
     }
 
-    if (model.rooms !== undefined && model.rooms.slice !== undefined) {
-	/* get uuid into rooms */
-	model.rooms([]);
-	for ( var uuid in rooms) {
-	    var tmp = rooms[uuid];
-	    tmp.uuid = uuid;
-	    tmp.action = ''; // dummy for table
-	    model.rooms.push(tmp);
-	}
+    if (model.rooms !== undefined && model.rooms.slice !== undefined)
+    {
+        /* get uuid into rooms */
+        model.rooms([]);
+        for ( var uuid in rooms)
+        {
+            var tmp = rooms[uuid];
+            tmp.uuid = uuid;
+            tmp.action = ''; // dummy for table
+            model.rooms.push(tmp);
+        }
     }
 
-    if (model.floorplans !== undefined) {
-	/* get uuid into floorplans */
-	var fpList = [];
-	for ( var uuid in floorPlans) {
-	    var tmp = floorPlans[uuid];
-	    tmp.uuid = uuid;
-	    tmp.action = ''; // dummy for table
-	    fpList.push(tmp);
-	}
+    if (model.floorplans !== undefined)
+    {
+        /* get uuid into floorplans */
+        var fpList = [];
+        for ( var uuid in floorPlans)
+        {
+            var tmp = floorPlans[uuid];
+            tmp.uuid = uuid;
+            tmp.action = ''; // dummy for table
+            fpList.push(tmp);
+        }
 
-	if (JSON.stringify(fpList) != JSON.stringify(model.floorplans())) {
-	    model.floorplans(fpList);
-	}
+        if (JSON.stringify(fpList) != JSON.stringify(model.floorplans()))
+        {
+            model.floorplans(fpList);
+        }
     }
 
-    if (model.variables !== undefined) {
-	/* build variable pairs */
-	var varList = [];
-	for ( var key in variables) {
-	    var tmp = {};
-	    tmp.variable = key;
-	    tmp.value = variables[key];
-	    tmp.action = ''; // dummy for table
-	    varList.push(tmp);
-	}
+    if (model.variables !== undefined)
+    {
+        /* build variable pairs */
+        var varList = [];
+        for ( var key in variables)
+        {
+            var tmp = {};
+            tmp.variable = key;
+            tmp.value = variables[key];
+            tmp.action = ''; // dummy for table
+            varList.push(tmp);
+        }
 
-	if (JSON.stringify(varList) != JSON.stringify(model.variables())) {
-	    model.variables(varList);
-	}
+        if (JSON.stringify(varList) != JSON.stringify(model.variables()))
+        {
+            model.variables(varList);
+        }
     }
 }
 
@@ -893,113 +921,131 @@ function datetimeToString(dt) {
  * @param template
  * @param environment
  */
-function doShowDetails(device, template, environment) {
+function doShowDetails(device, template, environment)
+{
     ko.renderTemplate("details/" + template, device, {
-	afterRender : function() {
-	    var dialogWidth = 800;
-	    var dialogHeight = 300;
+        afterRender : function() {
+    	    var dialogWidth = 800;
+            var dialogHeight = 300;
 
-	    if (document.getElementById('commandList')) {
-		showCommandList(document.getElementById('commandList'), device);
-	    }
-
-	    if (device.devicetype == "camera") {
-		dialogHeight = 620;
-		device.getVideoFrame();
-	    }
-
-	    if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype == "multisensor")) {
-            //refresh button
-            $('#get_graph').click(function() {
-                renderGraph(device, document.getElementById('graph')._environment);
-            });
-
-		/* Setup start date */
-		var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
-        var startEl = $('#start_date');
-        startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
-        startEl.datetimepicker({
-            closeOnDateSelect: true,
-            //value: $.datepicker.formatDate('dd.mm.yy', start) + ' 00:00',
-            format: 'd.m.Y H:i',
-            onChangeDateTime: function(dp,$input) {
-                //check date
-                var sd = stringToDatetime($('#start_date').val());
-                var ed = stringToDatetime($('#end_date').val());
-                if( sd.getTime()>ed.getTime() ) {
-                    //invalid date
-                    notif.warning('Specified datetime is invalid');
-                    sd = new Date(ed.getTime() - 24 * 3600 * 1000);
-                    $('#start_date').val( datetimeToString(sd) );
-                }
+            if (document.getElementById('commandList'))
+            {
+                showCommandList(document.getElementById('commandList'), device);
             }
-        });
 
-		/* Setup end date */
-        var endEl = $('#end_date');
-        endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
-        endEl.datetimepicker({
-            closeOnDateSelect: true,
-            format:'d.m.Y H:i',
-            onChangeDateTime: function(dp,$input) {
-                //check date
-                var sd = stringToDatetime($('#start_date').val());
-                var ed = stringToDatetime($('#end_date').val());
-                if( sd.getTime()>ed.getTime() ) {
-                    //invalid date
-                    notif.warning('Specified datetime is invalid');
-                    ed = new Date(sd.getTime() + 24 * 3600 * 1000);
-                    $('#end_date').val( datetimeToString(ed) );
-                }
+            if (device.devicetype == "camera")
+            {
+                dialogHeight = 620;
+                device.getVideoFrame();
             }
-        });
 
+            if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype=="multigraph"))
+            {
+                //refresh button
+                $('#get_graph').click(function() {
+                    renderGraph(device, document.getElementById('graph')._environment);
+                });
+
+                /* Setup start date */
+                var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
+                var startEl = $('#start_date');
+                startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
+                startEl.datetimepicker({
+                    closeOnDateSelect: true,
+                    //value: $.datepicker.formatDate('dd.mm.yy', start) + ' 00:00',
+                    format: 'd.m.Y H:i',
+                    onChangeDateTime: function(dp,$input) {
+                        //check date
+                        var sd = stringToDatetime($('#start_date').val());
+                        var ed = stringToDatetime($('#end_date').val());
+                        if( sd.getTime()>ed.getTime() )
+                        {
+                            //invalid date
+                            notif.warning('Specified datetime is invalid');
+                            sd = new Date(ed.getTime() - 24 * 3600 * 1000);
+                            $('#start_date').val( datetimeToString(sd) );
+                        }
+                    }
+                });
+
+                /* Setup end date */
+                var endEl = $('#end_date');
+                endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
+                endEl.datetimepicker({
+                    closeOnDateSelect: true,
+                    format:'d.m.Y H:i',
+                    onChangeDateTime: function(dp,$input) {
+                        //check date
+                        var sd = stringToDatetime($('#start_date').val());
+                        var ed = stringToDatetime($('#end_date').val());
+                        if( sd.getTime()>ed.getTime() ) {
+                            //invalid date
+                            notif.warning('Specified datetime is invalid');
+                            ed = new Date(sd.getTime() + 24 * 3600 * 1000);
+                            $('#end_date').val( datetimeToString(ed) );
+                        }
+                    }
+                });
+
+                if (device.devicetype == "binarysensor")
+                {
+                    environment = "device.state";
+                }
+                else if (device.devicetype == "multigraph")
+                {
+                    environment = "device.state";
+                }
+
+                renderGraph(device, environment ? environment : device.valueList()[0].name);
+
+                for( var i=0; i<document.getElementsByName("displayType").length; i++ )
+                {
+                    document.getElementsByName("displayType")[i].onchange = function() {
+                        renderGraph(device, environment ? environment : device.valueList()[0].name);
+                    }
+                }
+
+<<<<<<< HEAD
 		if (device.devicetype == "binarysensor") {
 		    environment = "device.state";
 		}
 		if (device.devicetype == "multisensor") {
 		    environment = "none";
 		}
+=======
+                var reset = function()
+                {
+                    if (device !== undefined)
+                        device.reset();
+                };
+>>>>>>> github/develop
 
-		renderGraph(device, environment ? environment : device.valueList()[0].name);
+                dialogWidth = 1000;
+                dialogHeight = 720;
+            }
 
-        for( var i=0; i<document.getElementsByName("displayType").length; i++ )
-        {
-            document.getElementsByName("displayType")[i].onchange = function() {
-		        renderGraph(device, environment ? environment : device.valueList()[0].name);
+            if (document.getElementById("detailsTitle"))
+            {
+                $("#detailsPage").dialog({
+                    title : document.getElementById("detailsTitle").innerHTML,
+                    modal : true,
+                    width : Math.min(dialogWidth, Math.round(screen.width * 0.8)),
+                    height : Math.min(dialogHeight, Math.round(screen.height * 0.8)),
+                    close : function() {
+                        var graphContainer = document.getElementById('graph');
+                        if (graphContainer)
+                        {
+                            graphContainer.parentNode.removeChild(graphContainer);
+                        }
+                    },
+                    open : function() {
+                        $("#detailsPage").css("overflow", "visible");
+                        if (device.dialogopened !== undefined)
+                            device.dialogopened(this);
+                    }
+                });
             }
         }
-
-		var reset = function() {
-		    if (device !== undefined)
-			device.reset();
-		};
-
-		dialogWidth = 1000;
-		dialogHeight = 720;
-	    }
-
-	    if (document.getElementById("detailsTitle")) {
-		$("#detailsPage").dialog({
-		    title : document.getElementById("detailsTitle").innerHTML,
-		    modal : true,
-		    width : Math.min(dialogWidth, Math.round(screen.width * 0.8)),
-		    height : Math.min(dialogHeight, Math.round(screen.height * 0.8)),
-		    close : function() {
-			var graphContainer = document.getElementById('graph');
-			if (graphContainer) {
-			    graphContainer.parentNode.removeChild(graphContainer);
-			}
-		    },
-		    open : function() {
-			$("#detailsPage").css("overflow", "visible");
-			if (device.dialogopened !== undefined)
-			    device.dialogopened(this);
-		    }
-		});
-	    }
-
-	}
     }, document.getElementById("detailsPage"));
 }
 

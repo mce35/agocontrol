@@ -73,7 +73,10 @@ namespace agocontrol {
 			/**
 			 * Changes to Syslog output.
 			 */
-			static void setOutputSyslog(const char *ident, int facility);
+			static void setOutputSyslog(const std::string &ident, int facility);
+
+			static int getFacility(const std::string &facility);
+			static severity_level getLevel(const std::string &level);
 
 		};
 	}

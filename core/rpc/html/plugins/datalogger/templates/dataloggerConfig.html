@@ -1,0 +1,61 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <span id="reallyreset" data-translateable="true">Reset controller (everything will be lost!)</span>
+    </div>
+
+    <h3>Datalogger configuration</h3>
+    <br/>
+
+    <div data-bind="jqTabs:{}">
+        <ul>
+            <li><a href="#tabs-general" data-translateable="true">General</a></li>
+            <li><a href="#tabs-graph" data-translateable="true">Graphs</a></li>
+            <li><a href="#tabs-sql" data-translateable="true">SQL</a></li>
+        </ul>
+
+        <div id="tabs-general">
+        </div>
+
+        <div id="tabs-graph">
+            <fieldset>
+                <legend>Add graph on dashboard</legend>
+                <ul style="list-style-type:none;">
+                    <li>
+                        <span>Select sensors to display on graph</span>:
+                        <select data-bind="options:sensors, optionsText:'name', selectedOptions::selectedSensors" multiple="true" size="6"></select>
+                    </li>
+                    <li class="field">
+                        <span>Number of hours to display on thumb</span>:
+                        <input data-bind="value: multigraphPeriod" class="xnarrow text input" type="text" placeholder="12" />
+                    </li>
+                    <li>
+                        <div class="medium primary pretty btn">
+                            <a data-bind="click: addMultigraph" href="#">Add graph</a>
+                        </div>
+                    </li>
+                </ul>
+            </fieldset>
+
+            <fieldset>
+                <legend>Delete graph</legend>
+                <div class="picker" style="top:14px;">
+                    <select data-bind="options:multigraphs, optionsText:'name', value:selectedMultigraphToDel"></select>
+                </div>
+                <div class="medium primary pretty btn" style="margin-top:14px;">
+                    <a data-bind="click: deleteMultigraph" href="#">Delete graph</a>
+                </div>
+                <br/>
+                <span>Displayed sensors on graph</span>:
+                <ul data-bind="foreach:selectedMultigraphSensors">
+                    <li><span data-bind="text:$data"></span></li>
+                </ul>
+            </fieldset>
+        </div>
+
+        <div id="tabs-purge">
+        </div>
+
+    </div>
+
+    <br/>
+</div>
