@@ -32,7 +32,6 @@ public:
 	void doShutdown() ;
 
 	int appMain();
-
 };
 
 

@@ -21,7 +21,7 @@
 #include <rrd.h>
 #include "base64.h"
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #ifndef DBFILE
 #define DBFILE "datalogger.db"
@@ -35,7 +35,22 @@ using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
 
-AgoConnection *agoConnection;
+using namespace agocontrol;
+
+class AgoDataLogger: public AgoApp {
+
+private:
+	void updateInventory();
+
+public:
+	AGOAPP_CONSTRUCTOR(AgoDataLogger);
+
+	void setupApp();
+
+	qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+	void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+};
+
 sqlite3 *db;
 qpid::types::Variant::Map inventory;
 qpid::types::Variant::Map units;
@@ -56,7 +71,7 @@ std::string uuidToName(std::string uuid) {
 /**
  * Update inventory
  */
-void updateInventory()
+void AgoDataLogger::updateInventory()
 {
     bool unitsLoaded = false;
 
@@ -808,7 +823,7 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
 /**
  * Main event handler
  */
-void eventHandler(std::string subject, qpid::types::Variant::Map content) {
+void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map content) {
     if( subject!="" && !content["uuid"].isVoid() )
     {
         if( enableSql )
@@ -919,7 +934,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
     result["result"] = data;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (internalid == "dataloggercontroller")
@@ -1127,14 +1142,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
-
+void AgoDataLogger::setupApp() {
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     int rc = sqlite3_open(dbpath.c_str(), &db);
     if( rc != SQLITE_OK){
-        AGO_ERROR() << "Can't open database: " << sqlite3_errmsg(db);
+        AGO_ERROR() << "Can't open database " << dbpath.string() << ": " << sqlite3_errmsg(db);
         sqlite3_close(db);
-        return 1;
+        throw StartupError();
     }
 
     list<string> queries;
@@ -1143,10 +1157,7 @@ int main(int argc, char **argv) {
     queries.push_back("CREATE INDEX uuid_position_idx ON position(uuid)");
     createTableIfNotExist("position", queries);
 
-    agoConnection = new AgoConnection("datalogger");	
     agoConnection->addDevice("dataloggercontroller", "dataloggercontroller");
-    agoConnection->addHandler(commandHandler);
-    agoConnection->addEventHandler(eventHandler);
 
     updateInventory();
 
@@ -1183,7 +1194,6 @@ int main(int argc, char **argv) {
         devicemap["multigraphs"] = devices;
         variantMapToJSONFile(devicemap, dmf);
     }
-
-    agoConnection->run();
-    return 0;
 }
+
+AGOAPP_ENTRY_POINT(AgoDataLogger);
