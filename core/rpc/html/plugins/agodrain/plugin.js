@@ -9,8 +9,8 @@ function agodrainPlugin() {
     var _originalHandler = handleEvent;
     var subDisplayed = false;
 
-    this.displayEvent = function(response) {
-        if (response.error) {
+    this.displayEvent = function(requestSucceed, response) {
+        if (!requestSucceed) {
             return;
         } else {
             if (response.result) { 
