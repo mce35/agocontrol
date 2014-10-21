@@ -648,14 +648,27 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
     else if( datas.size()==1 )
     {
         //single graph
-        //alloc memory
-        num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
-        params = (char**)malloc(sizeof(char*) * num_params);
         data = datas.front().asMap();
-    
-        //add graph parameters
-        addDefaultParameters(start, end, data["vertical_unit"], 850, 300, params, &index);
-        addSingleGraphParameters(data, params, &index);
+        if( thumbDuration<=0 )
+        {
+            //alloc memory
+            num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
+            params = (char**)malloc(sizeof(char*) * num_params);
+        
+            //add graph parameters
+            addDefaultParameters(start, end, data["vertical_unit"], 850, 300, params, &index);
+            addSingleGraphParameters(data, params, &index);
+        }
+        else
+        {
+            //alloc memory
+            num_params = 2 * datas.size() + 13;
+            params = (char**)malloc(sizeof(char*) * num_params);
+
+            //add graph parameters
+            addDefaultThumbParameters(thumbDuration, 250, 40, params, &index);
+            addThumbGraphParameters(data, params, &index);
+        }
     }
     else 
     {
@@ -990,7 +1003,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 }
 
                 //updateInventory();
-
+                
                 if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
                 {
                     returnval["error"] = 0;
