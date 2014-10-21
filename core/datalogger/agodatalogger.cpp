@@ -749,8 +749,6 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
             }
         }
     }
-    //else if( subject==
-    //updateInventory();
 }
 
 /**
@@ -934,7 +932,8 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
     result["result"] = data;
 }
 
-qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content)
+{
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (internalid == "dataloggercontroller")
@@ -989,6 +988,8 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                         uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
                     }
                 }
+
+                //updateInventory();
 
                 if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
                 {
@@ -1193,6 +1194,16 @@ void AgoDataLogger::setupApp() {
         qpid::types::Variant::Map devices;
         devicemap["multigraphs"] = devices;
         variantMapToJSONFile(devicemap, dmf);
+    }
+
+    //register existing devices
+    AGO_INFO() << "Register existing multigraphs:";
+    qpid::types::Variant::Map multigraphs = devicemap["multigraphs"].asMap();
+    for( qpid::types::Variant::Map::const_iterator it=multigraphs.begin(); it!=multigraphs.end(); it++ )
+    {
+        std::string internalid = (std::string)it->first;
+        AGO_INFO() << " - " << internalid;
+        agoConnection->addDevice(internalid.c_str(), "multigraph");
     }
 }
 
