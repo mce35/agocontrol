@@ -1218,6 +1218,9 @@ void AgoDataLogger::setupApp() {
         AGO_INFO() << " - " << internalid;
         agoConnection->addDevice(internalid.c_str(), "multigraph");
     }
+
+	 addEventHandler();
+	 addCommandHandler();
 }
 
 AGOAPP_ENTRY_POINT(AgoDataLogger);

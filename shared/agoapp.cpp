@@ -80,7 +80,13 @@ void AgoApp::setupLogging() {
 
 void AgoApp::setupAgoConnection() {
 	agoConnection = new AgoConnection(appShortName.c_str());
+}
+
+void AgoApp::addCommandHandler() {
 	agoConnection->addHandler(boost::bind(&AgoApp::commandHandler, this, _1));
+}
+
+void AgoApp::addEventHandler() {
 	agoConnection->addEventHandler(boost::bind(&AgoApp::eventHandler, this, _1, _2));
 }
 

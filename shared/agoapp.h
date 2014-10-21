@@ -68,6 +68,14 @@ namespace agocontrol {
 
 		bool isExitSignaled() { return exit_signaled; }
 
+		/* Shortcut to register the commandHandler with agoConnection.
+		 * Should be called from setupApp */
+		void addCommandHandler();
+
+		/* Shortcut to register the eventHandler with agoConnection.
+		 * Should be called from setupApp */
+		void addEventHandler();
+
 		/* Command handler registered with the agoConncetion; override! */
 		virtual qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 			return qpid::types::Variant::Map();
