@@ -180,12 +180,15 @@ int AgoApp::main(int argc, const char **argv) {
 
 	int ret = this->appMain();
 
+	AGO_DEBUG() << "Shutting down " << appName;
+
+	cleanup();
+
 	if(ret == 0)
 		AGO_INFO() << "Exiting " << appName << "(code " << ret << ")";
 	else
 		AGO_WARNING() << "Exiting " << appName << "(code " << ret << ")";
 
-	cleanup();
 	return ret;
 }
 

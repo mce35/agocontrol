@@ -24,7 +24,8 @@
 
 
 /* This helps with a class constructor */
-#define AGOAPP_CONSTRUCTOR(class_name) class_name() : AgoApp(#class_name) {};
+#define AGOAPP_CONSTRUCTOR_HEAD(class_name) class_name() : AgoApp(#class_name)
+#define AGOAPP_CONSTRUCTOR(class_name) AGOAPP_CONSTRUCTOR_HEAD(class_name) {};
 
 /* This defines the applications main() function */
 #define AGOAPP_ENTRY_POINT(app_class_name) \
