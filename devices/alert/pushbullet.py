@@ -52,7 +52,11 @@ class PushBullet():
         return requests.post(url, data=payload, files=files)
         
     def getDevices(self):
-        return self._request(HOST + "/devices", None, False)
+        r = self._request(HOST + "/devices", None, False)
+        if r.has_key('devices'):
+            return r['devices']
+        else:
+            return []
 
     def pushNote(self, device, title, body):
         data = {'type'       : 'note',
