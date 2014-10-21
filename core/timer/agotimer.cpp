@@ -3,38 +3,54 @@
 #include <time.h>
 #include <pthread.h>
 
-#include <syslog.h>
-
 #include <cstdlib>
 #include <iostream>
 
-#include <sstream>
+#include <boost/thread.hpp>
 
 #include "sunrise.h"
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
 using namespace std;
-
-
-using std::stringstream;
 using std::string;
-
-int sunsetoffset=0;
-int sunriseoffset=0;
-
-AgoConnection *agoConnection;
-std::string agocontroller;
 
 typedef struct { float lat; float lon;} latlon_struct;
 
-void *timer(void *param) {
+class AgoTimer: public AgoApp {
+
+private:
+	std::string agocontroller;
+
+	int sunsetoffset;
+	int sunriseoffset;
+
+	latlon_struct latlon;
+
+	boost::thread timerThread;
+	boost::thread suntimerThread;
+
+	void timer() ;
+	void suntimer() ;
+
+public:
+	AGOAPP_CONSTRUCTOR(AgoTimer);
+protected:
+
+	void setupApp();
+	void cleanupApp();
+};
+
+
+
+void AgoTimer::timer() {
 	time_t now;
 	struct tm *tms;
 	int waitsec;
-	while (1) {
+	AGO_DEBUG() << "Timer thread started";
+	while (!isExitSignaled()) {
 		Variant::Map content;
 		now = time(NULL);
 		tms = localtime(&now);
@@ -59,19 +75,19 @@ void *timer(void *param) {
 		agoConnection->sendMessage("event.environment.timechanged", content);
 		sleep(2);
 	}
+	AGO_DEBUG() << "Timer thread exited";
 }
 
-void *suntimer(void *param) {
+void AgoTimer::suntimer() {
 	time_t seconds;
 	time_t sunrise, sunset,sunrise_tomorrow,sunset_tomorrow;
-	latlon_struct *latlon;
 
 
-	latlon = (latlon_struct*)param;
-	float lat = latlon->lat;
-	float lon = latlon->lon;
+	float lat = latlon.lat;
+	float lon = latlon.lon;
 
-	while(1) {
+	AGO_DEBUG() << "Suntimer thread started";
+	while(!isExitSignaled()) {
 		Variant::Map content;
 		Variant::Map setvariable;
 		setvariable["uuid"] = agocontroller;
@@ -79,6 +95,11 @@ void *suntimer(void *param) {
 		setvariable["variable"] = "isDaytime";
 		std::string subject;
 		seconds = time(NULL);
+		int left;
+#define VERIFYINGSLEEP(delay) if((left=sleep((delay))) > 0) { \
+	AGO_INFO() << "agotimer sleep aborted, "<<left<<" seconds left. relading loop"; \
+	continue;\
+ }
 		if (GetSunriseSunset(sunrise,sunset,sunrise_tomorrow,sunset_tomorrow,lat,lon)) {
 			AGO_DEBUG() << "Now:" << seconds << " Sunrise: " << sunrise << " Sunset: " << sunset << " SunriseT: " << sunrise_tomorrow << " SunsetT: " << sunrise_tomorrow;
 			if (seconds < (sunrise + sunriseoffset)) {
@@ -88,7 +109,7 @@ void *suntimer(void *param) {
 				agoConnection->sendMessage("", setvariable);
 				// now wait for sunrise
 				AGO_DEBUG() << "sunrise at: " << asctime(localtime(&sunrise)) << " - minutes to wait for sunrise: " << (sunrise-seconds+sunriseoffset)/60;
-				sleep(sunrise-seconds + sunriseoffset);
+				VERIFYINGSLEEP(sunrise-seconds + sunriseoffset);
 				AGO_INFO() << "sending sunrise event";
 				agoConnection->sendMessage("event.environment.sunrise", content);
 			} else if (seconds > (sunset + sunsetoffset)) {
@@ -98,7 +119,7 @@ void *suntimer(void *param) {
 					setvariable["value"] = false;
 					agoConnection->sendMessage("", setvariable);
 					AGO_DEBUG() << "sunrise at: " << asctime(localtime(&sunrise_tomorrow)) <<  " - minutes to wait for sunrise: " << (sunrise_tomorrow-seconds+sunriseoffset)/60;
-					sleep(sunrise_tomorrow-seconds + sunriseoffset);
+					VERIFYINGSLEEP(sunrise_tomorrow-seconds + sunriseoffset);
 					AGO_INFO() << "sending sunrise event";
 					agoConnection->sendMessage("event.environment.sunrise", content);
 				}
@@ -106,7 +127,7 @@ void *suntimer(void *param) {
 				setvariable["value"] = true;
 				agoConnection->sendMessage("", setvariable);
 				AGO_DEBUG() << "sunset at: " << asctime(localtime(&sunset)) << " - minutes to wait for sunset: " << (sunset-seconds+sunsetoffset)/60;
-				sleep(sunset-seconds+sunsetoffset);
+				VERIFYINGSLEEP(sunset-seconds+sunsetoffset);
 				AGO_INFO() << "sending sunset event";
 				agoConnection->sendMessage("event.environment.sunset", content);
 			}
@@ -115,15 +136,13 @@ void *suntimer(void *param) {
 			AGO_FATAL() << "cannot determine sunrise/sunset time";
 			sleep(60);
 		}
+#undef VERIFYINGSLEEP
 	}
+
+	AGO_DEBUG() << "Suntimer thread exited";
 }
 
-int main(int argc, char** argv) {
-	latlon_struct latlon;
-
-	openlog(NULL, LOG_PID & LOG_CONS, LOG_DAEMON);
-	agoConnection = new AgoConnection("timer");
-
+void AgoTimer::setupApp() {
 	agocontroller = agoConnection->getAgocontroller();
 
 	latlon.lat=atof(getConfigOption("system", "lat", "47.07").c_str());
@@ -131,12 +150,18 @@ int main(int argc, char** argv) {
 	sunriseoffset=atoi(getConfigOption("system", "sunriseoffset", "0").c_str());
 	sunsetoffset=atoi(getConfigOption("system", "sunsetoffset", "0").c_str());
 
-	static pthread_t suntimerThread;
-	pthread_create(&suntimerThread,NULL,suntimer,&latlon);
-
-	static pthread_t timerThread;
-	pthread_create(&timerThread,NULL,timer,NULL);
-
-	agoConnection->run();	
-
+	timerThread = boost::thread(boost::bind(&AgoTimer::suntimer, this));
+	suntimerThread = boost::thread(boost::bind(&AgoTimer::timer, this));
 }
+
+void AgoTimer::cleanupApp() {
+	/*
+	 * TODO: implement proper timers...
+	AGO_DEBUG() << "Waiting for threads to exit...";
+	timerThread.join();
+	suntimerThread.join();
+	AGO_DEBUG() << "Threads gone";
+	*/
+}
+
+AGOAPP_ENTRY_POINT(AgoTimer);
