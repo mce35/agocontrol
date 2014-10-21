@@ -851,24 +851,24 @@ bool agocontrol::AgoConnection::loadUuidMap() {
 }
 
 bool agocontrol::AgoConnection::addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map)) {
-	commandHandler = boost::bind(handler, _1);
+	addHandler(boost::bind(handler, _1));
 	return true;
 }
 
 bool agocontrol::AgoConnection::addHandler(boost::function<qpid::types::Variant::Map (qpid::types::Variant::Map)> handler)
 {
-	this->commandHandler = commandHandler;
+	commandHandler = handler;
 	return true;
 }
 
 bool agocontrol::AgoConnection::addEventHandler(void (*handler)(std::string, qpid::types::Variant::Map)) {
-	eventHandler = boost::bind(handler, _1, _2);
+	addEventHandler(boost::bind(handler, _1, _2));
 	return true;
 }
 
-bool agocontrol::AgoConnection::addEventHandler(boost::function<void (std::string, qpid::types::Variant::Map)> eventHandler)
+bool agocontrol::AgoConnection::addEventHandler(boost::function<void (std::string, qpid::types::Variant::Map)> handler)
 {
-	this->eventHandler = eventHandler;
+	eventHandler = handler;
 	return true;
 }
 
