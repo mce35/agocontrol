@@ -162,7 +162,7 @@ Description: gc100 interface support
 
 Package: agocontrol-alert
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-xmpp, python-tweepy, python-simplejson 
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-xmpp, python-tweepy, python-simplejson, python-requests
 Description: agocontrol alerts
 
 Package: agocontrol-squeezebox
