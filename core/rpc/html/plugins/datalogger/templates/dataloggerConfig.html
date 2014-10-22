@@ -10,10 +10,29 @@
         <ul>
             <li><a href="#tabs-general" data-translateable="true">General</a></li>
             <li><a href="#tabs-graph" data-translateable="true">Graphs</a></li>
-            <li><a href="#tabs-sql" data-translateable="true">SQL</a></li>
+            <li><a href="#tabs-database" data-translateable="true">SQL</a></li>
         </ul>
 
         <div id="tabs-general">
+            <ul style="list-style-type:none; padding-left:0px;">
+                <li>
+                    <input type="checkbox" data-bind="checked: dataLogging" />
+                    <span>Activate SQL logging for all sensors except GPS sensors (plots+list)</span>
+                </li>
+                <li>
+                    <input type="checkbox" data-bind="checked: gpsLogging" />
+                    <span>Activate SQL logging for GPS sensors only (map)</span>
+                </li>
+                <li>
+                    <input type="checkbox" data-bind="checked: rrdLogging" />
+                    <span>Activate RRDTool logging (graph)</span>
+                </li>
+                <li>
+                    <div class="medium primary pretty btn">
+                        <a data-bind="click: saveEnabledModules" href="#">Save changes</a>
+                    </div>
+                </li>
+            </ul>
         </div>
 
         <div id="tabs-graph">
@@ -52,7 +71,49 @@
             </fieldset>
         </div>
 
-        <div id="tabs-purge">
+        <div id="tabs-database">
+            <fieldset>
+                <legend>Database infos</legend>
+                <ul style="list-style-type:none; padding-left:0px;">
+                    <li>
+                        <span>Database size</span> : <span data-bind="text:databaseSize"></span>
+                    </li>
+                </ul>
+            </fieldset>
+
+            <fieldset>
+                <legend>Data table infos</legend>
+                <ul style="list-style-type:none; padding-left:0px;">
+                    <li>
+                        <span>Number of records</span> : <span data-bind="text:dataCount"></span>
+                    </li>
+                    <li>
+                        <span>Records timerange</span> : <span data-bind="text:dataStart"></span> - <span data-bind="text:dataEnd"></span>
+                    </li>
+                    <li>
+                        <div class="medium primary pretty btn">
+                            <a data-bind="click: purgeDataTable" href="#">Purge all data</a>
+                        </div>
+                    </li>
+                </ul>
+            </fieldset>
+
+            <fieldset>
+                <legend>Position table infos</legend>
+                <ul style="list-style-type:none; padding-left:0px;">
+                    <li>
+                        <span>Number of records</span> : <span data-bind="text:positionCount"></span>
+                    </li>
+                    <li>
+                        <span>Records timerange</span> : <span data-bind="text:positionStart"></span> - <span data-bind="text:positionEnd"></span>
+                    </li>
+                    <li>
+                        <div class="medium primary pretty btn">
+                            <a data-bind="click: purgePositionTable" href="#">Purge all positions</a>
+                        </div>
+                    </li>
+                </ul>
+            </fieldset>
         </div>
 
     </div>
