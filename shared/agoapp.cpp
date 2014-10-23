@@ -36,15 +36,19 @@ AgoApp::AgoApp(const char *appName_)
 
 }
 
-AgoApp::~AgoApp() {
-	cleanup();
-}
-
 void AgoApp::setup() {
 	setupLogging();
 	setupAgoConnection();
 	setupSignals();
 	setupApp();
+}
+
+void AgoApp::cleanup() {
+	cleanupApp();
+	cleanupAgoConnection();
+
+	// Global signal mapper
+	app_instance = NULL;
 }
 
 void AgoApp::setupLogging() {
@@ -78,8 +82,17 @@ void AgoApp::setupLogging() {
 	}
 }
 
+
 void AgoApp::setupAgoConnection() {
 	agoConnection = new AgoConnection(appShortName.c_str());
+}
+
+void AgoApp::cleanupAgoConnection() {
+	if(agoConnection == NULL)
+		return;
+
+	delete agoConnection;
+	agoConnection = NULL;
 }
 
 void AgoApp::addCommandHandler() {
@@ -89,6 +102,8 @@ void AgoApp::addCommandHandler() {
 void AgoApp::addEventHandler() {
 	agoConnection->addEventHandler(boost::bind(&AgoApp::eventHandler, this, _1, _2));
 }
+
+
 
 
 void AgoApp::setupSignals() {
@@ -138,21 +153,11 @@ void AgoApp::doShutdown() {
 	}
 }
 
-void AgoApp::cleanup() {
-	cleanupAgoConnection();
-	cleanupApp();
 
-	// Global signal mapper
-	app_instance = NULL;
-}
 
-void AgoApp::cleanupAgoConnection() {
-	if(agoConnection == NULL)
-		return;
 
-	delete agoConnection;
-	agoConnection = NULL;
-}
+
+
 
 
 int AgoApp::appMain() {

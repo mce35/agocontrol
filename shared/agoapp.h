@@ -52,12 +52,13 @@ namespace agocontrol {
 		/* Setup will be called prior to appMain being called. This
 		 * normally sets up logging, an AgoConnection, signal handling,
 		 * and finally any app specific setup (setupApp).
+		 *
+		 * Please keep setupXX() functions in the order called!
 		 */
 		virtual void setup();
 		void setupLogging();
 		void setupAgoConnection();
 		void setupSignals();
-
 		/* App specific init can be done in this */
 		virtual void setupApp() { };
 
@@ -95,7 +96,7 @@ namespace agocontrol {
 
 	public:
 		AgoApp(const char *appName);
-		~AgoApp();
+		virtual ~AgoApp() {} ;
 
 		/**
 		 * Main method, call this from application main entry point (generally this
