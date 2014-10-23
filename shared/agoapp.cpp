@@ -1,7 +1,6 @@
 #include <signal.h>
 #include <stdexcept>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/thread.hpp>
 
 #include "agoapp.h"
 
@@ -41,11 +40,13 @@ void AgoApp::setup() {
 	setupAgoConnection();
 	setupSignals();
 	setupApp();
+	setupIoThread();
 }
 
 void AgoApp::cleanup() {
 	cleanupApp();
 	cleanupAgoConnection();
+	cleanupIoThread();
 
 	// Global signal mapper
 	app_instance = NULL;
@@ -155,7 +156,40 @@ void AgoApp::doShutdown() {
 
 
 
+boost::asio::io_service& AgoApp::ioService() {
+	if(!ioWork.get()) {
+		// Enqueue work on the IO service to indicate we want it running
+		ioWork = std::auto_ptr<boost::asio::io_service::work>(
+				new boost::asio::io_service::work(ioService_)
+			);
+	}
 
+	return ioService_;
+}
+
+void AgoApp::setupIoThread() {
+	if(!ioWork.get()) {
+		// No work job enqueued, skipping
+		AGO_TRACE() << "Skipping IO thread, nothing scheduled";
+		return;
+	}
+
+	// This thread will run until we're out of work.
+	AGO_TRACE() << "Starting IO thread";
+	ioThread = boost::thread(boost::bind(&boost::asio::io_service::run, &ioService_));
+}
+
+void AgoApp::cleanupIoThread(){
+	if(!ioThread.joinable()) {
+		AGO_TRACE() << "No IO thread alive";
+		return;
+	}
+
+	AGO_TRACE() << "Resetting work & joining IO thread, waiting for it to exit";
+	ioWork.reset();
+	ioThread.join();
+	AGO_TRACE() << "IO thread dead";
+}
 
 
 

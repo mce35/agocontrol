@@ -2,6 +2,8 @@
 #define AGOAPP_H
 
 #include "agoclient.h"
+#include <boost/asio/io_service.hpp>
+#include <boost/thread.hpp>
 
 /**
  * Provides boilerplate code for writing an AGO application.
@@ -43,11 +45,25 @@ namespace agocontrol {
 		std::string appShortName;
 
 		bool exit_signaled;
+		boost::thread ioThread;
+		boost::asio::io_service ioService_;
+		std::auto_ptr<boost::asio::io_service::work> ioWork;
+
 
 		void signalExit();
 
 	protected:
 		AgoConnection *agoConnection;
+
+		/* Obtain a reference to the ioService for async operations.
+		 *
+		 * By doing this, we also tell AgoApp base that we want to have an IO
+		 * thread running for the duration of the program.
+		 *
+		 * If this is never called during setup() phase, we will not start the IO thread.
+		 * However, if called at least once, we can call it whenever again later.
+		 */
+		boost::asio::io_service& ioService();
 
 		/* Setup will be called prior to appMain being called. This
 		 * normally sets up logging, an AgoConnection, signal handling,
@@ -61,12 +77,14 @@ namespace agocontrol {
 		void setupSignals();
 		/* App specific init can be done in this */
 		virtual void setupApp() { };
+		void setupIoThread();
 
 		/* After appMain has returned, we will call cleanup to release
 		 * any resources */
 		void cleanup();
 		void cleanupAgoConnection();
 		virtual void cleanupApp() { };
+		void cleanupIoThread();
 
 		bool isExitSignaled() { return exit_signaled; }
 
