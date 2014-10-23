@@ -7,6 +7,13 @@
 #include <iostream>
 
 #include <boost/thread.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include "boost/date_time/local_time_adjustor.hpp"
+#include "boost/date_time/c_local_time_adjustor.hpp"
+
+
 
 #include "sunrise.h"
 #include "agoapp.h"
@@ -17,7 +24,21 @@ using namespace agocontrol;
 using namespace std;
 using std::string;
 
+namespace pt = boost::posix_time;
+namespace greg = boost::gregorian;
+
+
 typedef struct { float lat; float lon;} latlon_struct;
+
+typedef enum {
+	UNKNOWN, SUNRISE, SUNSET
+} sunstate_t;
+
+typedef struct {
+	sunstate_t next_state;
+	time_t next_at;
+} sunevent_t;
+
 
 class AgoTimer: public AgoApp {
 
@@ -29,117 +50,173 @@ private:
 
 	latlon_struct latlon;
 
-	boost::thread timerThread;
-	boost::thread suntimerThread;
+	boost::asio::deadline_timer periodicTimer;
+	void clocktimer(const boost::system::error_code& error) ;
 
-	void timer() ;
-	void suntimer() ;
+	boost::asio::deadline_timer sunriseTimer;
+	sunevent_t next_sunevent();
+	void suntimer(const boost::system::error_code& error, sunstate_t new_state) ;
 
 public:
-	AGOAPP_CONSTRUCTOR(AgoTimer);
+	AGOAPP_CONSTRUCTOR_HEAD(AgoTimer)
+		, periodicTimer(ioService())
+		, sunriseTimer(ioService())
+	{}
+
 protected:
 
 	void setupApp();
 	void cleanupApp();
 };
 
+typedef boost::date_time::c_local_adjustor<pt::ptime> local_adj;
+#define TIME_SIMPLE_LOCAL_STRING(pTime) \
+	(pt::to_simple_string(local_adj::utc_to_local((pTime))))
 
+#define TIME_T_SIMPLE_LOCAL_STRING(tTime) \
+	TIME_SIMPLE_LOCAL_STRING(pt::from_time_t((tTime)))
 
-void AgoTimer::timer() {
-	time_t now;
-	struct tm *tms;
-	int waitsec;
-	AGO_DEBUG() << "Timer thread started";
-	while (!isExitSignaled()) {
-		Variant::Map content;
-		now = time(NULL);
-		tms = localtime(&now);
-		waitsec = 60-tms->tm_sec;
-		if (waitsec == 60) {
-			// just hit the full minute
-			//printf("MINUTE %i:%i\n",tms->tm_min,tms->tm_sec);
-		} else {
-			sleep(waitsec);
-			now = time(NULL);
-			tms = localtime(&now);
-			// printf("MINUTE %i:%i\n",tms->tm_min,tms->tm_sec);
-		}
-		content["minute"]=tms->tm_min;
-		content["second"]=tms->tm_sec;
-		content["hour"]=tms->tm_hour;
-		content["month"]=tms->tm_mon+1;
-		content["day"]=tms->tm_mday;
-		content["year"]=tms->tm_year+1900;
-		content["weekday"]= tms->tm_wday == 0 ? 7 : tms->tm_wday;
-		content["yday"]=tms->tm_yday+1;
-		agoConnection->sendMessage("event.environment.timechanged", content);
-		sleep(2);
+void AgoTimer::clocktimer(const boost::system::error_code& error) {
+	if(error && error != boost::asio::error::not_connected) {
+		return;
 	}
-	AGO_DEBUG() << "Timer thread exited";
+
+	// There are boost methods to go from utc->local, but not other way arround
+	pt::ptime now = pt::second_clock::universal_time();
+	pt::ptime now_local = local_adj::utc_to_local(now);
+
+	pt::time_duration t = now_local.time_of_day();
+	greg::date d = now_local.date();
+
+	if(!error) {
+		AGO_DEBUG() << "Distributing clock: " << pt::to_simple_string(now_local);
+
+		Variant::Map content;
+		content["minute"]=t.minutes();
+		content["second"]=t.seconds();
+		content["hour"]=t.hours();
+
+
+		content["month"] = d.month();
+		content["day"]= d.day();
+		content["year"]= d.year();
+		content["weekday"]= d.day_of_week().as_number() == 0 ? 7 : d.day_of_week().as_number()-1;
+		content["yday"]=d.day_of_year();
+
+		agoConnection->sendMessage("event.environment.timechanged", content);
+	}
+	else
+		AGO_DEBUG() << "Skipping clock distr, was just inited";
+
+	pt::ptime next = now;
+	next+= pt::seconds(60 - t.seconds());
+	AGO_TRACE() << "Waiting for next periodic at "
+		<< TIME_SIMPLE_LOCAL_STRING(next);
+
+	periodicTimer.expires_at(next);
+	periodicTimer.async_wait(boost::bind(&AgoTimer::clocktimer, this, _1));
 }
 
-void AgoTimer::suntimer() {
-	time_t seconds;
-	time_t sunrise, sunset,sunrise_tomorrow,sunset_tomorrow;
 
+/* Find out the next sunset/sunrise */
+sunevent_t AgoTimer::next_sunevent() {
+	sunevent_t evt;
 
-	float lat = latlon.lat;
-	float lon = latlon.lon;
-
-	AGO_DEBUG() << "Suntimer thread started";
-	while(!isExitSignaled()) {
-		Variant::Map content;
-		Variant::Map setvariable;
-		setvariable["uuid"] = agocontroller;
-		setvariable["command"] = "setvariable";
-		setvariable["variable"] = "isDaytime";
-		std::string subject;
-		seconds = time(NULL);
-		int left;
-#define VERIFYINGSLEEP(delay) if((left=sleep((delay))) > 0) { \
-	AGO_INFO() << "agotimer sleep aborted, "<<left<<" seconds left. relading loop"; \
-	continue;\
- }
-		if (GetSunriseSunset(sunrise,sunset,sunrise_tomorrow,sunset_tomorrow,lat,lon)) {
-			AGO_DEBUG() << "Now:" << seconds << " Sunrise: " << sunrise << " Sunset: " << sunset << " SunriseT: " << sunrise_tomorrow << " SunsetT: " << sunrise_tomorrow;
-			if (seconds < (sunrise + sunriseoffset)) {
-				// it is night, we're waiting for the sunrise
-				// set global variable
-				setvariable["value"] = false;
-				agoConnection->sendMessage("", setvariable);
-				// now wait for sunrise
-				AGO_DEBUG() << "sunrise at: " << asctime(localtime(&sunrise)) << " - minutes to wait for sunrise: " << (sunrise-seconds+sunriseoffset)/60;
-				VERIFYINGSLEEP(sunrise-seconds + sunriseoffset);
-				AGO_INFO() << "sending sunrise event";
-				agoConnection->sendMessage("event.environment.sunrise", content);
-			} else if (seconds > (sunset + sunsetoffset)) {
-				if (seconds > (sunrise_tomorrow+sunriseoffset)) {
-					AGO_TRACE() << "sunrise_tomorrow was calculated wrong, recalculating";
-				} else {
-					setvariable["value"] = false;
-					agoConnection->sendMessage("", setvariable);
-					AGO_DEBUG() << "sunrise at: " << asctime(localtime(&sunrise_tomorrow)) <<  " - minutes to wait for sunrise: " << (sunrise_tomorrow-seconds+sunriseoffset)/60;
-					VERIFYINGSLEEP(sunrise_tomorrow-seconds + sunriseoffset);
-					AGO_INFO() << "sending sunrise event";
-					agoConnection->sendMessage("event.environment.sunrise", content);
-				}
-			} else {
-				setvariable["value"] = true;
-				agoConnection->sendMessage("", setvariable);
-				AGO_DEBUG() << "sunset at: " << asctime(localtime(&sunset)) << " - minutes to wait for sunset: " << (sunset-seconds+sunsetoffset)/60;
-				VERIFYINGSLEEP(sunset-seconds+sunsetoffset);
-				AGO_INFO() << "sending sunset event";
-				agoConnection->sendMessage("event.environment.sunset", content);
-			}
-			sleep(120);
-		} else {
-			AGO_FATAL() << "cannot determine sunrise/sunset time";
-			sleep(60);
-		}
-#undef VERIFYINGSLEEP
+	// All sunrise/sunset times are in UTC!
+	time_t sunrise, sunset, sunrise_tomorrow, sunset_tomorrow;
+	time_t now = time(NULL);
+	if (!GetSunriseSunset(sunrise, sunset,
+				sunrise_tomorrow, sunset_tomorrow,
+				latlon.lat, latlon.lon)) {
+		AGO_ERROR() << "Failed to acquire sunrise/sunset data";
+		evt.next_state = UNKNOWN;
+		return evt;
 	}
 
-	AGO_DEBUG() << "Suntimer thread exited";
+	AGO_DEBUG() << "Now: "
+		<< TIME_T_SIMPLE_LOCAL_STRING(now)
+		<< " Sunrise: "
+		<< TIME_T_SIMPLE_LOCAL_STRING(sunrise)
+		<< " ("<< sunriseoffset << "s offset)"
+		<< " Sunset: "
+		<< TIME_T_SIMPLE_LOCAL_STRING(sunset)
+		<< " ("<< sunsetoffset << "s offset)"
+
+		<< " SunriseT: "
+		<< TIME_T_SIMPLE_LOCAL_STRING(sunrise_tomorrow)
+		<< " SunsetT: "
+		<< TIME_T_SIMPLE_LOCAL_STRING(sunset_tomorrow);
+
+	if (now < (sunrise + sunriseoffset)) {
+		evt.next_state = SUNRISE;
+		evt.next_at = sunrise + sunriseoffset;
+	} else if (now > (sunset + sunsetoffset)) {
+		if (now < (sunrise_tomorrow+sunriseoffset)) {
+			evt.next_state = SUNRISE;
+			evt.next_at = sunrise_tomorrow + sunriseoffset;
+		}else{
+			AGO_ERROR() << "illegal sunrise_tomorrow, has already occured ("
+				<< TIME_T_SIMPLE_LOCAL_STRING(sunrise_tomorrow) << "+"
+				<< sunriseoffset << "s, now = "
+				<< TIME_T_SIMPLE_LOCAL_STRING(now);
+
+			evt.next_state = UNKNOWN;
+		}
+	} else {
+		evt.next_state = SUNSET;
+		evt.next_at = sunset - sunsetoffset;
+	}
+	return evt;
+}
+
+/* Act on sun changes.
+ * Initially called with new_state == unknown.
+ * This will update variable isDaytime, then we schedule
+ * timer to kick us alive again at next change at which time we send
+ * the updated value.
+ */
+void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_state) {
+	if(error) {
+		// Aborted?
+		return;
+	}
+
+	AGO_TRACE() << "suntimer triggered with new_state=" << new_state;
+
+	sunevent_t sun = next_sunevent();
+	if(sun.next_state == UNKNOWN)
+	{
+		// Retry in 60s
+		AGO_DEBUG() << "Retrying in 60s";
+		sunriseTimer.expires_from_now(pt::seconds(60));
+		sunriseTimer.async_wait(boost::bind(&AgoTimer::suntimer, this, _1, UNKNOWN));
+		return;
+	}
+
+	Variant::Map empty;
+
+	// first, update variable with current state
+	// Boolean, isDaytime = true if sun is about to set
+	Variant isDaytime = (sun.next_state == SUNSET);
+
+	AGO_TRACE() << "Setting isDaytime = " << isDaytime;
+	agoConnection->setGlobalVariable("isDaytime", isDaytime);
+
+	if(new_state == SUNRISE) {
+		agoConnection->sendMessage("event.environment.sunrise", empty);
+	}
+	else if(new_state == SUNSET) {
+		agoConnection->sendMessage("event.environment.sunset", empty);
+	}
+
+	pt::ptime next_at = pt::from_time_t(sun.next_at);
+	AGO_DEBUG() << "Next sun-event is "
+		<< ((sun.next_state == SUNSET) ? "sunset":"sunrise")
+		<< " at " <<
+		pt::to_simple_string(local_adj::utc_to_local(next_at));
+
+	sunriseTimer.expires_at(next_at);
+	sunriseTimer.async_wait(boost::bind(&AgoTimer::suntimer, this, _1, sun.next_state));
 }
 
 void AgoTimer::setupApp() {
@@ -150,18 +227,20 @@ void AgoTimer::setupApp() {
 	sunriseoffset=atoi(getConfigOption("system", "sunriseoffset", "0").c_str());
 	sunsetoffset=atoi(getConfigOption("system", "sunsetoffset", "0").c_str());
 
-	timerThread = boost::thread(boost::bind(&AgoTimer::suntimer, this));
-	suntimerThread = boost::thread(boost::bind(&AgoTimer::timer, this));
+	AGO_DEBUG() << "agotimer configured with location "
+		<< latlon.lat << ", " << latlon.lon
+		<< " and sunrise offset " << sunriseoffset
+		<< ", sunset offset " << sunsetoffset;
+
+	// Start IO service in separate thread
+	clocktimer(boost::asio::error::not_connected);
+	suntimer(boost::system::error_code(), UNKNOWN);
 }
 
 void AgoTimer::cleanupApp() {
-	/*
-	 * TODO: implement proper timers...
-	AGO_DEBUG() << "Waiting for threads to exit...";
-	timerThread.join();
-	suntimerThread.join();
-	AGO_DEBUG() << "Threads gone";
-	*/
+	AGO_TRACE() << "Cancelling timers";
+	periodicTimer.cancel();
+	sunriseTimer.cancel();
 }
 
 AGOAPP_ENTRY_POINT(AgoTimer);
