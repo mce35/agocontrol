@@ -879,6 +879,9 @@ bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Va
 	try {
 		encode(content, message);
 		message.setSubject(subject);
+
+		AGO_TRACE() << "Sending message [src=" << message.getReplyTo() <<
+			", sub="<< message.getSubject()<<"]: " << content;
 		sender.send(message);
 	} catch(const std::exception& error) {
 		AGO_ERROR() << "Exception in sendMessage: " << error.what();
