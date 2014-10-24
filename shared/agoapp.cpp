@@ -39,6 +39,8 @@ AgoApp::AgoApp(const char *appName_)
 		appShortName = appName.substr(3);
 	else
 		appShortName = appName;
+
+	boost::to_lower(appShortName);
 }
 
 int AgoApp::parseCommandLine(int argc, const char **argv) {
