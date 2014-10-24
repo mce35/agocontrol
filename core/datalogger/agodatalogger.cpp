@@ -44,7 +44,7 @@ private:
     void updateInventory();
 
 public:
-	AGOAPP_CONSTRUCTOR(AgoDataLogger);
+    AGOAPP_CONSTRUCTOR(AgoDataLogger);
 
     void setupApp();
 
@@ -1505,8 +1505,8 @@ void AgoDataLogger::setupApp()
         agoConnection->addDevice(internalid.c_str(), "multigraph");
     }
 
-	 addEventHandler();
-	 addCommandHandler();
+    addEventHandler();
+    addCommandHandler();
 }
 
 AGOAPP_ENTRY_POINT(AgoDataLogger);
