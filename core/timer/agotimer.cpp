@@ -83,11 +83,25 @@ void AgoTimer::clocktimer(const boost::system::error_code& error) {
 
 	// There are boost methods to go from utc->local, but not other way arround
 	pt::ptime now = pt::second_clock::universal_time();
+
+	/* The timer subsystem might fire prematurely, i.e. if timer is
+	 * scheduled for 20:41:00 it was fired 20:40:59.
+	 * 20:40:59 +1m -59s == 20:41:00..again..
+	 *
+	 * Make sure we are sending a nice and round timestamp.
+	 */
+	pt::time_duration t = now.time_of_day();
+	if(t.seconds() != 0) {
+		if(t.seconds() > 30) {
+			now+= pt::minutes(1);
+		}
+		now-= pt::seconds(t.seconds());
+	}
+
 	pt::ptime now_local = local_adj::utc_to_local(now);
-
-	pt::time_duration t = now_local.time_of_day();
 	greg::date d = now_local.date();
-
+	t = now_local.time_of_day();
+	assert(t.seconds() == 0);
 	if(!error) {
 		AGO_DEBUG() << "Distributing clock: " << pt::to_simple_string(now_local);
 
@@ -108,17 +122,6 @@ void AgoTimer::clocktimer(const boost::system::error_code& error) {
 
 	pt::ptime next = now;
 	next+= pt::minutes(1);
-	next-= pt::seconds(t.seconds());
-
-	if(next - now < pt::seconds(30) && !error) {
-		/* The timer subsystem might fire prematurely, i.e. if timer is
-		 * scheduled for 20:41:00 it was fired 20:40:59.
-		 * 20:40:59 +1m -59s == 20:41:00..again..
-		 * So, make sure we have a sane amount of time between now and next,
-		 * and if not, we was probably late */
-		//AGO_DEBUG() << "Callback fired too early, adding another minute";
-		next+= pt::minutes(1);
-	}
 
 	AGO_TRACE() << "Waiting for next periodic at "
 		<< TIME_SIMPLE_LOCAL_STRING(next);
