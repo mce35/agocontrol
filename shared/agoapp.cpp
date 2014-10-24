@@ -1,24 +1,31 @@
 #include <signal.h>
 #include <stdexcept>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/algorithm/string/join.hpp>
+
+
 
 #include "agoapp.h"
 
 #include "agoclient.h"
+#include "options_validator.hpp"
 
 using namespace qpid::types;
 using namespace qpid::messaging;
 
 using namespace agocontrol::log;
+using namespace options_validator;
+namespace po = boost::program_options;
 
 namespace agocontrol {
+
 /* Single instance of AgoApp which gets info on signals */
 static AgoApp *app_instance;
 static void static_sighandler(int signo) {
 	if(app_instance != NULL)
 		app_instance->sighandler(signo);
 }
-
 
 
 AgoApp::AgoApp(const char *appName_)
@@ -32,8 +39,51 @@ AgoApp::AgoApp(const char *appName_)
 		appShortName = appName.substr(3);
 	else
 		appShortName = appName;
-
 }
+
+int AgoApp::parseCommandLine(int argc, const char **argv) {
+	po::options_description options;
+	options.add_options()
+		 ("help,h", "produce this help message")
+		 ("log-level", po::value<std::string>(),
+			  (std::string("Log level. Valid values are one of\n ") +
+			  boost::algorithm::join(log_container::getLevels(), ", ")).c_str())
+		 ("log-method", po::value<std::string>(),
+			  "Where to log. Valid values are one of console, syslog")
+		 ("debug,d", po::bool_switch(),
+			  "Shortcut to set console logging with level DEBUG")
+		 ("trace,t", po::bool_switch(),
+			  "Shortcut to set console logging with level TRACE");
+
+	appCmdLineOptions(options);
+	try {
+		po::variables_map &vm (cli_vars);
+		po::store(po::parse_command_line(argc, argv, options), vm);
+		po::notify(vm);
+
+		if (vm.count("help")) {
+			std::cout << "usage: " << argv[0] << std::endl;
+			std::cout << options << std::endl;
+			return 1;
+		}
+
+		options_validator<std::string>(vm, "log-method")
+			("console")("syslog")
+			.validate();
+
+		options_validator<std::string>(vm, "log-level")
+			(log_container::getLevels())
+			.validate();
+	}
+	catch(std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+		return 1;
+	}
+
+	return 0;
+}
+
 
 void AgoApp::setup() {
 	setupLogging();
@@ -55,7 +105,16 @@ void AgoApp::cleanup() {
 void AgoApp::setupLogging() {
 	log_container::initDefault();
 
-	std::string level_str = getConfigOption(appShortName.c_str(), "system", "log_level", "info");
+	std::string level_str;
+	if(cli_vars["debug"].as<bool>())
+		level_str = "DEBUG";
+	else if(cli_vars["trace"].as<bool>())
+		level_str = "TRACE";
+	else if(cli_vars.count("log-level"))
+		level_str = cli_vars["log-level"].as<std::string>();
+	else
+		level_str = getConfigOption(appShortName.c_str(), "system", "log_level", "info");
+
 	try {
 		severity_level level = log_container::getLevel(level_str);
 		log_container::setCurrentLevel(level);
@@ -63,7 +122,13 @@ void AgoApp::setupLogging() {
 		throw ConfigurationError(e.what());
 	}
 
-	std::string method = getConfigOption(appShortName.c_str(), "system", "log_method", "console");
+	std::string method;
+	if(cli_vars["debug"].as<bool>() || cli_vars["trace"].as<bool>())
+		method = "console";
+	else if(cli_vars.count("log-method"))
+		method = cli_vars["log-method"].as<std::string>();
+	else
+		method = getConfigOption(appShortName.c_str(), "system", "log_method", "console");
 
 	if(method == "syslog") {
 		const std::string facility_str = getConfigOption(appShortName.c_str(), "system", "syslog_facility", "local0");
@@ -201,6 +266,8 @@ int AgoApp::appMain() {
 
 int AgoApp::main(int argc, const char **argv) {
 	try {
+		if(parseCommandLine(argc, argv) != 0)
+			return 1;
 		setup();
 	}catch(StartupError &e) {
 		cleanup();

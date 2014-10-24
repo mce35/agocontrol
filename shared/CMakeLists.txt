@@ -30,6 +30,7 @@ set (AGOCLIENT_LIBRARIES
     boost_system
     boost_filesystem
     boost_thread
+    boost_program_options
     ${JSONCPP_LIBRARIES}
 )
 

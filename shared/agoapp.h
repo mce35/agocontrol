@@ -4,6 +4,8 @@
 #include "agoclient.h"
 #include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 /**
  * Provides boilerplate code for writing an AGO application.
@@ -49,10 +51,16 @@ namespace agocontrol {
 		boost::asio::io_service ioService_;
 		std::auto_ptr<boost::asio::io_service::work> ioWork;
 
-
 		void signalExit();
 
+		int parseCommandLine(int argc, const char **argv);
+
 	protected:
+		/**
+		 * Any parsed command line parameters are placed in this map-like object
+		 */
+		boost::program_options::variables_map cli_vars;
+
 		AgoConnection *agoConnection;
 
 		/* Obtain a reference to the ioService for async operations.
@@ -64,6 +72,11 @@ namespace agocontrol {
 		 * However, if called at least once, we can call it whenever again later.
 		 */
 		boost::asio::io_service& ioService();
+
+		/* Application should implement this function if it like to present
+		 * any extra command line options to the user.
+		 */
+		virtual void appCmdLineOptions(boost::program_options::options_description &options) {}
 
 		/* Setup will be called prior to appMain being called. This
 		 * normally sets up logging, an AgoConnection, signal handling,
