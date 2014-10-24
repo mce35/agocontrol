@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
-#include <pthread.h>
 
 #include <cstdlib>
 #include <iostream>
@@ -57,16 +56,14 @@ private:
 	sunevent_t next_sunevent();
 	void suntimer(const boost::system::error_code& error, sunstate_t new_state) ;
 
+	void setupApp();
+	void cleanupApp();
 public:
 	AGOAPP_CONSTRUCTOR_HEAD(AgoTimer)
 		, periodicTimer(ioService())
 		, sunriseTimer(ioService())
 	{}
 
-protected:
-
-	void setupApp();
-	void cleanupApp();
 };
 
 typedef boost::date_time::c_local_adjustor<pt::ptime> local_adj;

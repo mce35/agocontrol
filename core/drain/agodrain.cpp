@@ -24,14 +24,14 @@ private:
 	Session session;
 	Connection *connection;
 
-public:
-	AGOAPP_CONSTRUCTOR(AgoDrain);
-
 	// Override, we do not use a AgoConnection in drain
 	void setupAgoConnection() { }
 	void doShutdown() ;
 
 	int appMain();
+
+public:
+	AGOAPP_CONSTRUCTOR(AgoDrain);
 };
 
 

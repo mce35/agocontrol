@@ -4,7 +4,6 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#include <pthread.h>
 
 #include <string>
 #include <iostream>
@@ -39,20 +38,20 @@ namespace fs = ::boost::filesystem;
 using namespace agocontrol;
 
 class AgoDataLogger: public AgoApp {
-
 private:
+
     void updateInventory();
-
-public:
-    AGOAPP_CONSTRUCTOR(AgoDataLogger);
-
-    void setupApp();
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
     void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+
     qpid::types::Variant::Map getDatabaseInfos();
     bool purgeTable(std::string table);
     bool isTablePurgeAllowed(std::string table);
+
+    void setupApp();
+public:
+    AGOAPP_CONSTRUCTOR(AgoDataLogger);
 };
 
 sqlite3 *db;

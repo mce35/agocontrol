@@ -20,7 +20,6 @@
 #include <termios.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <pthread.h>
 #ifndef __FreeBSD__
 #include <sys/sysinfo.h>
 #endif
@@ -94,13 +93,12 @@ private:
 	boost::asio::deadline_timer discoveryTimer;
 	void discover(const boost::system::error_code& error) ;
 
+	void setupApp();
+	void cleanupApp();
 public:
 	AGOAPP_CONSTRUCTOR_HEAD(AgoResolver)
 		, discoveryTimer(ioService()) {}
 
-protected:
-	void setupApp();
-	void cleanupApp();
 };
 
 // helper to determine last element
