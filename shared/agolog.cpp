@@ -13,22 +13,24 @@ static AGO_LOGGER_IMPL default_inst;
 typedef std::map<std::string, int> str_int_map;
 
 static str_int_map syslog_facilities;
+static std::vector<std::string> log_levels;
 
 /* Static global accessor */
 AGO_LOGGER_IMPL & log_container::get() {
 	return default_inst;
 }
 
-const char* const severity_level_str[] = {
-	"TRACE",
-	"DEBUG",
-	"INFO",
-	"WARNING",
-	"ERROR", 
-	"FATAL"
-};
-
-int log_container::getFacility(const std::string &facility) {
+void init_static() {
+	if(log_levels.empty()) {
+		// Same order as severity_level
+		log_levels.push_back("TRACE");
+		log_levels.push_back("DEBUG");
+		log_levels.push_back("INFO");
+		log_levels.push_back("WARNING");
+		log_levels.push_back("ERROR");
+		log_levels.push_back("FATAL");
+		assert(log_levels.size() == AGOLOG_NUM_SEVERITY_LEVELS);
+	}
 
 	if(syslog_facilities.empty()) {
 		syslog_facilities["auth"] = 		LOG_AUTH;
@@ -61,7 +63,10 @@ int log_container::getFacility(const std::string &facility) {
 		syslog_facilities["local6"] =		LOG_LOCAL6;
 		syslog_facilities["local7"] =		LOG_LOCAL7;
 	}
+}
 
+int log_container::getFacility(const std::string &facility) {
+	init_static();
 
 	str_int_map::iterator it;
 	it = syslog_facilities.find(facility);
@@ -73,15 +78,32 @@ int log_container::getFacility(const std::string &facility) {
 }
 
 severity_level log_container::getLevel(const std::string &level) {
+	init_static();
 	std::string ulevel(boost::to_upper_copy(level));
 
-	for(int n=0; n < AGOLOG_NUM_SEVERITY_LEVELS; n++) {
-		if(ulevel == severity_level_str[n]) {
+	for(int n=0; n < log_levels.size(); n++) {
+		if(ulevel == log_levels[n]) {
 			return static_cast<severity_level>(n);
 		}
 	}
 
 	throw std::runtime_error("Invalid log level '" + level + "'");
+}
+
+const std::string& log_container::getLevel(severity_level level) {
+	init_static();
+	if(level >= log_levels.size()) {
+		std::stringstream ss;
+		ss << "Invalid log level " << level;
+		throw std::runtime_error(ss.str());
+	}
+
+	return log_levels[level];
+}
+
+const std::vector<std::string>& log_container::getLevels() {
+	init_static();
+	return log_levels;
 }
 
 }

@@ -24,11 +24,7 @@ static int sev2syslog[] = {
 
 void console_sink::output_record(record &rec) {
 	std::stringstream out;
-	const char * lvl;
-	if(rec.level < AGOLOG_NUM_SEVERITY_LEVELS)
-		lvl = severity_level_str[rec.level];
-	else
-		lvl = "????";
+	const std::string &lvl = log_container::getLevel(rec.level);
 			
 	out
 		<< boost::posix_time::to_simple_string(rec.timestamp)

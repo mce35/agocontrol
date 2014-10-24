@@ -39,11 +39,7 @@ inline std::basic_ostream< CharT, TraitsT >& operator<< (
 		std::basic_ostream< CharT, TraitsT >& strm,
 		severity_level lvl)
 {
-	if (static_cast< std::size_t >(lvl) < AGOLOG_NUM_SEVERITY_LEVELS)
-		strm << severity_level_str[lvl];
-	else
-		strm << static_cast< int >(lvl);
-
+	strm << log_container::getLevel(lvl);
 	return strm;
 }
 
