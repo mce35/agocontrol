@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 file (GLOB_RECURSE AGOTIMER_SOURCE_FILES *.cpp)
 set (TIMER_LIBRARIES
     agoclient
-    boost_date_time
+	 ${Boost_DATE_TIME_LIBRARY}
 )
 
 # add the executable
