@@ -45,7 +45,7 @@ namespace agocontrol {
 			record(severity_level level_)
 				: state(open)
 			   , level(level_)
-				, timestamp(boost::posix_time::second_clock::local_time())
+				, timestamp(boost::posix_time::microsec_clock::local_time())
 			{}
 
 			record(const record &rec_)
