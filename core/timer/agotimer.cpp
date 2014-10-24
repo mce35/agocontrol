@@ -105,11 +105,21 @@ void AgoTimer::clocktimer(const boost::system::error_code& error) {
 
 		agoConnection->sendMessage("event.environment.timechanged", content);
 	}
-	else
-		AGO_DEBUG() << "Skipping clock distr, was just inited";
 
 	pt::ptime next = now;
-	next+= pt::seconds(60 - t.seconds());
+	next+= pt::minutes(1);
+	next-= pt::seconds(t.seconds());
+
+	if(next - now < pt::seconds(30) && !error) {
+		/* The timer subsystem might fire prematurely, i.e. if timer is
+		 * scheduled for 20:41:00 it was fired 20:40:59.
+		 * 20:40:59 +1m -59s == 20:41:00..again..
+		 * So, make sure we have a sane amount of time between now and next,
+		 * and if not, we was probably late */
+		//AGO_DEBUG() << "Callback fired too early, adding another minute";
+		next+= pt::minutes(1);
+	}
+
 	AGO_TRACE() << "Waiting for next periodic at "
 		<< TIME_SIMPLE_LOCAL_STRING(next);
 
