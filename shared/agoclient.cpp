@@ -571,7 +571,9 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename)
 		ensureParentDirExists(uuidMapFile);
 	} catch(const std::exception& error) {
 		// exception msg has already been logged
-		AGO_FATAL() << "Couldn't use configured path";
+		AGO_FATAL()
+			<< "Couldn't use configuration dir path: "
+			<< error.what();
 		_exit(1);
 	}
 
