@@ -15,7 +15,7 @@ using namespace qpid::types;
 using namespace qpid::messaging;
 
 using namespace agocontrol::log;
-using namespace options_validator;
+using namespace boost_options_validator;
 namespace po = boost::program_options;
 
 namespace agocontrol {

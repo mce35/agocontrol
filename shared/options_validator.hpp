@@ -18,7 +18,7 @@
  *	we will throw po::validation_error with error po::validation_error::invalid_option_value
  *	for the specified key.
  */
-namespace options_validator {
+namespace boost_options_validator {
 
 
 template<class T>
