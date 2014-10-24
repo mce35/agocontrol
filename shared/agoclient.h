@@ -61,6 +61,15 @@ namespace agocontrol {
 	/// Return the full path to the local-state directory, with subpath appended if not NULL
 	boost::filesystem::path getLocalStatePath(const boost::filesystem::path &subpath = boost::filesystem::path());
 
+	class AgoApp;
+	class AgoClientInternal {
+		// Do not expose to other than AgoApp
+		friend class AgoApp;
+	protected:
+		static void setConfigDir(const boost::filesystem::path &dir);
+		static void setLocalStateDir(const boost::filesystem::path &dir);
+	};
+
 	/// Ensures that the directory exists
 	/// Note: throws exception if directory creation fails
 	boost::filesystem::path ensureDirExists(const boost::filesystem::path &dir);

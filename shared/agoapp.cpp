@@ -17,6 +17,7 @@ using namespace qpid::messaging;
 using namespace agocontrol::log;
 using namespace boost_options_validator;
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace agocontrol {
 
@@ -55,7 +56,12 @@ int AgoApp::parseCommandLine(int argc, const char **argv) {
 		 ("debug,d", po::bool_switch(),
 			  "Shortcut to set console logging with level DEBUG")
 		 ("trace,t", po::bool_switch(),
-			  "Shortcut to set console logging with level TRACE");
+			  "Shortcut to set console logging with level TRACE")
+		 ("config-dir", po::value<std::string>(),
+			  "Directory with configuration files")
+		 ("state-dir", po::value<std::string>(),
+			  "Directory with local state files")
+	 ;
 
 	appCmdLineOptions(options);
 	try {
@@ -63,9 +69,50 @@ int AgoApp::parseCommandLine(int argc, const char **argv) {
 		po::store(po::parse_command_line(argc, argv, options), vm);
 		po::notify(vm);
 
+		if(vm.count("config-dir")) {
+			std::string dir = vm["config-dir"].as<std::string>();
+			try {
+				AgoClientInternal::setConfigDir(dir);
+			} catch(const fs::filesystem_error& error) {
+				std::cout << "Could not use " << dir << " as config-dir: "
+					<< error.code().message()
+					<< std::endl;
+				return 1;
+			}
+		}
+
+		if(vm.count("state-dir")) {
+			std::string dir = vm["state-dir"].as<std::string>();
+			try {
+				AgoClientInternal::setLocalStateDir(dir);
+			} catch(const fs::filesystem_error& error) {
+				std::cout << "Could not use " << dir << " as state-dir: "
+					<< error.code().message()
+					<< std::endl;
+				return 1;
+			}
+		}
+
+		// Init dirs before anything else, so we at least show correct in help output
 		if (vm.count("help")) {
-			std::cout << "usage: " << argv[0] << std::endl;
-			std::cout << options << std::endl;
+			std::cout << "usage: " << argv[0] << std::endl
+				<< options << std::endl
+				<< std::endl
+				<< "Paths:" << std::endl
+				<< "  Default config dir: "
+					<<  BOOST_PP_STRINGIZE(DEFAULT_CONFDIR) << std::endl
+				<< "  Default state dir:  "
+					<<  BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR) << std::endl
+				<< "  Active config dir:  "
+					<< getConfigPath().string() << std::endl
+				<< "  Active state dir:   "
+					<< getLocalStatePath().string() << std::endl
+				<< std::endl
+				<< "App-specific configuration file: "
+					<< getConfigPath("conf.d/" + appShortName + ".conf").string() << std::endl
+				<< "System configuration file:       "
+					<< getConfigPath("conf.d/system.conf").string()
+				<< "" << std::endl;
 			return 1;
 		}
 

@@ -38,6 +38,18 @@ namespace agocontrol {
 	fs::path config_dir;
 	fs::path localstate_dir;
 
+	fs::path prepareDirectory(const char *name, const fs::path &dir) {
+		if(!fs::exists(dir)) {
+			// Try to create it
+			// ensureDirExists will canonical() it
+			return ensureDirExists(dir);
+		}
+		else {
+			// Exists, canonicalize it ourselfs
+			return fs::canonical(dir);
+		}
+	}
+
 	fs::path initDirectory(const char *name, const char *def){
 		const char *tmp;
 		std::string env ("AGO_");
@@ -51,23 +63,11 @@ namespace agocontrol {
 		}
 
 		try {
-			if(!fs::exists(dir)) {
-				// Try to create it
-				try{
-					// ensureDirExists will canonical() it
-					dir = ensureDirExists(dir);
-				} catch(const fs::filesystem_error& error) {
-					AGO_WARNING() << "Failed to create " << name << " "
-						<< dir.string() << ": " << error.code().message();
-				}
-			}
-			else {
-				// Exists, canonicalize it ourselfs
-				dir = fs::canonical(dir);
-			}
+			dir = prepareDirectory(name, dir);
 		} catch(const fs::filesystem_error& error) {
 			// Canonical failed; does it not exist after all?
-			AGO_WARNING() << "Failed to resolve " << name << " " << dir.string() << ": " << error.code().message() 
+			AGO_WARNING() << "Failed to resolve " << name << " " << dir.string()
+				<< ": " << error.code().message()
 				<< ". Falling back to " << tmp;
 			dir = fs::path(tmp);
 		}
@@ -78,9 +78,27 @@ namespace agocontrol {
 
 	void initDirectorys() {
 		// DEFAULT_CONFDIR, DEFAULT_LOCALSTATEDIR must be set with compiler flag
-		config_dir = initDirectory("confdir", BOOST_PP_STRINGIZE(DEFAULT_CONFDIR));
-		localstate_dir = initDirectory("localstatedir", BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR));
+		if(config_dir.empty()) {
+			config_dir = initDirectory("confdir", BOOST_PP_STRINGIZE(DEFAULT_CONFDIR));
+		}
+		if(localstate_dir.empty()) {
+			localstate_dir = initDirectory("localstatedir", BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR));
+		}
 		directories_inited = true;
+	}
+
+	/* These are only callable from AgoApp and AgoClient */
+	void AgoClientInternal::setConfigDir(const boost::filesystem::path &dir) {
+		if(!config_dir.empty()) {
+			throw runtime_error("setConfigDir after initDirectorys was called!");
+		}
+		config_dir = prepareDirectory("confdir", dir);
+	}
+	void AgoClientInternal::setLocalStateDir(const boost::filesystem::path &dir) {
+		if(!localstate_dir.empty()) {
+			throw runtime_error("setLocalStateDir change after initDirectorys was called!");
+		}
+		localstate_dir= prepareDirectory("localstatedir", dir);
 	}
 }
 
