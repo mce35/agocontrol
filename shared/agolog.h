@@ -63,7 +63,7 @@ namespace agocontrol {
 			/**
 			 * Changes the severity setting of the logger
 			 */
-			static void setLevel(severity_level lvl);
+			static void setCurrentLevel(severity_level lvl);
 
 			/**
 			 * Changes to console output

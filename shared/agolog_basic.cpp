@@ -74,11 +74,11 @@ void log_container::initDefault() {
 		return;
 	inited = true;
 
-	setLevel(AGO_DEFAULT_LEVEL);
+	setCurrentLevel(AGO_DEFAULT_LEVEL);
 	// Default inited with console sink
 }
 
-void log_container::setLevel(severity_level lvl) {
+void log_container::setCurrentLevel(severity_level lvl) {
 	get().setLevel(lvl);
 }
 

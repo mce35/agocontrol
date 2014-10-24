@@ -58,7 +58,7 @@ void AgoApp::setupLogging() {
 	std::string level_str = getConfigOption(appShortName.c_str(), "system", "log_level", "info");
 	try {
 		severity_level level = log_container::getLevel(level_str);
-		log_container::setLevel(level);
+		log_container::setCurrentLevel(level);
 	}catch(std::runtime_error &e) {
 		throw ConfigurationError(e.what());
 	}

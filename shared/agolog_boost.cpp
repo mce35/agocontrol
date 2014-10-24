@@ -56,10 +56,10 @@ void log_container::initDefault() {
 	logging::add_common_attributes();
 
 	setOutputConsole();
-	setLevel(AGO_DEFAULT_LEVEL);
+	setCurrentLevel(AGO_DEFAULT_LEVEL);
 }
 
-void log_container::setLevel(severity_level lvl) {
+void log_container::setCurrentLevel(severity_level lvl) {
 	boost::log::core::get()->set_filter
 	(
 		::agocontrol::log::severity >= lvl
