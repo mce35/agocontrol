@@ -44,7 +44,7 @@ public:
 	 * Add all elements from the vector
 	 */
 	options_validator & operator() (const std::vector<T> &elems) {
-		for(int i = 0; i < elems.size(); i++) {
+		for(size_t i = 0; i < elems.size(); i++) {
 			valid_values.push_back(elems[i]);
 		}
 		return *this;

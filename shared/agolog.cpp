@@ -81,7 +81,7 @@ severity_level log_container::getLevel(const std::string &level) {
 	init_static();
 	std::string ulevel(boost::to_upper_copy(level));
 
-	for(int n=0; n < log_levels.size(); n++) {
+	for(size_t n=0; n < log_levels.size(); n++) {
 		if(ulevel == log_levels[n]) {
 			return static_cast<severity_level>(n);
 		}
