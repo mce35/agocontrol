@@ -70,7 +70,7 @@ function device(obj, uuid) {
                 }
                 else
                 {
-                    console.log('No img for thumb found');
+                    //TODO notif something?
                 }
             }
             else
@@ -84,7 +84,6 @@ function device(obj, uuid) {
 
     //refresh dashboard thumbs
     this.refreshThumbs = function() {
-        console.log('refresh thumbs');
         for( var i=0; i<thumbs.length; i++ )
         {
             self.getThumbGraph(thumbs[i]);
