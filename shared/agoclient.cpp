@@ -68,8 +68,8 @@ namespace agocontrol {
 			// Canonical failed; does it not exist after all?
 			AGO_WARNING() << "Failed to resolve " << name << " " << dir.string()
 				<< ": " << error.code().message()
-				<< ". Falling back to " << tmp;
-			dir = fs::path(tmp);
+				<< ". Falling back to default " << def;
+			dir = fs::path(def);
 		}
 
 		return dir;

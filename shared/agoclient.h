@@ -61,6 +61,9 @@ namespace agocontrol {
 	/// Return the full path to the local-state directory, with subpath appended if not NULL
 	boost::filesystem::path getLocalStatePath(const boost::filesystem::path &subpath = boost::filesystem::path());
 
+	// XXX: This should preferably also be in AgoClientInternal, but called from global
+	// ensureDirExists..
+	void initDirectorys();
 	class AgoApp;
 	class AgoClientInternal {
 		// Do not expose to other than AgoApp

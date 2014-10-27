@@ -95,24 +95,25 @@ int AgoApp::parseCommandLine(int argc, const char **argv) {
 
 		// Init dirs before anything else, so we at least show correct in help output
 		if (vm.count("help")) {
+			initDirectorys();
 			std::cout << "usage: " << argv[0] << std::endl
 				<< options << std::endl
 				<< std::endl
 				<< "Paths:" << std::endl
 				<< "  Default config dir: "
 					<<  BOOST_PP_STRINGIZE(DEFAULT_CONFDIR) << std::endl
-				<< "  Default state dir:  "
+				<< "  Default state dir : "
 					<<  BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR) << std::endl
-				<< "  Active config dir:  "
+				<< "  Active config dir : "
 					<< getConfigPath().string() << std::endl
-				<< "  Active state dir:   "
+				<< "  Active state dir  : "
 					<< getLocalStatePath().string() << std::endl
 				<< std::endl
+				<< "System configuration file      : "
+					<< getConfigPath("conf.d/system.conf").string() << std::endl
 				<< "App-specific configuration file: "
 					<< getConfigPath("conf.d/" + appShortName + ".conf").string() << std::endl
-				<< "System configuration file:       "
-					<< getConfigPath("conf.d/system.conf").string()
-				<< "" << std::endl;
+				;
 			return 1;
 		}
 
