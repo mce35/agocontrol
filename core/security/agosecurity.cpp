@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
-#include <pthread.h>
 
 #include <syslog.h>
 
@@ -10,8 +9,9 @@
 
 #include <sstream>
 #include <algorithm>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #ifndef SECURITYMAPFILE
 #define SECURITYMAPFILE "maps/securitymap.json"
@@ -21,12 +21,15 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
 using namespace std;
+namespace pt = boost::posix_time;
 
-AgoConnection *agoConnection;
-std::string agocontroller;
-static pthread_t securityThread;
-bool isSecurityThreadRunning = false;
-qpid::types::Variant::Map securitymap;
+class AgoSecurity: public AgoApp {
+private:
+	std::string agocontroller;
+	boost::thread securityThread;
+	bool isSecurityThreadRunning;
+	bool wantSecurityThreadRunning;
+	qpid::types::Variant::Map securitymap;
 
 /* example map: 
 
@@ -52,7 +55,22 @@ qpid::types::Variant::Map securitymap;
     }
 
 */
-bool checkPin(std::string _pin) {
+
+	bool checkPin(std::string _pin) ;
+	bool findList(qpid::types::Variant::List list, std::string elem) ;
+	int getZoneDelay(qpid::types::Variant::Map smap, std::string elem) ;
+	void alarmthread(std::string zone) ;
+	qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+
+	void setupApp() ;
+
+public:
+	AGOAPP_CONSTRUCTOR_HEAD(AgoSecurity)
+		, isSecurityThreadRunning(false) 
+		, wantSecurityThreadRunning(false) {}
+};
+
+bool AgoSecurity::checkPin(std::string _pin) {
 	stringstream pins(getConfigOption("security", "pin", "0815"));
 	string pin;
 	while (getline(pins, pin, ',')) {
@@ -62,7 +80,7 @@ bool checkPin(std::string _pin) {
 }
 
 
-bool findList(qpid::types::Variant::List list, std::string elem) {
+bool AgoSecurity::findList(qpid::types::Variant::List list, std::string elem) {
 	//qpid::types::Variant::List::const_iterator it = std::find(list.begin(), list.end(), elem);
 	for (qpid::types::Variant::List::const_iterator it = list.begin(); it != list.end(); it++) {
 		if (it->getType() == qpid::types::VAR_MAP) {
@@ -77,7 +95,7 @@ bool findList(qpid::types::Variant::List list, std::string elem) {
 	return false;
 }
 
-int getZoneDelay(qpid::types::Variant::Map smap, std::string elem) {
+int AgoSecurity::getZoneDelay(qpid::types::Variant::Map smap, std::string elem) {
 	qpid::types::Variant::Map zonemap;
 	qpid::types::Variant::List list;
 	std::string housemode = securitymap["housemode"];
@@ -105,29 +123,33 @@ int getZoneDelay(qpid::types::Variant::Map smap, std::string elem) {
 	return 0;
 }
 
-void *alarmthread(void *param) {
-	std::string zone;
-	if (param) zone = (const char*)param;
+void AgoSecurity::alarmthread(std::string zone) {
 	int delay=getZoneDelay(securitymap, zone);	
-	Variant::Map content;
-	content["zone"]=zone;
-	AGO_INFO() << "Alarm triggered, zone: " << zone << " delay: " << delay;
-	while (delay-- > 0) {
-		Variant::Map countdowneventcontent;
-		countdowneventcontent["delay"]=delay;
-		countdowneventcontent["zone"]=zone;
-		agoConnection->emitEvent("securitycontroller", "event.security.countdown", countdowneventcontent);
-		AGO_TRACE() << "count down: " << delay;
-		sleep(1);
-	}
-	AGO_INFO() << "sending alarm event";
-	agoConnection->emitEvent("securitycontroller", "event.security.intruderalert", content);
-	isSecurityThreadRunning = false;
+	try {
+		Variant::Map content;
+		content["zone"]=zone;
+		AGO_INFO() << "Alarm triggered, zone: " << zone << " delay: " << delay;
+		while (wantSecurityThreadRunning && delay-- > 0) {
+			Variant::Map countdowneventcontent;
+			countdowneventcontent["delay"]=delay;
+			countdowneventcontent["zone"]=zone;
+			AGO_TRACE() << "count down: " << delay;
+			agoConnection->emitEvent("securitycontroller", "event.security.countdown", countdowneventcontent);
+			boost::this_thread::sleep(pt::seconds(1));
+		}
 
-	return NULL;
+		AGO_INFO() << "Countdown expired for " << zone << ", sending alarm event";
+		agoConnection->emitEvent("securitycontroller", "event.security.intruderalert", content);
+	}catch(boost::thread_interrupted &e) {
+		AGO_DEBUG() << "Alarmthread cancelled";
+	}
+
+	isSecurityThreadRunning = false;
+	wantSecurityThreadRunning = false;
+	AGO_DEBUG() << "Alarm thread exited";
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map content) {
 	AGO_TRACE() << "handling command: " << content;
 	qpid::types::Variant::Map returnval;
 	std::string internalid = content["internalid"].asString();
@@ -175,15 +197,17 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				if (zonemap[housemode].getType() == qpid::types::VAR_LIST) {
 					// let's see if the zone is active in the current house mode
 					if (findList(zonemap[housemode].asList(), zone)) {
-						const char *_zone = zone.c_str();
 						// check if there is already an alarmthread running
 						if (isSecurityThreadRunning == false) {
-							if (pthread_create(&securityThread,NULL,alarmthread,(void *)_zone) != 0) {
-								AGO_FATAL() << "can't start alarmthread!";
-								returnval["result"] = -1;
-							} else {
+							try {
+								// XXX: Does not handle multiple zone alarms.
+								wantSecurityThreadRunning = true;
+								securityThread = boost::thread(boost::bind(&AgoSecurity::alarmthread, this, zone));
 								isSecurityThreadRunning = true;
 								returnval["result"] = 0;
+							}catch(std::exception& e){
+								AGO_FATAL() << "failed to start alarmthread! " << e.what();
+								returnval["result"] = -1;
 							}
 						} else {
 							AGO_DEBUG() << "alarmthread already running";
@@ -242,14 +266,16 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 		} else if (content["command"] == "cancel") {
 			if (checkPin(content["pin"].asString())) {
 				if (isSecurityThreadRunning) {
-					if (pthread_cancel(securityThread) != 0) {
-						AGO_ERROR() << "cannot cancel alarm thread!";
-						returnval["result"] = -1;
-						returnval["error"] = "cancel failed";
-					} else {
+					wantSecurityThreadRunning = false;
+					try {
+						securityThread.interrupt();
 						isSecurityThreadRunning = false;
 						returnval["result"] = 0;
 						AGO_INFO() << "alarm cancelled";
+					}catch(std::exception& e){
+						AGO_ERROR() << "cannot cancel alarm thread!";
+						returnval["result"] = -1;
+						returnval["error"] = "cancel failed";
 					}
 
 				} else {
@@ -275,19 +301,12 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	return returnval;
 }
 
-void eventHandler(std::string subject, qpid::types::Variant::Map content) {
-	// string uuid = content["uuid"].asString();
-	// AGO_TRACE() << subject << " " << content;
-}
-
-int main(int argc, char** argv) {
-	agoConnection = new AgoConnection("security");
-
+void AgoSecurity::setupApp() {
 	securitymap = jsonFileToVariantMap(getConfigPath(SECURITYMAPFILE));
 
-	AGO_TRACE() << "securitymap: " << securitymap;
+	AGO_TRACE() << "Loaded securitymap: " << securitymap;
 	std::string housemode = securitymap["housemode"];
-	AGO_DEBUG() << "house mode: " << housemode;
+	AGO_DEBUG() << "Current house mode: " << housemode;
 	agoConnection->setGlobalVariable("housemode", housemode);
 /*
 	qpid::types::Variant::List armedZones;
@@ -298,11 +317,7 @@ int main(int argc, char** argv) {
 	variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE));
 */
 	agoConnection->addDevice("securitycontroller", "securitycontroller");
-	agoConnection->addHandler(commandHandler);
-//	agoConnection->addEventHandler(eventHandler);
-
-	agoConnection->run();	
-
+	addCommandHandler();
 }
 
-
+AGOAPP_ENTRY_POINT(AgoSecurity);
