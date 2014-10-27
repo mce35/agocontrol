@@ -13,6 +13,7 @@ static AGO_LOGGER_IMPL default_inst;
 typedef std::map<std::string, int> str_int_map;
 
 static str_int_map syslog_facilities;
+static std::vector<std::string> syslog_facility_names;
 static std::vector<std::string> log_levels;
 
 /* Static global accessor */
@@ -62,6 +63,10 @@ void init_static() {
 		syslog_facilities["local5"] =		LOG_LOCAL5;
 		syslog_facilities["local6"] =		LOG_LOCAL6;
 		syslog_facilities["local7"] =		LOG_LOCAL7;
+
+		for(str_int_map::iterator i = syslog_facilities.begin(); i != syslog_facilities.end(); i++) {
+			syslog_facility_names.push_back(i->first);
+		}
 	}
 }
 
@@ -77,6 +82,10 @@ int log_container::getFacility(const std::string &facility) {
 	return it->second;
 }
 
+const std::vector<std::string>& log_container::getSyslogFacilities() {
+	init_static();
+	return syslog_facility_names;
+}
 severity_level log_container::getLevel(const std::string &level) {
 	init_static();
 	std::string ulevel(boost::to_upper_copy(level));

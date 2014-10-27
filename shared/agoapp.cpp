@@ -52,7 +52,10 @@ int AgoApp::parseCommandLine(int argc, const char **argv) {
 			  (std::string("Log level. Valid values are one of\n ") +
 			  boost::algorithm::join(log_container::getLevels(), ", ")).c_str())
 		 ("log-method", po::value<std::string>(),
-			  "Where to log. Valid values are one of console, syslog")
+			  "Where to log. Valid values are one of\n console, syslog")
+		 ("log-syslog-facility", po::value<std::string>(),
+			  (std::string("Which syslog facility to log to. Valid values are on of\n ") +
+			  boost::algorithm::join(log_container::getSyslogFacilities(), ", ")).c_str())
 		 ("debug,d", po::bool_switch(),
 			  "Shortcut to set console logging with level DEBUG")
 		 ("trace,t", po::bool_switch(),
@@ -121,13 +124,17 @@ int AgoApp::parseCommandLine(int argc, const char **argv) {
 			("console")("syslog")
 			.validate();
 
+		options_validator<std::string>(vm, "log-syslog-facility")
+			(log_container::getSyslogFacilities())
+			.validate();
+
 		options_validator<std::string>(vm, "log-level")
 			(log_container::getLevels())
 			.validate();
 	}
 	catch(std::exception& e)
 	{
-		std::cout << e.what() << std::endl;
+		std::cout << "Failed to parse command line: " << e.what() << std::endl;
 		return 1;
 	}
 
@@ -181,7 +188,12 @@ void AgoApp::setupLogging() {
 		method = getConfigOption(appShortName.c_str(), "system", "log_method", "console");
 
 	if(method == "syslog") {
-		const std::string facility_str = getConfigOption(appShortName.c_str(), "system", "syslog_facility", "local0");
+		std::string facility_str;
+		if(cli_vars.count("log-syslog-facility"))
+			facility_str = cli_vars["log-syslog-facility"].as<std::string>();
+		else
+			facility_str = getConfigOption(appShortName.c_str(), "system", "syslog_facility", "local0");
+
 		int facility = log_container::getFacility(facility_str);
 		if(facility == -1) {
 			throw ConfigurationError("Bad syslog facility '" + facility_str + "'");

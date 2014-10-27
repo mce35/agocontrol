@@ -77,6 +77,9 @@ namespace agocontrol {
 
 			static int getFacility(const std::string &facility);
 
+			/* Returns a vector of all supported syslog facitliy names */
+			static const std::vector<std::string>& getSyslogFacilities() ;
+
 			/* Translate level string to internal level. Returns -1 on invalid value */
 			static severity_level getLevel(const std::string &level);
 
