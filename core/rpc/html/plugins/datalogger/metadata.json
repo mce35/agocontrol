@@ -1,0 +1,11 @@
+{
+        "name": "Datalogger",
+        "version": "0.0.2",
+        "description": "Datalogger configuration",
+        "dashboardAccess": false,
+        "resources": {
+            "css": [
+                "datalogger.css"
+            ]
+        }
+}

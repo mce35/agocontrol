@@ -9,6 +9,7 @@ configure_file (
 set(LIBAGOCLIENT_SOURCE_FILES
 	agoclient.cpp
 	agolog.cpp
+	agoapp.cpp
 	base64.cpp
 )
 
@@ -26,8 +27,10 @@ set (AGOCLIENT_LIBRARIES
     qpidtypes
     uuid
     augeas
-    boost_system
-    boost_filesystem
+	 ${Boost_SYSTEM_LIBRARY}
+	 ${Boost_FILESYSTEM_LIBRARY}
+	 ${Boost_THREAD_LIBRARY}
+	 ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${JSONCPP_LIBRARIES}
 )
 

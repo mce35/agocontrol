@@ -46,18 +46,18 @@
         <ul class="two_up tiles">
             <li class="dashboard-widget-content-button">
 		        <ko opts="if: state">
-                <div class="pretty medium default btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
+                <_div data-translateable="true" class="pretty medium default btn btn-full" data-bind="click: turnOn" data-value="on">ON</_div>
                 </ko>
                 <ko opts="ifnot: state">
-                <div class="pretty medium primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
+                <_div data-translateable="true" class="pretty medium primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</_div>
                 </ko>
             </li>
             <li class="dashboard-widget-content-button">
 		        <ko opts="if: state ">
-		        <div class="pretty medium primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
+		        <_div data-translateable="true" class="pretty medium primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</_div>
     		    </ko>
                 <ko opts="ifnot: state">
-                <div class="pretty medium default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
+                <_div data-translateable="true" class="pretty medium default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</_div>
                 </ko> 
             </li>
         </ul>

@@ -9,6 +9,7 @@
 
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/bind.hpp>
 
 
 #include <jsoncpp/json/reader.h>
@@ -37,6 +38,18 @@ namespace agocontrol {
 	fs::path config_dir;
 	fs::path localstate_dir;
 
+	fs::path prepareDirectory(const char *name, const fs::path &dir) {
+		if(!fs::exists(dir)) {
+			// Try to create it
+			// ensureDirExists will canonical() it
+			return ensureDirExists(dir);
+		}
+		else {
+			// Exists, canonicalize it ourselfs
+			return fs::canonical(dir);
+		}
+	}
+
 	fs::path initDirectory(const char *name, const char *def){
 		const char *tmp;
 		std::string env ("AGO_");
@@ -50,25 +63,13 @@ namespace agocontrol {
 		}
 
 		try {
-			if(!fs::exists(dir)) {
-				// Try to create it
-				try{
-					// ensureDirExists will canonical() it
-					dir = ensureDirExists(dir);
-				} catch(const fs::filesystem_error& error) {
-					AGO_WARNING() << "Failed to create " << name << " "
-						<< dir.string() << ": " << error.code().message();
-				}
-			}
-			else {
-				// Exists, canonicalize it ourselfs
-				dir = fs::canonical(dir);
-			}
+			dir = prepareDirectory(name, dir);
 		} catch(const fs::filesystem_error& error) {
 			// Canonical failed; does it not exist after all?
-			AGO_WARNING() << "Failed to resolve " << name << " " << dir.string() << ": " << error.code().message() 
-				<< ". Falling back to " << tmp;
-			dir = fs::path(tmp);
+			AGO_WARNING() << "Failed to resolve " << name << " " << dir.string()
+				<< ": " << error.code().message()
+				<< ". Falling back to default " << def;
+			dir = fs::path(def);
 		}
 
 		return dir;
@@ -77,9 +78,27 @@ namespace agocontrol {
 
 	void initDirectorys() {
 		// DEFAULT_CONFDIR, DEFAULT_LOCALSTATEDIR must be set with compiler flag
-		config_dir = initDirectory("confdir", BOOST_PP_STRINGIZE(DEFAULT_CONFDIR));
-		localstate_dir = initDirectory("localstatedir", BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR));
+		if(config_dir.empty()) {
+			config_dir = initDirectory("confdir", BOOST_PP_STRINGIZE(DEFAULT_CONFDIR));
+		}
+		if(localstate_dir.empty()) {
+			localstate_dir = initDirectory("localstatedir", BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR));
+		}
 		directories_inited = true;
+	}
+
+	/* These are only callable from AgoApp and AgoClient */
+	void AgoClientInternal::setConfigDir(const boost::filesystem::path &dir) {
+		if(!config_dir.empty()) {
+			throw runtime_error("setConfigDir after initDirectorys was called!");
+		}
+		config_dir = prepareDirectory("confdir", dir);
+	}
+	void AgoClientInternal::setLocalStateDir(const boost::filesystem::path &dir) {
+		if(!localstate_dir.empty()) {
+			throw runtime_error("setLocalStateDir change after initDirectorys was called!");
+		}
+		localstate_dir= prepareDirectory("localstatedir", dir);
 	}
 }
 
@@ -390,7 +409,15 @@ fs::path agocontrol::getConfigOption(const char *section, const char *option, co
 	return fs::path(value);
 }
 
+std::string agocontrol::getConfigOption(const char *section, const char *option,
+		const char *defaultvalue) {
+	return getConfigOption(section, NULL, option, defaultvalue);
+}
+
 std::string agocontrol::augeasPathFromSectionOption(const char *section, const char *option) {
+	assert(section != NULL);
+	assert(option != NULL);
+
 	std::stringstream valuepath;
 	valuepath << "/files";
 	valuepath << getConfigPath(MODULE_CONFDIR).string();
@@ -448,27 +475,38 @@ qpid::types::Variant::Map agocontrol::getConfigTree() {
 
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *option, const char *defaultvalue) {
+std::string agocontrol::getConfigOption(const char *section, const char *fallback_section,
+		const char *option, const char *defaultvalue) {
 	if (augeas==NULL) augeas_init();
 	if (augeas == NULL) {
 		AGO_ERROR() << "cannot initialize augeas";
 		return defaultvalue;
 	}
 
-	std::stringstream result;
-
 	const char *value;
 	int ret =  aug_get(augeas, augeasPathFromSectionOption(section, option).c_str(), &value);
 	if (ret != 1) {
-		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
-		result << defaultvalue;
-	} else {
-		if(value != NULL) {
-			// cout << "AUGEAS: using config value: " << value << endl;
-			result << value;
+		if(fallback_section) {
+			ret =  aug_get(augeas, augeasPathFromSectionOption(fallback_section, option).c_str(), &value);
 		}
 	}
-	return result.str();
+
+	if(ret != 1) {
+		// cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
+		if(defaultvalue) {
+			return std::string(defaultvalue);
+		}
+	} else {
+		if(value != NULL) {
+			std::stringstream result;
+			// cout << "AUGEAS: using config value: " << value << endl;
+			result << value;
+			return result.str();
+		}
+	}
+
+	// empty
+	return std::string();
 }
 
 bool agocontrol::setConfigOption(const char* section, const char* option, const char* value) {
@@ -511,7 +549,10 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
 	return setConfigOption(section, option, stringvalue.str().c_str());
 }
 
-agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
+agocontrol::AgoConnection::AgoConnection(const char *interfacename)
+	: shutdownSignaled(false)
+{
+	// TODO: Move to AgoApp
 	::agocontrol::log::log_container::initDefault();
 
 	Variant::Map connectionOptions;
@@ -521,18 +562,18 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 	connectionOptions["reconnect"] = "true";
 
 	filterCommands = true; // only pass commands for child devices to handler by default
-	commandHandler = NULL;
-	eventHandler = NULL;
 	instance = interfacename;
 
 	uuidMapFile = getConfigPath("uuidmap");
 	uuidMapFile /= (std::string(interfacename) + ".json");
-	AGO_INFO() << "Using uuidMapFile " << uuidMapFile;
+	AGO_DEBUG() << "Using uuidMapFile " << uuidMapFile;
 	try {
 		ensureParentDirExists(uuidMapFile);
 	} catch(const std::exception& error) {
 		// exception msg has already been logged
-		AGO_FATAL() << "Couldn't use configured path";
+		AGO_FATAL()
+			<< "Couldn't use configuration dir path: "
+			<< error.what();
 		_exit(1);
 	}
 
@@ -553,8 +594,10 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename) {
 
 agocontrol::AgoConnection::~AgoConnection() {
 	try {
-		AGO_DEBUG() << "Closing broker connection";
-		connection.close();
+		if(connection.isOpen()) {
+			AGO_DEBUG() << "Closing broker connection";
+			connection.close();
+		}
 	} catch(const std::exception& error) {
 		AGO_ERROR() << "Failed to close broker connection: " << error.what();
 	}
@@ -568,8 +611,8 @@ void agocontrol::AgoConnection::run() {
 		AGO_FATAL() << "Failed to create broker receiver: " << error.what();
 		_exit(1);
 	}
-	// reportDevices(); // this is obsolete as it is handled by addDevice 
-	while( true ) {
+
+	while( !shutdownSignaled ) {
 		try{
 			Variant::Map content;
 			Message message = receiver.fetch(Duration::SECOND * 3);
@@ -593,7 +636,7 @@ void agocontrol::AgoConnection::run() {
 					// lets see if this is for one of our devices
 					bool isOurDevice = (internalid.size() > 0) && (deviceMap.find(internalIdToUuid(internalid)) != deviceMap.end());
 					//  only handle if a command handler is set. In addition it needs to be one of our device when the filter is enabled
-					if ( ( isOurDevice || (!(filterCommands))) && commandHandler != NULL) {
+					if ( ( isOurDevice || (!(filterCommands))) && !commandHandler.empty()) {
 
 						// printf("command for id %s found, calling handler\n", internalid.c_str());
 						if (internalid.size() > 0) content["internalid"] = internalid;
@@ -619,13 +662,16 @@ void agocontrol::AgoConnection::run() {
 							}
 						} 
 					}
-				} else if (eventHandler != NULL) {
+				} else if (!eventHandler.empty()) {
 					eventHandler(message.getSubject(), content);
 				}
 			}
 		} catch(const NoMessageAvailable& error) {
 			
 		} catch(const std::exception& error) {
+			if(shutdownSignaled)
+				break;
+
 			AGO_ERROR() << "Exception in message loop: " << error.what();
 			if (session.hasError()) {
 				AGO_ERROR() << "Session has error, recreating";
@@ -639,6 +685,15 @@ void agocontrol::AgoConnection::run() {
 		}
 	}
 }
+
+void agocontrol::AgoConnection::shutdown() {
+	shutdownSignaled = true;
+	if(connection.isOpen()) {
+		AGO_DEBUG() << "Closing broker connection";
+		connection.close();
+	}
+}
+
 bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const char *deviceType) {
 	Variant::Map content;
 	Message event;
@@ -816,9 +871,27 @@ bool agocontrol::AgoConnection::loadUuidMap() {
 }
 
 bool agocontrol::AgoConnection::addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map)) {
+	addHandler(boost::bind(handler, _1));
+	return true;
+}
+
+bool agocontrol::AgoConnection::addHandler(boost::function<qpid::types::Variant::Map (qpid::types::Variant::Map)> handler)
+{
 	commandHandler = handler;
 	return true;
 }
+
+bool agocontrol::AgoConnection::addEventHandler(void (*handler)(std::string, qpid::types::Variant::Map)) {
+	addEventHandler(boost::bind(handler, _1, _2));
+	return true;
+}
+
+bool agocontrol::AgoConnection::addEventHandler(boost::function<void (std::string, qpid::types::Variant::Map)> handler)
+{
+	eventHandler = handler;
+	return true;
+}
+
 
 bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Variant::Map content) {
 	Message message;
@@ -826,6 +899,9 @@ bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Va
 	try {
 		encode(content, message);
 		message.setSubject(subject);
+
+		AGO_TRACE() << "Sending message [src=" << message.getReplyTo() <<
+			", sub="<< message.getSubject()<<"]: " << content;
 		sender.send(message);
 	} catch(const std::exception& error) {
 		AGO_ERROR() << "Exception in sendMessage: " << error.what();
@@ -938,11 +1014,6 @@ bool agocontrol::AgoConnection::setFilter(bool filter) {
 	return filterCommands;
 }
 
-bool agocontrol::AgoConnection::addEventHandler(void (*handler)(std::string, qpid::types::Variant::Map)) {
-	eventHandler = handler;
-	return true;
-}
-
 qpid::types::Variant::Map agocontrol::AgoConnection::getInventory() {
 	Variant::Map content;
 	Variant::Map responseMap;
@@ -1010,37 +1081,4 @@ bool agocontrol::AgoConnection::setGlobalVariable(std::string variable, qpid::ty
 	} 
 	return false;
 }
-
-agocontrol::Log::Log(std::string ident, int facility) {
-	facility_ = facility;
-	priority_ = LOG_DEBUG;
-	strncpy(ident_, ident.c_str(), sizeof(ident_));
-	ident_[sizeof(ident_)-1] = '\0';
-
-	openlog(ident_, LOG_PID, facility_);
-}
-
-int agocontrol::Log::sync() {
-	if (buffer_.length()) {
-		syslog(priority_, "%s", buffer_.substr(0,buffer_.length()-1).c_str());
-		buffer_.erase();
-		priority_ = LOG_DEBUG; // default to debug for each message
-	}
-	return 0;
-}
-
-int agocontrol::Log::overflow(int c) {
-	if (c != EOF) {
-		buffer_ += static_cast<char>(c);
-	} else {
-		sync();
-	}
-	return c;
-}
-
-std::ostream& agocontrol::operator<< (std::ostream& os, const agocontrol::LogPriority& log_priority) {
-	static_cast<agocontrol::Log *>(os.rdbuf())->priority_ = (int)log_priority;
-	return os;
-}
-
 

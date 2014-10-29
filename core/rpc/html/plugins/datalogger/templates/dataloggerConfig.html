@@ -1,0 +1,122 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <span id="reallyreset" data-translateable="true">Reset controller (everything will be lost!)</span>
+    </div>
+
+    <h3>Datalogger configuration</h3>
+    <br/>
+
+    <div data-bind="jqTabs:{}">
+        <ul>
+            <li><a href="#tabs-general" data-translateable="true">General</a></li>
+            <li><a href="#tabs-graph" data-translateable="true">Graphs</a></li>
+            <li><a href="#tabs-database" data-translateable="true">SQL</a></li>
+        </ul>
+
+        <div id="tabs-general">
+            <ul style="list-style-type:none; padding-left:0px;">
+                <li>
+                    <input type="checkbox" data-bind="checked: dataLogging" />
+                    <span>Activate SQL logging for all sensors except GPS sensors (plots+list)</span>
+                </li>
+                <li>
+                    <input type="checkbox" data-bind="checked: gpsLogging" />
+                    <span>Activate SQL logging for GPS sensors only (map)</span>
+                </li>
+                <li>
+                    <input type="checkbox" data-bind="checked: rrdLogging" />
+                    <span>Activate RRDTool logging (graph)</span>
+                </li>
+                <li>
+                    <div class="medium primary pretty btn">
+                        <a data-bind="click: saveEnabledModules" href="#">Save changes</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div id="tabs-graph">
+            <fieldset>
+                <legend>Add graph on dashboard</legend>
+                <ul style="list-style-type:none;">
+                    <li>
+                        <span>Select sensors to display on graph</span>:
+                        <select data-bind="options:sensors, optionsText:'name', selectedOptions::selectedSensors" multiple="true" size="6"></select>
+                    </li>
+                    <li class="field">
+                        <span>Number of hours to display on thumb</span>:
+                        <input data-bind="value: multigraphPeriod" class="xnarrow text input" type="text" placeholder="12" />
+                    </li>
+                    <li>
+                        <div class="medium primary pretty btn">
+                            <a data-bind="click: addMultigraph" href="#">Add graph</a>
+                        </div>
+                    </li>
+                </ul>
+            </fieldset>
+
+            <fieldset>
+                <legend>Delete graph</legend>
+                <div class="picker" style="top:14px;">
+                    <select data-bind="options:multigraphs, optionsText:'name', value:selectedMultigraphToDel"></select>
+                </div>
+                <div class="medium primary pretty btn" style="margin-top:14px;">
+                    <a data-bind="click: deleteMultigraph" href="#">Delete graph</a>
+                </div>
+                <br/>
+                <span>Displayed sensors on graph</span>:
+                <ul data-bind="foreach:selectedMultigraphSensors">
+                    <li><span data-bind="text:$data"></span></li>
+                </ul>
+            </fieldset>
+        </div>
+
+        <div id="tabs-database">
+            <fieldset>
+                <legend>Database infos</legend>
+                <ul style="list-style-type:none; padding-left:0px;">
+                    <li>
+                        <span>Database size</span> : <span data-bind="text:databaseSize"></span>
+                    </li>
+                </ul>
+            </fieldset>
+
+            <fieldset>
+                <legend>Data table infos</legend>
+                <ul style="list-style-type:none; padding-left:0px;">
+                    <li>
+                        <span>Number of records</span> : <span data-bind="text:dataCount"></span>
+                    </li>
+                    <li>
+                        <span>Records timerange</span> : <span data-bind="text:dataStart"></span> - <span data-bind="text:dataEnd"></span>
+                    </li>
+                    <li>
+                        <div class="medium primary pretty btn">
+                            <a data-bind="click: purgeDataTable" href="#">Purge all data</a>
+                        </div>
+                    </li>
+                </ul>
+            </fieldset>
+
+            <fieldset>
+                <legend>Position table infos</legend>
+                <ul style="list-style-type:none; padding-left:0px;">
+                    <li>
+                        <span>Number of records</span> : <span data-bind="text:positionCount"></span>
+                    </li>
+                    <li>
+                        <span>Records timerange</span> : <span data-bind="text:positionStart"></span> - <span data-bind="text:positionEnd"></span>
+                    </li>
+                    <li>
+                        <div class="medium primary pretty btn">
+                            <a data-bind="click: purgePositionTable" href="#">Purge all positions</a>
+                        </div>
+                    </li>
+                </ul>
+            </fieldset>
+        </div>
+
+    </div>
+
+    <br/>
+</div>

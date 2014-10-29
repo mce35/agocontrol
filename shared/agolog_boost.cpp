@@ -21,6 +21,9 @@
 namespace agocontrol {
 namespace log {
 
+static bool inited = false;
+static std::string syslog_ident;
+
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
@@ -36,24 +39,26 @@ inline std::basic_ostream< CharT, TraitsT >& operator<< (
 		std::basic_ostream< CharT, TraitsT >& strm,
 		severity_level lvl)
 {
-	if (static_cast< std::size_t >(lvl) < AGOLOG_NUM_SEVERITY_LEVELS)
-		strm << severity_level_str[lvl];
-	else
-		strm << static_cast< int >(lvl);
-
+	strm << log_container::getLevel(lvl);
 	return strm;
 }
 
 
 void log_container::initDefault() {
+	if(inited)
+		return;
+	inited = true;
+
 	logging::add_common_attributes();
-	setLevel(AGO_DEFAULT_LEVEL);
+
+	setOutputConsole();
+	setCurrentLevel(AGO_DEFAULT_LEVEL);
 }
 
-void log_container::setLevel(severity_level lvl) {
+void log_container::setCurrentLevel(severity_level lvl) {
 	boost::log::core::get()->set_filter
 	(
-		agocontrol::log::severity >= lvl
+		::agocontrol::log::severity >= lvl
 	);
 }
 
@@ -82,7 +87,7 @@ void log_container::setOutputConsole() {
 			expr::stream
 				<< expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")
 				<< " [" << expr::attr< attrs::current_thread_id::value_type > ("ThreadID") << "] "
-				<< " [" << agocontrol::log::severity << "] "
+				<<" [" << std::setw(7) << severity << std::setw(0) << "] "
 				<< expr::smessage
 		);
 
@@ -90,13 +95,18 @@ void log_container::setOutputConsole() {
 	core->add_sink(sink);
 }
 
-void log_container::setOutputSyslog(const char *ident, int facility) {
+void log_container::setOutputSyslog(const std::string &ident, int facility) {
 	boost::shared_ptr< logging::core > core = logging::core::get();
+
+	// The ident string passed into the syslog_backend
+	// must be keept allocated. syslog_ident is static
+	syslog_ident = ident;
 
 	// Create a backend and attach a couple of streams to it
 	boost::shared_ptr< sinks::syslog_backend > backend(
 			new sinks::syslog_backend(
-				keywords::facility = sinks::syslog::user,
+				keywords::facility = sinks::syslog::make_facility(facility),
+				keywords::ident = syslog_ident,
 				keywords::use_impl = sinks::syslog::native
 			)
 		);

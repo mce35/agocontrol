@@ -10,8 +10,6 @@
 #endif
 #include <stdio.h>
 #include <unistd.h>
-#include <syslog.h>
-#include <iostream>
 
 #include <qpid/messaging/Connection.h>
 #include <qpid/messaging/Message.h>
@@ -25,6 +23,7 @@
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
+#include <boost/function.hpp>
 
 #include "agolog.h"
 
@@ -62,6 +61,18 @@ namespace agocontrol {
 	/// Return the full path to the local-state directory, with subpath appended if not NULL
 	boost::filesystem::path getLocalStatePath(const boost::filesystem::path &subpath = boost::filesystem::path());
 
+	// XXX: This should preferably also be in AgoClientInternal, but called from global
+	// ensureDirExists..
+	void initDirectorys();
+	class AgoApp;
+	class AgoClientInternal {
+		// Do not expose to other than AgoApp
+		friend class AgoApp;
+	protected:
+		static void setConfigDir(const boost::filesystem::path &dir);
+		static void setLocalStateDir(const boost::filesystem::path &dir);
+	};
+
 	/// Ensures that the directory exists
 	/// Note: throws exception if directory creation fails
 	boost::filesystem::path ensureDirExists(const boost::filesystem::path &dir);
@@ -77,6 +88,10 @@ namespace agocontrol {
 	std::string getConfigOption(const char *section, const char *option, std::string &defaultvalue);
 	std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
 	boost::filesystem::path getConfigOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
+
+	/// fetch a value from the config file. if it does not exist in designated section, try
+	/// fallback_section before finally falling back on defaultvalue
+	std::string getConfigOption(const char *section, const char *fallback_section, const char *option, const char *defaultvalue);
 	qpid::types::Variant::Map getConfigTree();
 
 	/// save value to the config file
@@ -100,16 +115,15 @@ namespace agocontrol {
 			qpid::messaging::Session session;
 			qpid::types::Variant::Map deviceMap; // this holds the internal device list
 			qpid::types::Variant::Map uuidMap; // this holds the permanent uuid to internal id mapping
+			bool shutdownSignaled;
 			bool storeUuidMap(); // stores the map on disk
 			bool loadUuidMap(); // loads it
 			boost::filesystem::path uuidMapFile;
 			std::string instance;
-			std::string uuidToInternalId(std::string uuid); // lookup in map
-			std::string internalIdToUuid(std::string internalId); // lookup in map
 			void reportDevices();
-			qpid::types::Variant::Map (*commandHandler)(qpid::types::Variant::Map);
 			bool filterCommands;
-			void (*eventHandler)(std::string, qpid::types::Variant::Map);
+			boost::function< qpid::types::Variant::Map (qpid::types::Variant::Map) > commandHandler;
+			boost::function< void (std::string, qpid::types::Variant::Map) > eventHandler;
 			bool emitDeviceAnnounce(const char *internalId, const char *deviceType);
 			bool emitDeviceRemove(const char *internalId);
 			bool emitDeviceStale(const char* internalId, const int stale);
@@ -117,6 +131,7 @@ namespace agocontrol {
 			AgoConnection(const char *interfacename);
 			~AgoConnection();
 			void run();
+			void shutdown();
 			bool addDevice(const char *internalId, const char *deviceType);
 			bool addDevice(const char *internalId, const char *deviceType, bool passuuid);
 			bool removeDevice(const char *internalId);
@@ -124,8 +139,15 @@ namespace agocontrol {
 			bool resumeDevice(const char* internalId);
 			std::string getDeviceType(const char *internalId);
 			int isDeviceStale(const char *internalId);
+
+			// C-style function pointers
 			bool addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map));
 			bool addEventHandler(void (*eventHandler)(std::string, qpid::types::Variant::Map));
+
+			// C++-style function pointers, permits class references
+			bool addHandler(boost::function<qpid::types::Variant::Map (qpid::types::Variant::Map)> handler);
+			bool addEventHandler(boost::function<void (std::string, qpid::types::Variant::Map)> eventHandler);
+
 			bool setFilter(bool filter);
 			bool sendMessage(const char *subject, qpid::types::Variant::Map content);
 			bool sendMessage(qpid::types::Variant::Map content);
@@ -137,36 +159,8 @@ namespace agocontrol {
 			qpid::types::Variant::Map getInventory();
 			std::string getAgocontroller();
 			bool setGlobalVariable(std::string variable, qpid::types::Variant value);
-	};
-
-
-	enum LogPriority {
-		kLogEmerg	= LOG_EMERG,   // system is unusable
-		kLogAlert	= LOG_ALERT,   // action must be taken immediately
-		kLogCrit		= LOG_CRIT,    // critical conditions
-		kLogErr		= LOG_ERR,     // error conditions
-		kLogWarning = LOG_WARNING, // warning conditions
-		kLogNotice  = LOG_NOTICE,  // normal, but significant, condition
-		kLogInfo		= LOG_INFO,    // informational message
-		kLogDebug	= LOG_DEBUG    // debug-level message
-	};
-
-	std::ostream& operator<< (std::ostream& os, const LogPriority& log_priority);
-
-	class Log : public std::basic_streambuf<char, std::char_traits<char> > {
-		public:
-			explicit Log(std::string ident, int facility);
-
-		protected:
-			int sync();
-			int overflow(int c);
-
-		private:
-			friend std::ostream& operator<< (std::ostream& os, const LogPriority& log_priority);
-			std::string buffer_;
-			int facility_;
-			int priority_;
-			char ident_[50];
+			std::string uuidToInternalId(std::string uuid); // lookup in map
+			std::string internalIdToUuid(std::string internalId); // lookup in map
 	};
 
 }

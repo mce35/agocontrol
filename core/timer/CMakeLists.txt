@@ -4,6 +4,7 @@ file (GLOB_RECURSE AGOTIMER_SOURCE_FILES *.cpp)
 set (TIMER_LIBRARIES
     agoclient
     pthread
+	 ${Boost_DATE_TIME_LIBRARY}
 )
 
 # add the executable

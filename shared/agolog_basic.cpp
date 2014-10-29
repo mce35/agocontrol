@@ -9,9 +9,11 @@
 namespace agocontrol {
 namespace log {
 
+static bool inited = false;
+
 // TODO: Decide on levels. On FreeBSD at least, the LOG_INFO is normally
 // not logged, only notice..
-int sev2syslog[] = {
+static int sev2syslog[] = {
 	LOG_DEBUG,
 	LOG_DEBUG,
 	LOG_INFO,
@@ -22,11 +24,7 @@ int sev2syslog[] = {
 
 void console_sink::output_record(record &rec) {
 	std::stringstream out;
-	const char * lvl;
-	if(rec.level < AGOLOG_NUM_SEVERITY_LEVELS)
-		lvl = severity_level_str[rec.level];
-	else
-		lvl = "????";
+	const std::string &lvl = log_container::getLevel(rec.level);
 			
 	out
 		<< boost::posix_time::to_simple_string(rec.timestamp)
@@ -63,16 +61,20 @@ void log_container::setOutputConsole() {
 	get().setSink(boost::shared_ptr<log_sink>( new console_sink() ) );
 }
 
-void log_container::setOutputSyslog(const char *ident, int facility) {
-	get().setSink( boost::shared_ptr<log_sink>(new syslog_sink(ident, facility)) );
+void log_container::setOutputSyslog(const std::string &ident, int facility) {
+	get().setSink( boost::shared_ptr<log_sink>(new syslog_sink(ident.c_str(), facility)) );
 }
 
 void log_container::initDefault() {
-	setLevel(AGO_DEFAULT_LEVEL);
+	if(inited)
+		return;
+	inited = true;
+
+	setCurrentLevel(AGO_DEFAULT_LEVEL);
 	// Default inited with console sink
 }
 
-void log_container::setLevel(severity_level lvl) {
+void log_container::setCurrentLevel(severity_level lvl) {
 	get().setLevel(lvl);
 }
 

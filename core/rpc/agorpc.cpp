@@ -52,7 +52,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 //mongoose close idle connection after 30 seconds (timeout)
 #define MONGOOSE_POLLING 1000 //in ms, mongoose polling time
@@ -82,11 +82,6 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
 
-//agoclient
-AgoConnection *agoConnection;
-
-//auth
-FILE* authFile = NULL;
 
 // struct and map for json-rpc event subscriptions
 struct Subscriber
@@ -113,13 +108,6 @@ public:
 	}
 };
 
-map<string,Subscriber> subscriptions;
-boost::mutex mutexSubscriptions;
-
-list<mg_server*> all_servers;
-time_t last_event;
-
-
 // helper to determine last element
 #ifndef _LIBCPP_ITERATOR
 template <typename Iter>
@@ -129,10 +117,49 @@ Iter next(Iter iter)
 }
 #endif
 
-// json-print qpid Variant Map and List via mongoose
-void mg_printmap(struct mg_connection *conn, Variant::Map map);
 
-void mg_printlist(struct mg_connection *conn, Variant::List list) {
+class AgoRpc: public AgoApp {
+private:
+	//auth
+	FILE* authFile;
+	map<string,Subscriber> subscriptions;
+	boost::mutex mutexSubscriptions;
+
+	list<mg_server*> all_servers;
+	list<boost::thread*> server_threads;
+	time_t last_event;
+
+	bool getEventRequest(struct mg_connection *conn, GetEventState* state);
+	bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) ;
+	bool jsonrpc(struct mg_connection *conn);
+	void uploadFiles(struct mg_connection *conn);
+	bool downloadFile(struct mg_connection *conn);
+
+	void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+
+	void serve_webserver(void *server);
+
+	void setupApp();
+	void cleanupApp();
+public:
+	AGOAPP_CONSTRUCTOR_HEAD(AgoRpc)
+		, authFile(NULL)
+		{}
+
+	// Called from public mg_event_handler_wrapper
+	int mg_event_handler(struct mg_connection *conn, enum mg_event event);
+};
+
+static int mg_event_handler_wrapper(struct mg_connection *conn, enum mg_event event) {
+	AgoRpc* inst = (AgoRpc*)conn->server_param;
+	return inst->mg_event_handler(conn, event);
+}
+
+
+// json-print qpid Variant Map and List via mongoose
+static void mg_printmap(struct mg_connection *conn, Variant::Map map);
+
+static void mg_printlist(struct mg_connection *conn, Variant::List list) {
 	mg_printf_data(conn, "[");
 	for (Variant::List::const_iterator it = list.begin(); it != list.end(); ++it) {
 		switch(it->getType()) {
@@ -160,7 +187,7 @@ void mg_printlist(struct mg_connection *conn, Variant::List list) {
 	mg_printf_data(conn, "]");
 }
 
-void mg_printmap(struct mg_connection *conn, Variant::Map map) {
+static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
 	mg_printf_data(conn, "{");
 	for (Variant::Map::const_iterator it = map.begin(); it != map.end(); ++it) {
 		mg_printf_data(conn, "\"%s\":", it->first.c_str());
@@ -287,7 +314,7 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
  * Connection parameters are stored directly into mg_connection object inside connection_param variable.
  * Thanks to this variable its possible to call many times getEventRequest.
  */
-bool getEventRequest(struct mg_connection *conn, GetEventState* state)
+bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
 {
 	int result = true;
 	Variant::Map event;
@@ -327,7 +354,7 @@ bool getEventRequest(struct mg_connection *conn, GetEventState* state)
  * 	false if a response has been written,
  * 	true if further processing is required
  */
-bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
+bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
 	Json::StyledWriter writer;
 	string myId;
 	const Json::Value id = request.get("id", Json::Value());
@@ -440,7 +467,7 @@ bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) {
  * 	false if a response has been written, and no more output is to be written
  * 	true if further processing is required, and MG_POLL shall continue
  */
-static bool jsonrpc(struct mg_connection *conn)
+bool AgoRpc::jsonrpc(struct mg_connection *conn)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -479,7 +506,7 @@ static bool jsonrpc(struct mg_connection *conn)
  * Upload files
  * @info source from https://github.com/cesanta/mongoose/blob/master/examples/upload.c
  */
-static void uploadFiles(struct mg_connection *conn)
+void AgoRpc::uploadFiles(struct mg_connection *conn)
 {
 	//init
 	const char *data;
@@ -602,7 +629,7 @@ static void uploadFiles(struct mg_connection *conn)
  * Download file
  * @info https://github.com/cesanta/mongoose/blob/master/examples/file.c
  */
-static bool downloadFile(struct mg_connection *conn)
+bool AgoRpc::downloadFile(struct mg_connection *conn)
 {
 	//init
 	char param[1024];
@@ -669,7 +696,7 @@ static bool downloadFile(struct mg_connection *conn)
 /**
  * Mongoose event handler
  */
-static int event_handler(struct mg_connection *conn, enum mg_event event)
+int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
 {
 	int result = MG_FALSE;
 
@@ -754,7 +781,7 @@ static int event_handler(struct mg_connection *conn, enum mg_event event)
 /**
  * Agoclient event handler
  */
-void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
+void AgoRpc::eventHandler(std::string subject, qpid::types::Variant::Map content)
 {
 	// don't flood clients with unneeded events
 	if( subject=="event.environment.timechanged")
@@ -809,13 +836,14 @@ void ago_event_handler(std::string subject, qpid::types::Variant::Map content)
 /**
  * Webserver process (threaded)
  */
-static void *serve_webserver(void *server)
+void AgoRpc::serve_webserver(void *server)
 {
-	for (;;)
+	AGO_TRACE() << "Webserver thread started";
+	while(!isExitSignaled())
 	{
 		mg_poll_server((struct mg_server *) server, MONGOOSE_POLLING);
 	}
-	return NULL;
+	AGO_TRACE() << "Webserver thread terminated";
 }
 
 /**
@@ -839,7 +867,7 @@ static void signal_handler(int sig_num) {
 	}
 }
 
-int main(int argc, char **argv) {
+void AgoRpc::setupApp() {
 	Variant::List ports;
 	string port;
 	string split;
@@ -849,12 +877,8 @@ int main(int argc, char **argv) {
 	string domainname;
 	bool useSSL;
 	struct mg_server *firstServer = NULL;
-	char serverId[3] = "";
 	int maxthreads;
 	int threadId = 0;
-
-	//create agoclient
-	agoConnection = new AgoConnection("rpc");
 
 	//get parameters
 	port = getConfigOption("rpc", "ports", "8008,8009s");
@@ -910,11 +934,11 @@ int main(int argc, char **argv) {
 			AGO_INFO() << "Starting webserver on port " << port << " using SSL";
 		else
 			AGO_INFO() << "Starting webserver on port " << port;
+
 		for( int i=0; i<maxthreads; i++ )
 		{
 			struct mg_server *server;
-			sprintf(serverId, "%d", threadId);
-			server = mg_create_server((void*)serverId, event_handler);
+			server = mg_create_server(this, mg_event_handler_wrapper);
 			mg_set_option(server, "document_root", htdocs.string().c_str());
 			mg_set_option(server, "auth_domain", domainname.c_str());
 			if( useSSL )
@@ -933,7 +957,8 @@ int main(int argc, char **argv) {
 			{
 				firstServer = server;
 			}
-			mg_start_thread(serve_webserver, server);
+			boost::thread *t = new boost::thread(boost::bind(&AgoRpc::serve_webserver, this, server));
+			server_threads.push_back(t);
 			all_servers.push_back(server);
 		}
 
@@ -947,8 +972,22 @@ int main(int argc, char **argv) {
 	//avoid cgi zombies
 	signal(SIGCHLD, signal_handler);
 
-	//configure and run agoclient
-	agoConnection->addEventHandler(ago_event_handler);
-	agoConnection->run();
-
+	addEventHandler();
 }
+
+void AgoRpc::cleanupApp() {
+	// Signal wakes up one of the mg_poll_server calls,
+	// the rest will exit. Calling mg_wakup would however block fully, since the first
+	// thread does not respond anymore.. So just wait <1s for them
+	AGO_TRACE() << "Waiting for webserver threads";
+	for(list<boost::thread*>::iterator i = server_threads.begin(); i != server_threads.end(); i++) {
+		(*i)->join();
+	}
+	AGO_TRACE() << "All webserver threads returned";
+	for(list<boost::thread*>::iterator i = server_threads.begin(); i != server_threads.end(); i++) {
+		delete *i;
+	}
+}
+
+AGOAPP_ENTRY_POINT(AgoRpc);
+

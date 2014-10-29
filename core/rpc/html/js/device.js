@@ -37,10 +37,6 @@ function device(obj, uuid) {
         };
     }
 
-    if (this.devicetype == "dataloggercontroller") {
-        dataLoggerController = uuid;
-    }
-
     if (this.devicetype == "agocontroller") {
         agoController = uuid;
     }
@@ -59,7 +55,71 @@ function device(obj, uuid) {
         };
     }
 
-    if (this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/) ) {
+    this.multigraphThumb = ko.observable();
+    this.getThumbGraph = function(deferred) {
+        var content = {};
+        content.command = "getthumb";
+        content.uuid = dataLoggerController;
+        content.multigraph = deferred.internalid;
+        sendCommand(content, function(res) { 
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
+            {
+                if( !res.result.error )
+                {
+                    deferred.observable('data:image/png;base64,' + res.result.graph);
+                }
+                else
+                {
+                    //TODO notif something?
+                }
+            }
+            else
+            {
+                //no thumb available
+                //TODO notif something?
+                console.log('request getthumb failed');
+            }
+        }, 10);
+    };
+
+    //refresh dashboard thumbs
+    this.refreshThumbs = function() {
+        for( var i=0; i<thumbs.length; i++ )
+        {
+            self.getThumbGraph(thumbs[i]);
+        }
+    };
+
+    if (this.devicetype == "dataloggercontroller")
+    {
+        dataLoggerController = uuid;
+        //load deferred thumbs
+        for( var i=0; i<deferredThumbsLoading.length; i++ )
+        {
+            this.getThumbGraph(deferredThumbsLoading[i]);
+        }
+        deferredThumbsLoading = [];
+        //auto resfresh thumbs periodically
+        window.setInterval(this.refreshThumbs, 300000); 
+    }
+
+    if (this.devicetype == "multigraph")
+    {
+        var def = {'internalid':obj.internalid, 'observable':self.multigraphThumb};
+        if( dataLoggerController )
+        {
+            //get thumb right now
+            this.getThumbGraph(def);
+        }
+        else
+        {
+            //defer thumb loading
+            deferredThumbsLoading.push(def);
+        }
+        thumbs.push(def);
+    }
+
+    if (this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/) || this.devicetype=="multigraph" ) {
         //fill values list
         this.valueList = ko.computed(function() {
             var result = [];
@@ -120,6 +180,7 @@ function device(obj, uuid) {
                 }
             }, 10);
         };
+
     }
 
     if( this.devicetype=="barometersensor" )

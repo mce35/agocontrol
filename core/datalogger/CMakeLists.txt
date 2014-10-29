@@ -4,7 +4,8 @@ file (GLOB_RECURSE AGODATALOGGER_SOURCE_FILES *.cpp)
 set (DATALOGGER_LIBRARIES
     agoclient
     sqlite3
-    boost_date_time
+    pthread
+	 ${Boost_PROGRAM_DATE_TIME_LIBRARY}
     rrd
 )
 

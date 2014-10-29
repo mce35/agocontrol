@@ -15,7 +15,8 @@ endif(FREEBSD)
 file (GLOB_RECURSE AGOLUA_SOURCE_FILES *.cpp)
 set (LUA_LIBRARIES
     agoclient
-	 boost_regex
+    pthread
+	 ${Boost_REGEX_LIBRARY}
 	 ${LUA}
 )
 

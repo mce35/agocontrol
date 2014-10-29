@@ -9,7 +9,7 @@
 #include <sstream>
 #include <cerrno>
 
-#include "agoclient.h"
+#include "agoapp.h"
 #include "bool.h"
 
 #ifndef EVENTMAPFILE
@@ -21,8 +21,16 @@ using namespace agocontrol;
 using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
-qpid::types::Variant::Map eventmap;
-AgoConnection *agoConnection;
+class AgoEvent: public AgoApp {
+private:
+	qpid::types::Variant::Map eventmap;
+	qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+	void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+	void setupApp();
+public:
+	AGOAPP_CONSTRUCTOR(AgoEvent);
+};
+
 
 double variantToDouble(qpid::types::Variant v) {
 	double result;
@@ -86,7 +94,7 @@ bool operator>=(qpid::types::Variant a, qpid::types::Variant b) {
 // example event:eb68c4a5-364c-4fb8-9b13-7ea3a784081f:{action:{command:on, uuid:25090479-566d-4cef-877a-3e1927ed4af0}, criteria:{0:{comp:eq, lval:hour, rval:7}, 1:{comp:eq, lval:minute, rval:1}}, event:event.environment.timechanged, nesting:(criteria["0"] and criteria["1"])}
 
 
-void eventHandler(std::string subject, qpid::types::Variant::Map content) {
+void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	// ignore device announce events
 	if (subject == "event.device.announce") return;
 	// iterate event map and match for event name
@@ -198,7 +206,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	std::string internalid = content["internalid"].asString();
 	if (internalid == "eventcontroller") {
@@ -254,19 +262,20 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	return returnval;
 }
 
-int main(int argc, char **argv) {
-	agoConnection = new AgoConnection("event");	
+void AgoEvent::setupApp() {
 	AGO_DEBUG() << "parsing eventmap file" << endl;
 	fs::path file = ensureParentDirExists(getConfigPath(EVENTMAPFILE));
 	eventmap = jsonFileToVariantMap(file);
 
+	addCommandHandler();
+	addEventHandler();
+
 	agoConnection->addDevice("eventcontroller", "eventcontroller");
-	agoConnection->addHandler(commandHandler);
-	agoConnection->addEventHandler(eventHandler);
 
 	for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++) {
 		AGO_DEBUG() << "adding event:" << it->first << ":" << it->second << endl;	
 		agoConnection->addDevice(it->first.c_str(), "event", true);
 	}
-	agoConnection->run();
 }
+
+AGOAPP_ENTRY_POINT(AgoEvent);

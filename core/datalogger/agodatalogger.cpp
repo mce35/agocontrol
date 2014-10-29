@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/stat.h>
 
-#include <pthread.h>
 
 #include <string>
 #include <iostream>
@@ -21,24 +21,48 @@
 #include <rrd.h>
 #include "base64.h"
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #ifndef DBFILE
 #define DBFILE "datalogger.db"
+#endif
+
+#ifndef DEVICEMAPFILE
+#define DEVICEMAPFILE "/maps/datalogger.json"
 #endif
 
 using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
 
-AgoConnection *agoConnection;
+using namespace agocontrol;
+
+class AgoDataLogger: public AgoApp {
+private:
+
+    void updateInventory();
+
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+    void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+
+    qpid::types::Variant::Map getDatabaseInfos();
+    bool purgeTable(std::string table);
+    bool isTablePurgeAllowed(std::string table);
+
+    void setupApp();
+public:
+    AGOAPP_CONSTRUCTOR(AgoDataLogger);
+};
+
 sqlite3 *db;
 qpid::types::Variant::Map inventory;
 qpid::types::Variant::Map units;
-bool enableSql = 1;
-bool enableRrd = 1;
-//const char *colors[] = {"#800080", "#FF00FF", "#000080", "#0000FF", "#008080", "#00FFFF", "#008000", "#00FF00", "#808000", "#FFFF00", "#800000", "#FF0000", "#000000", "#808080", "#C0C0C0"};
+bool dataLogging = 1;
+bool gpsLogging = 1;
+bool rrdLogging = 1;
 const char* colors[] = {"#800080", "#0000FF", "#008000", "#FF00FF", "#000080", "#FF0000", "#00FF00", "#00FFFF", "#800000", "#808000", "#008080", "#C0C0C0", "#808080", "#000000", "#FFFF00"};
+qpid::types::Variant::Map devicemap;
+qpid::types::Variant::List allowedPurgeTables;
 
 std::string uuidToName(std::string uuid) {
     qpid::types::Variant::Map devices = inventory["inventory"].asMap();
@@ -47,6 +71,30 @@ std::string uuidToName(std::string uuid) {
     }
     qpid::types::Variant::Map device = devices[uuid].asMap();
     return device["name"].asString() == "" ? uuid : device["name"].asString();
+}
+
+/**
+ * Update inventory
+ */
+void AgoDataLogger::updateInventory()
+{
+    bool unitsLoaded = false;
+
+    //test unit content
+    if( units.size()>0 )
+        unitsLoaded = true;
+
+    //get inventory
+    inventory = agoConnection->getInventory();
+
+    //get units
+    if( !unitsLoaded && !inventory["schema"].isVoid() )
+    {
+        for( qpid::types::Variant::Map::iterator it=inventory["schema"].asMap()["units"].asMap().begin(); it!=inventory["schema"].asMap()["units"].asMap().end(); it++ )
+        {
+            units[it->first] = it->second.asMap()["label"].asString();
+        }
+    }
 }
 
 bool createTableIfNotExist(string tablename, list<string> createqueries) {
@@ -59,7 +107,7 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
     //prepare query
     rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
     if(rc != SQLITE_OK) {
-	AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
+        AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
         return false;
     }
     sqlite3_bind_text(stmt, 1, tablename.c_str(), -1, NULL);
@@ -83,6 +131,15 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
     createqueries.clear();
 
     return true;
+}
+
+/**
+ * Save device map file
+ */
+void saveDeviceMapFile()
+{
+    fs::path dmf = getConfigPath(DEVICEMAPFILE);
+    variantMapToJSONFile(devicemap, dmf);
 }
 
 /**
@@ -124,7 +181,7 @@ int string_real_length(const std::string str)
 }
 
 /**
- * Prepend spaces to source string until source size reached
+ * Prepend to source string until source size reached
  */
 std::string string_prepend_spaces(std::string source, size_t newSize)
 {
@@ -158,6 +215,12 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
     filename << uuid << ".rrd";
 
     //get device infos from inventory
+    if( inventory["devices"].isVoid() )
+    {
+        //unable to continue
+        AGO_ERROR() << "agodatalogger-RRDtool: no inventory available";
+        return false;
+    }
     qpid::types::Variant::Map devices = inventory["devices"].asMap();
     qpid::types::Variant::Map device;
     for( qpid::types::Variant::Map::const_iterator it=devices.begin(); it!=devices.end(); it++ )
@@ -194,17 +257,20 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
         //prepare unit
         string unit = "U";
         string vertical_unit = "U";
-        qpid::types::Variant::Map values = device["values"].asMap();
-        for( qpid::types::Variant::Map::const_iterator it=values.begin(); it!=values.end(); it++ )
+        if( !device["values"].isVoid() )
         {
-            if( it->first==kind )
+            qpid::types::Variant::Map values = device["values"].asMap();
+            for( qpid::types::Variant::Map::const_iterator it=values.begin(); it!=values.end(); it++ )
             {
-                qpid::types::Variant::Map infos = it->second.asMap();
-                if( !infos["unit"].isVoid() )
+                if( it->first==kind || it->first=="batterylevel" )
                 {
-                    vertical_unit = infos["unit"].asString();
+                    qpid::types::Variant::Map infos = it->second.asMap();
+                    if( !infos["unit"].isVoid() )
+                    {
+                        vertical_unit = infos["unit"].asString();
+                    }
+                    break;
                 }
-                break;
             }
         }
         if( !units[vertical_unit].isVoid() )
@@ -311,11 +377,11 @@ bool addGraphParam(const std::string& param, char** params, int* index)
  */
 void addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index)
 {
-    string param = "";
-    
     //first params
     addGraphParam("dummy", params, index);
     addGraphParam("", params, index);
+
+    addGraphParam("--slope-mode", params, index);
 
     //start
     addGraphParam("--start", params, index);
@@ -337,6 +403,37 @@ void addDefaultParameters(int start, int end, string vertical_unit, int width, i
     addGraphParam(string_format("%d", width), params, index);
     addGraphParam("--height", params, index);
     addGraphParam(string_format("%d", height), params, index);
+}
+
+/**
+ * Add default thumb graph parameters
+ */
+void addDefaultThumbParameters(int duration, int width, int height, char** params, int* index)
+{
+    //first params
+    addGraphParam("dummy", params, index);
+    addGraphParam("", params, index);
+
+    //start
+    addGraphParam("--start", params, index);
+    addGraphParam(string_format("end-%dh", duration), params, index);
+
+    //end
+    addGraphParam("--end", params, index);
+    addGraphParam("now", params, index);
+
+    //size
+    addGraphParam("--width", params, index);
+    addGraphParam(string_format("%d", width), params, index);
+    addGraphParam("--height", params, index);
+    addGraphParam(string_format("%d", height), params, index);
+
+    //legend
+    addGraphParam("--no-legend", params, index);
+    //addGraphParam("--y-grid", params, index);
+    //addGraphParam("none", params, index);
+    addGraphParam("--x-grid", params, index);
+    addGraphParam("none", params, index);
 }
 
 /**
@@ -434,9 +531,25 @@ void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int
 }
 
 /**
+ * Add thumb graph parameters
+ */
+void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+{
+    //keep index value
+    int id = (*index);
+
+    //DEF
+    fs::path rrdfile = getLocalStatePath(data["filename"].asString());
+    addGraphParam(string_format("DEF:level%d=%s:level:AVERAGE", id, rrdfile.c_str()), params, index);
+
+    //GFX LINE
+    addGraphParam(string_format("LINE1:level%d%s:%s", id, data["colorL"].asString().c_str(), data["kind"].asString().c_str()), params, index);
+}
+
+/**
  * Generate RRDtool graph
  */
-bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigned char** img, unsigned long* size)
+bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size)
 {
     qpid::types::Variant::Map data;
     char** params;
@@ -453,7 +566,6 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigne
             multiId++;
 
         //get data
-        qpid::types::Variant::Map data;
         if( prepareGraph((*it).asString(), multiId, data) )
         {
             datas.push_back(data);
@@ -464,8 +576,9 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigne
     if( datas.size()>1 )
     {
         //multigraph
+        
         //adjust some stuff
-        int defaultNumParam = 12;
+        int defaultNumParam = 13;
         string vertical_unit = "";
         string lastUnit = "";
         size_t maxUnitLength = 0;
@@ -483,7 +596,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigne
                 if( lastUnit.length()>0 )
                 {
                     //not the same unit
-                    defaultNumParam = 10;
+                    defaultNumParam = 11;
                     vertical_unit = "";
                 }
                 else
@@ -492,6 +605,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigne
                 }
             }
         }
+
         //format unit (add spaces for better display)
         for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
         {
@@ -507,35 +621,65 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, unsigne
             }
         }
 
-        //alloc memory
-        num_params = 11 * datas.size() + defaultNumParam; //11 parameters per datas + 10 default parameters (wo vertical_unit) or 12 (with vertical_unit)
-        params = (char**)malloc(sizeof(char*) * num_params);
-
-        //add graph parameters
-        addDefaultParameters(start, end, vertical_unit, 850, 300, params, &index);
-        for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
+        if( thumbDuration<=0 )
         {
-            data = (*it).asMap();
-            addMultiGraphParameters(data, params, &index);
+            //alloc memory
+            num_params = 11 * datas.size() + defaultNumParam; //11 parameters per datas + 10 default parameters (wo vertical_unit) or 12 (with vertical_unit)
+            params = (char**)malloc(sizeof(char*) * num_params);
+
+            //add graph parameters
+            addDefaultParameters(start, end, vertical_unit, 850, 300, params, &index);
+            for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
+            {
+                data = (*it).asMap();
+                addMultiGraphParameters(data, params, &index);
+            }
+        }
+        else
+        {
+            //alloc memory
+            num_params = 2 * datas.size() + 13;
+            params = (char**)malloc(sizeof(char*) * num_params);
+
+            //add graph parameters
+            addDefaultThumbParameters(thumbDuration, 250, 40, params, &index);
+            for( qpid::types::Variant::List::iterator it=datas.begin(); it!=datas.end(); it++ )
+            {
+                data = (*it).asMap();
+                addThumbGraphParameters(data, params, &index);
+            }
         }
     }
     else if( datas.size()==1 )
     {
         //single graph
-        //alloc memory
-        num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
-        params = (char**)malloc(sizeof(char*) * num_params);
         data = datas.front().asMap();
+        if( thumbDuration<=0 )
+        {
+            //alloc memory
+            num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
+            params = (char**)malloc(sizeof(char*) * num_params);
+        
+            //add graph parameters
+            addDefaultParameters(start, end, data["vertical_unit"], 850, 300, params, &index);
+            addSingleGraphParameters(data, params, &index);
+        }
+        else
+        {
+            //alloc memory
+            num_params = 2 * datas.size() + 13;
+            params = (char**)malloc(sizeof(char*) * num_params);
 
-        //add graph parameters
-        addDefaultParameters(start, end, data["vertical_unit"], 850, 300, params, &index);
-        addSingleGraphParameters(data, params, &index);
+            //add graph parameters
+            addDefaultThumbParameters(thumbDuration, 250, 40, params, &index);
+            addThumbGraphParameters(data, params, &index);
+        }
     }
-    else
+    else 
     {
-        //no data
-        AGO_ERROR() << "agodatalogger-RRDtool: no data";
-        return false;
+         //no data
+         AGO_ERROR() << "agodatalogger-RRDtool: no data";
+         return false;
     }
     dumpGraphParams((const char**)params, num_params);
 
@@ -634,7 +778,7 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
     int rc;
     string result;
 
-    if( subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" )
+    if( dataLogging && subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" )
     {
         AGO_DEBUG() << "specific environment case: position";
         string lat = content["latitude"].asString();
@@ -653,7 +797,7 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
         sqlite3_bind_text(stmt, 3, lon.c_str(), -1, NULL);
         sqlite3_bind_int(stmt, 4, time(NULL));
     }
-    else if( content["level"].asString() != "")
+    else if( gpsLogging && content["level"].asString() != "")
     {
         replaceString(subject, "event.environment.", "");
         replaceString(subject, "event.device.", "");
@@ -695,18 +839,21 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
 /**
  * Main event handler
  */
-void eventHandler(std::string subject, qpid::types::Variant::Map content) {
+void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map content) {
     if( subject!="" && !content["uuid"].isVoid() )
     {
-        if( enableSql )
-        {
-            eventHandlerSQLite(subject, content["uuid"].asString(), content);
-        }
+        //data logging
+        eventHandlerSQLite(subject, content["uuid"].asString(), content);
 
-        if( enableRrd )
+        //rrd logging
+        if( rrdLogging )
         {
             eventHandlerRRDtool(subject, content["uuid"].asString(), content);
         }
+    }
+    else if( subject=="event.environment.timechanged" )
+    {
+        updateInventory();
     }
 }
 
@@ -802,7 +949,171 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
     result["result"] = data;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+/**
+ * Return some information about database (size, date of first entry...)
+ */
+qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
+{
+    sqlite3_stmt *stmt;
+    int rc;
+    qpid::types::Variant::Map returnval;
+    returnval["data_start"] = 0;
+    returnval["data_end"] = 0;
+    returnval["data_count"] = 0;
+    returnval["position_start"] = 0;
+    returnval["position_end"] = 0;
+    returnval["position_count"] = 0;
+
+    //get data time range
+    rc = sqlite3_prepare_v2(db, "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM data;", -1, &stmt, NULL);
+    if(rc != SQLITE_OK)
+    {
+        AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
+    }
+    else
+    {
+        do
+        {
+            rc = sqlite3_step(stmt);
+            switch(rc)
+            {
+                case SQLITE_ERROR:
+                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
+                    break;
+                case SQLITE_ROW:
+                    returnval["data_start"] = (int)sqlite3_column_int(stmt, 0);
+                    returnval["data_end"] = (int)sqlite3_column_int(stmt, 1);
+                    break;
+            }
+        }
+        while (rc == SQLITE_ROW);
+        sqlite3_finalize(stmt);
+    }
+
+    //get data count
+    rc = sqlite3_prepare_v2(db, "SELECT COUNT(id) FROM data;", -1, &stmt, NULL);
+    if(rc != SQLITE_OK)
+    {
+        AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
+    }
+    else
+    {
+        do
+        {
+            rc = sqlite3_step(stmt);
+            switch(rc)
+            {
+                case SQLITE_ERROR:
+                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
+                    break;
+                case SQLITE_ROW:
+                    returnval["data_count"] = (int64_t)sqlite3_column_int64(stmt, 0);
+                    break;
+            }
+        }
+        while (rc == SQLITE_ROW);
+        sqlite3_finalize(stmt);
+    }
+
+    //get position time range
+    rc = sqlite3_prepare_v2(db, "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM position;", -1, &stmt, NULL);
+    if(rc != SQLITE_OK)
+    {
+        AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
+    }
+    else
+    {
+        do
+        {
+            rc = sqlite3_step(stmt);
+            switch(rc)
+            {
+                case SQLITE_ERROR:
+                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
+                    break;
+                case SQLITE_ROW:
+                    returnval["position_start"] = (int)sqlite3_column_int(stmt, 0);
+                    returnval["position_end"] = (int)sqlite3_column_int(stmt, 1);
+                    break;
+            }
+        }
+        while (rc == SQLITE_ROW);
+        sqlite3_finalize(stmt);
+    }
+
+    //get position count
+    rc = sqlite3_prepare_v2(db, "SELECT COUNT(id) FROM position;", -1, &stmt, NULL);
+    if(rc != SQLITE_OK)
+    {
+        AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
+    }
+    else
+    {
+        do
+        {
+            rc = sqlite3_step(stmt);
+            switch(rc)
+            {
+                case SQLITE_ERROR:
+                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
+                    break;
+                case SQLITE_ROW:
+                    returnval["position_count"] = (int64_t)sqlite3_column_int64(stmt, 0);
+                    break;
+            }
+        }
+        while (rc == SQLITE_ROW);
+        sqlite3_finalize(stmt);
+    }
+
+    return returnval;
+}
+
+/**
+ * Purge specified table
+ */
+bool AgoDataLogger::purgeTable(std::string table)
+{
+    //sqlite3_stmt *stmt;
+    int rc;
+    char *zErrMsg = 0;
+    std::string query = "DELETE FROM ";
+    query += table;
+
+    rc = sqlite3_exec(db, query.c_str(), NULL, NULL, &zErrMsg);
+    if(rc != SQLITE_OK)
+    {
+        AGO_ERROR() << "sql error #" << rc << ": " << zErrMsg;
+        return false;
+    }
+    else
+    {
+        //vacuum database
+        rc = sqlite3_exec(db, "VACUUM", NULL, NULL, &zErrMsg);
+        return true;
+    }
+}
+
+/**
+ * Table can be purged?
+ */
+bool AgoDataLogger::isTablePurgeAllowed(std::string table)
+{
+    for( qpid::types::Variant::List::iterator it=allowedPurgeTables.begin(); it!=allowedPurgeTables.end(); it++ )
+    {
+        if( (*it)==table )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Command handler
+ */
+qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content)
+{
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (internalid == "dataloggercontroller")
@@ -841,72 +1152,360 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
         }
         else if( content["command"] == "getgraph" )
         {
-            unsigned char* img = NULL;
-            unsigned long size = 0;
-            if( generateGraph(content["devices"].asList(), content["start"].asInt32(), content["end"].asInt32(), &img, &size) )
+            if( !content["start"].isVoid() && !content["end"].isVoid() && !content["devices"].isVoid() )
             {
-                returnval["error"] = 0;
-                returnval["msg"] = "";
-                returnval["graph"] = base64_encode(img, size);
+                unsigned char* img = NULL;
+                unsigned long size = 0;
+                qpid::types::Variant::List uuids;
+
+                uuids = content["devices"].asList();
+                //is a multigraph?
+                if( uuids.size()==1 )
+                {
+                    string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
+                    if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
+                    {
+                        uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
+                    }
+                }
+
+                //updateInventory();
+                
+                if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
+                {
+                    returnval["error"] = 0;
+                    returnval["msg"] = "";
+                    returnval["graph"] = base64_encode(img, size);
+                }
+                else
+                {
+                    //error generating graph
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Internal error";
+                }
             }
             else
             {
-                //error generating graph
+                AGO_ERROR() << "Unable to get multigraph: missing request parameter";
                 returnval["error"] = 1;
                 returnval["msg"] = "Internal error";
             }
+        }
+        else if( content["command"]=="getstatus" )
+        {
+            //add multigrahs
+            qpid::types::Variant::List multis;
+            if( !devicemap["multigraphs"].isVoid() )
+            {
+                for( qpid::types::Variant::Map::iterator it=devicemap["multigraphs"].asMap().begin(); it!=devicemap["multigraphs"].asMap().end(); it++ )
+                {
+                    qpid::types::Variant::Map multi;
+                    if( !it->second.isVoid() && !it->second.asMap()["uuids"].isVoid() )
+                    {
+                        multi["name"] = it->first;
+                        multi["uuids"] = it->second.asMap()["uuids"].asList();
+                        multis.push_back(multi);
+                    }
+                }
+            }
+
+            //database infos
+            qpid::types::Variant::Map db;
+            fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
+            struct stat stat_buf;
+            int rc = stat(dbpath.c_str(), &stat_buf);
+            db["size"] = (rc==0 ? (int)stat_buf.st_size : 0);
+            db["infos"] = getDatabaseInfos();
+
+            returnval["error"] = 0;
+            returnval["msg"] = "";
+            returnval["multigraphs"] = multis;
+            returnval["dataLogging"] = dataLogging ? 1 : 0;
+            returnval["gpsLogging"] = gpsLogging ? 1 : 0;
+            returnval["rrdLogging"] = rrdLogging ? 1 : 0;
+            returnval["database"] = db;
+        }
+        else if( content["command"]=="addmultigraph" )
+        {
+            if( !content["uuids"].isVoid() && !content["period"].isVoid() )
+            {
+                string internalid = "multigraph" + string(devicemap["nextid"]);
+                if( agoConnection->addDevice(internalid.c_str(), "multigraph") )
+                {
+                    devicemap["nextid"] = devicemap["nextid"].asInt32() + 1;
+                    qpid::types::Variant::Map device;
+                    device["uuids"] = content["uuids"].asList();
+                    device["period"] = content["period"].asInt32();
+                    devicemap["multigraphs"].asMap()[internalid] = device;
+                    saveDeviceMapFile();
+    
+                    returnval["error"] = 0;
+                    returnval["msg"] = "Multigraph " + internalid + " created successfully";
+                }
+                else
+                {
+                    AGO_ERROR() << "Unable to add new multigraph";
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Internal error";
+                }
+            }
+            else
+            {
+                AGO_ERROR() << "Unable to add multigraph: missing request parameter";
+                returnval["error"] = 1;
+                returnval["msg"] = "Internal error";
+            }
+        }
+        else if( content["command"]=="deletemultigraph" )
+        {
+            if( !content["multigraph"].isVoid() )
+            {
+                string internalid = content["multigraph"].asString();
+                if( agoConnection->removeDevice(internalid.c_str()) )
+                {
+                    devicemap["multigraphs"].asMap().erase(internalid);
+                    saveDeviceMapFile();
+
+                    returnval["error"] = 0;
+                    returnval["msg"] = "Multigraph " + internalid + " deleted successfully";
+                }
+                else
+                {
+                    AGO_ERROR() << "Unable to delete multigraph " << internalid;
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Internal error";
+                }
+            }
+            else
+            {
+                AGO_ERROR() << "Unable to delete multigraph: missing request parameter";
+                returnval["error"] = 1;
+                returnval["msg"] = "Internal error";
+            }
+        }
+        else if( content["command"]=="getthumb" )
+        {
+            if( !content["multigraph"].isVoid() )
+            {
+                string internalid = content["multigraph"].asString();
+                if( !devicemap["multigraphs"].isVoid() && !devicemap["multigraphs"].asMap()[internalid].isVoid() && !devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].isVoid() )
+                {
+                    unsigned char* img = NULL;
+                    unsigned long size = 0;
+                    int period = 12;
+                    
+                    //get thumb period
+                    if( !devicemap["multigraphs"].asMap()[internalid].asMap()["period"].isVoid() )
+                    {
+                        period = devicemap["multigraphs"].asMap()[internalid].asMap()["period"].asInt32();
+                    }
+
+                    if( generateGraph(devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList(), 0, 0, period, &img, &size) )
+                    {
+                        returnval["error"] = 0;
+                        returnval["msg"] = "";
+                        returnval["graph"] = base64_encode(img, size);
+                    }
+                    else
+                    {
+                        //error generating graph
+                        returnval["error"] = 1;
+                        returnval["msg"] = "Internal error";
+                    }
+                }
+                else
+                {
+                    AGO_ERROR() << "Unable to get thumb: it seems multigraph '" << internalid << "' doesn't exist";
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Internal error";
+                }
+            }
+            else
+            {
+                AGO_ERROR() << "Unable to get thumb: missing request parameter";
+                returnval["error"] = 1;
+                returnval["msg"] = "Internal error";
+            }
+        }
+        else if( content["command"]=="setenabledmodules" )
+        {
+            if( !content["dataLogging"].isVoid() && !content["rrdLogging"].isVoid()  && !content["gpsLogging"].isVoid() )
+            {
+                if( content["dataLogging"].asBool() )
+                {
+                    dataLogging = true;
+                    AGO_INFO() << "Data logging enabled";
+                }
+                else
+                {
+                    dataLogging = false;
+                    AGO_INFO() << "Data logging disabled";
+                }
+                if( !setConfigOption("datalogger", "dataLogging", dataLogging) )
+                {
+                    AGO_ERROR() << "Unable to save dataLogging status to config file";
+                }
+
+                if( content["igpsLogging"].asBool() )
+                {
+                    gpsLogging = true;
+                    AGO_INFO() << "GPS logging enabled";
+                }
+                else
+                {
+                    gpsLogging = false;
+                    AGO_INFO() << "GPS logging disabled";
+                }
+                if( !setConfigOption("datalogger", "gpsLogging", gpsLogging) )
+                {
+                    AGO_ERROR() << "Unable to save gpsLogging status to config file";
+                }
+
+                if( content["rrdLogging"].asBool() )
+                {
+                    rrdLogging = true;
+                    AGO_INFO() << "RRD logging enabled";
+                }
+                else
+                {
+                    rrdLogging = false;
+                    AGO_INFO() << "RRD logging disabled";
+                }
+                if( !setConfigOption("datalogger", "rrdLogging", rrdLogging) )
+                {
+                    AGO_ERROR() << "Unable to save rrdLogging status to config file";
+                }
+
+                returnval["error"] = 0;
+                returnval["msg"] = "";
+            }
+            else
+            {
+                AGO_ERROR() << "Unable to get thumb: missing request parameter";
+                returnval["error"] = 1;
+                returnval["msg"] = "Internal error";
+            }
+        }
+        else if( content["command"]=="purgetable" )
+        {
+            if( !content["table"].isVoid() )
+            {
+                //security check
+                std::string table = content["table"].asString();
+                if( isTablePurgeAllowed(table) )
+                {
+                    if( purgeTable(table) )
+                    {
+                        returnval["error"] = 0;
+                        returnval["msg"] = "";
+                    }
+                    else
+                    {
+                        AGO_ERROR() << "Unable to purge table '" << table << "'";
+                        returnval["error"] = 1;
+                        returnval["msg"] = "Internal error";
+                    }
+                }
+                else
+                {
+                    AGO_ERROR() << "Purge table '" << table << "' not allowed";
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Table purge not allowed";
+                }
+            }
+        }
+        else
+        {
+            AGO_WARNING() << "command not found";
+            returnval["error"] = 1;
+            returnval["msg"] = "Internal error";
         }
     }
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoDataLogger::setupApp()
+{
+    //init
+    allowedPurgeTables.push_back("data");
+    allowedPurgeTables.push_back("position");
 
+    //init database
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     int rc = sqlite3_open(dbpath.c_str(), &db);
     if( rc != SQLITE_OK){
-        AGO_ERROR() << "Can't open database: " << sqlite3_errmsg(db);
+        AGO_ERROR() << "Can't open database " << dbpath.string() << ": " << sqlite3_errmsg(db);
         sqlite3_close(db);
-        return 1;
+        throw StartupError();
     }
 
+    //create missing tables
     list<string> queries;
     queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
     queries.push_back("CREATE INDEX timestamp_position_idx ON position(timestamp)");
     queries.push_back("CREATE INDEX uuid_position_idx ON position(uuid)");
     createTableIfNotExist("position", queries);
 
-    agoConnection = new AgoConnection("datalogger");	
+    //add controller
     agoConnection->addDevice("dataloggercontroller", "dataloggercontroller");
-    agoConnection->addHandler(commandHandler);
-    agoConnection->addEventHandler(eventHandler);
-    inventory = agoConnection->getInventory();
 
-    //get units
-    for( qpid::types::Variant::Map::iterator it=inventory["schema"].asMap()["units"].asMap().begin(); it!=inventory["schema"].asMap()["units"].asMap().end(); it++ )
-    {
-        units[it->first] = it->second.asMap()["label"].asString();
-    }
+    //update inventory
+    updateInventory();
 
     //read config
-    std::string optString = getConfigOption("datalogger", "enableSql", "1");
+    std::string optString = getConfigOption("datalogger", "dataLogging", "1");
     int r;
     if(sscanf(optString.c_str(), "%d", &r) == 1) {
-        enableSql = (r == 1);
+        dataLogging = (r == 1);
     }
-    optString = getConfigOption("datalogger", "enableRrd", "1");
+    optString = getConfigOption("datalogger", "gpsLogging", "1");
     if(sscanf(optString.c_str(), "%d", &r) == 1) {
-        enableRrd = (r == 1);
+        gpsLogging = (r == 1);
     }
-    if( enableSql )
-        AGO_INFO() << "SQL logging enabled";
+    optString = getConfigOption("datalogger", "rrdLogging", "1");
+    if(sscanf(optString.c_str(), "%d", &r) == 1) {
+        rrdLogging = (r == 1);
+    }
+    if( dataLogging )
+        AGO_INFO() << "Data logging enabled";
     else
-        AGO_INFO() << "SQL logging disabled";
-    if( enableRrd )
-        AGO_INFO() << "RRDtool logging enabled";
+        AGO_INFO() << "Data logging disabled";
+    if( gpsLogging )
+        AGO_INFO() << "GPS logging enabled";
     else
-        AGO_INFO() << "RRDtool logging disabled";
+        AGO_INFO() << "GPS logging disabled";
+    if( rrdLogging )
+        AGO_INFO() << "RRD logging enabled";
+    else
+        AGO_INFO() << "RRD logging disabled";
 
-    agoConnection->run();
-    return 0;
+    // load map, create sections if empty
+    fs::path dmf = getConfigPath(DEVICEMAPFILE);
+    devicemap = jsonFileToVariantMap(dmf);
+    if (devicemap["nextid"].isVoid())
+    {
+        devicemap["nextid"] = 1;
+        variantMapToJSONFile(devicemap, dmf);
+    }
+    if (devicemap["multigraphs"].isVoid())
+    {
+        qpid::types::Variant::Map devices;
+        devicemap["multigraphs"] = devices;
+        variantMapToJSONFile(devicemap, dmf);
+    }
+
+    //register existing devices
+    AGO_INFO() << "Register existing multigraphs:";
+    qpid::types::Variant::Map multigraphs = devicemap["multigraphs"].asMap();
+    for( qpid::types::Variant::Map::const_iterator it=multigraphs.begin(); it!=multigraphs.end(); it++ )
+    {
+        std::string internalid = (std::string)it->first;
+        AGO_INFO() << " - " << internalid;
+        agoConnection->addDevice(internalid.c_str(), "multigraph");
+    }
+
+    addEventHandler();
+    addCommandHandler();
 }
+
+AGOAPP_ENTRY_POINT(AgoDataLogger);

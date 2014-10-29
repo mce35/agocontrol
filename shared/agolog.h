@@ -1,5 +1,7 @@
 #ifndef AGOLOG_H
 #define AGOLOG_H
+#include <vector>
+
 /* Defines the following macros:
  *
  * AGO_TRACE
@@ -50,8 +52,6 @@ namespace agocontrol {
 
 namespace agocontrol {
 	namespace log {
-		extern const char* const severity_level_str[];
-
 		class log_container {
 		public:
 			static AGO_LOGGER_IMPL &get();
@@ -63,7 +63,7 @@ namespace agocontrol {
 			/**
 			 * Changes the severity setting of the logger
 			 */
-			static void setLevel(severity_level lvl);
+			static void setCurrentLevel(severity_level lvl);
 
 			/**
 			 * Changes to console output
@@ -73,7 +73,21 @@ namespace agocontrol {
 			/**
 			 * Changes to Syslog output.
 			 */
-			static void setOutputSyslog(const char *ident, int facility);
+			static void setOutputSyslog(const std::string &ident, int facility);
+
+			static int getFacility(const std::string &facility);
+
+			/* Returns a vector of all supported syslog facitliy names */
+			static const std::vector<std::string>& getSyslogFacilities() ;
+
+			/* Translate level string to internal level. Returns -1 on invalid value */
+			static severity_level getLevel(const std::string &level);
+
+			/* Translate internal level to string. Throws exception on invalid value */
+			static const std::string & getLevel(severity_level lvl);
+
+			/* Returns a vector with all levels, indexed identical to severity_level */
+			static const std::vector<std::string> & getLevels();
 
 		};
 	}
