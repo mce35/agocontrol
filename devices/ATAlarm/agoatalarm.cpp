@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/system/system_error.hpp>
+#include <syslog.h>
 
 #include "agoclient.h"
 #include "agolog.h"
@@ -1618,9 +1619,9 @@ int main(int argc, char **argv)
   gatalarm.agoConnection->addDevice("ATAlarmController", "ATAlarmController");
   gatalarm.agoConnection->addHandler(commandHandler);
   if(debug != false)
-    agocontrol::log::log_container::setLevel(agocontrol::log::debug);
+    agocontrol::log::log_container::setCurrentLevel(agocontrol::log::debug);
   else
-    agocontrol::log::log_container::setLevel(agocontrol::log::info);
+    agocontrol::log::log_container::setCurrentLevel(agocontrol::log::info);
 
   if(atalarm_init(&gatalarm) < 0)
     {
