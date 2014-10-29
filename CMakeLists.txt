@@ -77,6 +77,8 @@ if (JSONCPP_FOUND)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 endif (JSONCPP_FOUND)
 
+FIND_PACKAGE(Boost COMPONENTS system filesystem thread program_options date_time regex REQUIRED)
+
 FIND_PACKAGE(Boost COMPONENTS log)
 IF (Boost_LOG_FOUND)
 	ADD_DEFINITIONS(-DHAVE_BOOST_LOG)

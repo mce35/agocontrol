@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Agoalert
@@ -604,8 +604,8 @@ class Pushbullet(AgoAlert):
             devs = self.pushbullet.getDevices()
             logging.debug('pushbullet devs=%s' % str(devs))
             for dev in devs:
-                name = '%s %s (%s)' % (dev['extras']['manufacturer'], dev['extras']['model'], dev['id'])
-                self.pbdevices[name] = {'name':name, 'id':dev['id']}
+                name = '%s %s (%s)' % (dev['manufacturer'], dev['model'], dev['iden'])
+                self.pbdevices[name] = {'name':name, 'id':dev['iden']}
                 devices.append(name)
         else:
             logging.error('Pushbullet: unable to get devices because not configured')

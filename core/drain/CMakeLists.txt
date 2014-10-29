@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 set (DRAIN_LIBRARIES
     agoclient
+    pthread
 )
 
 # add the executable

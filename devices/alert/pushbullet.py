@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-try:
-    from urllib.request import Request, urlopen
-except:
-    from urllib2 import Request, urlopen
+#try:
+#    from urllib.request import Request, urlopen
+#except:
+#    from urllib2 import Request, urlopen
 
 from base64 import encodestring, b64encode
 import json
 import mimetypes
 import os
+from mimetypes import MimeTypes
+import requests
 
-HOST = "https://api.pushbullet.com/api";
+HOST = "https://api.pushbullet.com/v2";
 
 class PushBulletError():
     def __init__(self, value):
@@ -22,108 +24,91 @@ class PushBullet():
     def __init__(self, apiKey):
         self.apiKey = apiKey
 
-    def _request(self, url, postdata=None):
-        request = Request(url)
-        request.add_header("Accept", "application/json")
-        request.add_header("Content-type","application/json");
+    def _request(self, url, payload=None, post=True):
         auth = "%s:" % (self.apiKey)
         auth = auth.encode('ascii')
         auth = b64encode(auth)
         auth = b"Basic "+auth
-        request.add_header("Authorization", auth)
-        request.add_header("User-Agent", "pyPushBullet")
-        if postdata:
-            postdata = json.dumps(postdata)
-            postdata = postdata.encode('utf-8')
-        response = urlopen(request, postdata)
-        data = response.read()
-        data = data.decode("utf-8")
-        j = json.loads(data)
-        return j
+        headers = {}
+        headers['Accept'] = 'application/json'
+        headers['Content-type'] = 'application/json'
+        headers['Authorization'] = auth
+        headers['User-Agent'] = 'pyPushBullet'
+        if post:
+            if payload:
+                payload = json.dumps(payload)
+                r = requests.post(url, data=payload, headers=headers)
+            else:
+                r = requests.post(url, headers=headers)
+        else:
+            if payload:
+                payload = json.dumps(payload)
+                r = requests.get(url, headers=headers)
+            else:
+                r = requests.get(url, data=payload, headers=headers)
+        return r.json()
         
-    def _request_multiform(self, url, postdata, files):
-        request = Request(url)
-        content_type, body = self._encode_multipart_formdata(postdata, files)
-        request.add_header("Accept", "application/json")
-        request.add_header("Content-type", content_type);
-        auth = "%s:" % (self.apiKey)
-        auth = auth.encode('ascii')
-        auth = b64encode(auth)
-        auth = b"Basic "+auth
-        request.add_header("Authorization", auth)
-        request.add_header("User-Agent", "pyPushBullet")
-        response = urlopen(request, body)
-        data = response.read()
-        data = data.decode("utf-8")
-        j = json.loads(data)
-        return j
+    def _request_multiform(self, url, payload, files):
+        return requests.post(url, data=payload, files=files)
         
-    def _encode_multipart_formdata(self, fields, files):
-        '''
-        from http://mattshaw.org/news/multi-part-form-post-with-files-in-python/
-        '''
-        def guess_type(filename):
-            return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
-        
-        BOUNDARY = '----------bound@ry_$'
-        CRLF = '\r\n'
-        L = []
-        for key,value in fields.iteritems():
-            L.append('--'+BOUNDARY)
-            L.append('Content-Disposition: form-data; name="%s"'%(key))
-            L.append('')
-            L.append(str(value))
-            
-        for (key, filename, value) in files:
-            L.append('--'+BOUNDARY)
-            L.append('Content-Disposition: form-data; name="%s"; filename="%s"'%(key, filename))
-            L.append('Content-Type: %s'%(guess_type(filename)))
-            L.append('')
-            L.append(value)
-            
-        L.append('--'+BOUNDARY+'--')
-        L.append('')
-        body = CRLF.join(L)
-        content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
-        return content_type, body
-
     def getDevices(self):
-        return self._request(HOST + "/devices")["devices"]
+        r = self._request(HOST + "/devices", None, False)
+        if r.has_key('devices'):
+            return r['devices']
+        else:
+            return []
 
     def pushNote(self, device, title, body):
-        data = {'type'      : 'note',
-                'device_id' : device,
-                'title'     : title,
-                'body'      : body}
+        data = {'type'       : 'note',
+                'device_iden': device,
+                'title'      : title,
+                'body'       : body}
         return self._request(HOST + "/pushes", data)
 
     def pushAddress(self, device, name, address):
-        data = {'type'      : 'address',
-                'device_id' : device,
-                'name'      : name,
-                'address'   : address}
+        data = {'type'       : 'address',
+                'device_iden': device,
+                'name'       : name,
+                'address'    : address}
         return self._request(HOST + "/pushes", data)
 
     def pushList(self, device, title, items):
-        data = {'type'      : 'list',
-                'device_id' : device,
-                'title'     : title,
-                'items'     : items}
+        data = {'type'       : 'list',
+                'device_iden': device,
+                'title'      : title,
+                'items'      : items}
         return self._request(HOST + "/pushes", data)
 
 
     def pushLink(self, device, title, url):
-        data = {'type'      : 'link',
-                'device_id' : device,
-                'title'     : title,
-                'url'     : url}
+        data = {'type'       : 'link',
+                'device_iden': device,
+                'title'      : title,
+                'url'        : url}
         return self._request(HOST + "/pushes", data)
 
     def pushFile(self, device, file):
-        data = {'type'      : 'file',
-                'device_id' : device}
-        filedata = ''
-        with open(file, "rb") as f:
-            filedata = f.read()
-        return self._request_multiform(HOST + "/pushes", data, [('file', os.path.basename(file), filedata)])
+        #get upload file authorization
+        mimes = MimeTypes()
+        mimetype = mimes.guess_type(file)[0]
+        filename = os.path.basename(file)
+        if not mimetype:
+            mimetype = ''
+        data = { 'file_name' : filename,
+                 'file_type' : mimetype}
+        try:
+            authResp = self._request(HOST + "/upload-request", data)
+
+            #upload file now
+            resp = self._request_multiform(authResp['upload_url'], authResp['data'], {'file': open(file, 'rb')})
+            if resp:
+                if resp.status_code==204:
+                    #file uploaded successfully, push file now
+                    data = { 'type'     : 'file',
+                             'file_name': filename,
+                             'file_type': mimetype,
+                             'file_url' : authResp['file_url']}
+                    return self._request(HOST + '/pushes', data)
+        except:
+            return None
 

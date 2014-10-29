@@ -2,14 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <pthread.h>
-
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <cerrno>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #ifndef SCENARIOMAPFILE
 #define SCENARIOMAPFILE "maps/scenariomap.json"
@@ -18,12 +16,20 @@
 using namespace std;
 using namespace agocontrol;
 
-qpid::types::Variant::Map scenariomap;
-AgoConnection *agoConnection;
+class AgoScenario: public AgoApp {
+private:
+	qpid::types::Variant::Map scenariomap;
+	qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+	void setupApp();
+	void runscenario(qpid::types::Variant::Map &scenario) ;
 
-void *runscenario(void * _scenario) {
-	qpid::types::Variant::Map *scenariop = (qpid::types::Variant::Map *) _scenario;
-	qpid::types::Variant::Map scenario = *scenariop;
+public:
+	AGOAPP_CONSTRUCTOR(AgoScenario);
+};
+
+void AgoScenario::runscenario(qpid::types::Variant::Map &scenario) {
+	AGO_DEBUG() << "Executing scenario";
+
 	// build sorted list of scenario elements
 	std::list<int> elements;
 	for (qpid::types::Variant::Map::const_iterator it = scenario.begin(); it!= scenario.end(); it++) {
@@ -53,11 +59,9 @@ void *runscenario(void * _scenario) {
 			agoConnection->sendMessage(element);
 		}
 	}
-
-	return NULL;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoScenario::commandHandler(qpid::types::Variant::Map content) {
 	qpid::types::Variant::Map returnval;
 	std::string internalid = content["internalid"].asString();
 	if (internalid == "scenariocontroller") {
@@ -114,9 +118,8 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 
 		if ((content["command"] == "on") || (content["command"] == "run")) {
 			AGO_DEBUG() << "spawning thread for scenario: " << internalid;
-			// runscenario((void *)&scenario);
-			pthread_t execThread;
-			pthread_create(&execThread, NULL, runscenario, (void *)&scenariomap[internalid].asMap());
+			boost::thread t(boost::bind(&AgoScenario::runscenario, this, scenariomap[internalid].asMap()));
+			t.detach();
 			returnval["result"] = 0;
 		} 
 
@@ -124,15 +127,15 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	return returnval;
 }
 
-int main(int argc, char **argv) {
-	agoConnection = new AgoConnection("scenario");	
+void AgoScenario::setupApp() {
+	addCommandHandler();
 	agoConnection->addDevice("scenariocontroller", "scenariocontroller");
-	agoConnection->addHandler(commandHandler);
 
 	scenariomap = jsonFileToVariantMap(getConfigPath(SCENARIOMAPFILE));
 	for (qpid::types::Variant::Map::const_iterator it = scenariomap.begin(); it!=scenariomap.end(); it++) {
-		AGO_DEBUG() << "adding scenario:" << it->first << ":" << it->second;
+		AGO_DEBUG() << "Loading scenario: " << it->first << ":" << it->second;
 		agoConnection->addDevice(it->first.c_str(), "scenario", true);
 	}
-	agoConnection->run();
 }
+
+AGOAPP_ENTRY_POINT(AgoScenario);

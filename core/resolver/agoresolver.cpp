@@ -7,7 +7,7 @@
 
 	See the GNU General Public License for more details.
 
-	this is the core resolver component for ago control 
+	this is the core resolver component for ago control
 */
 
 #include <iostream>
@@ -20,7 +20,6 @@
 #include <termios.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <pthread.h>
 #ifndef __FreeBSD__
 #include <sys/sysinfo.h>
 #endif
@@ -37,8 +36,9 @@
 #include <qpid/messaging/Sender.h>
 #include <qpid/messaging/Session.h>
 #include <qpid/messaging/Address.h>
+#include <boost/asio/deadline_timer.hpp>
 
-#include "agoclient.h"
+#include "agoapp.h"
 #include "version.h"
 
 #ifndef SCHEMADIR
@@ -65,33 +65,68 @@ using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
+namespace pt = ::boost::posix_time;
 
-AgoConnection *agoConnection;
+class AgoResolver: public AgoApp {
+private:
+	Variant::Map inventory; // used to hold device registrations
+	Variant::Map schema;
+	Variant::Map systeminfo; // holds system information
+	Variant::Map variables; // holds global variables
+	Variant::Map environment; // holds global environment like position, weather conditions, ..
 
-Variant::Map inventory; // used to hold device registrations
-Variant::Map schema;
-Variant::Map systeminfo; // holds system information
-Variant::Map variables; // holds global variables
-Variant::Map environment; // holds global environment like position, weather conditions, ..
+	Inventory *inv;
+	unsigned int discoverdelay;
+	bool persistence;
 
-Inventory *inv;
-unsigned int discoverdelay;
-bool persistence = false;
+	bool saveDevicemap();
+	void loadDevicemap();
+	void get_sysinfo() ;
+	bool emitNameEvent(const char *uuid, const char *eventType, const char *name) ;
+	bool emitFloorplanEvent(const char *uuid, const char *eventType, const char *floorplan, int x, int y) ;
+	void handleEvent(Variant::Map *device, string subject, Variant::Map *content) ;
 
-bool saveDevicemap() {
-	if (persistence) return variantMapToJSONFile(inventory, getConfigPath(DEVICESMAPFILE));
+	void scanSchemaDir(const fs::path &schemaPrefix) ;
+	qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+	void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+
+	boost::asio::deadline_timer discoveryTimer;
+	void discover(const boost::system::error_code& error) ;
+
+	void setupApp();
+	void cleanupApp();
+public:
+	AGOAPP_CONSTRUCTOR_HEAD(AgoResolver)
+		, discoveryTimer(ioService()) {}
+
+};
+
+// helper to determine last element
+#ifndef _LIBCPP_ITERATOR
+template <typename Iter>
+Iter next(Iter iter)
+{
+	return ++iter;
+}
+#endif
+
+bool AgoResolver::saveDevicemap() {
+	if (persistence) {
+		AGO_TRACE() << "Saving device-map";
+		return variantMapToJSONFile(inventory, getConfigPath(DEVICESMAPFILE));
+	}
 	return true;
 }
 
-void loadDevicemap() {
+void AgoResolver::loadDevicemap() {
 	inventory = jsonFileToVariantMap(getConfigPath(DEVICESMAPFILE));
 }
 
-void get_sysinfo() {
+void AgoResolver::get_sysinfo() {
 #ifndef __FreeBSD__
 	/* Note on FreeBSD exclusion. Sysinfo.h does not exist, but the code below
 	 * does not really use it anyway.. so just skip it.
-	 */ 
+	 */
 	struct sysinfo s_info;
 	int error;
 	error = sysinfo(&s_info);
@@ -110,14 +145,14 @@ void get_sysinfo() {
 #endif
 }
 
-bool emitNameEvent(const char *uuid, const char *eventType, const char *name) {
+bool AgoResolver::emitNameEvent(const char *uuid, const char *eventType, const char *name) {
 	Variant::Map content;
 	content["name"] = name;
 	content["uuid"] = uuid;
 	return agoConnection->sendMessage(eventType, content);
 }
 
-bool emitFloorplanEvent(const char *uuid, const char *eventType, const char *floorplan, int x, int y) {
+bool AgoResolver::emitFloorplanEvent(const char *uuid, const char *eventType, const char *floorplan, int x, int y) {
 	Variant::Map content;
 	content["uuid"] = uuid;
 	content["floorplan"] = floorplan;
@@ -126,26 +161,17 @@ bool emitFloorplanEvent(const char *uuid, const char *eventType, const char *flo
 	return agoConnection->sendMessage(eventType, content);
 }
 
-// helper to determine last element
-#ifndef _LIBCPP_ITERATOR
-template <typename Iter>
-Iter next(Iter iter)
-{
-	return ++iter;
-}
-#endif
-
 string valuesToString(Variant::Map *values) {
 	string result;
 	for (Variant::Map::const_iterator it = values->begin(); it != values->end(); ++it) {
 		result += it->second.asString();
-		if ((it != values->end()) && (next(it) != values->end())) result += "/";	
+		if ((it != values->end()) && (next(it) != values->end())) result += "/";
 	}
 	return result;
 }
 
 // handles events that update the state or values of a device
-void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
+void AgoResolver::handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 	Variant::Map *values;
 	if ((*device)["values"].isVoid()) {
 		AGO_ERROR() << "device[values] is empty in handleEvent()";
@@ -202,7 +228,7 @@ void handleEvent(Variant::Map *device, string subject, Variant::Map *content) {
 	}
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map content) {
 	std::string internalid = content["internalid"].asString();
 	qpid::types::Variant::Map reply;
 	if (internalid == "agocontroller") {
@@ -342,7 +368,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 				}
 			}
 			reply["devices"] = inventory;
-			reply["schema"] = schema;	
+			reply["schema"] = schema;
 			reply["rooms"] = inv->getrooms();
 			reply["floorplans"] = inv->getfloorplans();
 			get_sysinfo();
@@ -355,7 +381,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 	return reply;
 }
 
-void eventHandler(std::string subject, qpid::types::Variant::Map content) {
+void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	if (subject == "event.device.announce") {
 		string uuid = content["uuid"];
 		if (uuid != "") {
@@ -370,7 +396,7 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 			if (device["name"].asString() == "" && device["devicetype"] == "agocontroller") device["name"]="agocontroller";
 			device["name"].setEncoding("utf8");
 			// AGO_TRACE() << "getting room from inventory";
-			device["room"]=inv->getdeviceroom(content["uuid"].asString()); 
+			device["room"]=inv->getdeviceroom(content["uuid"].asString());
 			device["room"].setEncoding("utf8");
 			uint64_t timestamp;
 			timestamp = time(NULL);
@@ -440,33 +466,21 @@ void eventHandler(std::string subject, qpid::types::Variant::Map content) {
 	}
 }
 
-void *discover(void *param) {
+void AgoResolver::discover(const boost::system::error_code& error) {
+	if(error) {
+	  	return;
+	}
+
 	Variant::Map discovercmd;
 	discovercmd["command"] = "discover";
-	sleep(2);
-	while (true) {
-		AGO_TRACE() << "Sending discover message";
-		agoConnection->sendMessage("",discovercmd);
-		sleep(discoverdelay);
-	}
-	return NULL;
+	AGO_TRACE() << "Sending discover message";
+	agoConnection->sendMessage("",discovercmd);
+
+	discoveryTimer.expires_from_now(pt::seconds(discoverdelay));
+	discoveryTimer.async_wait(boost::bind(&AgoResolver::discover, this, _1));
 }
 
-int main(int argc, char **argv) {
-	agoConnection = new AgoConnection("resolver");
-	agoConnection->addHandler(commandHandler);
-	agoConnection->addEventHandler(eventHandler);
-	agoConnection->setFilter(false);
-
-	fs::path schemaPrefix;
-
-	schemaPrefix=getConfigOption("system", "schemapath", getConfigPath(SCHEMADIR));
-	discoverdelay=atoi(getConfigOption("system", "discoverdelay", "300").c_str());
-	if (atoi(getConfigOption("system","devicepersistence", "0").c_str()) != 1) persistence=false;
-
-	systeminfo["uuid"] = getConfigOption("system", "uuid", "00000000-0000-0000-000000000000");
-	systeminfo["version"] = AGOCONTROL_VERSION;
-
+void AgoResolver::scanSchemaDir(const fs::path &schemaPrefix) {
 	// generate vector of all schema files
 	std::vector<fs::path> schemaArray;
 	fs::path schemadir(schemaPrefix);
@@ -481,12 +495,12 @@ int main(int argc, char **argv) {
 		}
 	}
 	if (schemaArray.size() < 1) {
-		AGO_FATAL() << "Can't read schema, aborting!";
-		exit(1);
+		throw new ConfigurationError("Can't find any schemas in " + schemaPrefix.string());
 	}
 
 	// load schema files in proper order
 	std::sort(schemaArray.begin(), schemaArray.end());
+
 	fs::path schemaFile = schemaPrefix / schemaArray.front();
 	schema = parseSchema(schemaFile);
 	AGO_DEBUG() << "parsing schema file:" << schemaFile;
@@ -495,23 +509,52 @@ int main(int argc, char **argv) {
 		AGO_DEBUG() << "parsing additional schema file:" << schemaFile;
 		schema = mergeMap(schema, parseSchema(schemaFile));
 	}
+}
+
+void AgoResolver::setupApp() {
+	addCommandHandler();
+	addEventHandler();
+	agoConnection->setFilter(false);
+
+	fs::path schemaPrefix;
+
+	schemaPrefix = getConfigOption("system", "schemapath", getConfigPath(SCHEMADIR));
+	discoverdelay = atoi(getConfigOption("system", "discoverdelay", "300").c_str());
+	persistence = (atoi(getConfigOption("system","devicepersistence", "1").c_str()) == 1);
+
+	systeminfo["uuid"] = getConfigOption("system", "uuid", "00000000-0000-0000-000000000000");
+	systeminfo["version"] = AGOCONTROL_VERSION;
+
+	scanSchemaDir(schemaPrefix);
 
 	AGO_TRACE() << "reading inventory";
 	try {
 		inv = new Inventory(ensureParentDirExists(getConfigPath(INVENTORYDBFILE)));
 	}catch(std::exception& e){
-		AGO_FATAL() << "Failed to load inventory: " << e.what();
-		return 1;
+		throw ConfigurationError(std::string("Failed to load inventory: ") + e.what());
 	}
 
 	variables = jsonFileToVariantMap(getConfigPath(VARIABLESMAPFILE));
-	if (persistence) loadDevicemap();
+	if (persistence) {
+		AGO_TRACE() << "reading devicemap";
+		loadDevicemap();
+	}
 
 	agoConnection->addDevice("agocontroller","agocontroller");
 
-	static pthread_t discoverThread;
-	pthread_create(&discoverThread,NULL,discover,NULL);
-	
-	agoConnection->run();	
+	// Wait 2s before first discovery
+	discoveryTimer.expires_from_now(pt::seconds(2));
+	discoveryTimer.async_wait(boost::bind(&AgoResolver::discover, this, _1));
 }
 
+void AgoResolver::cleanupApp() {
+	if(inv) {
+		inv->close();
+		delete inv;
+		inv = NULL;
+	}
+
+	discoveryTimer.cancel();
+}
+
+AGOAPP_ENTRY_POINT(AgoResolver);

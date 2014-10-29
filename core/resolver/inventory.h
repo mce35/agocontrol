@@ -21,6 +21,8 @@ namespace fs = ::boost::filesystem;
 class Inventory {
 	public:
 		Inventory(const fs::path &dbfile);
+		~Inventory();
+		void close();
 
 		string getdevicename (string uuid);
 		string getdeviceroom (string uuid);

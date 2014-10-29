@@ -39,11 +39,7 @@ inline std::basic_ostream< CharT, TraitsT >& operator<< (
 		std::basic_ostream< CharT, TraitsT >& strm,
 		severity_level lvl)
 {
-	if (static_cast< std::size_t >(lvl) < AGOLOG_NUM_SEVERITY_LEVELS)
-		strm << severity_level_str[lvl];
-	else
-		strm << static_cast< int >(lvl);
-
+	strm << log_container::getLevel(lvl);
 	return strm;
 }
 
@@ -56,10 +52,10 @@ void log_container::initDefault() {
 	logging::add_common_attributes();
 
 	setOutputConsole();
-	setLevel(AGO_DEFAULT_LEVEL);
+	setCurrentLevel(AGO_DEFAULT_LEVEL);
 }
 
-void log_container::setLevel(severity_level lvl) {
+void log_container::setCurrentLevel(severity_level lvl) {
 	boost::log::core::get()->set_filter
 	(
 		::agocontrol::log::severity >= lvl

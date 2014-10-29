@@ -31,7 +31,7 @@ Inventory::Inventory(const fs::path &dbfile) {
 		AGO_ERROR() << "Can't open database " << dbfile.string() << ": " << sqlite3_errmsg(db);
 		throw std::runtime_error("Cannot open database");
 	}
-	AGO_DEBUG() << "Sccesfully opened database: " << dbfile.c_str();
+	AGO_DEBUG() << "Succesfully opened database: " << dbfile.c_str();
 
 	/*
 	CREATE TABLE rooms (uuid text, name text, location text);
@@ -46,6 +46,17 @@ Inventory::Inventory(const fs::path &dbfile) {
 	createTableIfNotExist("devicesfloorplan", "CREATE TABLE devicesfloorplan (floorplan text, device text, x integer, y integer)");
 	createTableIfNotExist("locations", "CREATE TABLE locations (uuid text, name text, description text)");
 	createTableIfNotExist("users", "CREATE TABLE users (uuid text, username text, password text, pin text, description text)");
+}
+
+Inventory::~Inventory() {
+	close();
+}
+
+void Inventory::close() {
+	if(db) {
+		sqlite3_close(db);
+		db = NULL;
+	}
 }
 
 string Inventory::getdevicename (string uuid) {

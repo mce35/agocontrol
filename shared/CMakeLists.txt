@@ -27,9 +27,10 @@ set (AGOCLIENT_LIBRARIES
     qpidtypes
     uuid
     augeas
-    boost_system
-    boost_filesystem
-    boost_thread
+	 ${Boost_SYSTEM_LIBRARY}
+	 ${Boost_FILESYSTEM_LIBRARY}
+	 ${Boost_THREAD_LIBRARY}
+	 ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${JSONCPP_LIBRARIES}
 )
 

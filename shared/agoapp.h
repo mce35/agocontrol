@@ -2,6 +2,10 @@
 #define AGOAPP_H
 
 #include "agoclient.h"
+#include <boost/asio/io_service.hpp>
+#include <boost/thread.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 /**
  * Provides boilerplate code for writing an AGO application.
@@ -24,7 +28,8 @@
 
 
 /* This helps with a class constructor */
-#define AGOAPP_CONSTRUCTOR(class_name) class_name() : AgoApp(#class_name) {};
+#define AGOAPP_CONSTRUCTOR_HEAD(class_name) class_name() : AgoApp(#class_name)
+#define AGOAPP_CONSTRUCTOR(class_name) AGOAPP_CONSTRUCTOR_HEAD(class_name) {};
 
 /* This defines the applications main() function */
 #define AGOAPP_ENTRY_POINT(app_class_name) \
@@ -41,32 +46,76 @@ namespace agocontrol {
 		const std::string appName;
 		std::string appShortName;
 
-		AgoConnection *agoConnection;
-
 		bool exit_signaled;
+		boost::thread ioThread;
+		boost::asio::io_service ioService_;
+		std::auto_ptr<boost::asio::io_service::work> ioWork;
 
 		void signalExit();
 
+		int parseCommandLine(int argc, const char **argv);
+
 	protected:
+		/**
+		 * Any parsed command line parameters are placed in this map-like object
+		 */
+		boost::program_options::variables_map cli_vars;
+
+		AgoConnection *agoConnection;
+
+		/* Obtain a reference to the ioService for async operations.
+		 *
+		 * By doing this, we also tell AgoApp base that we want to have an IO
+		 * thread running for the duration of the program.
+		 *
+		 * If this is never called during setup() phase, we will not start the IO thread.
+		 * However, if called at least once, we can call it whenever again later.
+		 */
+		boost::asio::io_service& ioService();
+
+		/* Application should implement this function if it like to present
+		 * any extra command line options to the user.
+		 */
+		virtual void appCmdLineOptions(boost::program_options::options_description &options) {}
+
 		/* Setup will be called prior to appMain being called. This
 		 * normally sets up logging, an AgoConnection, signal handling,
 		 * and finally any app specific setup (setupApp).
+		 *
+		 * Please keep setupXX() functions in the order called!
 		 */
 		virtual void setup();
 		void setupLogging();
 		void setupAgoConnection();
 		void setupSignals();
-
 		/* App specific init can be done in this */
 		virtual void setupApp() { };
+		void setupIoThread();
 
 		/* After appMain has returned, we will call cleanup to release
 		 * any resources */
 		void cleanup();
 		void cleanupAgoConnection();
 		virtual void cleanupApp() { };
+		void cleanupIoThread();
 
 		bool isExitSignaled() { return exit_signaled; }
+
+		/* Shortcut to register the commandHandler with agoConnection.
+		 * Should be called from setupApp */
+		void addCommandHandler();
+
+		/* Shortcut to register the eventHandler with agoConnection.
+		 * Should be called from setupApp */
+		void addEventHandler();
+
+		/* Command handler registered with the agoConncetion; override! */
+		virtual qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+			return qpid::types::Variant::Map();
+		}
+
+		/* Event handler registered with the agoConncetion; override! */
+		virtual void eventHandler(std::string subject, qpid::types::Variant::Map content) {}
 
 		/**
 		 * This is called from a separate thread when the app is
@@ -78,7 +127,7 @@ namespace agocontrol {
 
 	public:
 		AgoApp(const char *appName);
-		~AgoApp();
+		virtual ~AgoApp() {} ;
 
 		/**
 		 * Main method, call this from application main entry point (generally this
@@ -87,10 +136,11 @@ namespace agocontrol {
 		int main(int argc, const char **argv);
 
 		/**
-		 * This must be implemented by the application, and contains the 
-		 * application logic.
+		 * By default this calls agoConnection->run(), and blocks until shutdown signal
+		 * arrives.
+		 * This can be overridden if non-standard behavior is required.
 		 */
-		virtual int appMain() = 0;
+		virtual int appMain();
 
 		// Not really public
 		void sighandler(int signo);
@@ -104,6 +154,13 @@ namespace agocontrol {
 			: runtime_error(std::string(what)) {}
 	};
 
+	/* This can be raised from any setup method, to indicate setup failure.
+	 * Application should log actual error itself!
+	 */
+	class StartupError: public std::runtime_error {
+	public:
+		StartupError(): runtime_error("") {};
+	};
 }
 
 #endif
