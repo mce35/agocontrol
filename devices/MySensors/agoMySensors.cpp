@@ -1840,12 +1840,16 @@ int main(int argc, char **argv)
     }
 
     bool error;
-    cout << "Requesting gateway version...";
+    cout << "Requesting gateway version..." << flush;
     std::string getVersion = "0;0;3;0;2\n";
     std::string line = "";
     while( !error && !boost::algorithm::starts_with(line, "0;0;3;0;2;") )
     {
         line = readLine(&error);
+        if( DEBUG )
+        {
+            cout << "Read: " << line << endl;
+        }
         serialPort.write_some(buffer(getVersion));
     }
     if( !error )
@@ -1879,11 +1883,13 @@ int main(int argc, char **argv)
     pthread_mutex_init(&serialMutex, NULL);
     pthread_mutex_init(&resendMutex, NULL);
     pthread_mutex_init(&devicemapMutex, NULL);
-    if( pthread_create(&resendThread, NULL, resendFunction, NULL) < 0 ) {
+    if( pthread_create(&resendThread, NULL, resendFunction, NULL) < 0 )
+    {
         cerr << "Unable to create resend thread (errno=" << errno << ")" << endl;
         exit(1);
     }
-    if( pthread_create(&readThread, NULL, receiveFunction, NULL) < 0 ) {
+    if( pthread_create(&readThread, NULL, receiveFunction, NULL) < 0 )
+    {
         cerr << "Unable to create read thread (errno=" << errno << ")" << endl;
         exit(1);
     }
@@ -1891,7 +1897,8 @@ int main(int argc, char **argv)
     //register existing devices
     cout << "Register existing devices:" << endl;
     qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-    for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
+    for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+    {
         qpid::types::Variant::Map infos = it->second.asMap();
         std::string internalid = (std::string)it->first;
         cout << " - " << internalid << ":" << infos["type"].asString().c_str();
