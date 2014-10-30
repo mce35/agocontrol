@@ -1,9 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <pthread.h>
-
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -13,7 +10,6 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
 #include "boost/regex.hpp"
-//#include "boost/filesystem/operations.hpp"
 
 #ifndef SCRIPTSINFOSFILE
 #define SCRIPTSINFOSFILE "maps/agolua.json"
@@ -41,15 +37,6 @@ using namespace agocontrol;
 const char reAll[] = "--.*--\\[\\[(.*)\\]\\](.*)";
 const char reEvent[] = "(event\\.\\w+\\.\\w+)";
 
-class AgoLua;
-
-typedef struct S_THREAD_PARAMS
-{
-    qpid::types::Variant::Map content;
-    fs::path script;
-    AgoLua* agolua;
-} T_THREAD_PARAMS;
-
 class AgoLua: public AgoApp
 {
     private:
@@ -60,18 +47,13 @@ class AgoLua: public AgoApp
         boost::regex exprEvent;
         std::string agocontroller;
         int filterByEvents;
-        pthread_t resumeScriptThread;
         fs::path scriptdir;
-        T_THREAD_PARAMS threadParams[100];
-        int threadParamsId;
 
         fs::path construct_script_name(fs::path input) ;
         void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) ;
 
         void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents) ;
         void purgeScripts() ;
-        //bool runScript(qpid::types::Variant::Map content, const fs::path &script) ;
-        static void* thread_runScript(void* param);
         void runScript(qpid::types::Variant::Map content, const fs::path &script);
         bool canRunScript(qpid::types::Variant::Map content, const fs::path &script);
         qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
@@ -514,19 +496,9 @@ void AgoLua::purgeScripts()
 }
 
 /**
- * Execute script
+ * Execute LUA script (blocking).
+ * Called in separate thread.
  */
-void* AgoLua::thread_runScript(void* param)
-{
-    //get param
-    T_THREAD_PARAMS* params = (T_THREAD_PARAMS*)param;
-    qpid::types::Variant::Map content = params->content;
-    fs::path script = params->script;
-
-    params->agolua->runScript(content, script);
-
-    pthread_exit(NULL);
-}
 void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script)
 {
     refreshInventory = true;
@@ -556,6 +528,7 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     pushTableFromMap(L, content);
     lua_setglobal(L, "content");
 
+    AGO_TRACE() << "Loading " << script;
     int status = luaL_loadfile(L, script.c_str());
     int result = 0;
     if(status == LUA_OK)
@@ -573,6 +546,7 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     }
 
     lua_close(L);
+    AGO_TRACE() << "Execution of " << script << " finished.";
 }
 
 /**
@@ -899,20 +873,8 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 {
                     if( canRunScript(content, it->path()) )
                     {
-                        threadParams[threadParamsId].content = content;
-                        threadParams[threadParamsId].script = it->path();
-                        threadParams[threadParamsId].agolua = this;
-
-                        if( pthread_create(&resumeScriptThread, NULL, thread_runScript, (void*)&threadParams[threadParamsId]) < 0 )
-                        {
-                            AGO_ERROR() << "Unable to run script thread (errno=" << errno << ")";
-                        }
-
-                        threadParamsId++;
-                        if( threadParamsId>=100 )
-                        {
-                            threadParamsId = 0;
-                        }
+                        boost::thread t(boost::bind(&AgoLua::runScript, this, content, it->path()));
+                        t.detach();
                     }
                 }
                 ++it;
@@ -942,8 +904,6 @@ void AgoLua::eventHandler(std::string subject, qpid::types::Variant::Map content
 
 void AgoLua::setupApp()
 {
-    //init
-    threadParamsId = 0;
     agocontroller = agoConnection->getAgocontroller();
 
     //get config
@@ -960,16 +920,6 @@ void AgoLua::setupApp()
         scriptsInfos["scripts"] = scripts;
         variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
     }
-
-    //launch threads
-    /*T_THREAD_PARAMS params;
-    params.yields = &pausedScripts;
-    params.connection = agoConnection;
-    if( pthread_create(&resumeScriptThread, NULL, AgoLua::resumeScript, (void*)&params) < 0 )
-    {
-        AGO_ERROR() << "Unable to create resumeScript thread (errno=" << errno << ")";
-        exit(1);
-    }*/
 
     agoConnection->addDevice("luacontroller", "luacontroller");
     addCommandHandler();
