@@ -15,11 +15,11 @@ function init_systemConfig() {
     model = new systemConfig();
 
     model.mainTemplate = function() {
-	return "configuration/system";
+        return "configuration/system";
     }.bind(model);
 
     model.navigation = function() {
-	return "navigation/configuration";
+        return "navigation/configuration";
     }.bind(model);
 
     ko.applyBindings(model);
