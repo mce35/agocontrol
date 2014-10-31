@@ -37,46 +37,45 @@ using namespace agocontrol;
 const char reAll[] = "--.*--\\[\\[(.*)\\]\\](.*)";
 const char reEvent[] = "(event\\.\\w+\\.\\w+)";
 
-class AgoLua: public AgoApp
-{
-    private:
-        qpid::types::Variant::Map inventory;
-        bool refreshInventory; //optimize script execution (0.2s to get all inventory)
-        qpid::types::Variant::Map scriptsInfos;
-        boost::regex exprAll;
-        boost::regex exprEvent;
-        std::string agocontroller;
-        int filterByEvents;
-        fs::path scriptdir;
+class AgoLua: public AgoApp {
+private:
+    qpid::types::Variant::Map inventory;
+    bool refreshInventory; //optimize script execution (0.2s to get all inventory)
+    qpid::types::Variant::Map scriptsInfos;
+    boost::regex exprAll;
+    boost::regex exprEvent;
+    std::string agocontroller;
+    int filterByEvents;
+    fs::path scriptdir;
 
-        fs::path construct_script_name(fs::path input) ;
-        void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) ;
+    fs::path construct_script_name(fs::path input) ;
+    void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) ;
 
-        void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents) ;
-        void purgeScripts() ;
-        void runScript(qpid::types::Variant::Map content, const fs::path &script);
-        bool canRunScript(qpid::types::Variant::Map content, const fs::path &script);
-        qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
-        void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+    void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents) ;
+    void purgeScripts() ;
+    void runScript(qpid::types::Variant::Map content, const fs::path &script);
+    bool canRunScript(qpid::types::Variant::Map content, const fs::path &script);
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
+    void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
 
-        void setupApp();
+    void setupApp();
 
-    public:
-        AGOAPP_CONSTRUCTOR_HEAD(AgoLua)
-            , refreshInventory(true)
-            , exprAll(reAll)
-            , exprEvent(reEvent)
-            , filterByEvents(1)
-            {}
+public:
+    AGOAPP_CONSTRUCTOR_HEAD(AgoLua)
+        , refreshInventory(true)
+        , exprAll(reAll)
+        , exprEvent(reEvent)
+        , filterByEvents(1)
+        {}
 
-        // called from global static wrapper functions, thus public
-        int luaAddDevice(lua_State *l);
-        int luaSendMessage(lua_State *l);
-        int luaSetVariable(lua_State *L);
-        int luaGetVariable(lua_State *L);
-        int luaGetDeviceInventory(lua_State *L);
-        int luaGetInventory(lua_State *L);
-        int luaPause(lua_State *L);
+    // called from global static wrapper functions, thus public
+    int luaAddDevice(lua_State *l);
+    int luaSendMessage(lua_State *l);
+    int luaSetVariable(lua_State *L);
+    int luaGetVariable(lua_State *L);
+    int luaGetDeviceInventory(lua_State *L);
+    int luaGetInventory(lua_State *L);
+    int luaPause(lua_State *L);
 };
 
 
@@ -211,7 +210,7 @@ void AgoLua::pushTableFromMap(lua_State *L, qpid::types::Variant::Map content)
                 lua_pushnil(L);
                 lua_settable(L, -3);
                 break;
-            //default:
+                //default:
                 //lua_pushstring(L,it->first.c_str());
                 //lua_pushstring(L,"unhandled");
                 //AGO_TRACE() << "undhandled type: " << it->second.getType();
@@ -547,6 +546,7 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
 
     lua_close(L);
     AGO_TRACE() << "Execution of " << script << " finished.";
+
 }
 
 /**
