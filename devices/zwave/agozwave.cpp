@@ -746,7 +746,7 @@ string uint64ToString(uint64_t i) {
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
-    bool result;
+    bool result = false;
     std::string internalid = content["internalid"].asString();
 
     if (internalid == "zwavecontroller") {
@@ -921,7 +921,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
         if (device != NULL) {
             string devicetype = device->getDevicetype();
             AGO_TRACE() << "command received for " << internalid << "(" << devicetype << ")"; 
-            ValueID *tmpValueID;
+            ValueID *tmpValueID = NULL;
 
             if (devicetype == "switch") {
                 tmpValueID = device->getValueID("Switch");

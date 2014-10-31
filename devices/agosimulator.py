@@ -45,10 +45,8 @@ class testEvent(threading.Thread):
 		if counter > 3:
 			counter = 0
 			temp = random.randint(50,300) / 10
-                        print "Emitting temp/humid changed"
 			client.emit_event("126", "event.environment.temperaturechanged", temp, "degC");
 			client.emit_event("126", "event.environment.humiditychanged", random.randint(20, 75), "percent");
-                print "Emitting event.security.sensortrigged with level ", level
 		client.emit_event("125", "event.security.sensortriggered", level, "")
 		if (level == 0):
 			level = 255
