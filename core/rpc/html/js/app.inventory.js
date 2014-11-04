@@ -8,7 +8,7 @@ function inventoryView() {
     this.hasNavigation = ko.observable(false);
     this.inventory = ko.observable({});
     this.data = ko.computed(function() {
-	return JSON.stringify(self.inventory(), undefined, 2);
+        return JSON.stringify(self.inventory(), undefined, 2);
     });
 }
 
@@ -19,11 +19,11 @@ function init_inventoryView() {
     model = new inventoryView();
 
     model.mainTemplate = function() {
-	return "inventory";
+        return "inventory";
     }.bind(model);
 
     model.navigation = function() {
-	return "navigation/configuration";
+        return "navigation/configuration";
     }.bind(model);
 
     ko.applyBindings(model);

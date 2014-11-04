@@ -576,7 +576,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
     if( datas.size()>1 )
     {
         //multigraph
-        
+
         //adjust some stuff
         int defaultNumParam = 13;
         string vertical_unit = "";
@@ -659,7 +659,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
             //alloc memory
             num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
             params = (char**)malloc(sizeof(char*) * num_params);
-        
+
             //add graph parameters
             addDefaultParameters(start, end, data["vertical_unit"], 850, 300, params, &index);
             addSingleGraphParameters(data, params, &index);
@@ -677,9 +677,9 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
     }
     else 
     {
-         //no data
-         AGO_ERROR() << "agodatalogger-RRDtool: no data";
-         return false;
+        //no data
+        AGO_ERROR() << "agodatalogger-RRDtool: no data";
+        return false;
     }
     dumpGraphParams((const char**)params, num_params);
 
@@ -758,7 +758,7 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
             char param[50];
             snprintf(param, 50, "N:%s", content["level"].asString().c_str());
             const char* params[] = {param};
-    
+
             int res = rrd_update_r(rrdfile.string().c_str(), "level", 1, params);
             if( res<0 )
             {
@@ -1170,7 +1170,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 }
 
                 //updateInventory();
-                
+
                 if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
                 {
                     returnval["error"] = 0;
@@ -1238,7 +1238,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     device["period"] = content["period"].asInt32();
                     devicemap["multigraphs"].asMap()[internalid] = device;
                     saveDeviceMapFile();
-    
+
                     returnval["error"] = 0;
                     returnval["msg"] = "Multigraph " + internalid + " created successfully";
                 }
@@ -1293,7 +1293,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     unsigned char* img = NULL;
                     unsigned long size = 0;
                     int period = 12;
-                    
+
                     //get thumb period
                     if( !devicemap["multigraphs"].asMap()[internalid].asMap()["period"].isVoid() )
                     {

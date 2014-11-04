@@ -17,139 +17,141 @@
 #include <boost/shared_ptr.hpp>
 
 namespace agocontrol {
-	namespace log {
-		class simple_logger;
-		class record {
-		friend class simple_logger;
-		friend class record_pump;
-		friend class console_sink;
-		friend class syslog_sink;
+namespace log {
 
-		private: 
-			enum record_state { invalid, open, closed };
-			record_state state;
-			severity_level level;
-			boost::posix_time::ptime timestamp;
+class simple_logger;
+class record {
+friend class simple_logger;
+friend class record_pump;
+friend class console_sink;
+friend class syslog_sink;
 
-			typedef std::stringstream stream_type;
-			stream_type stream_;
+private:
+    enum record_state { invalid, open, closed };
+    record_state state;
+    severity_level level;
+    boost::posix_time::ptime timestamp;
 
-		public:
-			// Invalid record
-			record()
-				: state(invalid)
-		  		, level(fatal)
-			{}
+    typedef std::stringstream stream_type;
+    stream_type stream_;
 
-			// Valid record
-			record(severity_level level_)
-				: state(open)
-			   , level(level_)
-				, timestamp(boost::posix_time::microsec_clock::local_time())
-			{}
+public:
+    // Invalid record
+    record()
+        : state(invalid)
+          , level(fatal)
+    {}
 
-			record(const record &rec_)
-				: state(rec_.state)
-			   , level(rec_.level)
-				, timestamp(rec_.timestamp)
-			{}
+    // Valid record
+    record(severity_level level_)
+        : state(open)
+          , level(level_)
+          , timestamp(boost::posix_time::microsec_clock::local_time())
+    {}
 
-			/* indicates if we are valid for use or not */
-			bool operator! () const {
-				return state != open;
-			}
-		};
+    record(const record &rec_)
+        : state(rec_.state)
+          , level(rec_.level)
+          , timestamp(rec_.timestamp)
+    {}
 
-		class record_pump {
-		private:
-			simple_logger &logger;
-			record &rec;
-		public:
-			record_pump(simple_logger &logger_, record &rec_)
-				: logger(logger_)
-				, rec(rec_)
-			{}
+    /* indicates if we are valid for use or not */
+    bool operator! () const {
+        return state != open;
+    }
+};
 
-			~record_pump();
+class record_pump {
+private:
+    simple_logger &logger;
+    record &rec;
+public:
+    record_pump(simple_logger &logger_, record &rec_)
+        : logger(logger_)
+          , rec(rec_)
+{}
 
-			std::stringstream & stream() 
-			{
-				// Only valid for one stream() operation
-				assert(rec.state == record::open);
-				rec.state = record::closed;
-				return rec.stream_;
-			}
-		};
+    ~record_pump();
 
-		class log_sink {
-		public:
-			log_sink(){}
-			virtual void output_record(record &rec) = 0;
-			virtual ~log_sink() {}
-		};
+    std::stringstream & stream()
+    {
+        // Only valid for one stream() operation
+        assert(rec.state == record::open);
+        rec.state = record::closed;
+        return rec.stream_;
+    }
+};
 
-		class console_sink: public log_sink {
-		private:
-			boost::mutex sink_mutex;
+class log_sink {
+public:
+    log_sink(){}
+    virtual void output_record(record &rec) = 0;
+    virtual ~log_sink() {}
+};
 
-		public:
-			console_sink(){}
-			void output_record(record &rec);
-		};
+class console_sink: public log_sink {
+private:
+    boost::mutex sink_mutex;
 
-		class syslog_sink: public log_sink {
-		private:
-			boost::mutex sink_mutex;
-			char ident[255];
-		public:
-			syslog_sink(std::string const &ident, int facility);
-			void output_record(record &rec);
-		};
+public:
+    console_sink(){}
+    void output_record(record &rec);
+};
 
-		class simple_logger {
-		friend class record_pump;
+class syslog_sink: public log_sink {
+private:
+    boost::mutex sink_mutex;
+    char ident[255];
+public:
+    syslog_sink(std::string const &ident, int facility);
+    void output_record(record &rec);
+};
 
-		private:
-			severity_level current_level;
-			boost::shared_ptr<log_sink> sink;
+class simple_logger {
+    friend class record_pump;
 
-		protected:
-			void push_record(record &rec) {
-				sink->output_record(rec);
-			}
+    private:
+    severity_level current_level;
+    boost::shared_ptr<log_sink> sink;
 
-		public:
-			simple_logger()
-				: current_level(AGO_DEFAULT_LEVEL)
-				, sink( boost::shared_ptr<log_sink>(new console_sink()) )
-			{}
+    protected:
+    void push_record(record &rec) {
+        sink->output_record(rec);
+    }
 
-			simple_logger(severity_level severity)
-				: current_level(severity) {}
+    public:
+    simple_logger()
+        : current_level(AGO_DEFAULT_LEVEL)
+          , sink( boost::shared_ptr<log_sink>(new console_sink()) )
+    {}
 
-			void setLevel(severity_level severity) {
-				current_level = severity;
-			}
+    simple_logger(severity_level severity)
+        : current_level(severity) {}
 
-			void setSink(boost::shared_ptr<log_sink> sink_) {
-				sink = sink_;
-			}
+    void setLevel(severity_level severity) {
+        current_level = severity;
+    }
 
-			record open_record(severity_level severity) {
-				if(severity >= current_level) {
-					return record(severity);
-				}
-				return record(); // Invalid record
-			}
-		};
-	}
-}
+    void setSink(boost::shared_ptr<log_sink> sink_) {
+        sink = sink_;
+    }
+
+    record open_record(severity_level severity) {
+        if(severity >= current_level) {
+            return record(severity);
+        }
+        return record(); // Invalid record
+    }
+};
+
+} /* namespace log */
+} /* namespace agocontrol */
 
 #define AGO_LOGGER_IMPL agocontrol::log::simple_logger
 
 #define AGO_LOG_SEV(logger, severity) \
-	for (::agocontrol::log::record rec_var = (logger).open_record(severity); !!rec_var;)\
-		::agocontrol::log::record_pump((logger), rec_var).stream()
+    for (::agocontrol::log::record rec_var = (logger).open_record(severity); !!rec_var;)\
+        ::agocontrol::log::record_pump((logger), rec_var).stream()
 
 #define AGO_TRACE() AGO_LOG_SEV(AGO_GET_LOGGER, ::agocontrol::log::trace)
 #define AGO_DEBUG() AGO_LOG_SEV(AGO_GET_LOGGER, ::agocontrol::log::debug)

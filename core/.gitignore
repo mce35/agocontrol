@@ -1,0 +1,14 @@
+datalogger/agodatalogger
+drain/agodrain
+event/agoevent
+lua/agolua
+resolver/agoresolver
+rpc/agorpc
+scenario/agoscenario
+security/agosecurity
+timer/agotimer
+lua/command.lua
+messagesend/messagesend
+rpc/rpc-htpasswd
+rpc/get_table_lang.cgi
+agocontrol-init-script.sh

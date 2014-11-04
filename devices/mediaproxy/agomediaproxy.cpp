@@ -29,18 +29,18 @@ char stopLoop = 0;
 AgoConnection *agoConnection;
 
 static RTSPServer* createRTSPServer(Port port) {
-	return RTSPServer::createNew(*env, port, authDB);
+    return RTSPServer::createNew(*env, port, authDB);
 }
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
-	qpid::types::Variant::Map returnval;
-	string internalid = content["internalid"].asString();
-	if (internalid == "controller" && content["command"].asString() == "restart") {
-		AGO_INFO() << "restarting proxy";
-		stopLoop = 1;
-	}
-	returnval["result"]=0;
-	return returnval;
+    qpid::types::Variant::Map returnval;
+    string internalid = content["internalid"].asString();
+    if (internalid == "controller" && content["command"].asString() == "restart") {
+        AGO_INFO() << "restarting proxy";
+        stopLoop = 1;
+    }
+    returnval["result"]=0;
+    return returnval;
 }
 typedef struct { std::string username; std::string password; std::map<std::string, std::string> streams;} proxyparams;
 
@@ -49,93 +49,93 @@ proxyparams params;
 
 
 void *startProxy(void *params) {
-	// Increase the maximum size of video frames that we can 'proxy' without truncation.
-	// (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
-	OutPacketBuffer::maxSize = 100000; // bytes
+    // Increase the maximum size of video frames that we can 'proxy' without truncation.
+    // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
+    OutPacketBuffer::maxSize = 100000; // bytes
 
-	// Begin by setting up our usage environment:
-	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-	env = BasicUsageEnvironment::createNew(*scheduler);
+    // Begin by setting up our usage environment:
+    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
+    env = BasicUsageEnvironment::createNew(*scheduler);
 
-	*env << "ago control media proxy - "
-	<< "(LIVE555 Streaming Media library version "
-	<< LIVEMEDIA_LIBRARY_VERSION_STRING << ")\n\n";
+    *env << "ago control media proxy - "
+        << "(LIVE555 Streaming Media library version "
+        << LIVEMEDIA_LIBRARY_VERSION_STRING << ")\n\n";
 
 
-	streamRTPOverTCP = True;
+    streamRTPOverTCP = True;
 
-	authDB = NULL;
+    authDB = NULL;
 #ifdef ACCESS_CONTROL
-	// To implement client access control to the RTSP server, do the following:
-	authDB = new UserAuthenticationDatabase;
-	authDB->addUserRecord("username1", "password1"); // replace these with real strings
-	// Repeat the above with each <username>, <password> that you wish to allow
-	// access to the server.
+    // To implement client access control to the RTSP server, do the following:
+    authDB = new UserAuthenticationDatabase;
+    authDB->addUserRecord("username1", "password1"); // replace these with real strings
+    // Repeat the above with each <username>, <password> that you wish to allow
+    // access to the server.
 #endif
-	// Create the RTSP server.
-	RTSPServer* rtspServer;
-	portNumBits rtspServerPortNum = rtsp_port;
-	rtspServer = createRTSPServer(rtspServerPortNum);
-	if (rtspServer == NULL) {
-		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
-		exit(1);
-	}
+    // Create the RTSP server.
+    RTSPServer* rtspServer;
+    portNumBits rtspServerPortNum = rtsp_port;
+    rtspServer = createRTSPServer(rtspServerPortNum);
+    if (rtspServer == NULL) {
+        *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
+        exit(1);
+    }
 
-	// Also, attempt to create a HTTP server for RTSP-over-HTTP tunneling.
-	if (rtspServer->setUpTunnelingOverHTTP(http_port)) {
-		*env << "\n(We use port " << rtspServer->httpServerPortNum() << " for optional RTSP-over-HTTP tunneling.)\n";
-	} else {
-		*env << "Failed to enable RTSP-over-HTTP tunneling\n";
-		exit(1);
-	}
+    // Also, attempt to create a HTTP server for RTSP-over-HTTP tunneling.
+    if (rtspServer->setUpTunnelingOverHTTP(http_port)) {
+        *env << "\n(We use port " << rtspServer->httpServerPortNum() << " for optional RTSP-over-HTTP tunneling.)\n";
+    } else {
+        *env << "Failed to enable RTSP-over-HTTP tunneling\n";
+        exit(1);
+    }
 
-	// Now, enter the event loop:
-	while (true) {
-		qpid::types::Variant::Map inventory = agoConnection->getInventory();
-		qpid::types::Variant::Map devices = inventory["inventory"].asMap();
+    // Now, enter the event loop:
+    while (true) {
+        qpid::types::Variant::Map inventory = agoConnection->getInventory();
+        qpid::types::Variant::Map devices = inventory["inventory"].asMap();
 
-		for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
-			qpid::types::Variant::Map device = it->second.asMap();
-			if (device["devicetype"] == "onvifnvt") {
-				AGO_INFO() << "found ONVIF NVT: " << device["internalid"].asString();
-				std::string streamname = it->first;
-				std::string url = device["internalid"].asString();
-				ServerMediaSession* sms = ProxyServerMediaSession::createNew(*env, rtspServer,
-								   url.c_str(), streamname.c_str(),
-								   username.c_str(), password.c_str(), tunnelOverHTTPPortNum, verbosityLevel);
-				rtspServer->addServerMediaSession(sms);
+        for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
+            qpid::types::Variant::Map device = it->second.asMap();
+            if (device["devicetype"] == "onvifnvt") {
+                AGO_INFO() << "found ONVIF NVT: " << device["internalid"].asString();
+                std::string streamname = it->first;
+                std::string url = device["internalid"].asString();
+                ServerMediaSession* sms = ProxyServerMediaSession::createNew(*env, rtspServer,
+                        url.c_str(), streamname.c_str(),
+                        username.c_str(), password.c_str(), tunnelOverHTTPPortNum, verbosityLevel);
+                rtspServer->addServerMediaSession(sms);
 
-				char* proxyStreamURL = rtspServer->rtspURL(sms);
-				*env << "RTSP stream, proxying the stream \"" << url.c_str() << "\"\n";
-				*env << "\tPlay this stream using the URL: " << proxyStreamURL << "\n";
-				delete[] proxyStreamURL;
-			}
-		}	
-		env->taskScheduler().doEventLoop(&stopLoop); // does not return
-		AGO_DEBUG() << "Exited event loop";
-		stopLoop=0;
-	}
+                char* proxyStreamURL = rtspServer->rtspURL(sms);
+                *env << "RTSP stream, proxying the stream \"" << url.c_str() << "\"\n";
+                *env << "\tPlay this stream using the URL: " << proxyStreamURL << "\n";
+                delete[] proxyStreamURL;
+            }
+        }	
+        env->taskScheduler().doEventLoop(&stopLoop); // does not return
+        AGO_DEBUG() << "Exited event loop";
+        stopLoop=0;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 int main(int argc, char** argv) {
-	username = getConfigOption("onvif", "username", "onvif");
-	password = getConfigOption("onvif", "password", "onvif");
-	verbosityLevel = atoi(getConfigOption("mediaproxy", "verbosity", "1").c_str());
-	http_port = atoi(getConfigOption("mediaproxy", "http_port", "8888").c_str());
-	rtsp_port = atoi(getConfigOption("mediaproxy", "rtsp_port", "554").c_str());
+    username = getConfigOption("onvif", "username", "onvif");
+    password = getConfigOption("onvif", "password", "onvif");
+    verbosityLevel = atoi(getConfigOption("mediaproxy", "verbosity", "1").c_str());
+    http_port = atoi(getConfigOption("mediaproxy", "http_port", "8888").c_str());
+    rtsp_port = atoi(getConfigOption("mediaproxy", "rtsp_port", "554").c_str());
 
-	agoConnection = new AgoConnection("mediaproxy");		
+    agoConnection = new AgoConnection("mediaproxy");		
 
-	agoConnection->addDevice("controller", "mediaproxycontroller");
+    agoConnection->addDevice("controller", "mediaproxycontroller");
 
-	agoConnection->addHandler(commandHandler);
+    agoConnection->addHandler(commandHandler);
 
-	static pthread_t proxyThread;
-	pthread_create(&proxyThread,NULL,startProxy,&params);
+    static pthread_t proxyThread;
+    pthread_create(&proxyThread,NULL,startProxy,&params);
 
-	agoConnection->run();
+    agoConnection->run();
 
-	return 0; // only to prevent compiler warning
+    return 0; // only to prevent compiler warning
 }

@@ -70,11 +70,11 @@ namespace {
 
 // This structure mirrors the one found in /usr/include/asm/ucontext.h
 typedef struct _sig_ucontext {
-   unsigned long     uc_flags;
-   struct ucontext   *uc_link;
-   stack_t           uc_stack;
-   struct sigcontext uc_mcontext;
-   sigset_t          uc_sigmask;
+    unsigned long     uc_flags;
+    struct ucontext   *uc_link;
+    stack_t           uc_stack;
+    struct sigcontext uc_mcontext;
+    sigset_t          uc_sigmask;
 } sig_ucontext_t;
 
 void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext) {
@@ -84,15 +84,15 @@ void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext) {
     void * caller_address = (void *) uc->uc_mcontext.eip;
 
     std::cerr << "signal " << sig_num 
-              << " (" << strsignal(sig_num) << "), address is " 
-              << info->si_addr << " from " 
-              << caller_address << std::endl;
+        << " (" << strsignal(sig_num) << "), address is " 
+        << info->si_addr << " from " 
+        << caller_address << std::endl;
 
     void * array[50];
     int size = backtrace(array, 50);
 
     std::cerr << __FUNCTION__ << " backtrace returned " 
-              << size << " frames\n\n";
+        << size << " frames\n\n";
 
     // overwrite sigaction with caller's address
     array[1] = caller_address;
@@ -119,18 +119,18 @@ void my_terminate() {
     }
     catch (const std::exception &e) {
         std::cerr << __FUNCTION__ << " caught unhandled exception. what(): "
-                  << e.what() << std::endl;
+            << e.what() << std::endl;
     }
     catch (...) {
         std::cerr << __FUNCTION__ << " caught unknown/unhandled exception." 
-                  << std::endl;
+            << std::endl;
     }
 
     void * array[50];
     int size = backtrace(array, 50);    
 
     std::cerr << __FUNCTION__ << " backtrace returned " 
-              << size << " frames\n\n";
+        << size << " frames\n\n";
 
     char ** messages = backtrace_symbols(array, size);
 
@@ -148,17 +148,17 @@ void my_terminate() {
  * Split specified string
  */
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-	std::stringstream ss(s);
-	std::string item;
-	while (std::getline(ss, item, delim)) {
-		elems.push_back(item);
-	}
-	return elems;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
 }
 std::vector<std::string> split(const std::string &s, char delimiter) {
-	std::vector<std::string> elements;
-	split(s, delimiter, elements);
-	return elements;
+    std::vector<std::string> elements;
+    split(s, delimiter, elements);
+    return elements;
 }
 
 /**
@@ -249,7 +249,7 @@ qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
             out["protocol"] = "0.0";
             save = true;
         }
-        
+
         if( save )
         {
             setDeviceInfos(internalid, &out);
@@ -405,7 +405,7 @@ bool deleteDevice(std::string internalid)
         result = false;
         cout << "Unable to remove unknown device \"" << internalid << "\"" << endl;
     }
-    
+
     return result;
 }
 
@@ -646,7 +646,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                     infos["last_timestamp"] = 0;
                     setDeviceInfos(it->first, &infos);
                 }
-        	}
+            }
             returnval["error"] = 0;
             returnval["msg"] = "";
         }
@@ -1770,13 +1770,13 @@ int main(int argc, char **argv)
 {
     //exception handling (trace back)
     /*struct sigaction sigact;
-    sigact.sa_sigaction = crit_err_hdlr;
-    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-    if (sigaction(SIGABRT, &sigact, (struct sigaction *)NULL) != 0)
-    {
-        std::cerr << "error setting handler for signal " << SIGABRT << " (" << strsignal(SIGABRT) << ")\n";
-        exit(EXIT_FAILURE);
-    }*/
+      sigact.sa_sigaction = crit_err_hdlr;
+      sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+      if (sigaction(SIGABRT, &sigact, (struct sigaction *)NULL) != 0)
+      {
+      std::cerr << "error setting handler for signal " << SIGABRT << " (" << strsignal(SIGABRT) << ")\n";
+      exit(EXIT_FAILURE);
+      }*/
 
     //get config
     device = getConfigOption("mysensors", "device", "/dev/ttyACM0");
@@ -1840,12 +1840,16 @@ int main(int argc, char **argv)
     }
 
     bool error;
-    cout << "Requesting gateway version...";
+    cout << "Requesting gateway version..." << flush;
     std::string getVersion = "0;0;3;0;2\n";
     std::string line = "";
     while( !error && !boost::algorithm::starts_with(line, "0;0;3;0;2;") )
     {
         line = readLine(&error);
+        if( DEBUG )
+        {
+            cout << "Read: " << line << endl;
+        }
         serialPort.write_some(buffer(getVersion));
     }
     if( !error )
@@ -1879,11 +1883,13 @@ int main(int argc, char **argv)
     pthread_mutex_init(&serialMutex, NULL);
     pthread_mutex_init(&resendMutex, NULL);
     pthread_mutex_init(&devicemapMutex, NULL);
-    if( pthread_create(&resendThread, NULL, resendFunction, NULL) < 0 ) {
+    if( pthread_create(&resendThread, NULL, resendFunction, NULL) < 0 )
+    {
         cerr << "Unable to create resend thread (errno=" << errno << ")" << endl;
         exit(1);
     }
-    if( pthread_create(&readThread, NULL, receiveFunction, NULL) < 0 ) {
+    if( pthread_create(&readThread, NULL, receiveFunction, NULL) < 0 )
+    {
         cerr << "Unable to create read thread (errno=" << errno << ")" << endl;
         exit(1);
     }
@@ -1891,7 +1897,8 @@ int main(int argc, char **argv)
     //register existing devices
     cout << "Register existing devices:" << endl;
     qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-    for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
+    for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+    {
         qpid::types::Variant::Map infos = it->second.asMap();
         std::string internalid = (std::string)it->first;
         cout << " - " << internalid << ":" << infos["type"].asString().c_str();

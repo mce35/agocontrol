@@ -2,7 +2,7 @@
 (function(yourcode) {
 
     // The global jQuery object is passed as a parameter
-  	yourcode(window.jQuery, window, document);
+    yourcode(window.jQuery, window, document);
 
 } (function($, window, document) {
     // The $ is now locally scoped 
@@ -13,7 +13,7 @@
         notif = new agoNotifications();
         notif.init();
     });
-    
+
     //The DOM may not be ready
     var NOTIF_INFO = 0;
     var NOTIF_SUCC = 1;
@@ -26,7 +26,7 @@
         var self = this;
         self.name = "notification-box";
         self.duration = 4; //seconds
-    
+
         //create main container
         self.init = function() {
             self.container = $("<div></div>");
@@ -39,7 +39,7 @@
             }).attr("name", self.name);
             self.container.appendTo($(document.body));
         };
-    
+
         //notify message (internal use)
         self._notify = function(message, type, duration) {
             if( self.container!==undefined )
@@ -57,22 +57,22 @@
                 console.log('container is undefined');
             }
         };
-    
+
         //notify info message
         self.info = function(message, duration) {
             self._notify(message, NOTIF_INFO, duration);
         };
-        
+
         //notify success message
         self.success = function(message, duration) {
             self._notify(message, NOTIF_SUCC, duration);
         };
-        
+
         //notify warning message
         self.warning = function(message, duration) {
             self._notify(message, NOTIF_WARN, duration);
         };
-        
+
         //notify error message
         self.error = function(message, duration) {
             self._notify(message, NOTIF_ERRO, duration);
@@ -87,7 +87,7 @@
     function agoNotificationMessage() {
         //members
         var self = this;
-        
+
         //init
         self.init = function(container, message, type, duration) {
             self.container = container;
@@ -95,7 +95,7 @@
             self.type = type;
             self.duration = duration*1000;
         };
-        
+
         //show notification
         self.show = function() {
             //build elem
@@ -128,7 +128,7 @@
                 });
             }
         };
-        
+
         //hide notification
         self.hide = function() {
             if( self.elem!==undefined )
