@@ -145,13 +145,13 @@ function device(obj, uuid) {
                         name : k.charAt(0).toUpperCase() + k.substr(1),
                         latitude : self.values()[k].latitude,
                         longitude : self.values()[k].longitude
-                        //unit : no unit available for gps sensor
+                            //unit : no unit available for gps sensor
                     });
                 }
             }
             return result;
         });
-   
+
         //add function to get rrd graph
         this.getRrdGraph = function(uuid, start, end) {
             var content = {};
@@ -161,24 +161,24 @@ function device(obj, uuid) {
             content.start = start;
             content.end = end;
             sendCommand(content, function(res)
-            {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-                {
-                    if( !res.result.error && document.getElementById("graphRRD") )
                     {
-                        document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.graph;
-                        $("#graphRRD").show();
-                    }
-                    else
-                    {
-                        notif.error('Unable to get graph: '+res.result.msg);
-                    }
-                }
-                else
-                {
-                    notif.error('Unable to get graph: Internal error');
-                }
-            }, 10);
+                        if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
+                        {
+                            if( !res.result.error && document.getElementById("graphRRD") )
+                            {
+                                document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.graph;
+                                $("#graphRRD").show();
+                            }
+                            else
+                            {
+                                notif.error('Unable to get graph: '+res.result.msg);
+                            }
+                        }
+                        else
+                        {
+                            notif.error('Unable to get graph: Internal error');
+                        }
+                    }, 10);
         };
 
     }

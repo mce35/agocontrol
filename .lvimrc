@@ -1,0 +1,32 @@
+"
+" VIM modelines which shall be used when editing all Agocontrol files.
+" Ref: http://wiki.agocontrol.com/index.php/CodingConventions
+"
+" Please ensure your editor uses these, by either:
+"   - Installing the localvimrc plugin:
+"     http://www.vim.org/scripts/script.php?script_id=441
+"
+"   - Copying these settings to your own .vimrc, in full or via AutoBuf cmd
+"
+"   - NOT by adding modelines
+"   - NOT by ignoring them.. :) 
+"
+"
+" If you use the localvimrc plugin, you might want to add this line to your
+" main .vimc:
+"
+"   let g:localvimrc_whitelist='/home/youruser/agocontrol/'
+
+" Note that this file only controls indentation and basic code formatting
+" For coloring and other statements, please put those directives in your
+" private .vimrc.
+"
+set backspace=2
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+set formatoptions=tcroqn        " indentation
+set autoindent
+set cin
+

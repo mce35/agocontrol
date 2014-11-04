@@ -14,19 +14,19 @@ function init_pluginsConfig() {
     model = new pluginsConfig();
 
     model.mainTemplate = function() {
-	return "configuration/plugins";
+        return "configuration/plugins";
     }.bind(model);
 
     model.navigation = function() {
-	return "navigation/configuration";
+        return "navigation/configuration";
     }.bind(model);
 
     $.ajax({
-	url : "cgi-bin/pluginlist.cgi",
-	method : "GET",
-	async : true,
+        url : "cgi-bin/pluginlist.cgi",
+        method : "GET",
+        async : true,
     }).done(function(result) {
-	model.plugins(result);
+        model.plugins(result);
     });
 
     ko.applyBindings(model);

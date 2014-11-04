@@ -23,18 +23,18 @@
  */
 /* Severity level definition is the same for both implementations */
 namespace agocontrol {
-	namespace log {
-		enum severity_level
-		{
-			trace,
-			debug,
-			info,
-			warning,
-			error,
-			fatal
-		};
+    namespace log {
+        enum severity_level
+        {
+            trace,
+            debug,
+            info,
+            warning,
+            error,
+            fatal
+        };
 #define AGOLOG_NUM_SEVERITY_LEVELS 6
-	}
+    }
 }
 
 #define AGO_DEFAULT_LEVEL ::agocontrol::log::info
@@ -51,46 +51,47 @@ namespace agocontrol {
 
 
 namespace agocontrol {
-	namespace log {
-		class log_container {
-		public:
-			static AGO_LOGGER_IMPL &get();
-			/**
-			 * Inits the logger with default settings (log level INFO, console output)
-			 */
-			static void initDefault();
+namespace log {
+class log_container {
+public:
+    static AGO_LOGGER_IMPL &get();
+    /**
+     * Inits the logger with default settings (log level INFO, console output)
+     */
+    static void initDefault();
 
-			/**
-			 * Changes the severity setting of the logger
-			 */
-			static void setCurrentLevel(severity_level lvl);
+    /**
+     * Changes the severity setting of the logger
+     */
+    static void setCurrentLevel(severity_level lvl);
 
-			/**
-			 * Changes to console output
-			 */
-			static void setOutputConsole();
+    /**
+     * Changes to console output
+     */
+    static void setOutputConsole();
 
-			/**
-			 * Changes to Syslog output.
-			 */
-			static void setOutputSyslog(const std::string &ident, int facility);
+    /**
+     * Changes to Syslog output.
+     */
+    static void setOutputSyslog(const std::string &ident, int facility);
 
-			static int getFacility(const std::string &facility);
+    static int getFacility(const std::string &facility);
 
-			/* Returns a vector of all supported syslog facitliy names */
-			static const std::vector<std::string>& getSyslogFacilities() ;
+    /* Returns a vector of all supported syslog facitliy names */
+    static const std::vector<std::string>& getSyslogFacilities() ;
 
-			/* Translate level string to internal level. Returns -1 on invalid value */
-			static severity_level getLevel(const std::string &level);
+    /* Translate level string to internal level. Returns -1 on invalid value */
+    static severity_level getLevel(const std::string &level);
 
-			/* Translate internal level to string. Throws exception on invalid value */
-			static const std::string & getLevel(severity_level lvl);
+    /* Translate internal level to string. Throws exception on invalid value */
+    static const std::string & getLevel(severity_level lvl);
 
-			/* Returns a vector with all levels, indexed identical to severity_level */
-			static const std::vector<std::string> & getLevels();
+    /* Returns a vector with all levels, indexed identical to severity_level */
+    static const std::vector<std::string> & getLevels();
 
-		};
-	}
-}
+};
+
+} /* namespace log */
+} /* namespace agocontrol */
 
 #endif
