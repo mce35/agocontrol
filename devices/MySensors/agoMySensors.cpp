@@ -789,7 +789,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         }
                         else
                         {
-                            if( DEBUG ) cout << " -> Command dropped (value is the same)" << endl;
+                            if( DEBUG ) cout << " -> Command OFF dropped (value is the same [" << infos["value"].asString() << "])" << endl;
                         }
                     }
                     else if( cmd=="on" )
@@ -803,7 +803,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         }
                         else 
                         {
-                            if( DEBUG ) cout << " -> Command dropped (value is the same)" << endl;
+                            if( DEBUG ) cout << " -> Command ON dropped (value is the same [" << infos["value"].asString() << "])" << endl;
                         }
                     }
                 }
