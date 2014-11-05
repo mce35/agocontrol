@@ -400,6 +400,13 @@ std::string agocontrol::generateUuid() {
     return strUuid;
 }
 
+std::string agocontrol::uint64ToString(uint64_t i) {
+    stringstream tmp;
+    tmp << i;
+    return tmp.str();
+}
+
+
 std::string agocontrol::getConfigOption(const char *section, const char *option, std::string &defaultvalue) {
     return getConfigOption(section, option, defaultvalue.c_str());
 }
