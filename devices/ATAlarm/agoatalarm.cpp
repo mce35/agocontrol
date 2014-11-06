@@ -6,8 +6,7 @@
 #include <boost/system/system_error.hpp>
 #include <syslog.h>
 
-#include "agoclient.h"
-#include "agolog.h"
+#include "agoapp.h"
 
 #ifndef DEVICEMAPFILE
 #define DEVICEMAPFILE CONFDIR "/maps/mysensors.json"
@@ -45,9 +44,8 @@ typedef struct ATDevice {
   int time_after_stale;
 } ATDevice;
 
-typedef struct ATAlarm {
-  AgoConnection *agoConnection;
-
+class AgoATAlarm: public AgoApp {
+public:
   std::string device;
   int tty_fd;
 
@@ -60,19 +58,45 @@ typedef struct ATAlarm {
   AlarmState cur_state;
   uint8_t last_inputs;
   std::map<std::string, ATDevice> devicemap;
-} ATAlarm;
 
-static ATAlarm gatalarm;
+  qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command);
+
+  void setupApp();
+  void cleanupApp();
+
+  static const char *atalarm_state_to_string(AlarmState state);
+  static void atalarm_tokenize_res(char *res, int *argc, char *argv[]);
+  static const char *atalarm_rf_frame_type_to_str(int type);
+
+  int atalarm_init();
+  int atalarm_reopen_device();
+  void atalarm_close_device();
+  void atalarm_state_changed(AlarmState new_state);
+  void atalarm_process_res(int argc, char *argv[]);
+  CmdError atalarm_send_command(const char *command, char *res, int res_len);
+  CmdError atalarm_gets(char *out, int out_len, int timeout);
+  void register_sensor_from_info(char *argv[], int argc);
+  void register_rf_sensors();
+  void check_staled_device();
+  ATDevice *getDeviceInfos(std::string internalid);
+  void addDevice(std::string internalid, std::string devicetype, int time_after_stale);
+  void add_device_if_not_known(std::string internalid, std::string devicetype,
+                               int time_after_stale);
+  void *atalarm_thread_real();
+
+public:
+  AGOAPP_CONSTRUCTOR_HEAD(AgoATAlarm) {}
+};
 
 /**
  * Get infos of specified device
  */
-ATDevice *getDeviceInfos(ATAlarm *atalarm, std::string internalid)
+ATDevice *AgoATAlarm::getDeviceInfos(std::string internalid)
 {
   std::map<std::string, ATDevice>::iterator it;
 
-  it = atalarm->devicemap.find(internalid);
-  if(it == atalarm->devicemap.end())
+  it = this->devicemap.find(internalid);
+  if(it == this->devicemap.end())
     return NULL;
   return &(it->second);
   /*qpid::types::Variant::Map out;
@@ -89,7 +113,7 @@ ATDevice *getDeviceInfos(ATAlarm *atalarm, std::string internalid)
 /**
  * Save all necessary infos for new device and register it to agocontrol
  */
-static void addDevice(ATAlarm *atalarm, std::string internalid, std::string devicetype, int time_after_stale)
+void AgoATAlarm::addDevice(std::string internalid, std::string devicetype, int time_after_stale)
 {
   ATDevice dev;
   struct timespec ts;
@@ -100,7 +124,7 @@ static void addDevice(ATAlarm *atalarm, std::string internalid, std::string devi
   dev.last_seen = ts.tv_sec;
   dev.stale = false;
   dev.time_after_stale = time_after_stale;
-  atalarm->devicemap[internalid] = dev;
+  this->devicemap[internalid] = dev;
   /*infos["type"] = devicetype;
   infos["value"] = "0";
   infos["last_seen"] = ts.tv_sec;
@@ -112,18 +136,18 @@ static void addDevice(ATAlarm *atalarm, std::string internalid, std::string devi
   devices[internalid] = infos;
   atalarm->devicemap["devices"] = devices;
   //variantMapToJSONFile(devicemap,DEVICEMAPFILE);*/
-  atalarm->agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
+  this->agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
 }
 
 /**
  * Create new device
  */
-static void add_device_if_not_known(ATAlarm *atalarm, std::string internalid, std::string devicetype,
-                                    int time_after_stale)
+void AgoATAlarm::add_device_if_not_known(std::string internalid, std::string devicetype,
+                                         int time_after_stale)
 {
   ATDevice *dev;
 
-  dev = getDeviceInfos(atalarm, internalid);
+  dev = getDeviceInfos(internalid);
   if(dev != NULL)
     {
       struct timespec ts;
@@ -133,12 +157,12 @@ static void add_device_if_not_known(ATAlarm *atalarm, std::string internalid, st
       if(dev->stale == true)
         {
           dev->stale = false;
-          atalarm->agoConnection->resumeDevice(internalid.c_str());
+          this->agoConnection->resumeDevice(internalid.c_str());
         }
     }
   else
     {
-      addDevice(atalarm, internalid, devicetype, time_after_stale);
+      addDevice(internalid, devicetype, time_after_stale);
      }
   //init
   /*qpid::types::Variant::Map devices = atalarm->devicemap["devices"].asMap();
@@ -158,46 +182,46 @@ static void add_device_if_not_known(ATAlarm *atalarm, std::string internalid, st
       }*/
 }
 
-static void check_staled_device(ATAlarm *atalarm)
+void AgoATAlarm::check_staled_device()
 {
   std::map<std::string, ATDevice>::iterator it;
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
 
-  for(it = atalarm->devicemap.begin(); it != atalarm->devicemap.end(); it++)
+  for(it = this->devicemap.begin(); it != this->devicemap.end(); it++)
     {
       if(it->second.time_after_stale > 0 && ts.tv_sec - it->second.last_seen > it->second.time_after_stale &&
          it->second.stale == false)
         {
           AGO_WARNING() << "Device '" << it->first.c_str() << "' staled!";
-          atalarm->agoConnection->suspendDevice(it->first.c_str());
+          this->agoConnection->suspendDevice(it->first.c_str());
           it->second.stale = true;
         }
     }
 }
 
-static void atalarm_close_device(ATAlarm *atalarm)
+void AgoATAlarm::atalarm_close_device()
 {
-  close(atalarm->tty_fd);
-  atalarm->tty_fd = -1;
-  atalarm->current_line_pos = atalarm->current_line;
+  close(this->tty_fd);
+  this->tty_fd = -1;
+  this->current_line_pos = this->current_line;
 }
 
-static int atalarm_reopen_device(ATAlarm *atalarm)
+int AgoATAlarm::atalarm_reopen_device()
 {
   struct termios options;
 
-  if(atalarm->tty_fd >= 0)
-    atalarm_close_device(atalarm);
+  if(this->tty_fd >= 0)
+    atalarm_close_device();
 
-  atalarm->tty_fd = open(atalarm->device.c_str(), O_RDWR | O_NOCTTY);
-  if(atalarm->tty_fd < 0)
+  this->tty_fd = open(this->device.c_str(), O_RDWR | O_NOCTTY);
+  if(this->tty_fd < 0)
     {
-      AGO_ERROR() << "Failed to open device '" << atalarm->device.c_str() << "': " << strerror(errno);
+      AGO_ERROR() << "Failed to open device '" << this->device.c_str() << "': " << strerror(errno);
       return -1;
     }
-  tcflush(atalarm->tty_fd, TCIOFLUSH);
-  tcgetattr(atalarm->tty_fd, &options);
+  tcflush(this->tty_fd, TCIOFLUSH);
+  tcgetattr(this->tty_fd, &options);
 
   options.c_lflag = 0;
   options.c_oflag = 0;
@@ -216,17 +240,17 @@ static int atalarm_reopen_device(ATAlarm *atalarm)
   options.c_cflag &= ~CSIZE;
   options.c_cflag |= CS8;
 
-  if(tcsetattr(atalarm->tty_fd, TCSANOW, &options) != 0)
+  if(tcsetattr(this->tty_fd, TCSANOW, &options) != 0)
     AGO_ERROR() << "tcsetattr failed: " << strerror(errno);
 
-  tcflush(atalarm->tty_fd, TCIOFLUSH);
+  tcflush(this->tty_fd, TCIOFLUSH);
 
-  AGO_INFO() << "Using device '" << atalarm->device.c_str() << "'";
+  AGO_INFO() << "Using device '" << this->device.c_str() << "'";
 
   return 0;
 }
 
-static void atalarm_tokenize_res(char *res, int *argc, char *argv[])
+void AgoATAlarm::atalarm_tokenize_res(char *res, int *argc, char *argv[])
 {
   char *ptr;
 
@@ -242,7 +266,7 @@ static void atalarm_tokenize_res(char *res, int *argc, char *argv[])
   (*argc)++;
 }
 
-static const char *atalarm_state_to_string(AlarmState state)
+const char *AgoATAlarm::atalarm_state_to_string(AlarmState state)
 {
   switch(state)
     {
@@ -254,9 +278,9 @@ static const char *atalarm_state_to_string(AlarmState state)
     }
 }
 
-static void atalarm_state_changed(ATAlarm *alarm, AlarmState new_state)
+void AgoATAlarm::atalarm_state_changed(AlarmState new_state)
 {
-  AGO_DEBUG() << "Alarm state changed (" << atalarm_state_to_string(alarm->cur_state) << " -> " <<
+  AGO_DEBUG() << "Alarm state changed (" << atalarm_state_to_string(this->cur_state) << " -> " <<
     atalarm_state_to_string(new_state) << ")";
 
   if(new_state == ALARM_STATE_ARMED_TRIGGERED)
@@ -266,7 +290,7 @@ static void atalarm_state_changed(ATAlarm *alarm, AlarmState new_state)
       AGO_WARNING() << "Alarm triggered!";
 
       content["zone"] = "House";
-      alarm->agoConnection->emitEvent("ATAlarmController", "event.security.intruderalert", content);
+      this->agoConnection->emitEvent("ATAlarmController", "event.security.intruderalert", content);
     }
   else if(new_state == ALARM_STATE_ARMED_PRE_TRIGGERED)
     AGO_WARNING() << "Alarm pretriggered!";
@@ -275,12 +299,12 @@ static void atalarm_state_changed(ATAlarm *alarm, AlarmState new_state)
   else if(new_state == ALARM_STATE_ARMED)
     AGO_INFO() << "Alarm armed";
 
-  alarm->cur_state = new_state;
-  alarm->agoConnection->emitEvent("ATAlarm", "event.device.statechanged",
-                                  alarm->cur_state == ALARM_STATE_DISARMED ? 0:255, "");
+  this->cur_state = new_state;
+  this->agoConnection->emitEvent("ATAlarm", "event.device.statechanged",
+                                 this->cur_state == ALARM_STATE_DISARMED ? 0:255, "");
 }
 
-static const char *atalarm_rf_frame_type_to_str(int type)
+const char *AgoATAlarm::atalarm_rf_frame_type_to_str(int type)
 {
   switch(type)
     {
@@ -299,7 +323,7 @@ static const char *atalarm_rf_frame_type_to_str(int type)
     }
 }
 
-static void atalarm_process_res(ATAlarm *alarm, int argc, char *argv[])
+void AgoATAlarm::atalarm_process_res(int argc, char *argv[])
 {
   AlarmState new_state;
 
@@ -321,8 +345,8 @@ static void atalarm_process_res(ATAlarm *alarm, int argc, char *argv[])
   else if(strcmp(argv[1], "alarm_state_changed") == 0 && argc >= 3)
     {
       new_state = (AlarmState) strtol(argv[2], NULL, 10);
-      if(new_state != alarm->cur_state)
-        atalarm_state_changed(alarm, new_state);
+      if(new_state != this->cur_state)
+        atalarm_state_changed(new_state);
     }
   else if(strcmp(argv[1], "alarm_inputs_changed") == 0 && argc >= 4)
     {
@@ -333,22 +357,22 @@ static void atalarm_process_res(ATAlarm *alarm, int argc, char *argv[])
       inputs = strtol(argv[2], NULL, 16);
       for(i = 0; i < 6; i++)
         {
-          if((alarm->last_inputs & (0x01 << i)) != (inputs & (0x01 << i)))
+          if((this->last_inputs & (0x01 << i)) != (inputs & (0x01 << i)))
             {
               snprintf(buff, sizeof(buff), "base_%i", i);
               if((inputs & (0x01 << i)) != 0)
                 {
                   AGO_DEBUG() << "'" << buff << "' changed to 255";
-                  alarm->agoConnection->emitEvent(buff, "event.device.statechanged", 255, "");
+                  this->agoConnection->emitEvent(buff, "event.device.statechanged", 255, "");
                 }
               else
                 {
                   AGO_DEBUG() << "'" << buff << "' changed to 0";
-                  alarm->agoConnection->emitEvent(buff, "event.device.statechanged", 0, "");
+                  this->agoConnection->emitEvent(buff, "event.device.statechanged", 0, "");
                 }
             }
         }
-      alarm->last_inputs = inputs;
+      this->last_inputs = inputs;
     }
   else if(strcmp(argv[1], "wiegand_accepted") == 0 && argc >= 3)
     {
@@ -357,12 +381,12 @@ static void atalarm_process_res(ATAlarm *alarm, int argc, char *argv[])
   else if(strcmp(argv[1], "wiegand_unknown") == 0 && argc >= 3)
     {
       AGO_INFO() << "Unknown RFID tag '" << argv[2] << "'";
-      //hasd_notification_queue(alarm->mod.hasd, HASD_NOTIFY_INFO, "hasd_atalarm", notif);
+      //hasd_notification_queue(this->mod.hasd, HASD_NOTIFY_INFO, "hasd_atalarm", notif);
     }
   else if(strcmp(argv[1], "start") == 0 && argc >= 3)
     {
       AGO_WARNING() << "Device (re)started (version " << argv[2] << ")";
-      //hasd_notification_queue(alarm->mod.hasd, HASD_NOTIFY_INFO, "hasd_atalarm", "Device (re)started");
+      //hasd_notification_queue(this->mod.hasd, HASD_NOTIFY_INFO, "hasd_atalarm", "Device (re)started");
     }
   else if(strcmp(argv[1], "sensor_data") == 0 && argc >= 7)
     {
@@ -378,24 +402,23 @@ static void atalarm_process_res(ATAlarm *alarm, int argc, char *argv[])
         case 1 /* NET_DEV_TYPE_TEMP */:
           AGO_DEBUG() << "Sensor '" << argv[2] << "_" << argv[4] << "' temp " << ((double) value) / 10 <<
             "°C bat " << ((double) atoi(argv[6])) / 100 << "V";
-          add_device_if_not_known(alarm, buff, "temperaturesensor", 300);
+          add_device_if_not_known(buff, "temperaturesensor", 300);
           snprintf(temp, sizeof(temp), "%.1f", ((float) value) / 10); // convert value to string for agocontrol
-          alarm->agoConnection->emitEvent(buff, "event.environment.temperaturechanged", temp, "degC");
+          this->agoConnection->emitEvent(buff, "event.environment.temperaturechanged", temp, "degC");
           break;
         case 4 /* NET_DEV_TYPE_CONTACT */:
           AGO_DEBUG() << "Sensor '" << argv[2] << "_" << argv[4] << "' contact " << value <<
             " bat " << ((double) atoi(argv[6])) / 100 << "V";
-          add_device_if_not_known(alarm, buff, "binarysensor", 0);
-          alarm->agoConnection->emitEvent(buff, "event.device.statechanged",
-                                          value == 0 ? 0:255, "");
+          add_device_if_not_known(buff, "binarysensor", 0);
+          this->agoConnection->emitEvent(buff, "event.device.statechanged", value == 0 ? 0:255, "");
           break;
         }
       if(atoi(argv[6]) > 0)
         {
           snprintf(buff, sizeof(buff), "rf_%s_bat", argv[2]);
-          add_device_if_not_known(alarm, buff, "batterysensor", 1200);
+          add_device_if_not_known(buff, "batterysensor", 1200);
           snprintf(temp, sizeof(temp), "%.2f", ((float) atoi(argv[6])) / 100); // convert value to string for agocontrol
-          alarm->agoConnection->emitEvent(buff, "event.device.batterylevelchanged", temp, "V");
+          this->agoConnection->emitEvent(buff, "event.device.batterylevelchanged", temp, "V");
         }
     }
   else if(strcmp(argv[1], "sensor_request") == 0 && argc >= 3)
@@ -428,8 +451,7 @@ static void atalarm_process_res(ATAlarm *alarm, int argc, char *argv[])
     }
 }
 
-static CmdError atalarm_gets(ATAlarm *alarm, char *out, int out_len,
-                             int timeout)
+CmdError AgoATAlarm::atalarm_gets(char *out, int out_len, int timeout)
 {
   char *ptr;
   fd_set fdset;
@@ -440,10 +462,10 @@ static CmdError atalarm_gets(ATAlarm *alarm, char *out, int out_len,
   do
     {
       FD_ZERO(&fdset);
-      FD_SET(alarm->tty_fd, &fdset);
+      FD_SET(this->tty_fd, &fdset);
       tv.tv_sec = timeout;
       tv.tv_usec = 0;
-      n = select(alarm->tty_fd + 1, &fdset, NULL, NULL, &tv);
+      n = select(this->tty_fd + 1, &fdset, NULL, NULL, &tv);
       if(n < 0)
         {
           AGO_ERROR() << "select error: " << strerror(errno);
@@ -457,7 +479,7 @@ static CmdError atalarm_gets(ATAlarm *alarm, char *out, int out_len,
         }
       timeout = 1;
 
-      n = read(alarm->tty_fd, buff, sizeof(buff));
+      n = read(this->tty_fd, buff, sizeof(buff));
       if(n <= 0)
         {
           AGO_ERROR() << "Device read error: " << strerror(errno);
@@ -468,17 +490,17 @@ static CmdError atalarm_gets(ATAlarm *alarm, char *out, int out_len,
         {
           if(*ptr != '\n')
             {
-              *alarm->current_line_pos++ = *ptr++;
-              if(alarm->current_line_pos >= alarm->current_line + sizeof(alarm->current_line))
-                alarm->current_line_pos = alarm->current_line;
+              *this->current_line_pos++ = *ptr++;
+              if(this->current_line_pos >= this->current_line + sizeof(this->current_line))
+                this->current_line_pos = this->current_line;
             }
           else if(out_len > 0)
             {
-              *alarm->current_line_pos = 0;
-              strncpy(out, alarm->current_line, out_len);
+              *this->current_line_pos = 0;
+              strncpy(out, this->current_line, out_len);
               out[out_len - 1] = 0;
               out_len = -1;
-              alarm->current_line_pos = alarm->current_line;
+              this->current_line_pos = this->current_line;
               ptr++;
             }
           n--;
@@ -489,8 +511,8 @@ static CmdError atalarm_gets(ATAlarm *alarm, char *out, int out_len,
   return CMD_OK;
 }
 
-static CmdError atalarm_send_command(ATAlarm *alarm, const char *command,
-                                     char *res, int res_len)
+CmdError AgoATAlarm::atalarm_send_command(const char *command,
+                                          char *res, int res_len)
 {
   CmdError err;
   int argc;
@@ -499,7 +521,7 @@ static CmdError atalarm_send_command(ATAlarm *alarm, const char *command,
 
   *res = 0;
 
-  if(alarm->tty_fd < 0)
+  if(this->tty_fd < 0)
     {
       AGO_ERROR() << "Cannot exec command '" << command << "': No device found";
       return CMD_NO_DEV;
@@ -507,38 +529,38 @@ static CmdError atalarm_send_command(ATAlarm *alarm, const char *command,
 
   AGO_DEBUG() << "Exec command '" << command << "'";
 
-  pthread_mutex_lock(&alarm->device_mutex);
-  if(write(alarm->tty_fd, command, strlen(command)) < 0)
+  pthread_mutex_lock(&this->device_mutex);
+  if(write(this->tty_fd, command, strlen(command)) < 0)
     {
-      pthread_mutex_unlock(&alarm->device_mutex);
+      pthread_mutex_unlock(&this->device_mutex);
       AGO_ERROR() << "Cannot exec command '" << command << "': write error: " << strerror(errno);
       return CMD_WRITE_ERR;
     }
   n = 0;
   do
     {
-      err = atalarm_gets(alarm, res, res_len, 5);
+      err = atalarm_gets(res, res_len, 5);
       if(err != CMD_OK)
         {
-          pthread_mutex_unlock(&alarm->device_mutex);
+          pthread_mutex_unlock(&this->device_mutex);
           return err;
         }
       if(res[0] != '>')
         {
           AGO_DEBUG() << "Received data ('" << res << "') while executing command";
           atalarm_tokenize_res(res, &argc, argv);
-          atalarm_process_res(alarm, argc, argv);
+          atalarm_process_res(argc, argv);
           n++;
           if(n > 2)
             {
-              pthread_mutex_unlock(&alarm->device_mutex);
+              pthread_mutex_unlock(&this->device_mutex);
               AGO_WARNING() << "Command timeout (" << command << ")";
               return CMD_TIMEOUT;
             }
         }
     }
   while(res[0] != '>');
-  pthread_mutex_unlock(&alarm->device_mutex);
+  pthread_mutex_unlock(&this->device_mutex);
 
   AGO_DEBUG() << "Command finished cmd='" << command << "', res='" << res << "'";
 
@@ -670,7 +692,7 @@ std::vector<std::string> split(const std::string &s, char delimiter)
 /**
  * Agocontrol command handler
  */
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
+qpid::types::Variant::Map AgoATAlarm::commandHandler(qpid::types::Variant::Map command)
 {
   qpid::types::Variant::Map returnval;
   qpid::types::Variant::Map infos;
@@ -693,11 +715,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
 
           if(cmd == "on")
             {
-              atalarm_send_command(&gatalarm, "alarm_set_state 0\n", res, sizeof(res));
+              atalarm_send_command("alarm_set_state 0\n", res, sizeof(res));
             }
           else /* if(cmd == "off") */
             {
-              atalarm_send_command(&gatalarm, "alarm_set_state 1\n", res, sizeof(res));
+              atalarm_send_command("alarm_set_state 1\n", res, sizeof(res));
             }
           returnval["error"] = 0;
           returnval["msg"] = "";
@@ -707,7 +729,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
           //get serial port
           returnval["error"] = 0;
           returnval["msg"] = "";
-          returnval["port"] = gatalarm.device;
+          returnval["port"] = this->device;
         }
       else if(cmd == "setport")
         {
@@ -716,19 +738,19 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
             {
               std::string old_device;
 
-              pthread_mutex_lock(&gatalarm.device_mutex);
-              old_device = gatalarm.device;
-              gatalarm.device = command["port"].asString();
-              if(atalarm_reopen_device(&gatalarm) != 0)
+              pthread_mutex_lock(&this->device_mutex);
+              old_device = this->device;
+              this->device = command["port"].asString();
+              if(atalarm_reopen_device() != 0)
                 {
-                  gatalarm.device = old_device;
-                  atalarm_reopen_device(&gatalarm);
+                  this->device = old_device;
+                  atalarm_reopen_device();
                   returnval["error"] = 1;
                   returnval["msg"] = "Unable to open specified port";
                 }
               else
                 {
-                  if(!setConfigOption("atalarm", "device", gatalarm.device.c_str()) )
+                  if(!setConfigOption("atalarm", "device", this->device.c_str()) )
                     {
                       returnval["error"] = 2;
                       returnval["msg"] = "Unable to save serial port to config file";
@@ -739,7 +761,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                       returnval["msg"] = "";
                     }
                 }
-              pthread_mutex_unlock(&gatalarm.device_mutex);
+              pthread_mutex_unlock(&this->device_mutex);
             }
           else
             { // port is missing
@@ -762,7 +784,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
           do
             {
               snprintf(cmd, sizeof(cmd), "wiegand_get_tag %X\n", i);
-              n = atalarm_send_command(&gatalarm, cmd, args, sizeof(args));
+              n = atalarm_send_command(cmd, args, sizeof(args));
               atalarm_tokenize_res(args, &argc, argv);
               if(n == CMD_OK && argc == 2)
                 {
@@ -802,7 +824,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
               tag = strtol(command["wgtag"].asString().c_str(), NULL, 16);
 
               snprintf(cmd, sizeof(cmd), "wiegand_set_tag %X %X\n", n, tag);
-              n = atalarm_send_command(&gatalarm, cmd, args, sizeof(args));
+              n = atalarm_send_command(cmd, args, sizeof(args));
               atalarm_tokenize_res(args, &argc, argv);
               if(n == CMD_OK)
                 {
@@ -850,7 +872,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                   char buff[128];
 
                   snprintf(buff, sizeof(buff), "net_dev_action %X %X 0 1\n", dev_id, sensor_nb);
-                  n = atalarm_send_command(&gatalarm, buff, args, sizeof(args));
+                  n = atalarm_send_command(buff, args, sizeof(args));
                   atalarm_tokenize_res(args, &argc, argv);
                 }
               else if(cmd == "off")
@@ -858,7 +880,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                   char buff[128];
 
                   snprintf(buff, sizeof(buff), "net_dev_action %X %X 0 0\n", dev_id, sensor_nb);
-                  n = atalarm_send_command(&gatalarm, buff, args, sizeof(args));
+                  n = atalarm_send_command(buff, args, sizeof(args));
                   atalarm_tokenize_res(args, &argc, argv);
                   if(n == CMD_OK)
                     {
@@ -1342,7 +1364,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
 // }
 
 // args : >OK <devID> <sens1_type> <sens1_nb> <sens2_type> <sens2_nb> <sens3_type> <sens3_nb> <sens4_type> <sens4_nb> <sens5_type> <sens5_nb> <sens6_type> <sens6_nb>
-static void register_sensor_from_info(ATAlarm *atalarm, char *argv[], int argc)
+void AgoATAlarm::register_sensor_from_info(char *argv[], int argc)
 {
   uint32_t dev_id;
   int sens_type;
@@ -1379,7 +1401,7 @@ static void register_sensor_from_info(ATAlarm *atalarm, char *argv[], int argc)
             {
               snprintf(sens_name, sizeof(sens_name), "rf_%X_%i", dev_id, n);
               AGO_INFO() << "Register sensor '" << sens_name << "' type '" << type << "'";
-              add_device_if_not_known(atalarm, sens_name, type, time_after_stale);
+              add_device_if_not_known(sens_name, type, time_after_stale);
             }
           n++;
           sens_nb--;
@@ -1387,7 +1409,7 @@ static void register_sensor_from_info(ATAlarm *atalarm, char *argv[], int argc)
     }
 }
 
-static void register_rf_sensors(ATAlarm *atalarm)
+void AgoATAlarm::register_rf_sensors()
 {
   int i;
   char cmd[64];
@@ -1399,21 +1421,20 @@ static void register_rf_sensors(ATAlarm *atalarm)
   do
     {
       snprintf(cmd, sizeof(cmd), "net_dev_info nb %i\n", i);
-      n = atalarm_send_command(atalarm, cmd, args, sizeof(args));
+      n = atalarm_send_command(cmd, args, sizeof(args));
       atalarm_tokenize_res(args, &argc, argv);
       if(n == CMD_OK && argc == 14)
         {
-          register_sensor_from_info(atalarm, argv, argc);
+          register_sensor_from_info(argv, argc);
         }
       i++;
     }
   while(n == CMD_OK);
-  add_device_if_not_known(atalarm, "rf_123456_0", "switch", 0);
+  add_device_if_not_known("rf_123456_0", "switch", 0);
 }
 
-static void *atalarm_thread(void *param)
+void *AgoATAlarm::atalarm_thread_real()
 {
-  ATAlarm *alarm = (ATAlarm *) param;
   char buff[MAX_LINE_SIZE];
   int argc;
   char *argv[256];
@@ -1422,36 +1443,36 @@ static void *atalarm_thread(void *param)
   fd_set fdset;
   struct timeval tv;
 
-  add_device_if_not_known(alarm, "ATAlarm", "switch", 0);
+  this->add_device_if_not_known("ATAlarm", "switch", 0);
 
-  n = atalarm_send_command(alarm, "alarm_get_state", buff, sizeof(buff));
+  n = this->atalarm_send_command("alarm_get_state", buff, sizeof(buff));
   atalarm_tokenize_res(buff, &argc, argv);
   if(n == CMD_OK && argc == 2)
     {
-      alarm->cur_state = (AlarmState) strtol(argv[1], NULL, 10);
-      alarm->agoConnection->emitEvent("ATAlarm", "event.device.statechanged",
-                                      alarm->cur_state == ALARM_STATE_DISARMED ? 0:255, "");
+      this->cur_state = (AlarmState) strtol(argv[1], NULL, 10);
+      this->agoConnection->emitEvent("ATAlarm", "event.device.statechanged",
+                                      this->cur_state == ALARM_STATE_DISARMED ? 0:255, "");
 
-      AGO_INFO() << "Initial alarm state : " << atalarm_state_to_string(alarm->cur_state);
-      if(alarm->cur_state == ALARM_STATE_ARMED_TRIGGERED)
+      AGO_INFO() << "Initial alarm state : " << atalarm_state_to_string(this->cur_state);
+      if(this->cur_state == ALARM_STATE_ARMED_TRIGGERED)
         {
           qpid::types::Variant::Map content;
 
           content["zone"] = "House";
-          alarm->agoConnection->emitEvent(buff, "event.security.intruderalert", content);
+          this->agoConnection->emitEvent(buff, "event.security.intruderalert", content);
           AGO_WARNING() << "Initial alarm triggered!";
-          //hasd_notification_queue(alarm->mod.hasd, HASD_NOTIFY_URGENT,
+          //hasd_notification_queue(this->mod.hasd, HASD_NOTIFY_URGENT,
           //                      "hasd_atalarm",
           //                      "Initial alarm triggered!");
         }
     }
   else
     {
-      alarm->agoConnection->emitEvent("ATAlarm", "event.device.statechanged", 0, "");
+      this->agoConnection->emitEvent("ATAlarm", "event.device.statechanged", 0, "");
       AGO_ERROR() << "Cannot get initial alarm state";
     }
 
-  n = atalarm_send_command(alarm, "alarm_get_inputs", buff, sizeof(buff));
+  n = this->atalarm_send_command("alarm_get_inputs", buff, sizeof(buff));
   atalarm_tokenize_res(buff, &argc, argv);
   if(n == CMD_OK && argc == 3)
     {
@@ -1462,34 +1483,34 @@ static void *atalarm_thread(void *param)
       for(i = 0; i < 6; i++)
         {
           snprintf(buff, sizeof(buff), "base_%i", i);
-          add_device_if_not_known(alarm, buff, "binarysensor", 0);
+          this->add_device_if_not_known(buff, "binarysensor", 0);
           if((inputs & (0x01 << i)) != 0)
-            alarm->agoConnection->emitEvent(buff, "event.device.statechanged", 255, "");
+            this->agoConnection->emitEvent(buff, "event.device.statechanged", 255, "");
           else
-            alarm->agoConnection->emitEvent(buff, "event.device.statechanged", 0, "");
+            this->agoConnection->emitEvent(buff, "event.device.statechanged", 0, "");
         }
-      alarm->last_inputs = inputs;
+      this->last_inputs = inputs;
     }
   else
     {
-      alarm->last_inputs = 0;
+      this->last_inputs = 0;
       AGO_ERROR() << "Cannot get initial inputs state";
     }
 
-  register_rf_sensors(alarm);
+  this->register_rf_sensors();
 
-  //alarm->agoConnection->emitEvent("base_0", "event.device.statechanged", 0, "");
-  //alarm->agoConnection->emitEvent("base_0", "event.device.statechanged", 255, "");
-  //alarm->agoConnection->emitEvent("base_0", "event.device.statechanged", 0, "");
+  //this->agoConnection->emitEvent("base_0", "event.device.statechanged", 0, "");
+  //this->agoConnection->emitEvent("base_0", "event.device.statechanged", 255, "");
+  //this->agoConnection->emitEvent("base_0", "event.device.statechanged", 0, "");
 
   nb_read_err = 0;
   while(1)
     {
       FD_ZERO(&fdset);
-      FD_SET(alarm->tty_fd, &fdset);
+      FD_SET(this->tty_fd, &fdset);
       tv.tv_sec = 10;
       tv.tv_usec = 0;
-      n = select(alarm->tty_fd + 1, &fdset, NULL, NULL, &tv);
+      n = select(this->tty_fd + 1, &fdset, NULL, NULL, &tv);
       if(n <= 0)
         {
           if(n < 0)
@@ -1500,7 +1521,7 @@ static void *atalarm_thread(void *param)
           nb_read_err++;
           if(nb_read_err >= 20 || n < 0)
             { // select error or read timeout
-              //hasd_notification_queue(alarm->mod.hasd,
+              //hasd_notification_queue(this->mod.hasd,
               //                      HASD_NOTIFY_INFO,
               //                      "hasd_atalarm",
               //                      "Device communication error or timeout, reopening");
@@ -1509,9 +1530,9 @@ static void *atalarm_thread(void *param)
                 {
                   nb_read_err++;
                   AGO_ERROR() << "Too many read errors, reopening device (try " << nb_read_err << ")";
-                  pthread_mutex_lock(&alarm->device_mutex);
-                  n = atalarm_reopen_device(alarm);
-                  pthread_mutex_unlock(&alarm->device_mutex);
+                  pthread_mutex_lock(&this->device_mutex);
+                  n = this->atalarm_reopen_device();
+                  pthread_mutex_unlock(&this->device_mutex);
                   if(n != 0)
                     {
                       AGO_ERROR() << "Device not found while reopening device!";
@@ -1519,31 +1540,31 @@ static void *atalarm_thread(void *param)
                     }
                 }
               while(n != 0);
-              //if(alarm->tty_fd < 0)
+              //if(this->tty_fd < 0)
               //{
               //  agolog(LOG_CRIT, "Too many failures, giving up\n");
-                  //hasd_notification_queue(alarm->mod.hasd,
+                  //hasd_notification_queue(this->mod.hasd,
                   //                      HASD_NOTIFY_URGENT,
                   //                      "hasd_atalarm",
                   //                      "Too many errors, giving up");
               //  break;
               //}
             }
-          //hasd_notification_queue(alarm->mod.hasd,
+          //hasd_notification_queue(this->mod.hasd,
           //                      HASD_NOTIFY_INFO,
           //                      "hasd_atalarm",
           //                      "Device communication re-established");
           continue;
         }
-      check_staled_device(alarm);
+      this->check_staled_device();
 
-      pthread_mutex_lock(&alarm->device_mutex);
-      n = atalarm_gets(alarm, buff, sizeof(buff), 0);
-      pthread_mutex_unlock(&alarm->device_mutex);
+      pthread_mutex_lock(&this->device_mutex);
+      n = this->atalarm_gets(buff, sizeof(buff), 0);
+      pthread_mutex_unlock(&this->device_mutex);
       if(n == CMD_OK)
         {
           atalarm_tokenize_res(buff, &argc, argv);
-          atalarm_process_res(alarm, argc, argv);
+          this->atalarm_process_res(argc, argv);
 
           nb_read_err = 0;
         }
@@ -1551,28 +1572,35 @@ static void *atalarm_thread(void *param)
         nb_read_err++;
     }
 
-  if(alarm->tty_fd >= 0)
-    atalarm_close_device(alarm);
+  if(this->tty_fd >= 0)
+    this->atalarm_close_device();
 
   return NULL;
 }
 
-static int atalarm_init(ATAlarm *atalarm)
+static void *atalarm_thread(void *param)
 {
-  atalarm->cur_state = ALARM_STATE_DISARMED;
-  atalarm->tty_fd = -1;
-  atalarm->current_line_pos = atalarm->current_line;
-  pthread_mutex_init(&atalarm->device_mutex, NULL);
+  AgoATAlarm *alarm = (AgoATAlarm *) param;
 
-  atalarm->device = getConfigOption("atalarm", "device", "/dev/serial/by-id/usb-4348_5523-if00-port0");
+  return alarm->atalarm_thread_real();
+}
 
-  if(atalarm_reopen_device(atalarm) != 0)
+int AgoATAlarm::atalarm_init()
+{
+  this->cur_state = ALARM_STATE_DISARMED;
+  this->tty_fd = -1;
+  this->current_line_pos = this->current_line;
+  pthread_mutex_init(&this->device_mutex, NULL);
+
+  this->device = getConfigOption("atalarm", "device", "/dev/serial/by-id/usb-4348_5523-if00-port0");
+
+  if(atalarm_reopen_device() != 0)
     {
       AGO_FATAL() << "No device found";
       return -1;
     }
 
-  if(pthread_create(&atalarm->thread, NULL, atalarm_thread, atalarm) < 0)
+  if(pthread_create(&this->thread, NULL, atalarm_thread, this) < 0)
     {
       AGO_FATAL() << "Unable to create thread: " << strerror(errno);
       return -1;
@@ -1581,85 +1609,24 @@ static int atalarm_init(ATAlarm *atalarm)
   return 0;
 }
 
-/**
- * main
- */
-int main(int argc, char **argv)
+void AgoATAlarm::setupApp()
 {
-  bool continu = true;
-  bool debug = false;
-  bool use_syslog = true;
-
-  do
-    {
-      switch(getopt(argc,argv,"dc"))
-        {
-        case 'd':
-          //activate debug
-          debug = true;
-          break;
-        case 'c':
-          //console output
-          use_syslog = false;
-          break;
-        default:
-          continu = false;
-          break;
-        }
-    } while(continu);
-
-  if(use_syslog != false)
-    agocontrol::log::log_container::setOutputSyslog("agoatalarm", LOG_DAEMON);
-  else
-    agocontrol::log::log_container::setOutputConsole();
   AGO_INFO() << "Initializing ATAlarm controller";
 
-  //init agocontrol client
-  gatalarm.agoConnection = new AgoConnection("ATAlarm");
-  gatalarm.agoConnection->addDevice("ATAlarmController", "ATAlarmController");
-  gatalarm.agoConnection->addHandler(commandHandler);
-  if(debug != false)
-    agocontrol::log::log_container::setCurrentLevel(agocontrol::log::debug);
-  else
-    agocontrol::log::log_container::setCurrentLevel(agocontrol::log::info);
+  addCommandHandler();
 
-  if(atalarm_init(&gatalarm) < 0)
+  if(atalarm_init() < 0)
     {
       AGO_FATAL() << "Init error";
-      return 1;
+      throw StartupError();
     }
 
-  // load map, create sections if empty
-  /*devicemap = jsonFileToVariantMap(DEVICEMAPFILE);
-  if(devicemap["nextid"].isVoid())
-    {
-      devicemap["nextid"]=1;
-      variantMapToJSONFile(devicemap,DEVICEMAPFILE);
-      }*/
-  //if(devicemap["devices"].isVoid())
-    {
-      //qpid::types::Variant::Map devices;
-      //gatalarm.devicemap["devices"] = devices;
-      //variantMapToJSONFile(devicemap,DEVICEMAPFILE);
-    }
-
-  //cout << readLine() << endl;
-  /*cout << "Requesting gateway version: ";
-  std::string getVersion = "0;0;4;4;\n";
-  serialPort.write_some(buffer(getVersion));
-  bool error;
-  cout << readLine(&error) << endl;*/
-
-  //register existing devices
-  /*cout << "Register existing devices:" << endl;
-  qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-  for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
-    qpid::types::Variant::Map infos = it->second.asMap();
-    cout << " - " << it->first.c_str() << ":" << infos["type"].asString().c_str() << endl;
-    agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
-    }*/
-
-  //run client
-    AGO_INFO() << "Running ATAlarm controller...";
-    gatalarm.agoConnection->run();
+  AGO_INFO() << "Running ATAlarm controller...";
 }
+
+void AgoATAlarm::cleanupApp()
+{
+  AGO_TRACE() << "ATAlarm exiting...";
+}
+
+AGOAPP_ENTRY_POINT(AgoATAlarm);
