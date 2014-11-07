@@ -731,8 +731,12 @@ function unsubscribe() {
     request.params = {};
     request.params.uuid = subscription;
 
-    $.post(url, JSON.stringify(request), function() {
-    }, "json");
+    # disable async to ensure request is sent
+    $.ajax({ type:     "POST",
+             async:    false,
+             url:      url,
+             data:     JSON.stringify(request),
+             dataType: "json" });
 }
 
 function handleSubscribe(response) {
@@ -740,9 +744,7 @@ function handleSubscribe(response) {
         subscription = response.result;
         getInventory();
         getEvent();
-        window.onbeforeunload = function(event) {
-            unsubscribe();
-        };
+        window.addEventListener("beforeunload", unsubscribe, false);
     }
 }
 
