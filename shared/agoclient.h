@@ -55,6 +55,9 @@ namespace agocontrol {
     /// helper to generate a string containing a uuid.
     std::string generateUuid();
 
+    /// helper for conversions
+    std::string uint64ToString(uint64_t i);
+
     /// Return the full path to the configuration directory, with subpath appended if not NULL
     boost::filesystem::path getConfigPath(const boost::filesystem::path &subpath = boost::filesystem::path());
 

@@ -269,14 +269,14 @@ int AgoLua::luaSetVariable(lua_State *L)
     qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);
 
     //manage result
-    if( !replyMap["returncode"].isVoid() )
+    if( replyMap.size()>0 && !replyMap["returncode"].isVoid() )
     {
         lua_pushnumber(L, replyMap["returncode"].asInt32());
     }
     else
     {
         //sendcommand problem
-        lua_pushnumber(L,0);
+        lua_pushnumber(L, 0);
     }
 
     //refresh inventory only once (performance optimization)
@@ -286,12 +286,27 @@ int AgoLua::luaSetVariable(lua_State *L)
         refreshInventory = false;
     }
 
-    //update current inventory to reflect changes without reloading it (too long!!)
-    qpid::types::Variant::Map variables = inventory["variables"].asMap();
-    if( !variables[content["variable"]].isVoid() )
+    if( inventory.size()>0 )
     {
-        variables[content["variable"]] = content["value"];
-        inventory["variables"] = variables;
+        //update current inventory to reflect changes without reloading it (too long!!)
+        qpid::types::Variant::Map variables = inventory["variables"].asMap();
+        if( !variables[content["variable"]].isVoid() )
+        {
+            variables[content["variable"]] = content["value"];
+            inventory["variables"] = variables;
+            lua_pushnumber(L, 1);
+        }
+        else
+        {
+            //unknown variable
+            lua_pushnumber(L, 0);
+        }
+    }
+    else
+    {
+        //no inventory available
+        refreshInventory = false;
+        lua_pushnumber(L, 0);
     }
 
     return 1;
@@ -311,27 +326,37 @@ int AgoLua::luaGetVariable(lua_State *L)
         inventory = agoConnection->getInventory();
         refreshInventory = false;
     }
-    qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
 
-    //get variable name
-    variableName = std::string(lua_tostring(L,1));
-
-    if( variableName.length()>0 )
+    if( inventory.size()>0 )
     {
-        qpid::types::Variant::Map variables = inventory["variables"].asMap();
-        if( !variables[variableName].isVoid() )
+        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+
+        //get variable name
+        variableName = std::string(lua_tostring(L,1));
+
+        if( variableName.length()>0 )
         {
-            lua_pushstring(L, variables[variableName].asString().c_str());
+            qpid::types::Variant::Map variables = inventory["variables"].asMap();
+            if( !variables[variableName].isVoid() )
+            {
+                lua_pushstring(L, variables[variableName].asString().c_str());
+            }
+            else
+            {
+                //unknown variable
+                lua_pushnil(L);
+            }
         }
         else
         {
-            //unknown variable
+            //bad parameter
             lua_pushnil(L);
         }
     }
     else
     {
-        //bad parameter
+        //no inventory available
+        refreshInventory = true;
         lua_pushnil(L);
     }
 
@@ -355,60 +380,82 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
         inventory = agoConnection->getInventory();
         refreshInventory = false;
     }
-    qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
 
-    // number of input arguments
-    int argc = lua_gettop(L);
-
-    // print input arguments
-    for(int i=1; i<=argc; ++i)
+    if( inventory.size()>0 )
     {
-        switch(i)
+        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+
+        // number of input arguments
+        int argc = lua_gettop(L);
+
+        // print input arguments
+        for(int i=1; i<=argc; ++i)
         {
-            case 1:
-                uuid = std::string(lua_tostring(L,i));
-                break;
-            case 2:
-                attribute = std::string(lua_tostring(L,i));
-                break;
-            case 3:
-                subAttribute = std::string(lua_tostring(L,i));
-                break;
-            default:
-                //unmanaged parameter
-                break;
+            switch(i)
+            {
+                case 1:
+                    uuid = std::string(lua_tostring(L,i));
+                    break;
+                case 2:
+                    attribute = std::string(lua_tostring(L,i));
+                    break;
+                case 3:
+                    subAttribute = std::string(lua_tostring(L,i));
+                    break;
+                default:
+                    //unmanaged parameter
+                    break;
+            }
         }
-    }
-    AGO_DEBUG() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
-    if( subAttribute.length()>0 )
-    {
-        AGO_DEBUG() << "[" << subAttribute << "]";
-    }
-    if( !deviceInventory[uuid].isVoid() )
-    {
-        qpid::types::Variant::Map attributes = deviceInventory[uuid].asMap();
-        if( !attributes[attribute].isVoid() )
+
+        AGO_DEBUG() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
+        if( subAttribute.length()>0 )
         {
-            //return main device attribute
-            lua_pushstring(L, attributes[attribute].asString().c_str());
+            AGO_DEBUG() << "[" << subAttribute << "]";
+        }
+
+        if( !deviceInventory[uuid].isVoid() )
+        {
+            qpid::types::Variant::Map attributes = deviceInventory[uuid].asMap();
+            if( !attributes[attribute].isVoid() )
+            {
+                //return main device attribute
+                lua_pushstring(L, attributes[attribute].asString().c_str());
+            }
+            else
+            {
+                //search attribute in device values
+                bool found = false;
+                qpid::types::Variant::Map values = attributes["values"].asMap();
+                for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
+                {
+                    //TODO return device value property (quantity, unit, latitude, longitude...)
+                    qpid::types::Variant::Map value = it->second.asMap();
+                    lua_pushstring(L, value[subAttribute].asString().c_str());
+                    found = true;
+                    break;
+                }
+
+                //handle item not found
+                if( !found )
+                {
+                    lua_pushnil(L);
+                }
+            }
         }
         else
         {
-            //search attribute in device values
-            qpid::types::Variant::Map values = attributes["values"].asMap();
-            for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
-            {
-                //TODO return device value property (quantity, unit, latitude, longitude...)
-                qpid::types::Variant::Map value = it->second.asMap();
-                lua_pushstring(L, value[subAttribute].asString().c_str());
-            }
+            //device not found
+            lua_pushnil(L);
         }
     }
     else
     {
-        //device not found
+        //no inventory available
+        refreshInventory = true;
         lua_pushnil(L);
     }
+
     return 1;
 }
 

@@ -53,7 +53,7 @@ function agoAlertPlugin(deviceMap) {
         sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                self.gtalkStatus(true);
+                self.gtalkStatus(res.result.gtalk.configured);
                 if (res.result.gtalk.configured)
                 {
                     self.gtalkUsername(res.result.gtalk.username);
