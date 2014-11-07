@@ -733,10 +733,9 @@ function unsubscribe() {
 
     # disable async to ensure request is sent
     $.ajax({ type:     "POST",
-             async:    false,
              url:      url,
              data:     JSON.stringify(request),
-             dataType: "json" });
+             dataType: "json" }, { async: false });
 }
 
 function handleSubscribe(response) {
