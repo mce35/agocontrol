@@ -731,7 +731,7 @@ function unsubscribe() {
     request.params = {};
     request.params.uuid = subscription;
 
-    # disable async to ensure request is sent
+    // disable async to ensure request is sent
     $.ajax({ type:     "POST",
              async:    false,
              url:      url,
