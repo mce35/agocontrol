@@ -1,70 +1,13 @@
-"""@package agoclient
-This is the agocontrol python client library.
-
-An example device can be found here:
-http://wiki.agocontrol.com/index.php/Example_Device
-"""
-
 import time
 import syslog
-import sys
-import os
 import simplejson
-import augeas
-from threading import Lock
+from config import get_config_option, CONFDIR
 
 from qpid.messaging import *
 from qpid.util import URL
 from qpid.log import enable, DEBUG, WARN
 
-syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
-
-BINDIR = '@BINDIR@'
-CONFDIR = os.environ.get('AGO_CONFDIR', '@CONFDIR@')
-LOCALSTATEDIR = os.environ.get('AGO_LOCALSTATEDIR', '@LOCALSTATEDIR@')
-
-augeas =  augeas.Augeas()
-CONFIG_LOCK = Lock()
-
-
-def get_config_option(section, option, default, filename=None):
-    """Read a config option from a .ini style file."""
-    CONFIG_LOCK.acquire(True)
-    try:
-        if filename:
-            value = augeas.get("/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + section + '/' + option)
-        else:
-            value = augeas.get("/files" + CONFDIR + '/conf.d/' + section + '.conf/' + section + '/' + option)
-    except:
-        syslog.syslog(syslog.LOG_WARNING, "Can't parse config file")
-    finally:
-        CONFIG_LOCK.release()
-    if not value:
-        value = default
-    return value
-
-
-def set_config_option(section, option, value, filename=None):
-    """Write out a config option to a .ini style file."""
-    result = False
-    CONFIG_LOCK.acquire(True)
-    try:
-        if filename:
-            path = "/files" + CONFDIR + '/conf.d/' + filename + '.conf/' + section + '/' + option
-        else:
-            path = "/files" + CONFDIR + '/conf.d/' + section + '.conf/' + section + '/' + option
-        print path
-        augeas.set(path, value)
-        augeas.save()
-        result = True
-    except IOError, exception:
-        syslog.syslog(syslog.LOG_ERR,
-            "Can't write config file: " + str(exception))
-        result = False
-    finally:
-        CONFIG_LOCK.release()
-    return result
-
+__all__ = ["AgoConnection"]
 
 class AgoConnection:
     """This is class will handle the connection to ago control."""

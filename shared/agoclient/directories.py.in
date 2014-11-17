@@ -1,0 +1,6 @@
+# This file is automatically populated by the CMake system at build time
+
+import os
+BINDIR = '@BINDIR@'
+CONFDIR = os.environ.get('AGO_CONFDIR', '@CONFDIR@')
+LOCALSTATEDIR = os.environ.get('AGO_LOCALSTATEDIR', '@LOCALSTATEDIR@')

@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 
 configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/agoclient.py.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/agoclient.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/agoclient/directories.py.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/agoclient/directories.py"
     @ONLY
 )
 

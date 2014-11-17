@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 
 import random
-import sys
 import syslog
-import socket
 import threading
 import time
 
