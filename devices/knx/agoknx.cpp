@@ -23,7 +23,7 @@
 #include <eibclient.h>
 #include "Telegram.h"
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace qpid::messaging;
 using namespace qpid::types;
@@ -32,20 +32,35 @@ using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
 
-int polldelay = 0;
+class AgoKnx: public AgoApp {
+private:
+    int polldelay;
 
-Variant::Map deviceMap;
+    Variant::Map deviceMap;
 
-EIBConnection *eibcon;
-pthread_mutex_t mutexCon;
-pthread_t listenerThread;
+    EIBConnection *eibcon;
+    pthread_mutex_t mutexCon;
+    pthread_t listenerThread;
 
-AgoConnection *agoConnection;
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void setupApp();
+
+    bool loadDevices(fs::path &filename, Variant::Map& _deviceMap);
+    void reportDevices(Variant::Map devicemap);
+    string uuidFromGA(Variant::Map devicemap, string ga);
+    string typeFromGA(Variant::Map device, string ga);
+
+    void *listener();
+public:
+    AGOAPP_CONSTRUCTOR_HEAD(AgoKnx)
+        , polldelay(0)
+        {}
+};
 
 /**
  * parses the device XML file and creates a qpid::types::Variant::Map with the data
  */
-bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
+bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
     XMLDocument devicesFile;
     int returncode;
 
@@ -87,7 +102,7 @@ bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
 /**
  * announces our devices in the devicemap to the resolver
  */
-void reportDevices(Variant::Map devicemap) {
+void AgoKnx::reportDevices(Variant::Map devicemap) {
     for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
         Variant::Map device;
         Variant::Map content;
@@ -101,7 +116,7 @@ void reportDevices(Variant::Map devicemap) {
 /**
  * looks up the uuid for a specific GA - this is needed to match incoming telegrams to the right device
  */
-string uuidFromGA(Variant::Map devicemap, string ga) {
+string AgoKnx::uuidFromGA(Variant::Map devicemap, string ga) {
     for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
         Variant::Map device;
 
@@ -119,7 +134,7 @@ string uuidFromGA(Variant::Map devicemap, string ga) {
 /**
  * looks up the type for a specific GA - this is needed to match incoming telegrams to the right event type
  */
-string typeFromGA(Variant::Map device, string ga) {
+string AgoKnx::typeFromGA(Variant::Map device, string ga) {
     for (Variant::Map::const_iterator itd = device.begin(); itd != device.end(); itd++) {
         if (itd->second.asString() == ga) {
             // AGO_TRACE() << "GA " << itd->second.asString() << " belongs to " << itd->first;
@@ -131,7 +146,7 @@ string typeFromGA(Variant::Map device, string ga) {
 /**
  * thread to poll the knx bus for incoming telegrams
  */
-void *listener(void *param) {
+void *AgoKnx::listener() {
     int received = 0;
 
     AGO_TRACE() << "starting listener thread";
@@ -193,7 +208,7 @@ void *listener(void *param) {
     return NULL;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
@@ -277,7 +292,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoKnx::setupApp() {
     std::string eibdurl;
     fs::path devicesFile;
 
@@ -306,16 +321,17 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    // connect to broker
-    agoConnection = new AgoConnection("knx");
-
+    addCommandHandler();
     // announce devices to resolver
     reportDevices(deviceMap);
 
     pthread_mutex_init(&mutexCon,NULL);
-    pthread_create(&listenerThread, NULL, listener, NULL);
 
-    agoConnection->addHandler(commandHandler);
-    agoConnection->run();
+    AGO_DEBUG() << "Spawning thread for KNX listener";
+    boost::thread t(boost::bind(&AgoKnx::listener, this));
+    t.detach();
+
 }
+
+AGOAPP_ENTRY_POINT(AgoKnx);
 
