@@ -22,18 +22,28 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "agoclient.h"
-
+#include "agoapp.h"
 
 using namespace std;
 using namespace agocontrol;
 
-int fd; // file desc for device
-unsigned short   usp_crc; // initialise per packet with $FFFF.
-int increment;
-int speed;
+class AgoChromoflex: public AgoApp {
+private:
+    int fd; // file desc for device
+    unsigned short   usp_crc; // initialise per packet with $FFFF.
+    int increment;
+    int speed;
 
-void process_crc(unsigned char ucData) {
+    void setupApp();
+    void cleanupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+
+    void process_crc(unsigned char ucData);
+public:
+    AGOAPP_CONSTRUCTOR(AgoChromoflex);
+};
+
+void AgoChromoflex::process_crc(unsigned char ucData) {
     int i;
     usp_crc^=ucData;
     for(i=0;i<8;i++){ // Process each Bit
@@ -43,7 +53,7 @@ void process_crc(unsigned char ucData) {
 
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoChromoflex::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     int red = 0;
     int green = 0;
@@ -99,7 +109,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 }
 
 
-int main(int argc, char **argv) {
+void AgoChromoflex::setupApp() {
     string devicefile=getConfigOption("chromoflex", "device", "/dev/ttyS_01");
 
     fd = open(devicefile.c_str(), O_RDWR);
@@ -134,17 +144,15 @@ int main(int argc, char **argv) {
 
     if (write (fd, buf, 11) != 11) {
         AGO_FATAL() << "cannot open device:" << devicefile << " - error: " << fd;
-        exit (1);
+        throw StartupError();
     }
 
-    AgoConnection agoConnection = AgoConnection("chromoflex");		
+    agoConnection->addDevice("0", "dimerrgb");
+    addCommandHandler();
+}
 
-    agoConnection.addDevice("0", "dimerrgb");
-    agoConnection.addHandler(commandHandler);
-
-    agoConnection.run();
-
+void AgoChromoflex::cleanupApp() {
     close(fd);
 }
 
-
+AGOAPP_ENTRY_POINT(AgoChromoflex)
