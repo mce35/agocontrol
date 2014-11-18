@@ -1,7 +1,7 @@
 import time
-import syslog
+import logging
 import simplejson
-from config import get_config_option, CONFDIR
+from config import get_config_option, get_config_path
 
 from qpid.messaging import *
 from qpid.util import URL
@@ -14,10 +14,14 @@ class AgoConnection:
     def __init__(self, instance):
         """The constructor."""
         self.instance = instance
-        syslog.syslog(syslog.LOG_NOTICE, "connecting to broker")
+        self.uuidmap_file = get_config_path('uuidmap/' + self.instance + '.json')
+        self.log = logging.getLogger('AgoConnection')
+
         broker = str(get_config_option("system", "broker", "localhost"))
         username = str(get_config_option("system", "username", "agocontrol"))
         password = str(get_config_option("system", "password", "letmein"))
+
+        self.log.debug("Connecting to broker %s", broker)
         self.connection = Connection(broker,
             username=username, password=password, reconnect=True)
         self.connection.open()
@@ -33,9 +37,17 @@ class AgoConnection:
         self.load_uuid_map()
 
     def __del__(self):
-        self.session.acknowledge()
-        self.session.close()
-        self.connection.close()
+        self.shutdown()
+
+    def shutdown(self):
+        if self.session:
+            self.session.acknowledge()
+            self.session.close()
+            self.session = None
+
+        if self.connection:
+            self.connection.close()
+            self.connection = None
 
     def add_handler(self, handler):
         """Add a command handler to be called when
@@ -56,38 +68,31 @@ class AgoConnection:
         """Convert an agocontrol UUID to a local (internal) id."""
         try:
             return self.uuids[uuid]
-        except KeyError, exception:
-            syslog.syslog(syslog.LOG_WARNING,
-                "Cannot translate uuid to internalid: " + str(exception))
+        except KeyError:
+            self.log.warning("Cannot translate uuid %s to internal id", uuid)
             return None
 
     def store_uuid_map(self):
         """Store the mapping (dict) of UUIDs to
         internal ids into a JSON file."""
         try:
-            with open(CONFDIR + '/uuidmap/' + self.instance +
-                '.json', 'w') as outfile:
+            with open(self.uuidmap_file, 'w') as outfile:
                 simplejson.dump(self.uuids, outfile)
         except (OSError, IOError) as exception:
-            syslog.syslog(syslog.LOG_ERR,
-                "Cannot write uuid map file: " + str(exception))
+            self.log.error("Cannot write uuid map file: %s", exception)
         except ValueError, exception:  # includes simplejson error
-            syslog.syslog(syslog.LOG_ERR,
-                "Cannot encode uuid map: " + str(exception))
+            self.log.error("Cannot encode uuid map: %s", exception)
 
     def load_uuid_map(self):
         """Read the mapping (dict) of UUIDs to
         internal ids from a JSON file."""
         try:
-            with open(CONFDIR + '/uuidmap/' + self.instance +
-                '.json', 'r') as infile:
+            with open(self.uuidmap_file, 'r') as infile:
                 self.uuids = simplejson.load(infile)
         except (OSError, IOError) as exception:
-            syslog.syslog(syslog.LOG_ERR,
-                "Cannot load uuid map file: " + str(exception))
+            self.log.error("Cannot load uuid map file: %s", exception)
         except ValueError, exception:  # includes simplejson error
-            syslog.syslog(syslog.LOG_ERR,
-                "Cannot decode uuid map: " + str(exception))
+            self.log.error("Cannot decode uuid map from file: %s", exception)
 
     def emit_device_announce(self, uuid, device):
         """Send a device announce event, this will
@@ -168,13 +173,15 @@ class AgoConnection:
         """Method to send an agocontrol message with a subject."""
         _content = content
         _content["instance"] = self.instance
+        if self.log.isEnabledFor(logging.TRACE):
+            self.log.trace("Sending message [sub=%s]: %s", subject, content)
+
         try:
             message = Message(content=_content, subject=subject)
             self.sender.send(message)
             return True
         except SendError, exception:
-            syslog.syslog(syslog.LOG_ERR,
-                "Can't send message: " + str(exception))
+            self.log.error("Failed to send message: ", exception)
             return False
 
     def send_message_reply(self, content):
@@ -187,6 +194,11 @@ class AgoConnection:
                 "reply-%s; {create: always, delete: always}" % replyuuid)
             message = Message(content=_content)
             message.reply_to = 'reply-%s' % replyuuid
+
+            if self.log.isEnabledFor(logging.TRACE):
+                self.log.trace("Sending message [reply-to=%s, sub=%s]: %s", message.reply_to,
+                        subject, content)
+
             self.sender.send(message)
             replymessage = replyreceiver.fetch(timeout=3)
             self.session.acknowledge()
@@ -223,7 +235,7 @@ class AgoConnection:
 
     def report_devices(self):
         """Report all our devices."""
-        syslog.syslog(syslog.LOG_NOTICE, "reporting child devices")
+        self.log.debug("Reporting child devices")
         for device in self.devices:
             #only report not stale device
             if not self.devices[device].has_key("stale"):
@@ -233,32 +245,35 @@ class AgoConnection:
 
     def _sendreply(self, addr, content):
         """Internal used to send a reply."""
+        if self.log.isEnabledFor(logging.TRACE):
+            self.log.trace("Sending reply to %s: %s", addr, content)
+
         try:
             replysession = self.connection.session()
             replysender = replysession.sender(addr)
             response = Message(content)
             replysender.send(response)
         except SendError, exception:
-            syslog.syslog(syslog.LOG_ERR,
-                "can't send reply: " + str(exception))
+            self.log.error("Failed to send reply: ", exception)
         except AttributeError, exception:
-            syslog.syslog(syslog.LOG_ERR,
-                "can't send reply: " + str(exception))
+            self.log.error("Failed to encode reply: ", exception)
         except MessagingError, exception:
-            syslog.syslog(syslog.LOG_ERR,
-                "can't send reply message: " + str(exception))
+            self.log.error("Failed to send reply message: ", exception)
         finally:
             replysession.close()
 
     def run(self):
         """This will start command and event handling.
         Be aware that this is blocking."""
-        syslog.syslog(syslog.LOG_NOTICE,
-            "startup complete, waiting for messages")
-        while (True):
+        self.log.debug("Startup complete, waiting for messages")
+        while self.connection:
             try:
                 message = self.receiver.fetch()
                 self.session.acknowledge()
+                if self.log.isEnabledFor(logging.TRACE):
+                    self.log.trace("Processing message [src=%s, sub=%s]: %s",
+                            message.reply_to, message.subject, message.content)
+
                 if (message.content and 'command' in message.content):
                     if (message.content['command'] == 'discover'):
                         self.report_devices()
@@ -285,6 +300,10 @@ class AgoConnection:
                 pass
 
             except ReceiverError, exception:
-                syslog.syslog(syslog.LOG_ERR,
-                    "can't receive message: " + str(exception))
+                self.log.error("Error whlie receiving message: %s", exception)
                 time.sleep(0.05)
+
+            except LinkClosed:
+                # connection explicitly closed
+                break
+
