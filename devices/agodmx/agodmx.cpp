@@ -29,14 +29,22 @@ using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
 
+class AgoLogDestination: public ola::LogDestination {
+    public:
+        void Write(ola::log_level level, const string &log_line);
+};
+
 class AgoDmx: public AgoApp {
 private:
     Variant::Map channelMap;
     ola::DmxBuffer buffer;
     ola::StreamingClient ola_client;
+    AgoLogDestination *agoLogDestination;
 
     void setupApp();
     void cleanupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+
     bool setDevice_strobe(Variant::Map device, int strobe);
     void ola_setChannel(int channel, int value);
     bool setDevice_color(Variant::Map device, int red, int green, int blue);
@@ -44,10 +52,21 @@ private:
     bool ola_send(int universe);
     void reportDevices(Variant::Map channelmap);
     bool loadChannels(string filename, Variant::Map& _channelMap);
-    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+
 public:
     AGOAPP_CONSTRUCTOR(AgoDmx);
 };
+
+void AgoLogDestination::Write(ola::log_level level, const string &log_line) {
+    string line = log_line;
+    replaceString(line, "\n"," ");
+
+    if (level == OLA_FATAL) AGO_FATAL() << "[OLA] " << line;
+    else if (level == OLA_WARN) AGO_WARNING() <<  "[OLA] " << line;
+    else if (level == OLA_DEBUG) AGO_DEBUG() <<  "[OLA] " << line;
+    else if (level == OLA_INFO) AGO_INFO() <<  "[OLA] " << line;
+    else AGO_DEBUG() << "[OLA] " << line;
+}
 
 /**
  * parses the device XML file and creates a qpid::types::Variant::Map with the data
@@ -229,17 +248,23 @@ void AgoDmx::setupApp() {
 
     // connect to OLA
     // turn on OLA logging
-    ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+    //ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+    AGO_DEBUG() << "Setting up OLA log destination";
+    agoLogDestination = new AgoLogDestination();
+    ola::InitLogging(ola::OLA_LOG_WARN, agoLogDestination);
 
     // set all channels to 0
+    AGO_TRACE() << "Blacking out DMX buffer";
     buffer.Blackout();
 
     // Setup the client, this connects to the server
+    AGO_DEBUG() << "Setting up OLA client";
     if (!ola_client.Setup()) {
         AGO_FATAL() << "OLA client setup failed";
         throw StartupError();
     }
 
+    AGO_TRACE() << "reporting devices";
     reportDevices(channelMap);
 
     addCommandHandler();
