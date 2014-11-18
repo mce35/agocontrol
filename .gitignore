@@ -10,5 +10,5 @@ build/
 Makefile
 *.core
 scripts/agososreport.sh
-shared/agoclient.py
+shared/agoclient/_directories.py
 version.h

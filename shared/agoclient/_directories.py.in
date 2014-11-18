@@ -1,0 +1,5 @@
+# This file is automatically populated by the CMake system at build time
+
+BINDIR = '@BINDIR@'
+DEFAULT_CONFDIR = '@CONFDIR@'
+DEFAULT_LOCALSTATEDIR = '@LOCALSTATEDIR@'
