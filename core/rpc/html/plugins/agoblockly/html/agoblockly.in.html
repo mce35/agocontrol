@@ -263,9 +263,9 @@
     <script id="rowTemplate" type="text/html">
         <td class="rename_script" data-bind="attr: {'data-oldname': name}, text: name"></td>
         <td>
-            <_button data-translateable="true" data-bind="click: $root.uiLoadScript.bind($data,name)">Load</_button>
-            <_button data-translateable="true" data-bind="click: $root.uiDeleteScript.bind($data,name)">Delete</_button>
-            <_button data-translateable="true" data-bind="click: $root.uiExportScript.bind($data,name)">Export</_button>
+            <_button data-translateable="true" data-bind="click: $parent.uiLoadScript.bind($data,name)">Load</_button>
+            <_button data-translateable="true" data-bind="click: $parent.uiDeleteScript.bind($data,name)">Delete</_button>
+            <_button data-translateable="true" data-bind="click: $parent.uiExportScript.bind($data,name)">Export</_button>
         </td>
     </script>
 

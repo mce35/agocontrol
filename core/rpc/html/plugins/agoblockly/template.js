@@ -2,9 +2,11 @@
  * Agoblockly plugin
  * @returns {agoblockly}
  */
-function agoBlocklyPlugin(deviceMap) {
+function agoBlocklyPlugin(devices, agocontrol)
+{
     //members
     var self = this;
+    self.agocontrol = agocontrol;
     self.luaControllerUuid = null;
     self.availableScripts = ko.observableArray([]);
     self.selectedScript = ko.observable('');
@@ -13,13 +15,13 @@ function agoBlocklyPlugin(deviceMap) {
     self.scriptLoaded = false;
 
     //luacontroller uuid
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].devicetype=='luacontroller' )
+            if( devices[i].devicetype=='luacontroller' )
             {
-                self.luaControllerUuid = deviceMap[i].uuid;
+                self.luaControllerUuid = devices[i].uuid;
                 break;
             }
         }
@@ -147,7 +149,7 @@ function agoBlocklyPlugin(deviceMap) {
             name: scriptName,
             script: self.mergeXmlAndLua(self.getXml(), self.getLua())
         };
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -223,7 +225,7 @@ function agoBlocklyPlugin(deviceMap) {
             uuid: self.luaControllerUuid,
             command: 'getscriptlist'
         };
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 //update ui variables
@@ -286,7 +288,7 @@ function agoBlocklyPlugin(deviceMap) {
             command: 'delscript',
             name: script
         };
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if( res.result.result===0 )
@@ -315,7 +317,7 @@ function agoBlocklyPlugin(deviceMap) {
             oldname: 'blockly_'+oldScript,
             newname: 'blockly_'+newScript
         };
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             console.log(res);
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -435,7 +437,7 @@ function agoBlocklyPlugin(deviceMap) {
             command: 'delscript',
             name: 'TODO'
         };
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if( res.result.result===0 )
@@ -548,7 +550,7 @@ function agoBlocklyPlugin(deviceMap) {
             command: 'getscript',
             name: 'blockly_'+script
         };
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -616,7 +618,7 @@ function agoBlocklyPlugin(deviceMap) {
 /**
  * Entry point: mandatory!
  */
-function init_plugin()
+function init_template(path, params, agocontrol)
 {
     ko.blockly = {
         viewModel: function(config) {
@@ -636,7 +638,7 @@ function init_plugin()
             //init agoblockly
             if( BlocklyAgocontrol!==null && BlocklyAgocontrol.init!==undefined )
             {
-                BlocklyAgocontrol.init(schema, deviceMap, variables);
+                BlocklyAgocontrol.init(agocontrol.schema(), agocontrol.devices(), agocontrol.variables());
                 //handle workspace changing event
                 Blockly.addChangeListener(viewmodel().onWorkspaceChanged);
             }
@@ -649,10 +651,7 @@ function init_plugin()
         }
     };
 
-    model = new agoBlocklyPlugin(deviceMap);
-    model.mainTemplate = function() {
-        return templatePath + "agoblockly";
-    }.bind(model);
+    var model = new agoBlocklyPlugin(agocontrol.devices(), agocontrol);
 
     return model;
 }
