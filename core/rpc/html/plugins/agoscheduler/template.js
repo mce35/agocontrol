@@ -2,9 +2,11 @@
  * Agoscheduler plugin
  * @returns {agoscheduler}
  */
-function agoSchedulerPlugin(deviceMap) {
+function agoSchedulerPlugin(devices, agocontrol)
+{
     //members
     var self = this;
+    self.agocontrol = agocontrol;
     this.viewDate = ko.observable(new Date());
     this.schedules = [];
     this.availableStartScenarios = ko.observableArray([]);
@@ -19,26 +21,26 @@ function agoSchedulerPlugin(deviceMap) {
     this.agoschedulerUuid;
 
     //fill available scenarios and get agoscheduler uuid
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
         self.availableEndScenarios.push(new Option('None', '0', false, true));
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
             var first = true;
-            if( deviceMap[i].devicetype=='scenario' )
+            if( devices[i].devicetype=='scenario' )
             {
-                var opt = new Option(deviceMap[i].name, deviceMap[i].uuid, false, first);
+                var opt = new Option(devices[i].name, devices[i].uuid, false, first);
                 if( first )
                     first = false;
                 self.availableStartScenarios.push(opt);
 
-                opt = new Option(deviceMap[i].name, deviceMap[i].uuid, false, false);
+                opt = new Option(devices[i].name, devices[i].uuid, false, false);
                 self.availableEndScenarios.push(opt);
             }
 
-            if( deviceMap[i].devicetype=='agoscheduler' )
+            if( devices[i].devicetype=='agoscheduler' )
             {
-                self.agoschedulerUuid = deviceMap[i].uuid;
+                self.agoschedulerUuid = devices[i].uuid;
             }
         }
     }
@@ -49,7 +51,7 @@ function agoSchedulerPlugin(deviceMap) {
             uuid: self.agoschedulerUuid,
             command: 'getSchedules'
         };
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 for( var i=0; i<res.result.schedules.length; i++)
@@ -88,7 +90,7 @@ function agoSchedulerPlugin(deviceMap) {
             };
 
             //send new schedule to controller
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.error==0 )
                 {
                     //and add all new schedules to fullCalendar
@@ -136,7 +138,7 @@ function agoSchedulerPlugin(deviceMap) {
         }
             
         //update on server
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.error==0 )
             {
                 if( newSched.repeat!=0 )
@@ -188,7 +190,7 @@ function agoSchedulerPlugin(deviceMap) {
             };
 
             //remove from server
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.error==0 )
                 {
                     if( sched.repeat!=0 )
@@ -403,7 +405,7 @@ function agoSchedulerPlugin(deviceMap) {
 /**
  * Entry point: mandatory!
  */
-function init_plugin()
+function init_template(path, params, agocontrol)
 {
     ko.fullCalendar = {
         // Defines a view model class you can use to populate a calendar
@@ -450,10 +452,6 @@ function init_plugin()
         }
     };
 
-    model = new agoSchedulerPlugin(deviceMap);
-    model.mainTemplate = function() {
-        return templatePath + "agoscheduler";
-    }.bind(model);
-
+    model = new agoSchedulerPlugin(agocontrol.devices(), agocontrol);
     return model;
 }
