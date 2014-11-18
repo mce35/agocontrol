@@ -21,7 +21,7 @@
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace qpid::types;
 using namespace tinyxml2;
@@ -29,16 +29,30 @@ using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
 
+class AgoDmx: public AgoApp {
+private:
+    Variant::Map channelMap;
+    ola::DmxBuffer buffer;
+    ola::StreamingClient ola_client;
 
-Variant::Map channelMap;
-ola::DmxBuffer buffer;
-ola::StreamingClient ola_client;
-AgoConnection *agoConnection;
+    void setupApp();
+    void cleanupApp();
+    bool setDevice_strobe(Variant::Map device, int strobe);
+    void ola_setChannel(int channel, int value);
+    bool setDevice_color(Variant::Map device, int red, int green, int blue);
+    bool setDevice_level(Variant::Map device, int level);
+    bool ola_send(int universe);
+    void reportDevices(Variant::Map channelmap);
+    bool loadChannels(string filename, Variant::Map& _channelMap);
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+public:
+    AGOAPP_CONSTRUCTOR(AgoDmx);
+};
 
 /**
  * parses the device XML file and creates a qpid::types::Variant::Map with the data
  */
-bool loadChannels(string filename, Variant::Map& _channelMap) {
+bool AgoDmx::loadChannels(string filename, Variant::Map& _channelMap) {
     XMLDocument channelsFile;
     int returncode;
 
@@ -79,36 +93,9 @@ bool loadChannels(string filename, Variant::Map& _channelMap) {
 }
 
 /**
- * sets up the ola client
- */
-bool ola_connect() {
-    // turn on OLA logging
-    ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-
-    // set all channels to 0
-    buffer.Blackout();
-
-    // Setup the client, this connects to the server
-    if (!ola_client.Setup()) {
-        AGO_FATAL() << "OLA client setup failed";
-        return false;
-    }
-    return true;
-}
-
-/**
- * disconnects the ola client
- */
-void ola_disconnect() {
-    // close the connection
-    ola_client.Stop();
-}
-
-
-/**
  * set a channel to off
  */
-void ola_setChannel(int channel, int value) {
+void AgoDmx::ola_setChannel(int channel, int value) {
     AGO_DEBUG() << "Setting channel " << channel << " to value " << value;
     buffer.SetChannel(channel, value);
 }
@@ -116,7 +103,7 @@ void ola_setChannel(int channel, int value) {
 /**
  * send buffer to ola
  */
-bool ola_send(int universe = 0) {
+bool AgoDmx::ola_send(int universe = 0) {
     if (!ola_client.SendDmx(universe, buffer)) {
         AGO_ERROR() << "Send to dmx failed for universe " << universe;
         return false;
@@ -127,7 +114,7 @@ bool ola_send(int universe = 0) {
 /**
  * set a device to a color
  */
-bool setDevice_color(Variant::Map device, int red=0, int green=0, int blue=0) {
+bool AgoDmx::setDevice_color(Variant::Map device, int red=0, int green=0, int blue=0) {
     string channel_red = device["red"];
     string channel_green = device["green"];
     string channel_blue = device["blue"];
@@ -140,7 +127,7 @@ bool setDevice_color(Variant::Map device, int red=0, int green=0, int blue=0) {
 /**
  * set device level 
  */
-bool setDevice_level(Variant::Map device, int level=0) {
+bool AgoDmx::setDevice_level(Variant::Map device, int level=0) {
     if (device["level"]) {
         string channel = device["level"];
         ola_setChannel(atoi(channel.c_str()), (int) ( 255.0 * level / 100 ));
@@ -159,7 +146,7 @@ bool setDevice_level(Variant::Map device, int level=0) {
 /**
  * set device strobe
  */
-bool setDevice_strobe(Variant::Map device, int strobe=0) {
+bool AgoDmx::setDevice_strobe(Variant::Map device, int strobe=0) {
     if (device["strobe"]) {
         string channel = device["strobe"];
         ola_setChannel(atoi(channel.c_str()), (int) ( 255.0 * strobe / 100 ));
@@ -173,7 +160,7 @@ bool setDevice_strobe(Variant::Map device, int strobe=0) {
 /**
  * announces our devices in the channelmap to the resolver
  */
-void reportDevices(Variant::Map channelmap) {
+void AgoDmx::reportDevices(Variant::Map channelmap) {
     for (Variant::Map::const_iterator it = channelmap.begin(); it != channelmap.end(); ++it) {
         Variant::Map device;
 
@@ -182,7 +169,7 @@ void reportDevices(Variant::Map channelmap) {
     }
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
+qpid::types::Variant::Map AgoDmx::commandHandler(qpid::types::Variant::Map command) {
     bool handled = true;
 
     const char *internalid = command["internalid"].asString().c_str();
@@ -227,8 +214,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
     return returnval;
 }
 
-
-int main(int argc, char **argv) {
+void AgoDmx::setupApp() {
     fs::path channelsFile;
     std::string ola_server;
 
@@ -238,22 +224,31 @@ int main(int argc, char **argv) {
     // load xml file into map
     if (!loadChannels(channelsFile.string(), channelMap)) {
         AGO_FATAL() << "Can't load channel xml";
-        exit(-1);
+        throw StartupError();
     }
 
     // connect to OLA
-    if (!ola_connect()) {
-        AGO_FATAL() << "Can't connect to OLA";
-        exit(-1);
-    }
+    // turn on OLA logging
+    ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
 
-    agoConnection = new AgoConnection("dmx");
+    // set all channels to 0
+    buffer.Blackout();
+
+    // Setup the client, this connects to the server
+    if (!ola_client.Setup()) {
+        AGO_FATAL() << "OLA client setup failed";
+        throw StartupError();
+    }
 
     reportDevices(channelMap);
 
-    agoConnection->addHandler(commandHandler);
+    addCommandHandler();
 
-    agoConnection->run();
-
-    ola_disconnect();
 }
+
+void AgoDmx::cleanupApp() {
+    ola_client.Stop();
+}
+
+AGOAPP_ENTRY_POINT(AgoDmx);
+
