@@ -337,6 +337,8 @@ void AgoKnx::setupApp() {
 void AgoKnx::cleanupApp() {
     AGO_TRACE() << "waiting for listener thread";
     listenerThread->join();
+    AGO_DEBUG() << "closing eibd connection";
+    EIBClose(eibcon);
 }
 
 AGOAPP_ENTRY_POINT(AgoKnx);
