@@ -330,8 +330,6 @@ void AgoKnx::setupApp() {
 
     AGO_DEBUG() << "Spawning thread for KNX listener";
     listenerThread = new boost::thread(boost::bind(&AgoKnx::listener, this));
-    listenerThread->detach();
-
 }
 
 void AgoKnx::cleanupApp() {
