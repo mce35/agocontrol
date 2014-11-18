@@ -6,7 +6,7 @@
 	<table id="configTable"
 		style="width: 100%; margin-top: 15px; margin-bottom: 5px;"
 		data-bind="dataTable: { 
-            dataSource: variables, 
+            dataSource: agocontrol.variables, 
             rowTemplate: 'rowTemplate', 
             columns: [
                 'variable', 
@@ -43,7 +43,7 @@
 	<_h3 data-translateable="true">Add new variable</_h3>
 	<div class="row">
 		<ul class="ten columns">
-			<li class="append field"><input class="wide input" id="varName"
+			<li class="append field"><input class="normal input" id="varName"
 				type="text" data-translateable="true" _placeholder="Input variable name" />
 				<div class="medium primary btn">
 					<_a data-translateable="true" href="#"
