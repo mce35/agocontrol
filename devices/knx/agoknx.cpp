@@ -40,10 +40,11 @@ private:
 
     EIBConnection *eibcon;
     pthread_mutex_t mutexCon;
-    pthread_t listenerThread;
+    boost::thread *listenerThread;
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void setupApp();
+    void cleanupApp();
 
     bool loadDevices(fs::path &filename, Variant::Map& _deviceMap);
     void reportDevices(Variant::Map devicemap);
@@ -304,21 +305,21 @@ void AgoKnx::setupApp() {
     // load xml file into map
     if (!loadDevices(devicesFile, deviceMap)) {
         AGO_FATAL() << "can't load device xml";
-        exit(-1);
+        throw StartupError();
     }
 
     AGO_INFO() << "connecting to eibd"; 
     eibcon = EIBSocketURL(eibdurl.c_str());
     if (!eibcon) {
         AGO_FATAL() << "can't connect to eibd url:" << eibdurl;
-        exit(-1);
+        throw StartupError();
     }
 
     if (EIBOpen_GroupSocket (eibcon, 0) == -1)
     {
         EIBClose(eibcon);
         AGO_FATAL() << "can't open EIB Group Socket";
-        exit(-1);
+        throw StartupError();
     }
 
     addCommandHandler();
@@ -328,9 +329,14 @@ void AgoKnx::setupApp() {
     pthread_mutex_init(&mutexCon,NULL);
 
     AGO_DEBUG() << "Spawning thread for KNX listener";
-    boost::thread t(boost::bind(&AgoKnx::listener, this));
-    t.detach();
+    listenerThread = new boost::thread(boost::bind(&AgoKnx::listener, this));
+    listenerThread->detach();
 
+}
+
+void AgoKnx::cleanupApp() {
+    AGO_TRACE() << "waiting for listener thread";
+    listenerThread->join();
 }
 
 AGOAPP_ENTRY_POINT(AgoKnx);
