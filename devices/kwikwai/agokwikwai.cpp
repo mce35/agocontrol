@@ -17,7 +17,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #include "kwikwai.h"
 
@@ -25,9 +25,17 @@
 using namespace std;
 using namespace agocontrol;
 
-kwikwai::Kwikwai *myKwikwai;
+class AgoKwikwai: public AgoApp {
+private:
+    kwikwai::Kwikwai *myKwikwai;
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+public:
+    AGOAPP_CONSTRUCTOR(AgoKwikwai);
+};
+
+qpid::types::Variant::Map AgoKwikwai::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (internalid == "hdmicec") {
@@ -47,7 +55,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoKwikwai::setupApp() {
     std::string hostname;
     std::string port;
 
@@ -57,12 +65,11 @@ int main(int argc, char **argv) {
     kwikwai::Kwikwai _myKwikwai(hostname.c_str(), port.c_str());
     myKwikwai = &_myKwikwai;
     AGO_INFO() << "Version: " << myKwikwai->getVersion();
-    AgoConnection agoConnection = AgoConnection("kwikwai");		
 
-    agoConnection.addDevice("hdmicec", "hdmicec");
-    agoConnection.addDevice("tv", "tv");
-    agoConnection.addHandler(commandHandler);
-
-    agoConnection.run();
+    agoConnection->addDevice("hdmicec", "hdmicec");
+    agoConnection->addDevice("tv", "tv");
+    addCommandHandler();
 }
+
+AGOAPP_ENTRY_POINT(AgoKwikwai);
 
