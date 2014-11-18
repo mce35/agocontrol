@@ -2,15 +2,24 @@
 #include <stdlib.h>
 #include <sstream>
 
-#include "agoclient.h"
+#include "agoapp.h"
 #include "firmata.h"
 
 using namespace std;
 using namespace agocontrol;
 
-Firmata* f;
+class AgoFirmata: public AgoApp {
+private:
+    Firmata* f;
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void setupApp();
+    void cleanupApp();
+public:
+    AGOAPP_CONSTRUCTOR(AgoFirmata);
+};
+
+qpid::types::Variant::Map AgoFirmata::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     int pin = atoi(content["internalid"].asString().c_str());
     if (content["command"] == "on" ) {
@@ -24,7 +33,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 }
 
 
-int main(int argc, char** argv) {
+void AgoFirmata::setupApp() {
     string devicefile=getConfigOption("firmata", "device", "/dev/ttyUSB2");
     stringstream outputs(getConfigOption("firmata", "outputs", "2")); // read digital out pins from config, default to pin 2 only
 
@@ -32,24 +41,22 @@ int main(int argc, char** argv) {
     if (f->openPort(devicefile.c_str()) != 0) {
         AGO_FATAL() << "cannot open device: " << devicefile;
         f->destroy();
-        exit(2);
+        throw StartupError();
     }
 
     AGO_INFO() << "Firmata version: " <<  f->getFirmwareVersion();
 
-
-    AgoConnection agoConnection = AgoConnection("firmata");		
-
     string output;
     while (getline(outputs, output, ',')) {
         f->setPinMode(atoi(output.c_str()), FIRMATA_OUTPUT);
-        agoConnection.addDevice(output.c_str(), "switch");
+        agoConnection->addDevice(output.c_str(), "switch");
         AGO_INFO() << "adding DIGITAL out pin as switch: " << output;
     } 
-    agoConnection.addHandler(commandHandler);
-
-    agoConnection.run();
-
-    f->destroy();
-    return 0;
+    addCommandHandler();
 }
+
+void AgoFirmata::cleanupApp() {
+    f->destroy();
+}
+
+AGOAPP_ENTRY_POINT(AgoFirmata);
