@@ -10,7 +10,7 @@ import agoclient
 
 CLIENT = agoclient.AgoConnection("owfs")
 
-DEVICE = agoclient.get_config_option("owfs", "device", "172.28.1.2")
+DEVICE = agoclient.get_config_option("owfs", "device", "/dev/usbowfs")
 
 
 # route stderr to syslog
