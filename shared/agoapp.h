@@ -51,8 +51,6 @@ namespace agocontrol {
         boost::asio::io_service ioService_;
         std::auto_ptr<boost::asio::io_service::work> ioWork;
 
-        void signalExit();
-
         int parseCommandLine(int argc, const char **argv);
 
     protected:
@@ -60,6 +58,8 @@ namespace agocontrol {
          * Any parsed command line parameters are placed in this map-like object
          */
         boost::program_options::variables_map cli_vars;
+
+        void signalExit();
 
         AgoConnection *agoConnection;
 
