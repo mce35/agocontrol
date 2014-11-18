@@ -406,6 +406,12 @@ std::string agocontrol::uint64ToString(uint64_t i) {
     return tmp.str();
 }
 
+unsigned int agocontrol::stringToUint(string v)
+{
+    unsigned int r;
+    istringstream (v) >> r;
+    return r;
+}
 
 std::string agocontrol::getConfigOption(const char *section, const char *option, std::string &defaultvalue) {
     return getConfigOption(section, option, defaultvalue.c_str());
