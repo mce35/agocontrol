@@ -1,297 +1,545 @@
 /**
  * Model class
  * 
- * @returns {floorPlan}
+ * @returns {Dashboard}
  */
-function floorPlan() {
+
+
+function Dashboard(dashboard, edition, agocontrol)
+{
+    //members
     var self = this;
-    this.devices = ko.observableArray([]);
-    this.hasNavigation = ko.observable(true);
+    self.agocontrol = agocontrol;
+    self.currentDashboard = dashboard;
+    self.dashboardName = ko.observable(ucFirst(self.currentDashboard.name));
+    self.editLabel = ko.observable('Edit');
+    self.devices = ko.observableArray([]);
+    self.selectedTextFilter = ko.observable('');
+    self.selectedMainFilter = ko.observable('all');
+    self.selectedSubFilter = ko.observable('');
+    self.placedDevices = ko.observable([]);
+    self.editorOpened = false;
 
-    this.page = ko.observable(1);
-
-    this.rooms = ko.computed(function() {
-        var roomMap = [];
-        for ( var room in rooms) {
-            roomMap[room] = rooms[room];
-            roomMap[room].devices = ko.observableArray([]);
-        }
-        roomMap['none'] = {
-            name : "No Room",
-            devices : ko.observableArray([])
-        };
-
-        for ( var i = 0; i < self.devices().length; i++) {
-            if (roomMap[self.devices()[i].roomUID] !== undefined) {
-                roomMap[self.devices()[i].roomUID].devices.push(self.devices()[i]);
-            } else {
-                roomMap['none'].devices.push(self.devices()[i]);
-            }
-        }
-
-        var result = [];
-        for ( var room in rooms) {
-            result.push(roomMap[room]);
-        }
-        if (result.length > 0) {
-            result.push(roomMap['none']);
-        }
-
-        return result;
-    });
-
-    self.findDevice = function(uuid) {
-        for ( var i = 0; i < self.devices().length; i++) {
-            if (self.devices()[i].uuid == uuid) {
-                return self.devices()[i];
-            }
+    //after render
+    self.afterRender = function()
+    {
+        if( edition )
+        {
+            //edition mode, show editor
+            self.showEditor(0);
         }
     };
 
-    /*
-     * Load the floorplan data into the grid. This is meant to refresh whenever
-     * currentFloorPlan changes, and only when we have devices
-     */
-    this.fpdevSubscription = ko.computed(function() {
-        if (self.devices().length == 0) {
+
+
+    //====================================================
+    //EDITOR
+
+    //disable drag and drop
+    self.disableDragAndDrop = function()
+    {
+        //remove special style
+        $('.dashboard-widget').removeClass('dashboard-widget-draggable');
+
+        //destroy draggable and droppable
+        $('.placeholder').each(function()
+        {
+            if( $(this).hasClass('ui-droppable') )
+            {
+                $(this).droppable('destroy');
+            }
+        });
+        $('.device-list').each(function()
+        {
+            if( $(this).hasClass('ui-droppable') )
+            {
+                $(this).droppable('destroy');
+            }
+        });
+        $('.device-list-item').each(function()
+        {
+            if( $(this).hasClass('ui-draggable') )
+            {
+                $(this).draggable('destroy');
+            }
+        });
+        $('.dashboard-widget').each(function()
+        {
+            if( $(this).hasClass('ui-draggable') )
+            {
+                $(this).draggable('destroy');
+            }
+        });
+    };
+
+    //enable drag and drop
+    self.enableDragAndDrop = function()
+    {
+        //exit if not in edition
+        if( !self.editorOpened )
+        {
             return;
         }
-        var list = currentFloorPlan();
-        var result = [];
-        for ( var k in list) {
-            if (k == "name" || k == "uuid") {
+
+        //add special style
+        $('.dashboard-widget').not('.placeholder').addClass('dashboard-widget-draggable');
+
+        //placeholder droppable
+        $('.placeholder').each(function()
+        {
+            $(this).droppable({
+                accept: '.device-list-item, .dashboard-widget',
+                activate: function(event, ui) {
+                    $(this).find('div.dashboard-widget-header').addClass('dashboard-widget-header-active');
+                    $(this).find('div.dashboard-widget-content').addClass('dashboard-widget-content-active');
+                },
+                deactivate: function(event, ui) {
+                    $(this).find('div.dashboard-widget-header').removeClass('dashboard-widget-header-active');
+                    $(this).find('div.dashboard-widget-content').removeClass('dashboard-widget-content-active');
+                },
+                over: function(event, ui) {
+                    $(this).find('div.dashboard-widget-header').addClass('dashboard-widget-header-hover');
+                    $(this).find('div.dashboard-widget-content').addClass('dashboard-widget-content-hover');
+                },
+                out: function(event, ui) {
+                    $(this).find('div.dashboard-widget-header').removeClass('dashboard-widget-header-hover');
+                    $(this).find('div.dashboard-widget-content').removeClass('dashboard-widget-content-hover');
+                },
+                drop: function(event, ui) {
+                    //remove style
+                    $(this).find('div.dashboard-widget-header').removeClass('dashboard-widget-header-hover');
+                    $(this).find('div.dashboard-widget-content').removeClass('dashboard-widget-content-hover');
+
+                    //handle dropped item
+                    var x = $(this).data('x');
+                    var y = $(this).data('y');
+                    var uuid = ui.draggable.attr('data-uuid');
+
+                    //need to delay dashboard widget update to avoid js bug (items are destroyed before this function ends!)
+                    //delay must be long enough to allow html template to be downloaded, otherwise dnd won't be enable on it
+                    //until other item is moved.
+                    setTimeout(function()
+                    {
+                        self.updateDashboard(uuid, x, y);
+                    }, 250);
+                }
+            });
+        });
+
+        //trash droppable
+        $('.device-list').each(function()
+        {
+            $(this).droppable({
+                accept: '.dashboard-widget',
+                activate: function(event, ui) {
+                    $(this).addClass('device-list-active');
+                    $(this).find('div.device-list-item').hide();
+                },
+                deactivate: function(event, ui) {
+                    $(this).removeClass('device-list-active');
+                    $(this).find('div.device-list-item').show();
+                },
+                over: function(event, ui) {
+                    $(this).addClass('device-list-hover');
+                },
+                out: function(event, ui) {
+                    $(this).removeClass('device-list-hover');
+                },
+                drop: function(event, ui) {
+                    //remove style
+                    $(this).removeClass('device-list-hover');
+
+                    //handle dropped item
+                    var uuid = ui.draggable.attr('data-uuid');
+
+                    //remove item from dashboard
+                    setTimeout(function()
+                    {
+                        self.updateDashboard(uuid, -1, -1);
+                    }, 50);
+                }
+            });
+        });
+
+        //list items draggable
+        $('.device-list-item').each(function()
+        {
+            $(this).draggable({
+                opacity: 0.7,
+                cursor: 'move',
+                revert: 'invalid',
+                helper: 'clone',
+                appendTo: $('#draganddroparea'),
+                containment: $('#draganddroparea'),
+                zIndex: 10000
+            });
+        });
+
+        //dashboard widgets draggable
+        $('.dashboard-widget').not('.placeholder').each(function()
+        {
+            $(this).draggable({
+                opacity: 0.7,
+                cursor: 'move',
+                revert: 'invalid',
+                helper: 'clone',
+                appendTo: $('#draganddroparea'),
+                containment: $('#draganddroparea'),
+                zIndex: 10000
+            });
+        });
+    };
+
+    //editor's devices
+    self.filteredDevices = ko.computed(function()
+    {
+        var output = [];
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
+        {
+            var device = self.agocontrol.devices()[i];
+            if( device.name && device.name.length>0 )
+            {
+                if( self.selectedMainFilter()=='rooms' )
+                {
+                    //filter by rooms
+                    if( self.selectedSubFilter() && device.room==self.selectedSubFilter().name )
+                    {
+                        output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                    }
+                }
+                else if( self.selectedMainFilter()=='types' )
+                {
+                    //filter by devicetype
+                    if( self.selectedSubFilter() && device.devicetype==self.selectedSubFilter().name )
+                    {
+                        output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                    }
+                }
+                else
+                {
+                    //no filter
+                    output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                }
+            }
+
+            //apply text filter
+            if( self.selectedTextFilter() && $.trim(self.selectedTextFilter())!='' )
+            {
+                output = output.filter(function(item) {
+                    if( item.name.toLowerCase().indexOf(self.selectedTextFilter())!=-1 )
+                    {
+                        return true;
+                    }
+                    if( item.devicetype.toLowerCase().indexOf(self.selectedTextFilter())!=-1 )
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+        }
+
+        //re-enabled drag and drop
+        //need to wait sometime to make sure items are inserted
+        setTimeout(function()
+        {
+            self.enableDragAndDrop();
+        }, 50);
+
+        return output;
+    });
+
+    //clear editor text filter
+    self.clearTextFilter = function()
+    {
+        self.selectedTextFilter('');
+        self.enableDragAndDrop();
+    };
+
+    //sub filter options
+    self.subFilterOptions = ko.computed(function()
+    {
+        if( self.selectedMainFilter()=='types' )
+        {
+            //return devices of specified types
+            return self.deviceTypes();
+        }
+        else if( self.selectedMainFilter()=='rooms' )
+        {
+            //return all rooms
+            return self.rooms();
+        }
+        else
+        {
+            //return nothing
+            return [];
+        }
+    });
+
+    //show editor
+    self.showEditor = function(duration)
+    {
+        if( duration===undefined )
+        {
+            duration = 300;
+        }
+
+        if( self.editorOpened )
+        {
+            $('#dashboardEditor').slideUp({
+                duration: duration,
+                complete: function() {
+                },
+                always: function() {
+                    self.editorOpened = false;
+                    self.editLabel('Edit');
+
+                    //close editor, disable edition mode
+                    self.disableDragAndDrop();
+                }
+            });
+        }
+        else
+        {
+            $('#dashboardEditor').slideDown({
+                duration: duration,
+                complete: function() {
+                },
+                always: function() {
+                    self.editorOpened = true;
+                    self.editLabel('Close');
+
+                    //editor opened, init draggables and droppables
+                    self.enableDragAndDrop();
+                }
+            });
+        }
+    };
+
+
+
+
+    //====================================================
+    //DASHBOARD
+
+    //build rooms list
+    self.rooms = ko.computed(function()
+    {
+        var output = [];
+        for( var uuid in self.agocontrol.rooms() )
+        {
+            output.push({uuid:uuid, name:self.agocontrol.rooms()[uuid].name, location:self.agocontrol.rooms()[uuid].location});
+        }
+        return output;
+    });
+
+    //build device types
+    self.deviceTypes = ko.computed(function()
+    {
+        var output = [];
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
+        {
+            var device = self.agocontrol.devices()[i];
+            //console.log(device);
+            if( device.name && device.name.length>0 )
+            {
+                var found = false;
+                for( var j=0; j<output.length; j++ )
+                {
+                    if( output[j].name==device.devicetype )
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if( !found )
+                {
+                    output.push({uuid:device.devicetype, name:device.devicetype});
+                }
+            }
+        }
+        return output;
+    });
+
+
+    //search device in inventory
+    self.findDevice = function(uuid)
+    {
+        for( var i=0; i<self.agocontrol.devices().length; i++)
+        {
+            if( self.agocontrol.devices()[i].uuid==uuid ) 
+            {
+                return self.agocontrol.devices()[i];
+            }
+        }
+        return null;
+    };
+
+    //render dashboard
+    self.renderDashboard = function()
+    {
+        //init
+        var content = [[null, null, null], [null, null, null], [null, null, null]];
+	    self.placedDevices(content);
+
+        if (self.agocontrol.devices().length == 0)
+        {
+            return;
+        }
+
+        for ( var k in self.currentDashboard )
+        {
+            if( self.currentDashboard[k].x==undefined || self.currentDashboard[k].y===undefined )
+            {
+                //skip uneeded items
                 continue;
             }
-            var x = list[k].x;
-            var y = list[k].y;
-            if (x < 0 || y < 0) {
-                continue;
-            }
-            if (result[x] === undefined) {
-                result[x] = [];
-            }
-            result[x][y] = self.findDevice(k);
-        }
-        self.placedDevices([]);
-        self.placedDevices(result);
-    });
 
-    this.placedDevices = ko.observable([]);
-
-    this.firstRow = ko.computed(function() {
-        var result = [];
-        var x = 0;
-        for ( var y = 0; y < 3; y++) {
-            if (self.placedDevices()[x] !== undefined && self.placedDevices()[x][y] !== undefined) {
-                result.push(self.placedDevices()[x][y]);
-            } else {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
+            var x = self.currentDashboard[k].x;
+            var y = self.currentDashboard[k].y;
+            if (x < 0 || y < 0)
+            {
+               continue;
             }
+
+            content[x][y] = self.findDevice(k);
         }
 
-        return result;
-    });
+	    self.placedDevices([]);
+	    self.placedDevices(content);
 
-    this.secondRow = ko.computed(function() {
-        var result = [];
-        var x = 1;
-        for ( var y = 0; y < 3; y++) {
-            if (self.placedDevices()[x] !== undefined && self.placedDevices()[x][y] !== undefined) {
-                result.push(self.placedDevices()[x][y]);
-            } else {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
-            }
+        if( self.editorOpened )
+        {
+            //re-enable drag and drop (dashboard widgets are regenerated)
+            setTimeout(function()
+            {
+                self.enableDragAndDrop();
+            }, 50);
         }
 
-        return result;
-    });
+    };
 
-    this.thirdRow = ko.computed(function() {
-        var result = [];
-        var x = 2;
-        for ( var y = 0; y < 3; y++) {
-            if (self.placedDevices()[x] !== undefined && self.placedDevices()[x][y] !== undefined) {
-                result.push(self.placedDevices()[x][y]);
-            } else {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
-            }
-        }
-
-        return result;
-    });
-
-    this.saveDevicePos = function(uuid, x, y) {
+    //update dashboard
+    self.updateDashboard = function(uuid, x, y)
+    {
+        //save update
         var content = {};
         content.command = "setdevicefloorplan";
-        content.floorplan = currentFloorPlan().uuid;
+        content.floorplan = self.currentDashboard.uuid;
         content.device = uuid;
-        content.uuid = agoController;
+        content.uuid = self.agocontrol.agoController;
         content.x = x;
         content.y = y;
-        sendCommand(content);
+        self.agocontrol.sendCommand(content);
 
-        purgeInventoryCache();
-        // Update local floorplan too
-        var fp = floorPlans[content.floorplan];
-        if (x === -1 && y === -1)
-            delete fp[uuid];
-        else {
-            if (fp[uuid] == undefined) {
-                fp[uuid] = {};
+        //update dashboard object
+        self.currentDashboard[uuid] = {x:x, y:y};
+
+        //and render dashboard
+        self.renderDashboard();
+    };
+
+    //first row content
+    this.firstRow = ko.computed(function()
+    {
+        var result = [];
+        var x = 0;
+        for ( var y = 0; y < 3; y++)
+        {
+            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
+            {
+                result.push(self.placedDevices()[x][y]);
             }
-            fp[uuid].x = x;
-            fp[uuid].y = y;
+            else
+            {
+                result.push({
+                    devicetype : "placeholder",
+                    x : x,
+                    y : y
+                });
+            }
         }
-    };
 
-    this.postRender = function() {
-        $('.dnd-device').each(function() {
-            $(this).draggable({
-                cursor : "move",
-                revert : true,
-                helper : function(event) {
-                    return $('<div style="z-Index: 999; text-align:center; color:#FFF; width: 58px; height: 58px;" class="pretty large primary btn grid-item-icon"></div>');
-                }
-            });
-        });
+        return result;
+    });
 
-        $('.device').each(function() {
-            $(this).draggable({
-                cursor : "move",
-                handle : ".handle",
-                revert : true,
-                helper : function(event) {
-                    return $('<div style="z-Index: 999; text-align:center; color:#FFF;' + 'width: 58px; height: 58px;" class="pretty large primary btn grid-item-icon"></div>');
-                }
-            });
-        });
-
-        $('.drop-target').each(function() {
-            $(this).droppable({
-                drop : function(event, ui) {
-                    var x = $(this).data("x");
-                    var y = $(this).data("y");
-                    var uuid = ui.draggable.data("uuid");
-                    console.debug("dropped:" + uuid + " on " + x + " / " + y);
-                    var tmp = self.placedDevices();
-                    /* Remove old entry if any */
-                    for ( var i = 0; i < tmp.length; i++) {
-                        if (tmp[i] === undefined) {
-                            continue;
-                        }
-                        for ( var j = 0; j < tmp[i].length; j++) {
-                            if (tmp[i][j] !== undefined && tmp[i][j].uuid == uuid) {
-                                tmp[i][j] = undefined;
-                            }
-                        }
-                    }
-                    /* Add the new one */
-                    for ( var i = 0; i < self.devices().length; i++) {
-                        if (self.devices()[i].uuid == uuid) {
-                            if (tmp[x] === undefined) {
-                                tmp[x] = [];
-                            }
-                            tmp[x][y] = self.devices()[i];
-                            self.saveDevicePos(uuid, x, y);
-                            self.placedDevices([]);
-                            self.placedDevices(tmp);
-                        }
-                    }
-                }
-            });
-        });
-
-        $('.placeholder').each(function() {
-            $(this).css("cursor", "default");
-        });
-
-    };
-
-    this.afterTreeView = function() {
-        $('.tree li').each(function() {
-            if ($(this).children('ul').length > 0) {
-                $(this).addClass('parent');
+    //second row content
+    this.secondRow = ko.computed(function()
+    {
+        var result = [];
+        var x = 1;
+        for ( var y = 0; y < 3; y++)
+        {
+            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
+            {
+                result.push(self.placedDevices()[x][y]);
             }
-        });
-
-        $('.tree li.parent > a').unbind('click');
-        $('.tree li.parent > a').click(function() {
-            $(this).parent().toggleClass('active');
-            $(this).parent().children('ul').slideToggle('fast');
-        });
-
-        $('.device_tree').droppable({
-            drop : function(event, ui) {
-                var uuid = ui.draggable.data("uuid");
-                var tmp = self.placedDevices();
-                for ( var i = 0; i < tmp.length; i++) {
-                    if (tmp[i] === undefined) {
-                        continue;
-                    }
-                    for ( var j = 0; j < tmp[i].length; j++) {
-                        if (tmp[i][j] !== undefined && tmp[i][j].uuid == uuid) {
-                            tmp[i][j] = undefined;
-                            self.saveDevicePos(uuid, -1, -1);
-                        }
-                    }
-                }
-                self.placedDevices([]);
-                self.placedDevices(tmp);
+            else
+            {
+                result.push({
+                    devicetype : "placeholder",
+                    x : x,
+                    y : y
+                });
             }
-        });
+        }
 
-        self.postRender();
-    };
+        return result;
+    });
 
-    buildfloorPlanList(this);
+    //third row content
+    this.thirdRow = ko.computed(function()
+    {
+        var result = [];
+        var x = 2;
+        for ( var y = 0; y < 3; y++)
+        {
+            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
+            {
+                result.push(self.placedDevices()[x][y]);
+            }
+            else
+            {
+                result.push({
+                    devicetype : "placeholder",
+                    x : x,
+                    y : y
+                });
+            }
+        }
+
+        return result;
+    });
+
+    //render dashboard
+    self.renderDashboard();
 }
 
 /**
  * Initalizes the model
  */
-function init_floorPlan() {
-    model = new floorPlan();
+function init_template(path, params, agocontrol)
+{
+    //init
+    var model = new Dashboard(params.dashboard, params.edition, agocontrol);
 
     model.deviceTemplate = function(item) {
-        if (supported_devices.indexOf(item.devicetype) != -1) {
-            return 'devices/' + item.devicetype;
+        if( agocontrol.supported_devices().indexOf(item.devicetype)!=-1 )
+        {
+            return 'templates/devices/' + item.devicetype;
         }
-        return 'devices/empty';
+        return 'templates/devices/empty';
     }.bind(model);
 
-    model.mainTemplate = function() {
-        return "floorplan";
+    model.listDeviceTemplate = function(item) {
+        if (agocontrol.supported_devices().indexOf(item.devicetype) != -1)
+        {
+            return 'templates/list/' + item.devicetype;
+        }
+        return 'templates/list/empty';
     }.bind(model);
 
-    model.navigation = function() {
-        return "navigation/treenav";
-    }.bind(model);
-
-    ko.applyBindings(model);
+    return model;
 }
 
-function createFloorPlan() {
-    var content = {};
-    content.command = "setfloorplanname";
-    content.uuid = agoController;
-    content.name = $("#floorplanName").val();
-    if (!content.name) {
-        return;
-    }
-    sendCommand(content, function(r) {
-        purgeInventoryCache();
-        document.location.href = "?floorplan&fp=" + r.result.uuid;
-    });
-}
+

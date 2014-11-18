@@ -1,0 +1,8 @@
+{
+    "name": "All my devices",
+    "version": "0.0.1",
+    "description": "Main dashboard",
+    "template": "html/dashboard",
+    "listable": false,
+    "resources": null
+}
