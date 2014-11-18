@@ -2,11 +2,13 @@
  * agodrain by jaeger@agocontrol.com
  * @returns {agodrainPlugin}
  */
-function agodrainPlugin() {
+function agodrainPlugin(agocontrol)
+{
     this.rooms = ko.observableArray([]);
 
     var self = this;
-    var _originalHandler = handleEvent;
+    //var _originalHandler = handleEvent;
+    var _originalHandler = agocontrol.handleEvent;
     var subDisplayed = false;
 
     this.displayEvent = function(requestSucceed, response) {
@@ -23,7 +25,7 @@ function agodrainPlugin() {
     };
 
     this.stopDrain = function() {
-        handleEvent = _originalHandler;
+        agocontrol.handleEvent = _originalHandler;
     };
 
     this.clear = function() {
@@ -43,12 +45,12 @@ function agodrainPlugin() {
     };
 }
 
-function init_plugin()
+function init_template(path, params, agocontrol)
 {
-    model = new agodrainPlugin();
-    model.mainTemplate = function() {
+    model = new agodrainPlugin(agocontrol);
+    /*model.mainTemplate = function() {
         return templatePath + "agodrain";
-    }.bind(model);
+    }.bind(model);*/
 
     return model;
 }
