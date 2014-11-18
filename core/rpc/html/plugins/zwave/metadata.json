@@ -2,7 +2,8 @@
         "name": "Z-Wave",
         "version": "0.0.1",
         "description": "Z-Wave configuration",
-        "dashboardAccess": true,
+        "listable": true,
+        "template": "html/zwaveConfig",
         "resources": {
             "js": [
                 "d3.v3.min.js"
