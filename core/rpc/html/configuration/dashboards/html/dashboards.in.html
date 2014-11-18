@@ -4,9 +4,8 @@
 		style="display:none" _data-yes="Yes" _data-no="No" />
 	<_h3 data-translateable="true">Floorplan Configuration</_h3>
 	<table id="floorPlanTable"
-		style="width: 100%; margin-top: 15px; margin-bottom: 5px;"
 		data-bind="dataTable: { 
-            dataSource: floorplans, 
+            dataSource: dashboards, 
             rowTemplate: 'rowTemplate', 
             columns: [
                 'name', 
@@ -28,7 +27,7 @@
 	<br /> <br />
 	
 <script id="rowTemplate" type="text/html">
-<ko opts="if: uuid">
+<ko opts="if: editable">
 <ko opts="if: name">
 <td class="edit_fp" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
 </ko>
@@ -37,7 +36,7 @@
 </ko>
 <td style="max-width: 120px; white-space: nowrap; text-align:center">
 <div class="pretty medium default btn">
-	<i class="icon-pencil"  data-translateable="true" _alt="Edit" _title="Edit" data-bind="click: $parent.editPlan"></i>
+	<i class="icon-pencil"  data-translateable="true" _alt="Edit" _title="Edit" data-bind="click: $root.gotoDashboard.bind($data, $data, true)"></i>
 </div>
 <div class="pretty medium default btn">
 	<i class="icon-cancel"  data-translateable="true" _alt="Delete" _title="Delete" data-bind="click: $parent.deletePlan"></i>
@@ -45,15 +44,15 @@
 </td>
 </ko>
 </script>
-	<_h3 data-translateable="true">Create a new floorplan</_h3>
+	<_h3 data-translateable="true">Create a new dashboard</_h3>
 	<div class="row">
 		<ul class="ten columns">
-			<li class="append field"><input class="wide input"
+			<li class="append field"><input class="normal input"
 				id="floorplanName" type="text" data-translateable="true"
-				_placeholder="New floorplan name" />
+				_placeholder="New dashboard name" />
 				<div class="medium primary btn">
 					<_a data-translateable="true" href="#"
-						onclick="createFloorPlan(); return false;">Create Floorplan</_a>
+						data-bind="click: createDashboard">Create dashboard</_a>
 				</div></li>
 		</ul>
 	</div>
