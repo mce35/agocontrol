@@ -1,9 +1,16 @@
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace agocontrol;
-AgoConnection *agoConnection;
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
+class AgoExample: public AgoApp {
+private:
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command);
+public:
+    AGOAPP_CONSTRUCTOR(AgoExample);
+};
+
+qpid::types::Variant::Map AgoExample::commandHandler(qpid::types::Variant::Map command) {
     qpid::types::Variant::Map returnval;
     std::string internalid = command["internalid"].asString();
     if (command["command"] == "on") {
@@ -19,11 +26,21 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
-    agoConnection = new AgoConnection("example");
+void AgoExample::setupApp() {
     AGO_INFO() << "example device starting up";
+
+    // do some device specific setup
+    if (false) {
+        AGO_FATAL() << "setup failed";
+        throw StartupError();
+    }
+
+    // add some devices
     agoConnection->addDevice("123", "dimmer");
     agoConnection->addDevice("124", "switch");
-    agoConnection->addHandler(commandHandler);
-    agoConnection->run();
+
+    // add our command handler
+    addCommandHandler();
 }
+
+AGOAPP_ENTRY_POINT(AgoExample);
