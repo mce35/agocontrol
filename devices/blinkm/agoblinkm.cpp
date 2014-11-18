@@ -8,14 +8,23 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace std;
 using namespace agocontrol;
 
-string devicefile;
+class AgoBlinkm: public AgoApp {
+private:
+    string devicefile;
 
-bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf) {
+    bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf);
+    qpid::types::Variant::Map  commandHandler(qpid::types::Variant::Map content);
+    void setupApp();
+public:
+    AGOAPP_CONSTRUCTOR(AgoBlinkm);
+};
+
+bool AgoBlinkm::i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf) {
     int file = open(device, O_RDWR);
     if (file < 0) {
         AGO_ERROR() << "cannot open " << file << " - error: " << file;
@@ -36,7 +45,7 @@ bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8 
     return true;
 }
 
-qpid::types::Variant::Map  commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map  AgoBlinkm::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     int i2caddr = atoi(content["internalid"].asString().c_str());
     __u8 buf[10];
@@ -74,20 +83,16 @@ qpid::types::Variant::Map  commandHandler(qpid::types::Variant::Map content) {
 }
 
 
-int main(int argc, char** argv) {
+void AgoBlinkm::setupApp() {
     devicefile=getConfigOption("blinkm", "bus", "/dev/i2c-0");
     stringstream devices(getConfigOption("blinkm", "devices", "9")); // read blinkm addr from config, default to addr 9
 
-    AgoConnection agoConnection = AgoConnection("blinkm");		
-
     string device;
     while (getline(devices, device, ',')) {
-        agoConnection.addDevice(device.c_str(), "dimmerrgb");
+        agoConnection->addDevice(device.c_str(), "dimmerrgb");
         i2ccommand(devicefile.c_str(),atoi(device.c_str()),0x6f,0,NULL); // stop script on blinkm
     } 
-    agoConnection.addHandler(commandHandler);
-
-    agoConnection.run();
-
-    return 0;
+    addCommandHandler();
 }
+
+AGOAPP_ENTRY_POINT(AgoBlinkm);
