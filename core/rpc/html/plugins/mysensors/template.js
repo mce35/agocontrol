@@ -1,9 +1,11 @@
 /**
  * MySensors plugin
  */
-function mysensorsConfig(deviceMap) {
+function mysensorsConfig(devices, agocontrol)
+{
     //members
     var self = this;
+    self.agocontrol = agocontrol;
     self.mysensorsControllerUuid = null;
     self.port = ko.observable();
     self.devices = ko.observableArray();
@@ -11,13 +13,13 @@ function mysensorsConfig(deviceMap) {
     self.selectedCountersDevice = ko.observable();
 
     //MySensor controller uuid
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].devicetype=='mysensorscontroller' )
+            if( devices[i].devicetype=='mysensorscontroller' )
             {
-                self.mysensorsControllerUuid = deviceMap[i].uuid;
+                self.mysensorsControllerUuid = devices[i].uuid;
                 break;
             }
         }
@@ -33,7 +35,7 @@ function mysensorsConfig(deviceMap) {
             port: self.port()
         }
 
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -61,7 +63,7 @@ function mysensorsConfig(deviceMap) {
             command: 'getport'
         }
 
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -83,7 +85,7 @@ function mysensorsConfig(deviceMap) {
                 command: 'resetallcounters'
             }
     
-            sendCommand(content, function(res)
+            self.agocontrol.sendCommand(content, function(res)
             {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
@@ -107,7 +109,7 @@ function mysensorsConfig(deviceMap) {
                 device: self.selectedCountersDevice()
             }
     
-            sendCommand(content, function(res)
+            self.agocontrol.sendCommand(content, function(res)
             {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
@@ -128,7 +130,7 @@ function mysensorsConfig(deviceMap) {
             command: 'getdevices'
         }
 
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -151,7 +153,7 @@ function mysensorsConfig(deviceMap) {
                 device: self.selectedRemoveDevice()
             }
     
-            sendCommand(content, function(res)
+            self.agocontrol.sendCommand(content, function(res)
             {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
@@ -180,7 +182,7 @@ function mysensorsConfig(deviceMap) {
     self.getDevices();
 }
 
-function mysensorsDashboard(deviceMap) {
+function mysensorsDashboard(devices) {
     //members
     var self = this;
     self.mysensorsControllerUuid = null;
@@ -188,13 +190,13 @@ function mysensorsDashboard(deviceMap) {
     self.counters = ko.observableArray([]);
 
     //MySensor controller uuid
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].devicetype=='mysensorscontroller' )
+            if( devices[i].devicetype=='mysensorscontroller' )
             {
-                self.mysensorsControllerUuid = deviceMap[i].uuid;
+                self.mysensorsControllerUuid = devices[i].uuid;
                 break;
             }
         }
@@ -207,7 +209,7 @@ function mysensorsDashboard(deviceMap) {
             command: 'getcounters'
         }
 
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -230,24 +232,9 @@ function mysensorsDashboard(deviceMap) {
 /**
  * Entry point: mandatory!
  */
-function init_plugin(fromDashboard)
+function init_template(path, params, agocontrol)
 {
-    var model;
-    var template;
-    if( fromDashboard )
-    {
-        model = new mysensorsDashboard(deviceMap);
-        template = 'mysensorsDashboard';
-    }
-    else
-    {
-        model = new mysensorsConfig(deviceMap);
-        template = 'mysensorsConfig';
-    }
-    model.mainTemplate = function() {
-        return templatePath + template;
-    }.bind(model);
-
+    var model = new mysensorsConfig(agocontrol.devices(), agocontrol);
     return model;
 }
 
