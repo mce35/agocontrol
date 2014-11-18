@@ -43,14 +43,6 @@ function Template(path, resources, template, params)
     this.params = params; //data passed to loaded template
 }
 
-//Menu item object
-function Item(key, data)
-{
-    this.key = key;
-    this.data = data;
-};
-
-
 //Agocontrol object
 function Agocontrol()
 {
@@ -162,8 +154,6 @@ function Agocontrol()
                 if( !found )
                 {
                     //add new device
-                    console.log('Add new device ' + uuid);
-                    console.log(devs[uuid]);
                     self.devices.push(new device(self, devs[uuid], uuid));
                 }
             }
@@ -237,19 +227,8 @@ function Agocontrol()
         self.system(response.result.system);
         self.schema(response.result.schema);
 
-        //console.log('DASHBOARDS:');
-        //console.log(self.dashboards());
-        //console.log('RESPONSE:');
-        //console.log(response);
-        //floorPlans = response.result.floorplans;
-        //environment = response.result.environment;
-        
         //save device map
-        //console.log("DEVICES");
-        //console.log(response.result.devices);
         var devs = self.cleanInventory(response.result.devices);
-        //console.log("DEVS");
-        //console.log(devs);
         for( var uuid in devs )
         {
             if (devs[uuid].room !== undefined && devs[uuid].room)
@@ -334,7 +313,6 @@ function Agocontrol()
         {
             async = false;
         }
-        console.log('ASYNC='+async);
         if( !callback )
         {
             callback = self.handleInventory;
@@ -605,8 +583,6 @@ function AgocontrolViewModel()
     //route functions
     self.gotoDashboard = function(dashboard, edit)
     {
-        console.log('GOTO DASHBOARD');
-        console.log(dashboard);
         if( edit===true )
         {
             location.hash = 'dashboard/' + dashboard.name + '/edit';
@@ -619,25 +595,17 @@ function AgocontrolViewModel()
 
     self.gotoConfiguration = function(config)
     {
-        console.log('GOTO CONFIG');
-        console.log(config);
         location.hash = 'config/' + config.name;
     };
 
     self.gotoPlugin = function(plugin)
     {
-        console.log('GOTO PLUGIN');
-        console.log(plugin);
         location.hash = 'plugin/' + plugin.name;
     };
 
     //load template
     self.loadTemplate = function(template)
     {
-        //load js resource file
-        console.log('LOAD TEMPLATE');
-        console.log(template);
-
         //block ui
         $.blockUI({ message: '<img src="img/loading.gif" />  Loading...' });
 
@@ -677,13 +645,13 @@ function AgocontrolViewModel()
                                 }
                                 else
                                 {
-                                    console.log('Failed to load template: no model returned by init_template. Please check your code.');
+                                    console.error('Failed to load template: no model returned by init_template. Please check your code.');
                                     notif.fatal('Problem during page loading.');
                                 }
                             }
                             else
                             {
-                                console.log('Failed to load template: init_template function not defined. Please check your code.');
+                                console.error('Failed to load template: init_template function not defined. Please check your code.');
                                 notif.fatal('Problem during page loading.');
                             }
                             $.unblockUI();
@@ -702,21 +670,21 @@ function AgocontrolViewModel()
                     }
                     else
                     {
-                        console.log('Failed to load template: no model returned by init_template. Please check your code.');
+                        console.error('Failed to load template: no model returned by init_template. Please check your code.');
                         notif.fatal('Problem during page loading.');
                     }
                 }
                 else
                 {
-                    console.log('Failed to load template: init_template function not defined. Please check your code.');
+                    console.error('Failed to load template: init_template function not defined. Please check your code.');
                     notif.fatal('Problem during page loading.');
                 }
                 $.unblockUI();
             }
         }).fail(function(jqXHR, textStatus, errorThrown) {
             $.unblockUI();
-            console.log("Failed to load template: ["+textStatus+"] "+errorThrown.message);
-            console.log(errorThrown);
+            console.error("Failed to load template: ["+textStatus+"] "+errorThrown.message);
+            console.error(errorThrown);
             notif.fatal('Problem during page loading.');
         });
     };
@@ -753,7 +721,6 @@ function AgocontrolViewModel()
             else
             {
                 var dashboard = getDashboard(this.params.name);
-                console.log(dashboard);
                 if( dashboard )
                 {
                     var basePath = 'dashboard/custom';
@@ -816,7 +783,6 @@ function AgocontrolViewModel()
         //configuration loading
         this.get('#config/:name', function()
         {
-            console.log('-> configuration');
             //get config infos
             var config = null;
             for( var i=0; i<self.agocontrol.configurations().length; i++ )
@@ -827,7 +793,6 @@ function AgocontrolViewModel()
                     config = self.agocontrol.configurations()[i];
                 }
             }
-            console.log(config);
             if( config )
             {
                 self.loadTemplate(new Template(config.path, null, config.template, null));
@@ -841,7 +806,6 @@ function AgocontrolViewModel()
         //help
         this.get('#help/:name', function()
         {
-            console.log('-> help');
             var basePath = 'help/' + this.params.name;
             var templatePath = '/html/' + this.params.name;
             self.loadTemplate(new Template(basePath, null, templatePath, null));
@@ -850,7 +814,6 @@ function AgocontrolViewModel()
         //startup page (dashboard)
         this.get('', function ()
         {
-            console.log('-> startup');
             this.app.runRoute('get', '#dashboard/all');
         });
     }).run();
