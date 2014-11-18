@@ -176,7 +176,14 @@ void *AgoKnx::listener() {
                     AGO_FATAL() << "cannot reconnect to eibd";
                     signalExit();
                 } else {
-                    pthread_mutex_unlock (&mutexCon);
+                    if (EIBOpen_GroupSocket (eibcon, 0) == -1) {
+                        AGO_FATAL() << "cannot reconnect to eibd";
+                        pthread_mutex_unlock (&mutexCon);
+                        signalExit();
+                    } else {
+                        pthread_mutex_unlock (&mutexCon);
+                        AGO_INFO() << "reconnect to eibd succeeded"; 
+                    }
                 }
                 break;
                 ;;
