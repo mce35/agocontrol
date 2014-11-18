@@ -1,9 +1,11 @@
 /**
  * Datalogger plugin
  */
-function dataloggerConfig(deviceMap) {
+function dataloggerConfig(devices, agocontrol)
+{
     //members
     var self = this;
+    self.agocontrol = agocontrol;
     self.controllerUuid = null;
     self.multigraphs = ko.observableArray([]);
     self.sensors = ko.observableArray([]);
@@ -51,20 +53,20 @@ function dataloggerConfig(deviceMap) {
         var name = '';
         var type = '';
         var found = false;
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            //if( deviceMap[i].internalid==obj.internalid )
-            if( deviceMap[i].uuid==uuid )
+            //if( devices[i].internalid==obj.internalid )
+            if( devices[i].uuid==uuid )
             {
-                if( deviceMap[i].name.length!=0 )
+                if( devices[i].name.length!=0 )
                 {
-                    name = deviceMap[i].name;
+                    name = devices[i].name;
                 }
                 else
                 {
-                    name = deviceMap[i].internalid;
+                    name = devices[i].internalid;
                 }
-                type = deviceMap[i].devicetype.replace('sensor', '');
+                type = devices[i].devicetype.replace('sensor', '');
                 found = true;
                 break;
             }
@@ -81,17 +83,17 @@ function dataloggerConfig(deviceMap) {
     };
 
     //datalogger controller and sensors uuids
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].devicetype=='dataloggercontroller' )
+            if( devices[i].devicetype=='dataloggercontroller' )
             {
-                self.controllerUuid = deviceMap[i].uuid;
+                self.controllerUuid = devices[i].uuid;
             }
-            else if( deviceMap[i].devicetype.match(/sensor$/) && deviceMap[i].devicetype.indexOf('gps')==-1 && deviceMap[i].devicetype.indexOf('binary')==-1)
+            else if( devices[i].devicetype.match(/sensor$/) && devices[i].devicetype.indexOf('gps')==-1 && devices[i].devicetype.indexOf('binary')==-1)
             {
-                var device = {'uuid':deviceMap[i].uuid, 'name':self.getDeviceName(deviceMap[i].uuid)};
+                var device = {'uuid':devices[i].uuid, 'name':self.getDeviceName(devices[i].uuid)};
                 self.sensors.push(device);
             }
         }
@@ -105,7 +107,7 @@ function dataloggerConfig(deviceMap) {
             var content = {};
             content.uuid = self.controllerUuid;
             content.command = 'getstatus';
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     //update multigraphs
@@ -157,7 +159,7 @@ function dataloggerConfig(deviceMap) {
             content.command = 'addmultigraph';
             content.uuids = uuids;
             content.period = self.multigraphPeriod();
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     if( res.result.error==0 )
@@ -189,7 +191,7 @@ function dataloggerConfig(deviceMap) {
                 content.uuid = self.controllerUuid;
                 content.command = 'deletemultigraph';
                 content.multigraph = self.selectedMultigraphToDel().name;
-                sendCommand(content, function(res) {
+                self.agocontrol.sendCommand(content, function(res) {
                     if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                     {
                         if( res.result.error==0 )
@@ -222,7 +224,7 @@ function dataloggerConfig(deviceMap) {
             content.dataLogging = self.dataLogging();
             content.gpsLogging = self.gpsLogging();
             content.rrdLogging = self.rrdLogging();
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     if( res.result.error==0 )
@@ -255,7 +257,7 @@ function dataloggerConfig(deviceMap) {
                 content.uuid = self.controllerUuid;
                 content.command = 'purgetable';
                 content.table = tablename;
-                sendCommand(content, function(res) {
+                self.agocontrol.sendCommand(content, function(res) {
                     if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                     {
                         if( res.result.error==0 )
@@ -289,11 +291,8 @@ function dataloggerConfig(deviceMap) {
 /**
  * Entry point: mandatory!
  */
-function init_plugin(fromDashboard)
+function init_template(path, params, agocontrol)
 {
-    var model;
-    var template;
-
     ko.bindingHandlers.jqTabs = {
         init: function(element, valueAccessor) {
             var options = valueAccessor() || {};
@@ -301,13 +300,7 @@ function init_plugin(fromDashboard)
         }
     };
 
-    model = new dataloggerConfig(deviceMap);
-    template = 'dataloggerConfig';
-
-    model.mainTemplate = function() {
-        return templatePath + template;
-    }.bind(model);
-
+    var model = new dataloggerConfig(agocontrol.devices(), agocontrol);
     return model;
 }
 

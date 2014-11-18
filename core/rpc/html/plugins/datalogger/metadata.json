@@ -2,7 +2,8 @@
         "name": "Datalogger",
         "version": "0.0.2",
         "description": "Datalogger configuration",
-        "dashboardAccess": false,
+        "listable": true,
+        "template": "html/dataloggerConfig",
         "resources": {
             "css": [
                 "datalogger.css"
