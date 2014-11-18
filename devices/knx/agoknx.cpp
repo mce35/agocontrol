@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include <tinyxml2.h>
 
@@ -31,6 +32,7 @@ using namespace tinyxml2;
 using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
+namespace pt = boost::posix_time;
 
 class AgoKnx: public AgoApp {
 private:
@@ -152,58 +154,63 @@ void *AgoKnx::listener() {
 
     AGO_TRACE() << "starting listener thread";
     while(!isExitSignaled()) {
-        string uuid;
-        pthread_mutex_lock (&mutexCon);
-        received=EIB_Poll_Complete(eibcon);
-        pthread_mutex_unlock (&mutexCon);
-        switch(received) {
-            case(-1): 
-                AGO_FATAL() << "cannot poll bus";
-                exit(-1);
-                break;
-                ;;
-            case(0)	:
-                usleep(polldelay);
-                break;
-                ;;
-            default:
-                Telegram tl;
-                pthread_mutex_lock (&mutexCon);
-                tl.receivefrom(eibcon);
-                pthread_mutex_unlock (&mutexCon);
-                AGO_DEBUG() << "received telegram from: " << Telegram::paddrtostring(tl.getSrcAddress()) << " to: " 
-                    << Telegram::gaddrtostring(tl.getGroupAddress()) << " type: " << tl.decodeType() << " shortdata: "
-                    << tl.getShortUserData();
-                uuid = uuidFromGA(deviceMap, Telegram::gaddrtostring(tl.getGroupAddress()));
-                if (uuid != "") {
-                    string type = typeFromGA(deviceMap[uuid].asMap(),Telegram::gaddrtostring(tl.getGroupAddress()));
-                    if (type != "") {
-                        AGO_DEBUG() << "handling telegram, GA from telegram belongs to: " << uuid << " - type: " << type;
-                        if(type == "onoff" || type == "onoffstatus") { 
-                            agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", tl.getShortUserData()==1 ? 255 : 0, "");
-                        } else if (type == "setlevel" || type == "levelstatus") {
-                            int data = tl.getUIntData(); 
-                            agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", data, "");
-                        } else if (type == "temperature") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.temperaturechanged", tl.getFloatData(), "degC");
-                        } else if (type == "brightness") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.brightnesschanged", tl.getFloatData(), "lux");
-                        } else if (type == "energy") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "mA");
-                        } else if (type == "energyusage") {
-                            unsigned char buffer[4];
-                            if (tl.getUserData(buffer,4) == 4) {
-                                AGO_DEBUG() << "USER DATA: " << std::hex << buffer[0] << " " << buffer[1] << " " << buffer[2] << buffer[3];
+        try {
+            string uuid;
+            pthread_mutex_lock (&mutexCon);
+            received=EIB_Poll_Complete(eibcon);
+            pthread_mutex_unlock (&mutexCon);
+            switch(received) {
+                case(-1): 
+                    AGO_FATAL() << "cannot poll bus";
+                    exit(-1);
+                    break;
+                    ;;
+                case(0)	:
+                    boost::this_thread::sleep(pt::milliseconds(polldelay));
+                    break;
+                    ;;
+                default:
+                    Telegram tl;
+                    pthread_mutex_lock (&mutexCon);
+                    tl.receivefrom(eibcon);
+                    pthread_mutex_unlock (&mutexCon);
+                    AGO_DEBUG() << "received telegram from: " << Telegram::paddrtostring(tl.getSrcAddress()) << " to: " 
+                        << Telegram::gaddrtostring(tl.getGroupAddress()) << " type: " << tl.decodeType() << " shortdata: "
+                        << tl.getShortUserData();
+                    uuid = uuidFromGA(deviceMap, Telegram::gaddrtostring(tl.getGroupAddress()));
+                    if (uuid != "") {
+                        string type = typeFromGA(deviceMap[uuid].asMap(),Telegram::gaddrtostring(tl.getGroupAddress()));
+                        if (type != "") {
+                            AGO_DEBUG() << "handling telegram, GA from telegram belongs to: " << uuid << " - type: " << type;
+                            if(type == "onoff" || type == "onoffstatus") { 
+                                agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", tl.getShortUserData()==1 ? 255 : 0, "");
+                            } else if (type == "setlevel" || type == "levelstatus") {
+                                int data = tl.getUIntData(); 
+                                agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", data, "");
+                            } else if (type == "temperature") {
+                                agoConnection->emitEvent(uuid.c_str(), "event.environment.temperaturechanged", tl.getFloatData(), "degC");
+                            } else if (type == "brightness") {
+                                agoConnection->emitEvent(uuid.c_str(), "event.environment.brightnesschanged", tl.getFloatData(), "lux");
+                            } else if (type == "energy") {
+                                agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "mA");
+                            } else if (type == "energyusage") {
+                                unsigned char buffer[4];
+                                if (tl.getUserData(buffer,4) == 4) {
+                                    AGO_DEBUG() << "USER DATA: " << std::hex << buffer[0] << " " << buffer[1] << " " << buffer[2] << buffer[3];
+                                }
+                                // event.setSubject("event.environment.powerchanged");
+                            } else if (type == "binary") {
+                                agoConnection->emitEvent(uuid.c_str(), "event.security.sensortriggered", tl.getShortUserData()==1 ? 255 : 0, "");
                             }
-                            // event.setSubject("event.environment.powerchanged");
-                        } else if (type == "binary") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.security.sensortriggered", tl.getShortUserData()==1 ? 255 : 0, "");
                         }
                     }
-                }
-                break;
-                ;;
+                    break;
+                    ;;
+            }
+        } catch(boost::thread_interrupted &e) {
+            AGO_DEBUG() << "listener thread cancelled";
         }
+
     }
 
     return NULL;
