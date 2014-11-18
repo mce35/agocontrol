@@ -23,13 +23,21 @@
 
 #include <curl/curl.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 #include "base64.h"
 
 using namespace std;
 using namespace agocontrol;
 
-AgoConnection *agoConnection;
+class AgoWebcam: public AgoApp {
+private:
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+
+    CURLcode curl_read(const std::string& url, std::ostream& os, long timeout);
+public:
+    AGOAPP_CONSTRUCTOR(AgoWebcam);
+};
 
 // callback function writes data to a std::ostream
 static size_t data_write(void* buf, size_t size, size_t nmemb, void* userp) {
@@ -43,7 +51,7 @@ static size_t data_write(void* buf, size_t size, size_t nmemb, void* userp) {
     return 0;
 }
 
-CURLcode curl_read(const std::string& url, std::ostream& os, long timeout = 30) {
+CURLcode AgoWebcam::curl_read(const std::string& url, std::ostream& os, long timeout = 30) {
     CURLcode code(CURLE_FAILED_INIT);
     CURL* curl = curl_easy_init();
 
@@ -63,7 +71,7 @@ CURLcode curl_read(const std::string& url, std::ostream& os, long timeout = 30) 
     return code;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoWebcam::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (content["command"] == "getvideoframe") {
@@ -82,13 +90,10 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoWebcam::setupApp() {
     curl_global_init(CURL_GLOBAL_ALL);
 
-    AgoConnection _agoConnection = AgoConnection("webcam");
-    agoConnection = &_agoConnection;
-
-    agoConnection->addHandler(commandHandler);
+    addCommandHandler();
 
     stringstream devices(getConfigOption("webcam", "devices", "http://192.168.80.65/axis-cgi/jpg/image.cgi"));
     string device;
@@ -99,5 +104,6 @@ int main(int argc, char **argv) {
             agoConnection->addDevice(device.c_str(), "camera");
         }
     } 
-    agoConnection->run();	
 }
+
+AGOAPP_ENTRY_POINT(AgoWebcam);
