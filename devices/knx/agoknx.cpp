@@ -150,7 +150,7 @@ void *AgoKnx::listener() {
     int received = 0;
 
     AGO_TRACE() << "starting listener thread";
-    while(true) {
+    while(!isExitSignaled()) {
         string uuid;
         pthread_mutex_lock (&mutexCon);
         received=EIB_Poll_Complete(eibcon);
