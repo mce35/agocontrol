@@ -145,7 +145,7 @@
 		return "#" + templateId
 	    }, // DEFAULT MAPPING
 	    loadingTemplate : {
-		content : '<div class="infuser-loading">Loading...</div>',
+        content : '<div style="width:100%; height:100%; text-align:center; vertical-align:middle;">Loading...</div>',
 		transitionIn : function(target, content) {
 		    var tgt = $(target);
 		    tgt.hide();

@@ -22,7 +22,7 @@
                     <div class="adjoined" style="padding-left:0px; padding-right: 0px;">
                         <i class="icon-search"></i>
                     </div>
-                    <input type="text" data-translateable="true" data-bind="value: keyword" class="wide text input" placeholder="Search"></input>
+                    <input type="text" data-translateable="true" data-bind="value: keyword" class="wide text input" _placeholder="Search"></input>
                     <div class="medium primary btn" style="height:34px; border-top-width:0px; color:white;" data-bind="click: clearSearch">
                         <i class="icon-cancel" title="Clear search"></i>
                     </div>

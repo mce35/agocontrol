@@ -77,9 +77,7 @@ data-bind="attr: {'data-uuid': uuid}, text: room"></td>
 				<_h4 data-translateable="true">Name</_h4>
 				<div class="row">
 					<ul class="ten columns">
-						<li class="append field"><input class="wide email input"
-							id="scenarioName" type="text" data-translateable="true"
-							_placeholder="Input scenario name" />
+						<li class="append field"><input class="normal input" id="scenarioName" type="text" data-translateable="true" _placeholder="Input scenario name" data-bind="value:scenarioName" />
 							<div class="medium primary btn">
 								<_a data-translateable="true" href="#"
 									data-bind="click: createScenario">Create Scenario</_a>
