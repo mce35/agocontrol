@@ -2,10 +2,11 @@
     "name": "alert",
     "version": "0.0.2",
     "description": "Configure agocontrol alerts",
-    "dashboardAccess": false,
+    "template": "html/agoalert",
+    "listable": true,
     "resources": {
         "css": [
-            "templates/agoalert.css"
+            "html/agoalert.css"
         ],
         "js" : []
     }

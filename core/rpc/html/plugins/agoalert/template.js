@@ -2,9 +2,11 @@
  * Agoalert plugin
  * @returns {agoalert}
  */
-function agoAlertPlugin(deviceMap) {
+function agoAlertPlugin(devices, agocontrol)
+{
     //members
     var self = this;
+    self.agocontrol = agocontrol;
     self.gtalkStatus = ko.observable(self.gtalkStatus);
     self.gtalkUsername = ko.observable(self.gtalkUsername);
     self.gtalkPassword = ko.observable(self.gtalkPassword);
@@ -33,13 +35,13 @@ function agoAlertPlugin(deviceMap) {
     self.agoalertUuid;
     
     //get agoalert uuid
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].devicetype=='alertcontroller' )
+            if( devices[i].devicetype=='alertcontroller' )
             {
-                self.agoalertUuid = deviceMap[i].uuid;
+                self.agoalertUuid = devices[i].uuid;
             }
         }
     }
@@ -50,7 +52,7 @@ function agoAlertPlugin(deviceMap) {
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'status';
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 self.gtalkStatus(res.result.gtalk.configured);
@@ -133,7 +135,7 @@ function agoAlertPlugin(deviceMap) {
         content.command = 'setconfig';
         content.param1 = 'twitter';
         content.param2 = '';
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             { 
                 if (res.result.error == 0)
@@ -167,7 +169,7 @@ function agoAlertPlugin(deviceMap) {
         content.command = 'setconfig';
         content.param1 = 'twitter';
         content.param2 = el.val();
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if (res.result.error == 1)
@@ -190,7 +192,7 @@ function agoAlertPlugin(deviceMap) {
         content.uuid = self.agoalertUuid;
         content.command = 'test';
         content.param1 = 'twitter';
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 notif.info(res.result.msg);
@@ -219,7 +221,7 @@ function agoAlertPlugin(deviceMap) {
             content.param3 = self.freemobileUser();
             content.param4 = self.freemobileApikey();
         }
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if (res.result.error == 1)
@@ -242,7 +244,7 @@ function agoAlertPlugin(deviceMap) {
         content.uuid = self.agoalertUuid;
         content.command = 'test';
         content.param1 = 'sms';
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 notif.info(res.result.msg);
@@ -263,7 +265,7 @@ function agoAlertPlugin(deviceMap) {
         content.param1 = 'gtalk';
         content.param2 = self.gtalkUsername();
         content.param3 = self.gtalkPassword();
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if (res.result.error == 1)
@@ -286,7 +288,7 @@ function agoAlertPlugin(deviceMap) {
         content.uuid = self.agoalertUuid;
         content.command = 'test';
         content.param1 = 'gtalk';
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 notif.info(res.result.msg);
@@ -322,7 +324,7 @@ function agoAlertPlugin(deviceMap) {
         {
             content.param5 = '1';
         }
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if (res.result.error == 1)
@@ -346,7 +348,7 @@ function agoAlertPlugin(deviceMap) {
         content.command = 'test';
         content.param1 = 'mail';
         content.param2 = document.getElementsByClassName("mailEmail")[0].value;
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 notif.info(res.result.msg);
@@ -368,7 +370,7 @@ function agoAlertPlugin(deviceMap) {
         content.param2 = this.selectedPushProvider();
         content.param3 = 'getdevices';
         content.param4 = self.pushbulletApikey();
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if (res.result.error == 0)
@@ -434,7 +436,7 @@ function agoAlertPlugin(deviceMap) {
         {
             content.param3 = this.nmaAvailableApikeys();
         }
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if (res.result.error == 1)
@@ -457,7 +459,7 @@ function agoAlertPlugin(deviceMap) {
         content.uuid = self.agoalertUuid;
         content.command = 'test';
         content.param1 = 'push';
-        sendCommand(content, function(res) {
+        self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 notif.info(res.result.msg);
@@ -474,7 +476,7 @@ function agoAlertPlugin(deviceMap) {
 /**
  * Entry point: mandatory!
  */
-function init_plugin()
+function init_template(path, params, agocontrol)
 {
     ko.bindingHandlers.jqTabs = {
         init: function(element, valueAccessor) {
@@ -486,10 +488,7 @@ function init_plugin()
         }
     };
 
-    model = new agoAlertPlugin(deviceMap);
-    model.mainTemplate = function() {
-	    return templatePath + "agoalert";
-    }.bind(model);
+    var model = new agoAlertPlugin(agocontrol.devices(), agocontrol);
 
     return model;
 }
