@@ -1,9 +1,11 @@
 /**
  * Ipx plugin
  */
-function ipxConfig(deviceMap) {
+function ipxConfig(devices, agocontrol)
+{
     //members
     var self = this;
+    self.agocontrol = agocontrol;
     self.controllerUuid = null;
     self.boards = ko.observableArray([]);
     self.boardIp = ko.observable();
@@ -14,8 +16,14 @@ function ipxConfig(deviceMap) {
     self.selectedAnalogPin1 = ko.observable();
     self.selectedCounterPin1 = ko.observable();
     self.selectedDigitalPin1 = ko.observable();
-    self.selectedBoardUuid = null;
     self.selectedBoard = ko.observable();
+    self.selectedBoardUuid = ko.computed(function() {
+        if( self.selectedBoard() )
+        {
+            return self.selectedBoard().uuid;
+        }
+        return null;
+    });
     self.selectedOutputType = ko.observable();
     self.selectedOutputType.subscribe(function(newVal) {
         if (newVal == "switch") {
@@ -43,13 +51,13 @@ function ipxConfig(deviceMap) {
     self.links = ko.observableArray([]);
 
     //ipx controller uuid and boards
-    if( deviceMap!==undefined )
+    if( devices!==undefined )
     {
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].devicetype=='ipx800controller' )
+            if( devices[i].devicetype=='ipx800controller' )
             {
-                self.controllerUuid = deviceMap[i].uuid;
+                self.controllerUuid = devices[i].uuid;
             }
         }
     }
@@ -58,13 +66,13 @@ function ipxConfig(deviceMap) {
     self.getDeviceName = function(obj) {
         var name = '';
         var found = false;
-        for( var i=0; i<deviceMap.length; i++ )
+        for( var i=0; i<devices.length; i++ )
         {
-            if( deviceMap[i].internalid==obj.internalid )
+            if( devices[i].internalid==obj.internalid )
             {
-                if( deviceMap[i].name.length!=0 )
+                if( devices[i].name.length!=0 )
                 {
-                    name = deviceMap[i].name;
+                    name = devices[i].name;
                 }
                 else
                 {
@@ -103,7 +111,7 @@ function ipxConfig(deviceMap) {
             var content = {};
             content.uuid = self.selectedBoardUuid;
             content.command = 'status';
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     if( res.result.error===0 )
@@ -194,30 +202,30 @@ function ipxConfig(deviceMap) {
     {
         if( internalid )
         {
-            for( var i=0; i<deviceMap.length; i++ )
+            for( var i=0; i<devices.length; i++ )
             {
-                if( deviceMap[i].devicetype=='ipx800v3board' && deviceMap[i].internalid==internalid)
+                if( devices[i].devicetype=='ipx800v3board' && devices[i].internalid==internalid)
                 {
-                    return deviceMap[i].uuid;
+                    return devices[i].uuid;
                 }
             }
         }
         return null;
     };
 
-    self.selectedBoard.subscribe(function(newVal) {
+    /*self.selectedBoard.subscribe(function(newVal) {
         //update selected ipx board uuid
         self.selectedBoardUuid = self.getBoardUuid(newVal);
         if( self.selectedBoardUuid )
         {
             self.updateUi();
         }
-    });
+    });*/
 
     //add a device
     self.addDevice = function(content, callback)
     {
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -247,7 +255,7 @@ function ipxConfig(deviceMap) {
             var content = {};
             content.uuid = self.controllerUuid;
             content.command = 'getboards';
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     self.boards.removeAll();
@@ -275,7 +283,7 @@ function ipxConfig(deviceMap) {
             var content = {};
             content.uuid = self.selectedBoardUuid;
             content.command = 'getdevices';
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     //console.log('BOARD DEVICES:');
@@ -468,7 +476,7 @@ function ipxConfig(deviceMap) {
                 content.output = self.selectedLinkToDelete().output.internalid;
                 content.digital = self.selectedLinkToDelete().binary.internalid;
                 content.command = 'deletelink';
-                sendCommand(content, function(res) {
+                self.agocontrol.sendCommand(content, function(res) {
                     if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                     {
                         if( !res.result.error )
@@ -500,7 +508,7 @@ function ipxConfig(deviceMap) {
             content.device = self.selectedDeviceToForce().internalid;
             content.command = 'forcestate';
             content.state = self.selectedDeviceState();
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     if( res.result.error===0 )
@@ -528,7 +536,7 @@ function ipxConfig(deviceMap) {
             var content = {};
             content.uuid = self.selectedBoardUuid;
             content.command = 'allon';
-            sendCommand(content);
+            self.agocontrol.sendCommand(content);
         }
     };
     
@@ -540,7 +548,7 @@ function ipxConfig(deviceMap) {
             var content = {};
             content.uuid = self.selectedBoardUuid;
             content.command = 'alloff';
-            sendCommand(content);
+            self.agocontrol.sendCommand(content);
         }
     };
 
@@ -554,8 +562,8 @@ function ipxConfig(deviceMap) {
                 var content = {};
                 content.uuid = self.controllerUuid;
                 content.command = 'deleteboard';
-                content.board = self.selectedBoardUuid;
-                sendCommand(content, function(res) {
+                content.ip = self.selectedBoardUuid;
+                self.agocontrol.sendCommand(content, function(res) {
                     if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                     {
                         if( res.result.error==0 )
@@ -588,7 +596,7 @@ function ipxConfig(deviceMap) {
                 content.uuid = self.selectedBoardUuid;
                 content.device = self.selectedDeviceToDelete().internalid;
                 content.command = 'deletedevice';
-                sendCommand(content, function(res) {
+                self.agocontrol.sendCommand(content, function(res) {
                     if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                     {
                         if( !res.result.error )
@@ -619,7 +627,7 @@ function ipxConfig(deviceMap) {
             content.uuid = self.selectedBoardUuid;
             content.device = self.selectedCounterToReset().internalid;
             content.command = 'reset';
-            sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
                     if( !res.result.error )
@@ -646,11 +654,8 @@ function ipxConfig(deviceMap) {
 /**
  * Entry point: mandatory!
  */
-function init_plugin(fromDashboard)
+function init_template(path, params, agocontrol)
 {
-    var model;
-    var template;
-
     ko.bindingHandlers.jqTabs = {
         init: function(element, valueAccessor) {
         var options = valueAccessor() || {};
@@ -658,13 +663,7 @@ function init_plugin(fromDashboard)
         }
     };
 
-    model = new ipxConfig(deviceMap);
-    template = 'ipxConfig';
-
-    model.mainTemplate = function() {
-        return templatePath + template;
-    }.bind(model);
-
+    var model = new ipxConfig(agocontrol.devices(), agocontrol);
     return model;
 }
 
