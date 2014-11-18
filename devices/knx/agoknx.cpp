@@ -91,7 +91,17 @@ bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
                 XMLElement *nextga = ga;
                 while (nextga != NULL) {
                     AGO_DEBUG() << "GA: " << nextga->GetText() << " type: " << nextga->Attribute("type");
+                    string type = nextga->Attribute("type");
 
+                    if (type=="onoffstatus" || type=="levelstatus") {
+                        AGO_DEBUG() << "Requesting current status: " << nextga->GetText();
+                        Telegram *tg = new Telegram();
+                        eibaddr_t dest;
+                        dest = Telegram::stringtogaddr(nextga->GetText());
+                        tg->setGroupAddress(dest);
+                        tg->setType(EIBREAD);
+                        tg->sendTo(eibcon);
+                    }
                     content[nextga->Attribute("type")]=nextga->GetText();
                     nextga = nextga->NextSiblingElement();
                 }
@@ -170,6 +180,7 @@ void *AgoKnx::listener() {
                 }
                 AGO_INFO() << "reconnecting to eibd"; 
                 pthread_mutex_lock (&mutexCon);
+                EIBClose(eibcon);
                 eibcon = EIBSocketURL(eibdurl.c_str());
                 if (!eibcon) {
                     pthread_mutex_unlock (&mutexCon);
@@ -331,11 +342,6 @@ void AgoKnx::setupApp() {
     polldelay=atoi(getConfigOption("knx", "polldelay", "5000").c_str());
     devicesFile=getConfigOption("knx", "devicesfile", getConfigPath("/knx/devices.xml"));
 
-    // load xml file into map
-    if (!loadDevices(devicesFile, deviceMap)) {
-        AGO_FATAL() << "can't load device xml";
-        throw StartupError();
-    }
 
     AGO_INFO() << "connecting to eibd"; 
     eibcon = EIBSocketURL(eibdurl.c_str());
@@ -352,6 +358,12 @@ void AgoKnx::setupApp() {
     }
 
     addCommandHandler();
+
+    // load xml file into map
+    if (!loadDevices(devicesFile, deviceMap)) {
+        AGO_FATAL() << "can't load device xml";
+        throw StartupError();
+    }
     // announce devices to resolver
     reportDevices(deviceMap);
 
