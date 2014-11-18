@@ -9,13 +9,14 @@ function examplePlugin() {
 /**
  * Entry point: mandatory!
  */
-function init_plugin(fromDashboard)
+function init_template(path, params, agocontrol)
 {
     //DEFAULT BEHAVIOUR
     model = new examplePlugin();
-    model.mainTemplate = function() {
-        return templatePath + "example";
-    }.bind(model);
+    /*model.mainTemplate = function() {
+        return templatePath + "templates/example";
+    }.bind(model);*/
+    model.mainTemplate = path + "templates/example";
 
     //DASHBOARD AND CONFIG PAGES
     //you can make a config page and a different dashboard page using input parameter fromDashboard
