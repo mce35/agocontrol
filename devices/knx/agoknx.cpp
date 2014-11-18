@@ -40,6 +40,7 @@ private:
 
     Variant::Map deviceMap;
 
+    std::string eibdurl;
     EIBConnection *eibcon;
     pthread_mutex_t mutexCon;
     boost::thread *listenerThread;
@@ -161,8 +162,18 @@ void *AgoKnx::listener() {
             pthread_mutex_unlock (&mutexCon);
             switch(received) {
                 case(-1): 
-                    AGO_FATAL() << "cannot poll bus";
-                    exit(-1);
+                    AGO_WARNING() << "cannot poll bus";
+                    boost::this_thread::sleep(pt::seconds(3));
+                    AGO_INFO() << "reconnecting to eibd"; 
+                    pthread_mutex_lock (&mutexCon);
+                    eibcon = EIBSocketURL(eibdurl.c_str());
+                    if (!eibcon) {
+                        pthread_mutex_unlock (&mutexCon);
+                        AGO_FATAL() << "cannot reconnect to eibd";
+                        signalExit();
+                    } else {
+                        pthread_mutex_unlock (&mutexCon);
+                    }
                     break;
                     ;;
                 case(0)	:
@@ -301,7 +312,6 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
 }
 
 void AgoKnx::setupApp() {
-    std::string eibdurl;
     fs::path devicesFile;
 
     // parse config
