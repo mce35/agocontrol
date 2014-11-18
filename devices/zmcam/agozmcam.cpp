@@ -25,7 +25,7 @@ NOTE: This is based on the agocontrol webcam device.
 
 #include <curl/curl.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #include "../webcam/base64.h"
 #include "zoneminderclient.h"
@@ -33,20 +33,17 @@ NOTE: This is based on the agocontrol webcam device.
 using namespace std;
 using namespace agocontrol;
 
-AgoConnection *agoConnection;
+class AgoZmcam: public AgoApp {
+private:
+    ZoneminderClient *zoneminderClient;
 
-ZoneminderClient *zoneminderClient;
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+public:
+    AGOAPP_CONSTRUCTOR(AgoZmcam);
+};
 
-static unsigned int stringToUint(string v)
-{
-    unsigned int r;
-
-    istringstream (v) >> r;
-
-    return r;
-}
-
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) 
+qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map content) 
 {
     qpid::types::Variant::Map returnval;
     int monitorId = content["internalid"].asInt32();
@@ -96,18 +93,19 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content)
     return returnval;
 }
 
-bool doInitialize(void)
-{
+void AgoZmcam::setupApp() {
     string temp;
 
     temp = getConfigOption("zmcam", "authtype", "");
+
+    curl_global_init(CURL_GLOBAL_ALL);
 
     transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
 
     if (temp != "hash" && temp != "plain"  && temp != "none")
     {
-        cout << "doInitialize - Invalid zmcam auth type of " << temp << " specified.  Only hash, plain and none are supported." << endl;
-        return false;
+        AGO_FATAL() << "doInitialize - Invalid zmcam auth type of " << temp << " specified.  Only hash, plain and none are supported." << endl;
+        throw StartupError();
     }
 
     ZM_AUTH_TYPE authType;
@@ -140,7 +138,8 @@ bool doInitialize(void)
                 getConfigOption("zmcam", "authhashscret", ""),
                 stringToUint(getConfigOption("zmcam", "triggerport", "6802"))))
     {
-        return false;
+        AGO_FATAL() << "cannot create Zoneminder client";
+        throw StartupError();
     }
 
     stringstream devices(getConfigOption("zmcam", "monitors", ""));
@@ -148,27 +147,10 @@ bool doInitialize(void)
     string device;
     while (getline(devices, device, ','))
         agoConnection->addDevice(device.c_str(), "camera");
+
+    zoneminderClient = new ZoneminderClient();
+
+    addCommandHandler();
 }
 
-int main(int argc, char **argv)
-{
-    curl_global_init(CURL_GLOBAL_ALL);
-
-    AgoConnection _agoConnection = AgoConnection("zmcam");
-    ZoneminderClient _zoneminderClient;
-
-    agoConnection = &_agoConnection;
-    zoneminderClient = &_zoneminderClient;
-
-    if (!doInitialize())
-    {
-        cout << "Could not initialize." << endl;
-        return -1;
-    }
-
-    agoConnection->addHandler(commandHandler);
-
-    agoConnection->run();
-    return 0;
-}
-
+AGOAPP_ENTRY_POINT(AgoZmcam);
