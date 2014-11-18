@@ -25,7 +25,7 @@ SENSORS = {}
 
 syslog.syslog(syslog.LOG_NOTICE, "agoowfs.py startup")
 try:
-    ow.init(DEVICE)
+    ow.init(str(DEVICE))
 except ow.exNoController:
     syslog.syslog(syslog.LOG_ERROR, "can't open one wire device, aborting")
     time.sleep(5)
