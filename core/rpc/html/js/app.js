@@ -185,7 +185,7 @@ function Agocontrol()
                 dashboard.action = '';
                 dashboard.ucName = ucFirst(dashboard.name);
                 dashboard.editable = true;
-                self.dashboards.push(response.result.floorplans[uuid]);
+                self.dashboards.push(dashboard);
             }
         }, async);
     };
