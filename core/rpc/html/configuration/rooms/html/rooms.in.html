@@ -6,7 +6,7 @@
 	<table id="configTable"
 		style="width: 100%; margin-top: 15px; margin-bottom: 5px;"
 		data-bind="dataTable: { 
-            dataSource: rooms, 
+            dataSource: agocontrol.rooms, 
             rowTemplate: 'rowTemplate', 
             columns: [
                 'name', 
@@ -34,7 +34,7 @@
 <ko opts="ifnot: name">
 <_td data-translateable="true" class="edit_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
 </ko>
-<td class="delete_room" style="max-width: 120px; white-space: nowrap; text-align:center">
+<td class="delete_room">
 <div class="pretty medium default btn">
 <i class="icon-cancel"  data-translateable="true" _alt="Delete" _title="Delete" data-bind="click: $parent.deleteRoom"></i>
 </div>
@@ -46,7 +46,7 @@
 	<_h3 data-translateable="true">Create a new room</_h3>
 	<div class="row">
 		<ul class="ten columns">
-			<li class="append field"><input class="wide input" id="roomName"
+			<li class="append field"><input class="normal input" id="roomName"
 				type="text" data-translateable="true" _placeholder="New room name" />
 				<div class="medium primary btn">
 					<_a data-translateable="true" href="#"
