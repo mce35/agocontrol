@@ -238,7 +238,7 @@ class AgoApp:
             return 1
 
         try:
-            self.log.warning("Starting %s", self.app_name)
+            self.log.info("Starting %s", self.app_name)
             ret = self.appMain()
             self.log.debug("Shutting down %s", self.app_name)
 
