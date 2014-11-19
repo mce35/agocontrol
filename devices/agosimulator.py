@@ -8,7 +8,7 @@ import logging
 import agoclient
 
 class AgoSimulator(agoclient.AgoApp):
-    def messageHandler(internalid, content):
+    def message_handler(self, internalid, content):
         if "command" in content:
             if content["command"] == "on":
                 print "switching on: " + internalid
@@ -31,7 +31,7 @@ class AgoSimulator(agoclient.AgoApp):
 
 
     def setup_app(self):
-        self.connection.add_handler(self.messageHandler)
+        self.connection.add_handler(self.message_handler)
 
         self.connection.add_device("123", "dimmer")
         self.connection.add_device("124", "switch")
