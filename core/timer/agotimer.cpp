@@ -231,10 +231,10 @@ void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_s
 void AgoTimer::setupApp() {
     agocontroller = agoConnection->getAgocontroller();
 
-    latlon.lat=atof(getConfigOption("system", "lat", "47.07").c_str());
-    latlon.lon=atof(getConfigOption("system", "lon", "15.42").c_str());
-    sunriseoffset=atoi(getConfigOption("system", "sunriseoffset", "0").c_str());
-    sunsetoffset=atoi(getConfigOption("system", "sunsetoffset", "0").c_str());
+    latlon.lat=atof(getConfigSectionOption("system", "lat", "47.07").c_str());
+    latlon.lon=atof(getConfigSectionOption("system", "lon", "15.42").c_str());
+    sunriseoffset=atoi(getConfigSectionOption("system", "sunriseoffset", "0").c_str());
+    sunsetoffset=atoi(getConfigSectionOption("system", "sunsetoffset", "0").c_str());
 
     AGO_DEBUG() << "agotimer configured with location "
         << latlon.lat << ", " << latlon.lon

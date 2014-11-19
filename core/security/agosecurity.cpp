@@ -71,7 +71,7 @@ public:
 };
 
 bool AgoSecurity::checkPin(std::string _pin) {
-    stringstream pins(getConfigOption("security", "pin", "0815"));
+    stringstream pins(getConfigOption("pin", "0815"));
     string pin;
     while (getline(pins, pin, ',')) {
         if (_pin == pin) return true;
