@@ -413,18 +413,18 @@ unsigned int agocontrol::stringToUint(string v)
     return r;
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *option, std::string &defaultvalue) {
-    return getConfigOption(section, option, defaultvalue.c_str());
+std::string agocontrol::getConfigSectionOption(const char *section, const char *option, std::string &defaultvalue) {
+    return getConfigSectionOption(section, option, defaultvalue.c_str());
 }
 
-fs::path agocontrol::getConfigOption(const char *section, const char *option, const fs::path &defaultvalue) {
-    std::string value = getConfigOption(section, option, defaultvalue.c_str());
+fs::path agocontrol::getConfigSectionOption(const char *section, const char *option, const fs::path &defaultvalue) {
+    std::string value = getConfigSectionOption(section, option, defaultvalue.c_str());
     return fs::path(value);
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *option,
+std::string agocontrol::getConfigSectionOption(const char *section, const char *option,
         const char *defaultvalue) {
-    return getConfigOption(section, NULL, option, defaultvalue);
+    return getConfigSectionOption(section, NULL, option, defaultvalue);
 }
 
 std::string agocontrol::augeasPathFromSectionOption(const char *section, const char *option) {
@@ -488,7 +488,7 @@ qpid::types::Variant::Map agocontrol::getConfigTree() {
 
 }
 
-std::string agocontrol::getConfigOption(const char *section, const char *fallback_section,
+std::string agocontrol::getConfigSectionOption(const char *section, const char *fallback_section,
         const char *option, const char *defaultvalue) {
     if (augeas==NULL) augeas_init();
     if (augeas == NULL) {
@@ -522,7 +522,7 @@ std::string agocontrol::getConfigOption(const char *section, const char *fallbac
     return std::string();
 }
 
-bool agocontrol::setConfigOption(const char* section, const char* option, const char* value) {
+bool agocontrol::setConfigSectionOption(const char* section, const char* option, const char* value) {
     bool result = true;
     if (augeas==NULL) augeas_init();
     if (augeas == NULL) {
@@ -544,26 +544,28 @@ bool agocontrol::setConfigOption(const char* section, const char* option, const 
     return result;
 }
 
-bool agocontrol::setConfigOption(const char* section, const char* option, const float value) {
+bool agocontrol::setConfigSectionOption(const char* section, const char* option, const float value) {
     std::stringstream stringvalue;
     stringvalue << value;
-    return setConfigOption(section, option, stringvalue.str().c_str());
+    return setConfigSectionOption(section, option, stringvalue.str().c_str());
 }
 
-bool agocontrol::setConfigOption(const char* section, const char* option, const int value) {
+bool agocontrol::setConfigSectionOption(const char* section, const char* option, const int value) {
     std::stringstream stringvalue;
     stringvalue << value;
-    return setConfigOption(section, option, stringvalue.str().c_str());
+    return setConfigSectionOption(section, option, stringvalue.str().c_str());
 }
 
-bool agocontrol::setConfigOption(const char* section, const char* option, const bool value) {
+bool agocontrol::setConfigSectionOption(const char* section, const char* option, const bool value) {
     std::stringstream stringvalue;
     stringvalue << value;
-    return setConfigOption(section, option, stringvalue.str().c_str());
+    return setConfigSectionOption(section, option, stringvalue.str().c_str());
 }
 
-    agocontrol::AgoConnection::AgoConnection(const char *interfacename)
-: shutdownSignaled(false)
+
+
+agocontrol::AgoConnection::AgoConnection(const char *interfacename)
+    : shutdownSignaled(false)
 {
     // TODO: Move to AgoApp
     ::agocontrol::log::log_container::initDefault();

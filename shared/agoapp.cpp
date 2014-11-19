@@ -42,6 +42,10 @@ AgoApp::AgoApp(const char *appName_)
         appShortName = appName;
 
     boost::to_lower(appShortName);
+
+    // Default to same config section as shortname, but this may be custom
+    // if the original app did not use something "matching"
+    appConfigSection = appShortName;
 }
 
 int AgoApp::parseCommandLine(int argc, const char **argv) {
