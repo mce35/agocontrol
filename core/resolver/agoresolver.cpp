@@ -521,7 +521,7 @@ void AgoResolver::setupApp() {
     // XXX: Why is this in system and not resolver config?
     schemaPrefix = getConfigSectionOption("system", "schemapath", getConfigPath(SCHEMADIR));
     discoverdelay = atoi(getConfigSectionOption("system", "discoverdelay", "300").c_str());
-    persistence = (atoi(getConfigSectionOption("system","devicepersistence", "1").c_str()) == 1);
+    persistence = (atoi(getConfigSectionOption("system","devicepersistence", "0").c_str()) == 1);
 
     systeminfo["uuid"] = getConfigSectionOption("system", "uuid", "00000000-0000-0000-000000000000");
     systeminfo["version"] = AGOCONTROL_VERSION;
