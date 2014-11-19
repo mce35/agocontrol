@@ -174,7 +174,7 @@ void AgoApp::setupLogging() {
     else if(cli_vars.count("log-level"))
         level_str = cli_vars["log-level"].as<std::string>();
     else
-        level_str = getConfigOption(appShortName.c_str(), "system", "log_level", "info");
+        level_str = getConfigOption("log_level", "info", "system");
 
     try {
         severity_level level = log_container::getLevel(level_str);
@@ -189,14 +189,14 @@ void AgoApp::setupLogging() {
     else if(cli_vars.count("log-method"))
         method = cli_vars["log-method"].as<std::string>();
     else
-        method = getConfigOption(appShortName.c_str(), "system", "log_method", "console");
+        method = getConfigOption("log_method", "console", "system");
 
     if(method == "syslog") {
         std::string facility_str;
         if(cli_vars.count("log-syslog-facility"))
             facility_str = cli_vars["log-syslog-facility"].as<std::string>();
         else
-            facility_str = getConfigOption(appShortName.c_str(), "system", "syslog_facility", "local0");
+            facility_str = getConfigOption("syslog_facility", "local0", "system");
 
         int facility = log_container::getFacility(facility_str);
         if(facility == -1) {

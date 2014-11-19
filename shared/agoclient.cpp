@@ -571,9 +571,9 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename)
     ::agocontrol::log::log_container::initDefault();
 
     Variant::Map connectionOptions;
-    std::string broker = getConfigOption("system", "broker", "localhost:5672");
-    connectionOptions["username"] = getConfigOption("system", "username", "agocontrol");
-    connectionOptions["password"] = getConfigOption("system", "password", "letmein");
+    std::string broker = getConfigSectionOption("system", "broker", "localhost:5672");
+    connectionOptions["username"] = getConfigSectionOption("system", "username", "agocontrol");
+    connectionOptions["password"] = getConfigSectionOption("system", "password", "letmein");
     connectionOptions["reconnect"] = "true";
 
     filterCommands = true; // only pass commands for child devices to handler by default
