@@ -69,11 +69,11 @@ set_property(
 # Install instructions for this target
 install (TARGETS agoclient LIBRARY DESTINATION ${LIBDIR})
 install (DIRECTORY DESTINATION ${PYTHON2DIST}/agoclient)
-install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/agoapp.py DESTINATION ${PYTHON2DIST}/agoclient)
-install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/agoconnection.py DESTINATION ${PYTHON2DIST}/agoclient)
-install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/config.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/agoclient/agoapp.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/agoclient/agoconnection.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/agoclient/config.py DESTINATION ${PYTHON2DIST}/agoclient)
 install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/_directories.py DESTINATION ${PYTHON2DIST}/agoclient)
-install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/__init__.py DESTINATION ${PYTHON2DIST}/agoclient)
-install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/_logging.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/agoclient/__init__.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/agoclient/_logging.py DESTINATION ${PYTHON2DIST}/agoclient)
 install (DIRECTORY DESTINATION ${CONFDIR}/uuidmap)
 
