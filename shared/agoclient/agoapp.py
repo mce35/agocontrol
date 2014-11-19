@@ -20,9 +20,10 @@ class ConfigurationError(Exception):
 class AgoApp:
     """This is a base class for all Python AgoControl applications
 
-    An app implementation should create one main class which extends
-    this class.
-    Also, it is responsible for calling the main function:
+    Each application needs to implement a class which extends the AgoApp class.
+    Please see devices/example/ for basic usage examples.
+
+    It must then provide the main entry point:
 
         if __name__ == "__main__":
             TheApp().main()
@@ -38,7 +39,19 @@ class AgoApp:
         self.log = logging.getLogger(self.app_name)
 
     def parse_command_line(self, argv):
+        """Parse the provided command line.
+
+        This sets up the default options for all apps. If an application
+        wants custom options, override the app_cmd_line_options method.
+
+        Arguments are parsed by the argparse module, and the resulting Namespace
+        object is available in self.args.
+
+        Arguments:
+            argv -- An array of parameters to parse, not including program name.
+        """
         parser = argparse.ArgumentParser(add_help=False)
+
         LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'FATAL']
 
         parser.add_argument('-h', '--help', action='store_true',
@@ -98,16 +111,31 @@ class AgoApp:
         return True
 
     def app_cmd_line_options(self, parser):
-        """Override this to add your own command line options"""
+        """Override this to add your own command line options
+
+        Arguments:
+            parser -- An instance of argparse.ArgumentParser which the implementation should
+                      add options to.
+        """
         pass
 
     def setup(self):
+        """Execute initial setup.
+
+        This is done after command line arguments have been parsed.
+        App specific setup should be done in setup_app method.
+        """
         self.setup_logging()
         self.setup_connection()
         self.setup_signals()
         self.setup_app()
 
     def cleanup(self):
+        """Cleanup after shutdown.
+
+        Note that this may be called even if corresponding setup call
+        have not been executed, implementations must ensure that they
+        can handle this."""
         self.log.trace("Cleaning up")
         self.cleanup_app()
         self.cleanup_connection()
@@ -178,23 +206,30 @@ class AgoApp:
         root.addHandler(self.log_handler)
 
     def setup_connection(self):
+        """Create an AgoConnection instance, assigned to self.connection"""
         self.connection = AgoConnection(self.app_short_name)
 
     def cleanup_connection(self):
+        """Shutdown and clean up our AgoConnection instance"""
         if self.connection:
             self.connection.shutdown()
             self.connection = None
 
     def setup_signals(self):
+        """Setup signal handlers"""
         signal.signal(signal.SIGINT, self._sighandler)
         signal.signal(signal.SIGQUIT, self._sighandler)
 
     def _sighandler(self, signal, frame):
+        """Internal method called when catched signals are received"""
         self.log.debug("Exit signal catched, shutting down")
         self.signal_exit()
 
     def signal_exit(self):
-        """Call this to begin shutdown procedures"""
+        """Call this to begin shutdown procedures.
+
+        This can be called by the application if it wants to shut down the app.
+        """
         self.exit_signaled = True
         self._do_shutdown()
 
@@ -212,7 +247,9 @@ class AgoApp:
 
     def main(self, argv=None):
         """Main entrypoint, called by the application
-        If argv is not set, sys.argv is used.
+
+        Arguments:
+            argv -- Command line arguments. Defaults to sys.argv if not set.
         """
         if not argv:
             argv = sys.argv
@@ -221,7 +258,22 @@ class AgoApp:
         sys.exit(ret)
 
     def _main(self, argv):
-        """Internal main function, return value will be the OS exit code"""
+        """Internal main function.
+
+        This is where we launch the app. It will:
+            - parse command line
+            - setup
+            - run app main loop [forever]
+            - cleanup
+            - exit
+
+        Arguments:
+            argv -- Command line arguments, including script name in [0].
+
+        Returns:
+            OS Exit code
+
+        """
         if not self.parse_command_line(argv):
             return 1
 
@@ -239,7 +291,7 @@ class AgoApp:
 
         try:
             self.log.info("Starting %s", self.app_name)
-            ret = self.appMain()
+            ret = self.app_main()
             self.log.debug("Shutting down %s", self.app_name)
 
             self.cleanup()
@@ -255,7 +307,16 @@ class AgoApp:
             return 1
 
 
-    def appMain(self):
+    def app_main(self):
+        """Main entry point for application.
+
+        By default this calls the run method of the AgoConnection object, which will
+        block until shut down.
+
+        This CAN be overriden, but generally it is sufficient to do your setup in
+        setup_app.
+        """
+
         self.connection.run()
         return 0
 
