@@ -48,6 +48,11 @@ void AgoExample::setupApp() {
 
     AGO_INFO() << "Param Test string is " << test_param;
 
+    /* Read a configuration value "test_option" from our example.conf file
+     * This will look in the configuration file conf.d/<app name>.conf
+     * under the [<app name>] section.
+     * In this example, this means example.conf and [example] section
+     */
     std::string cfgvalue = getConfigOption("test_option", "not set");
     AGO_INFO() << "Config test_option is '" << cfgvalue << "'";
 
