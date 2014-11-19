@@ -13,6 +13,15 @@ set(LIBAGOCLIENT_SOURCE_FILES
 	base64.cpp
 )
 
+set(PYTHON_AGOCLIENT_SOURCE_FILES
+    agoapp.py
+    agoconnection.py
+    config.py
+    _directories.py 
+    __init__.py 
+    _logging.py
+)
+
 IF (Boost_LOG_FOUND)
 	list(APPEND LIBAGOCLIENT_SOURCE_FILES agolog_boost.cpp)
 else()
@@ -59,6 +68,12 @@ set_property(
 
 # Install instructions for this target
 install (TARGETS agoclient LIBRARY DESTINATION ${LIBDIR})
-install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient.py DESTINATION ${BINDIR})
+install (DIRECTORY DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/agoapp.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/agoconnection.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/config.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/_directories.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/__init__.py DESTINATION ${PYTHON2DIST}/agoclient)
+install (PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/agoclient/_logging.py DESTINATION ${PYTHON2DIST}/agoclient)
 install (DIRECTORY DESTINATION ${CONFDIR}/uuidmap)
 
