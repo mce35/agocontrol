@@ -37,6 +37,7 @@ class AgoApp:
             self.app_short_name = self.app_name.lower()
 
         self.log = logging.getLogger(self.app_name)
+        self.exit_signaled = False
 
     def parse_command_line(self, argv):
         """Parse the provided command line.
@@ -233,6 +234,10 @@ class AgoApp:
         self.exit_signaled = True
         self._do_shutdown()
 
+    def is_exit_signaled(self):
+        """Check if we have been asked to exit"""
+        return self.exit_signaled
+
     def _do_shutdown(self):
         if self.connection:
             self.connection.shutdown()
@@ -319,4 +324,14 @@ class AgoApp:
 
         self.connection.run()
         return 0
+
+
+    def get_config_option(self, option, default_value, fallback_section=None):
+        """Get an option for this application.
+
+        This just wraps the config.get_config_option method, but fills our
+        application name as section name"""
+
+        return config.get_config_option(self.app_short_name, option, default_value,
+                fallback_section=fallback_section)
 
