@@ -40,6 +40,8 @@ ELSE (FREEBSD)
 	set (LOCALSTATEDIR /var/opt/agocontrol CACHE STRING "Directory for state info")
 	set (HTMLDIR /opt/agocontrol/html CACHE STRING "Directory for rpc HTML files")
 	set (AUGEASLENSEDIR /usr/share/augeas/lenses CACHE STRING "Directory for augeas lenses")
+	set (PYTHON2DIST /usr/lib/python2.7/dist-packages CACHE STRING "Directory for Python 2.7 packages")
+	set (PYTHON3DIST /usr/lib/python3/dist-packages CACHE STRING "Directory for Python 3 packages")
 	set (CMAKE_EXE_LINKER_FLAGS "-Wl,-z,now")
 ENDIF (FREEBSD)
 
