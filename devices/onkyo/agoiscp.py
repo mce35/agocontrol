@@ -14,6 +14,7 @@ class AgoIscp(agoclient.AgoApp):
     def setup_app(self):
         devices = {}
         self.connection.add_handler(self.message_handler)
+        self.discovery()
 
     def discovery(self, timeout=3):
         self.log.info("Discovering eISCP devices")
