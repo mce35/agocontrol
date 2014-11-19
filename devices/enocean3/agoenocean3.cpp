@@ -79,7 +79,7 @@ qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map 
 
 void AgoEnocean3::setupApp() {
     std::string devicefile;
-    devicefile=getConfigOption("enocean3", "device", "/dev/ttyAMA0");
+    devicefile=getConfigOption("device", "/dev/ttyAMA0");
     myESP3 = new esp3::ESP3(devicefile);
     if (!myESP3->init()) {
         AGO_FATAL() << "cannot initalize enocean ESP3 protocol on device " << devicefile;
@@ -89,13 +89,13 @@ void AgoEnocean3::setupApp() {
     addCommandHandler();
     agoConnection->addDevice("enoceancontroller", "enoceancontroller");
 
-    stringstream dimmers(getConfigOption("enocean3", "dimmers", "1"));
+    stringstream dimmers(getConfigOption("dimmers", "1"));
     string dimmer;
     while (getline(dimmers, dimmer, ',')) {
         agoConnection->addDevice(dimmer.c_str(), "dimmer");
         AGO_DEBUG() << "adding rid " << dimmer << " as dimmer";
     } 
-    stringstream switches(getConfigOption("enocean3", "switches", "20"));
+    stringstream switches(getConfigOption("switches", "20"));
     string switchdevice;
     while (getline(switches, switchdevice, ',')) {
         agoConnection->addDevice(switchdevice.c_str(), "switch");

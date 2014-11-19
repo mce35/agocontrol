@@ -95,7 +95,7 @@ void AgoWebcam::setupApp() {
 
     addCommandHandler();
 
-    stringstream devices(getConfigOption("webcam", "devices", "http://192.168.80.65/axis-cgi/jpg/image.cgi"));
+    stringstream devices(getConfigOption("devices", "http://192.168.80.65/axis-cgi/jpg/image.cgi"));
     string device;
     while (getline(devices, device, ',')) {
         if (device.find("rtsp://") != string::npos) {

@@ -338,9 +338,9 @@ void AgoKnx::setupApp() {
     fs::path devicesFile;
 
     // parse config
-    eibdurl=getConfigOption("knx", "url", "ip:127.0.0.1");
-    polldelay=atoi(getConfigOption("knx", "polldelay", "5000").c_str());
-    devicesFile=getConfigOption("knx", "devicesfile", getConfigPath("/knx/devices.xml"));
+    eibdurl=getConfigOption("url", "ip:127.0.0.1");
+    polldelay=atoi(getConfigOption("polldelay", "5000").c_str());
+    devicesFile=getConfigOption("devicesfile", getConfigPath("/knx/devices.xml"));
 
 
     AGO_INFO() << "connecting to eibd"; 

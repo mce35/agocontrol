@@ -59,8 +59,8 @@ void AgoKwikwai::setupApp() {
     std::string hostname;
     std::string port;
 
-    hostname=getConfigOption("kwikwai", "host", "kwikwai.local");
-    port=getConfigOption("kwikwai", "port", "9090");
+    hostname=getConfigOption("host", "kwikwai.local");
+    port=getConfigOption("port", "9090");
 
     kwikwai::Kwikwai _myKwikwai(hostname.c_str(), port.c_str());
     myKwikwai = &_myKwikwai;

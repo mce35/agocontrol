@@ -110,7 +110,7 @@ qpid::types::Variant::Map AgoChromoflex::commandHandler(qpid::types::Variant::Ma
 
 
 void AgoChromoflex::setupApp() {
-    string devicefile=getConfigOption("chromoflex", "device", "/dev/ttyS_01");
+    string devicefile=getConfigOption("device", "/dev/ttyS_01");
 
     fd = open(devicefile.c_str(), O_RDWR);
     unsigned char buf[1024];

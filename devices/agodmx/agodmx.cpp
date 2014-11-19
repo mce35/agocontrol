@@ -237,8 +237,8 @@ void AgoDmx::setupApp() {
     fs::path channelsFile;
     std::string ola_server;
 
-    channelsFile=getConfigOption("dmx", "channelsfile", getConfigPath("/dmx/channels.xml"));
-    ola_server=getConfigOption("dmx", "url", "ip:127.0.0.1");
+    channelsFile=getConfigOption("channelsfile", getConfigPath("/dmx/channels.xml"));
+    ola_server=getConfigOption("url", "ip:127.0.0.1");
 
     // load xml file into map
     if (!loadChannels(channelsFile.string(), channelMap)) {

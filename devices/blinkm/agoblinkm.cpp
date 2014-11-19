@@ -84,8 +84,8 @@ qpid::types::Variant::Map  AgoBlinkm::commandHandler(qpid::types::Variant::Map c
 
 
 void AgoBlinkm::setupApp() {
-    devicefile=getConfigOption("blinkm", "bus", "/dev/i2c-0");
-    stringstream devices(getConfigOption("blinkm", "devices", "9")); // read blinkm addr from config, default to addr 9
+    devicefile=getConfigOption("bus", "/dev/i2c-0");
+    stringstream devices(getConfigOption("devices", "9")); // read blinkm addr from config, default to addr 9
 
     string device;
     while (getline(devices, device, ',')) {

@@ -34,8 +34,8 @@ qpid::types::Variant::Map AgoFirmata::commandHandler(qpid::types::Variant::Map c
 
 
 void AgoFirmata::setupApp() {
-    string devicefile=getConfigOption("firmata", "device", "/dev/ttyUSB2");
-    stringstream outputs(getConfigOption("firmata", "outputs", "2")); // read digital out pins from config, default to pin 2 only
+    string devicefile=getConfigOption("device", "/dev/ttyUSB2");
+    stringstream outputs(getConfigOption("outputs", "2")); // read digital out pins from config, default to pin 2 only
 
     f = new Firmata();
     if (f->openPort(devicefile.c_str()) != 0) {

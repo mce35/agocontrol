@@ -66,7 +66,7 @@ qpid::types::Variant::Map AgoRain8net::commandHandler(qpid::types::Variant::Map 
 void AgoRain8net::setupApp() {
     std::string devicefile;
 
-    devicefile=getConfigOption("rain8net", "device", "/dev/ttyS_01");
+    devicefile=getConfigOption("device", "/dev/ttyS_01");
 
     if (rain8.init(devicefile.c_str()) != 0) {
         AGO_FATAL() << "can't open rainnet device " << devicefile;

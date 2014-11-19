@@ -188,8 +188,8 @@ qpid::types::Variant::Map AgoI2c::commandHandler(qpid::types::Variant::Map conte
 
 
 void AgoI2c::setupApp() {
-    devicefile=getConfigOption("i2c", "bus", "/dev/i2c-0");
-    stringstream devices(getConfigOption("i2c", "devices", "pcf8574:32")); 
+    devicefile=getConfigOption("bus", "/dev/i2c-0");
+    stringstream devices(getConfigOption("devices", "pcf8574:32")); 
 
     string device;
     while (getline(devices, device, ',')) {

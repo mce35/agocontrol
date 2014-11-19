@@ -96,7 +96,7 @@ qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map con
 void AgoZmcam::setupApp() {
     string temp;
 
-    temp = getConfigOption("zmcam", "authtype", "");
+    temp = getConfigOption("authtype", "");
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -117,7 +117,7 @@ void AgoZmcam::setupApp() {
     else
         authType = ZM_AUTH_NONE;
 
-    temp = getConfigOption("zmcam", "hashauthuselocaladdress", "n");
+    temp = getConfigOption("hashauthuselocaladdress", "n");
 
     bool hashAuthUseLocalAddress;
 
@@ -128,21 +128,21 @@ void AgoZmcam::setupApp() {
     else
         hashAuthUseLocalAddress = false;
 
-    if (!zoneminderClient->create(getConfigOption("zmcam", "webprotocal", "http"), 
-                getConfigOption("zmcam", "server", ""), 
-                stringToUint(getConfigOption("zmcam", "webport", "80")), 
+    if (!zoneminderClient->create(getConfigOption("webprotocal", "http"), 
+                getConfigOption("server", ""), 
+                stringToUint(getConfigOption("webport", "80")), 
                 authType,
                 hashAuthUseLocalAddress,
-                getConfigOption("zmcam", "username", ""),
-                getConfigOption("zmcam", "password", ""),
-                getConfigOption("zmcam", "authhashscret", ""),
-                stringToUint(getConfigOption("zmcam", "triggerport", "6802"))))
+                getConfigOption("username", ""),
+                getConfigOption("password", ""),
+                getConfigOption("authhashscret", ""),
+                stringToUint(getConfigOption("triggerport", "6802"))))
     {
         AGO_FATAL() << "cannot create Zoneminder client";
         throw StartupError();
     }
 
-    stringstream devices(getConfigOption("zmcam", "monitors", ""));
+    stringstream devices(getConfigOption("monitors", ""));
 
     string device;
     while (getline(devices, device, ','))

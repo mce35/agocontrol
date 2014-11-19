@@ -63,8 +63,8 @@ void AgoIrtrans_Ethernet::setupApp() {
     std::string hostname;
     std::string port;
 
-    hostname=getConfigOption("irtrans_ethernet", "host", "192.168.80.12");
-    port=getConfigOption("irtrans_ethernet", "port", "21000");
+    hostname=getConfigOption("host", "192.168.80.12");
+    port=getConfigOption("port", "21000");
 
     host= (struct hostent *) gethostbyname((char *)hostname.c_str());
 

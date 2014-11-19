@@ -41,7 +41,10 @@ public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoPlcbus)
         , reprq(0)
         , announce(false)
-        {}
+        {
+            // Compatability with old configuration section
+            appConfigSection = "PLCBUS";
+        }
 };
 
 int AgoPlcbus::serial_write (int dev,uint8_t pnt[],int len) {
@@ -244,26 +247,26 @@ void AgoPlcbus::receiveFunction() {
 
 void AgoPlcbus::setupApp() {
 
-    if (getConfigOption("PLCBUS", "phases", "3") == "3") {
+    if (getConfigOption("phases", "3") == "3") {
         reprq = 64;
     }
-    if (getConfigOption("PLCBUS", "announce", "no") == "yes") {
+    if (getConfigOption("announce", "no") == "yes") {
         announce = true;
     }
 
 
-    fd = open(getConfigOption("PLCBUS", "device", "/dev/ttyUSB0").c_str(), O_RDWR);
+    fd = open(getConfigOption("device", "/dev/ttyUSB0").c_str(), O_RDWR);
     // TODO: check for error
 
     addCommandHandler();
 
-    stringstream dimmers(getConfigOption("PLCBUS", "dimmers", "A1"));
+    stringstream dimmers(getConfigOption("dimmers", "A1"));
     string dimmer;
     while (getline(dimmers, dimmer, ',')) {
         agoConnection->addDevice(dimmer.c_str(), "dimmer");
         AGO_INFO() << "adding code " << dimmer << " as dimmer";
     } 
-    stringstream switches(getConfigOption("PLCBUS", "switches", "A2"));
+    stringstream switches(getConfigOption("switches", "A2"));
     string switchdevice;
     while (getline(switches, switchdevice, ',')) {
         agoConnection->addDevice(switchdevice.c_str(), "switch");
