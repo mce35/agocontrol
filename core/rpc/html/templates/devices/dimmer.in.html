@@ -5,12 +5,12 @@
             <li class="dashboard-widget-header-icon">
                 <ko opts="if: stale">
                     <div class="pretty large danger btn handle">
-                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-adjust"></i>
+                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-adjust"></i>
                     </div>
                 </ko>
                 <ko opts="ifnot: stale">
                     <div class="pretty large primary btn handle">
-                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-adjust"></i>
+                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-adjust"></i>
                     </div>
                 </ko>
             </li>

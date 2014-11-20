@@ -15,16 +15,11 @@ function device(agocontrol, obj, uuid) {
     }
 
     this.uuid = uuid;
-
     this.action = ''; // dummy for table
-
     this.handledBy = this['handled-by'];
-
     var currentState = parseInt(this.state);
     this.state = ko.observable(currentState);
-
     this.values = ko.observable(this.values);
-
     this.stale = ko.observable(this.stale);
     this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
 
