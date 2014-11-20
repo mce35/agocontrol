@@ -40,7 +40,7 @@ function dashBoard(agocontrol)
         return list;
     });
 
-    self.page = ko.observable(1);
+    self.currentPage = ko.observable(1);
     self.pages = ko.computed(function()
     {
         var pages = [];
@@ -55,11 +55,11 @@ function dashBoard(agocontrol)
     self.firstRow = ko.computed(function()
     {
         var currentList = self.deviceList().chunk(self.itemsPerPage);
-        if (currentList.length < self.page())
+        if (currentList.length < self.currentPage())
         {
             return [];
         }
-        currentList = currentList[self.page() - 1];
+        currentList = currentList[self.currentPage() - 1];
         if (currentList.length >= 0)
         {
             return currentList.chunk(self.itemsPerRow)[0];
@@ -70,11 +70,11 @@ function dashBoard(agocontrol)
     self.secondRow = ko.computed(function()
     {
         var currentList = self.deviceList().chunk(self.itemsPerPage);
-        if (currentList.length < self.page())
+        if (currentList.length < self.currentPage())
         {
             return [];
         }
-        currentList = currentList[self.page() - 1];
+        currentList = currentList[self.currentPage() - 1];
         if (currentList.length >= (self.itemsPerRow+1))
         {
             return currentList.chunk(self.itemsPerRow)[1];
@@ -85,11 +85,11 @@ function dashBoard(agocontrol)
     self.thirdRow = ko.computed(function()
     {
         var currentList = self.deviceList().chunk(self.itemsPerPage);
-        if (currentList.length < self.page())
+        if (currentList.length < self.currentPage())
         {
             return [];
         }
-        currentList = currentList[self.page() - 1];
+        currentList = currentList[self.currentPage() - 1];
         if (currentList.length >= (self.itemsPerRow*2+1))
         {
             return currentList.chunk(self.itemsPerRow)[2];
@@ -100,7 +100,7 @@ function dashBoard(agocontrol)
     //change page
     self.switchPage = function(item)
     {
-        self.page(item.idx);
+        self.currentPage(item.idx);
     };
 
     //clear current search
