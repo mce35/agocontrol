@@ -595,7 +595,7 @@ qpid::types::Variant::Map AgoATAlarm::commandHandler(qpid::types::Variant::Map c
                 }
               else
                 {
-                  if(!setConfigOption("atalarm", "device", this->device.c_str()) )
+                  if(!setConfigOption("device", this->device.c_str()) )
                     {
                       returnval["error"] = 2;
                       returnval["msg"] = "Unable to save serial port to config file";
@@ -989,7 +989,7 @@ int AgoATAlarm::atalarm_init()
   this->current_line_pos = this->current_line;
   pthread_mutex_init(&this->device_mutex, NULL);
 
-  this->device = getConfigOption("atalarm", "device", "/dev/serial/by-id/usb-4348_5523-if00-port0");
+  this->device = getConfigOption("device", "/dev/serial/by-id/usb-4348_5523-if00-port0");
 
   if(atalarm_reopen_device() != 0)
     {
