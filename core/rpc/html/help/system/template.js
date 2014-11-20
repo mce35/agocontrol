@@ -12,7 +12,7 @@ function SystemConfig(agocontrol)
 /**
  * Initalizes the System model
  */
-function init_systemConfig(path, params, agocontrol)
+function init_template(path, params, agocontrol)
 {
     var model = new SystemConfig(agocontrol);
     return model;
