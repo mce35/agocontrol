@@ -38,7 +38,6 @@
         return instance.main(argc, argv);		\
     }
 
-
 namespace agocontrol {
 
     class AgoApp {
@@ -51,15 +50,19 @@ namespace agocontrol {
         boost::asio::io_service ioService_;
         std::auto_ptr<boost::asio::io_service::work> ioWork;
 
-        void signalExit();
-
         int parseCommandLine(int argc, const char **argv);
 
     protected:
+        /* This can be overriden from the applications constructor.
+         * Preferably, don't!*/
+        std::string appConfigSection;
+
         /**
          * Any parsed command line parameters are placed in this map-like object
          */
         boost::program_options::variables_map cli_vars;
+
+        void signalExit();
 
         AgoConnection *agoConnection;
 
@@ -125,6 +128,36 @@ namespace agocontrol {
          */
         virtual void doShutdown();
 
+        /// Get config option from applications configuration file
+        std::string getConfigOption(const char *option, const char *defaultValue) {
+            return getConfigSectionOption(appConfigSection.c_str(), option, defaultValue);
+        }
+        std::string getConfigOption(const char *option, std::string &defaultValue) {
+            return getConfigSectionOption(appConfigSection.c_str(), option, defaultValue);
+        }
+        boost::filesystem::path getConfigOption(const char *option, const boost::filesystem::path &defaultValue) {
+            return getConfigSectionOption(appConfigSection.c_str(), option, defaultValue);
+        }
+
+        /// If fallback_section is set, and value is not set in our section, try
+        /// fallback_section before finally falling back on defaultValue
+        std::string getConfigOptionFallback(const char *option, const char *defaultValue, const char *fallback_section = NULL) {
+            return getConfigSectionOption(fallback_section, appConfigSection.c_str(), option, defaultValue);
+        }
+
+        /// save value to the applications config file
+        bool setConfigOption(const char *option, const char* value) {
+            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        }
+        bool setConfigOption(const char *option, const float value) {
+            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        }
+        bool setConfigOption(const char *option, const int value) {
+            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        }
+        bool setConfigOption(const char *option, const bool value) {
+            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        }
     public:
         AgoApp(const char *appName);
         virtual ~AgoApp() {} ;

@@ -120,11 +120,11 @@ void *startProxy(void *params) {
 }
 
 int main(int argc, char** argv) {
-    username = getConfigOption("onvif", "username", "onvif");
-    password = getConfigOption("onvif", "password", "onvif");
-    verbosityLevel = atoi(getConfigOption("mediaproxy", "verbosity", "1").c_str());
-    http_port = atoi(getConfigOption("mediaproxy", "http_port", "8888").c_str());
-    rtsp_port = atoi(getConfigOption("mediaproxy", "rtsp_port", "554").c_str());
+    username = getConfigSectionOption("onvif", "username", "onvif");
+    password = getConfigSectionOption("onvif", "password", "onvif");
+    verbosityLevel = atoi(getConfigSectionOption("mediaproxy", "verbosity", "1").c_str());
+    http_port = atoi(getConfigSectionOption("mediaproxy", "http_port", "8888").c_str());
+    rtsp_port = atoi(getConfigSectionOption("mediaproxy", "rtsp_port", "554").c_str());
 
     agoConnection = new AgoConnection("mediaproxy");		
 

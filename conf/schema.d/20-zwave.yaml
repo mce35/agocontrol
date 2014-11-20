@@ -19,6 +19,8 @@ commands:
       target:
         name: target
         type: integer
+  healnetwork:
+    name: heal the zwave network
   healnode:
     name: heal a zwave node
     paramters:
@@ -73,4 +75,4 @@ devicetypes:
   zwavecontroller:
     name: z-wave interface
     description: z-wave interface from agozwave
-    commands: [allon, alloff, addnode, removenode, addcontroller, removecontroller, addassociation, removeassociation, setconfigparam, downloadconfig, cancel, saveconfig, reset, healnode]
+    commands: [allon, alloff, addnode, removenode, addcontroller, removecontroller, addassociation, removeassociation, setconfigparam, downloadconfig, cancel, saveconfig, reset, healnode, healnetwork]

@@ -20,19 +20,34 @@
 #include <termios.h>
 #include <stdio.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace qpid::types;
 using namespace std;
 using namespace agocontrol;
 
-AgoConnection *agoConnection;
+class AgoPlcbus: public AgoApp {
+private:
+    int reprq;
+    bool announce;
 
-int reprq = 0;
-bool announce = false;
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command);
 
-int serial_write (int dev,uint8_t pnt[],int len)
-{
+    int serial_write (int dev,uint8_t pnt[],int len);
+    int serial_read (int dev,uint8_t pnt[],int len,long timeout);
+    void receiveFunction();
+public:
+    AGOAPP_CONSTRUCTOR_HEAD(AgoPlcbus)
+        , reprq(0)
+        , announce(false)
+        {
+            // Compatability with old configuration section
+            appConfigSection = "PLCBUS";
+        }
+};
+
+int AgoPlcbus::serial_write (int dev,uint8_t pnt[],int len) {
     int res;
 
     res = write (dev,pnt,len);
@@ -44,8 +59,7 @@ int serial_write (int dev,uint8_t pnt[],int len)
     return (len);
 }
 
-int serial_read (int dev,uint8_t pnt[],int len,long timeout)
-{
+int AgoPlcbus::serial_read (int dev,uint8_t pnt[],int len,long timeout) {
     int bytes = 0;
     int total = 0;
     struct timeval tv;
@@ -73,7 +87,7 @@ int serial_read (int dev,uint8_t pnt[],int len,long timeout)
 }
 
 // commandhandler
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
+qpid::types::Variant::Map AgoPlcbus::commandHandler(qpid::types::Variant::Map command) {
     qpid::types::Variant::Map returnval;
     string addr = command["internalid"].asString();
     int house = addr.substr(0,1).c_str()[0]-65;
@@ -104,7 +118,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
     return returnval;
 }
 
-void *receiveFunction(void *param) {
+void AgoPlcbus::receiveFunction() {
 
     uint8_t buf[1024];
     uint8_t bufr[1024];
@@ -231,30 +245,28 @@ void *receiveFunction(void *param) {
 
 
 
-int main(int argc, char **argv) {
+void AgoPlcbus::setupApp() {
 
-    if (getConfigOption("PLCBUS", "phases", "3") == "3") {
+    if (getConfigOption("phases", "3") == "3") {
         reprq = 64;
     }
-    if (getConfigOption("PLCBUS", "announce", "no") == "yes") {
+    if (getConfigOption("announce", "no") == "yes") {
         announce = true;
     }
 
 
-    fd = open(getConfigOption("PLCBUS", "device", "/dev/ttyUSB0").c_str(), O_RDWR);
+    fd = open(getConfigOption("device", "/dev/ttyUSB0").c_str(), O_RDWR);
     // TODO: check for error
 
-    agoConnection = new AgoConnection("PLCBUS");
+    addCommandHandler();
 
-    agoConnection->addHandler(commandHandler);
-
-    stringstream dimmers(getConfigOption("PLCBUS", "dimmers", "A1"));
+    stringstream dimmers(getConfigOption("dimmers", "A1"));
     string dimmer;
     while (getline(dimmers, dimmer, ',')) {
         agoConnection->addDevice(dimmer.c_str(), "dimmer");
         AGO_INFO() << "adding code " << dimmer << " as dimmer";
     } 
-    stringstream switches(getConfigOption("PLCBUS", "switches", "A2"));
+    stringstream switches(getConfigOption("switches", "A2"));
     string switchdevice;
     while (getline(switches, switchdevice, ',')) {
         agoConnection->addDevice(switchdevice.c_str(), "switch");
@@ -276,8 +288,9 @@ int main(int argc, char **argv) {
     tcsetattr(fd,TCSANOW,&tio);
 
     pthread_mutex_init(&mutexSendQueue, NULL);
-    static pthread_t readThread;
-    pthread_create(&readThread, NULL, receiveFunction, NULL);
+
+    boost::thread t(boost::bind(&AgoPlcbus::receiveFunction, this));
+    t.detach();
 
     for (int i=0;i<5;i++) {
         PLCBUSJob *myjob = new PLCBUSJob;
@@ -292,9 +305,6 @@ int main(int argc, char **argv) {
         PLCBUSSendQueue.push_back(myjob);
         pthread_mutex_unlock (&mutexSendQueue);
     }
-
-    agoConnection->run();
-
 }
 
-
+AGOAPP_ENTRY_POINT(AgoPlcbus);

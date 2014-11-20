@@ -18,18 +18,24 @@
 #include <pthread.h>
 #include <stdio.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 #include "esp3.h"
 
 
 using namespace std;
 using namespace agocontrol;
 
-esp3::ESP3 *myESP3;
+class AgoEnocean3: public AgoApp {
+private:
+    esp3::ESP3 *myESP3;
 
-AgoConnection *agoConnection;
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+public:
+    AGOAPP_CONSTRUCTOR(AgoEnocean3);
+};
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (internalid == "enoceancontroller") {
@@ -71,33 +77,31 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoEnocean3::setupApp() {
     std::string devicefile;
-    devicefile=getConfigOption("enocean3", "device", "/dev/ttyAMA0");
+    devicefile=getConfigOption("device", "/dev/ttyAMA0");
     myESP3 = new esp3::ESP3(devicefile);
     if (!myESP3->init()) {
         AGO_FATAL() << "cannot initalize enocean ESP3 protocol on device " << devicefile;
-        exit(-1);
+        throw StartupError();
     }
 
-    AgoConnection _agoConnection = AgoConnection("enocean3");
-    agoConnection = &_agoConnection;
-
-    agoConnection->addHandler(commandHandler);
+    addCommandHandler();
     agoConnection->addDevice("enoceancontroller", "enoceancontroller");
 
-    stringstream dimmers(getConfigOption("enocean3", "dimmers", "1"));
+    stringstream dimmers(getConfigOption("dimmers", "1"));
     string dimmer;
     while (getline(dimmers, dimmer, ',')) {
         agoConnection->addDevice(dimmer.c_str(), "dimmer");
         AGO_DEBUG() << "adding rid " << dimmer << " as dimmer";
     } 
-    stringstream switches(getConfigOption("enocean3", "switches", "20"));
+    stringstream switches(getConfigOption("switches", "20"));
     string switchdevice;
     while (getline(switches, switchdevice, ',')) {
         agoConnection->addDevice(switchdevice.c_str(), "switch");
         AGO_DEBUG() << "adding rid " << switchdevice << " as switch";
     } 
 
-    agoConnection->run();	
 }
+
+AGOAPP_ENTRY_POINT(AgoEnocean3);

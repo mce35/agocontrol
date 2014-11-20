@@ -484,9 +484,9 @@ std::string commandHandler(qpid::types::Variant::Map content) {
 int main (int argc, char ** argv)  
 {  
     std::map<std::string, std::string> networkvideotransmitters; // this holds the probe results
-    std::string m_username = getConfigOption("onvif", "username", "onvif");
-    std::string m_password = getConfigOption("onvif", "password", "onvif");
-    std::string targetprofile = getConfigOption("onvif", "profile", "p-agoview");
+    std::string m_username = getConfigSectionOption("onvif", "username", "onvif");
+    std::string m_password = getConfigSectionOption("onvif", "password", "onvif");
+    std::string targetprofile = getConfigSectionOption("onvif", "profile", "p-agoview");
 
     struct wsdd__ProbeType probe;
     struct __wsdd__ProbeMatches matches;

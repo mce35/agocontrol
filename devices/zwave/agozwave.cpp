@@ -24,7 +24,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 #include <openzwave/Options.h>
 #include <openzwave/Manager.h>
@@ -44,33 +44,61 @@ using namespace std;
 using namespace agocontrol;
 using namespace OpenZWave;
 
-bool debug = true;
-bool polling = false;
+class AgoZwave: public AgoApp {
+private:
+    bool polling;
+    int unitsystem;
+    uint32 g_homeId;
+    bool g_initFailed;
 
-int unitsystem = 0; // 0 == SI, 1 == US
+    typedef struct {
+        uint32			m_homeId;
+        uint8			m_nodeId;
+        bool			m_polled;
+        list<ValueID>	m_values;
+    } NodeInfo;
+    
+    list<NodeInfo*> g_nodes;
 
-AgoConnection *agoConnection;
+    map<ValueID, qpid::types::Variant> valueCache;
 
-static uint32 g_homeId = 0;
-static bool   g_initFailed = false;
+    pthread_mutex_t g_criticalSection;
+    pthread_cond_t  initCond;
+    pthread_mutex_t initMutex;
 
-typedef struct
-{
-    uint32			m_homeId;
-    uint8			m_nodeId;
-    bool			m_polled;
-    list<ValueID>	m_values;
-}NodeInfo;
+    ZWaveNodes devices;
 
-static list<NodeInfo*> g_nodes;
+    const char *controllerErrorStr (Driver::ControllerError err);
+    NodeInfo* GetNodeInfo (Notification const* _notification);
+    ValueID* getValueID(int nodeid, int instance, string label);
 
-static map<ValueID, qpid::types::Variant> valueCache;
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void setupApp();
+    void cleanupApp();
+public:
+    AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
+        , polling(false)
+        , unitsystem(0)
+        , g_homeId(0)
+        , g_initFailed(false)
+        , initCond(PTHREAD_COND_INITIALIZER)
+        , initMutex(PTHREAD_MUTEX_INITIALIZER)
+        {}
 
-static pthread_mutex_t g_criticalSection;
-static pthread_cond_t  initCond  = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
-ZWaveNodes devices;
+    void _OnNotification (Notification const* _notification);
+    Driver::pfnControllerCallback_t _controller_update(Driver::ControllerState state,  Driver::ControllerError err);
+};
+
+void controller_update(Driver::ControllerState state,  Driver::ControllerError err, void *context) {
+    AgoZwave *inst = static_cast<AgoZwave*>(context);
+    inst->_controller_update(state, err); 
+}
+
+void on_notification(Notification const* _notification, void *context) {
+    AgoZwave *inst = static_cast<AgoZwave*>(context);
+    inst->_OnNotification(_notification);
+}
 
 class MyLog : public i_LogImpl {
     virtual void Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args );
@@ -101,8 +129,7 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
     AGO_INFO() << string(lineBuf);
 }
 
-const char *controllerErrorStr (Driver::ControllerError err)
-{
+const char *AgoZwave::controllerErrorStr (Driver::ControllerError err) {
     switch (err) {
         case Driver::ControllerError_None:
             return "None";
@@ -135,7 +162,7 @@ const char *controllerErrorStr (Driver::ControllerError err)
     }
 }
 
-void controller_update(Driver::ControllerState state,  Driver::ControllerError err, void *context) {
+Driver::pfnControllerCallback_t AgoZwave::_controller_update(Driver::ControllerState state,  Driver::ControllerError err) {
     qpid::types::Variant::Map eventmap;
     eventmap["statecode"]=state;
     switch(state) {
@@ -222,11 +249,7 @@ void controller_update(Driver::ControllerState state,  Driver::ControllerError e
 // <GetNodeInfo>
 // Callback that is triggered when a value, group or node changes
 //-----------------------------------------------------------------------------
-    NodeInfo* GetNodeInfo
-(
- Notification const* _notification
- )
-{
+AgoZwave::NodeInfo* AgoZwave::GetNodeInfo (Notification const* _notification) {
     uint32 const homeId = _notification->GetHomeId();
     uint8 const nodeId = _notification->GetNodeId();
     for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
@@ -242,7 +265,7 @@ void controller_update(Driver::ControllerState state,  Driver::ControllerError e
 }
 
 
-ValueID* getValueID(int nodeid, int instance, string label) {
+ValueID* AgoZwave::getValueID(int nodeid, int instance, string label) {
     for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
     {
         for (list<ValueID>::iterator it2 = (*it)->m_values.begin(); it2 != (*it)->m_values.end(); it2++ ) {
@@ -258,22 +281,11 @@ ValueID* getValueID(int nodeid, int instance, string label) {
     return NULL;
 }
 
-string uint64ToString(uint64_t i) {
-    stringstream tmp;
-    tmp << i;
-    return tmp.str();
-}
-
 //-----------------------------------------------------------------------------
 // <OnNotification>
 // Callback that is triggered when a value, group or node changes
 //-----------------------------------------------------------------------------
-    void OnNotification
-(
- Notification const* _notification,
- void* _context
- )
-{
+void AgoZwave::_OnNotification (Notification const* _notification) {
     qpid::types::Variant::Map eventmap;
     // Must do this inside a critical section to avoid conflicts with the main thread
     pthread_mutex_lock( &g_criticalSection );
@@ -744,7 +756,7 @@ string uint64ToString(uint64_t i) {
 
 
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     bool result = false;
     std::string internalid = content["internalid"].asString();
@@ -752,14 +764,14 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     if (internalid == "zwavecontroller") {
         AGO_TRACE() << "z-wave specific controller command received";
         if (content["command"] == "addnode") {
-            Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_AddDevice, controller_update, NULL, true);
+            Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_AddDevice, controller_update, this, true);
             result = true;
         } else if (content["command"] == "removenode") {
             if (!(content["node"].isVoid())) {
                 int mynode = content["node"];
-                Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_RemoveFailedNode, controller_update, NULL, true, mynode);
+                Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_RemoveFailedNode, controller_update, this, true, mynode);
             } else {
-                Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_RemoveDevice, controller_update, NULL, true);
+                Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_RemoveDevice, controller_update, this, true);
             }
             result = true;
         } else if (content["command"] == "healnode") {
@@ -1038,11 +1050,12 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoZwave::setupApp() {
     std::string device;
 
-    device=getConfigOption("zwave", "device", "/dev/usbzwave");
-    if (getConfigOption("system", "units", "SI")!="SI") unitsystem=1;
+    device=getConfigOption("device", "/dev/usbzwave");
+    if (getConfigSectionOption("system", "units", "SI") != "SI")
+        unitsystem=1;
 
 
     pthread_mutexattr_t mutexattr;
@@ -1055,10 +1068,6 @@ int main(int argc, char **argv) {
 
     pthread_mutex_lock( &initMutex );
 
-
-    AgoConnection _agoConnection = AgoConnection("zwave");		
-    agoConnection = &_agoConnection;
-
     // init open zwave
     Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
     Options::Get()->AddOptionBool("PerformReturnRoutes", false );
@@ -1069,7 +1078,7 @@ int main(int argc, char **argv) {
     Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
     Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
 
-    int retryTimeout = atoi(getConfigOption("zwave","retrytimeout","2000").c_str());
+    int retryTimeout = atoi(getConfigOption("retrytimeout","2000").c_str());
     OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
 
     Options::Get()->Lock();
@@ -1081,9 +1090,9 @@ int main(int argc, char **argv) {
     pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
 
     Manager::Create();
-    Manager::Get()->AddWatcher( OnNotification, NULL );
-    // Manager::Get()->SetPollInterval(atoi(getConfigOption("zwave", "pollinterval", "300000").c_str()),true);
-    if (getConfigOption("zwave", "polling", "0") == "1") polling=true;
+    Manager::Get()->AddWatcher( on_notification, this );
+    // Manager::Get()->SetPollInterval(atoi(getConfigOption("pollinterval", "300000").c_str()),true);
+    if (getConfigOption("polling", "0") == "1") polling=true;
     Manager::Get()->AddDriver(device);
 
     // Now we just wait for the driver to become ready
@@ -1101,15 +1110,19 @@ int main(int argc, char **argv) {
         AGO_DEBUG() << devices.toString();
 
         agoConnection->addDevice("zwavecontroller", "zwavecontroller");
-        agoConnection->addHandler(commandHandler);
-
-        agoConnection->run();
+        addCommandHandler();
     } else {
         AGO_FATAL() << "unable to initialize OZW";
+        Manager::Destroy();
+        pthread_mutex_destroy( &g_criticalSection );
+        throw StartupError();
     }	
-    Manager::Destroy();
 
-    pthread_mutex_destroy( &g_criticalSection );
-    return 0;
 }
 
+void AgoZwave::cleanupApp() {
+    Manager::Destroy();
+    pthread_mutex_destroy( &g_criticalSection );
+}
+
+AGOAPP_ENTRY_POINT(AgoZwave);
