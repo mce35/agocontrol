@@ -151,8 +151,8 @@ class AgoApp:
         elif self.args.log_level:
             lvl_name = self.args.log_level
         else:
-            lvl_name = config.get_config_option(self.app_short_name, "log_level", "INFO",
-                    fallback_section="system")
+            lvl_name = self.get_config_option("log_level", "INFO",
+                    section=[None, "system"])
 
             if lvl_name.upper() not in logging._levelNames:
                 raise ConfigurationError("Invalid log_level %s" % lvl_name)
@@ -167,8 +167,8 @@ class AgoApp:
         elif self.args.log_method:
             log_method = self.args.log_method
         else:
-            log_method = config.get_config_option(self.app_short_name, "log_method", "console",
-                    fallback_section="system")
+            log_method = self.get_config_option("log_method", "console",
+                    section=[None, "system"])
 
             if log_method not in ['console', 'syslog']:
                 raise ConfigurationError("Invalid log_method %s" % log_method)
@@ -181,8 +181,8 @@ class AgoApp:
             if self.args.syslog_facility:
                 syslog_fac = self.args.syslog_facility
             else:
-                syslog_fac = config.get_config_option(self.app_short_name, "syslog_facility",
-                        "local0", fallback_section = "system")
+                syslog_fac = self.get_config_option("syslog_facility",
+                        "local0", section = [None,"system"])
 
                 if syslog_fac not in SysLogHandler.facility_names:
                     raise ConfigurationError("Invalid syslog_facility %s" % syslog_fac)
@@ -326,21 +326,87 @@ class AgoApp:
         return 0
 
 
-    def get_config_option(self, option, default_value, fallback_section=None):
-        """Get an option for this application.
+    def get_config_option(self, option, default_value=None, section=None, app=None):
+        """Read a config option from the configuration subsystem.
 
-        This just wraps the config.get_config_option method, but fills our
-        application name as section name"""
+        The system is based on per-app configuration files, which has sections
+        and options.
 
-        return config.get_config_option(self.app_short_name, option, default_value,
-                fallback_section=fallback_section)
+        Note that "option not set" means not set, or empty value!
+
+        Arguments:
+            option -- The name of the option to retreive
+
+            default_value -- If the option can not be found in any of the specified
+                sections, fall back to this value.
+
+            section -- A string section to look for the option in, or an iterable
+                with multiple sections to try in the defined order, in case the option
+                was not set.
+
+                If not set, it defaults to the applications short name,
+                which is the class name in lower-case, with the leading "Ago" removed.
+                (AgoExample becomes example).
+                If you want to use the default value, but fall back on other, you 
+                can use None:
+
+                    section = [None, 'system']
+
+                This will look primarly in the default section, falling back to the 
+                'system' section.
+
+            app -- A string identifying the configuration storage unit to look in.
+                Can also be an iterable with multiple units to look at. If the option
+                was not found in any of the sections specified, the next available
+                'app' value will be tried.
+
+                If not set, it defaults to the same value as section.
+                If the list contains None, this is too replaced by the default section
+                value (NOT the value of the passed section argument).
 
 
-    def set_config_option(self, option, value):
-        """Set an option for this application.
+        Returns:
+            A unicode object with the value found in the data store, if found.
+            If not found, default_value is passed through unmodified.
+        """
+        if section is None:
+            section = self.app_short_name
 
-        This just wraps the config.set_config_option method, but fills our
-        application name as section name"""
+        if app is None:
+            app = section
 
-        return config.set_config_option(self.app_short_name, option, value)
+        config._iterable_replace_none(section, self.app_short_name)
+        config._iterable_replace_none(app, self.app_short_name)
+
+        return config.get_config_option(section, option, default_value, app)
+
+
+    def set_config_option(self, option, value, section=None, app=None):
+        """Write a config option to the configuration subsystem.
+
+        The system is based on per-app configuration files, which has sections
+        and options.
+
+        Arguments:
+            option -- The name of the option to set
+
+            value -- The value of the option.
+
+            section -- A string section in which to store the option in.
+                If not set, it defaults to the applications short name,
+                which is the class name in lower-case, with the leading "Ago" removed.
+                (AgoExample becomes example).
+
+            app -- A string identifying the configuration storage unit to store in.
+                If omited, it defaults to the same as section.
+
+        Returns:
+            True if succesfully stored, False otherwise.
+            Please refer to the error log for failure indication.
+
+        """
+        if section is None:
+            section = self.app_short_name
+
+        return config.set_config_option(section, option, value, app)
 
