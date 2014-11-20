@@ -110,7 +110,7 @@ void AgoTimer::clocktimer(const boost::system::error_code& error) {
         content["month"] = d.month();
         content["day"]= d.day();
         content["year"]= d.year();
-        content["weekday"]= d.day_of_week().as_number() == 0 ? 7 : d.day_of_week().as_number()-1;
+        content["weekday"]= d.day_of_week().as_number() == 0 ? 7 : d.day_of_week().as_number();
         content["yday"]=d.day_of_year();
 
         agoConnection->sendMessage("event.environment.timechanged", content);
