@@ -37,7 +37,7 @@
 						<br />
 						<div class="row">
 							<div class="medium primary btn six columns centered">
-								<_a data-translateable="true" href="#">Dashboards</_a>
+								<_a data-translateable="true" href="#" data-bind="click: $root.gotoConfiguration.bind($data, {name:'dashboards'})">Dashboards</_a>
 							</div>
 						</div>
 					</div>
@@ -57,7 +57,7 @@
 						<br />
 						<div class="row">
 							<div class="medium primary btn six columns centered">
-								<a href="/?scenarioConfig">Open Scenario Editor</a>
+								<_a href="#" data-translateable="true" data-bind="click: $root.gotoConfiguration.bind($data, {name:'scenarios'})">Open scenario editor</_a>
 							</div>
 						</div>
 					</div>
@@ -74,7 +74,7 @@
 						<br />
 						<div class="row">
 							<div class="medium primary btn six columns centered">
-								<a href="/?eventConfig">Open Event Editor</a>
+								<_a href="#" data-translateable="true" data-bind="click: $root.gotoConfiguration.bind($data, {name:'events'})">Open event editor</_a>
 							</div>
 						</div>
 					</div>
@@ -86,19 +86,17 @@
 							controller options, associations and so on.</p>
 						<div class="row">
 							<div class="medium primary btn six columns centered">
-								<a href="/?deviceConfig">Open Device Setup</a>
+								<_a href="#" data-translateable="true" data-bind="click: $root.gotoConfiguration.bind($data, {name:'devices'})">Open device setup</_a>
 							</div>
 						</div>
 					</div>
 					<!-- Devices end -->
 					<!-- Setup and Cloud begin -->
 					<div class="tab-content eight columns">
-						<p>You can set custom setting for your installed devices or
-							hardware devices. Here you can set up for example the Z-Wave
-							controller options, associations and so on.</p>
+						<p>TODO.</p>
 						<div class="row">
 							<div class="medium primary btn six columns centered">
-								<a href="/?deviceConfig">Open Device Setup</a>
+								<_a href="#" data-translateable="true" data-bind="click: $root.gotoConfiguration.bind($data, {name:'cloud'})">Open Cloud setup</_a>
 							</div>
 						</div>
 					</div>
