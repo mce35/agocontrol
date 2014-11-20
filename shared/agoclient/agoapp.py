@@ -103,7 +103,7 @@ class AgoApp:
             print "  Active state dir  : %s" % config.LOCALSTATEDIR
             print
             print "System configuration file      : %s" % config.get_config_path('conf.d/system.conf')
-            print "App-specific configuration file: %s" % config.get_localstate_path('conf.d/%s.conf'% self.app_short_name)
+            print "App-specific configuration file: %s" % config.get_config_path('conf.d/%s.conf'% self.app_short_name)
             print
 
             return False
