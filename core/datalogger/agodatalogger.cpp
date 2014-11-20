@@ -351,6 +351,7 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
  */
 void dumpGraphParams(const char** params, const int num_params)
 {
+    AGO_TRACE() << "Dump graph parameters (" << num_params << " params) :";
     for( int i=0; i<num_params; i++ )
     {
         AGO_TRACE() << " - " << string(params[i]);
@@ -657,7 +658,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
         if( thumbDuration<=0 )
         {
             //alloc memory
-            num_params = 14 + 12; //14 specific graph parameters + 12 default parameters
+            num_params = 14 + 13; //14 specific graph parameters + 13 default parameters
             params = (char**)malloc(sizeof(char*) * num_params);
 
             //add graph parameters
@@ -675,12 +676,13 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
             addThumbGraphParameters(data, params, &index);
         }
     }
-    else 
+    else
     {
         //no data
         AGO_ERROR() << "agodatalogger-RRDtool: no data";
         return false;
     }
+    num_params = index;
     dumpGraphParams((const char**)params, num_params);
 
     //build graph
