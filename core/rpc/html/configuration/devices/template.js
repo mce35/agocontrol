@@ -81,7 +81,7 @@ function DeviceConfig(agocontrol)
 
     this.findDevice = function(uuid)
     {
-        var l = self.agocontrol.devices.filter(function(d) {
+        var l = self.agocontrol.devices().filter(function(d) {
             return d.uuid==uuid;
         });
         if(l.length == 1)
@@ -187,10 +187,9 @@ function DeviceConfig(agocontrol)
                 content.uuid = self.agocontrol.agoController;
                 content.command = "setdevicename";
                 content.name = value;
-                self.agocontrol.sendCommand(content, function(res){
+                self.agocontrol.sendCommand(content, function(res) {
                     var d = self.findDevice(item.uuid);
                     d.name = value;
-                    purgeInventoryCache();
                 });
                 return value;
             },
@@ -209,7 +208,7 @@ function DeviceConfig(agocontrol)
                 content.command = "setdeviceroom";
                 value = value == "unset" ? "" : value;
                 content.room = value;
-                self.agocontrol.sendCommand(content, function(res){
+                self.agocontrol.sendCommand(content, function(res) {
                     var d = self.findDevice(item.uuid);
                     if(value == "")
                     {
