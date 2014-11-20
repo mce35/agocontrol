@@ -224,7 +224,20 @@ function DeviceConfig(agocontrol)
                         d.roomUID = value;
                     }
                 });
-                return value == "" ? "unset" : self.agocontrol.rooms()[value].name;
+                if( value=="" )
+                {
+                    return "unset";
+                }
+                else
+                {
+                    for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                    {
+                        if( self.agocontrol.rooms()[i].uuid==value )
+                        {
+                            return self.agocontrol.rooms()[i].name;
+                        }
+                    }
+                }
             },
             {
                 data : function(value, settings)
