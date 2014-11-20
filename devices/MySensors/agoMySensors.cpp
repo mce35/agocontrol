@@ -697,7 +697,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                 else {
                     //everything looks good, save port
                     device = command["port"].asString();
-                    if( !setConfigOption("mysensors", "device", device.c_str()) ) {
+                    if( !setConfigSectionOption("mysensors", "device", device.c_str()) ) {
                         returnval["error"] = 2;
                         returnval["msg"] = "Unable to save serial port to config file";
                     }
@@ -1779,8 +1779,8 @@ int main(int argc, char **argv)
       }*/
 
     //get config
-    device = getConfigOption("mysensors", "device", "/dev/ttyACM0");
-    staleThreshold = atoi(getConfigOption("mysensors", "staleThreshold", "86400").c_str());
+    device = getConfigSectionOption("mysensors", "device", "/dev/ttyACM0");
+    staleThreshold = atoi(getConfigSectionOption("mysensors", "staleThreshold", "86400").c_str());
 
     //get command line parameters
     bool continu = true;
@@ -1814,7 +1814,7 @@ int main(int argc, char **argv)
     } while(continu);
 
     // determine reply for INTERNAL;I_UNIT message - defaults to "M"etric
-    if (getConfigOption("system","units","SI")!="SI") units="I";
+    if (getConfigSectionOption("system","units","SI")!="SI") units="I";
 
     //open serial port
     if( DEBUG )

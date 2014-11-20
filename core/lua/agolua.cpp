@@ -954,7 +954,7 @@ void AgoLua::setupApp()
     agocontroller = agoConnection->getAgocontroller();
 
     //get config
-    std::string optString = getConfigOption("lua", "filterByEvents", "1");
+    std::string optString = getConfigOption("filterByEvents", "1");
     sscanf(optString.c_str(), "%d", &filterByEvents);
 
     scriptdir = ensureDirExists(getConfigPath(LUA_SCRIPT_DIR));

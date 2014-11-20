@@ -8,7 +8,7 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 extern "C"{
 #include "BMP085.c"
@@ -19,21 +19,32 @@ using namespace agocontrol;
 
 typedef struct {const char *file; int interval;} config_struct;
 
-string devicefile;
-AgoConnection *agoConnection;
+class AgoI2c: public AgoApp {
+private:
+    string devicefile;
+    config_struct conf;
+    int interval;
+
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+
+    void readBMP085();
+    bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf);
+    bool i2cread(const char *device, int i2caddr, int command, size_t size, __u8 &buf);
+    bool set_pcf8574_output(const char *device, int i2caddr, int output, bool state);
+    bool get_pcf8574_state(const char *device, int i2caddr, uint8_t &state);
+public:
+    AGOAPP_CONSTRUCTOR(AgoI2c);
+};
 
 //void *readBMP085(void*){
-void *readBMP085( void* param){
+void AgoI2c::readBMP085(){
 
-    config_struct *config;
-    config = (config_struct*)param;
-    const char *i2cFileName = config->file;
-    int interval = config->interval;
-    AGO_DEBUG() << "void *readBMP085( void* param) i2cFileName: " << i2cFileName << " interval: " << interval;
+    AGO_DEBUG() << "void *readBMP085( void* param) i2cFileName: " << devicefile << " interval: " << interval;
     while (true){
-        bmp085_Calibration(i2cFileName);
-        temperature = bmp085_GetTemperature(bmp085_ReadUT(i2cFileName));
-        pressure = bmp085_GetPressure(bmp085_ReadUP(i2cFileName));
+        bmp085_Calibration(devicefile.c_str());
+        temperature = bmp085_GetTemperature(bmp085_ReadUT(devicefile.c_str()));
+        pressure = bmp085_GetPressure(bmp085_ReadUP(devicefile.c_str()));
 
         stringstream value;
         value << ((double)pressure)/100;
@@ -46,7 +57,7 @@ void *readBMP085( void* param){
     }
 }
 
-bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf) {
+bool AgoI2c::i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8  *buf) {
     int file = open(device, O_RDWR);
     if (file < 0) {
         AGO_FATAL() << "Cannot open device: " << device << " - error: " << file;
@@ -67,7 +78,7 @@ bool i2ccommand(const char *device, int i2caddr, int command, size_t size, __u8 
     return true;
 }
 
-bool i2cread(const char *device, int i2caddr, int command, size_t size, __u8 &buf) {
+bool AgoI2c::i2cread(const char *device, int i2caddr, int command, size_t size, __u8 &buf) {
     int file = open(device, O_RDWR);
     if (file < 0) {
         AGO_FATAL() << "Cannot open device: " << device << " - error: " << file;
@@ -89,7 +100,7 @@ bool i2cread(const char *device, int i2caddr, int command, size_t size, __u8 &bu
     return true;
 }
 
-bool set_pcf8574_output(const char *device, int i2caddr, int output, bool state) {
+bool AgoI2c::set_pcf8574_output(const char *device, int i2caddr, int output, bool state) {
     unsigned char buf[10];
     int file = open(device, O_RDWR);
     if (file < 0) {
@@ -124,7 +135,7 @@ bool set_pcf8574_output(const char *device, int i2caddr, int output, bool state)
     return true;
 }
 
-bool get_pcf8574_state(const char *device, int i2caddr, uint8_t &state) {
+bool AgoI2c::get_pcf8574_state(const char *device, int i2caddr, uint8_t &state) {
     unsigned char buf[10];
     int file = open(device, O_RDWR);
     if (file < 0) {
@@ -149,7 +160,7 @@ bool get_pcf8574_state(const char *device, int i2caddr, uint8_t &state) {
     return true;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoI2c::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     returnval["result"]=0;
     string internalid = content["internalid"].asString();
@@ -176,11 +187,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
 }
 
 
-int main(int argc, char** argv) {
-    devicefile=getConfigOption("i2c", "bus", "/dev/i2c-0");
-    stringstream devices(getConfigOption("i2c", "devices", "pcf8574:32")); 
-
-    agoConnection = new AgoConnection("i2c");		
+void AgoI2c::setupApp() {
+    devicefile=getConfigOption("bus", "/dev/i2c-0");
+    stringstream devices(getConfigOption("devices", "pcf8574:32")); 
 
     string device;
     while (getline(devices, device, ',')) {
@@ -194,15 +203,10 @@ int main(int argc, char** argv) {
             agoConnection->addDevice("BMP085-baro", "barometersensor");
             agoConnection->addDevice("BMP085-temp", "temperaturesensor");
 
-            config_struct conf;
-            const char *file = devicefile.c_str();
+            interval = 300; // need to make this configurable
 
-
-            conf.file = file;
-            conf.interval = 300; // need to make this configurable
-
-            pthread_t listner;
-            pthread_create(&listner, NULL, readBMP085, &conf);
+            boost::thread t(boost::bind(&AgoI2c::readBMP085, this));
+            t.detach();
         }
         if (type == "pcf8574") {
             string addr;
@@ -223,9 +227,8 @@ int main(int argc, char** argv) {
             }
         }
     } 
-    agoConnection->addHandler(commandHandler);
+    addCommandHandler();
 
-    agoConnection->run();
-
-    return 0;
 }
+
+AGOAPP_ENTRY_POINT(AgoI2c);

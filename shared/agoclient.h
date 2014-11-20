@@ -57,6 +57,7 @@ namespace agocontrol {
 
     /// helper for conversions
     std::string uint64ToString(uint64_t i);
+    unsigned int stringToUint(std::string v);
 
     /// Return the full path to the configuration directory, with subpath appended if not NULL
     boost::filesystem::path getConfigPath(const boost::filesystem::path &subpath = boost::filesystem::path());
@@ -88,20 +89,20 @@ namespace agocontrol {
     std::string augeasPathFromSectionOption(const char *section, const char *option);
 
     /// fetch a value from the config file.
-    std::string getConfigOption(const char *section, const char *option, std::string &defaultvalue);
-    std::string getConfigOption(const char *section, const char *option, const char *defaultvalue);
-    boost::filesystem::path getConfigOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
+    std::string getConfigSectionOption(const char *section, const char *option, std::string &defaultvalue);
+    std::string getConfigSectionOption(const char *section, const char *option, const char *defaultvalue);
+    boost::filesystem::path getConfigSectionOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
 
     /// fetch a value from the config file. if it does not exist in designated section, try
     /// fallback_section before finally falling back on defaultvalue
-    std::string getConfigOption(const char *section, const char *fallback_section, const char *option, const char *defaultvalue);
+    std::string getConfigSectionOption(const char *section, const char *fallback_section, const char *option, const char *defaultvalue);
     qpid::types::Variant::Map getConfigTree();
 
     /// save value to the config file
-    bool setConfigOption(const char *section, const char *option, const char* value);
-    bool setConfigOption(const char *section, const char *option, const float value);
-    bool setConfigOption(const char *section, const char *option, const int value);
-    bool setConfigOption(const char *section, const char *option, const bool value);
+    bool setConfigSectionOption(const char *section, const char *option, const char* value);
+    bool setConfigSectionOption(const char *section, const char *option, const float value);
+    bool setConfigSectionOption(const char *section, const char *option, const int value);
+    bool setConfigSectionOption(const char *section, const char *option, const bool value);
 
     /// convert int to std::string.
     std::string int2str(int i);

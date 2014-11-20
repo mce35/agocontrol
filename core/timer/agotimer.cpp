@@ -110,7 +110,7 @@ void AgoTimer::clocktimer(const boost::system::error_code& error) {
         content["month"] = d.month();
         content["day"]= d.day();
         content["year"]= d.year();
-        content["weekday"]= d.day_of_week().as_number() == 0 ? 7 : d.day_of_week().as_number()-1;
+        content["weekday"]= d.day_of_week().as_number() == 0 ? 7 : d.day_of_week().as_number();
         content["yday"]=d.day_of_year();
 
         agoConnection->sendMessage("event.environment.timechanged", content);
@@ -231,10 +231,10 @@ void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_s
 void AgoTimer::setupApp() {
     agocontroller = agoConnection->getAgocontroller();
 
-    latlon.lat=atof(getConfigOption("system", "lat", "47.07").c_str());
-    latlon.lon=atof(getConfigOption("system", "lon", "15.42").c_str());
-    sunriseoffset=atoi(getConfigOption("system", "sunriseoffset", "0").c_str());
-    sunsetoffset=atoi(getConfigOption("system", "sunsetoffset", "0").c_str());
+    latlon.lat=atof(getConfigSectionOption("system", "lat", "47.07").c_str());
+    latlon.lon=atof(getConfigSectionOption("system", "lon", "15.42").c_str());
+    sunriseoffset=atoi(getConfigSectionOption("system", "sunriseoffset", "0").c_str());
+    sunsetoffset=atoi(getConfigSectionOption("system", "sunsetoffset", "0").c_str());
 
     AGO_DEBUG() << "agotimer configured with location "
         << latlon.lat << ", " << latlon.lon

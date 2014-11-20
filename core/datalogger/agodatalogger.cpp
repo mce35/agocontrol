@@ -1341,7 +1341,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     dataLogging = false;
                     AGO_INFO() << "Data logging disabled";
                 }
-                if( !setConfigOption("datalogger", "dataLogging", dataLogging) )
+                if( !setConfigOption("dataLogging", dataLogging) )
                 {
                     AGO_ERROR() << "Unable to save dataLogging status to config file";
                 }
@@ -1356,7 +1356,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     gpsLogging = false;
                     AGO_INFO() << "GPS logging disabled";
                 }
-                if( !setConfigOption("datalogger", "gpsLogging", gpsLogging) )
+                if( !setConfigOption("gpsLogging", gpsLogging) )
                 {
                     AGO_ERROR() << "Unable to save gpsLogging status to config file";
                 }
@@ -1371,7 +1371,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     rrdLogging = false;
                     AGO_INFO() << "RRD logging disabled";
                 }
-                if( !setConfigOption("datalogger", "rrdLogging", rrdLogging) )
+                if( !setConfigOption("rrdLogging", rrdLogging) )
                 {
                     AGO_ERROR() << "Unable to save rrdLogging status to config file";
                 }
@@ -1453,16 +1453,16 @@ void AgoDataLogger::setupApp()
     updateInventory();
 
     //read config
-    std::string optString = getConfigOption("datalogger", "dataLogging", "1");
+    std::string optString = getConfigOption("dataLogging", "1");
     int r;
     if(sscanf(optString.c_str(), "%d", &r) == 1) {
         dataLogging = (r == 1);
     }
-    optString = getConfigOption("datalogger", "gpsLogging", "1");
+    optString = getConfigOption("gpsLogging", "1");
     if(sscanf(optString.c_str(), "%d", &r) == 1) {
         gpsLogging = (r == 1);
     }
-    optString = getConfigOption("datalogger", "rrdLogging", "1");
+    optString = getConfigOption("rrdLogging", "1");
     if(sscanf(optString.c_str(), "%d", &r) == 1) {
         rrdLogging = (r == 1);
     }

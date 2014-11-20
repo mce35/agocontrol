@@ -881,11 +881,11 @@ void AgoRpc::setupApp() {
     int threadId = 0;
 
     //get parameters
-    port = getConfigOption("rpc", "ports", "8008,8009s");
-    htdocs = getConfigOption("rpc", "htdocs", fs::path(BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR)));
-    certificate = getConfigOption("rpc", "certificate", getConfigPath("/rpc/rpc_cert.pem"));
-    numthreads = getConfigOption("rpc", "numthreads", "30");
-    domainname = getConfigOption("rpc", "domainname", "agocontrol");
+    port = getConfigOption("ports", "8008,8009s");
+    htdocs = getConfigOption("htdocs", fs::path(BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR)));
+    certificate = getConfigOption("certificate", getConfigPath("/rpc/rpc_cert.pem"));
+    numthreads = getConfigOption("numthreads", "30");
+    domainname = getConfigOption("domainname", "agocontrol");
 
     //ports
     while( port.find(',')!=std::string::npos )

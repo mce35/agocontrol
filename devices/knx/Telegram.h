@@ -45,7 +45,7 @@
 
 using namespace std;
 
-	enum TRAME_TYPE
+	enum FRAME_TYPE
 	{
 		EIBWRITE 	= 0x0080,
 		EIBREAD		= 0x0000,

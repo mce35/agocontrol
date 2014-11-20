@@ -1053,8 +1053,9 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
 void AgoZwave::setupApp() {
     std::string device;
 
-    device=getConfigOption("zwave", "device", "/dev/usbzwave");
-    if (getConfigOption("system", "units", "SI")!="SI") unitsystem=1;
+    device=getConfigOption("device", "/dev/usbzwave");
+    if (getConfigSectionOption("system", "units", "SI") != "SI")
+        unitsystem=1;
 
 
     pthread_mutexattr_t mutexattr;
@@ -1077,7 +1078,7 @@ void AgoZwave::setupApp() {
     Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
     Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
 
-    int retryTimeout = atoi(getConfigOption("zwave","retrytimeout","2000").c_str());
+    int retryTimeout = atoi(getConfigOption("retrytimeout","2000").c_str());
     OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
 
     Options::Get()->Lock();
@@ -1090,8 +1091,8 @@ void AgoZwave::setupApp() {
 
     Manager::Create();
     Manager::Get()->AddWatcher( on_notification, this );
-    // Manager::Get()->SetPollInterval(atoi(getConfigOption("zwave", "pollinterval", "300000").c_str()),true);
-    if (getConfigOption("zwave", "polling", "0") == "1") polling=true;
+    // Manager::Get()->SetPollInterval(atoi(getConfigOption("pollinterval", "300000").c_str()),true);
+    if (getConfigOption("polling", "0") == "1") polling=true;
     Manager::Get()->AddDriver(device);
 
     // Now we just wait for the driver to become ready

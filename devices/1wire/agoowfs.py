@@ -10,7 +10,7 @@ import agoclient
 
 CLIENT = agoclient.AgoConnection("owfs")
 
-DEVICE = agoclient.get_config_option("owfs", "device", "172.28.1.2")
+DEVICE = agoclient.get_config_option("owfs", "device", "/dev/usbowfs")
 
 
 # route stderr to syslog
@@ -25,7 +25,7 @@ SENSORS = {}
 
 syslog.syslog(syslog.LOG_NOTICE, "agoowfs.py startup")
 try:
-    ow.init(DEVICE)
+    ow.init(str(DEVICE))
 except ow.exNoController:
     syslog.syslog(syslog.LOG_ERROR, "can't open one wire device, aborting")
     time.sleep(5)

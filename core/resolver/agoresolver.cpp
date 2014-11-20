@@ -348,7 +348,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             reply["returncode"] = 0;
         } else if (content["command"] == "setconfig") {
             if ((content["section"].asString() != "") && (content["option"].asString() != "") && (content["value"].asString() != "")) {
-                setConfigOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str());
+                setConfigSectionOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str());
                 reply["returncode"]=0;
             } else {
                 reply["returncode"]=-1;
@@ -518,11 +518,12 @@ void AgoResolver::setupApp() {
 
     fs::path schemaPrefix;
 
-    schemaPrefix = getConfigOption("system", "schemapath", getConfigPath(SCHEMADIR));
-    discoverdelay = atoi(getConfigOption("system", "discoverdelay", "300").c_str());
-    persistence = (atoi(getConfigOption("system","devicepersistence", "1").c_str()) == 1);
+    // XXX: Why is this in system and not resolver config?
+    schemaPrefix = getConfigSectionOption("system", "schemapath", getConfigPath(SCHEMADIR));
+    discoverdelay = atoi(getConfigSectionOption("system", "discoverdelay", "300").c_str());
+    persistence = (atoi(getConfigSectionOption("system","devicepersistence", "0").c_str()) == 1);
 
-    systeminfo["uuid"] = getConfigOption("system", "uuid", "00000000-0000-0000-000000000000");
+    systeminfo["uuid"] = getConfigSectionOption("system", "uuid", "00000000-0000-0000-000000000000");
     systeminfo["version"] = AGOCONTROL_VERSION;
 
     scanSchemaDir(schemaPrefix);

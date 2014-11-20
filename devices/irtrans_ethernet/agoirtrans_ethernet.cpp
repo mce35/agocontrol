@@ -26,17 +26,24 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "agoclient.h"
-
-int irtrans_socket;
-struct sockaddr_in server_addr;
-struct hostent *host;
-
+#include "agoapp.h"
 
 using namespace std;
 using namespace agocontrol;
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+class AgoIrtrans_Ethernet: public AgoApp {
+private:
+    int irtrans_socket;
+    struct sockaddr_in server_addr;
+    struct hostent *host;
+
+    void setupApp();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+public:
+    AGOAPP_CONSTRUCTOR(AgoIrtrans_Ethernet);
+};
+
+qpid::types::Variant::Map AgoIrtrans_Ethernet::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     int internalid = atoi(content["internalid"].asString().c_str());
     AGO_TRACE() << "Command: " << content["command"] << " internal id: " << internalid;
@@ -52,18 +59,18 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
+void AgoIrtrans_Ethernet::setupApp() {
     std::string hostname;
     std::string port;
 
-    hostname=getConfigOption("irtrans_ethernet", "host", "192.168.80.12");
-    port=getConfigOption("irtrans_ethernet", "port", "21000");
+    hostname=getConfigOption("host", "192.168.80.12");
+    port=getConfigOption("port", "21000");
 
     host= (struct hostent *) gethostbyname((char *)hostname.c_str());
 
     if ((irtrans_socket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        perror("socket");
-        return false;
+        AGO_FATAL() << "Cannot open UDP socket";
+        throw StartupError();
     }
 
     server_addr.sin_family = AF_INET;
@@ -74,11 +81,8 @@ int main(int argc, char **argv) {
     server_addr.sin_addr = *((struct in_addr *)host->h_addr);
     bzero(&(server_addr.sin_zero),8);
 
-    AgoConnection agoConnection = AgoConnection("irtrans_ethernet");		
-
-    agoConnection.addDevice("1", "infraredblaster");
-    agoConnection.addHandler(commandHandler);
-
-    agoConnection.run();
+    agoConnection->addDevice("1", "infraredblaster");
+    addCommandHandler();
 }
 
+AGOAPP_ENTRY_POINT(AgoIrtrans_Ethernet);

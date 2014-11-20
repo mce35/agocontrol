@@ -17,13 +17,14 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include <tinyxml2.h>
 
 #include <eibclient.h>
 #include "Telegram.h"
 
-#include "agoclient.h"
+#include "agoapp.h"
 
 using namespace qpid::messaging;
 using namespace qpid::types;
@@ -31,21 +32,39 @@ using namespace tinyxml2;
 using namespace std;
 using namespace agocontrol;
 namespace fs = ::boost::filesystem;
+namespace pt = boost::posix_time;
 
-int polldelay = 0;
+class AgoKnx: public AgoApp {
+private:
+    int polldelay;
 
-Variant::Map deviceMap;
+    Variant::Map deviceMap;
 
-EIBConnection *eibcon;
-pthread_mutex_t mutexCon;
-pthread_t listenerThread;
+    std::string eibdurl;
+    EIBConnection *eibcon;
+    pthread_mutex_t mutexCon;
+    boost::thread *listenerThread;
 
-AgoConnection *agoConnection;
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void setupApp();
+    void cleanupApp();
+
+    bool loadDevices(fs::path &filename, Variant::Map& _deviceMap);
+    void reportDevices(Variant::Map devicemap);
+    string uuidFromGA(Variant::Map devicemap, string ga);
+    string typeFromGA(Variant::Map device, string ga);
+
+    void *listener();
+public:
+    AGOAPP_CONSTRUCTOR_HEAD(AgoKnx)
+        , polldelay(0)
+        {}
+};
 
 /**
  * parses the device XML file and creates a qpid::types::Variant::Map with the data
  */
-bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
+bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
     XMLDocument devicesFile;
     int returncode;
 
@@ -72,7 +91,17 @@ bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
                 XMLElement *nextga = ga;
                 while (nextga != NULL) {
                     AGO_DEBUG() << "GA: " << nextga->GetText() << " type: " << nextga->Attribute("type");
+                    string type = nextga->Attribute("type");
 
+                    if (type=="onoffstatus" || type=="levelstatus") {
+                        AGO_DEBUG() << "Requesting current status: " << nextga->GetText();
+                        Telegram *tg = new Telegram();
+                        eibaddr_t dest;
+                        dest = Telegram::stringtogaddr(nextga->GetText());
+                        tg->setGroupAddress(dest);
+                        tg->setType(EIBREAD);
+                        tg->sendTo(eibcon);
+                    }
                     content[nextga->Attribute("type")]=nextga->GetText();
                     nextga = nextga->NextSiblingElement();
                 }
@@ -87,7 +116,7 @@ bool loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
 /**
  * announces our devices in the devicemap to the resolver
  */
-void reportDevices(Variant::Map devicemap) {
+void AgoKnx::reportDevices(Variant::Map devicemap) {
     for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
         Variant::Map device;
         Variant::Map content;
@@ -101,7 +130,7 @@ void reportDevices(Variant::Map devicemap) {
 /**
  * looks up the uuid for a specific GA - this is needed to match incoming telegrams to the right device
  */
-string uuidFromGA(Variant::Map devicemap, string ga) {
+string AgoKnx::uuidFromGA(Variant::Map devicemap, string ga) {
     for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
         Variant::Map device;
 
@@ -119,7 +148,7 @@ string uuidFromGA(Variant::Map devicemap, string ga) {
 /**
  * looks up the type for a specific GA - this is needed to match incoming telegrams to the right event type
  */
-string typeFromGA(Variant::Map device, string ga) {
+string AgoKnx::typeFromGA(Variant::Map device, string ga) {
     for (Variant::Map::const_iterator itd = device.begin(); itd != device.end(); itd++) {
         if (itd->second.asString() == ga) {
             // AGO_TRACE() << "GA " << itd->second.asString() << " belongs to " << itd->first;
@@ -131,23 +160,50 @@ string typeFromGA(Variant::Map device, string ga) {
 /**
  * thread to poll the knx bus for incoming telegrams
  */
-void *listener(void *param) {
+void *AgoKnx::listener() {
     int received = 0;
 
     AGO_TRACE() << "starting listener thread";
-    while(true) {
+    while(!isExitSignaled()) {
         string uuid;
         pthread_mutex_lock (&mutexCon);
         received=EIB_Poll_Complete(eibcon);
         pthread_mutex_unlock (&mutexCon);
         switch(received) {
             case(-1): 
-                AGO_FATAL() << "cannot poll bus";
-                exit(-1);
+                AGO_WARNING() << "cannot poll bus";
+                try {
+                    boost::this_thread::sleep(pt::seconds(3));
+                } catch(boost::thread_interrupted &e) {
+                    AGO_DEBUG() << "listener thread cancelled";
+                    break;
+                }
+                AGO_INFO() << "reconnecting to eibd"; 
+                pthread_mutex_lock (&mutexCon);
+                EIBClose(eibcon);
+                eibcon = EIBSocketURL(eibdurl.c_str());
+                if (!eibcon) {
+                    pthread_mutex_unlock (&mutexCon);
+                    AGO_FATAL() << "cannot reconnect to eibd";
+                    signalExit();
+                } else {
+                    if (EIBOpen_GroupSocket (eibcon, 0) == -1) {
+                        AGO_FATAL() << "cannot reconnect to eibd";
+                        pthread_mutex_unlock (&mutexCon);
+                        signalExit();
+                    } else {
+                        pthread_mutex_unlock (&mutexCon);
+                        AGO_INFO() << "reconnect to eibd succeeded"; 
+                    }
+                }
                 break;
                 ;;
             case(0)	:
-                usleep(polldelay);
+                try {
+                    boost::this_thread::sleep(pt::milliseconds(polldelay));
+                } catch(boost::thread_interrupted &e) {
+                    AGO_DEBUG() << "listener thread cancelled";
+                }
                 break;
                 ;;
             default:
@@ -188,12 +244,13 @@ void *listener(void *param) {
                 break;
                 ;;
         }
+
     }
 
     return NULL;
 }
 
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
@@ -277,45 +334,52 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
     return returnval;
 }
 
-int main(int argc, char **argv) {
-    std::string eibdurl;
+void AgoKnx::setupApp() {
     fs::path devicesFile;
 
     // parse config
-    eibdurl=getConfigOption("knx", "url", "ip:127.0.0.1");
-    polldelay=atoi(getConfigOption("knx", "polldelay", "5000").c_str());
-    devicesFile=getConfigOption("knx", "devicesfile", getConfigPath("/knx/devices.xml"));
+    eibdurl=getConfigOption("url", "ip:127.0.0.1");
+    polldelay=atoi(getConfigOption("polldelay", "5000").c_str());
+    devicesFile=getConfigOption("devicesfile", getConfigPath("/knx/devices.xml"));
 
-    // load xml file into map
-    if (!loadDevices(devicesFile, deviceMap)) {
-        AGO_FATAL() << "can't load device xml";
-        exit(-1);
-    }
 
     AGO_INFO() << "connecting to eibd"; 
     eibcon = EIBSocketURL(eibdurl.c_str());
     if (!eibcon) {
         AGO_FATAL() << "can't connect to eibd url:" << eibdurl;
-        exit(-1);
+        throw StartupError();
     }
 
     if (EIBOpen_GroupSocket (eibcon, 0) == -1)
     {
         EIBClose(eibcon);
         AGO_FATAL() << "can't open EIB Group Socket";
-        exit(-1);
+        throw StartupError();
     }
 
-    // connect to broker
-    agoConnection = new AgoConnection("knx");
+    addCommandHandler();
 
+    // load xml file into map
+    if (!loadDevices(devicesFile, deviceMap)) {
+        AGO_FATAL() << "can't load device xml";
+        throw StartupError();
+    }
     // announce devices to resolver
     reportDevices(deviceMap);
 
     pthread_mutex_init(&mutexCon,NULL);
-    pthread_create(&listenerThread, NULL, listener, NULL);
 
-    agoConnection->addHandler(commandHandler);
-    agoConnection->run();
+    AGO_DEBUG() << "Spawning thread for KNX listener";
+    listenerThread = new boost::thread(boost::bind(&AgoKnx::listener, this));
 }
+
+void AgoKnx::cleanupApp() {
+    AGO_TRACE() << "waiting for listener thread to stop";
+    listenerThread->interrupt();
+    listenerThread->join();
+    AGO_DEBUG() << "closing eibd connection";
+    EIBClose(eibcon);
+}
+
+AGOAPP_ENTRY_POINT(AgoKnx);
 

@@ -39,9 +39,9 @@ int AgoDrain::appMain() {
     std::string broker;
 
     Variant::Map connectionOptions;
-    broker = getConfigOption("system", "broker", "localhost:5672");
-    connectionOptions["username"]=getConfigOption("system", "username", "agocontrol");
-    connectionOptions["password"]=getConfigOption("system", "password", "letmein");
+    broker = getConfigSectionOption("system", "broker", "localhost:5672");
+    connectionOptions["username"] = getConfigSectionOption("system", "username", "agocontrol");
+    connectionOptions["password"] = getConfigSectionOption("system", "password", "letmein");
 
     connectionOptions["reconnect"] = "true";
 
