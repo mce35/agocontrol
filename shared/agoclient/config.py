@@ -2,6 +2,7 @@ import os
 import os.path as ospath
 from augeas import Augeas
 from threading import Lock
+import logging
 
 from _directories import *
 
@@ -49,6 +50,9 @@ def init_directories():
     if LOCALSTATEDIR is None:
         set_localstate_dir(os.environ.get('AGO_LOCALSTATEDIR', DEFAULT_LOCALSTATEDIR))
 
+# TODO: Remove when all apps have been verified to NOT use CONFDIR without
+# first calling init_directories one way or another. Preferably by using get_config_path instead..
+init_directories()
 
 # Postpone until after CONFDIR has been configured
 augeas = None
