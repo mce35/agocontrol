@@ -1,3 +1,6 @@
+/**
+ * Add chunk function to Array object
+ */
 Array.prototype.chunk = function(chunkSize) {
     var array = this;
     return [].concat.apply([], array.map(function(elem, i) {
