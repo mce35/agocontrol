@@ -8,8 +8,8 @@ function dashBoard(agocontrol)
     self.agocontrol = agocontrol;
     self.itemsPerPage = 9;
     self.itemsPerRow = 3;
-    this.keyword = ko.observable("");
-    this.deviceList = ko.computed(function()
+    self.keyword = ko.observable("");
+    self.deviceList = ko.computed(function()
     {
         var list = self.agocontrol.devices();
         list = list.filter(function(dev)
@@ -40,8 +40,8 @@ function dashBoard(agocontrol)
         return list;
     });
 
-    this.page = ko.observable(1);
-    this.pages = ko.computed(function()
+    self.page = ko.observable(1);
+    self.pages = ko.computed(function()
     {
         var pages = [];
         var max = Math.ceil(self.deviceList().length / self.itemsPerPage);
@@ -52,7 +52,7 @@ function dashBoard(agocontrol)
         return pages;
     });
 
-    this.firstRow = ko.computed(function()
+    self.firstRow = ko.computed(function()
     {
         var currentList = self.deviceList().chunk(self.itemsPerPage);
         if (currentList.length < self.page())
@@ -67,7 +67,7 @@ function dashBoard(agocontrol)
         return [];
     });
 
-    this.secondRow = ko.computed(function()
+    self.secondRow = ko.computed(function()
     {
         var currentList = self.deviceList().chunk(self.itemsPerPage);
         if (currentList.length < self.page())
@@ -82,7 +82,7 @@ function dashBoard(agocontrol)
         return [];
     });
 
-    this.thirdRow = ko.computed(function()
+    self.thirdRow = ko.computed(function()
     {
         var currentList = self.deviceList().chunk(self.itemsPerPage);
         if (currentList.length < self.page())
@@ -98,7 +98,7 @@ function dashBoard(agocontrol)
     });
 
     //change page
-    this.switchPage = function(item)
+    self.switchPage = function(item)
     {
         self.page(item.idx);
     };
@@ -106,12 +106,8 @@ function dashBoard(agocontrol)
     //clear current search
     self.clearSearch = function()
     {
-        console.log('plouf');
         self.keyword("");
     };
-
-    //buildfloorPlanList(this);
-    //buildPluginNamesList(this);
 }
 
 /**
@@ -130,14 +126,6 @@ function init_template(path, params, agocontrol)
         return 'templates/devices/empty';
     }.bind(model);
 
-    /*model.mainTemplate = function() {
-        return "dashboard";
-    }.bind(model);*/
-
-    /*model.navigation = function() {
-        return ""; // No navigation
-    }.bind(model);*/
-
-    //ko.applyBindings(model);
     return model;
 }
+
