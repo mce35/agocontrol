@@ -60,7 +60,7 @@ function device(agocontrol, obj, uuid) {
     }
 
     this.multigraphThumb = ko.observable();
-    this.getThumbGraph = function(deferred)
+    this.getMultigraphThumb = function(deferred)
     {
         var content = {};
         content.command = "getthumb";
@@ -83,17 +83,17 @@ function device(agocontrol, obj, uuid) {
             {
                 //no thumb available
                 //TODO notif something?
-                console.log('request getthumb failed');
+                console.error('request getthumb failed');
             }
         }, 10);
     };
 
-    //refresh dashboard thumbs
-    this.refreshThumbs = function()
+    //refresh dashboard multigraph thumb
+    self.refreshMultigraphThumbs = function()
     {
-        for( var i=0; i<thumbs.length; i++ )
+        for( var i=0; i<self.agocontrol.multigraphThumbs.length; i++ )
         {
-            self.getThumbGraph(thumbs[i]);
+            self.getMultigraphThumb(self.agocontrol.multigraphThumbs[i]);
         }
     };
 
@@ -101,30 +101,29 @@ function device(agocontrol, obj, uuid) {
     {
         dataLoggerController = uuid;
         //load deferred thumbs
-        /*TODO
-        for( var i=0; i<deferredThumbsLoading.length; i++ )
+        for( var i=0; i<self.agocontrol.deferredMultigraphThumbs.length; i++ )
         {
-            this.getThumbGraph(deferredThumbsLoading[i]);
+            self.getMultigraphThumb(deferredThumbsLoading[i]);
         }
-        deferredThumbsLoading = [];
+        self.agocontrol.deferredMultigraphThumbs = [];
         //auto resfresh thumbs periodically
-        window.setInterval(this.refreshThumbs, 300000); */
+        window.setInterval(self.refreshMultigraphThumbs, 120000);
     }
 
-    if (this.devicetype == "multigraph")
+    if (self.devicetype == "multigraph")
     {
         var def = {'internalid':obj.internalid, 'observable':self.multigraphThumb};
         if( dataLoggerController )
         {
             //get thumb right now
-            this.getThumbGraph(def);
+            self.getMultigraphThumb(def);
         }
         else
         {
             //defer thumb loading
-            //TODO deferredThumbsLoading.push(def);
+            self.agocontrol.deferredMultigraphThumbs.push(def);
         }
-        thumbs.push(def);
+        self.agocontrol.multigraphThumbs.push(def);
     }
 
     if (this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/) || this.devicetype=="multigraph" )

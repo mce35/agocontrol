@@ -4,9 +4,13 @@ function Agocontrol()
 };
 
 Agocontrol.prototype = {
-    //members
+    //private members
     subscription: null,
     url: 'jsonrpc',
+    multigraphThumbs: [],
+    deferredMultigraphThumbs: [],
+
+    //public members
     devices: ko.observableArray([]),
     environment: ko.observableArray([]),
     rooms: ko.observableArray([]),
