@@ -26,6 +26,7 @@ Agocontrol.prototype = {
     agoController: null,
     scenarioController: null,
     eventController: null,
+    inventory:null,
 
     //send command   
     sendCommand: function(content, callback, timeout, async)
@@ -159,14 +160,8 @@ Agocontrol.prototype = {
             return;
         }
 
-        if (response == null)
-        {
-            response = {
-                result : JSON.parse(localStorage.inventoryCache)
-            };
-        }
-
         //fill members
+        self.inventory = response.result;
         self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
         for( uuid in response.result.floorplans )
         {

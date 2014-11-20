@@ -7,6 +7,7 @@ function SystemConfig(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
+    self.inventory = ko.observable(JSON.stringify(self.agocontrol.inventory, undefined, 2));
 }
 
 /**
