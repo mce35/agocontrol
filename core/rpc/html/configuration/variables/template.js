@@ -3,23 +3,29 @@
  * 
  * @returns {variablesConfig}
  */
-function variablesConfig() {
-    this.hasNavigation = ko.observable(true);
-    this.variables = ko.observableArray([]);
-
+function VariablesConfig(agocontrol)
+{
     var self = this;
+    self.agocontrol = agocontrol;
+
+    //after model render
+    self.afterRender = function()
+    {
+        self.agocontrol.stopDatatableLinksPropagation('configTable');
+    };
 
     this.makeEditable = function(row) {
         window.setTimeout(function() {
             $(row).find('td.edit_var').editable(function(value, settings) {
                 var content = {};
                 content.variable = $(this).data('variable');
-                content.uuid = agoController;
+                content.uuid = self.agocontrol.agoController;
                 content.command = "setvariable";
                 content.value = value;
-                sendCommand(content);
+                self.agocontrol.sendCommand(content);
                 return value;
-            }, {
+            },
+            {
                 data : function(value, settings) {
                     return value;
                 },
@@ -28,40 +34,42 @@ function variablesConfig() {
         }, 1);
     };
 
-    this.createVariable = function(data, event) {
-        $('#configTable').block({
-            message : '<div>Please wait ...</div>',
-            css : {
-                border : '3px solid #a00'
-            }
-        });
+    this.createVariable = function(data, event)
+    {
+        self.agocontrol.block($('#configTable'));
         var content = {};
         content.variable = $("#varName").val();
         content.value = "True";
         content.command = 'setvariable';
-        content.uuid = agoController;
-        sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0) {
-                self.variables.push({
+        content.uuid = self.agocontrol.agoController;
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result && res.result.returncode == 0)
+            {
+                self.agocontrol.variables.push({
                     variable : content.variable,
                     value : content.value,
                     action : ""
                 });
-            } else {
-                alert("Error while creating variable!");
             }
-            $('#configTable').unblock();
+            else
+            {
+                notif.error("Error while creating variable!");
+            }
+            self.agocontrol.unblock($('#configTable'));
         });
     };
 
-    this.deleteVariable = function(item, event) {
+    this.deleteVariable = function(item, event)
+    {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
         var buttons = {};
-        buttons[button_no] = function() {
+        buttons[button_no] = function()
+        {
             $("#confirmDelete").dialog("close");
         };
-        buttons[button_yes] = function() {
+        buttons[button_yes] = function()
+        {
             self.doDeleteVariable(item, event);
             $("#confirmDelete").dialog("close");
         };
@@ -73,45 +81,34 @@ function variablesConfig() {
         });
     };
 
-    this.doDeleteVariable = function(item, event) {
-        $('#configTable').block({
-            message : '<div>Please wait ...</div>',
-            css : {
-                border : '3px solid #a00'
-            }
-        });
+    this.doDeleteVariable = function(item, event)
+    {
+        self.agocontrol.block($('#configTable'));
         var content = {};
         content.variable = item.variable;
-        content.uuid = agoController;
+        content.uuid = self.agocontrol.agoController;
         content.command = 'delvariable';
-        sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0) {
-                self.variables.remove(function(e) {
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result && res.result.returncode == 0)
+            {
+                self.agocontrol.variables.remove(function(e) {
                     return e.variable == item.variable;
                 });
-                delete localStorage.inventoryCache;
-            } else {
-                alert("Error while deleting variable!");
             }
-            $('#configTable').unblock();
+            else
+            {
+                notif.error("Error while deleting variable!");
+            }
+            self.agocontrol.unblock($('#configTable'));
         });
     };
-
 }
 
 /**
  * Initalizes the model
  */
-function init_variablesConfig() {
-    model = new variablesConfig();
-
-    model.mainTemplate = function() {
-        return "configuration/variables";
-    }.bind(model);
-
-    model.navigation = function() {
-        return "navigation/configuration";
-    }.bind(model);
-
-    ko.applyBindings(model);
+function init_template(path, params, agocontrol)
+{
+    var model = new VariablesConfig(agocontrol);
+    return model;
 }

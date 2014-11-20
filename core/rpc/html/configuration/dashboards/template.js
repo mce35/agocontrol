@@ -1,41 +1,71 @@
 /**
  * Model class
  * 
- * @returns {floorPlanConfig}
+ * @returns {DashboardConfig}
  */
-function floorPlanConfig() {
-    this.hasNavigation = ko.observable(true);
-    this.floorplans = ko.observableArray([]);
-
+function DashboardConfig(agocontrol)
+{
     var self = this;
+    self.agocontrol = agocontrol;
+    self.newDashboardName = ko.observable('');
 
-    this.makeEditable = function(row, item) {
-        window.setTimeout(function() {
-            $(row).find('td.edit_fp').editable(function(value, settings) {
-                var content = {};
-                content.floorplan = item.uuid;
-                content.uuid = agoController;
-                content.command = "setfloorplanname";
-                content.name = value;
-                sendCommand(content);
-                return value;
-            }, {
-                data : function(value, settings) {
+    //after model render
+    self.afterRender = function()
+    {
+        self.agocontrol.stopDatatableLinksPropagation('floorPlanTable');
+    };
+
+    //filter dashboard that don't need to be displayed
+    //need to do that because datatable odd is broken when filtering items using knockout
+    self.dashboards = ko.computed(function()
+    {
+        var dashboards = [];
+        for( var i=0; i<self.agocontrol.dashboards().length; i++ )
+        {
+            if( self.agocontrol.dashboards()[i].editable )
+            {
+                dashboards.push(self.agocontrol.dashboards()[i]);
+            }
+        }
+        return dashboards;
+    });
+
+    self.makeEditable = function(row, item)
+    {
+        window.setTimeout(function()
+        {
+            $(row).find('td.edit_fp').editable(
+                function(value, settings)
+                {
+                    var content = {};
+                    content.floorplan = item.uuid;
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setfloorplanname";
+                    content.name = value;
+                    self.agocontrol.sendCommand(content);
                     return value;
                 },
-                onblur : "cancel"
-            });
+                {
+                    data : function(value, settings)
+                    {
+                        return value;
+                    },
+                    onblur : "cancel"
+                });
         }, 1);
     };
 
-    this.deletePlan = function(item, event) {
+    self.deletePlan = function(item, event)
+    {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
         var buttons = {};
-        buttons[button_no] = function() {
+        buttons[button_no] = function()
+        {
             $("#confirmDelete").dialog("close");
         };
-        buttons[button_yes] = function() {
+        buttons[button_yes] = function()
+        {
             self.doDeletePlan(item, event);
             $("#confirmDelete").dialog("close");
         };
@@ -47,49 +77,51 @@ function floorPlanConfig() {
         });
     };
 
-    this.doDeletePlan = function(item, event) {
-        $('#floorPlanTable').block({
-            message : '<div>Please wait ...</div>',
-            css : {
-                border : '3px solid #a00'
-            }
-        });
+    self.doDeletePlan = function(item, event)
+    {
+        self.agocontrol.block($('#floorPlanTable'));
         var content = {};
         content.floorplan = item.uuid;
-        content.uuid = agoController;
+        content.uuid = self.agocontrol.agoController;
         content.command = 'deletefloorplan';
-        sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0) {
-                self.floorplans.remove(function(e) {
-                    return e.uuid == item.uuid;
-                });
-                delete localStorage.inventoryCache;
-            } else {
-                alert("Error while deleting floorplan!");
+        self.agocontrol.sendCommand(content, function(res)
+        {
+            if (res.result && res.result.returncode == 0)
+            {
+                self.agocontrol.getDashboards();
             }
-            $('#floorPlanTable').unblock();
+            else
+            {
+                notif.error("Error while deleting floorplan!");
+            }
+            self.agocontrol.unblock($('#floorPlanTable'));
         });
     };
 
-    this.editPlan = function(item) {
-        document.location.href = "/?floorplan&fp=" + item.uuid;
+    self.createDashboard = function()
+    {
+        if( $.trim(self.newDashboardName())!='' )
+        {
+            self.agocontrol.block($('#floorPlanTable'));
+            var content = {};
+            content.command = "setfloorplanname";
+            content.uuid = self.agocontrol.agoController;
+            content.name = self.newDashboardName();
+            self.agocontrol.sendCommand(content, function(response)
+            {
+                self.newDashboardName('');
+                self.agocontrol.getDashboards();
+                self.agocontrol.unblock($('#floorPlanTable'));
+            });
+        }
     };
-
 }
 
 /**
  * Initalizes the model
  */
-function init_floorplanConfig() {
-    model = new floorPlanConfig();
-
-    model.mainTemplate = function() {
-        return "configuration/floorplan";
-    }.bind(model);
-
-    model.navigation = function() {
-        return "navigation/configuration";
-    }.bind(model);
-
-    ko.applyBindings(model);
+function init_template(path, params, agocontrol)
+{
+    model = new DashboardConfig(agocontrol);
+    return model;
 }

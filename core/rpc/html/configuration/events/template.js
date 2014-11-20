@@ -1,57 +1,53 @@
 /**
  * Model class
  * 
- * @returns {eventConfig}
+ * @returns {EventsConfig}
  */
-function eventConfig() {
-    this.hasNavigation = ko.observable(true);
-    this.deviceCount = ko.observable(0);
-    this.devices = ko.observableArray([]);
-    this.events = ko.observableArray([]);
-
+function EventsConfig(agocontrol)
+{
     var self = this;
-    this.openEvent = null;
-    this.current_id = 0;
-    this.map = {};
-    this.eventMap = {};
-    this.deviceList = {};
+    self.eventName = ko.observable();
+    self.agocontrol = agocontrol;
+    self.openEvent = null;
+    self.current_id = 0;
+    self.map = {};
+    self.events = ko.computed(function() {
+        //get only events
+        var events = self.agocontrol.devices().filter(function(d) {
+            return d.devicetype=='event';
+        });
 
-    this.devices.subscribe(function() {
-        var tmp = [];
-        for ( var i = 0; i < self.devices().length; i++) {
-            var dev = self.devices()[i];
-            if (dev.devicetype == "event") {
-                tmp.push(dev);
-            }
-        }
-        /* No events add a dummy to trigger afterRender */
-        if (tmp.length == 0) {
-            tmp.push({
-                name : "dummy",
-                uuid : "0",
-                action : "",
-            });
-        }
+        //sort devices
+        self.agocontrol.devices().sort(function(a, b) {
+            return a.name.localeCompare(b.name);
+        });
 
-        self.events(tmp);
-
-        self.eventMap = schema.events;
-        self.deviceList = deviceMap;
+        return events;
     });
+
+    //script entry point
+    self.afterRender = function()
+    {
+        if( document.getElementsByClassName("eventBuilder")[0] )
+        {
+            //template fully rendered
+            //maybe it's possible to do it better
+            self.initBuilder();
+            self.agocontrol.stopDatatableLinksPropagation('configTable');
+        }
+    };
 
     /**
      * Initalizes the empty event creation builder
      */
-    this.initBuilder = function() {
-        self.eventMap = schema.events;
-        self.deviceList = deviceMap;
-
+    this.initBuilder = function()
+    {
         // Clean
         document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
         document.getElementById("actionBuilder").innerHTML = "";
 
         // Build new
-        var eventSelector = self.getEventSelector(self.eventMap, document.getElementsByClassName("eventBuilder")[0]);
+        var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementsByClassName("eventBuilder")[0]);
         eventSelector.id = "eventSelector";
         document.getElementsByClassName("eventBuilder")[0].appendChild(eventSelector);
         self.addNesting(document.getElementsByClassName("eventBuilder")[0], "and");
@@ -61,46 +57,53 @@ function eventConfig() {
     /**
      * Callback for editable table
      */
-    this.makeEditable = function(row) {
+    this.makeEditable = function(row)
+    {
         window.setTimeout(function() {
             $(row).find('td.edit_event').editable(function(value, settings) {
                 var content = {};
                 content.device = $(this).data('uuid');
-                content.uuid = agoController;
+                content.uuid = self.agocontrol.agoController;
                 content.command = "setdevicename";
                 content.name = value;
-                sendCommand(content);
+                self.agocontrol.sendCommand(content);
                 return value;
-            }, {
-                data : function(value, settings) {
+            },
+            {
+                data : function(value, settings)
+                {
                     return value;
                 },
                 onblur : "cancel"
             });
 
             // Initial build
-            if (!document.getElementsByClassName("eventBuilder")[0]._set) {
+            /*if (!document.getElementsByClassName("eventBuilder")[0]._set)
+            {
                 self.initBuilder();
                 document.getElementsByClassName("eventBuilder")[0]._set = true;
             }
 
             self.events.remove(function(ev) {
                 return ev.uuid == '0';
-            });
+            });*/
         }, 1);
     };
 
     /* Used for parsing event into JSON structure */
-    this.getCriteriaIdx = function(str) {
+    this.getCriteriaIdx = function(str)
+    {
         var regex = /.+([0-9]).+/g;
         var matches = regex.exec(str);
-        if (!matches) {
+        if (!matches)
+        {
             return false;
         }
         return matches[1];
     };
 
-    this.parseSubOp = function(str, criteria) {
+    this.parseSubOp = function(str, criteria)
+    {
         var data = str.split(/(or|and)/g);
         var sub = [];
         var type = "";
@@ -108,14 +111,17 @@ function eventConfig() {
             return $.trim(e) != "";
         });
 
-        for ( var i = 0; i < data.length; i++) {
+        for ( var i = 0; i < data.length; i++)
+        {
             var tmp = data[i];
-            if (type == "" && (tmp == "and" || tmp == "or")) {
+            if (type == "" && (tmp == "and" || tmp == "or"))
+            {
                 type = tmp;
                 continue;
             }
             var idx = self.getCriteriaIdx(tmp);
-            if (idx !== false) {
+            if (idx !== false)
+            {
                 sub.push(criteria[idx]);
             }
         }
@@ -127,24 +133,30 @@ function eventConfig() {
     };
 
     /* Used for parsing event into JSON structure */
-    this.parseGroup = function(str, criteria) {
+    this.parseGroup = function(str, criteria)
+    {
         var operation = "";
         var subs = [];
         var parsed = "";
 
-        for ( var i = str.length - 1; i >= 0; i--) {
-            if (str[i] == "(") {
-                for ( var j = i + 1; j < str.length; j++) {
-                    if (str[j] == ")") {
+        for ( var i = str.length - 1; i >= 0; i--)
+        {
+            if (str[i] == "(")
+            {
+                for ( var j = i + 1; j < str.length; j++)
+                {
+                    if (str[j] == ")")
+                    {
                         break;
                     }
                     operation += str[j];
                 }
 
-                if (operation != "" && !operation.match(/^sub/)) {
-                    if (operation.indexOf("sub") != -1) {
+                if (operation != "" && !operation.match(/^sub/))
+                {
+                    if (operation.indexOf("sub") != -1)
+                    {
                         operation = operation.substring(0, operation.indexOf("sub"));
-
                     }
 
                     subs.push(self.parseSubOp(operation, criteria));
@@ -153,10 +165,12 @@ function eventConfig() {
                      * In case it is "open ended" we want to leave the operator
                      * for the top level
                      */
-                    if ($.trim(operation).substr(-3) == "and") {
+                    if ($.trim(operation).substr(-3) == "and")
+                    {
                         operation = operation.substr(0, operation.length - 5);
                     }
-                    if ($.trim(operation).substr(-2) == "or") {
+                    if ($.trim(operation).substr(-2) == "or")
+                    {
                         operation = operation.substr(0, operation.length - 4);
                     }
                 }
@@ -165,54 +179,62 @@ function eventConfig() {
                 str = str.substr(0, i) + "sub{" + (subs.length - 1) + "}" + str.substr(j + 1);
 
                 /* No more unparsed criteria done */
-                if (parsed.indexOf("criteria") == -1) {
+                if (parsed.indexOf("criteria") == -1)
+                {
                     break;
                 }
 
-                if (operation != "") {
+                if (operation != "")
+                {
                     operation = "";
                 }
             }
         }
 
         /* Only one level no need for parsing */
-        if (subs.length == 1) {
+        if (subs.length == 1)
+        {
             return subs[0];
         }
 
         /* Clean up string */
         parsed = parsed.replace(/\{/g, "[");
         parsed = parsed.replace(/\}/g, "]");
-    parsed = parsed.replace(/\)/g, "");
-    parsed = parsed.replace(/\(/g, "");
+        parsed = parsed.replace(/\)/g, "");
+        parsed = parsed.replace(/\(/g, "");
 
-    /* Parse the top level */
-    var data = parsed.split(/(or|and)/g);
+        /* Parse the top level */
+        var data = parsed.split(/(or|and)/g);
 
-    var sub = [];
-    var type = "";
-    for ( var i = 0; i < data.length; i++) {
-        var tmp = data[i];
-        if (tmp == "and" || tmp == "or") {
-            type = tmp;
-            continue;
+        var sub = [];
+        var type = "";
+        for( var i = 0; i < data.length; i++)
+        {
+            var tmp = data[i];
+            if (tmp == "and" || tmp == "or")
+            {
+                type = tmp;
+                continue;
+            }
+            var idx = self.getCriteriaIdx(tmp);
+            if (idx !== false)
+            {
+                sub.push(subs[idx]);
+            }
         }
-        var idx = self.getCriteriaIdx(tmp);
-        if (idx !== false) {
-            sub.push(subs[idx]);
-        }
-    }
 
-    return {
-        "sub" : sub,
-        "type" : type
-    };
+        return {
+            "sub" : sub,
+            "type" : type
+        };
     };
 
     /* Used for parsing event into JSON structure */
-    this.mapToJSON = function(input) {
+    this.mapToJSON = function(input)
+    {
         var criteria = {};
-        for ( var idx in input.criteria) {
+        for ( var idx in input.criteria)
+        {
             criteria[idx] = {};
             criteria[idx].path = input.event;
             criteria[idx].comp = input.criteria[idx].comp;
@@ -221,25 +243,29 @@ function eventConfig() {
         }
 
         var res = {};
-        if (input.nesting == "True") {
+        if (input.nesting == "True")
+        {
             res.elements = [];
-        } else {
+        }
+        else
+        {
             res.elements = [ self.parseGroup("(" + input.nesting + ")", criteria) ];
         }
         res.path = input.event;
-
+    
         return res;
     };
 
     /**
      * Opens edit event dialog
      */
-    this.editEvent = function(item) {
+    this.editEvent = function(item)
+    {
         var content = {};
         content.command = "getevent";
         content.event = item.uuid;
-        content.uuid = eventController;
-        sendCommand(content, function(res) {
+        content.uuid = self.agocontrol.eventController;
+        self.agocontrol.sendCommand(content, function(res) {
             // Swap active selector
             document.getElementById("eventBuilder").className = "";
             document.getElementById("eventBuilderEdit").className = "eventBuilder";
@@ -277,15 +303,17 @@ function eventConfig() {
     /**
      * Sends the event edit command
      */
-    this.doEditEvent = function() {
+    this.doEditEvent = function()
+    {
         this.createEventMap(self.createJSON());
         var content = {};
-        content.uuid = eventController;
+        content.uuid = self.agocontrol.eventController;
         content.command = "setevent";
         content.eventmap = self.map;
         content.event = self.openEvent;
-        sendCommand(content, function(res) {
-            if (res.result && res.result.event) {
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result && res.result.event)
+            {
                 $("#editEventDialog").dialog("close");
             }
         });
@@ -294,50 +322,56 @@ function eventConfig() {
     /**
      * Sends the create event commands
      */
-    this.createEvent = function() {
-        if ($("#eventName").val() == "") {
-            alert("Please supply an event name!");
+    this.createEvent = function()
+    {
+        if( $.trim(self.eventName())=='' )
+        {
+            notif.warning("Please supply an event name!");
             return;
         }
 
+        self.agocontrol.block($('#configTable'));
         this.createEventMap(self.createJSON());
-
         var content = {};
-        content.uuid = eventController;
+        content.uuid = self.agocontrol.eventController;
         content.command = "setevent";
         content.eventmap = self.map;
-
-        sendCommand(content, function(res) {
-            if (res.result && res.result.event) {
+    
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result && res.result.event)
+            {
                 var cnt = {};
-                cnt.uuid = agoController;
+                cnt.uuid = self.agocontrol.agoController;
                 cnt.device = res.result.event;
                 cnt.command = "setdevicename";
-                cnt.name = $("#eventName").val();
-                sendCommand(cnt, function(nameRes) {
-                    if (nameRes.result && nameRes.result.returncode == "0") {
-                        self.events.push({
-                            name : cnt.name,
-                            uuid : res.result.event,
-                            action : ""
-                        });
+                cnt.name = self.eventName();
+                self.agocontrol.sendCommand(cnt, function(nameRes) {
+                    if (nameRes.result && nameRes.result.returncode == "0")
+                    {
+                        self.agocontrol.getDevices(false);
                         self.initBuilder();
                     }
+                    self.agocontrol.unblock($('#configTable'));
                 });
-            } else {
-                alert("ERROR");
+            }
+            else
+            {
+                notif.error("ERROR");
             }
         });
     };
 
-    this.deleteEvent = function(item, event) {
+    this.deleteEvent = function(item, event)
+    {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
         var buttons = {};
-        buttons[button_no] = function() {
+        buttons[button_no] = function()
+        {
             $("#confirmDelete").dialog("close");
         };
-        buttons[button_yes] = function() {
+        buttons[button_yes] = function()
+        {
             self.doDeleteEvent(item, event);
             $("#confirmDelete").dialog("close");
         };
@@ -352,58 +386,68 @@ function eventConfig() {
     /**
      * Sends the delete event command
      */
-    this.doDeleteEvent = function(item, event) {
-        $('#configTable').block({
-            message : '<div>Please wait ...</div>',
-            css : {
-                border : '3px solid #a00'
-            }
-        });
+    this.doDeleteEvent = function(item, event)
+    {
+        self.agocontrol.block($('#configTable'));
         var content = {};
         content.event = item.uuid;
-        content.uuid = eventController;
+        content.uuid = self.agocontrol.eventController;
         content.command = 'delevent';
-        sendCommand(content, function(res) {
-            if (res.result && res.result.result == 0) {
-                self.events.remove(function(e) {
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result && res.result.result == 0)
+            {
+                self.agocontrol.devices.remove(function(e) {
                     return e.uuid == item.uuid;
                 });
-                delete localStorage.inventoryCache;
-            } else {
-                alert("Error while deleting event!");
             }
-            $('#configTable').unblock();
+            else
+            {
+                notif.error("Error while deleting event!");
+            }
+            self.agocontrol.unblock($('#configTable'))
         });
     };
 
     /**
      * Helper for event map creation
      */
-    this.parseElement = function(element) {
+    this.parseElement = function(element)
+    {
         // 'empty' events like 'sun did rise'
-        if (element.sub === undefined) {
+        if (element.sub === undefined)
+        {
             return "True";
         }
 
         var nesting = "";
 
-        for ( var j = 0; j < element.sub.length; j++) {
+        for ( var j = 0; j < element.sub.length; j++)
+        {
             var obj = element.sub[j];
-            if (obj.param !== undefined) {
+            if (obj.param !== undefined)
+            {
                 self.map.criteria[self.idx] = {};
                 self.map.criteria[self.idx].lval = obj.param;
                 self.map.criteria[self.idx].comp = obj.comp;
                 self.map.criteria[self.idx].rval = obj.value;
-                if (nesting == "") {
+                if (nesting == "")
+                {
                     nesting += "(criteria[" + self.idx + "]";
-                } else {
+                }
+                else
+                {
                     nesting += " " + element.type + " criteria[" + self.idx + "]";
                 }
                 self.idx = self.idx + 1;
-            } else {
-                if (nesting == "") {
+            }
+            else
+            {
+                if (nesting == "")
+                {
                     nesting += "(";
-                } else {
+                }
+                else
+                {
                     nesting += " " + element.type;
                 }
 
@@ -411,18 +455,19 @@ function eventConfig() {
             }
         }
 
-        if (nesting == "") {
+        if (nesting == "")
+        {
             return "(True)";
         }
 
         return nesting + ")";
-
     };
 
     /**
      * Creates the event map for the resolver
      */
-    this.createEventMap = function(data) {
+    this.createEventMap = function(data)
+    {
         self.map = {};
         self.map.criteria = {};
         self.map.nesting = "";
@@ -430,7 +475,8 @@ function eventConfig() {
 
         self.idx = 0;
 
-        for ( var i = 0; i < data.elements.length; i++) {
+        for ( var i = 0; i < data.elements.length; i++)
+        {
             self.map.nesting += self.parseElement(data.elements[i]);
             self.idx = self.idx + 1;
         }
@@ -443,18 +489,21 @@ function eventConfig() {
         self.map.nesting = self.map.nesting.replace(/^(and|or)/g, "");
         self.map.nesting = $.trim(self.map.nesting);
 
-        if (self.map.criteria == {}) {
+        if (self.map.criteria == {})
+        {
             self.map.nesting = "True";
         }
 
         // Set the action
         self.map.action = {};
         self.map.action.command = document.getElementById("commandSelect").options[document.getElementById("commandSelect").selectedIndex].value;
-        self.map.action.uuid = self.deviceList[document.getElementById("deviceListSelect").options[document.getElementById("deviceListSelect").selectedIndex].value].uuid;
+        self.map.action.uuid = self.agocontrol.devices()[document.getElementById("deviceListSelect").options[document.getElementById("deviceListSelect").selectedIndex].value].uuid;
 
         var paramList = document.getElementsByClassName("cmdParam");
-        if (paramList) {
-            for ( var i = 0; i < paramList.length; i++) {
+        if (paramList)
+        {
+            for ( var i = 0; i < paramList.length; i++)
+            {
                 self.map.action[paramList[i].name] = paramList[i].value;
             }
         }
@@ -463,7 +512,8 @@ function eventConfig() {
     /**
      * Adds a nested element
      */
-    this.addNesting = function(container, type) {
+    this.addNesting = function(container, type)
+    {
         var dl = document.createElement("dl");
         var dd = document.createElement("dd");
         dl.setAttribute("class", "operator");
@@ -503,7 +553,8 @@ function eventConfig() {
         var adSbutton = document.createElement("button");
         adSbutton.appendChild(document.createTextNode("Add criteria"));
         adSbutton._list = subList;
-        adSbutton.onclick = function() {
+        adSbutton.onclick = function()
+        {
             self.addSegment(this._list);
         };
 
@@ -512,7 +563,8 @@ function eventConfig() {
         var adNbutton = document.createElement("button");
         adNbutton.appendChild(document.createTextNode("Add nesting"));
         adNbutton._list = dl;
-        adNbutton.onclick = function() {
+        adNbutton.onclick = function()
+        {
             self.addNesting(this._list.lastChild, "and");
         };
 
@@ -521,9 +573,11 @@ function eventConfig() {
         var button = document.createElement("button");
         button.appendChild(document.createTextNode("delete"));
         button._list = dl;
-        button.onclick = function() {
-            if (this._list.parentNode == document.getElementsByClassName("eventBuilder")[0] && document.getElementsByClassName("operator").length == 1) {
-                alert("Last element cannot be deleted!");
+        button.onclick = function()
+        {
+            if (this._list.parentNode == document.getElementsByClassName("eventBuilder")[0] && document.getElementsByClassName("operator").length == 1)
+            {
+                notif.warning("Last element cannot be deleted!");
                 return;
             }
             this._list.parentNode.removeChild(this._list);
@@ -534,48 +588,59 @@ function eventConfig() {
         var button = document.createElement("button");
         button.appendChild(document.createTextNode("<"));
         button._list = dl;
-        button.onclick = function() {
-            if (this._list.parentNode == document.getElementsByClassName("eventBuilder")[0]) {
-                alert("This is already a top level element!");
+        button.onclick = function()
+        {
+            if (this._list.parentNode == document.getElementsByClassName("eventBuilder")[0])
+            {
+                notif.warning("This is already a top level element!");
                 return;
             }
             var parentElem = dl.parentNode;
             var newParent = dl.parentNode.parentNode.parentNode;
             parentElem.removeChild(dl);
-            if (parentElem.nextSibling) {
+            if (parentElem.nextSibling)
+            {
                 newParent.insertBefore(dl, parentElem.nextSibling);
-            } else {
+            }
+            else
+            {
                 newParent.appendChild(dl);
             }
         };
 
         dd.appendChild(button);
-
+    
         var button = document.createElement("button");
         button.appendChild(document.createTextNode(">"));
         button._list = dl;
-        button.onclick = function() {
+        button.onclick = function()
+        {
             var ops = document.getElementsByClassName("operator");
-            if (ops.length == 1) {
-                alert("This is already a top level element!");
+            if (ops.length == 1)
+            {
+                notif.warning("This is already a top level element!");
                 return;
-            } else {
+            }
+            else
+            {
                 var parentElem = dl.parentNode;
                 var newParent = dl;
-                while ((newParent = newParent.previousSibling) != null) {
-                    if (newParent.nodeType == 1) {
+                while ((newParent = newParent.previousSibling) != null)
+                {
+                    if (newParent.nodeType == 1)
+                    {
                         break;
                     }
                 }
 
-                if (newParent.className != "operator") {
-                    alert("Item is already at the maximum indent level!");
+                if (newParent.className != "operator")
+                {
+                    notif.warning("Item is already at the maximum indent level!");
                     return;
                 }
                 parentElem.removeChild(dl);
                 newParent.lastChild.appendChild(dl);
             }
-
         };
 
         dd.appendChild(button);
@@ -592,25 +657,30 @@ function eventConfig() {
     /**
      * Adds a new segment
      */
-    this.addSegment = function(container, eventObj) {
+    this.addSegment = function(container, eventObj)
+    {
         var dd = document.createElement("dd");
 
         var span = document.createElement("span");
         span.className = "eventParams";
-
+    
         dd.appendChild(span);
-
-        if (eventObj) {
-            self.renderEvent(eventObj.param.type, eventObj.path, self.eventMap[eventObj.path], span, eventObj);
-        } else {
+    
+        if (eventObj)
+        {
+            self.renderEvent(eventObj.param.type, eventObj.path, self.agocontrol.schema().events[eventObj.path], span, eventObj);
+        }
+        else
+        {
             var selector = document.getElementById("eventSelector");
-            self.renderEvent("event", selector.options[selector.selectedIndex].value, self.eventMap[selector.options[selector.selectedIndex].value], span);
+            self.renderEvent("event", selector.options[selector.selectedIndex].value, self.agocontrol.schema().events[selector.options[selector.selectedIndex].value], span);
         }
 
         var button = document.createElement("button");
         button.appendChild(document.createTextNode("delete"));
         button._listItem = dd;
-        button.onclick = function() {
+        button.onclick = function()
+        {
             this._listItem.parentNode.removeChild(this._listItem);
         };
         dd.appendChild(button);
@@ -620,35 +690,44 @@ function eventConfig() {
     /**
      * Converts one operation to JSON
      */
-    this.operationToJSON = function(tmp) {
+    this.operationToJSON = function(tmp)
+    {
         var op = {};
         op.sub = [];
         var radios = tmp.firstChild.getElementsByTagName("input");
-        for ( var j = 0; j < radios.length; j++) {
-            if (radios[j].checked) {
+        for ( var j = 0; j < radios.length; j++)
+        {
+            if (radios[j].checked)
+            {
                 op.type = radios[j].value;
             }
         }
 
-        if (tmp.getElementsByClassName("subList").length > 0) {
+        if (tmp.getElementsByClassName("subList").length > 0)
+        {
             var subList = tmp.getElementsByClassName("subList")[0];
-            for ( var j = 0; j < subList.childNodes.length; j++) {
+            for ( var j = 0; j < subList.childNodes.length; j++)
+            {
                 var eventObj = {};
                 var selects = subList.childNodes[j].getElementsByTagName("select");
                 var selector = document.getElementById("eventSelector");
                 eventObj.path = selector.options[selector.selectedIndex].value;
 
-                if (selects.length > 0) {
+                if (selects.length > 0)
+                {
                     var type = selects[0].options[selects[0].selectedIndex].value;
-                    if (type == "event") {
+                    if (type == "event")
+                    {
                         eventObj.comp = selects[2].options[selects[2].selectedIndex].value;
 
                         eventObj.param = {};
                         eventObj.param.type = "event";
                         eventObj.param.parameter = selects[1].options[selects[1].selectedIndex].value;
-
+    
                         eventObj.value = subList.childNodes[j].getElementsByTagName("input")[0].value;
-                    } else if (type == "device") {
+                    }
+                    else if (type == "device")
+                    {
                         eventObj.comp = selects[3].options[selects[3].selectedIndex].value;
 
                         eventObj.param = {};
@@ -658,7 +737,8 @@ function eventConfig() {
 
                         eventObj.value = subList.childNodes[j].getElementsByTagName("input")[0].value;
                     }
-                    if (type == "variable") {
+                    if (type == "variable")
+                    {
                         eventObj.comp = selects[2].options[selects[2].selectedIndex].value;
                         eventObj.param = {};
                         eventObj.param.type = "variable";
@@ -670,8 +750,10 @@ function eventConfig() {
             }
 
             var subOps = subList.parentNode.childNodes;
-            for ( var j = 0; j < subOps.length; j++) {
-                if (subOps[j].className == "operator") {
+            for ( var j = 0; j < subOps.length; j++)
+            {
+                if (subOps[j].className == "operator")
+                {
                     op.sub.push(self.operationToJSON(subOps[j]));
                 }
             }
@@ -683,11 +765,14 @@ function eventConfig() {
     /**
      * Create a JSON structure out of the whole event
      */
-    this.createJSON = function() {
+    this.createJSON = function()
+    {
         var ops = document.getElementsByClassName("operator");
         var res = [];
-        for ( var i = 0; i < ops.length; i++) {
-            if (ops[i].parentNode != document.getElementsByClassName("eventBuilder")[0]) {
+        for ( var i = 0; i < ops.length; i++)
+        {
+            if (ops[i].parentNode != document.getElementsByClassName("eventBuilder")[0])
+            {
                 continue;
             }
             res.push(self.operationToJSON(ops[i]));
@@ -705,18 +790,24 @@ function eventConfig() {
     /**
      * Creates a new operation
      */
-    this.createOperation = function(sub, container, type, toplevel) {
-        if (toplevel) {
+    this.createOperation = function(sub, container, type, toplevel)
+    {
+        if (toplevel)
+        {
             self.createOperation(sub[0].sub, container, sub[0].type);
             return;
         }
         var res = self.addNesting(container, type);
         var dl = res[0];
         var subList = res[1];
-        for ( var i = 0; i < sub.length; i++) {
-            if (sub[i].type) {
+        for ( var i = 0; i < sub.length; i++)
+        {
+            if (sub[i].type)
+            {
                 self.createOperation(sub[i].sub, dl.lastChild, sub[i].type);
-            } else {
+            }
+            else
+            {
                 self.addSegment(subList, sub[i]);
             }
         }
@@ -725,22 +816,26 @@ function eventConfig() {
     /**
      * (re) Builds the list from JSON
      */
-    this.buildListFromJSON = function(input, container) {
+    this.buildListFromJSON = function(input, container)
+    {
         document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
-        var eventSelector = self.getEventSelector(self.eventMap, document.getElementsByClassName("eventBuilder")[0]);
+        var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementsByClassName("eventBuilder")[0]);
         eventSelector.id = "eventSelector";
         document.getElementsByClassName("eventBuilder")[0].appendChild(eventSelector);
 
         var inputList = input.elements;
         inputList.reverse();
-        for ( var i = 0; i < inputList.length; i++) {
+        for ( var i = 0; i < inputList.length; i++)
+        {
             var op = inputList[i];
             self.createOperation(op.sub, document.getElementsByClassName("eventBuilder")[0], op.type);
         }
 
         var eventSelector = document.getElementById("eventSelector");
-        for ( var i = 0; i < eventSelector.options.length; i++) {
-            if (eventSelector.options[i].value == input.path) {
+        for ( var i = 0; i < eventSelector.options.length; i++)
+        {
+            if (eventSelector.options[i].value == input.path)
+            {
                 eventSelector.options[i].selected = true;
                 break;
             }
@@ -750,20 +845,25 @@ function eventConfig() {
     /**
      * Creates the event selector
      */
-    this.getEventSelector = function(events, container, defaultPath) {
+    this.getEventSelector = function(events, container, defaultPath)
+    {
         var eventList = document.createElement("select");
-        eventList.onchange = function() {
+        eventList.onchange = function()
+        {
             var path = eventList.options[eventList.selectedIndex].value;
             var eventParams = document.getElementsByClassName("eventParams");
-            for ( var i = 0; i < eventParams.length; i++) {
+            for ( var i = 0; i < eventParams.length; i++)
+            {
                 self.renderEvent("event", path, events[path], eventParams[i]);
             }
         };
         var i = 0;
-        for (path in events) {
+        for (path in events)
+        {
             var opt = new Option(events[path].description, path);
             eventList.options[i] = opt;
-            if (defaultPath && defaultPath == path) {
+            if (defaultPath && defaultPath == path)
+            {
                 eventList.options[i].selected = true;
             }
             i++;
@@ -775,7 +875,8 @@ function eventConfig() {
     /**
      * Renders an event
      */
-    this.renderEvent = function(selectType, path, event, container, defaultValues) {
+    this.renderEvent = function(selectType, path, event, container, defaultValues)
+    {
         container.innerHTML = "";
 
         var params = null;
@@ -786,54 +887,76 @@ function eventConfig() {
         baseType.options[2] = new Option("variable", "variable");
         container.appendChild(baseType);
 
-        if (selectType == "event") {
+        if (selectType == "event")
+        {
             baseType.selectedIndex = 0;
-        } else if (selectType == "device") {
+        }
+        else if (selectType == "device")
+        {
             baseType.selectedIndex = 1;
-        } else if (selectType == "variable") {
+        }
+        else if (selectType == "variable")
+        {
             baseType.selectedIndex = 2;
         }
 
-        baseType.onchange = function() {
+        baseType.onchange = function()
+        {
             var type = baseType.options[baseType.selectedIndex].value;
             self.renderEvent(type, path, event, container, defaultValues);
         };
 
-        if (selectType == "event") {
+        if (selectType == "event")
+        {
             params = document.createElement("select");
             params.name = path + ".param";
-            if (event.parameters !== undefined) {
-                for ( var i = 0; i < event.parameters.length; i++) {
+            if (event.parameters !== undefined)
+            {
+                for ( var i = 0; i < event.parameters.length; i++)
+                {
                     var opt = null;
-                    if (event.parameters[i] == "uuid") {
+                    if (event.parameters[i] == "uuid")
+                    {
                         opt = new Option("device", event.parameters[i]);
-                    } else {
+                    }
+                    else
+                    {
                         opt = new Option(event.parameters[i], event.parameters[i]);
                     }
                     params.options[i] = opt;
-                    if (defaultValues && event.parameters[i] == defaultValues.param.parameter) {
+                    if (defaultValues && event.parameters[i] == defaultValues.param.parameter)
+                    {
                         params.options[i].selected = true;
                     }
                 }
             }
 
             container.appendChild(params);
-        } else if (selectType == "device") {
+        }
+        else if (selectType == "device")
+        {
             var deviceSelect = document.createElement("select");
             deviceSelect.name = path + ".device";
-            self.deviceList.sort(function(a, b) {
+            /*self.agocontrol.devices().sort(function(a, b)
+            {
                 return a.room.localeCompare(b.room);
-            });
-            for ( var i = 0; i < self.deviceList.length; i++) {
-                if (self.deviceList[i].name) {
+            });*/
+            for ( var i = 0; i < self.agocontrol.devices().length; i++)
+            {
+                if (self.agocontrol.devices()[i].name)
+                {
                     var dspName = "";
-                    if (self.deviceList[i].room) {
-                        dspName = self.deviceList[i].room + " - " + self.deviceList[i].name;
-                    } else {
-                        dspName = self.deviceList[i].name;
+                    if (self.agocontrol.devices()[i].room)
+                    {
+                        dspName = self.agocontrol.devices()[i].room + " - " + self.agocontrol.devices()[i].name;
                     }
-                    deviceSelect.options[deviceSelect.options.length] = new Option(dspName, self.deviceList[i].uuid);
-                    if (defaultValues && self.deviceList[i].uuid == defaultValues.param.uuid) {
+                    else
+                    {
+                        dspName = self.agocontrol.devices()[i].name;
+                    }
+                    deviceSelect.options[deviceSelect.options.length] = new Option(dspName, self.agocontrol.devices()[i].uuid);
+                    if (defaultValues && self.agocontrol.devices()[i].uuid == defaultValues.param.uuid)
+                    {
                         deviceSelect.options[deviceSelect.options.length - 1].selected = true;
                     }
                 }
@@ -842,14 +965,18 @@ function eventConfig() {
             params = document.createElement("select");
             params.name = path + ".param";
 
-            var _buildParamList = function(dev) {
+            var _buildParamList = function(dev)
+            {
                 params.options.length = 0;
                 params.options[0] = new Option("state", "state");
-                if (dev.values) {
+                if (dev.values)
+                {
                     var i = 0;
-                    for ( var k in dev.values()) {
+                    for ( var k in dev.values())
+                    {
                         params.options[i + 1] = new Option(k, k);
-                        if (defaultValues && k == defaultValues.param.parameter) {
+                        if (defaultValues && k == defaultValues.param.parameter)
+                        {
                             params.options[i + 1].selected = true;
                         }
                         i++;
@@ -857,14 +984,17 @@ function eventConfig() {
                 }
             };
 
-            _buildParamList(self.deviceList[deviceSelect.options.selectedIndex]);
+            _buildParamList(self.agocontrol.devices()[deviceSelect.options.selectedIndex]);
 
-            deviceSelect.onchange = function() {
+            deviceSelect.onchange = function()
+            {
                 var selectedUuid = deviceSelect.options[deviceSelect.selectedIndex].value;
                 var dev = {};
-                for ( var i = 0; i < self.deviceList.length; i++) {
-                    if (self.deviceList[i].uuid == selectedUuid) {
-                        dev = self.deviceList[i];
+                for ( var i = 0; i < self.agocontrol.devices().length; i++)
+                {
+                    if (self.agocontrol.devices()[i].uuid == selectedUuid)
+                    {
+                        dev = self.agocontrol.devices()[i];
                         break;
                     }
                 }
@@ -874,13 +1004,17 @@ function eventConfig() {
             container.appendChild(deviceSelect);
             container.appendChild(params);
             deviceSelect.onchange();
-        } else if (selectType == "variable") {
+        }
+        else if (selectType == "variable")
+        {
             params = document.createElement("select");
             params.name = path + ".param";
             var i = 0;
-            for ( var k in variables) {
+            for ( var k in variables)
+            {
                 params.options[i] = new Option(k, k);
-                if (defaultValues && k == defaultValues.param.name) {
+                if (defaultValues && k == defaultValues.param.name)
+                {
                     params.options[i].selected = true;
                 }
                 i++;
@@ -897,9 +1031,12 @@ function eventConfig() {
         comp.options[4] = new Option(">=", "gte");
         comp.options[5] = new Option("<=", "lte");
 
-        if (defaultValues) {
-            for ( var i = 0; comp.options.length; i++) {
-                if (comp.options[i].value == defaultValues.comp) {
+        if (defaultValues)
+        {
+            for ( var i = 0; comp.options.length; i++)
+            {
+                if (comp.options[i].value == defaultValues.comp)
+                {
                     comp.options[i].selected = true;
                     break;
                 }
@@ -908,14 +1045,17 @@ function eventConfig() {
 
         var inputField = document.createElement("input");
         inputField.name = path + ".value";
-        if (defaultValues) {
+        if (defaultValues)
+        {
             inputField.value = defaultValues.value;
         }
 
         /* Show variable value placeholder */
-        if (selectType == "variable") {
+        if (selectType == "variable")
+        {
             inputField.setAttribute("placeholder", variables[params.options[0].value]);
-            params.onchange = function() {
+            params.onchange = function()
+            {
                 inputField.setAttribute("placeholder", variables[params.options[params.selectedIndex].value]);
             };
         }
@@ -924,52 +1064,62 @@ function eventConfig() {
         container.appendChild(inputField);
 
         /* Add a device selector when someone selects the uuid field of event */
-        if (selectType == "event") {
+        if (selectType == "event")
+        {
             var deviceSelect = document.createElement("select");
             deviceSelect.name = path + ".device";
-            self.deviceList.sort(function(a, b) {
-                return a.room.localeCompare(b.room);
-            });
-            for ( var i = 0; i < self.deviceList.length; i++) {
-                if (self.deviceList[i].name) {
+            for ( var i = 0; i < self.agocontrol.devices().length; i++)
+            {
+                if (self.agocontrol.devices()[i].name)
+                {
                     var dspName = "";
-                    if (self.deviceList[i].room) {
-                        dspName = self.deviceList[i].room + " - " + self.deviceList[i].name;
-                    } else {
-                        dspName = self.deviceList[i].name;
+                    if (self.agocontrol.devices()[i].room)
+                    {
+                        dspName = self.agocontrol.devices()[i].room + " - " + self.agocontrol.devices()[i].name;
                     }
-                    deviceSelect.options[deviceSelect.options.length] = new Option(dspName, self.deviceList[i].uuid);
-                    if (defaultValues && defaultValues.param.parameter == "uuid" && self.deviceList[i].uuid == defaultValues.value) {
+                    else
+                    {
+                        dspName = self.agocontrol.devices()[i].name;
+                    }
+                    deviceSelect.options[deviceSelect.options.length] = new Option(dspName, self.agocontrol.devices()[i].uuid);
+                    if (defaultValues && defaultValues.param.parameter == "uuid" && self.agocontrol.devices()[i].uuid == defaultValues.value)
+                    {
                         deviceSelect.selectedIndex = deviceSelect.options.length - 1;
                     }
                 }
             }
-            deviceSelect.onchange = function() {
+            deviceSelect.onchange = function()
+            {
                 inputField.value = deviceSelect.options[deviceSelect.selectedIndex].value;
             };
             deviceSelect.style.display = "none";
             container.appendChild(deviceSelect);
-            params.onchange = function() {
-                if (params.options[params.selectedIndex].value == "uuid") {
+            params.onchange = function()
+            {
+                if (params.options[params.selectedIndex].value == "uuid")
+                {
                     deviceSelect.style.display = "";
                     inputField.style.display = "none";
-                } else {
+                }
+                else
+                {
                     deviceSelect.style.display = "none";
                     inputField.style.display = "";
                     inputField.value = "";
                 }
             };
-            if (defaultValues && defaultValues.param.parameter == "uuid") {
+            if (defaultValues && defaultValues.param.parameter == "uuid")
+            {
                 params.onchange();
             }
         }
-
     };
 
     /**
      * Creates the action builder
      */
-    this.createActionBuilder = function(container, defaults) {
+    this.createActionBuilder = function(container, defaults)
+    {
         container.innerHTML = "";
         var deviceListSelect = document.createElement("select");
         deviceListSelect.id = "deviceListSelect";
@@ -977,23 +1127,27 @@ function eventConfig() {
         commandSelect.id = "commandSelect";
         var commandParams = document.createElement("fieldset");
         var j = 0;
-        self.deviceList.sort(function(a, b) {
-            return a.room.localeCompare(b.room);
-        });
-        for ( var i = 0; i < self.deviceList.length; i++) {
-            var dev = self.deviceList[i];
-            if (schema.devicetypes[dev.devicetype] === undefined || schema.devicetypes[dev.devicetype].commands.length == 0) {
+        for ( var i = 0; i < self.agocontrol.devices().length; i++)
+        {
+            var dev = self.agocontrol.devices()[i];
+            if (self.agocontrol.schema().devicetypes[dev.devicetype] === undefined || self.agocontrol.schema().devicetypes[dev.devicetype].commands.length == 0)
+            {
                 continue;
             }
-            if (self.deviceList[i].name) {
+            if (self.agocontrol.devices()[i].name)
+            {
                 var dspName = "";
-                if (self.deviceList[i].room) {
-                    dspName = self.deviceList[i].room + " - " + self.deviceList[i].name;
-                } else {
-                    dspName = self.deviceList[i].name;
+                if (self.agocontrol.devices()[i].room)
+                {
+                    dspName = self.agocontrol.devices()[i].room + " - " + self.agocontrol.devices()[i].name;
+                }
+                else
+                {
+                    dspName = self.agocontrol.devices()[i].name;
                 }
                 deviceListSelect.options[j] = new Option(dspName, i);
-                if (defaults && defaults.uuid == dev["uuid"]) {
+                if (defaults && defaults.uuid == dev["uuid"])
+                {
                     deviceListSelect.options[j].selected = true;
                 }
                 j++;
@@ -1003,63 +1157,80 @@ function eventConfig() {
         container.appendChild(deviceListSelect);
         container.appendChild(commandSelect);
         container.appendChild(commandParams);
-
-        deviceListSelect.onchange = function() {
-            if (deviceListSelect.options[deviceListSelect.selectedIndex] == undefined) {
+    
+        deviceListSelect.onchange = function()
+        {
+            if (deviceListSelect.options[deviceListSelect.selectedIndex] == undefined)
+            {
                 return;
             }
             var idx = deviceListSelect.options[deviceListSelect.selectedIndex].value;
-            self.createCommandSelector(commandSelect, commandParams, self.deviceList[idx].devicetype);
+            self.createCommandSelector(commandSelect, commandParams, self.agocontrol.devices()[idx].devicetype);
         };
-        if (!defaults) {
+        if (!defaults)
+        {
             deviceListSelect.onchange();
-        } else {
+        }
+        else
+        {
             var idx = deviceListSelect.options[deviceListSelect.selectedIndex].value;
-            self.createCommandSelector(commandSelect, commandParams, self.deviceList[idx].devicetype, defaults);
+            self.createCommandSelector(commandSelect, commandParams, self.agocontrol.devices()[idx].devicetype, defaults);
         }
     };
 
     /**
      * Creates the command selector
      */
-    this.createCommandSelector = function(commandSelect, commandParams, type, defaults) {
+    this.createCommandSelector = function(commandSelect, commandParams, type, defaults)
+    {
         commandSelect.options.length = 0;
-        for ( var i = 0; i < schema.devicetypes[type].commands.length; i++) {
-            commandSelect.options[i] = new Option(schema.commands[schema.devicetypes[type].commands[i]].name, schema.devicetypes[type].commands[i]);
-            if (defaults && defaults.command == schema.devicetypes[type].commands[i]) {
+        for ( var i = 0; i < self.agocontrol.schema().devicetypes[type].commands.length; i++)
+        {
+            commandSelect.options[i] = new Option(self.agocontrol.schema().commands[self.agocontrol.schema().devicetypes[type].commands[i]].name, self.agocontrol.schema().devicetypes[type].commands[i]);
+            if (defaults && defaults.command == self.agocontrol.schema().devicetypes[type].commands[i])
+            {
                 commandSelect.options[i].selected = true;
             }
         }
 
-        commandSelect.onchange = function() {
-            var cmd = schema.commands[commandSelect.options[commandSelect.selectedIndex].value];
+        commandSelect.onchange = function()
+        {
+            var cmd = self.agocontrol.schema().commands[commandSelect.options[commandSelect.selectedIndex].value];
             commandParams.innerHTML = "";
-            if (cmd.parameters !== undefined) {
+            if (cmd.parameters !== undefined)
+            {
                 commandParams.style.display = "";
                 var legend = document.createElement("legend");
                 legend.style.fontWeight = 700;
                 legend.appendChild(document.createTextNode("Parameters"));
                 commandParams.appendChild(legend);
-                for ( var param in cmd.parameters) {
+                for ( var param in cmd.parameters)
+                {
                     var label = document.createElement("label");
                     label.appendChild(document.createTextNode(cmd.parameters[param].name + ": "));
                     label.setAttribute("for", cmd.parameters[param].name);
                     commandParams.appendChild(label);
 
-                    if (cmd.parameters[param].type == 'option') {
+                    if (cmd.parameters[param].type == 'option')
+                    {
                         var select = document.createElement("select");
                         select.name = param;
                         select.className = "cmdParam";
                         select.id = cmd.parameters[param].name;
                         for ( var i = 0; i < cmd.parameters[param].options.length; i++)
+                        {
                             select.options[select.options.length] = new Option(cmd.parameters[param].options[i], cmd.parameters[param].options[i]);
-                        commandParams.appendChild(select);
-                    } else {
+                        }
+                    commandParams.appendChild(select);
+                    }
+                    else
+                    {
                         var input = document.createElement("input");
                         input.name = param;
                         input.id = cmd.parameters[param].name;
                         input.className = "cmdParam";
-                        if (defaults && defaults[param]) {
+                        if (defaults && defaults[param])
+                        {
                             input.value = defaults[param];
                         }
                         commandParams.appendChild(input);
@@ -1068,28 +1239,24 @@ function eventConfig() {
                     var br = document.createElement("br");
                     commandParams.appendChild(br);
                 }
-            } else {
+            }
+            else
+            {
                 commandParams.style.display = "none";
             }
         };
-
+    
         commandSelect.onchange();
     };
+
 }
 
 /**
  * Initalizes the model
  */
-function init_eventConfig() {
-    model = new eventConfig();
-
-    model.mainTemplate = function() {
-        return "configuration/events";
-    }.bind(model);
-
-    model.navigation = function() {
-        return "navigation/configuration";
-    }.bind(model);
-
-    ko.applyBindings(model);
+function init_template(path, params, agocontrol)
+{
+    var model = new EventsConfig(agocontrol);
+    return model;
 }
+

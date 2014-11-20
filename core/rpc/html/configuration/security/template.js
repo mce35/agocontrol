@@ -1,41 +1,58 @@
 /**
  * Model class
  * 
- * @returns {securityConfig}
+ * @returns {SecurityConfig}
  */
-function securityConfig() {
-    this.hasNavigation = ko.observable(true);
-    this.devices = ko.observableArray([]);
-
+function SecurityConfig(agocontrol)
+{
+    var self = this;
+    self.agocontrol = agocontrol;
     this.zoneMap = ko.observable([]);
-
     this.housemode = ko.observable("");
     this.housemodeNames = ko.observableArray([]);
-
     this.housemodes = ko.observableArray([]);
     this.zones = ko.observableArray([]);
-
-    this.securityController = null;
-
-    var self = this;
+    self.securityController = null;
 
     /* Possible delays, we use a drop down so use a list */
     this.possibleDelays = ko.observableArray([]);
     this.possibleDelays.push("inactive");
     this.possibleDelays.push(0);
-    for ( var i = 1; i <= 256; i *= 2) {
+    for ( var i = 1; i <= 256; i *= 2)
+    {
         this.possibleDelays.push(i);
     }
+
+    self.initSecurity = function()
+    {
+        //get security controller uuid
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
+        {
+            if( self.agocontrol.devices()[i].devicetype=="securitycontroller" )
+            {
+                self.securityController = self.agocontrol.devices()[i].uuid;
+                console.log(self.securityController);
+                break;
+            }
+        };
+        if( self.securityController )
+        {
+            self.getZones();
+            self.getHouseMode();
+        }
+    };
 
     /**
      * Get the zones and place into a map
      */
-    this.getZones = function() {
+    this.getZones = function()
+    {
         var content = {};
         content.command = "getzones";
-        content.uuid = self.securityController.uuid;
-        sendCommand(content, function(res) {
-            if (res.result.result == 0 && res.result.zonemap) {
+        content.uuid = self.securityController;
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result.result == 0 && res.result.zonemap)
+            {
                 self.zoneMap(res.result.zonemap);
             }
         });
@@ -44,34 +61,21 @@ function securityConfig() {
     /**
      * Gets the currently active housemode
      */
-    this.getHouseMode = function() {
+    this.getHouseMode = function()
+    {
         var content = {};
         content.command = "gethousemode";
-        content.uuid = self.securityController.uuid;
-        sendCommand(content, function(res) {
-            if (res.result.result == 0 && res.result.housemode) {
+        content.uuid = self.securityController;
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result.result == 0 && res.result.housemode)
+            {
                 self.housemode(res.result.housemode);
             }
         });
     };
 
-    /**
-     * Wait for the securityController and build the zone map
-     */
-    this.devices.subscribe(function() {
-        var list = self.devices().filter(function(dev) {
-            return dev.devicetype == "securitycontroller";
-        });
-
-        if (list.length > 0) {
-            self.securityController = list[0];
-        }
-
-        self.getZones();
-        self.getHouseMode();
-    });
-
-    this.zoneMap.subscribe(function() {
+    this.zoneMap.subscribe(function()
+    {
         // Current zone map
         var zoneMap = self.zoneMap();
 
@@ -85,10 +89,13 @@ function securityConfig() {
         // Housemode names
         var modeNames = [];
 
-        /* Build list of zones and index mapping */
-        for ( var mode in zoneMap) {
-            for ( var i = 0; i < zoneMap[mode].length; i++) {
-                if (zoneIdx[zoneMap[mode][i].zone] === undefined) {
+        // Build list of zones and index mapping
+        for ( var mode in zoneMap)
+        {
+            for ( var i = 0; i < zoneMap[mode].length; i++)
+            {
+                if (zoneIdx[zoneMap[mode][i].zone] === undefined)
+                {
                     zones.push({
                         name : zoneMap[mode][i].zone
                     });
@@ -97,13 +104,16 @@ function securityConfig() {
             }
         }
 
-        /* Build a housemode list with delays, "inactive" means not set */
-        for ( var mode in zoneMap) {
+        //Build a housemode list with delays, "inactive" means not set
+        for ( var mode in zoneMap)
+        {
             var delays = [];
-            for ( var i = 0; i < zones.length; i++) {
+            for ( var i = 0; i < zones.length; i++)
+            {
                 delays[i] = "inactive";
             }
-            for ( var i = 0; i < zoneMap[mode].length; i++) {
+            for ( var i = 0; i < zoneMap[mode].length; i++)
+            {
                 delays[zoneIdx[zoneMap[mode][i].zone]] = zoneMap[mode][i].delay;
             }
             modes.push({
@@ -121,10 +131,12 @@ function securityConfig() {
     /**
      * Adds a new housemode
      */
-    this.addHouseMode = function() {
+    this.addHouseMode = function()
+    {
         var name = $("#modeName").val();
 
-        if ($.trim(name) == "") {
+        if ($.trim(name) == "")
+        {
             notif.error("#emptyMode");
             return;
         }
@@ -132,8 +144,10 @@ function securityConfig() {
         var modes = self.housemodes();
         self.housemodes([]);
         var delays = [];
-        if (modes.length > 0) {
-            for ( var i = 0; i < modes[0].delays.length; i++) {
+        if (modes.length > 0)
+        {
+            for ( var i = 0; i < modes[0].delays.length; i++)
+            {
                 delays.push("inactive");
             }
         }
@@ -148,15 +162,18 @@ function securityConfig() {
     /**
      * Adds a new zone
      */
-    this.addZone = function() {
+    this.addZone = function()
+    {
         var name = $("#zoneName").val();
 
-        if (self.housemodes().length == 0) {
+        if (self.housemodes().length == 0)
+        {
             notif.error("#modeFirst");
             return;
         }
 
-        if ($.trim(name) == "") {
+        if ($.trim(name) == "")
+        {
             notif.error("#emptyZone");
             return;
         }
@@ -166,7 +183,8 @@ function securityConfig() {
         });
         var modes = self.housemodes();
         self.housemodes([]);
-        for ( var i = 0; i < modes.length; i++) {
+        for ( var i = 0; i < modes.length; i++)
+        {
             modes[i].delays.push("inactive");
         }
         self.housemodes(modes);
@@ -176,7 +194,9 @@ function securityConfig() {
     /**
      * Saves the current zone matrix
      */
-    this.save = function() {
+    this.save = function()
+    {
+        self.agocontrol.block($('#securityTable'));
         // Current zone map
         var zoneMap = self.zoneMap();
         var zones = self.zones();
@@ -199,8 +219,10 @@ function securityConfig() {
 
         $('.housemode').each(function(idx, e) {
             var list = [];
-            for ( var i = 0; i < numDelays; i++) {
-                if (delayList[i] != "inactive") {
+            for ( var i = 0; i < numDelays; i++)
+            {
+                if (delayList[i] != "inactive")
+                {
                     list.push({
                         delay : parseInt(delayList[i]),
                         zone : idx2zone[i]
@@ -212,59 +234,65 @@ function securityConfig() {
         });
 
         var pin = window.prompt("PIN:");
-        if (pin) {
+        if (pin)
+        {
             var content = {};
             content.command = "setzones";
-            content.uuid = self.securityController.uuid;
+            content.uuid = self.securityController;
             content.zonemap = newMap;
             content.pin = pin;
-            sendCommand(content, function(res) {
-                if (res.result.error) {
+            self.agocontrol.sendCommand(content, function(res) {
+                if (res.result.error)
+                {
                     notif.error(res.result.error);
                     return;
                 }
                 self.getZones();
+                self.agocontrol.unblock($('#securityTable'));
             });
         }
-
+        else
+        {
+            self.agocontrol.unblock($('#securityTable'));
+        }
     };
 
     /**
      * Changes the current house mode this requires the user to enter the pin
      */
-    this.changeHouseMode = function() {
+    this.changeHouseMode = function()
+    {
         var content = {};
         var pin = window.prompt("PIN:");
-        if (pin) {
+        if (pin)
+        {
             content.command = "sethousemode";
-            content.uuid = self.securityController.uuid;
+            content.uuid = self.securityController;
             content.mode = $('#selectedMode').val();
             content.pin = pin;
-            sendCommand(content, function(res) {
-                if (res.result.error) {
+            self.agocontrol.sendCommand(content, function(res) {
+                if (res.result.error)
+                {
                     notif.error(res.result.error);
-                } else {
+                }
+                else
+                {
                     self.getHouseMode();
                 }
             });
         }
     };
 
+    self.initSecurity();
 }
+
+
 /**
  * Initalizes the model
  */
-function init_securityConfig() {
-    model = new securityConfig();
-
-    model.mainTemplate = function() {
-        return "configuration/security";
-    }.bind(model);
-
-    model.navigation = function() {
-        return "navigation/configuration";
-    }.bind(model);
-
-    ko.applyBindings(model);
-
+function init_template(path, params, agocontrol)
+{
+    var model = new SecurityConfig(agocontrol);
+    return model;
 }
+

@@ -3,23 +3,32 @@
  * 
  * @returns {roomConfig}
  */
-function roomConfig() {
-    this.hasNavigation = ko.observable(true);
-    this.rooms = ko.observableArray([]);
-
+function RoomConfig(agocontrol)
+{
     var self = this;
+    self.agocontrol = agocontrol;
+    self.roomName = ko.observable('');
 
-    this.makeEditable = function(row, item) {
-        window.setTimeout(function() {
+    //after model render
+    self.afterRender = function()
+    {
+        self.agocontrol.stopDatatableLinksPropagation('configTable');
+    };
+
+    self.makeEditable = function(row, item)
+    {
+        window.setTimeout(function()
+        {
             $(row).find('td.edit_room').editable(function(value, settings) {
                 var content = {};
                 content.room = item.uuid;
-                content.uuid = agoController;
+                content.uuid = self.agocontrol.agoController;
                 content.command = "setroomname";
                 content.name = value;
-                sendCommand(content);
+                self.agocontrol.sendCommand(content);
                 return value;
-            }, {
+            }, 
+            {
                 data : function(value, settings) {
                     return value;
                 },
@@ -28,40 +37,46 @@ function roomConfig() {
         }, 1);
     };
 
-    this.createRoom = function(data, event) {
-        $('#configTable').block({
-            message : '<div>Please wait ...</div>',
-            css : {
-                border : '3px solid #a00'
-            }
-        });
-        var content = {};
-        content.name = $("#roomName").val();
-        content.command = 'setroomname';
-        content.uuid = agoController;
-        sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0) {
-                self.rooms.push({
-                    uuid : res.result.uuid,
-                    name : content.name,
-                    location : "",
-                    action : ""
-                });
-            } else {
-                alert("Error while creating room!");
-            }
-            $('#configTable').unblock();
-        });
+    self.createRoom = function(data, event)
+    {
+        if( $.trim(self.roomName())!='' )
+        {
+            self.agocontrol.block($('#configTable'));
+            var content = {};
+            content.name = self.roomName();
+            content.command = 'setroomname';
+            content.uuid = self.agocontrol.agoController;
+            self.agocontrol.sendCommand(content, function(res) {
+                self.roomName('');
+                if (res.result && res.result.returncode == 0)
+                {
+                    self.agocontrol.rooms.push({
+                        uuid : res.result.uuid,
+                        name : content.name,
+                        location : "",
+                        action : ""
+                    });
+                }
+                else
+                {
+                    notif.error("Error while creating room!");
+                }
+                self.agocontrol.unblock($('#configTable'));
+            });
+        }
     };
 
-    this.deleteRoom = function(item, event) {
+    self.deleteRoom = function(item, event)
+    {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
         var buttons = {};
-        buttons[button_no] = function() {
+        buttons[button_no] = function()
+        {
             $("#confirmDelete").dialog("close");
         };
-        buttons[button_yes] = function() {
+        buttons[button_yes] = function()
+        {
             self.doDeleteRoom(item, event);
             $("#confirmDelete").dialog("close");
         };
@@ -73,45 +88,35 @@ function roomConfig() {
         });
     };
 
-    this.doDeleteRoom = function(item, event) {
-        $('#configTable').block({
-            message : '<div>Please wait ...</div>',
-            css : {
-                border : '3px solid #a00'
-            }
-        });
+    self.doDeleteRoom = function(item, event)
+    {
+        self.agocontrol.block($('#configTable'));
         var content = {};
         content.room = item.uuid;
-        content.uuid = agoController;
+        content.uuid = self.agocontrol.agoController;
         content.command = 'deleteroom';
-        sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0) {
-                self.rooms.remove(function(e) {
+        self.agocontrol.sendCommand(content, function(res) {
+            if (res.result && res.result.returncode == 0)
+            {
+                self.agocontrol.rooms.remove(function(e) {
                     return e.uuid == item.uuid;
                 });
-                delete localStorage.inventoryCache;
-            } else {
-                alert("Error while deleting room!");
             }
-            $('#configTable').unblock();
+            else
+            {
+                notif.error("Error while deleting room!");
+            }
+            self.agocontrol.unblock($('#configTable'));
         });
     };
-
 }
 
 /**
  * Initalizes the model
  */
-function init_roomConfig() {
-    model = new roomConfig();
-
-    model.mainTemplate = function() {
-        return "configuration/rooms";
-    }.bind(model);
-
-    model.navigation = function() {
-        return "navigation/configuration";
-    }.bind(model);
-
-    ko.applyBindings(model);
+function init_template(path, params, agocontrol)
+{
+    var model = new RoomConfig(agocontrol);
+    return model;
 }
+
