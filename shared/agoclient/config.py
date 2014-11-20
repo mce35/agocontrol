@@ -68,6 +68,8 @@ CONFIG_LOCK = Lock()
 def _augeas_path(section, option):
     return "/files%s/conf.d/%s.conf/%s/%s" % (get_config_path(), section, section, option)
 
+
+# TODO: Clean up filename vs section handling
 def get_config_option(section, option, default, fallback_section = None):
     """Read a config option from a .ini style file."""
     if not augeas: _augeas_init()

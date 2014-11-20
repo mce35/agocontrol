@@ -44,6 +44,9 @@ class AgoExample(agoclient.AgoApp):
         parser.add_argument('-T', '--test', action="store_true",
                 help="This can be set or not set")
 
+        parser.add_argument('--set-parameter', 
+                help="Set this to do set_config_option with the value upon startup")
+
 
     # the message_handler method will be called by the CLIENT
     # library when a message comes in that is destined for
@@ -96,8 +99,16 @@ class AgoExample(agoclient.AgoApp):
         # This will look in the configuration file conf.d/<app name>.conf
         # under the [<app name>] section.
         # In this example, this means example.conf and [example] section
-        param = self.get_config_option("parameter", "0")
-        self.log.info("Configuration parameter was set to %s", param)
+        param = self.get_config_option("some_key", "0")
+        self.log.info("Configuration parameter 'some_key' was set to %s", param)
+
+        if self.args.set_parameter:
+            self.log.info("Setting configuration parameter 'some_key' to %s", self.args.set_parameter)
+            self.set_config_option("some_key", self.args.set_parameter)
+
+
+            param = self.get_config_option("some_key", "0")
+            self.log.info("Configuration parameter 'some_key' is now set to %s", param)
 
         # Now you need to tell the AgoConnection object about the
         # devices you provide.

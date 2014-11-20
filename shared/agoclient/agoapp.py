@@ -335,3 +335,12 @@ class AgoApp:
         return config.get_config_option(self.app_short_name, option, default_value,
                 fallback_section=fallback_section)
 
+
+    def set_config_option(self, option, value):
+        """Set an option for this application.
+
+        This just wraps the config.set_config_option method, but fills our
+        application name as section name"""
+
+        return config.set_config_option(self.app_short_name, option, value)
+
