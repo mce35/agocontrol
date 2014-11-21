@@ -103,7 +103,7 @@ function device(agocontrol, obj, uuid) {
         //load deferred thumbs
         for( var i=0; i<self.agocontrol.deferredMultigraphThumbs.length; i++ )
         {
-            self.getMultigraphThumb(deferredThumbsLoading[i]);
+            self.getMultigraphThumb(self.agocontrol.deferredMultigraphThumbs[i]);
         }
         self.agocontrol.deferredMultigraphThumbs = [];
         //auto resfresh thumbs periodically
