@@ -72,8 +72,12 @@ def _augeas_init():
 
 CONFIG_LOCK = Lock()
 
-def _augeas_path(filename, section, option):
-    return "/files%s/conf.d/%s.conf/%s/%s" % (get_config_path(), filename, section, option)
+def _conf_file_path(filename):
+    return get_config_path("conf.d/%s.conf" % filename)
+
+def _augeas_path(path, section, option):
+    return "/files%s/%s/%s" % (path, section, option)
+    return "/files%s/%s/%s" % (path, section, option)
 
 
 def get_config_option(section, option, default_value=None, app=None):
@@ -120,11 +124,16 @@ def get_config_option(section, option, default_value=None, app=None):
     try:
         for fn in app:
             for s in section:
-                path = _augeas_path(fn, s, option)
-                value = augeas.get(path)
-                if value:
-                    # First match
-                    return value
+                path = _conf_file_path(fn)
+                aug_path = _augeas_path(path, s, option)
+                try:
+                    value = augeas.get(aug_path)
+                    if value:
+                        # First match
+                        return value
+                except ValueError, e:
+                    logging.error("Failed to read configuration from %s: %s",
+                            aug_path, e)
     finally:
         CONFIG_LOCK.release()
 
@@ -163,13 +172,37 @@ def set_config_option(section, option, value, app=None):
 
     CONFIG_LOCK.acquire(True)
     try:
-        path = _augeas_path(app, section, option)
-        augeas.set(path, value)
+        path = _conf_file_path(app)
+        aug_path = _augeas_path(path, section, option)
+
+        # Protect against broken augeas library, fails in differnt ways
+        # when file is not writable
+        #
+        # https://github.com/hercules-team/augeas/issues/178
+        # also: tang2 had issues with failing without error msg if unwritable
+        if os.path.isfile(path) and not os.access(path, os.W_OK):
+            raise IOError("%s is not writeable" % path)
+        elif os.path.isdir(os.path.dirname(path)) and not os.access(os.path.dirname(path), os.W_OK):
+            raise IOError("%s is not writeable" % os.path.dirname(path))
+
+        augeas.set(aug_path, value)
         augeas.save()
 
         return True
     except IOError, exception:
-        logging.error("Failed to write configuration file: %s", exception)
+        # Try to extract error
+        aug_err = augeas.match("/augeas//error")
+        e = []
+        if aug_err:
+            for f in aug_err:
+                e.append("%s: %s" % (faugeas.get(f)))
+
+        if e:
+            extra = "(/augeas//error: %s)" % ",".join(e)
+        else:
+            extra = ""
+
+        logging.error("Failed to write configuration file: %s%s", exception, extra)
         return False
     finally:
         CONFIG_LOCK.release()

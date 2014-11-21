@@ -83,6 +83,26 @@ class ConfigTest(ConfigTestBase):
 
         self.assertEqual(gco('newfile', 'new_value'), '666')
 
+    def test_unwritable(self):
+        with open(config.get_config_path('conf.d/blocked.conf'), 'w') as f:
+            f.write("[blocked]\nnop=nop\n")
+
+        os.chmod(config.get_config_path('conf.d/blocked.conf'), 0444)
+
+        self.assertEqual(gco('blocked', 'nop'), 'nop')
+
+        # This shall fail, and write log msg
+        self.assertEqual(sco('blocked', 'new_value', '666'), False)
+
+        os.chmod(config.get_config_path('conf.d/blocked.conf'), 0)
+
+        # reload
+        config.augeas = None
+        self.assertEqual(gco('blocked', 'nop'), None)
+        self.assertEqual(gco('blocked', 'nop', 'def'), 'def')
+
+
+
 class AppConfigTest(ConfigTestBase):
     def setUp(self):
         super(AppConfigTest, self).setUp()
