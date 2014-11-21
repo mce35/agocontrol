@@ -64,7 +64,7 @@ function device(agocontrol, obj, uuid) {
     {
         var content = {};
         content.command = "getthumb";
-        content.uuid = dataLoggerController;
+        content.uuid = self.agocontrol.dataLoggerController;
         content.multigraph = deferred.internalid;
         self.agocontrol.sendCommand(content, function(res)
         {
@@ -99,7 +99,7 @@ function device(agocontrol, obj, uuid) {
 
     if (this.devicetype == "dataloggercontroller")
     {
-        dataLoggerController = uuid;
+        self.agocontrol.dataLoggerController = uuid;
         //load deferred thumbs
         for( var i=0; i<self.agocontrol.deferredMultigraphThumbs.length; i++ )
         {
@@ -113,7 +113,7 @@ function device(agocontrol, obj, uuid) {
     if (self.devicetype == "multigraph")
     {
         var def = {'internalid':obj.internalid, 'observable':self.multigraphThumb};
-        if( dataLoggerController )
+        if( self.agocontrol.dataLoggerController )
         {
             //get thumb right now
             self.getMultigraphThumb(def);
@@ -171,7 +171,7 @@ function device(agocontrol, obj, uuid) {
         {
             var content = {};
             content.command = "getgraph";
-            content.uuid = dataLoggerController;
+            content.uuid = self.agocontrol.dataLoggerController;
             content.devices = [uuid];
             content.start = start;
             content.end = end;

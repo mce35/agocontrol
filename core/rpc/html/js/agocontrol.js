@@ -26,7 +26,8 @@ Agocontrol.prototype = {
     agoController: null,
     scenarioController: null,
     eventController: null,
-    inventory:null,
+    inventory: null,
+    dataLoggerController: null,
 
     //send command   
     sendCommand: function(content, callback, timeout, async)
