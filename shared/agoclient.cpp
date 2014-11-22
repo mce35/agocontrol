@@ -1,5 +1,4 @@
 #include <string>
-#include <string.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,10 +6,7 @@
 #include <sstream>
 #include <assert.h>
 
-#include <boost/preprocessor/stringize.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
-
 
 #include <jsoncpp/json/reader.h>
 #include "agoclient.h"
@@ -28,138 +24,6 @@ Iter next(Iter iter)
     return ++iter;
 }
 #endif
-
-#define MODULE_CONFDIR "/conf.d"
-
-namespace agocontrol {
-    augeas *augeas = NULL;
-
-    bool directories_inited = false;
-    fs::path config_dir;
-    fs::path localstate_dir;
-
-    fs::path prepareDirectory(const char *name, const fs::path &dir) {
-        if(!fs::exists(dir)) {
-            // Try to create it
-            // ensureDirExists will canonical() it
-            return ensureDirExists(dir);
-        }
-        else {
-            // Exists, canonicalize it ourselfs
-            return fs::canonical(dir);
-        }
-    }
-
-    fs::path initDirectory(const char *name, const char *def){
-        const char *tmp;
-        std::string env ("AGO_");
-        env+= name;
-
-        boost::to_upper(env);
-
-        fs::path dir(def);
-        if((tmp = getenv(env.c_str())) != NULL) {
-            dir = tmp;
-        }
-
-        try {
-            dir = prepareDirectory(name, dir);
-        } catch(const fs::filesystem_error& error) {
-            // Canonical failed; does it not exist after all?
-            AGO_WARNING() << "Failed to resolve " << name << " " << dir.string()
-                << ": " << error.code().message()
-                << ". Falling back to default " << def;
-            dir = fs::path(def);
-        }
-
-        return dir;
-    }
-
-
-    void initDirectorys() {
-        // DEFAULT_CONFDIR, DEFAULT_LOCALSTATEDIR must be set with compiler flag
-        if(config_dir.empty()) {
-            config_dir = initDirectory("confdir", BOOST_PP_STRINGIZE(DEFAULT_CONFDIR));
-        }
-        if(localstate_dir.empty()) {
-            localstate_dir = initDirectory("localstatedir", BOOST_PP_STRINGIZE(DEFAULT_LOCALSTATEDIR));
-        }
-        directories_inited = true;
-    }
-
-    /* These are only callable from AgoApp and AgoClient */
-    void AgoClientInternal::setConfigDir(const boost::filesystem::path &dir) {
-        if(!config_dir.empty()) {
-            throw runtime_error("setConfigDir after initDirectorys was called!");
-        }
-        config_dir = prepareDirectory("confdir", dir);
-    }
-    void AgoClientInternal::setLocalStateDir(const boost::filesystem::path &dir) {
-        if(!localstate_dir.empty()) {
-            throw runtime_error("setLocalStateDir change after initDirectorys was called!");
-        }
-        localstate_dir= prepareDirectory("localstatedir", dir);
-    }
-} /*namespace agocontrol*/
-
-fs::path agocontrol::ensureDirExists(const boost::filesystem::path &dir) {
-    if(!fs::exists(dir))  {
-        // This will throw if it fails
-        fs::create_directories(dir);
-    }
-
-    // Normalize the directory; it should exist and should thus not fail
-    return fs::canonical(dir);
-}
-
-fs::path agocontrol::ensureParentDirExists(const boost::filesystem::path &filename) {
-    if(!fs::exists(filename))  {
-        // Ensure parent directory exist
-        fs::path dir = filename.parent_path();
-        ensureDirExists(dir);
-    }
-    return filename;
-}
-
-fs::path agocontrol::getConfigPath(const fs::path &subpath) {
-    if(!directories_inited) {
-        initDirectorys();
-    }
-    fs::path res(config_dir);
-    if(!subpath.empty()) {
-        res /= subpath;
-    }
-    return res;
-}
-
-fs::path agocontrol::getLocalStatePath(const fs::path &subpath) {
-    if(!directories_inited) {
-        initDirectorys();
-    }
-    fs::path res(localstate_dir);
-    if(!subpath.empty()) {
-        res /= subpath;
-    }
-    return res;
-}
-
-
-bool agocontrol::augeas_init()  {
-    fs::path path = getConfigPath(fs::path(MODULE_CONFDIR));
-    path /= "*.conf";
-
-    fs::path extra_loadpath = getConfigPath();
-
-    augeas = aug_init(NULL, extra_loadpath.c_str(), AUG_SAVE_BACKUP | AUG_NO_MODL_AUTOLOAD);
-    if (augeas == NULL) {
-        AGO_ERROR() << "Can't initalize augeas";
-        return false;
-    }
-    aug_set(augeas, "/augeas/load/Agocontrol/lens", "agocontrol.lns");
-    aug_set(augeas, "/augeas/load/Agocontrol/incl", path.c_str());
-    if (aug_load(augeas) == 0) return true;
-    return false;
-}
 
 bool agocontrol::nameval(const std::string& in, std::string& name, std::string& value) {
     std::string::size_type i = in.find("=");
@@ -199,7 +63,7 @@ std::string agocontrol::float2str(float f) {
 
 bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, const fs::path &filename) {
     ofstream mapfile;
-    try { 
+    try {
         mapfile.open(filename.c_str());
         mapfile << variantMapToJSONString(map);
         mapfile.close();
@@ -376,7 +240,7 @@ qpid::types::Variant::Map agocontrol::jsonStringToVariantMap(std::string jsonstr
     try {
         if ( reader.parse(jsonstring, root)) {
             result = jsonToVariantMap(root);
-        }/* else { 
+        }/* else {
             printf("warning, could not parse json to Variant::Map: %s\n",jsonstring.c_str());
             }*/
     } catch (const std::exception& error) {
@@ -413,157 +277,6 @@ unsigned int agocontrol::stringToUint(string v)
     return r;
 }
 
-std::string agocontrol::getConfigSectionOption(const char *section, const char *option, std::string &defaultvalue) {
-    return getConfigSectionOption(section, option, defaultvalue.c_str());
-}
-
-fs::path agocontrol::getConfigSectionOption(const char *section, const char *option, const fs::path &defaultvalue) {
-    std::string value = getConfigSectionOption(section, option, defaultvalue.c_str());
-    return fs::path(value);
-}
-
-std::string agocontrol::getConfigSectionOption(const char *section, const char *option,
-        const char *defaultvalue) {
-    return getConfigSectionOption(section, NULL, option, defaultvalue);
-}
-
-std::string agocontrol::augeasPathFromSectionOption(const char *section, const char *option) {
-    assert(section != NULL);
-    assert(option != NULL);
-
-    std::stringstream valuepath;
-    valuepath << "/files";
-    valuepath << getConfigPath(MODULE_CONFDIR).string();
-    valuepath << "/";
-    valuepath << section;
-    valuepath << ".conf";
-    valuepath << "/";
-    valuepath << section;
-    valuepath << "/";
-    valuepath << option;
-    return valuepath.str();
-}
-
-qpid::types::Variant::Map agocontrol::getConfigTree() {
-    qpid::types::Variant::Map tree;
-    if (augeas==NULL) augeas_init();
-    if (augeas == NULL) {
-        AGO_ERROR() << "cannot initialize augeas";
-        return tree;
-    }
-    char **matches;
-    std::stringstream path;
-    path << "/files";
-    path << getConfigPath(MODULE_CONFDIR).string();
-    path << "/";
-    std::string prefix = path.str();
-    path << "/*";
-    int num = aug_match(augeas, path.str().c_str(), &matches);
-    for (int i=0; i < num; i++) {
-        const char *val;
-        aug_get(augeas, matches[i], &val);
-        if (val != NULL) {
-            // TODO: split augeas path into section and option
-            std::string match = matches[i];
-            replaceString(match, prefix, "");
-            size_t pos = match.find(".conf");
-            std::string section = match.substr(0,pos);
-            replaceString(match, section, "");
-            replaceString(match, ".conf/", "");
-            std::string option = match.substr(1); // skip trailing slash
-            if (!(tree[section].isVoid())) {
-                qpid::types::Variant::Map sectionMap = tree[section].asMap();
-                sectionMap[option] = val;
-                tree[section] = sectionMap;
-            } else {
-                qpid::types::Variant::Map sectionMap;
-                sectionMap[option] = val;
-                tree[section] = sectionMap;
-            }
-        }
-        free((void *) matches[i]);
-    }
-    free(matches);
-    return tree;
-
-}
-
-std::string agocontrol::getConfigSectionOption(const char *section, const char *fallback_section,
-        const char *option, const char *defaultvalue) {
-    if (augeas==NULL) augeas_init();
-    if (augeas == NULL) {
-        AGO_ERROR() << "cannot initialize augeas";
-        return defaultvalue;
-    }
-
-    const char *value;
-    int ret =  aug_get(augeas, augeasPathFromSectionOption(section, option).c_str(), &value);
-    if (ret != 1) {
-        if(fallback_section) {
-            ret =  aug_get(augeas, augeasPathFromSectionOption(fallback_section, option).c_str(), &value);
-        }
-    }
-
-    if(ret != 1) {
-        // cout << "AUGEAS: no " <<  valuepath.str() << " - using default value: " << defaultvalue << endl;
-        if(defaultvalue) {
-            return std::string(defaultvalue);
-        }
-    } else {
-        if(value != NULL) {
-            std::stringstream result;
-            // cout << "AUGEAS: using config value: " << value << endl;
-            result << value;
-            return result.str();
-        }
-    }
-
-    // empty
-    return std::string();
-}
-
-bool agocontrol::setConfigSectionOption(const char* section, const char* option, const char* value) {
-    bool result = true;
-    if (augeas==NULL) augeas_init();
-    if (augeas == NULL) {
-        AGO_ERROR() << "cannot initialize augeas";
-        return false;
-    }
-
-    if (aug_set(augeas, augeasPathFromSectionOption(section, option).c_str(), value) == -1) {
-        AGO_WARNING() << "Could not set value!";
-        return false;
-    }
-
-    if (aug_save(augeas)==-1) {
-        AGO_ERROR() << "Could not write config file!";
-        return false;
-    }
-
-
-    return result;
-}
-
-bool agocontrol::setConfigSectionOption(const char* section, const char* option, const float value) {
-    std::stringstream stringvalue;
-    stringvalue << value;
-    return setConfigSectionOption(section, option, stringvalue.str().c_str());
-}
-
-bool agocontrol::setConfigSectionOption(const char* section, const char* option, const int value) {
-    std::stringstream stringvalue;
-    stringvalue << value;
-    return setConfigSectionOption(section, option, stringvalue.str().c_str());
-}
-
-bool agocontrol::setConfigSectionOption(const char* section, const char* option, const bool value) {
-    std::stringstream stringvalue;
-    stringvalue << value;
-    return setConfigSectionOption(section, option, stringvalue.str().c_str());
-}
-
-
-
 agocontrol::AgoConnection::AgoConnection(const char *interfacename)
     : shutdownSignaled(false)
 {
@@ -597,9 +310,9 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename)
     connection = Connection(broker, connectionOptions);
     try {
         AGO_DEBUG() << "Opening broker connection: " << broker;
-        connection.open(); 
-        session = connection.createSession(); 
-        sender = session.createSender("agocontrol; {create: always, node: {type: topic}}"); 
+        connection.open();
+        session = connection.createSession();
+        sender = session.createSender("agocontrol; {create: always, node: {type: topic}}");
     } catch(const std::exception& error) {
         AGO_FATAL() << "Failed to connect to broker: " << error.what();
         connection.close();
@@ -675,7 +388,7 @@ void agocontrol::AgoConnection::run() {
                                 AGO_ERROR() << "Failed to send reply: " << error.what();;
                                 replysession.close();
                             }
-                        } 
+                        }
                     }
                 } else if (!eventHandler.empty()) {
                     eventHandler(message.getSubject(), content);
@@ -691,9 +404,9 @@ void agocontrol::AgoConnection::run() {
             if (session.hasError()) {
                 AGO_ERROR() << "Session has error, recreating";
                 session.close();
-                session = connection.createSession(); 
-                receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}"); 
-                sender = session.createSender("agocontrol; {create: always, node: {type: topic}}"); 
+                session = connection.createSession();
+                receiver = session.createReceiver("agocontrol; {create: always, node: {type: topic}}");
+                sender = session.createSender("agocontrol; {create: always, node: {type: topic}}");
             }
 
             usleep(50);
@@ -724,9 +437,9 @@ bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const
     } catch(const std::exception& error) {
         AGO_ERROR() << "Exception in emitDeviceAnnounce: " << error.what();
         return false;
-    } 
+    }
     return true;
-} 
+}
 
 /**
  * Emit stale state
@@ -749,7 +462,7 @@ bool agocontrol::AgoConnection::emitDeviceStale(const char* internalId, const in
     {
         AGO_ERROR() << "Exception in emitDeviceStale: " << error.what();
         return false;
-    } 
+    }
     return true;
 }
 
@@ -765,9 +478,9 @@ bool agocontrol::AgoConnection::emitDeviceRemove(const char *internalId) {
     } catch(const std::exception& error) {
         AGO_ERROR() << "Exception in emitDeviceRemove: " << error.what();
         return false;
-    } 
+    }
     return true;
-} 
+}
 
 bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *deviceType, bool passuuid) {
     if (!passuuid) return addDevice(internalId, deviceType);
@@ -835,7 +548,7 @@ bool agocontrol::AgoConnection::resumeDevice(const char* internalId)
 }
 std::string agocontrol::AgoConnection::uuidToInternalId(std::string uuid) {
     return uuidMap[uuid].asString();
-} 
+}
 
 std::string agocontrol::AgoConnection::internalIdToUuid(std::string internalId) {
     string result;
@@ -1093,7 +806,7 @@ bool agocontrol::AgoConnection::setGlobalVariable(std::string variable, qpid::ty
         setvariable["variable"] = variable;
         setvariable["value"] = value;
         return sendMessage("", setvariable);
-    } 
+    }
     return false;
 }
 

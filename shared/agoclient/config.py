@@ -157,11 +157,11 @@ def set_config_option(section, option, value, app=None):
 
         value -- The value of the option.
 
-        app -- A string identifying the configuration storage unit to look in.
+        app -- A string identifying the configuration storage unit to store to.
             If omited, it defaults to the section.
 
     Returns:
-        True if succesfully stored, False otherwise.
+        True if sucesfully stored, False otherwise
         Please refer to the error log for failure indication.
 
     """

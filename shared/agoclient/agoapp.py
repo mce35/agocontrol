@@ -347,12 +347,12 @@ class AgoApp:
                 If not set, it defaults to the applications short name,
                 which is the class name in lower-case, with the leading "Ago" removed.
                 (AgoExample becomes example).
-                If you want to use the default value, but fall back on other, you 
+                If you want to use the default value, but fall back on other, you
                 can use None:
 
                     section = [None, 'system']
 
-                This will look primarly in the default section, falling back to the 
+                This will look primarly in the default section, falling back to the
                 'system' section.
 
             app -- A string identifying the configuration storage unit to look in.
