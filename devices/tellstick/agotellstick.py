@@ -26,13 +26,13 @@ class AgoTellstick(agoclient.AgoApp):
             if content["command"] == "on":
                 resCode = self.tellstick.turnOn(internalid)
                 if resCode != 'success':   # != 0:
-                    self.log.trace("rescode="+resCode)
+                    self.log.trace("rescode = %s", resCode)
                     #res = self.tellstick.getErrorString(resCode)
-                    error("tellstick.py error turning on device. res=" + resCode)
+                    self.log.error("Failed to turn on device, res=" + resCode)
                 else:
                     self.connection.emit_event(internalid, "event.device.statechanged", 255, "")
 
-                self.log.debug("Turning on device:  " + str(internalid) + " res=" + resCode)
+                self.log.debug("Turning on device: %s res=%s", internalid, resCode)
 
             # Allon - TODO: will require changes in schema.yaml + somewhere else too
             if content["command"] == "allon":
@@ -43,34 +43,34 @@ class AgoTellstick(agoclient.AgoApp):
                 resCode = self.tellstick.turnOff(internalid)
                 if resCode != 'success':  # 0:
                     #res = self.tellstick.getErrorString(resCode)
-                    error("tellstick.py error turning off device. res=" + resCode)
+                    self.log.error("Failed to turn off device, res=" + resCode)
                 else:
                     #res = 'Success'
                     self.connection.emit_event(internalid, "event.device.statechanged", 0, "")
 
-                self.log.debug("Turning off device: " + str(internalid) + " res="+ resCode)
+                self.log.debug("Turning off device: %s res=%s", internalid, resCode)
 
             # Setlevel for dimmer
             if content["command"] == "setlevel":
                 resCode = self.tellstick.dim(internalid, int(255 * int(content["level"]))/100)  # Different scales: aGo use 0-100, Tellstick use 0-255
                 if resCode != 'success':  # 0:
-                    error( "tellstick.py error dimming device. res=" + resCode)
+                    self.log.error( "Failed dimming device, res=%s", resCode)
                 else:
                     #res = 'Success'
                     self.connection.emit_event(internalid, "event.device.statechanged", content["level"], "")
 
-                self.log.debug("Dimming device=" + str(internalid) + " res=" + resCode + " level=" + str(content["level"]))
+                self.log.debug("Dimming device=%s res=%s level=%s", internalid, resCode, str(content["level"]))
 
     #Event handlers for device and sensor events
     def agoDeviceEvent(self, deviceId, method, data, callbackId):
-        self.log.trace("agoDeviceEvent devId=%s", str(deviceId))
+        self.log.trace("agoDeviceEvent devId=%s method=%s data=%s", str(deviceId), method, data)
 
         received = self.event_received.get(deviceId)
         if received == None:
             received = self.event_received[deviceId] = 0
             self.lasttime[deviceId] = time.time()
 
-        self.log.debug("time-lasttime=" + str(time.time() - self.lasttime[deviceId]))
+        self.log.trace("time - lasttime = %d", time.time() - self.lasttime[deviceId])
 
         if received == 1:
             delay = self.dev_delay.get(deviceId)
@@ -81,7 +81,7 @@ class AgoTellstick(agoclient.AgoApp):
                 #No echo, stop cancelling events
                 received = self.event_received[deviceId] = 0
             else:
-                self.log.info("Echo cancelled")
+                self.log.debug("Echo cancelled")
 
         if received == 0:
             #if debug:
@@ -93,11 +93,11 @@ class AgoTellstick(agoclient.AgoApp):
             #print "method=" + str(method)
             if (method == self.tellstick.TELLSTICK_TURNON):
                 self.connection.emit_event(deviceId, "event.device.statechanged", 255, "")
-                self.log.debug("emit_event statechanged " + str(deviceId) + " ON 255")
+                self.log.debug("emit_event statechanged %s ON 255", deviceId)
 
             if (method == self.tellstick.TELLSTICK_TURNOFF):
                 self.connection.emit_event(deviceId, "event.device.statechanged", 0, "")
-                self.log.debug("emit_event statechanged " + str(deviceId) + " OFF 0")
+                self.log.debug("emit_event statechanged %s OFF 0", deviceId)
             # if (method == self.tellstick.TELLSTICK_DIM): #Hmm, not sure if this can happen?!?
             #     level = int(100 * int(data))/255
             #     if int(data) > 0 and int(data) < 255:
@@ -256,7 +256,7 @@ class AgoTellstick(agoclient.AgoApp):
         if agoController == None:
             self.log.warning("No agocontroller found, cannot set device names")
         else:
-            self.log.info("agoController found: " + agoController)
+            self.log.debug("agoController found: %s", agoController)
 
         def setNameIfNecessary(deviceUUID, name):
             dev = inventory['devices'].get(deviceUUID)
@@ -269,7 +269,7 @@ class AgoTellstick(agoclient.AgoApp):
 
                 message = Message(content=content)
                 self.connection.send_message (None, content)
-                self.log.info("'setdevicename' message sent. name=" + name)
+                self.log.debug("'setdevicename' message sent for %s, name=", deviceUUID, name)
 
         # Get devices from Telldus, announce to Ago Control
         self.log.info("Getting switches and dimmers")
@@ -281,7 +281,7 @@ class AgoTellstick(agoclient.AgoApp):
             model = dev["model"]
             name = dev["name"]
 
-            self.log.info("devId=" + str(devId) + " name=" + name + " model=" + model)
+            self.log.info("devId=%s name=%s model=%s", devId, name, model)
             #+ " method=" + self.tellstick.methods(devId))
 
             #found = False
@@ -306,7 +306,7 @@ class AgoTellstick(agoclient.AgoApp):
         for devId, dev in remotes.iteritems():
             model = dev["model"]
             name = dev["name"]
-            self.log.info("devId=" + str(devId) + " name=" + name + " model=" + model)
+            self.log.info("devId=%s name=%s model=%s", devId, name, model)
 
             if not "codeswitch" in model:
                 self.connection.add_device(devId, "binarysensor")
@@ -316,7 +316,7 @@ class AgoTellstick(agoclient.AgoApp):
                 #"devId=" + str(devId) + " model " + model
                 try:
                     self.dev_delay[devId] = float(self.get_config_option(str(devId) + '_Delay', 5000, 'EventDevices')) / 1000
-                except KeyError:
+                except:
                     self.dev_delay[devId] = self.general_delay
 
                 # Check if device already exist, if not - send its name from the tellstick config file
@@ -331,7 +331,7 @@ class AgoTellstick(agoclient.AgoApp):
         cbId = []
 
         cbId.append(self.tellstick.registerDeviceEvent(self.agoDeviceEvent))
-        self.log.info('Register device event returned:' + str(cbId[-1]))
+        self.log.debug('Register device event returned: %s', str(cbId[-1]))
 
         #cbId.append(self.tellstick.registerDeviceChangedEvent(self.agoDeviceChangeEvent))
         #info ('Register device changed event returned:' + str(cbId[-1]))
@@ -340,7 +340,7 @@ class AgoTellstick(agoclient.AgoApp):
         #info ('Register raw device event returned:' + str(cbId[-1]))
 
         cbId.append(self.tellstick.registerSensorEvent(self.agoSensorEvent))
-        self.log.info('Register sensor event returned:' + str(cbId[-1]))
+        self.log.debug('Register sensor event returned: %s', str(cbId[-1]))
 
     def app_cleanup(self):
         if self.tellstick:
