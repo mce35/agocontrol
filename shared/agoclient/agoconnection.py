@@ -196,8 +196,7 @@ class AgoConnection:
             message.reply_to = 'reply-%s' % replyuuid
 
             if self.log.isEnabledFor(logging.TRACE):
-                self.log.trace("Sending message [reply-to=%s, sub=%s]: %s", message.reply_to,
-                        subject, content)
+                self.log.trace("Sending message [reply-to=%s]: %s", message.reply_to, content)
 
             self.sender.send(message)
             replymessage = replyreceiver.fetch(timeout=3)
