@@ -169,6 +169,13 @@ void TestAgoConfig::testSetError() {
     // Make file non-writeable and make sure we handle it properly
     // In augeas 1.3.0 it segfaults, we've got workarounds to avoid that.
     // https://github.com/hercules-team/augeas/issues/178
+    if(getuid() == 0) {
+        // TODO: Fix builders so they dont run as root, then change to CPPUNIT_FAIL instead.
+        //CPPUNIT_FAIL("You cannot run this test as. Also, do not develop as root!");
+        std::cerr << "You cannot run this test as. Also, do not develop as root!" << std::endl;
+        return;
+    }
+
     chmod(getConfigPath("conf.d/test.conf").c_str(), 0);
 
     CPPUNIT_ASSERT(! setConfigSectionOption("test", "new_key", "val"));

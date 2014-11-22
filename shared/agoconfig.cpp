@@ -369,7 +369,6 @@ bool setConfigSectionOption(const char* section, const char* option, const bool 
 
 
 bool setConfigSectionOption(const char* section, const char* option, const char* value, const char *app) {
-    bool result = true;
     if (augeas==NULL){
         if(!augeas_init()) {
             AGO_ERROR() << "Save failed: augeas not inited";
@@ -385,7 +384,7 @@ bool setConfigSectionOption(const char* section, const char* option, const char*
     // Make file is writeable; augeas 1.2.0 (probably others) segfaults,
     // we protect ourselfs from this:
     //   https://github.com/hercules-team/augeas/issues/178
-    // When the is fixed, we can remove this hack
+    // When the issue is fixed, we can remove this hack
     if(fs::exists(file)) {
         if(access(file.c_str(), W_OK) != 0) {
             AGO_ERROR() << "Could not write config file "
@@ -417,8 +416,7 @@ bool setConfigSectionOption(const char* section, const char* option, const char*
         return false;
     }
 
-
-    return result;
+    return true;
 }
 
 qpid::types::Variant::Map getConfigTree() {
