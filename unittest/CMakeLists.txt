@@ -18,5 +18,7 @@ target_link_libraries (testrunner ${TEST_LIBRARIES})
 
 add_test( test testrunner )
 
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
+add_custom_target(check
+    COMMAND ${CMAKE_CTEST_COMMAND} --verbose
+    DEPENDS testrunner )
 
