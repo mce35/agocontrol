@@ -15,14 +15,12 @@ __status__     = "Experimental"
 __version__    = AGO_TELLSTICK_VERSION
 ############################################
 
-import optparse
 import logging
 import sys
 import syslog
 import time
 from qpid.log import enable, DEBUG, WARN
 from qpid.messaging import Message
-from configobj import ConfigObj
 
 from threading import Timer
 import time
@@ -38,9 +36,6 @@ class LogErr:
                 syslog.syslog(syslog.LOG_ERR, data)
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID, syslog.LOG_DAEMON)
-
-logging.basicConfig(filename='/var/log/tellstick.log', format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO) #level=logging.DEBUG
-#logging.setLevel( logging.INFO )
 
 timers = {} # List of timers
 event_received = {}
@@ -287,20 +282,15 @@ client = agoclient.AgoConnection("tellstick")
 if (agoclient.get_config_option("tellstick", "debug", "false").lower() == "true"):
     debug = True
 
-config = ConfigObj(agoclient.CONFDIR + "/conf.d/tellstick.conf")
-#config = ConfigObj("./tellstick.conf")
 try:
-    general_delay = float(config['EventDevices']['Delay'])/1000
+    general_delay = float(agoclient.get_config_option('EventDevices', 'Delay', 0.5, 'tellstick'))
 except:
     general_delay = 0.5
-#section = config['EventDevices']
 
-SensorPollDelay = 300.0  # 5 minutes
 try:
-    if 'SensorPollDelay' in config['tellstick']:
-        SensorPollDelay = config['tellstick']['SensorPollDelay']
+    SensorPollDelay = float(agoclient.get_config_option('tellstick', 'SensorPollDelay', 0.5))
 except KeyError:
-    pass
+    SensorPollDelay = 300.0  # 5 minutes
 
 
 units = agoclient.get_config_option("system", "units", "SI")
@@ -308,10 +298,7 @@ TempUnits = "C"
 if units.lower() == "us":
     TempUnits = "F"
 
-try:
-    stickVersion = config['tellstick']['StickVersion']
-except:
-    stickVersion = "Tellstick Dou"
+stickVersion = agoclient.get_config_option('tellstick', 'StickVersion', 'Tellstick Duo')
 
 if "Net" in stickVersion:
     # Postpone tellsticknet loading, has extra dependencies which
@@ -397,7 +384,7 @@ for devId, dev in remotes.iteritems():
         #found = True
         "devId=" + str(devId) + " model " + model
         try:
-            dev_delay[devId] = float(config['EventDevices'][str(devId)]['Delay'])/1000
+            dev_delay[devId] = float(agoclient.get_config_option('EventDevices', str(devId) + '_Delay', 5000, 'tellstick')) / 1000
         except KeyError:
             dev_delay[devId] = general_delay
 
