@@ -260,6 +260,12 @@ class AgoApp:
             argv = sys.argv
 
         ret = self._main(argv)
+
+        if ret == 0:
+            self.log.info("Exiting %s", self.app_name)
+        else:
+            self.log.warn("Exiting %s (code %d)", self.app_name, ret)
+
         sys.exit(ret)
 
     def _main(self, argv):
@@ -283,33 +289,32 @@ class AgoApp:
             return 1
 
         try:
-            self.setup()
-        except StartupError:
-            self.cleanup()
-            return 1
+            try:
+                self.setup()
+            except StartupError:
+                return 1
 
-        except ConfigurationError,e:
-            self.log.error("Failed to start %s due to configuration error: %s",
-                    self.app_name, e.message)
-            self.cleanup()
-            return 1
+            except ConfigurationError,e:
+                self.log.error("Failed to start %s due to configuration error: %s",
+                        self.app_name, e.message)
+                return 1
 
-        try:
-            self.log.info("Starting %s", self.app_name)
-            ret = self.app_main()
-            self.log.debug("Shutting down %s", self.app_name)
-
-            self.cleanup()
-
-            if ret == 0:
-                self.log.info("Exiting %s", self.app_name)
-            else:
-                self.log.warn("Exiting %s (code %d)", self.app_name, ret)
+                self.log.info("Starting %s", self.app_name)
+                ret = self.app_main()
+                self.log.debug("Shutting down %s", self.app_name)
         except:
             self.log.critical("Unhandled exception, crashing",
                     exc_info=True)
-
             return 1
+        finally:
+            # Always execute cleanup!
+            # For example, if connection.close() is not called, the app will not shutdown
+            # properly, even if we have not called connection.run() yet.
+            try:
+                self.cleanup()
+            except:
+                self.log.error("Unhandled exception while cleaning up", exc_info=True)
+
 
 
     def app_main(self):
