@@ -20,47 +20,26 @@ from tellstickbase import tellstickbase
 import sys, getopt, httplib, urllib, json, os, thread, time
 import oauth.oauth as oauth
 import datetime
-from configobj import ConfigObj
+from agoclient.agoapp import ConfigurationError
 
 
 class tellsticknet(tellstickbase):
     """Class used for Tellstick Net devices with direct access to Telldus Live API"""
-    def __init__(self):
-        debug = True
-        self.config = ConfigObj(agoclient.CONFDIR + "/conf.d/tellstick.conf")
+    def __init__(self, app):
+        super(tellsticknet, self).__init__(app)
 
-        try:
-            self.PUBLIC_KEY = self.config['keys']['PUBLIC_KEY']
-        except KeyError:
-            error ("PUBLIC_KEY missing in config file " + agoclient.CONFDIR + "/conf.d/tellstick.conf Cannot continue.")
-            quit()
+        self.PUBLIC_KEY = self.app.get_config_option('PUBLIC_KEY', None, 'keys')
+        if not self.PUBLIC_KEY:
+            raise ConfigurationError("PUBLIC_KEY missing in config file, cannot continue.")
 
-        try:
-            self.PRIVATE_KEY = self.config['keys']['PRIVATE_KEY']
-        except KeyError:
-            error ("PRIVATE_KEY missing in config file " + agoclient.CONFDIR + "/conf.d/tellstick.conf Cannot continue.")
-            quit()
-
-        self.TELLSTICK_TURNON = 1
-        self.TELLSTICK_TURNOFF = 2
-        self.TELLSTICK_BELL = 4
-        self.TELLSTICK_DIM = 16
-        self.TELLSTICK_UP = 128
-        self.TELLSTICK_DOWN = 256
-
-        self.TELLSTICK_TEMPERATURE = 1 #td.TELLSTICK_TEMPERATURE
-        self.TELLSTICK_HUMIDITY = 2 #td.TELLSTICK_HUMIDITY
-
-        self.sensors={}
-        self.switches={}
-        self.remotes={}
+        self.PRIVATE_KEY = self.app.get_config_option('PRIVATE_KEY', None, 'keys')
+        if not self.PRIVATE_KEY:
+            raise ConfigurationError("PRIVATE_KEY missing in config file, cannot continue.")
 
         self.devices={}
         self.models={}
         self.names={}
         self.devicesRetrieved = False
-
-        #super(tellsticknet, self).__init__() # call base class init method
 
     def __get__(self, obj, objtype=None):
         pass
@@ -74,7 +53,14 @@ class tellsticknet(tellstickbase):
     def init(self, SensorPollDelay, TempUnits):
         self.SUPPORTED_METHODS = self.TELLSTICK_TURNON | self.TELLSTICK_TURNOFF | self.TELLSTICK_DIM
         self.consumer = oauth.OAuthConsumer(self.PUBLIC_KEY, self.PRIVATE_KEY)
-        self.token = oauth.OAuthToken(self.config['telldus']['token'], self.config['telldus']['tokenSecret'])
+
+        token = self.app.get_config_option('token', None, 'telldus')
+        secret = self.app.get_config_option('tokenSecret', None, 'telldus')
+
+        if not token or not secret:
+            raise ConfigurationError("token/tokenSecret missing in telldus section, please use tellstick_auth.py first")
+
+        self.token = oauth.OAuthToken(token, secret)
         self.SensorPollDelay  = SensorPollDelay
         self.TempUnits = TempUnits
 
@@ -209,23 +195,6 @@ class tellsticknet(tellstickbase):
         except:
             return json.loads('{"error": "Network connectivity issue"}')
 
-
-
-    def requestToken(self):
-        consumer = oauth.OAuthConsumer(self.PUBLIC_KEY, self.PRIVATE_KEY)
-        request = oauth.OAuthRequest.from_consumer_and_token(consumer, http_url='http://api.telldus.com/oauth/requestToken')
-        request.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), consumer, None)
-        conn = httplib.HTTPConnection('api.telldus.com:80')
-        conn.request(request.http_method, '/oauth/requestToken', headers=request.to_header())
-
-        resp = conn.getresponse().read()
-        token = oauth.OAuthToken.from_string(resp)
-        print 'Open the following url in your webbrowser:\nhttp://api.telldus.com/oauth/authorize?oauth_token=%s\n' % token.key
-        print 'After logging in and accepting to use this application run:\n%s --authenticate' % (sys.argv[0])
-        self.config['telldus']['requestToken'] = str(token.key)
-        self.config['telldus']['requestTokenSecret'] = str(token.secret)
-        self.saveConfig()
-
     def listSwitches(self):
         response = self.doRequest('devices/list', {'supportedMethods': self.SUPPORTED_METHODS})
         noDevices= len(response['device'])
@@ -329,28 +298,4 @@ class tellsticknet(tellstickbase):
                             sensorCallback (protocol = "", model = "humidity", devId = devId, dataType = 0, value = humidity, timestamp = lastupdate, callbackId = None)
 
             time.sleep (float(self.SensorPollDelay))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -378,9 +378,11 @@ class AgoApp:
         if section is None:
             section = self.app_short_name
 
-        # TODO: does not make sense, still want to use app name primarly?
         if app is None:
-            app = section
+            if type(section) == str:
+                app = [self.app_short_name, section]
+            else:
+                app = [self.app_short_name] + section
 
         config._iterable_replace_none(section, self.app_short_name)
         config._iterable_replace_none(app, self.app_short_name)

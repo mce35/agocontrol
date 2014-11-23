@@ -17,18 +17,22 @@ __version__    = AGO_TELLSTICK_VERSION
 ############################################
 import syslog as syslog
 
-class tellstickbase:
+class tellstickbase(object):
     """Base class used for Tellstick, Tellstick Duo and Tellstck Net devices"""
-    def __init__(self):
+    def __init__(self, app):
         self.TELLSTICK_TURNON = 1  # check values
         self.TELLSTICK_TURNOFF = 2
-        self.TELLSTICK_DIM = 4
+        self.TELLSTICK_BELL = 4
+        self.TELLSTICK_DIM = 16
+        self.TELLSTICK_UP = 128
+        self.TELLSTICK_DOWN = 256
 
         self.TELLSTICK_TEMPERATURE = 1 #td.TELLSTICK_TEMPERATURE
         self.TELLSTICK_HUMIDITY = 2 #td.TELLSTICK_HUMIDITY
         self.sensors={}
         self.switches={}
         self.remotes={}
+        self.app = app
 
     def __get__(self, obj, objtype=None):
         pass
