@@ -302,6 +302,7 @@ class AgoApp:
                 self.log.info("Starting %s", self.app_name)
                 ret = self.app_main()
                 self.log.debug("Shutting down %s", self.app_name)
+                return 0
         except:
             self.log.critical("Unhandled exception, crashing",
                     exc_info=True)
