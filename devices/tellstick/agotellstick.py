@@ -231,14 +231,18 @@ class AgoTellstick(agoclient.AgoApp):
 
         stickVersion = self.get_config_option('StickVersion', 'Tellstick Duo')
 
-        if "Net" in stickVersion:
-            # Postpone tellsticknet loading, has extra dependencies which
-            # we can do without if we've only got a Duo
-            from tellsticknet import tellsticknet
-            self.tellstick = tellsticknet()
-        else:
-            from  tellstickduo import  tellstickduo
-            self.tellstick = tellstickduo()
+        try:
+            if "Net" in stickVersion:
+                # Postpone tellsticknet loading, has extra dependencies which
+                # we can do without if we've only got a Duo
+                from tellsticknet import tellsticknet
+                self.tellstick = tellsticknet()
+            else:
+                from  tellstickduo import  tellstickduo
+                self.tellstick = tellstickduo()
+        except OSError,e:
+            self.log.error("Failed to load tellstick code: %s", e)
+            raise agoclient.agoapp.StartupError()
 
         self.tellstick.init(self.SensorPollDelay, self.TempUnits)
 
