@@ -216,13 +216,13 @@ class AgoTellstick(agoclient.AgoApp):
 
         try:
             self.general_delay = float(self.get_config_option('Delay', 500, 'EventDevices'))/1000
-        except:
+        except ValueError:
             self.general_delay = 0.5
 
         try:
-            self.SensorPollDelay = float(self.get_config_option('SensorPollDelay', 300))/1000
-        except:
-            self.SensorPollDelay = 300.0  # 5 minutes
+            self.SensorPollInterval = float(self.get_config_option('SensorPollInterval', 300))
+        except ValueError:
+            self.SensorPollInterval = 300.0  # 5 minutes
 
         units = self.get_config_option("units", "SI", section="units")
         self.TempUnits = "C"
@@ -236,15 +236,15 @@ class AgoTellstick(agoclient.AgoApp):
                 # Postpone tellsticknet loading, has extra dependencies which
                 # we can do without if we've only got a Duo
                 from tellsticknet import tellsticknet
-                self.tellstick = tellsticknet()
+                self.tellstick = tellsticknet(self)
             else:
                 from  tellstickduo import  tellstickduo
-                self.tellstick = tellstickduo()
+                self.tellstick = tellstickduo(self)
         except OSError,e:
             self.log.error("Failed to load tellstick code: %s", e)
             raise agoclient.agoapp.StartupError()
 
-        self.tellstick.init(self.SensorPollDelay, self.TempUnits)
+        self.tellstick.init(self.SensorPollInterval, self.TempUnits)
 
         self.connection.add_handler(self.message_handler)
 
@@ -316,11 +316,9 @@ class AgoTellstick(agoclient.AgoApp):
                 self.connection.add_device(devId, "binarysensor")
                 deviceUUID = self.connection.internal_id_to_uuid (devId)
 
-                #found = True
-                #"devId=" + str(devId) + " model " + model
                 try:
-                    self.dev_delay[devId] = float(self.get_config_option(str(devId) + '_Delay', 5000, 'EventDevices')) / 1000
-                except:
+                    self.dev_delay[devId] = float(self.get_config_option('Delay', self.general_delay, str(devId))) / 1000
+                except ValueError:
                     self.dev_delay[devId] = self.general_delay
 
                 # Check if device already exist, if not - send its name from the tellstick config file
