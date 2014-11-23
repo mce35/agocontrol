@@ -1,13 +1,15 @@
 import unittest
-import config
-import agoapp
+import agoclient.config as config
+from agoclient.agoapp import AgoApp
 
 import tempfile
 import os, os.path, shutil
 
-devdir = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
+# Find checkedout code dir:
+# We're in subdir shared/agoclient/
+devdir = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + "/../..")
 
-class AgoTest(agoapp.AgoApp):
+class AgoTest(AgoApp):
     pass
 
 class ConfigTestBase(unittest.TestCase):
