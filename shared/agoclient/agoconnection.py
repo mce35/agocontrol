@@ -1,6 +1,7 @@
 import time
 import logging
 import simplejson
+import errno
 from config import get_config_option, get_config_path
 
 from qpid.messaging import *
@@ -90,7 +91,11 @@ class AgoConnection:
             with open(self.uuidmap_file, 'r') as infile:
                 self.uuids = simplejson.load(infile)
         except (OSError, IOError) as exception:
-            self.log.error("Cannot load uuid map file: %s", exception)
+            if exception.errno == errno.ENOENT:
+                # This is not fatal, it just haven't been created yet
+                self.log.debug("Cannot find uuid map file: %s", exception)
+            else:
+                self.log.error("Cannot load uuid map file: %s", exception)
         except ValueError, exception:  # includes simplejson error
             self.log.error("Cannot decode uuid map from file: %s", exception)
 
