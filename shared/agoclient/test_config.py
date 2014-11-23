@@ -19,14 +19,22 @@ class ConfigTestBase(unittest.TestCase):
         # Custom dir, we must place agocontrol.aug into this dir
         # TODO: or add some dir in loadpath?
         shutil.copyfile("%s/conf/agocontrol.aug" % devdir, "%s/agocontrol.aug" % self.tempdir)
+        shutil.copyfile("%s/conf/conf.d/system.conf" % devdir, "%s/conf.d/system.conf" % self.tempdir)
 
         config.set_config_dir(self.tempdir)
-        with open(config.get_config_path('conf.d/system.conf'), 'w') as f:
-            f.write("[system]\ntest_value_0=42\ntest_value_blank=\ntest_string=hello there\n")
-
         with open(config.get_config_path('conf.d/test.conf'), 'w') as f:
-            f.write("[test]\ntest_value_0=100\ntest_value_blank=\ntest_string=\nlocal=4\n"+
-                    "[sec2]\nsome=value\ntest_value_blank=not blank\n")
+            f.write("[test]\n"+
+                    "test_value_0=100\n"+
+                    "test_value_blank=\n"+
+                    "local=4\n"+
+                    "units=inv\n"+
+
+                    "[system]\n"+
+                    "password=testpwd\n"+
+
+                    "[sec2]\n"+
+                    "some=value\n"+
+                    "test_value_blank=not blank\n")
 
         # Kill augeas
         config.augeas = None
@@ -47,26 +55,27 @@ class ConfigTest(ConfigTestBase):
         self.assertEqual(config.get_config_path("/conf.d/"), "%s/conf.d/" % self.tempdir)
 
     def test_get_basic(self):
-        self.assertEqual(gco('system', 'test_value_0'), '42')
-        self.assertEqual(gco('system', 'test_value_blank'), None)
-        self.assertEqual(gco('system', 'test_string'), 'hello there')
+        self.assertEqual(gco('system', 'broker'), 'localhost')
         self.assertEqual(gco('system', 'not_set'), None)
 
-        self.assertEqual(gco('test', 'test_string'), None)
+        self.assertEqual(gco('test', 'test_value_blank'), None)
         self.assertEqual(gco('test', 'local'), '4')
 
         # Test with defaults
-        self.assertEqual(gco('system', 'test_string', 'def'), 'hello there')
+        self.assertEqual(gco('system', 'broker', 'def'), 'localhost')
         self.assertEqual(gco('system', 'not_set', 'def'), 'def')
 
     def test_get_multiapp(self):
-        self.assertEqual(gco('system', 'test_value_0', app="test"), None)
-        self.assertEqual(gco('system', 'test_value_0', app=["test", "system"]), '42')
+        self.assertEqual(gco('system', 'broker', app="test"), None)
+        self.assertEqual(gco('system', 'broker', app=["test", "system"]), 'localhost')
+        self.assertEqual(gco('system', 'password', app=["test", "system"]), 'testpwd')
 
     def test_get_multisection(self):
+        # Must explicitly tell app=test, with differnet section name
         self.assertEqual(gco('sec2', 'some', app='test'), 'value')
         self.assertEqual(gco(['sec2', 'test'], 'test_value_blank', app='test'), 'not blank')
-        self.assertEqual(gco(['test', 'system'], 'test_string'), 'hello there')
+        self.assertEqual(gco(['system'], 'units'), 'SI')
+        self.assertEqual(gco(['test', 'system'], 'units'), 'inv')
 
 
     def test_set_basic(self):
@@ -84,6 +93,12 @@ class ConfigTest(ConfigTestBase):
         self.assertEqual(gco('newfile', 'new_value'), '666')
 
     def test_unwritable(self):
+        if os.getuid() == 0:
+            # TODO: Fix builders so they dont run as root, then change to self.fail instead.
+            #self.fail("You cannot run this test as. Also, do not develop as root!")
+            print "You cannot run this test as. Also, do not develop as root!"
+            return
+
         with open(config.get_config_path('conf.d/blocked.conf'), 'w') as f:
             f.write("[blocked]\nnop=nop\n")
 
@@ -115,23 +130,20 @@ class AppConfigTest(ConfigTestBase):
     def test_get_basic(self):
         self.assertEqual(gco('test_value_0'), '100')
         self.assertEqual(gco('test_value_1'), None)
-        self.assertEqual(gco('test_string'), None)
+        self.assertEqual(gco('units'), 'inv')
 
     def test_get_section(self):
-        # Only read system
-        self.assertEqual(gco('test_value_0', section='system'), '42')
-
-        # Fallback on system
-        self.assertEqual(gco('test_value_0', section=[None, 'system']), '100')
-        self.assertEqual(gco('test_string', section=[None, 'system']), 'hello there')
+        # from system.conf:
+        self.assertEqual(gco('broker', section='system'), 'localhost')
+        # from test.conf:
+        self.assertEqual(gco('password', section='system'), 'testpwd')
 
     def test_get_app(self):
-        self.assertEqual(gco('test_value_0', app=[None, 'system']), '100')
-
         # Will give None, since we're looking in section test, which is not in system.conf
         self.assertEqual(gco('test_value_0', app=['other', 'system']), None)
 
-        self.assertEqual(gco('test_value_0', app=['other', 'system'], section='system'), '42')
+        # Will give system.confs password
+        self.assertEqual(gco('password', app=['other', 'system'], section='system'), 'letmein')
 
     def test_set_basic(self):
         self.assertEqual(sco('new_value', '666'), True)
