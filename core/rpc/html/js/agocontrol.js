@@ -178,13 +178,13 @@ Agocontrol.prototype = {
 
         //fill members
         self.inventory = response.result;
-        self.dashboards.push({name:'All my devices', ucName:'All my devices', action:'', editable:false});
+        self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
         for( uuid in response.result.floorplans )
         {
             var dashboard = response.result.floorplans[uuid];
             dashboard.uuid = uuid;
             dashboard.action = '';
-            dashboard.ucName = ucFirst(dashboard.name);
+            dashboard.ucName = dashboard.name;
             dashboard.editable = true;
             self.dashboards.push(dashboard);
         }
