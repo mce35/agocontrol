@@ -9,8 +9,12 @@ function dashBoard(agocontrol)
     self.itemsPerPage = 9;
     self.itemsPerRow = 3;
     self.keyword = ko.observable("");
+    self.currentPage = ko.observable(1);
     self.deviceList = ko.computed(function()
     {
+        //reset current page
+        self.currentPage(1);
+
         var list = self.agocontrol.devices();
         list = list.filter(function(dev)
         {
@@ -40,7 +44,6 @@ function dashBoard(agocontrol)
         return list;
     });
 
-    self.currentPage = ko.observable(1);
     self.pages = ko.computed(function()
     {
         var pages = [];
