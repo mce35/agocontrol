@@ -10,6 +10,7 @@ function Dashboard(dashboard, edition, agocontrol)
     //members
     var self = this;
     self.agocontrol = agocontrol;
+    self.itemsPerRow = 4;
     self.currentDashboard = dashboard;
     self.dashboardName = ko.observable(ucFirst(self.currentDashboard.name));
     self.editLabel = ko.observable('Edit');
@@ -223,7 +224,7 @@ function Dashboard(dashboard, edition, agocontrol)
             }
 
             //apply text filter
-            if( self.selectedTextFilter() && $.trim(self.selectedTextFilter())!='' )
+            if( self.selectedTextFilter() && $.trim(self.selectedTextFilter())!=='' )
             {
                 output = output.filter(function(item) {
                     if( item.name.toLowerCase().indexOf(self.selectedTextFilter())!=-1 )
@@ -382,14 +383,14 @@ function Dashboard(dashboard, edition, agocontrol)
         var content = [[null, null, null], [null, null, null], [null, null, null]];
 	    self.placedDevices(content);
 
-        if (self.agocontrol.devices().length == 0)
+        if (self.agocontrol.devices().length===0)
         {
             return;
         }
 
         for ( var k in self.currentDashboard )
         {
-            if( self.currentDashboard[k].x==undefined || self.currentDashboard[k].y===undefined )
+            if( self.currentDashboard[k].x===undefined || self.currentDashboard[k].y===undefined )
             {
                 //skip uneeded items
                 continue;
@@ -444,7 +445,7 @@ function Dashboard(dashboard, edition, agocontrol)
     {
         var result = [];
         var x = 0;
-        for ( var y = 0; y < 3; y++)
+        for ( var y=0; y<self.itemsPerRow; y++ )
         {
             if( self.placedDevices()[x] && self.placedDevices()[x][y] )
             {
@@ -468,7 +469,7 @@ function Dashboard(dashboard, edition, agocontrol)
     {
         var result = [];
         var x = 1;
-        for ( var y = 0; y < 3; y++)
+        for ( var y=0; y<self.itemsPerRow; y++ )
         {
             if( self.placedDevices()[x] && self.placedDevices()[x][y] )
             {
@@ -492,7 +493,7 @@ function Dashboard(dashboard, edition, agocontrol)
     {
         var result = [];
         var x = 2;
-        for ( var y = 0; y < 3; y++)
+        for ( var y=0; y<self.itemsPerRow; y++ )
         {
             if( self.placedDevices()[x] && self.placedDevices()[x][y] )
             {

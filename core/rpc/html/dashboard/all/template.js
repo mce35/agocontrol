@@ -6,8 +6,8 @@ function dashBoard(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
-    self.itemsPerPage = 9;
-    self.itemsPerRow = 3;
+    self.itemsPerPage = 12;
+    self.itemsPerRow = 4;
     self.keyword = ko.observable("");
     self.currentPage = ko.observable(1);
     self.deviceList = ko.computed(function()
