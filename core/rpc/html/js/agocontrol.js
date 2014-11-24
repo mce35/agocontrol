@@ -69,6 +69,21 @@ Agocontrol.prototype = {
         });
     },
 
+    //find room
+    findRoom: function(uuid)
+    {
+        var self = this;
+
+        for( var i=0; i<self.rooms().length; i++ )
+        {
+            if( self.rooms()[i].uuid==uuid )
+            {
+                return self.rooms()[i];
+            }
+        }
+        return null;
+    },
+
     //refresh devices list
     getDevices: function(async)
     {
@@ -196,21 +211,28 @@ Agocontrol.prototype = {
         var devs = self.cleanInventory(response.result.devices);
         for( var uuid in devs )
         {
-            if (devs[uuid].room !== undefined && devs[uuid].room)
+            //update device room infos
+            if( devs[uuid].room && devs[uuid].room.length>0 )
             {
-                devs[uuid].roomUID = devs[uuid].room;
-                if( self.rooms()[devs[uuid].room]!==undefined )
+                var r = self.findRoom(devs[uuid].room);
+                if( r )
                 {
-                    devs[uuid].room = self.rooms()[devs[uuid].room].name;
+                    //save room uuid in roomUID field instead of room field
+                    devs[uuid].roomUID = devs[uuid].room;
+                    //and put room name in room field
+                    devs[uuid].room = r.name;
                 }
                 else
                 {
-                    devs[uuid].room = "";
+                    //room not found, maybe it has been deleted
+                    devs[uuid].roomUID = null;
+                    devs[uuid].room = '';
                 }
             }
             else
             {
-                devs[uuid].room = "";
+                //only add new field
+                devs[uuid].roomUID = null;
             }
             
             //TODO still useful?
