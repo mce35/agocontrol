@@ -186,7 +186,7 @@ class AgoConnection:
             self.sender.send(message)
             return True
         except SendError, exception:
-            self.log.error("Failed to send message: ", exception)
+            self.log.error("Failed to send message: %s", exception)
             return False
 
     def send_message_reply(self, content):
@@ -258,11 +258,11 @@ class AgoConnection:
             response = Message(content)
             replysender.send(response)
         except SendError, exception:
-            self.log.error("Failed to send reply: ", exception)
+            self.log.error("Failed to send reply: %s", exception)
         except AttributeError, exception:
-            self.log.error("Failed to encode reply: ", exception)
+            self.log.error("Failed to encode reply: %s", exception)
         except MessagingError, exception:
-            self.log.error("Failed to send reply message: ", exception)
+            self.log.error("Failed to send reply message: %s", exception)
         finally:
             replysession.close()
 
