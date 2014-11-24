@@ -21,7 +21,9 @@
     </div>
 
     <div class="row dashboard-widget-content dashboard-widget-content-values" style="text-align:center;">
-        <img data-bind="attr: {'src':multigraphThumb}"/>
+        <a href="#" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <img data-bind="attr: {'src':multigraphThumb}"/>
+        </a>
     </div>
 
 </div>
