@@ -281,8 +281,12 @@ Agocontrol.prototype = {
             //HELP PAGES
             for( var i=0; i<result.help.length; i++ )
             {
-                self.helps.push(result.help[i]);
+                var help = result.help[i];
+                help.url = null;
+                self.helps.push(help);
             }
+            self.helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
+            self.helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
         });
     },
 
