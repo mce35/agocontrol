@@ -1,0 +1,7 @@
+{
+        "name": "System",
+        "version": "1.0.0",
+        "description": "System information",
+        "template": "html/system",
+        "listable": true
+}

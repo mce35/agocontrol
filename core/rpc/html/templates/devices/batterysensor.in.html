@@ -1,16 +1,16 @@
-<div data-bind="attr: {'data-uuid': uuid}" class="four columns device">
+<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
 
     <div class="row dashboard-widget-header">
         <ul class="two_up tiles">
             <li class="dashboard-widget-header-icon">
                 <ko opts="if: stale">
                     <div class="pretty large danger btn handle">
-                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-battery"/>
+                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-battery"/>
                     </div>
                 </ko>
                 <ko opts="ifnot: stale">
                     <div class="pretty large primary btn handle">
-                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-battery"/>
+                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-battery"/>
                     </div>
                 </ko>
             </li>
@@ -44,7 +44,7 @@
             </li>
             <li class="dashboard-widget-content-button">
                 <div class="small pretty primary btn btn-full">
-                    <a href="#" data-bind="click: function(data, event) { showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
+                    <a href="#" data-bind="click: function(data, event) { $parent.agocontrol.showDetails($parent, data.name) }"><i class="icon-chart-area"/></a>
                 </div>
             </li>
         </ul>

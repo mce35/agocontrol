@@ -2,7 +2,8 @@
         "name": "blockly",
         "version": "0.0.1",
         "description": "Create events easily using blocks",
-        "dashboardAccess": true,
+        "listable": true,
+        "template": "html/agoblockly",
         "resources": {
             "css": [
                 "prettify/prettify.css"

@@ -16,13 +16,12 @@
 <link rel="stylesheet" href="css/style.css" />
 
 <link rel="stylesheet" href="css/jquery.dataTables.css" />
-<link rel="stylesheet" href="css/jquery.dataTables.css" />
 <link rel="stylesheet" href="css/jquery.dataTables_themeroller.css" />
 <link rel="stylesheet" href="css/jquery-ui/jquery.ui.all.css" />
 
-<script type="text/javascript" src="js/libs/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="js/libs/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/libs/jquery-ui.js"></script>
-<script type="text/javascript" src="js/libs/jquery.blockUI.js"></script>
+<script type="text/javascript" src="js/libs/jquery.blockUI.min.js"></script>
 <script type="text/javascript" src="js/libs/jscolor.js"></script>
 <script type="text/javascript" src="js/libs/jquery.dataTables.js"></script>
 <script type="text/javascript" src="js/libs/jquery.jeditable.js"></script>
@@ -33,17 +32,31 @@
 
 <script type="text/javascript" src="js/lang.js"></script>
 
-<script type="text/javascript" src="js/libs/knockout-3.1.0.js"></script>
+<script type="text/javascript" src="js/libs/knockout-3.2.0.js"></script>
 <script type="text/javascript" src="js/libs/koExternalTemplateEngine_all.js"></script>
 
 <script type="text/javascript" src="js/libs/cog.js"></script>
 <script type="text/javascript" src="js/libs/cog.utils.js"></script>
 <script type="text/javascript" src="js/libs/knockout.bindings.dataTables.js"></script>
 
+<script src="js/libs/modernizr-2.6.2.min.js"></script>
+<script gumby-touch="js/libs" src="js/libs/gumby.js"></script>
+<script src="js/libs/ui/gumby.retina.js"></script>
+<script src="js/libs/ui/gumby.fixed.js"></script>
+<script src="js/libs/ui/gumby.skiplink.js"></script>
+<script src="js/libs/ui/gumby.toggleswitch.js"></script>
+<script src="js/libs/ui/gumby.checkbox.js"></script>
+<script src="js/libs/ui/gumby.radiobtn.js"></script>
+<script src="js/libs/ui/gumby.tabs.js"></script>
+<script src="js/libs/ui/gumby.navbar.js"></script>
+<script src="js/libs/ui/jquery.validation.js"></script>
+<script src="js/libs/gumby.init.js"></script>
 
 <script type="text/javascript" src="js/device.js"></script>
-<script type="text/javascript" src="js/app.floorplan.js"></script>
+<!--<script type="text/javascript" src="js/app.floorplan.js"></script>-->
 <script type="text/javascript" src="js/libs/yepnope.1.5.4-min.js"></script>
+
+<script type="text/javascript" src="js/libs/sammy.min.js"></script>
 
 <link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.css" />
 <script src="js/libs/jquery.datetimepicker.js"></script>
@@ -51,7 +64,7 @@
 </head>
 <body>
 
-<div id="colorPickerDialog" title="Please select a color" data-uuid="">
+<div id="colorPickerDialog" title="Please select a color" data-uuid="" style="display:none;">
 	<form>
 		<input id="colorValue" class="color" style="display:none" />
 	</form>
@@ -59,26 +72,74 @@
 
 <div id="detailsPage" style="display: none">&nbsp;</div>
 
+<!-- HEADER -->
+<nav id="navbar-main-nav" class="navbar pretty">
+    <div class="row">
+        <a class="toggle" gumby-trigger="#navbar-main-nav #main-nav" href="#"><i class="icon-menu"></i></a>
+        <h1 class="three columns logo">
+            <a href="http://www.agocontrol.com" target="_blank"><img src="/img/agocontrol_logo.png" gumby-retina /></a>
+        </h1>
+        <nav class="eight columns pull_right">
+            <ul id="main-nav">
+                <li>
+                    <a href="#" data-bind="click:$root.noclick">
+                        <i class="icon-layout" title="Dashboards"></i>
+                        <span>Dashboards</span>
+                    </a>
+                    <div class="dropdown">
+                        <ul data-bind="foreach: agocontrol.dashboards">
+                            <li><a href="#" data-bind="text:ucName, click:$root.gotoDashboard"></a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <a href="#" data-bind="click:$root.noclick">
+                        <i class="icon-archive" title="Plugins"></i>
+                        <span>Applications</span>
+                    </a>
+                    <div class="dropdown">
+                        <ul data-bind="foreach: agocontrol.plugins">
+                            <li><a href="#" data-bind="text:ucName, click:$root.gotoPlugin"></a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <a href="#" data-bind="click:$root.noclick">
+                        <i class="icon-tools" title="Configuration"></i>
+                        <span>Configuration</span>
+                    </a>
+                    <div class="dropdown">
+                        <ul data-bind="foreach: agocontrol.configurations">
+                            <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <a href="http://wiki.agocontrol.com" target="_blank">
+                        <i class="icon-help" title="Help"></i>
+                        <span>Help</span>
+                    </a>
+                    <div class="dropdown">
+                        <ul data-bind="foreach: agocontrol.helps">
+                            <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</nav>
 
-<div class="container">
-	<div class="row">
-		<div class="two columns" id="col-left" data-bind="template: 'navigation/main'">
-
-		</div>
-	    <div class="ten columns" id="col-right">
-		  	<div class="row" id="header">
-				<div class="nine columns" id="info">
-					<a href="http://www.agocontrol.com" target="_blank">www.agocontrol.com</a>
-				</div>
-				<div class="three columns" id="logo">
-					<a href="http://www.agocontrol.com" target="_blank"><img src="img/agocontrol_logo.png"/></a>
-				</div>  		
-			</div>
-			<div class="container" id="grid" data-bind="template: {name: mainTemplate}">
-	 		</div>
-	    </div>
-	</div>
+<!-- CONTENT -->
+<div id="main" data-bind="with:currentView">
+    <div class="row" style="min-height:500px;" data-bind="template: {name:templateName, data:model, afterRender:model.afterRender}" >
+    </div>
 </div>
+
+<script type="text/javascript" src="js/agocontrol.js"></script>
+<script type="text/javascript" src="js/details.js"></script>
+<script type="text/javascript" src="js/uihelpers.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
+
 </body>
 </html>

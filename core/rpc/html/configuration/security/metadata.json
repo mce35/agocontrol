@@ -1,0 +1,7 @@
+{
+        "name": "Security",
+        "version": "1.0.0",
+        "description": "Security configuration",
+        "template": "html/security",
+        "listable": true
+}

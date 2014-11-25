@@ -1,0 +1,7 @@
+{
+        "name": "Devices",
+        "version": "1.0.0",
+        "description": "Devices configuration",
+        "template": "html/devices",
+        "listable": true
+}

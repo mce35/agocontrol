@@ -1,0 +1,53 @@
+<div id="draganddroparea">
+    
+    <!-- EDITOR -->
+    <div id="dashboardEditor" class="dashboard-editor">
+        <div class="row">
+            <div class="three columns" style="padding-top:10px; padding-left:20px;">
+                <ul>
+                    <li class="field" style="margin:0px;">
+                        <div class="picker">
+                            <select data-bind="value:selectedMainFilter">
+                                <option value="all">All</option>
+                                <option value="rooms">Rooms</option>
+                                <option value="types">Device types</option>
+                            </select>
+                        </div>
+                    </li>
+                    <li class="field" style="margin:0px;">
+                        <div class="picker">
+                            <select data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter">
+                            </select>
+                        </div>
+                    </li>
+                    <li class="append field" style="margin:0px;">
+                        <input class="xwide text input" type="text" placeholder="Filter" data-bind="value:selectedTextFilter"/>
+                        <div class="medium primary btn" style="color:#FFFFFF;" data-bind="click:clearTextFilter">
+                            <i class="icon-cancel" title="Clear filter"></i>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="nine columns">
+                <div class="device-list" data-bind="template: {name:listDeviceTemplate, foreach:filteredDevices }">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="row">
+        <div class="ten columns">
+            <h4 data-bind="text: dashboardName"></h4>
+        </div>
+        <div class="two columns" style="text-align:right;">
+            <div class="small default btn pretty icon-left entypo icon-pencil">
+                <a href="#" data-bind="text:editLabel, click:showEditor"></a>
+            </div>
+        </div>
+    </div>
+    <div data-bind="template: {name: deviceTemplate, foreach: firstRow}" class="row grid"/>
+    <div data-bind="template: {name: deviceTemplate, foreach: secondRow}" class="row grid"/>
+    <div data-bind="template: {name: deviceTemplate, foreach: thirdRow}" class="row grid"/>
+
+</div>

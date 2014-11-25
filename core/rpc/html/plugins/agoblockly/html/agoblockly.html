@@ -1,0 +1,356 @@
+<div style="margin: 0px auto 10px auto; padding:15px;" id="contentarea">
+    
+    <div style="display:none;">
+        <span id="nr" data-translateable="true">luacontroller is not responding. Unable to execute action.</span>
+        <span xml:lang="de" id="nr" data-translateable="true">luacontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden.</span>
+        <span xml:lang="fr" id="nr" data-translateable="true">luacontroller ne répond pas. Impossible d'exécuter l'action.</span>
+        <span xml:lang="nl" id="nr" data-translateable="true">luacontroller reageert niet. Handeling kan niet worden uitgevoerd.</span>
+        <span id="nb" data-translateable="true">No block defined in workspace.</span>
+        <span xml:lang="de" id="nb" data-translateable="true">Kein Block im Arbeitsbereich definiert.</span>
+        <span xml:lang="fr" id="nb" data-translateable="true">Aucun bloc n'est défini.</span>
+        <span xml:lang="nl" id="nb" data-translateable="true">Geen block gedefinieert.</span>
+        <span id="ss" data-translateable="true">Script saved successfully.</span>
+        <span xml:lang="de" id="ss" data-translateable="true">Script wurde erfolgreich gespeichert.</span>
+        <span xml:lang="fr" id="ss" data-translateable="true">Le script a été sauvegardé.</span>
+        <span xml:lang="nl" id="ss" data-translateable="true">Script opgeslagen</span>
+        <span id="sl" data-translateable="true">Script loaded successfully.</span>
+        <span xml:lang="de" id="sl" data-translateable="true">Script wurde erfolgreich geladen.</span>
+        <span xml:lang="fr" id="sl" data-translateable="true">Le script a bien été chargé.</span>
+        <span xml:lang="nl" id="sl" data-translateable="true">Script ingeladen.</span>
+        <span id="pss" data-translateable="true">Please select a script</span>
+        <span xml:lang="de" id="pss" data-translateable="true">Bitte wähle ein Script</span>
+        <span xml:lang="fr" id="pss" data-translateable="true">Sélectionner un script s'il vous plait</span>
+        <span xml:lang="nl" id="pss" data-translateable="true">Selecteer een script</span>
+        <span id="sc" data-translateable="true">Unable to load script, it seems to be corrupted!</span>
+        <span xml:lang="de" id="sc" data-translateable="true">Skript kann nicht geladen werden, es scheint beschädigt zu sein!</span>
+        <span xml:lang="fr" id="sc" data-translateable="true">Le script semble corrompu. Impossible de l'ouvrir!</span>
+        <span xml:lang="nl" id="sc" data-translateable="true">Niet mogelijk om script te laden, het lijkt beschadigt.</span>
+        <span id="ns" data-translateable="true">Script not saved</span>
+        <span xml:lang="de" id="ns" data-translateable="true">Script wurde nicht gespeichert</span>
+        <span xml:lang="fr" id="ns" data-translateable="true">Le script n'a pas été sauvegardé</span>
+        <span xml:lang="nl" id="ns" data-translateable="true">Script niet opgeslagen</span>
+        <span id="sn" data-translateable="true">Please specify a valid script name</span>
+        <span xml:lang="de" id="sn" data-translateable="true">Bitte gültigen Skriptnamen eingeben</span>
+        <span xml:lang="fr" id="sn" data-translateable="true">Veuillez entrer un nom de script valide</span>
+        <span xml:lang="nl" id="sn" data-translateable="true">Geef een geldige script naam</span>
+        <span id="cd" data-translateable="true">Delete selected script?</span>
+        <span xml:lang="de" id="cd" data-translateable="true">Lösche ausgewähltes Script</span>
+        <span xml:lang="fr" id="cd" data-translateable="true">Supprimer le script?</span>
+        <span xml:lang="nl" id="cd" data-translateable="true">Verwijder geselecteert script?</span>
+        <span id="sd" data-translateable="true">Script deleted successfully</span>
+        <span xml:lang="de" id="sd" data-translateable="true">Script wurde erfolgreich gelöscht.</span>
+        <span xml:lang="fr" id="sd" data-translateable="true">Le script a bien été chargé.</span>
+        <span xml:lang="nl" id="sd" data-translateable="true">Script verwijderd</span>
+        <span id="nd" data-translateable="true">Unable to delete script</span>
+        <span xml:lang="de" id="nd" data-translateable="true">Kann Script nicht löschen</span>
+        <span xml:lang="fr" id="nd" data-translateable="true">Sélectionner un script s'il vous plait</span>
+        <span xml:lang="nl" id="nd" data-translateable="true">Verwijderen van script mislukt</span>
+        <span id="rss" data-translateable="true">Script renamed successfully</span>
+        <span xml:lang="de" id="rss" data-translateable="true">Script wurde erfolgreich umbenannt.</span>
+        <span xml:lang="fr" id="rss" data-translateable="true">Le script a été renommé.</span>
+        <span id="rsf" data-translateable="true">Script not renamed</span>
+        <span xml:lang="de" id="rsf" data-translateable="true">Script wurde nicht umbenannt</span>
+        <span xml:lang="fr" id="rsf" data-translateable="true">Le script n'a pas été renommé</span>
+    </div>
+
+    
+    <xml style="display: none" id="toolbox">
+        <category name="Logic">
+            <block type="controls_if"/>
+            <block type="logic_compare"/>
+            <block type="logic_operation"/>
+            <block type="logic_negate"/>
+            <block type="logic_boolean"/>
+            <block type="logic_ternary"/>
+        </category>
+        <category name="Loops">
+            <block type="controls_repeat"/>
+            <block type="controls_whileUntil"/>
+            <block type="controls_for">
+                <value name="FROM">
+                    <block type="math_number">
+                        <title name="NUM">1</title>
+                    </block>
+                </value>
+                <value name="TO">
+                    <block type="math_number">
+                        <title name="NUM">10</title>
+                    </block>
+                </value>
+                <value name="BY">
+                    <block type="math_number">
+                        <title name="NUM">1</title>
+                    </block>
+                </value>
+            </block>
+            <block type="controls_forEach"/>
+            <block type="controls_flow_statements"/>
+        </category>
+        <category name="Math">
+            <block type="math_number"/>
+            <block type="math_arithmetic"/>
+            <block type="agocontrol_range">
+                <value name="MIN">
+                    <block type="math_number">
+                        <title name="NUM">0</title>
+                    </block>
+                </value>
+                <value name="PROP">
+                    <block type="agocontrol_eventProperty"/>
+                </value>
+                <value name="MAX">
+                    <block type="math_number">
+                        <title name="NUM">100</title>
+                    </block>
+                </value>
+            </block>
+            <block type="math_number_property"/>
+            <block type="math_change">
+                <value name="DELTA">
+                    <block type="math_number">
+                        <title name="NUM">1</title>
+                    </block>
+                </value>
+            </block>
+            <block type="math_round"/>
+            <block type="math_on_list"/>
+            <block type="math_constrain">
+                <value name="LOW">
+                    <block type="math_number">
+                        <title name="NUM">1</title>
+                    </block>
+                </value>
+                <value name="HIGH">
+                    <block type="math_number">
+                        <title name="NUM">100</title>
+                    </block>
+                </value>
+            </block>
+            <block type="math_random_int">
+                <value name="FROM">
+                    <block type="math_number">
+                        <title name="NUM">1</title>
+                    </block>
+                </value>
+                <value name="TO">
+                    <block type="math_number">
+                        <title name="NUM">100</title>
+                    </block>
+                </value>
+            </block>
+            <block type="math_random_float"/>
+            <block type="math_modulo"/>
+        </category>
+        <category name="Colour">
+            <block type="colour_picker"/>
+            <block type="colour_rgb"/>
+        </category>
+        <category name="Text">
+            <block type="text"/>
+            <block type="agocontrol_email"/>
+            <block type="agocontrol_phoneNumber"/>
+            <block type="agocontrol_valueOptions"/>
+            <block type="text_join"/>
+            <block type="text_append">
+                <value name="TEXT">
+                    <block type="text"/>
+                </value>
+            </block>
+            <block type="text_length"/>
+            <block type="text_isEmpty"/>
+            <block type="text_changeCase"/>
+            <block type="text_trim"/>
+            <block type="text_format"/>
+        </category>
+        <category name="List">
+            <block type="lists_create_empty"/>
+            <block type="lists_create_with"/>
+            <block type="lists_repeat">
+                <value name="NUM">
+                    <block type="math_number">
+                        <field name="NUM">5</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_length"/>
+            <block type="lists_isEmpty"/>
+            <block type="lists_indexOf">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_getIndex">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_setIndex">
+                <value name="LIST">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_getSublist">
+                <value name="LIST">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+        </category>
+        <category name="Datetime">
+            <block type="datetime_timestamp"/>
+            <block type="datetime_totimestamp"/>
+            <block type="datetime_currentdate"/>
+            <block type="datetime_specificdate"/>
+        </category>
+        <category name="Common">
+            <block type="text_print"/>
+            <block type="common_tonumber"/>
+            <block type="common_tostring"/>
+            <block type="common_type"/>
+            <block type="common_execute"/>
+        </category>
+        <category name="Variables" custom="VARIABLE">
+        </category>
+        <category name="Procedures" custom="PROCEDURE">
+        </category>
+        <category name="Agocontrol">
+            <category name="Content">
+                <block type="agocontrol_content">
+                    <value name="EVENT">
+                        <block type="agocontrol_eventAll">
+                        </block>
+                    </value>
+                </block>
+                <block type="agocontrol_contentProperty"/>
+            </category>
+            <category name="Inventory">
+                <block type="agocontrol_deviceProperty"/>
+            </category>
+            <category name="Device">
+                <block type="agocontrol_device"/>
+            </category>
+            <category name="Event">
+                <block type="agocontrol_deviceEvent"/>
+                <block type="agocontrol_eventAll"/>
+            </category>
+            <category name="Actions">
+                <block type="agocontrol_sendMessage"/>
+                <block type="agocontrol_sleep"/>
+            </category>
+            <category name="Variables">
+                <block type="agocontrol_getVariable"/>
+                <block type="agocontrol_setVariable"/>
+            </category>
+        </category>
+    </xml>
+    
+    
+    <div style="margin-bottom:0px" class="row">
+        <div class="pretty medium info btn icon-left icon-install"><a title="Save your script" href="#" data-bind="click:save"><span data-translateable="true">Save</span>
+        <span xml:lang="de" data-translateable="true">Speichern</span>
+        <span xml:lang="fr" data-translateable="true">Enregistrer</span>
+        <span xml:lang="nl" data-translateable="true">Opslaan</span> <span style="font-style:bold;" data-bind="text:scriptName"/></a></div>
+        <div class="pretty medium info btn icon-left icon-up"><a title="Load existing script" href="#" data-translateable="true" data-bind="click:load">Load</a>
+        <a xml:lang="de" title="Load existing script" href="#" data-translateable="true" data-bind="click:load">Laden</a>
+        <a xml:lang="fr" title="Load existing script" href="#" data-translateable="true" data-bind="click:load">Ouvrir</a>
+        <a xml:lang="nl" title="Load existing script" href="#" data-translateable="true" data-bind="click:load">Laden</a></div>
+        <div style="margin-left:20px;" class="pretty medium info btn icon-left icon-check"><a title="Check blocks" href="#" data-translateable="true" data-bind="click:check">Check</a>
+        <a xml:lang="de" title="Check blocks" href="#" data-translateable="true" data-bind="click:check">Überprüfen</a>
+        <a xml:lang="fr" title="Check blocks" href="#" data-translateable="true" data-bind="click:check">Vérifier</a>
+        <a xml:lang="nl" title="Check blocks" href="#" data-translateable="true" data-bind="click:check">Controleer</a></div>
+        <div class="pretty medium info btn icon-left icon-eye"><a title="View your blocks under script format" href="#" data-translateable="true" data-bind="click:viewlua">View</a>
+        <a xml:lang="de" title="View your blocks under script format" href="#" data-translateable="true" data-bind="click:viewlua">Ansehen</a>
+        <a xml:lang="fr" title="View your blocks under script format" href="#" data-translateable="true" data-bind="click:viewlua">Voir</a>
+        <a xml:lang="nl" title="View your blocks under script format" href="#" data-translateable="true" data-bind="click:viewlua">Bekijk</a></div>
+        <div style="margin-left:20px;" class="pretty medium info btn icon-left icon-trash"><a title="Clear all blocks on workspace" href="#" data-translateable="true" data-bind="click:clear">Clear</a>
+        <a xml:lang="de" title="Clear all blocks on workspace" href="#" data-translateable="true" data-bind="click:clear">Löschen</a>
+        <a xml:lang="fr" title="Clear all blocks on workspace" href="#" data-translateable="true" data-bind="click:clear">Effacer</a>
+        <a xml:lang="nl" title="Clear all blocks on workspace" href="#" data-translateable="true" data-bind="click:clear">Wissen</a></div>
+        <div style="margin-left:20px; display: inline-block;">
+            <ko opts="if:scriptSaved">
+            <li data-translateable="true" class="default label">Script saved</li>
+            <li xml:lang="de" data-translateable="true" class="default label">Script gespeichert</li>
+            <li xml:lang="fr" data-translateable="true" class="default label">Script sauvegardé</li>
+            <li xml:lang="nl" data-translateable="true" class="default label">Script opgeslagen</li>
+            </ko>
+            <ko opts="ifnot:scriptSaved">
+            <li data-translateable="true" class="warning label">Script modified</li>
+            <li xml:lang="de" data-translateable="true" class="warning label">Script geändert</li>
+            <li xml:lang="fr" data-translateable="true" class="warning label">Script modifié</li>
+            <li xml:lang="nl" data-translateable="true" class="warning label">Script gewijzigd</li>
+            </ko>
+        </div>
+    </div>
+    <div style="height:800px; width:960px;" id="blocklyDiv" data-bind="blockly:blocklyViewModel"/>
+
+    
+    <div id="luaDialog">
+        <pre style="width:100%; height:100%;" id="luaContent"/>
+    </div>
+
+    
+    <div style="display:none;" id="loadDialog">
+        <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px;">
+            <legend><span style="font-weight:bold;" data-translateable="true">Existing scripts</span>
+            <span xml:lang="de" style="font-weight:bold;" data-translateable="true">Vorhandenes Script</span>
+            <span xml:lang="fr" style="font-weight:bold;" data-translateable="true">Scripts existants</span></legend>
+                <table style="width: 100%; margin-top: 15px; margin-bottom: 5px;" data-bind="dataTable: { dataSource:availableScripts, rowTemplate:'rowTemplate', columns:['name'], options:{fnRowCallback:uiRenameScript}}">
+                <thead>
+                <tr>
+                    <th data-translateable="true">Script</th>
+                    <th xml:lang="de" data-translateable="true">Script</th>
+                    <th xml:lang="fr" data-translateable="true">Script</th>
+                    <th data-translateable="true">Actions</th>
+                    <th xml:lang="de" data-translateable="true">Befehle</th>
+                    <th xml:lang="fr" data-translateable="true">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                </table>
+        </fieldset>
+        <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px; margin-top:10px;">
+            <legend><span style="font-weight:bold;" data-translateable="true">Import script</span>
+            <span xml:lang="de" style="font-weight:bold;" data-translateable="true">Script importieren</span>
+            <span xml:lang="fr" style="font-weight:bold;" data-translateable="true">Importer un script</span></legend>
+            <input type="file" name="files" id="fileupload" data-url="/upload"/>
+            <div style="width:100%; border:1px solid #ddd; padding:1px; border-radius:3px; margin-top:10px;" id="progress">
+                <div style="width:0%; height:10px; background:#72D940; border-radius:3px;" class="bar"/>
+            </div>
+        </fieldset>
+    </div>
+
+    <script type="text/html" id="rowTemplate">
+        <td data-bind="attr: {'data-oldname': name}, text: name" class="rename_script"/>
+        <td>
+            <button data-translateable="true" data-bind="click: $parent.uiLoadScript.bind($data,name)">Load</button>
+            <button xml:lang="de" data-translateable="true" data-bind="click: $parent.uiLoadScript.bind($data,name)">Laden</button>
+            <button xml:lang="fr" data-translateable="true" data-bind="click: $parent.uiLoadScript.bind($data,name)">Ouvrir</button>
+            <button xml:lang="nl" data-translateable="true" data-bind="click: $parent.uiLoadScript.bind($data,name)">Laden</button>
+            <button data-translateable="true" data-bind="click: $parent.uiDeleteScript.bind($data,name)">Delete</button>
+            <button xml:lang="de" data-translateable="true" data-bind="click: $parent.uiDeleteScript.bind($data,name)">Löschen</button>
+            <button xml:lang="fr" data-translateable="true" data-bind="click: $parent.uiDeleteScript.bind($data,name)">Supprimer</button>
+            <button xml:lang="nl" data-translateable="true" data-bind="click: $parent.uiDeleteScript.bind($data,name)">Verwijderen</button>
+            <button data-translateable="true" data-bind="click: $parent.uiExportScript.bind($data,name)">Export</button>
+            <button xml:lang="de" data-translateable="true" data-bind="click: $parent.uiExportScript.bind($data,name)">Exportieren</button>
+            <button xml:lang="fr" data-translateable="true" data-bind="click: $parent.uiExportScript.bind($data,name)">Exporter</button>
+        </td>
+    </script>
+
+    
+    <div style="display:none;" id="saveDialog">
+        <span data-translateable="true">Script name</span>
+        <span xml:lang="de" data-translateable="true">Script Name</span>
+        <span xml:lang="fr" data-translateable="true">Nom du script</span>:
+        <div class="field">
+            <input data-bind="value:scriptName" class="input"/>
+        </div>
+    </div>
+</div>
