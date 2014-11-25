@@ -1,6 +1,7 @@
 import time
 import logging
 import simplejson
+import errno
 from config import get_config_option, get_config_path
 
 from qpid.messaging import *
@@ -90,7 +91,11 @@ class AgoConnection:
             with open(self.uuidmap_file, 'r') as infile:
                 self.uuids = simplejson.load(infile)
         except (OSError, IOError) as exception:
-            self.log.error("Cannot load uuid map file: %s", exception)
+            if exception.errno == errno.ENOENT:
+                # This is not fatal, it just haven't been created yet
+                self.log.debug("Cannot find uuid map file: %s", exception)
+            else:
+                self.log.error("Cannot load uuid map file: %s", exception)
         except ValueError, exception:  # includes simplejson error
             self.log.error("Cannot decode uuid map from file: %s", exception)
 
@@ -181,7 +186,7 @@ class AgoConnection:
             self.sender.send(message)
             return True
         except SendError, exception:
-            self.log.error("Failed to send message: ", exception)
+            self.log.error("Failed to send message: %s", exception)
             return False
 
     def send_message_reply(self, content):
@@ -196,8 +201,7 @@ class AgoConnection:
             message.reply_to = 'reply-%s' % replyuuid
 
             if self.log.isEnabledFor(logging.TRACE):
-                self.log.trace("Sending message [reply-to=%s, sub=%s]: %s", message.reply_to,
-                        subject, content)
+                self.log.trace("Sending message [reply-to=%s]: %s", message.reply_to, content)
 
             self.sender.send(message)
             replymessage = replyreceiver.fetch(timeout=3)
@@ -254,11 +258,11 @@ class AgoConnection:
             response = Message(content)
             replysender.send(response)
         except SendError, exception:
-            self.log.error("Failed to send reply: ", exception)
+            self.log.error("Failed to send reply: %s", exception)
         except AttributeError, exception:
-            self.log.error("Failed to encode reply: ", exception)
+            self.log.error("Failed to encode reply: %s", exception)
         except MessagingError, exception:
-            self.log.error("Failed to send reply message: ", exception)
+            self.log.error("Failed to send reply message: %s", exception)
         finally:
             replysession.close()
 

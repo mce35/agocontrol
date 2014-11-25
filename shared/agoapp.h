@@ -40,7 +40,10 @@
 
 namespace agocontrol {
 
+    class TestAgoConfig;
     class AgoApp {
+    friend class TestAgoConfig;
+
     private :
         const std::string appName;
         std::string appShortName;
@@ -128,35 +131,105 @@ namespace agocontrol {
          */
         virtual void doShutdown();
 
-        /// Get config option from applications configuration file
-        std::string getConfigOption(const char *option, const char *defaultValue) {
-            return getConfigSectionOption(appConfigSection.c_str(), option, defaultValue);
+        /**
+         * Read a config option from the configuration subsystem.
+         *
+         * The system is based on per-app configuration files, which has sections
+         * and options.
+         *
+         * The simplest, and most common, usage only specifies the option and
+         * defaultValue. This looks in the applications own configuration file, in a
+         * section named after the app.
+         * Some apps might want to use a custom section too.
+         * Edge-case apps might want to look in other files, by specifying value for app.
+         *
+         * It is posible to look at multiple sections, for example for fallback if it's
+         * not present in the main section. To do this, pass an explicit
+         * ExtraConfigNameList object as section/app. This will look first at the apps
+         * primary section/app, then at any sections/apps specified in the ExtraConfigNameList.
+         * To completely override the probed sections/apps, use a plain ConfigNameList.
+         *
+         * Note that a regular char* or std::string can be passed instead of
+         * ConfigNameList objects, it will create an implicit ConfigNameList.
+         *
+         * Arguments:
+         *  option -- The name of the option to retreive
+         *
+         *  defaultValue -- If the option can not be found in any of the specified
+         *      sections, fall back to this value.
+         *
+         *  section -- A ConfigNameList section to look for the option in.
+         *      Defaults to the applications shorted name.
+         *
+         *  app -- A ConfigNameList identifying the configuration storage unit to look in.
+         *      If omited, it defaults to the section(s).
+         *
+         * Lookup order:
+         *  For each specified app, we look at each specified section/option. First non-empty
+         *  value wins.
+         *
+         * Returns:
+         *  The value found.
+         *  If not found, defaultValue is passed through unmodified.
+         */
+        std::string getConfigOption(const char *option, const char *defaultValue, const ConfigNameList &section=BLANK_CONFIG_NAME_LIST, const ConfigNameList &app = BLANK_CONFIG_NAME_LIST) {
+            ConfigNameList section_(section, appConfigSection);
+            ConfigNameList app_(app, section_);
+            return getConfigSectionOption(section_, option, defaultValue, app_);
         }
-        std::string getConfigOption(const char *option, std::string &defaultValue) {
-            return getConfigSectionOption(appConfigSection.c_str(), option, defaultValue);
+        std::string getConfigOption(const char *option, std::string &defaultValue, const ConfigNameList &section=BLANK_CONFIG_NAME_LIST, const ConfigNameList &app = BLANK_CONFIG_NAME_LIST) {
+            ConfigNameList section_(section, appConfigSection);
+            ConfigNameList app_(app, section_);
+            return getConfigSectionOption(section_, option, defaultValue, app_);
         }
-        boost::filesystem::path getConfigOption(const char *option, const boost::filesystem::path &defaultValue) {
-            return getConfigSectionOption(appConfigSection.c_str(), option, defaultValue);
+        boost::filesystem::path getConfigOption(const char *option, const boost::filesystem::path &defaultValue, const ConfigNameList &section=BLANK_CONFIG_NAME_LIST, const ConfigNameList &app = BLANK_CONFIG_NAME_LIST) {
+            ConfigNameList section_(section, appConfigSection);
+            ConfigNameList app_(app, section_);
+            return getConfigSectionOption(section_, option, defaultValue, app_);
         }
 
-        /// If fallback_section is set, and value is not set in our section, try
-        /// fallback_section before finally falling back on defaultValue
-        std::string getConfigOptionFallback(const char *option, const char *defaultValue, const char *fallback_section = NULL) {
-            return getConfigSectionOption(fallback_section, appConfigSection.c_str(), option, defaultValue);
+        /**
+         * Write a config option to the configuration subsystem.
+         *
+         * The system is based on per-app configuration files, which has sections
+         * and options.
+         *
+         * This is a low-level implementation, please try to use AgoApp's instance version
+         * of setConfigOption instead.
+         *
+         * Arguments:
+         *  section -- A string section in which to store the option in.
+         *
+         *  option -- The name of the option to set
+         *
+         *  value -- The value to write
+         *
+         *  app -- A string identifying the configuration storage unit to store to.
+         *      If omited, it defaults to the section.
+         *
+         * Returns:
+         *  true if sucesfully stored, false otherwise.
+         *  Please refer to the error log for failure indication.
+         */
+        bool setConfigOption(const char *option, const char* value, const char *section=NULL, const char *app=NULL) {
+            if(section == NULL) section = appConfigSection.c_str();
+            if(app == NULL)     app = section;
+            return setConfigSectionOption(section, option, value, app);
         }
-
-        /// save value to the applications config file
-        bool setConfigOption(const char *option, const char* value) {
-            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        bool setConfigOption(const char *option, const float value, const char *section=NULL, const char *app=NULL) {
+            if(section == NULL) section = appConfigSection.c_str();
+            if(app == NULL)     app = section;
+            return setConfigSectionOption(section, option, value, app);
         }
-        bool setConfigOption(const char *option, const float value) {
-            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        bool setConfigOption(const char *option, const int value, const char *section=NULL, const char *app=NULL) {
+            if(section == NULL) section = appConfigSection.c_str();
+            if(app == NULL)     app = section;
+            return setConfigSectionOption(section, option, value, app);
         }
-        bool setConfigOption(const char *option, const int value) {
-            return setConfigSectionOption(appConfigSection.c_str(), option, value);
-        }
-        bool setConfigOption(const char *option, const bool value) {
-            return setConfigSectionOption(appConfigSection.c_str(), option, value);
+        bool setConfigOption(const char *option, const bool value, const char *section=NULL, const char *app=NULL) {
+            if(section == NULL) section = appConfigSection.c_str();
+            if(app == NULL)     app = section;
+            return setConfigSectionOption(section, option, value, app);
         }
     public:
         AgoApp(const char *appName);

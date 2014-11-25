@@ -13,3 +13,5 @@ Makefile
 scripts/agososreport.sh
 shared/agoclient/_directories.py
 version.h
+CTestTestfile.cmake
+Testing/

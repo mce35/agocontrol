@@ -22,21 +22,6 @@ import td
 
 class tellstickduo(tellstickbase):
     """Class used for Tellstick & Tellstick Duo devices"""
-    def __init__(self):
-        self.TELLSTICK_TURNON = 1
-        self.TELLSTICK_TURNOFF = 2
-        self.TELLSTICK_BELL = 4
-        self.TELLSTICK_DIM = 16
-        self.TELLSTICK_UP = 128
-        self.TELLSTICK_DOWN = 256
-
-        self.TELLSTICK_TEMPERATURE = td.TELLSTICK_TEMPERATURE
-        self.TELLSTICK_HUMIDITY = td.TELLSTICK_HUMIDITY
-        self.sensors={}
-        self.switches={}
-        self.remotes={}
-        #super(tellstickduo, self).__init__() # call base class init method
-
     def __get__(self, obj, objtype=None):
         pass
 

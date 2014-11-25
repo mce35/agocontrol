@@ -26,10 +26,9 @@
 #include <boost/function.hpp>
 
 #include "agolog.h"
+#include "agoconfig.h"
 
 #include <uuid/uuid.h>
-#include <augeas.h>
-
 namespace agocontrol {
 
     bool nameval(const std::string& in, std::string& name, std::string& value);
@@ -58,51 +57,6 @@ namespace agocontrol {
     /// helper for conversions
     std::string uint64ToString(uint64_t i);
     unsigned int stringToUint(std::string v);
-
-    /// Return the full path to the configuration directory, with subpath appended if not NULL
-    boost::filesystem::path getConfigPath(const boost::filesystem::path &subpath = boost::filesystem::path());
-
-    /// Return the full path to the local-state directory, with subpath appended if not NULL
-    boost::filesystem::path getLocalStatePath(const boost::filesystem::path &subpath = boost::filesystem::path());
-
-    // XXX: This should preferably also be in AgoClientInternal, but called from global
-    // ensureDirExists..
-    void initDirectorys();
-    class AgoApp;
-    class AgoClientInternal {
-        // Do not expose to other than AgoApp
-        friend class AgoApp;
-        protected:
-        static void setConfigDir(const boost::filesystem::path &dir);
-        static void setLocalStateDir(const boost::filesystem::path &dir);
-    };
-
-    /// Ensures that the directory exists
-    /// Note: throws exception if directory creation fails
-    boost::filesystem::path ensureDirExists(const boost::filesystem::path &dir);
-
-    /// Ensures that the parent directory for the specified filename exists
-    /// Note: throws exception if directory creation fails
-    boost::filesystem::path ensureParentDirExists(const boost::filesystem::path &filename);
-
-    bool augeas_init();
-    std::string augeasPathFromSectionOption(const char *section, const char *option);
-
-    /// fetch a value from the config file.
-    std::string getConfigSectionOption(const char *section, const char *option, std::string &defaultvalue);
-    std::string getConfigSectionOption(const char *section, const char *option, const char *defaultvalue);
-    boost::filesystem::path getConfigSectionOption(const char *section, const char *option, const boost::filesystem::path &defaultvalue);
-
-    /// fetch a value from the config file. if it does not exist in designated section, try
-    /// fallback_section before finally falling back on defaultvalue
-    std::string getConfigSectionOption(const char *section, const char *fallback_section, const char *option, const char *defaultvalue);
-    qpid::types::Variant::Map getConfigTree();
-
-    /// save value to the config file
-    bool setConfigSectionOption(const char *section, const char *option, const char* value);
-    bool setConfigSectionOption(const char *section, const char *option, const float value);
-    bool setConfigSectionOption(const char *section, const char *option, const int value);
-    bool setConfigSectionOption(const char *section, const char *option, const bool value);
 
     /// convert int to std::string.
     std::string int2str(int i);

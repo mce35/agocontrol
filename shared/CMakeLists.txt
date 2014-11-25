@@ -10,6 +10,7 @@ set(LIBAGOCLIENT_SOURCE_FILES
 	agoclient.cpp
 	agolog.cpp
 	agoapp.cpp
+	agoconfig.cpp
 	base64.cpp
 )
 
@@ -17,8 +18,8 @@ set(PYTHON_AGOCLIENT_SOURCE_FILES
     agoapp.py
     agoconnection.py
     config.py
-    _directories.py 
-    __init__.py 
+    _directories.py
+    __init__.py
     _logging.py
 )
 
