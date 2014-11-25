@@ -195,7 +195,7 @@ def set_config_option(section, option, value, app=None):
         e = []
         if aug_err:
             for f in aug_err:
-                e.append("%s: %s" % (faugeas.get(f)))
+                e.append("%s: %s" % (f, augeas.get(f)))
 
         if e:
             extra = "(/augeas//error: %s)" % ",".join(e)
