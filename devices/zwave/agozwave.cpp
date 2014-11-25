@@ -1070,7 +1070,8 @@ void AgoZwave::setupApp() {
 
     // init open zwave
     Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
-    Options::Get()->AddOptionBool("PerformReturnRoutes", false );
+    if (getConfigOption("returnroutes", "true")=="true")
+        Options::Get()->AddOptionBool("PerformReturnRoutes", false );
     Options::Get()->AddOptionBool("ConsoleOutput", false ); 
     if (getConfigOption("sis", "true")=="true")
         Options::Get()->AddOptionBool("EnableSIS", true ); 
