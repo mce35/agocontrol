@@ -6,16 +6,16 @@
         </div>
         <!-- TOP PAGINATION -->
     	<div id="pagination" data-bind="foreach: pages" class="six columns" style="text-align:center;">
-            <!-- ko if: idx==$parent.currentPage() -->
-    		<div class="small oval btn primary">
-	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-		    </div>
-            <!-- /ko -->
-            <!-- ko ifnot: idx==$parent.currentPage() -->
-		    <div class="small oval btn info">
-    			<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-	    	</div>
-            <!-- /ko -->
+            <ko opts="if: idx==$parent.currentPage()">
+    		<div class="small oval btn primary">    
+    	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+	    	    </div>
+            </ko>
+            <ko opts="ifnot: idx==$parent.currentPage()">
+		        <div class="small oval btn info">
+        			<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+	        	</div>
+            </ko>
 	    </div>
         <!-- SEARCH -->
 	    <div style="text-align:right;" class="three columns">
@@ -39,16 +39,16 @@
 
     <!-- BOTTOM PAGINATION -->
 	<div id="pagination" data-bind="foreach: pages" class="row" style="text-align:center; margin-top:10px;">
-        <!-- ko if: idx==$parent.currentPage() -->
-		<div class="small oval btn primary">
-			<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-		</div>
-        <!-- /ko -->
-        <!-- ko ifnot: idx==$parent.currentPage() -->
-		<div class="small oval btn info">
-			<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-		</div>
-        <!-- /ko -->
+        <ko opts="if: idx==$parent.currentPage()">
+    		<div class="small oval btn primary">
+	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+		    </div>
+        </ko>
+        <ko opts="ifnot: idx==$parent.currentPage()">
+    		<div class="small oval btn info">
+	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+		    </div>
+        </ko>
 	</div>
 
 </div>
