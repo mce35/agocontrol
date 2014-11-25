@@ -107,6 +107,11 @@ function AgocontrolViewModel()
         location.hash = 'plugin/' + plugin.name;
     };
 
+    self.gotoHelp = function(help)
+    {
+        location.hash = 'help/' + help.name;
+    };
+
     //load template
     self.loadTemplate = function(template)
     {
@@ -277,13 +282,6 @@ function AgocontrolViewModel()
             }
         });
 
-        //configuration presentation loading
-        this.get('#config', function()
-        {
-            var basePath = 'configuration/presentation';
-            self.loadTemplate(new Template(basePath, null, 'html/presentation', null));
-        });
-
         //configuration loading
         this.get('#config/:name', function()
         {
@@ -295,11 +293,13 @@ function AgocontrolViewModel()
                 {
                     //config found
                     config = self.agocontrol.configurations()[i];
+                    break;
                 }
             }
             if( config )
             {
-                self.loadTemplate(new Template(config.path, null, config.template, null));
+                var basePath = "configuration/" + config._name;
+                self.loadTemplate(new Template(basePath, null, config.template, null));
             }
             else
             {
@@ -310,9 +310,25 @@ function AgocontrolViewModel()
         //help
         this.get('#help/:name', function()
         {
-            var basePath = 'help/' + this.params.name;
-            var templatePath = '/html/' + this.params.name;
-            self.loadTemplate(new Template(basePath, null, templatePath, null));
+            var help = null;
+            for( var i=0; i<self.agocontrol.helps().length; i++ )
+            {
+                if( self.agocontrol.helps()[i].name==this.params.name )
+                {
+                    //page found
+                    help = self.agocontrol.helps()[i];
+                    break;
+                }
+            }
+            if( help )
+            {
+                var basePath = "help/" + help._name;
+                self.loadTemplate(new Template(basePath, null, help.template, null));
+            }
+            else
+            {
+                notif.fatal('Specified help page not found');
+            }
         });
 
         //startup page (dashboard)

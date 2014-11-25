@@ -348,7 +348,7 @@ function EventsConfig(agocontrol)
                 self.agocontrol.sendCommand(cnt, function(nameRes) {
                     if (nameRes.result && nameRes.result.returncode == "0")
                     {
-                        self.agocontrol.getDevices(false);
+                        self.agocontrol.refreshDevices(false);
                         self.initBuilder();
                     }
                     self.agocontrol.unblock($('#configTable'));

@@ -22,6 +22,7 @@ Agocontrol.prototype = {
     plugins: ko.observableArray([]),
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
+    helps: ko.observableArray([]),
 
     agoController: null,
     scenarioController: null,
@@ -85,7 +86,7 @@ Agocontrol.prototype = {
     },
 
     //refresh devices list
-    getDevices: function(async)
+    refreshDevices: function(async)
     {
         var self = this;
 
@@ -132,7 +133,7 @@ Agocontrol.prototype = {
     },
 
     //refresh dashboards list
-    getDashboards: function(async)
+    refreshDashboards: function(async)
     {
         var self = this;
 
@@ -158,17 +159,6 @@ Agocontrol.prototype = {
     {
         var self = this;
 
-        //fill configurations
-        //TODO should be returned by agorpc
-        self.configurations.push({name:'dashboards', ucName:'Dashboards', path:'configuration/dashboards', template:'html/dashboards'});
-        self.configurations.push({name:'cloud', ucName:'Cloud', path:'configuration/cloud', template:'html/cloud'});
-        self.configurations.push({name:'devices', ucName:'Devices', path:'configuration/devices', template:'html/devices'});
-        self.configurations.push({name:'events', ucName:'Events', path:'configuration/events', template:'html/events'});
-        self.configurations.push({name:'rooms', ucName:'Rooms', path:'configuration/rooms', template:'html/rooms'});
-        self.configurations.push({name:'scenarios', ucName:'Scenarios', path:'configuration/scenarios', template:'html/scenarios'});
-        self.configurations.push({name:'security', ucName:'Security', path:'configuration/security', template:'html/security'});
-        self.configurations.push({name:'variables', ucName:'Variables', path:'configuration/variables', template:'html/variables'});
-
         //check errors
         if (response != null && response.result.match !== undefined && response.result.match(/^exception/))
         {
@@ -176,18 +166,10 @@ Agocontrol.prototype = {
             return;
         }
 
-        //fill members
+        //INVENTORY
         self.inventory = response.result;
-        self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
-        for( uuid in response.result.floorplans )
-        {
-            var dashboard = response.result.floorplans[uuid];
-            dashboard.uuid = uuid;
-            dashboard.action = '';
-            dashboard.ucName = dashboard.name;
-            dashboard.editable = true;
-            self.dashboards.push(dashboard);
-        }
+
+        //rooms
         for( uuid in response.result.rooms )
         {
             var room = response.result.rooms[uuid];
@@ -195,6 +177,8 @@ Agocontrol.prototype = {
             room.action = ''; //dummy for datatables
             self.rooms.push(room);
         }
+
+        //variables
         for( name in response.result.variables )
         {
             var variable = {
@@ -204,10 +188,14 @@ Agocontrol.prototype = {
             };
             self.variables.push(variable);
         }
+
+        //system
         self.system(response.result.system);
+
+        //schema
         self.schema(response.result.schema);
 
-        //save device map
+        //devices
         var devs = self.cleanInventory(response.result.devices);
         for( var uuid in devs )
         {
@@ -234,37 +222,36 @@ Agocontrol.prototype = {
                 //only add new field
                 devs[uuid].roomUID = null;
             }
-            
-            //TODO still useful?
-            found = false;
-            for ( var i=0; i<self.devices().length; i++)
-            {
-                if( self.devices()[i].uuid===uuid )
-                {
-                    // device already exists in devices array. Update its content
-                    self.devices()[i].update(devs[uuid], uuid);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                self.devices.push(new device(self, devs[uuid], uuid));
-            }
+            self.devices.push(new device(self, devs[uuid], uuid));
         }
         
-        //get plugins
+        //LISTING
+        
+        //dashboards
+        self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+        for( uuid in response.result.floorplans )
+        {
+            var dashboard = response.result.floorplans[uuid];
+            dashboard.uuid = uuid;
+            dashboard.action = '';
+            dashboard.ucName = dashboard.name;
+            dashboard.editable = true;
+            self.dashboards.push(dashboard);
+        }
+        
         $.ajax({
-            url : "cgi-bin/pluginlist.cgi",
+            url : "cgi-bin/newlisting.cgi?get=all",
             method : "GET",
             async : false,
         }).done(function(result) {
+
+            //PLUGINS
             //load plugins list template at top of menu
-            for( var i=0; i<result.length; i++ )
+            for( var i=0; i<result.plugins.length; i++ )
             {
-                if( result[i].name=='Applications list' )
+                if( result.plugins[i].name=='Applications list' )
                 {
-                    var plugin = result[i];
+                    var plugin = result.plugins[i];
                     plugin.ucName = ucFirst(plugin.name);
                     self.plugins.push(plugin);
                     break;
@@ -272,24 +259,30 @@ Agocontrol.prototype = {
             }
             
             //load all other plugins
-            for( var i=0; i<result.length; i++ )
+            for( var i=0; i<result.plugins.length; i++ )
             {
-                if( result[i].name!='Applications list' )
+                if( result.plugins[i].name!='Applications list' )
                 {
-                    var plugin = result[i];
+                    var plugin = result.plugins[i];
                     plugin.ucName = ucFirst(plugin.name);
                     self.plugins.push(plugin);
                 }
             }
-        });
 
-        //get supported devices
-        $.ajax({
-            url : "cgi-bin/listing.cgi?devices=1",
-            method : "GET",
-            async : false
-        }).done(function(msg) {
-            self.supported_devices(msg);
+            //CONFIGURATION PAGES
+            for( var i=0; i<result.config.length; i++ )
+            {
+                self.configurations.push(result.config[i]);
+            }
+
+            //SUPPORTED DEVICES
+            self.supported_devices(result.supported)
+
+            //HELP PAGES
+            for( var i=0; i<result.help.length; i++ )
+            {
+                self.helps.push(result.help[i]);
+            }
         });
     },
 

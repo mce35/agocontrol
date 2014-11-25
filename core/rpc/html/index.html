@@ -16,7 +16,6 @@
 <link rel="stylesheet" href="css/style.css" />
 
 <link rel="stylesheet" href="css/jquery.dataTables.css" />
-<link rel="stylesheet" href="css/jquery.dataTables.css" />
 <link rel="stylesheet" href="css/jquery.dataTables_themeroller.css" />
 <link rel="stylesheet" href="css/jquery-ui/jquery.ui.all.css" />
 
@@ -111,7 +110,7 @@
                     </a>
                     <div class="dropdown">
                         <ul data-bind="foreach: agocontrol.configurations">
-                            <li><a href="#" data-bind="text:ucName, click:$root.gotoConfiguration"></a></li>
+                            <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
                         </ul>
                     </div>
                 </li>
@@ -121,10 +120,8 @@
                         <span>Help</span>
                     </a>
                     <div class="dropdown">
-                        <ul>
-                            <li><a href="#help/configuration">Configure Agocontrol</a></li>
-                            <li><a href="#help/system">System informations</a></li>
-                            <li><a href="http://www.agocontrol.com/about/" target="_blank">About</a></li>
+                        <ul data-bind="foreach: agocontrol.helps">
+                            <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
                         </ul>
                     </div>
                 </li>

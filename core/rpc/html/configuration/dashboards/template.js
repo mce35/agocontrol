@@ -88,7 +88,7 @@ function DashboardConfig(agocontrol)
         {
             if (res.result && res.result.returncode == 0)
             {
-                self.agocontrol.getDashboards();
+                self.agocontrol.refreshDashboards();
             }
             else
             {
@@ -110,7 +110,7 @@ function DashboardConfig(agocontrol)
             self.agocontrol.sendCommand(content, function(response)
             {
                 self.newDashboardName('');
-                self.agocontrol.getDashboards();
+                self.agocontrol.refreshDashboards();
                 self.agocontrol.unblock($('#floorPlanTable'));
             });
         }

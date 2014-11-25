@@ -31,7 +31,6 @@ function SecurityConfig(agocontrol)
             if( self.agocontrol.devices()[i].devicetype=="securitycontroller" )
             {
                 self.securityController = self.agocontrol.devices()[i].uuid;
-                console.log(self.securityController);
                 break;
             }
         };

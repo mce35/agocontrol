@@ -144,7 +144,7 @@ function ScenarioConfig(agocontrol)
                 self.agocontrol.sendCommand(cnt, function(nameRes) {
                     if (nameRes.result && nameRes.result.returncode == "0")
                     {
-                        self.agocontrol.getDevices(false);
+                        self.agocontrol.refreshDevices(false);
                         document.getElementById("scenarioBuilder").innerHTML = "";
                     }
 
