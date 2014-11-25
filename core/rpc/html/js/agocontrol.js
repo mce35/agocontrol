@@ -240,7 +240,7 @@ Agocontrol.prototype = {
         }
         
         $.ajax({
-            url : "cgi-bin/newlisting.cgi?get=all",
+            url : "cgi-bin/listing.cgi?get=all",
             method : "GET",
             async : false,
         }).done(function(result) {
