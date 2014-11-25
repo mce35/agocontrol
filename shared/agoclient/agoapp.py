@@ -299,10 +299,10 @@ class AgoApp:
                         self.app_name, e.message)
                 return 1
 
-                self.log.info("Starting %s", self.app_name)
-                ret = self.app_main()
-                self.log.debug("Shutting down %s", self.app_name)
-                return 0
+            self.log.info("Starting %s", self.app_name)
+            ret = self.app_main()
+            self.log.debug("Shutting down %s", self.app_name)
+            return 0
         except:
             self.log.critical("Unhandled exception, crashing",
                     exc_info=True)
