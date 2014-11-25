@@ -121,7 +121,12 @@
                     </a>
                     <div class="dropdown">
                         <ul data-bind="foreach: agocontrol.helps">
+                            <!-- ko ifnot: url -->
                             <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
+                            <!-- /ko -->
+                            <!-- ko if: url -->
+                            <li><a href="#" data-bind="text:name, attr:{'href':url, 'target':'_blank'}"></a></li>
+                            <!-- /ko -->
                         </ul>
                     </div>
                 </li>
