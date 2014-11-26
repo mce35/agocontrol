@@ -39,6 +39,7 @@ set (AGODEVICES
   rrdtool
   zmcam
   ETAtouch
+  yamaha
 )
 
 IF (FREEBSD)
