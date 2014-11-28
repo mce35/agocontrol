@@ -22,6 +22,11 @@ thead > tr > th {
     border: 1px solid #3085D6 !important;
 }
 
+/* Fix buttons margin-bottom in table (take too much space)  */
+table > tbody > tr > td > div.btn {
+    margin-bottom: 0px;
+}
+
 /* == 
 ago control Styles 
 */

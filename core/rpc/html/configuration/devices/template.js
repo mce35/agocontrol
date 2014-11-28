@@ -10,11 +10,6 @@ function DeviceConfig(agocontrol)
     self.roomFilters = ko.observableArray([]);
     self.deviceTypeFilters = ko.observableArray([]);
 
-    self.afterRender = function()
-    {
-        self.agocontrol.stopDatatableLinksPropagation('configTable');
-    };
-
     self.updateRoomFilters = function()
     {
         var tagMap = {};
@@ -30,9 +25,10 @@ function DeviceConfig(agocontrol)
                 else
                 {
                     tagMap["room_" + dev.room] = {
-                        type : "room",
+                        column : "room",
                         value : dev.room,
                         w : 1,
+                        selected : false,
                         className : "default label"
                     };
                 }
@@ -43,7 +39,7 @@ function DeviceConfig(agocontrol)
         for ( var k in tagMap)
         {
             var entry = tagMap[k];
-            if (entry.type != "device")
+            if (entry.column != "devicetype")
             {
                 roomList.push(entry);
             }
@@ -69,9 +65,10 @@ function DeviceConfig(agocontrol)
             else
             {
                 tagMap["type_" + dev.devicetype] = {
-                    type : "device",
+                    column : "devicetype",
                     value : dev.devicetype,
                     w : 1,
+                    selected : false,
                     className : "default label"
                 };
             }
@@ -81,7 +78,7 @@ function DeviceConfig(agocontrol)
         for ( var k in tagMap)
         {
             var entry = tagMap[k];
-            if (entry.type == "device")
+            if (entry.column == "devicetype")
             {
                 devList.push(entry);
             }
@@ -118,13 +115,24 @@ function DeviceConfig(agocontrol)
     {
         var tmp = "";
         var i = 0;
-        if (item.type == "device")
+        if (item.column == "devicetype")
         {
+            //update selected devicetype filters
             for ( i = 0; i < self.deviceTypeFilters().length; i++)
             {
                 if (self.deviceTypeFilters()[i].value == item.value)
                 {
-                    self.deviceTypeFilters()[i].className = item.className == "default label" ? "primary label" : "default label";
+                    if( item.className == "default label" )
+                    {
+                        self.deviceTypeFilters()[i].selected = true;
+                        self.deviceTypeFilters()[i].className = "primary label";
+                    }
+                    else
+                    {
+                        self.deviceTypeFilters()[i].selected = false;
+                        self.deviceTypeFilters()[i].className = "default label";
+                    }
+                    //self.deviceTypeFilters()[i].className = item.className == "default label" ? "primary label" : "default label";
                 }
             }
             tmp = self.deviceTypeFilters();
@@ -133,11 +141,22 @@ function DeviceConfig(agocontrol)
         }
         else
         {
+            //update selected room filters
             for ( i = 0; i < self.roomFilters().length; i++)
             {
                 if (self.roomFilters()[i].value == item.value)
                 {
-                    self.roomFilters()[i].className = item.className == "default label" ? "primary label" : "default label";
+                    if( item.className == "default label" )
+                    {
+                        item.selected = true;
+                        self.roomFilters()[i].className = "primary label";
+                    }
+                    else
+                    {
+                        item.selected = false;
+                        self.roomFilters()[i].className = "default label";
+                    }
+                    //self.roomFilters()[i].className = item.className == "default label" ? "primary label" : "default label";
                 }
             }
             tmp = self.roomFilters();
@@ -145,60 +164,29 @@ function DeviceConfig(agocontrol)
             self.roomFilters(tmp);
         }
 
-        var eTable = $("#configTable").dataTable();
-        self.resetFilter();
-
-        var escapeRegExp = function(str)
+        //apply filters to grid
+        self.grid.resetFilters();
+        for( var i=0; i<self.roomFilters().length; i++ )
         {
-            return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-        };
-
-        var filters = [];
-        for ( i = 0; i < self.deviceTypeFilters().length; i++)
-        {
-            tmp = self.deviceTypeFilters()[i];
-            if (tmp.className == "primary label")
+            if( self.roomFilters()[i].selected )
             {
-                filters.push(escapeRegExp(tmp.value));
+                self.grid.addFilter('room', self.roomFilters()[i].value);
             }
         }
-        if (filters.length > 0)
+        for( var i=0; i<self.deviceTypeFilters().length; i++ )
         {
-            eTable.fnFilter("^(" + filters.join("|") + ")$", 2, true, false);
-        }
-
-        filters = [];
-        for ( i = 0; i < self.roomFilters().length; i++)
-        {
-            tmp = self.roomFilters()[i];
-            if (tmp.className == "primary label")
+            if( self.deviceTypeFilters()[i].selected )
             {
-                filters.push(escapeRegExp(tmp.value));
+                self.grid.addFilter('devicetype', self.deviceTypeFilters()[i].value);
             }
-        }
-
-        if (filters.length > 0)
-        {
-            eTable.fnFilter("^(" + filters.join("|") + ")$", 1, true, false);
         }
     };
 
-    self.resetFilter = function()
+    self.makeEditable = function(item, td, tr)
     {
-        var eTable = $("#configTable").dataTable();
-        var oSettings = eTable.fnSettings();
-        for ( var i = 0; i < oSettings.aoPreSearchCols.length; i++)
+        if( $(td).hasClass('edit_device') )
         {
-            oSettings.aoPreSearchCols[i].sSearch = "";
-        }
-        oSettings.oPreviousSearch.sSearch = "";
-        eTable.fnDraw();
-    };
-
-    self.makeEditable = function(row, item)
-    {
-        window.setTimeout(function() {
-            $(row).find('td.edit_device').editable(function(value, settings) {
+            $(td).editable(function(value, settings) {
                 var content = {};
                 content.device = item.uuid;
                 content.uuid = self.agocontrol.agoController;
@@ -218,17 +206,17 @@ function DeviceConfig(agocontrol)
                 return value;
             },
             {
-                data : function(value, settings)
-                {
-                    return value;
-                },
+                data : function(value, settings) { return value; },
                 onblur : "cancel"
-            });
-
-            $(row).find('td.select_device_room').editable(function(value, settings) {
-                var d = self.findDevice(item.uuid);
-                if( d && d.name && d.name.length>0 )
-                {
+            }).click();
+        }
+            
+        if( $(td).hasClass('select_device_room') )
+        {
+            var d = self.findDevice(item.uuid);
+            if( d && d.name && d.name.length>0 )
+            {
+                $(td).editable(function(value, settings) {
                     var content = {};
                     content.device = item.uuid;
                     content.uuid = self.agocontrol.agoController;
@@ -262,44 +250,58 @@ function DeviceConfig(agocontrol)
                             notif.error('Error updating room');
                         }
                     });
-                }
-                else
-                {
-                    notif.warning('Please specify device name first');
-                }
-                if( value==="" )
-                {
-                    return "unset";
-                }
-                else
-                {
-                    for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                    if( value==="" )
                     {
-                        if( self.agocontrol.rooms()[i].uuid==value )
+                        return "unset";
+                    }
+                    else
+                    {
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
                         {
-                            return self.agocontrol.rooms()[i].name;
+                            if( self.agocontrol.rooms()[i].uuid==value )
+                            {
+                                return self.agocontrol.rooms()[i].name;
+                            }
                         }
                     }
-                }
-            },
-            {
-                data : function(value, settings)
-                {
-                    var list = {};
-                    list["unset"] = "--";
-                    for( var i=0; i<self.agocontrol.rooms().length; i++ )
-                    {
-                        list[self.agocontrol.rooms()[i].uuid] = self.agocontrol.rooms()[i].name;
-                    }
-                    return JSON.stringify(list);
                 },
-                type : "select",
-                onblur : "submit"
-            });
-        }, 1);
+                {
+                    data : function(value, settings)
+                    {
+                        var list = {};
+                        list["unset"] = "--";
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                        {
+                            list[self.agocontrol.rooms()[i].uuid] = self.agocontrol.rooms()[i].name;
+                        }
+                        return JSON.stringify(list);
+                    },
+                    type : "select",
+                    onblur : "submit"
+                }).click();
+            }
+            else
+            {
+                notif.warning('Please specify device name first');
+            }
+        }
     };
 
-    this.deleteDevice = function(item, event)
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.agocontrol.devices,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Room', rowText:'room'},
+            {headerText:'Device type', rowText:'devicetype'},
+            {headerText:'Handled by', rowText:'handledBy'},
+            {headerText:'Internalid', rowText:'internalid'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
+
+    self.deleteDevice = function(item, event)
     {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
@@ -319,7 +321,7 @@ function DeviceConfig(agocontrol)
         });
     };
 
-    this.doDeleteDevice = function(item, event)
+    self.doDeleteDevice = function(item, event)
     {
         self.agocontrol.block($('#configTable'));
         var request = {};

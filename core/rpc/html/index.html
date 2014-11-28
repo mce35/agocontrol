@@ -34,6 +34,7 @@
 
 <script type="text/javascript" src="js/libs/knockout-3.2.0.js"></script>
 <script type="text/javascript" src="js/libs/koExternalTemplateEngine_all.js"></script>
+<script type="text/javascript" src="js/libs/knockout.agoGrid.1.0.js"></script>
 
 <script type="text/javascript" src="js/libs/cog.js"></script>
 <script type="text/javascript" src="js/libs/cog.utils.js"></script>
@@ -121,12 +122,12 @@
                     </a>
                     <div class="dropdown">
                         <ul data-bind="foreach: agocontrol.helps">
-                            <!-- ko ifnot: url -->
-                            <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
-                            <!-- /ko -->
-                            <!-- ko if: url -->
-                            <li><a href="#" data-bind="text:name, attr:{'href':url, 'target':'_blank'}"></a></li>
-                            <!-- /ko -->
+                            <ko opts="ifnot: url">
+                                <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
+                            </ko>
+                            <ko opts="if: url">
+                                <li><a href="#" data-bind="text:name, attr:{'href':url, 'target':'_blank'}"></a></li>
+                            </ko>
                         </ul>
                     </div>
                 </li>
