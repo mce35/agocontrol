@@ -322,7 +322,7 @@ function EventsConfig(agocontrol)
             return;
         }
 
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         this.createEventMap(self.createJSON());
         var content = {};
         content.uuid = self.agocontrol.eventController;
@@ -343,7 +343,7 @@ function EventsConfig(agocontrol)
                         self.agocontrol.refreshDevices(false);
                         self.initBuilder();
                     }
-                    self.agocontrol.unblock($('#configTable'));
+                    self.agocontrol.unblock($('#agoGrid'));
                 });
             }
             else
@@ -378,7 +378,7 @@ function EventsConfig(agocontrol)
     //Sends the delete event command
     self.doDeleteEvent = function(item, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.event = item.uuid;
         content.uuid = self.agocontrol.eventController;
@@ -394,7 +394,7 @@ function EventsConfig(agocontrol)
             {
                 notif.error("Error while deleting event!");
             }
-            self.agocontrol.unblock($('#configTable'))
+            self.agocontrol.unblock($('#agoGrid'))
         });
     };
 
