@@ -1,42 +1,52 @@
 /**
  * Model class
  * 
- * @returns {variablesConfig}
+ * @returns {VariablesConfig}
  */
 function VariablesConfig(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
 
-    //after model render
-    self.afterRender = function()
+    self.makeEditable = function(item, td, tr)
     {
-        self.agocontrol.stopDatatableLinksPropagation('configTable');
-    };
-
-    this.makeEditable = function(row) {
-        window.setTimeout(function() {
-            $(row).find('td.edit_var').editable(function(value, settings) {
-                var content = {};
-                content.variable = $(this).data('variable');
-                content.uuid = self.agocontrol.agoController;
-                content.command = "setvariable";
-                content.value = value;
-                self.agocontrol.sendCommand(content);
-                return value;
-            },
-            {
-                data : function(value, settings) {
+        if( $(td).hasClass('edit_var') )
+        {
+            $(td).editable(
+                function(value, settings)
+                {
+                    var content = {};
+                    content.variable = $(this).data('variable');
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setvariable";
+                    content.value = value;
+                    self.agocontrol.sendCommand(content);
                     return value;
                 },
-                onblur : "cancel"
-            });
-        }, 1);
+                {
+                    data : function(value, settings) {
+                        return value;
+                    },
+                    onblur : "cancel"
+                }
+            ).click();
+        }
     };
 
-    this.createVariable = function(data, event)
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.agocontrol.variables,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Value', rowText:'value'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
+
+    self.createVariable = function(data, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.variable = $("#varName").val();
         content.value = "True";
@@ -55,11 +65,11 @@ function VariablesConfig(agocontrol)
             {
                 notif.error("Error while creating variable!");
             }
-            self.agocontrol.unblock($('#configTable'));
+            self.agocontrol.unblock($('#agoGrid'));
         });
     };
 
-    this.deleteVariable = function(item, event)
+    self.deleteVariable = function(item, event)
     {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
@@ -81,9 +91,9 @@ function VariablesConfig(agocontrol)
         });
     };
 
-    this.doDeleteVariable = function(item, event)
+    self.doDeleteVariable = function(item, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.variable = item.variable;
         content.uuid = self.agocontrol.agoController;
@@ -99,7 +109,7 @@ function VariablesConfig(agocontrol)
             {
                 notif.error("Error while deleting variable!");
             }
-            self.agocontrol.unblock($('#configTable'));
+            self.agocontrol.unblock($('#agoGrid'));
         });
     };
 }
