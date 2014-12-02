@@ -280,8 +280,7 @@ std::string prettyPrint(std::string message)
         //internalid
         internalid = items[0] + "/" + items[1];
         result << internalid << ";";
-
-        if( gateway_protocol_version=="1.4" )
+        if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
         {
             //protocol v1.4
 
@@ -330,7 +329,7 @@ std::string prettyPrint(std::string message)
                     result << items[3] << endl;;
             }
         }
-        else if( gateway_protocol_version=="1.3" )
+        else if( boost::algorithm::starts_with(gateway_protocol_version, "1.3") )
         {
             //protocol v1.3
 
@@ -1688,7 +1687,7 @@ void *receiveFunction(void *param) {
             infos = getDeviceInfos(internalid);
 
             //process message
-            if( gateway_protocol_version=="1.4" )
+            if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
             {
                 int ack = atoi(items[3].c_str());
                 subType = atoi(items[4].c_str());
@@ -1696,7 +1695,7 @@ void *receiveFunction(void *param) {
                     payload = items[5];
                 processMessageV14(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
             }
-            else if( gateway_protocol_version=="1.3" )
+            else if( boost::algorithm::starts_with(gateway_protocol_version, "1.3") )
             {
                 subType = atoi(items[3].c_str());
                 if( items.size()==5 )
@@ -1860,7 +1859,7 @@ int main(int argc, char **argv)
             //payload (last field, contains protocol version)
             gateway_protocol_version = items[items.size()-1].c_str();
             //check protocol version
-            if( gateway_protocol_version!="1.4" && gateway_protocol_version!="1.3" )
+            if( !boost::algorithm::starts_with(gateway_protocol_version, "1.4") && !boost::algorithm::starts_with(gateway_protocol_version, "1.3") )
             {
                 //unknown protocol version, exit now
                 cout << "Unknown gateway protocol version. Exit. (received \"" << line  << "\" from gateway)" << endl;
