@@ -381,7 +381,7 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
         refreshInventory = false;
     }
 
-    if( inventory.size()>0 )
+    if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
 
@@ -426,14 +426,17 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
             {
                 //search attribute in device values
                 bool found = false;
-                qpid::types::Variant::Map values = attributes["values"].asMap();
-                for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
+                if( !attributes["values"].isVoid() )
                 {
-                    //TODO return device value property (quantity, unit, latitude, longitude...)
-                    qpid::types::Variant::Map value = it->second.asMap();
-                    lua_pushstring(L, value[subAttribute].asString().c_str());
-                    found = true;
-                    break;
+                    qpid::types::Variant::Map values = attributes["values"].asMap();
+                    for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
+                    {
+                        //TODO return device value property (quantity, unit, latitude, longitude...)
+                        qpid::types::Variant::Map value = it->second.asMap();
+                        lua_pushstring(L, value[subAttribute].asString().c_str());
+                        found = true;
+                        break;
+                    }
                 }
 
                 //handle item not found
