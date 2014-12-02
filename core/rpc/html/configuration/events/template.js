@@ -87,10 +87,7 @@ function EventsConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate',
-        displaySearch: false,
-        displayPagination: false,
-        displayRowCount: true
+        rowTemplate: 'rowTemplate'
     });
 
     //Used for parsing event into JSON structure

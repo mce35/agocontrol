@@ -57,10 +57,7 @@ function DashboardConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate',
-        displaySearch: false,
-        displayPagination: false,
-        displayRowCount: true
+        rowTemplate: 'rowTemplate'
     });
 
     self.deletePlan = function(item, event)
