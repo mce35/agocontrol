@@ -14,70 +14,82 @@ function ScenarioConfig(agocontrol)
         });
     });
 
-    //after model render
-    self.afterRender = function()
+    self.makeEditable = function(item, td, tr)
     {
-        self.agocontrol.stopDatatableLinksPropagation('configTable');
-    };
-
-    this.makeEditable = function(row, item)
-    {
-        window.setTimeout(function() {
-            $(row).find('td.edit_scenario').editable(function(value, settings) {
-                var content = {};
-                content.device = item.uuid;
-                content.uuid = self.agocontrol.agoController;
-                content.command = "setdevicename";
-                content.name = value;
-                self.agocontrol.sendCommand(content);
-                return value;
-            },
-            {
-                data : function(value, settings)
+        if( $(td).hasClass('edit_scenario') )
+        {
+            $(td).editable(
+                function(value, settings)
                 {
+                    var content = {};
+                    content.device = item.uuid;
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setdevicename";
+                    content.name = value;
+                    self.agocontrol.sendCommand(content);
                     return value;
                 },
-                onblur : "cancel"
-            });
-
-            $(row).find('td.select_room').editable(function(value, settings) {
-                var content = {};
-                content.device = $(this).data('uuid');
-                content.uuid = self.agocontrol.agoController;
-                content.command = "setdeviceroom";
-                content.room = value == "unset" ? "" : value;
-                self.agocontrol.sendCommand(content);
-                var name = "unset";
-                for( var i=0; i<self.agocontrol.rooms().length; i++ )
                 {
-                    if( self.agocontrol.rooms()[i].uuid==value )
+                    data : function(value, settings)
                     {
-                        name = self.agocontrol.rooms()[i].name;
-                    }
+                        return value;
+                    },
+                    onblur : "cancel"
                 }
-                return value == "unset" ? "unset" : name;
-            },
-            {
-                data : function(value, settings)
+            ).click();
+        }
+        else if( $(td).hasClass('select_room') )
+        {
+            $(td).editable(
+                function(value, settings)
                 {
-                    var list = {};
-                    list["unset"] = "--";
+                    var content = {};
+                    content.device = $(this).data('uuid');
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setdeviceroom";
+                    content.room = value == "unset" ? "" : value;
+                    self.agocontrol.sendCommand(content);
+                    var name = "unset";
                     for( var i=0; i<self.agocontrol.rooms().length; i++ )
                     {
-                        list[self.agocontrol.rooms()[i].uuid] = self.agocontrol.rooms()[i].name;
+                        if( self.agocontrol.rooms()[i].uuid==value )
+                        {
+                            name = self.agocontrol.rooms()[i].name;
+                        }
                     }
-                    return JSON.stringify(list);
+                    return value == "unset" ? "unset" : name;
                 },
-                type : "select",
-                onblur : "submit"
-            });
-        }, 1);
+                {
+                    data : function(value, settings)
+                    {
+                        var list = {};
+                        list["unset"] = "--";
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                        {
+                            list[self.agocontrol.rooms()[i].uuid] = self.agocontrol.rooms()[i].name;
+                        }
+                        return JSON.stringify(list);
+                    },
+                    type : "select",
+                    onblur : "submit"
+                }
+            ).click();
+        }
     };
 
-    /**
-     * Creates a scenario map out of the form fields inside a container
-     */
-    this.buildScenarioMap = function(containerID)
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.scenarios,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Room', rowText:'room'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
+
+    //Creates a scenario map out of the form fields inside a container
+    self.buildScenarioMap = function(containerID)
     {
         var map = {};
         var map_idx = 0;
@@ -115,10 +127,8 @@ function ScenarioConfig(agocontrol)
         return map;
     };
 
-    /**
-     * Sends the create scenario command
-     */
-    this.createScenario = function()
+    //Sends the create scenario command
+    self.createScenario = function()
     {
         if( $.trim(self.scenarioName())=='' )
         {
@@ -126,7 +136,7 @@ function ScenarioConfig(agocontrol)
             return;
         }
 
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
 
         var content = {};
         content.command = "setscenario";
@@ -148,7 +158,7 @@ function ScenarioConfig(agocontrol)
                         document.getElementById("scenarioBuilder").innerHTML = "";
                     }
 
-                    self.agocontrol.unblock($('#configTable'));
+                    self.agocontrol.unblock($('#agoGrid'));
                 });
             }
             else
@@ -158,10 +168,8 @@ function ScenarioConfig(agocontrol)
         });
     };
 
-    /**
-     * Adds a command selection entry
-     */
-    this.addCommand = function(containerID, defaultValues)
+    //Adds a command selection entry
+    self.addCommand = function(containerID, defaultValues)
     {
         var row = document.createElement("div");
 
@@ -354,7 +362,7 @@ function ScenarioConfig(agocontrol)
         document.getElementById(containerID).appendChild(row);
     };
 
-    this.deleteScenario = function(item, event)
+    self.deleteScenario = function(item, event)
     {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
@@ -376,12 +384,10 @@ function ScenarioConfig(agocontrol)
         });
     };
 
-    /**
-     * Sends the delete scenario command
-     */
-    this.doDeleteScenario = function(item, event)
+    //Sends the delete scenario command
+    self.doDeleteScenario = function(item, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.scenario = item.uuid;
         content.uuid = self.agocontrol.scenarioController;
@@ -398,11 +404,11 @@ function ScenarioConfig(agocontrol)
             {
                 notif.error("Error while deleting scenarios!");
             }
-            self.agocontrol.unblock($('#configTable'));
+            self.agocontrol.unblock($('#agoGrid'));
         });
     };
 
-    this.editScenario = function(item)
+    self.editScenario = function(item)
     {
         var content = {};
         content.scenario = item.uuid;
@@ -438,7 +444,7 @@ function ScenarioConfig(agocontrol)
         });
     };
 
-    this.doEditScenario = function()
+    self.doEditScenario = function()
     {
         var content = {};
         content.command = "setscenario";
@@ -454,7 +460,7 @@ function ScenarioConfig(agocontrol)
         });
     };
 
-    this.runScenario = function(item)
+    self.runScenario = function(item)
     {
         var content = {};
         content.uuid = item.uuid;
