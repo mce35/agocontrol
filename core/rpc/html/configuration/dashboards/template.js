@@ -9,12 +9,6 @@ function DashboardConfig(agocontrol)
     self.agocontrol = agocontrol;
     self.newDashboardName = ko.observable('');
 
-    //after model render
-    self.afterRender = function()
-    {
-        self.agocontrol.stopDatatableLinksPropagation('floorPlanTable');
-    };
-
     //filter dashboard that don't need to be displayed
     //need to do that because datatable odd is broken when filtering items using knockout
     self.dashboards = ko.computed(function()
@@ -30,11 +24,11 @@ function DashboardConfig(agocontrol)
         return dashboards;
     });
 
-    self.makeEditable = function(row, item)
+    self.makeEditable = function(item, td, tr)
     {
-        window.setTimeout(function()
+        if( $(td).hasClass('edit_dashboard') )
         {
-            $(row).find('td.edit_fp').editable(
+            $(td).editable(
                 function(value, settings)
                 {
                     var content = {};
@@ -51,9 +45,20 @@ function DashboardConfig(agocontrol)
                         return value;
                     },
                     onblur : "cancel"
-                });
-        }, 1);
+                }
+            ).click();
+        }
     };
+
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.dashboards,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
 
     self.deletePlan = function(item, event)
     {
@@ -79,7 +84,7 @@ function DashboardConfig(agocontrol)
 
     self.doDeletePlan = function(item, event)
     {
-        self.agocontrol.block($('#floorPlanTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.floorplan = item.uuid;
         content.uuid = self.agocontrol.agoController;
@@ -92,9 +97,9 @@ function DashboardConfig(agocontrol)
             }
             else
             {
-                notif.error("Error while deleting floorplan!");
+                notif.error("Error while deleting dashboard!");
             }
-            self.agocontrol.unblock($('#floorPlanTable'));
+            self.agocontrol.unblock($('#agoGrid'));
         });
     };
 
@@ -102,7 +107,7 @@ function DashboardConfig(agocontrol)
     {
         if( $.trim(self.newDashboardName())!='' )
         {
-            self.agocontrol.block($('#floorPlanTable'));
+            self.agocontrol.block($('#agoGrid'));
             var content = {};
             content.command = "setfloorplanname";
             content.uuid = self.agocontrol.agoController;
@@ -111,7 +116,7 @@ function DashboardConfig(agocontrol)
             {
                 self.newDashboardName('');
                 self.agocontrol.refreshDashboards();
-                self.agocontrol.unblock($('#floorPlanTable'));
+                self.agocontrol.unblock($('#agoGrid'));
             });
         }
     };

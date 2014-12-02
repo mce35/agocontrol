@@ -30,17 +30,15 @@ function EventsConfig(agocontrol)
     {
         if( document.getElementsByClassName("eventBuilder")[0] )
         {
-            //template fully rendered
-            //maybe it's possible to do it better
+            //template fully rendered, render event builder
             self.initBuilder();
-            self.agocontrol.stopDatatableLinksPropagation('configTable');
         }
     };
 
     /**
      * Initalizes the empty event creation builder
      */
-    this.initBuilder = function()
+    self.initBuilder = function()
     {
         // Clean
         document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
@@ -57,41 +55,43 @@ function EventsConfig(agocontrol)
     /**
      * Callback for editable table
      */
-    this.makeEditable = function(row)
+    self.makeEditable = function(item, td, tr)
     {
-        window.setTimeout(function() {
-            $(row).find('td.edit_event').editable(function(value, settings) {
-                var content = {};
-                content.device = $(this).data('uuid');
-                content.uuid = self.agocontrol.agoController;
-                content.command = "setdevicename";
-                content.name = value;
-                self.agocontrol.sendCommand(content);
-                return value;
-            },
-            {
-                data : function(value, settings)
-                {
+        if( $(td).hasClass('edit_event') )
+        {
+            $(td).editable(
+                function(value, settings) {
+                    var content = {};
+                    content.device = $(this).data('uuid');
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setdevicename";
+                    content.name = value;
+                    self.agocontrol.sendCommand(content);
                     return value;
                 },
-                onblur : "cancel"
-            });
-
-            // Initial build
-            /*if (!document.getElementsByClassName("eventBuilder")[0]._set)
-            {
-                self.initBuilder();
-                document.getElementsByClassName("eventBuilder")[0]._set = true;
-            }
-
-            self.events.remove(function(ev) {
-                return ev.uuid == '0';
-            });*/
-        }, 1);
+                {
+                    data : function(value, settings)
+                    {
+                        return value;
+                    },
+                    onblur : "cancel"
+               }
+            ).click();
+        }
     };
 
-    /* Used for parsing event into JSON structure */
-    this.getCriteriaIdx = function(str)
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.events,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
+
+    //Used for parsing event into JSON structure
+    self.getCriteriaIdx = function(str)
     {
         var regex = /.+([0-9]).+/g;
         var matches = regex.exec(str);
@@ -102,7 +102,7 @@ function EventsConfig(agocontrol)
         return matches[1];
     };
 
-    this.parseSubOp = function(str, criteria)
+    self.parseSubOp = function(str, criteria)
     {
         var data = str.split(/(or|and)/g);
         var sub = [];
@@ -132,8 +132,8 @@ function EventsConfig(agocontrol)
         };
     };
 
-    /* Used for parsing event into JSON structure */
-    this.parseGroup = function(str, criteria)
+    //Used for parsing event into JSON structure
+    self.parseGroup = function(str, criteria)
     {
         var operation = "";
         var subs = [];
@@ -161,10 +161,8 @@ function EventsConfig(agocontrol)
 
                     subs.push(self.parseSubOp(operation, criteria));
 
-                    /*
-                     * In case it is "open ended" we want to leave the operator
-                     * for the top level
-                     */
+                    //In case it is "open ended" we want to leave the operator
+                    //for the top level
                     if ($.trim(operation).substr(-3) == "and")
                     {
                         operation = operation.substr(0, operation.length - 5);
@@ -178,7 +176,7 @@ function EventsConfig(agocontrol)
                 parsed = str.replace(operation, "sub{" + (subs.length - 1) + "}");
                 str = str.substr(0, i) + "sub{" + (subs.length - 1) + "}" + str.substr(j + 1);
 
-                /* No more unparsed criteria done */
+                //No more unparsed criteria done
                 if (parsed.indexOf("criteria") == -1)
                 {
                     break;
@@ -191,19 +189,19 @@ function EventsConfig(agocontrol)
             }
         }
 
-        /* Only one level no need for parsing */
+        //Only one level no need for parsing
         if (subs.length == 1)
         {
             return subs[0];
         }
 
-        /* Clean up string */
+        //Clean up string
         parsed = parsed.replace(/\{/g, "[");
         parsed = parsed.replace(/\}/g, "]");
         parsed = parsed.replace(/\)/g, "");
         parsed = parsed.replace(/\(/g, "");
 
-        /* Parse the top level */
+        //Parse the top level
         var data = parsed.split(/(or|and)/g);
 
         var sub = [];
@@ -229,8 +227,8 @@ function EventsConfig(agocontrol)
         };
     };
 
-    /* Used for parsing event into JSON structure */
-    this.mapToJSON = function(input)
+    //Used for parsing event into JSON structure
+    self.mapToJSON = function(input)
     {
         var criteria = {};
         for ( var idx in input.criteria)
@@ -256,10 +254,8 @@ function EventsConfig(agocontrol)
         return res;
     };
 
-    /**
-     * Opens edit event dialog
-     */
-    this.editEvent = function(item)
+    //Opens edit event dialog
+    self.editEvent = function(item)
     {
         var content = {};
         content.command = "getevent";
@@ -300,10 +296,8 @@ function EventsConfig(agocontrol)
         });
     };
 
-    /**
-     * Sends the event edit command
-     */
-    this.doEditEvent = function()
+    //Sends the event edit command
+    self.doEditEvent = function()
     {
         this.createEventMap(self.createJSON());
         var content = {};
@@ -319,10 +313,8 @@ function EventsConfig(agocontrol)
         });
     };
 
-    /**
-     * Sends the create event commands
-     */
-    this.createEvent = function()
+    //Sends the create event commands
+    self.createEvent = function()
     {
         if( $.trim(self.eventName())=='' )
         {
@@ -330,7 +322,7 @@ function EventsConfig(agocontrol)
             return;
         }
 
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         this.createEventMap(self.createJSON());
         var content = {};
         content.uuid = self.agocontrol.eventController;
@@ -351,7 +343,7 @@ function EventsConfig(agocontrol)
                         self.agocontrol.refreshDevices(false);
                         self.initBuilder();
                     }
-                    self.agocontrol.unblock($('#configTable'));
+                    self.agocontrol.unblock($('#agoGrid'));
                 });
             }
             else
@@ -361,7 +353,7 @@ function EventsConfig(agocontrol)
         });
     };
 
-    this.deleteEvent = function(item, event)
+    self.deleteEvent = function(item, event)
     {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
@@ -383,12 +375,10 @@ function EventsConfig(agocontrol)
         });
     };
 
-    /**
-     * Sends the delete event command
-     */
-    this.doDeleteEvent = function(item, event)
+    //Sends the delete event command
+    self.doDeleteEvent = function(item, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.event = item.uuid;
         content.uuid = self.agocontrol.eventController;
@@ -404,14 +394,12 @@ function EventsConfig(agocontrol)
             {
                 notif.error("Error while deleting event!");
             }
-            self.agocontrol.unblock($('#configTable'))
+            self.agocontrol.unblock($('#agoGrid'))
         });
     };
 
-    /**
-     * Helper for event map creation
-     */
-    this.parseElement = function(element)
+    //Helper for event map creation
+    self.parseElement = function(element)
     {
         // 'empty' events like 'sun did rise'
         if (element.sub === undefined)
@@ -463,10 +451,8 @@ function EventsConfig(agocontrol)
         return nesting + ")";
     };
 
-    /**
-     * Creates the event map for the resolver
-     */
-    this.createEventMap = function(data)
+    //Creates the event map for the resolver
+    self.createEventMap = function(data)
     {
         self.map = {};
         self.map.criteria = {};
@@ -509,10 +495,8 @@ function EventsConfig(agocontrol)
         }
     };
 
-    /**
-     * Adds a nested element
-     */
-    this.addNesting = function(container, type)
+    //Adds a nested element
+    self.addNesting = function(container, type)
     {
         var dl = document.createElement("dl");
         var dd = document.createElement("dd");
@@ -654,10 +638,8 @@ function EventsConfig(agocontrol)
         return [ dl, subList ];
     };
 
-    /**
-     * Adds a new segment
-     */
-    this.addSegment = function(container, eventObj)
+    //Adds a new segment
+    self.addSegment = function(container, eventObj)
     {
         var dd = document.createElement("dd");
 
@@ -687,10 +669,8 @@ function EventsConfig(agocontrol)
         container.appendChild(dd);
     };
 
-    /**
-     * Converts one operation to JSON
-     */
-    this.operationToJSON = function(tmp)
+    //Converts one operation to JSON
+    self.operationToJSON = function(tmp)
     {
         var op = {};
         op.sub = [];
@@ -762,10 +742,8 @@ function EventsConfig(agocontrol)
         return op;
     };
 
-    /**
-     * Create a JSON structure out of the whole event
-     */
-    this.createJSON = function()
+    //Create a JSON structure out of the whole event
+    self.createJSON = function()
     {
         var ops = document.getElementsByClassName("operator");
         var res = [];
@@ -787,10 +765,8 @@ function EventsConfig(agocontrol)
         return res;
     };
 
-    /**
-     * Creates a new operation
-     */
-    this.createOperation = function(sub, container, type, toplevel)
+    //Creates a new operation
+    self.createOperation = function(sub, container, type, toplevel)
     {
         if (toplevel)
         {
@@ -813,10 +789,8 @@ function EventsConfig(agocontrol)
         }
     };
 
-    /**
-     * (re) Builds the list from JSON
-     */
-    this.buildListFromJSON = function(input, container)
+    //(re) Builds the list from JSON
+    self.buildListFromJSON = function(input, container)
     {
         document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
         var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementsByClassName("eventBuilder")[0]);
@@ -842,10 +816,8 @@ function EventsConfig(agocontrol)
         }
     };
 
-    /**
-     * Creates the event selector
-     */
-    this.getEventSelector = function(events, container, defaultPath)
+    //Creates the event selector
+    self.getEventSelector = function(events, container, defaultPath)
     {
         var eventList = document.createElement("select");
         eventList.onchange = function()
@@ -872,10 +844,8 @@ function EventsConfig(agocontrol)
         return eventList;
     };
 
-    /**
-     * Renders an event
-     */
-    this.renderEvent = function(selectType, path, event, container, defaultValues)
+    //Renders an event
+    self.renderEvent = function(selectType, path, event, container, defaultValues)
     {
         container.innerHTML = "";
 
@@ -1115,10 +1085,8 @@ function EventsConfig(agocontrol)
         }
     };
 
-    /**
-     * Creates the action builder
-     */
-    this.createActionBuilder = function(container, defaults)
+    //Creates the action builder
+    self.createActionBuilder = function(container, defaults)
     {
         container.innerHTML = "";
         var deviceListSelect = document.createElement("select");
@@ -1178,10 +1146,8 @@ function EventsConfig(agocontrol)
         }
     };
 
-    /**
-     * Creates the command selector
-     */
-    this.createCommandSelector = function(commandSelect, commandParams, type, defaults)
+    //Creates the command selector
+    self.createCommandSelector = function(commandSelect, commandParams, type, defaults)
     {
         commandSelect.options.length = 0;
         for ( var i = 0; i < self.agocontrol.schema().devicetypes[type].commands.length; i++)

@@ -9,39 +9,46 @@ function RoomConfig(agocontrol)
     self.agocontrol = agocontrol;
     self.roomName = ko.observable('');
 
-    //after model render
-    self.afterRender = function()
+    self.makeEditable = function(item, td, tr)
     {
-        self.agocontrol.stopDatatableLinksPropagation('configTable');
+        if( $(td).hasClass('edit_room') )
+        {
+            $(td).editable(
+                function(value, settings)
+                {
+                    var content = {};
+                    content.room = item.uuid;
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setroomname";
+                    content.name = value;
+                    self.agocontrol.sendCommand(content);
+                    return value;
+                }, 
+                {
+                    data : function(value, settings) {
+                        return value;
+                    },
+                    onblur : "cancel"
+                }
+            ).click();
+        }
     };
 
-    self.makeEditable = function(row, item)
-    {
-        window.setTimeout(function()
-        {
-            $(row).find('td.edit_room').editable(function(value, settings) {
-                var content = {};
-                content.room = item.uuid;
-                content.uuid = self.agocontrol.agoController;
-                content.command = "setroomname";
-                content.name = value;
-                self.agocontrol.sendCommand(content);
-                return value;
-            }, 
-            {
-                data : function(value, settings) {
-                    return value;
-                },
-                onblur : "cancel"
-            });
-        }, 1);
-    };
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.agocontrol.rooms,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
 
     self.createRoom = function(data, event)
     {
         if( $.trim(self.roomName())!='' )
         {
-            self.agocontrol.block($('#configTable'));
+            self.agocontrol.block($('#agoGrid'));
             var content = {};
             content.name = self.roomName();
             content.command = 'setroomname';
@@ -61,7 +68,7 @@ function RoomConfig(agocontrol)
                 {
                     notif.error("Error while creating room!");
                 }
-                self.agocontrol.unblock($('#configTable'));
+                self.agocontrol.unblock($('#agoGrid'));
             });
         }
     };
@@ -90,7 +97,7 @@ function RoomConfig(agocontrol)
 
     self.doDeleteRoom = function(item, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var content = {};
         content.room = item.uuid;
         content.uuid = self.agocontrol.agoController;
@@ -106,7 +113,7 @@ function RoomConfig(agocontrol)
             {
                 notif.error("Error while deleting room!");
             }
-            self.agocontrol.unblock($('#configTable'));
+            self.agocontrol.unblock($('#agoGrid'));
         });
     };
 }
