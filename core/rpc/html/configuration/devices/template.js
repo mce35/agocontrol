@@ -323,7 +323,7 @@ function DeviceConfig(agocontrol)
 
     self.doDeleteDevice = function(item, event)
     {
-        self.agocontrol.block($('#configTable'));
+        self.agocontrol.block($('#agoGrid'));
         var request = {};
         request.method = "message";
         request.params = {};
@@ -348,7 +348,7 @@ function DeviceConfig(agocontrol)
                     self.agocontrol.devices.remove(function(e) {
                         return e.uuid == item.uuid;
                     });
-                    self.agocontrol.unblock($('#configTable'));
+                    self.agocontrol.unblock($('#agoGrid'));
                 });
             },
             dataType : "json",
