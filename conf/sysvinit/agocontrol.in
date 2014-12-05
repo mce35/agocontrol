@@ -14,7 +14,7 @@ BIN_PATH=@BINDIR@/
 PID_PATH=/var/run/
 DAEMON_USER=agocontrol
 DAEMON_GROUP=agocontrol
-APPS="agorpc agodatalogger agoevent agoresolver agoscenario agotimer agosqueezebox.py agoalert.py agoipx800.py agoscheduler.py agolua agoMySensors agorrdtool.py"
+APPS="agorpc agoevent agoresolver agoscenario agotimer agodatalogger agosystem agosqueezebox.py agoalert.py agoipx800.py agoscheduler.py agolua agoMySensors agorrdtool.py"
 
 DESC="agocontrol"
 start_module() {

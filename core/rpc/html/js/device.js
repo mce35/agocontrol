@@ -51,6 +51,11 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.scenarioController = uuid;
     }
 
+    if (this.devicetype == "systemcontroller")
+    {
+        self.agocontrol.systemController = uuid;
+    }
+
     if (this.devicetype == "dimmerrgb")
     {
         this.setColor = function()

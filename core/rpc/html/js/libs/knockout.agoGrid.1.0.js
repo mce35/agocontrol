@@ -133,19 +133,26 @@
                     var key = this.sortKey();
                     var asc = this.sortAsc();
                     out = out.sort(function(a,b) {
+                        var aKey = ko.utils.unwrapObservable(a[key]);
+                        var bKey = ko.utils.unwrapObservable(b[key]);
+                        if( typeof a[key]==='string' || typeof a[key]==='object' )
+                        {
+                            aKey = (''+a[key]).toLowerCase();
+                            bKey = (''+b[key]).toLowerCase();
+                        }
                         if( asc )
                         {
-                            if( ko.utils.unwrapObservable(a[key]).toLowerCase() < ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            if( aKey < bKey )
                                 return -1;
-                            else if( ko.utils.unwrapObservable(a[key]).toLowerCase() > ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            else if( aKey > bKey )
                                 return 1;
                             return 0;
                         }
                         else
                         {
-                            if( ko.utils.unwrapObservable(a[key]).toLowerCase() > ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            if( aKey > bKey )
                                 return -1;
-                            else if( ko.utils.unwrapObservable(a[key]).toLowerCase() < ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            else if( aKey < bKey )
                                 return 1;
                             return 0;
                         }

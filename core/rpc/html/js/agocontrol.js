@@ -29,6 +29,7 @@ Agocontrol.prototype = {
     eventController: null,
     inventory: null,
     dataLoggerController: null,
+    systemController: null,
 
     //send command   
     sendCommand: function(content, callback, timeout, async)

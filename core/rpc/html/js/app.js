@@ -77,6 +77,7 @@ function AgocontrolViewModel()
     var self = this;
     self.currentView = ko.observable();
     self.agocontrol = new Agocontrol();
+    self.currentModel = null;
 
     //disable click event
     self.noclick = function()
@@ -118,6 +119,12 @@ function AgocontrolViewModel()
         //block ui
         $.blockUI({ message: '<img src="img/loading.gif" />  Loading...' });
 
+        //reset current template
+        if( typeof reset_template == 'function' )
+        {
+            reset_template(self.currentModel);
+        }
+
         //load template script file
         $.getScript(template.path+'/template.js' , function()
         {
@@ -147,13 +154,14 @@ function AgocontrolViewModel()
                             // here, all resources are really loaded
                             if (typeof init_template == 'function')
                             {
-                                var model = init_template(template.path+'/', template.params, self.agocontrol);
-                                if( model )
+                                self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
+                                if( self.currentModel )
                                 {
-                                    self.currentView(new View(template.path+'/'+template.template, model));
+                                    self.currentView(new View(template.path+'/'+template.template, self.currentModel));
                                 }
                                 else
                                 {
+                                    self.currentModel = null;
                                     console.error('Failed to load template: no model returned by init_template. Please check your code.');
                                     notif.fatal('Problem during page loading.');
                                 }
@@ -172,13 +180,14 @@ function AgocontrolViewModel()
             {
                 if (typeof init_template == 'function')
                 {
-                    var model = init_template(template.path+'/', template.params, self.agocontrol);
-                    if( model )
+                    self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
+                    if( self.currentModel )
                     {
-                        self.currentView(new View(template.path+'/'+template.template, model));
+                        self.currentView(new View(template.path+'/'+template.template, self.currentModel));
                     }
                     else
                     {
+                        self.currentModel = null;
                         console.error('Failed to load template: no model returned by init_template. Please check your code.');
                         notif.fatal('Problem during page loading.');
                     }
