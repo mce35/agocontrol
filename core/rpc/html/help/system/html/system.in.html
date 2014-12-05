@@ -1,13 +1,36 @@
-<div class="container" id="contentarea">
-    <div class="row">
-        <h2>System Information</h2>
-        <p>
-            You are running ago control GPL - build <span data-bind="text: agocontrol.system().version"></span>.
-            <br />
-            System UUID: <span data-bind="text: agocontrol.system().uuid"></span>.
-        </p>
-        <br />
-        <h2>Inventory</h2>
-        <pre data-bind="text: inventory" style="padding:10px; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;"/>
-    </div>
+<div id="contentarea" class="container" data-bind="initTabs: $root">
+    <h3>System informations</h3>
+    <section class="tabs">
+        <ul class="tab-nav">
+            <li class="active"><a href="#">System version</a></li>
+            <li><a href="#">Processes list</a></li>
+            <li><a href="#">Inventory</a></li>
+        </ul>
+
+        <div class="tab-content active">
+            <p>
+                You are running ago control GPL - build <span data-bind="text: agocontrol.system().version"/>.
+                <br/>
+                System UUID: <span style="font-weight:bold;" data-bind="text: agocontrol.system().uuid"/>.
+            </p>
+        </div>
+        <div class="tab-content">
+            <script id="rowTemplate" type="text/html">
+                <td data-bind="text: name"></td>
+                <ko opts="if: running">
+                    <td><i style="color:green; font-weight:bold;" class="icon-check"></i></td>
+                </ko>
+                <ko opts="ifnot: running">
+                    <td><i style="color:red; font-weight:bold;" class="icon-cancel"></i></td>
+                </ko>
+                <td data-bind="text: cpu"></td>
+                <td data-bind="text: $parent.sizeToHRSize(memRes)"></td>
+                <td data-bind="text: $parent.sizeToHRSize(memVirt)"></td>
+            </script>
+            <div data-bind="agoGrid:grid"/>
+        </div>
+        <div class="tab-content">
+            <pre style="padding:10px; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;" data-bind="text: inventory"/>
+        </div>
+    </section>
 </div>
