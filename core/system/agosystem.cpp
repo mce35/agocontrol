@@ -31,7 +31,7 @@ public:
 };
 
 const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "agologger.py"};
-const int PROCESS_BLACKLIST_SIZE = 4;
+const int PROCESS_BLACKLIST_SIZE = sizeof(PROCESS_BLACKLIST)/sizeof(*PROCESS_BLACKLIST);
 const char* BIN_DIR = "/opt/agocontrol/bin";
 const int MONITOR_INTERVAL = 5; //time between 2 monitoring (in seconds)
 
@@ -131,8 +131,8 @@ void AgoSystem::fillProcessesStats(qpid::types::Variant::Map& processes)
             cs["stime"] = (uint64_t)proc_info.stime;
             cs["cutime"] = (uint64_t)proc_info.cutime;
             cs["cstime"] = (uint64_t)proc_info.cstime;
-            cs["vsize"] = (uint64_t)proc_info.vm_size;
-            cs["rss"] = (uint64_t)proc_info.vm_rss;
+            cs["vsize"] = (uint64_t)proc_info.vm_size * 1024;
+            cs["rss"] = (uint64_t)proc_info.vm_rss * 1024;
             cs["cpuTotalTime"] = (uint32_t)getCpuTotalTime();
             double ucpu=0, scpu=0;
             if( ls["utime"].asUint64()!=0 )
@@ -252,6 +252,7 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
                     {
                         //drop file
                         blackListed = true;
+                        break;
                     }
                 }
 
