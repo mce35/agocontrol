@@ -30,8 +30,8 @@ public:
     AGOAPP_CONSTRUCTOR(AgoSystem);
 };
 
-const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem"};
-const int PROCESS_BLACKLIST_SIZE = 2;
+const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "agologger.py"};
+const int PROCESS_BLACKLIST_SIZE = 4;
 const char* BIN_DIR = "/opt/agocontrol/bin";
 const int MONITOR_INTERVAL = 5; //time between 2 monitoring (in seconds)
 
