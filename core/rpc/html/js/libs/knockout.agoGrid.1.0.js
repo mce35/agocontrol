@@ -303,6 +303,14 @@
                                <th>\
                                   <!-- ko ifnot: rowText=='' -->\
                                       <span style=\"cursor:pointer;\" data-bind=\"text:headerText, click:sortBy.bind($data, $context, rowText)\"></span>\
+                                      <!-- ko if:rowText==sortKey() -->\
+                                          <!-- ko if:sortAsc() -->\
+                                              <span><i class=\"icon-up-dir\"></i></span>\
+                                          <!-- /ko -->\
+                                          <!-- ko ifnot:sortAsc() -->\
+                                              <span><i class=\"icon-down-dir\"></i></span>\
+                                          <!-- /ko -->\
+                                      <!-- /ko -->\
                                   <!-- /ko -->\
                                   <!-- ko if: rowText=='' -->\
                                       <span data-bind=\"text:headerText\"></span>\
