@@ -135,17 +135,17 @@
                     out = out.sort(function(a,b) {
                         if( asc )
                         {
-                            if( ko.utils.unwrapObservable(a[key]).toLowerCase() < ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            if( ko.utils.unwrapObservable(''+a[key]).toLowerCase() < ko.utils.unwrapObservable(''+b[key]).toLowerCase() )
                                 return -1;
-                            else if( ko.utils.unwrapObservable(a[key]).toLowerCase() > ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            else if( ko.utils.unwrapObservable(''+a[key]).toLowerCase() > ko.utils.unwrapObservable(''+b[key]).toLowerCase() )
                                 return 1;
                             return 0;
                         }
                         else
                         {
-                            if( ko.utils.unwrapObservable(a[key]).toLowerCase() > ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            if( ko.utils.unwrapObservable(''+a[key]).toLowerCase() > ko.utils.unwrapObservable(''+b[key]).toLowerCase() )
                                 return -1;
-                            else if( ko.utils.unwrapObservable(a[key]).toLowerCase() < ko.utils.unwrapObservable(b[key]).toLowerCase() )
+                            else if( ko.utils.unwrapObservable(''+a[key]).toLowerCase() < ko.utils.unwrapObservable(''+b[key]).toLowerCase() )
                                 return 1;
                             return 0;
                         }
