@@ -272,8 +272,8 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
 
     //append qpid
     qpid::types::Variant::Map stats = getProcessStructure();
-    output["qpid"] = stats;
-    AGO_INFO() << " - qpid";
+    output["qpidd"] = stats;
+    AGO_INFO() << " - qpidd";
 
     return output;
 }
