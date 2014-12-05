@@ -1,17 +1,17 @@
 <div id="contentarea" class="container" data-bind="initTabs: $root">
-    <h3>System informations</h3>
+    <_h3 data-translateable="true">System informations</_h3>
     <section class="tabs">
         <ul class="tab-nav">
-            <li class="active"><a href="#">System version</a></li>
-            <li><a href="#">Processes list</a></li>
-            <li><a href="#">Inventory</a></li>
+            <li class="active"><_a data-translateable="true" href="#">System version</_a></li>
+            <li><_a data-translateable="true" href="#">Process list</_a></li>
+            <li><_a data-translateable="true" href="#">Inventory</_a></li>
         </ul>
 
         <div class="tab-content active">
             <p>
-                You are running ago control GPL - build <span data-bind="text: agocontrol.system().version"/>.
+                <_span data-translateable="true">You are running</_span> ago control GPL - build <span data-bind="text: agocontrol.system().version"/>.
                 <br/>
-                System UUID: <span style="font-weight:bold;" data-bind="text: agocontrol.system().uuid"/>.
+                <_span data-translateable="true">System</_span> UUID: <span style="font-weight:bold;" data-bind="text: agocontrol.system().uuid"/>.
             </p>
         </div>
         <div class="tab-content">
