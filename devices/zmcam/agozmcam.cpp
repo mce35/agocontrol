@@ -35,7 +35,7 @@ using namespace agocontrol;
 
 class AgoZmcam: public AgoApp {
 private:
-    ZoneminderClient *zoneminderClient;
+    ZoneminderClient zoneminderClient;
 
     void setupApp();
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
@@ -50,7 +50,7 @@ qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map con
     if (content["command"] == "getvideoframe") 
     {
         ostringstream tmpostr;
-        if (zoneminderClient->getVideoFrame(monitorId, tmpostr))
+        if (zoneminderClient.getVideoFrame(monitorId, tmpostr))
         {
             std::string s;
             s = tmpostr.str();	
@@ -65,7 +65,7 @@ qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map con
     }
     else if (content["command"] == "triggeralarm")
     {
-        if (zoneminderClient->setMonitorAlert(monitorId,
+        if (zoneminderClient.setMonitorAlert(monitorId,
                     content["duration"].asUint32(),
                     content["importance"].asInt32(),
                     content["cause"].asString(),
@@ -80,7 +80,7 @@ qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map con
     }
     else if (content["command"] == "clearalarm")
     {
-        if (zoneminderClient->clearMonitorAlert(monitorId))
+        if (zoneminderClient.clearMonitorAlert(monitorId))
             returnval["result"] = 0;
         else
         {
@@ -128,7 +128,7 @@ void AgoZmcam::setupApp() {
     else
         hashAuthUseLocalAddress = false;
 
-    if (!zoneminderClient->create(getConfigOption("webprotocal", "http"), 
+    if (!zoneminderClient.create(getConfigOption("webprotocal", "http"), 
                 getConfigOption("server", ""), 
                 stringToUint(getConfigOption("webport", "80")), 
                 authType,
@@ -147,8 +147,6 @@ void AgoZmcam::setupApp() {
     string device;
     while (getline(devices, device, ','))
         agoConnection->addDevice(device.c_str(), "camera");
-
-    zoneminderClient = new ZoneminderClient();
 
     addCommandHandler();
 }
