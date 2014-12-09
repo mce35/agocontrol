@@ -44,6 +44,10 @@ using namespace std;
 using namespace agocontrol;
 using namespace OpenZWave;
 
+  static  pthread_mutex_t g_criticalSection;
+static    pthread_cond_t  initCond = PTHREAD_COND_INITIALIZER;
+static    pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
+
 class AgoZwave: public AgoApp {
 private:
     bool polling;
@@ -62,9 +66,6 @@ private:
 
     map<ValueID, qpid::types::Variant> valueCache;
 
-    pthread_mutex_t g_criticalSection;
-    pthread_cond_t  initCond;
-    pthread_mutex_t initMutex;
 
     ZWaveNodes devices;
 
@@ -81,8 +82,8 @@ public:
         , unitsystem(0)
         , g_homeId(0)
         , g_initFailed(false)
-        , initCond(PTHREAD_COND_INITIALIZER)
-        , initMutex(PTHREAD_MUTEX_INITIALIZER)
+     //   , initCond(PTHREAD_COND_INITIALIZER)
+     //   , initMutex(PTHREAD_MUTEX_INITIALIZER)
         {}
 
 
@@ -92,7 +93,7 @@ public:
 
 void controller_update(Driver::ControllerState state,  Driver::ControllerError err, void *context) {
     AgoZwave *inst = static_cast<AgoZwave*>(context);
-    inst->_controller_update(state, err); 
+    if (inst != NULL) inst->_controller_update(state, err); 
 }
 
 void on_notification(Notification const* _notification, void *context) {
@@ -1065,7 +1066,6 @@ void AgoZwave::setupApp() {
     device=getConfigOption("device", "/dev/usbzwave");
     if (getConfigSectionOption("system", "units", "SI") != "SI")
         unitsystem=1;
-
 
     pthread_mutexattr_t mutexattr;
 
