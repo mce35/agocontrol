@@ -34,7 +34,7 @@ function SystemConfig(agocontrol)
     {
         var content = {};
         content.uuid = self.agocontrol.systemController;
-        content.command = 'status';
+        content.command = 'getprocesslist';
         self.agocontrol.sendCommand(content, function(res) {
             var procs = [];
             for( var name in res.result )

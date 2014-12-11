@@ -3,5 +3,6 @@
     "version": "0.0.1",
     "description": "This is an example plugin",
     "listable": false,
-    "template": "html/example"
+    "template": "html/example",
+    "depends": ""
 }

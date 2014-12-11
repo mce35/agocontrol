@@ -18,6 +18,7 @@ Agocontrol.prototype = {
     system: ko.observable(), 
     variables: ko.observableArray([]),
     supported_devices: ko.observableArray([]),
+    processes: ko.observableArray([]),
 
     plugins: ko.observableArray([]),
     dashboards: ko.observableArray([]),
@@ -81,6 +82,24 @@ Agocontrol.prototype = {
             if( self.rooms()[i].uuid==uuid )
             {
                 return self.rooms()[i];
+            }
+        }
+        return null;
+    },
+
+    //return specified process or null if not found
+    findProcess: function(proc)
+    {
+        if( proc && $.trim(proc).length>0 )
+        {
+            for( var i=0; i<self.processes().length; i++ )
+            {
+                console.log(self.processes()[i]);
+                if( self.processes()[i].name===proc )
+                {
+                    //process found
+                    return self.processes()[i];
+                }
             }
         }
         return null;
@@ -225,9 +244,28 @@ Agocontrol.prototype = {
             }
             self.devices.push(new device(self, devs[uuid], uuid));
         }
+
+        //PROCESSES (from agosystem)
+        var content = {};
+        content.command = "getprocesslist";
+        content.uuid = self.systemController;
+        self.sendCommand(content, function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
+            {
+                for( var procName in res.result )
+                {
+                    var proc = res.result[procName];
+                    proc.name = procName;
+                    self.processes.push(proc);
+                }
+            }
+            else
+            {
+                console.error('Unable to get processes list!');
+            }
+        }, 5, false);
         
         //LISTING
-        
         //dashboards
         self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
         for( uuid in response.result.floorplans )
@@ -247,7 +285,7 @@ Agocontrol.prototype = {
         }).done(function(result) {
 
             //PLUGINS
-            //load plugins list template at top of menu
+            //load plugins list at top of menu
             for( var i=0; i<result.plugins.length; i++ )
             {
                 if( result.plugins[i].name=='Applications list' )
@@ -258,15 +296,32 @@ Agocontrol.prototype = {
                     break;
                 }
             }
-            
             //load all other plugins
             for( var i=0; i<result.plugins.length; i++ )
             {
                 if( result.plugins[i].name!='Applications list' )
                 {
-                    var plugin = result.plugins[i];
-                    plugin.ucName = ucFirst(plugin.name);
-                    self.plugins.push(plugin);
+                    var append = false;
+                    if( result.plugins[i].depends && $.trim(result.plugins[i].depends).length>0 )
+                    {
+                        append = true;
+                    }
+                    else
+                    {
+                        //check if process is installed (and not if it's currently running!)
+                        var proc = self.findProcess(result.plugins[i].depends);
+                        if( proc )
+                        {
+                            append = true;
+                        }
+                    }
+
+                    if( append )
+                    {
+                        var plugin = result.plugins[i];
+                        plugin.ucName = ucFirst(plugin.name);
+                        self.plugins.push(plugin);
+                    }
                 }
             }
 

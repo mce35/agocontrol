@@ -3,5 +3,6 @@
         "version": "0.0.1",
         "description": "MySensors configuration",
         "template": "html/mysensorsConfig",
-        "listable": true
+        "listable": true,
+        "depends": "agoMySensors"
 }

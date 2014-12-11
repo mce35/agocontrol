@@ -4,6 +4,7 @@
         "description": "Datalogger configuration",
         "listable": true,
         "template": "html/dataloggerConfig",
+        "depends": "agodatalogger",
         "resources": {
             "css": [
                 "datalogger.css"

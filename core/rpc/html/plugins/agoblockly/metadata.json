@@ -4,6 +4,7 @@
         "description": "Create events easily using blocks",
         "listable": true,
         "template": "html/agoblockly",
+        "depends": "agolua",
         "resources": {
             "css": [
                 "prettify/prettify.css"
