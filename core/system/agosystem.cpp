@@ -305,7 +305,7 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
     AGO_DEBUG() << "Command received:" << content;
     if (internalid == "systemcontroller")
     {
-        if (content["command"] == "status")
+        if (content["command"] == "getprocesslist")
         {
             processesMutex.lock();
             returnval = processes;
