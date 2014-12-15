@@ -16,6 +16,7 @@ This is a licence-free software, it can be used by anyone who try to build a bet
  */
 
 #include "serialib.h"
+#include <unistd.h>
 
 
 
@@ -310,6 +311,7 @@ char serialib::ReadChar(char *pByte,unsigned int TimeOut_ms)
         case 1  : return 1;                                             // Read successfull
         case -1 : return -2;                                            // Error while reading
         }
+        usleep(1000);
     }
     return 0;
 #endif
@@ -344,6 +346,7 @@ int serialib::ReadStringNoTimeOut(char *String,char FinalChar,unsigned int MaxNb
             NbBytes++;                                                  // If not, just increase the number of bytes read
         }
         if (ret<0) return ret;                                          // Error while reading : return the error number
+        usleep(1000);
     }
     return -3;                                                          // Buffer is full : return -3
 }
@@ -393,6 +396,7 @@ int serialib::ReadString(char *String,char FinalChar,unsigned int MaxNbBytes,uns
             String[NbBytes]=0;                                          // Add the end caracter
             return 0;                                                   // Return 0
         }
+        usleep(1000);
     }
     return -3;                                                          // Buffer is full : return -3
 }
@@ -434,6 +438,7 @@ int serialib::Read (void *Buffer,unsigned int MaxNbBytes,unsigned int TimeOut_ms
             if (NbByteRead>=MaxNbBytes)                                 // Success : bytes has been read
                 return 1;
         }
+        usleep(1000);
     }
     return 0;                                                           // Timeout reached, return 0
 #endif
