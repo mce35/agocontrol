@@ -118,10 +118,13 @@ std::string printDeviceInfos(std::string internalid, qpid::types::Variant::Map i
 void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos)
 {
     pthread_mutex_lock(&devicemapMutex);
-    qpid::types::Variant::Map device = devicemap["devices"].asMap();
-    device[internalid] = (*infos);
-    devicemap["devices"] = device;
-    variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
+    if( !devicemap["devices"].isVoid() )
+    {
+        qpid::types::Variant::Map device = devicemap["devices"].asMap();
+        device[internalid] = (*infos);
+        devicemap["devices"] = device;
+        variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
+    }
     pthread_mutex_unlock(&devicemapMutex);
 }
 
@@ -130,25 +133,30 @@ void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos)
  */
 qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
     qpid::types::Variant::Map out;
-    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
     bool save = false;
 
-    if( devices.count(internalid)==1 )
+    if( !devicemap["devices"].isVoid() )
     {
-        out = devices[internalid].asMap();
+        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
 
-        //check field existence
-        if( out["protocol"].isVoid() ) 
+        if( !devices[internalid].isVoid() )
         {
-            out["protocol"] = "0.0";
-            save = true;
-        }
+            out = devices[internalid].asMap();
 
-        if( save )
-        {
-            setDeviceInfos(internalid, &out);
+            //check field existence
+            if( out["protocol"].isVoid() ) 
+            {
+                out["protocol"] = "0.0";
+                save = true;
+            }
+
+            if( save )
+            {
+                setDeviceInfos(internalid, &out);
+            }
         }
     }
+
     return out;
 }
 
@@ -266,37 +274,41 @@ std::string prettyPrint(std::string message)
 bool deleteDevice(std::string internalid)
 {
     //init
-    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-    bool result = true;
+    bool result = false;
 
-    //check if device exists
-    if( !devices[internalid].isVoid() )
+    if( !devicemap["devices"].isVoid() )
     {
-        //remove device from uuidmap
-        if( agoConnection->removeDevice(internalid.c_str()) )
-        {
-            //clear all infos
-            pthread_mutex_lock(&devicemapMutex);
-            devices.erase(internalid);
-            devicemap["devices"] = devices;
-            variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
-            pthread_mutex_unlock(&devicemapMutex);
+        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
 
-            result = true;
-            cout << "Device \"" << internalid << "\" removed successfully" << endl;
+        //check if device exists
+        if( !devices[internalid].isVoid() )
+        {
+            //remove device from uuidmap
+            if( agoConnection->removeDevice(internalid.c_str()) )
+            {
+                //clear all infos
+                pthread_mutex_lock(&devicemapMutex);
+                devices.erase(internalid);
+                devicemap["devices"] = devices;
+                variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
+                pthread_mutex_unlock(&devicemapMutex);
+
+                result = true;
+                cout << "Device \"" << internalid << "\" removed successfully" << endl;
+            }
+            else
+            {
+                //unable to remove device
+                result = false;
+                cout << "Unable to remove device \"" << internalid << "\"" << endl;
+            }
         }
         else
         {
-            //unable to remove device
+            //device not found
             result = false;
-            cout << "Unable to remove device \"" << internalid << "\"" << endl;
+            cout << "Unable to remove unknown device \"" << internalid << "\"" << endl;
         }
-    }
-    else
-    {
-        //device not found
-        result = false;
-        cout << "Unable to remove unknown device \"" << internalid << "\"" << endl;
     }
 
     return result;
@@ -512,51 +524,57 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             returnval["error"] = 0;
             returnval["msg"] = "";
             qpid::types::Variant::Map counters;
-            qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-            for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+            if( !devicemap["devices"].isVoid() )
             {
-                qpid::types::Variant::Map content = it->second.asMap();
-                //add device name + device type
-                std::stringstream deviceNameType;
-                deviceNameType << it->first.c_str() << " (";
-                infos = getDeviceInfos(it->first);
-                if( infos.size()>0 && !infos["type"].isVoid() )
+                qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+                for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
                 {
-                    deviceNameType << infos["type"];
+                    qpid::types::Variant::Map content = it->second.asMap();
+                    //add device name + device type
+                    std::stringstream deviceNameType;
+                    deviceNameType << it->first.c_str() << " (";
+                    infos = getDeviceInfos(it->first);
+                    if( infos.size()>0 && !infos["type"].isVoid() )
+                    {
+                        deviceNameType << infos["type"];
+                    }
+                    else 
+                    {
+                        deviceNameType << "unknown";
+                    }
+                    deviceNameType << ")";
+                    content["device"] = deviceNameType.str().c_str();
+                    if( !content["last_timestamp"].isVoid() )
+                    {
+                        int32_t timestamp = content["last_timestamp"].asInt32();
+                        content["datetime"] = timestampToStr((time_t*)&timestamp);
+                    }
+                    else {
+                        content["datetime"] = "?";
+                    }
+                    counters[it->first.c_str()] = content;
                 }
-                else 
-                {
-                    deviceNameType << "unknown";
-                }
-                deviceNameType << ")";
-                content["device"] = deviceNameType.str().c_str();
-                if( !content["last_timestamp"].isVoid() )
-                {
-                    int32_t timestamp = content["last_timestamp"].asInt32();
-                    content["datetime"] = timestampToStr((time_t*)&timestamp);
-                }
-                else {
-                    content["datetime"] = "?";
-                }
-                counters[it->first.c_str()] = content;
             }
             returnval["counters"] = counters;
         }
         else if( cmd=="resetallcounters" )
         {
             //reset all counters
-            qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-            for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++)
+            if( !devicemap["devices"].isVoid() )
             {
-                infos = getDeviceInfos(it->first);
-                if( infos.size()>0 )
+                qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+                for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++)
                 {
-                    infos["counter_received"] = 0;
-                    infos["counter_sent"] = 0;
-                    infos["counter_retries"] = 0;
-                    infos["counter_failed"] = 0;
-                    infos["last_timestamp"] = 0;
-                    setDeviceInfos(it->first, &infos);
+                    infos = getDeviceInfos(it->first);
+                    if( infos.size()>0 )
+                    {
+                        infos["counter_received"] = 0;
+                        infos["counter_sent"] = 0;
+                        infos["counter_retries"] = 0;
+                        infos["counter_failed"] = 0;
+                        infos["last_timestamp"] = 0;
+                        setDeviceInfos(it->first, &infos);
+                    }
                 }
             }
             returnval["error"] = 0;
@@ -566,18 +584,21 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
         {
             //reset counters of specified sensor
             //command["device"] format: {internalid:<>, type:<>}
-            qpid::types::Variant::Map device = command["device"].asMap();
-            if( !device["internalid"].isVoid() )
+            if( !command["device"].isVoid() )
             {
-                infos = getDeviceInfos(device["internalid"].asString());
-                if( infos.size()>0 )
+                qpid::types::Variant::Map device = command["device"].asMap();
+                if( !device["internalid"].isVoid() )
                 {
-                    infos["counter_received"] = 0;
-                    infos["counter_sent"] = 0;
-                    infos["counter_retries"] = 0;
-                    infos["counter_failed"] = 0;
-                    infos["last_timestamp"] = 0;
-                    setDeviceInfos(device["internalid"].asString(), &infos);
+                    infos = getDeviceInfos(device["internalid"].asString());
+                    if( infos.size()>0 )
+                    {
+                        infos["counter_received"] = 0;
+                        infos["counter_sent"] = 0;
+                        infos["counter_retries"] = 0;
+                        infos["counter_failed"] = 0;
+                        infos["last_timestamp"] = 0;
+                        setDeviceInfos(device["internalid"].asString(), &infos);
+                    }
                 }
                 returnval["error"] = 0;
                 returnval["msg"] = "";
@@ -631,18 +652,24 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             returnval["error"] = 0;
             returnval["msg"] = "";
             qpid::types::Variant::List devicesList;
-            qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-            for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++) {
-                infos = getDeviceInfos(it->first);
-                qpid::types::Variant::Map item;
-                item["internalid"] = it->first.c_str();
-                if( infos.size()>0 && !infos["type"].isVoid() ) {
-                    item["type"] = infos["type"];
+            if( !devicemap["devices"].isVoid() )
+            {
+                qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+                for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+                {
+                    infos = getDeviceInfos(it->first);
+                    qpid::types::Variant::Map item;
+                    item["internalid"] = it->first.c_str();
+                    if( infos.size()>0 && !infos["type"].isVoid() )
+                    {
+                        item["type"] = infos["type"];
+                    }
+                    else
+                    {
+                        item["type"] = "unknown";
+                    }
+                    devicesList.push_back(item);
                 }
-                else {
-                    item["type"] = "unknown";
-                }
-                devicesList.push_back(item);
             }
             returnval["devices"] = devicesList;
         }
@@ -767,45 +794,56 @@ std::string readLine(bool* error) {
 void newDevice(std::string internalid, std::string devicetype)
 {
     //init
-    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
     qpid::types::Variant::Map infos = getDeviceInfos(internalid);
 
-    if( infos.size()>0 )
+    if( !devicemap["devices"].isVoid() )
     {
-        //internalid already referenced
-        if( infos["type"].asString()!=devicetype )
+        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+
+        if( infos.size()>0 )
         {
-            //sensors is probably reconditioned, remove it before adding it
-            cout << "Reconditioned sensor detected (" << infos["type"] << "=>" << devicetype << ")" << endl;
-            deleteDevice(internalid);
-            //refresh infos
-            infos = getDeviceInfos(internalid);
-            //and add brand new device
-            devices = devicemap["devices"].asMap();
-            addDevice(internalid, devicetype, devices, infos);
-        }
-        else if( infos["protocol"].asString()!=gateway_protocol_version )
-        {
-            //sensors code was updated to different protocol
-            cout << "Sensor protocol changed (" << infos["protocol"] << "=>" << gateway_protocol_version << ")" << endl;
-            //refresh infos
-            infos = getDeviceInfos(internalid);
-            if( infos.size()>0 )
+            //internalid already referenced
+            if( infos["type"].asString()!=devicetype )
             {
-                infos["protocol"] = gateway_protocol_version;
-                setDeviceInfos(internalid, &infos);
+                //sensors is probably reconditioned, remove it before adding it
+                cout << "Reconditioned sensor detected (" << infos["type"] << "=>" << devicetype << ")" << endl;
+                deleteDevice(internalid);
+                //refresh infos
+                infos = getDeviceInfos(internalid);
+                //and add brand new device
+                if( !devicemap["devices"].isVoid() )
+                {
+                    devices = devicemap["devices"].asMap();
+                    addDevice(internalid, devicetype, devices, infos);
+                }
+                else
+                {
+                    cerr << "No device map available. Unable to add device!" << endl;
+                }
+            }
+            else if( infos["protocol"].asString()!=gateway_protocol_version )
+            {
+                //sensors code was updated to different protocol
+                cout << "Sensor protocol changed (" << infos["protocol"] << "=>" << gateway_protocol_version << ")" << endl;
+                //refresh infos
+                infos = getDeviceInfos(internalid);
+                if( infos.size()>0 )
+                {
+                    infos["protocol"] = gateway_protocol_version;
+                    setDeviceInfos(internalid, &infos);
+                }
+            }
+            else
+            {
+                //sensor has just rebooted
+                addDevice(internalid, devicetype, devices, infos);
             }
         }
         else
         {
-            //sensor has just rebooted
+            //add new device
             addDevice(internalid, devicetype, devices, infos);
         }
-    }
-    else
-    {
-        //add new device
-        addDevice(internalid, devicetype, devices, infos);
     }
 }
 
@@ -1639,30 +1677,36 @@ void *checkStale(void *param)
         //get current time
         time_t now = time(NULL);
 
-        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-        for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+        if( !devicemap["devices"].isVoid() )
         {
-            qpid::types::Variant::Map infos = it->second.asMap();
-            std::string internalid = (std::string)it->first;
-            if( !infos["last_timestamp"].isVoid() && checkInternalid(internalid) )
+            qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+            for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
             {
-                if( !agoConnection->isDeviceStale(internalid.c_str()) )
+                if( !it->second.isVoid() )
                 {
-                    if( (int)now>(infos["last_timestamp"].asInt32()+staleThreshold) )
+                    qpid::types::Variant::Map infos = it->second.asMap();
+                    std::string internalid = (std::string)it->first;
+                    if( !infos["last_timestamp"].isVoid() && checkInternalid(internalid) )
                     {
-                        //device is stalled
-                        //cout << "suspend device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
-                        //cout << "isstale? " << agoConnection->isDeviceStale(internalid.c_str()) << endl;
-                        agoConnection->suspendDevice(internalid.c_str());
-                    }
-                }
-                else
-                {
-                    if( infos["last_timestamp"].asInt32()>=((int)now-staleThreshold) )
-                    {
-                        //device woke up
-                        //cout << "resume device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
-                        agoConnection->resumeDevice(internalid.c_str());
+                        if( !agoConnection->isDeviceStale(internalid.c_str()) )
+                        {
+                            if( (int)now>(infos["last_timestamp"].asInt32()+staleThreshold) )
+                            {
+                                //device is stalled
+                                //cout << "suspend device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
+                                //cout << "isstale? " << agoConnection->isDeviceStale(internalid.c_str()) << endl;
+                                agoConnection->suspendDevice(internalid.c_str());
+                            }
+                        }
+                        else
+                        {
+                            if( infos["last_timestamp"].asInt32()>=((int)now-staleThreshold) )
+                            {
+                                //device woke up
+                                //cout << "resume device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
+                                agoConnection->resumeDevice(internalid.c_str());
+                            }
+                        }
                     }
                 }
             }
@@ -1744,7 +1788,7 @@ int main(int argc, char **argv)
     //connect to gateway
     bool error = false;
     std::string line = "";
-    cout << "Waiting for gateway started..." << endl << flush;
+    cout << "Waiting for the gateway starts..." << endl << flush;
     while( !error && line.find("Gateway startup complete")==string::npos )
     {
         line = readLine(&error);
@@ -1806,21 +1850,30 @@ int main(int argc, char **argv)
 
     //register existing devices
     cout << "Register existing devices:" << endl;
-    qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-    for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
+    if( !devicemap["devices"].isVoid() )
     {
-        qpid::types::Variant::Map infos = it->second.asMap();
-        std::string internalid = (std::string)it->first;
-        cout << " - " << internalid << ":" << infos["type"].asString().c_str();
-        if( internalid.length()>0 && checkInternalid(internalid) )
+        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+        for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
         {
-            agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
+            qpid::types::Variant::Map infos = it->second.asMap();
+            std::string internalid = (std::string)it->first;
+            cout << " - " << internalid << ":" << infos["type"].asString().c_str();
+            if( internalid.length()>0 && checkInternalid(internalid) )
+            {
+                agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
+            }
+            else
+            {
+                cout << " [INVALID]";
+            }
+            cout << endl;
         }
-        else
-        {
-            cout << " [INVALID]";
-        }
-        cout << endl;
+    }
+    else
+    {
+        //problem with map file
+        cerr << "No device map file available. Exit now." << endl;
+        exit(1);
     }
 
     //run check stale thread
