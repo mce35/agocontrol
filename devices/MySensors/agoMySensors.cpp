@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <iostream>
-#include <boost/asio.hpp> 
 #include <boost/system/system_error.hpp> 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
@@ -11,6 +10,7 @@
 #include <time.h>
 #include <cstdlib>
 #include <stdexcept>
+#include "serialib.h"
 
 #include "MySensors.h"
 #include "agoclient.h"
@@ -23,7 +23,6 @@
 using namespace std;
 using namespace agocontrol;
 using namespace boost::system; 
-using namespace boost::asio; 
 using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
@@ -54,8 +53,7 @@ qpid::types::Variant::Map devicemap;
 std::map<std::string, T_COMMAND> commandsmap;
 std::string gateway_protocol_version = "1.4";
 
-io_service ioService; 
-serial_port serialPort(ioService); 
+serialib serialPort;
 string device = "";
 int staleThreshold = 86400;
 
@@ -87,25 +85,6 @@ std::string timestampToStr(const time_t* timestamp)
     snprintf(hr, 512, "%02d:%02d:%02d %04d/%02d/%02d", sTm->tm_hour, sTm->tm_min, sTm->tm_sec, sTm->tm_year+1900, sTm->tm_mon+1, sTm->tm_mday);
 
     return std::string(hr);
-}
-
-/**
- * @brief Flush a serial port's buffers.
- * @param serial_port Port to flush.
- * @param what Determines the buffers to flush.
- * @param error Set to indicate what error occurred, if any.
- * @info http://stackoverflow.com/questions/22581315/how-to-discard-data-as-it-is-sent-with-boostasio
- */
-void flush_serial_port(boost::asio::serial_port& serial_port, flush_type what, boost::system::error_code& error)
-{
-    if (0 == ::tcflush(serial_port.lowest_layer().native_handle(), what))
-    {
-        error = boost::system::error_code();
-    }
-    else
-    {
-        error = boost::system::error_code(errno, boost::asio::error::get_system_category());
-    }
 }
 
 /**
@@ -352,17 +331,21 @@ bool openSerialPort(string device)
     bool result = true;
     try
     {
-        serialPort.open(device); 
-        serialPort.set_option(serial_port::baud_rate(115200)); 
-        serialPort.set_option(serial_port::parity(serial_port::parity::none)); 
-        serialPort.set_option(serial_port::character_size(serial_port::character_size(8))); 
-        serialPort.set_option(serial_port::stop_bits(serial_port::stop_bits::one)); 
-        serialPort.set_option(serial_port::flow_control(serial_port::flow_control::none)); 
-        //flush serial content
-        //boost::system::error_code error;
-        //flush_serial_port(serialPort, flush_both, error);
-        //if( DEBUG )
-        //    cout << "Flushing serial port: " << error.message() << endl;
+        int res = serialPort.Open(device.c_str(), 115200);
+        if( res!=1 )
+        {
+            cerr << "Can't open serial port: " << res << endl;
+            result = false;
+        }
+        else
+        {
+            //reset arduino
+            serialPort.EnableDTR(false);
+            //TODO flush
+            sleep(1);
+            serialPort.EnableDTR(true);
+
+        }
     }
     catch(std::exception const&  ex)
     {
@@ -377,7 +360,7 @@ bool openSerialPort(string device)
  */
 void closeSerialPort() {
     try {
-        serialPort.close();
+        serialPort.Close();
     }
     catch( std::exception const&  ex) {
         //cerr  << "Can't close serial port: " << ex.what() << endl;
@@ -434,7 +417,7 @@ void sendcommand(std::string command)
         time_t t = time(NULL);
         cout << " => " << timestampToStr(&t) << " RE-SENDING: " << command;
     }
-    serialPort.write_some(buffer(command));
+    serialPort.WriteString(command.c_str());
 }
 void sendcommandV14(std::string internalid, int messageType, int ack, int subType, std::string payload)
 {
@@ -468,7 +451,7 @@ void sendcommandV14(std::string internalid, int messageType, int ack, int subTyp
         time_t t = time(NULL);
         cout << " => " << timestampToStr(&t) << " SENDING: " << command.str();
     }
-    serialPort.write_some(buffer(command.str()));
+    serialPort.WriteString(command.str().c_str());
 }
 void sendcommandV13(std::string internalid, int messageType, int subType, std::string payload)
 {
@@ -502,7 +485,7 @@ void sendcommandV13(std::string internalid, int messageType, int subType, std::s
         time_t t = time(NULL);
         cout << " => " << timestampToStr(&t) << " SENDING: " << command.str();
     }
-    serialPort.write_some(buffer(command.str()));
+    serialPort.WriteString(command.str().c_str());
 }
 
 /**
@@ -516,7 +499,8 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
     std::string internalid = "";
     if( DEBUG )
         cout << "CommandHandler" << command << endl;
-    if( command.count("internalid")==1 && command.count("command")==1 ) {
+    if( command.count("internalid")==1 && command.count("command")==1 )
+    {
         //get values
         cmd = command["command"].asString();
         internalid = command["internalid"].asString();
@@ -536,15 +520,18 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                 std::stringstream deviceNameType;
                 deviceNameType << it->first.c_str() << " (";
                 infos = getDeviceInfos(it->first);
-                if( infos.size()>0 && !infos["type"].isVoid() ) {
+                if( infos.size()>0 && !infos["type"].isVoid() )
+                {
                     deviceNameType << infos["type"];
                 }
-                else {
+                else 
+                {
                     deviceNameType << "unknown";
                 }
                 deviceNameType << ")";
                 content["device"] = deviceNameType.str().c_str();
-                if( !content["last_timestamp"].isVoid() ) {
+                if( !content["last_timestamp"].isVoid() )
+                {
                     int32_t timestamp = content["last_timestamp"].asInt32();
                     content["datetime"] = timestampToStr((time_t*)&timestamp);
                 }
@@ -559,9 +546,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
         {
             //reset all counters
             qpid::types::Variant::Map devices = devicemap["devices"].asMap();
-            for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
+            for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++)
+            {
                 infos = getDeviceInfos(it->first);
-                if( infos.size()>0 ) {
+                if( infos.size()>0 )
+                {
                     infos["counter_received"] = 0;
                     infos["counter_sent"] = 0;
                     infos["counter_retries"] = 0;
@@ -754,7 +743,7 @@ std::string readLine(bool* error) {
     (*error) = false;
     try {
         for(;;) {
-            boost::asio::read(serialPort,boost::asio::buffer(&c,1));
+            serialPort.ReadChar(&c, 0);
             switch(c) {
                 case '\r':
                     break;
@@ -1729,14 +1718,6 @@ int main(int argc, char **argv)
     // determine reply for INTERNAL;I_UNIT message - defaults to "M"etric
     if (getConfigSectionOption("system","units","SI")!="SI") units="I";
 
-    //open serial port
-    if( DEBUG )
-        cout << "Opening serial port '" << device << "'..." << endl;
-    if( !openSerialPort(device) )
-    {
-        exit(1);
-    }
-
     // load map, create sections if empty
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
     devicemap = jsonFileToVariantMap(dmf);
@@ -1752,18 +1733,34 @@ int main(int argc, char **argv)
         variantMapToJSONFile(devicemap, dmf);
     }
 
-    bool error;
-    cout << "Requesting gateway version..." << flush;
-    std::string getVersion = "0;0;3;0;2\n";
+    //open serial port
+    if( DEBUG )
+        cout << "Opening serial port '" << device << "'..." << endl;
+    if( !openSerialPort(device) )
+    {
+        exit(1);
+    }
+
+    //connect to gateway
+    bool error = false;
     std::string line = "";
+    cout << "Waiting for gateway started..." << endl << flush;
+    while( !error && line.find("Gateway startup complete")==string::npos )
+    {
+        line = readLine(&error);
+        if( DEBUG )
+            cout << "Read: " << line << endl << flush;
+    }
+    cout << "Done." << endl << flush;
+
+    cout << "Requesting gateway version..." << endl << flush;
+    std::string getVersion = "0;0;3;0;2\n";
+    serialPort.WriteString(getVersion.c_str());
     while( !error && !boost::algorithm::starts_with(line, "0;0;3;0;2;") )
     {
         line = readLine(&error);
         if( DEBUG )
-        {
-            cout << "Read: " << line << endl;
-        }
-        serialPort.write_some(buffer(getVersion));
+            cout << "Read: " << line << endl << flush;
     }
     if( !error )
     {
