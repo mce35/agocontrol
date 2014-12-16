@@ -353,7 +353,7 @@ bool openSerialPort(string device)
         {
             //reset arduino
             serialPort.EnableDTR(false);
-            //TODO flush
+            serialPort.FlushReceiver();
             sleep(1);
             serialPort.EnableDTR(true);
 
