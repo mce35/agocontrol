@@ -1,7 +1,9 @@
 <div id="contentarea" class="container">
 
 <script id="rowTemplate" type="text/html">
-    <td data-bind="text: name"></td>
+    <td>
+        <a href="#" data-bind="text:name, click:$root.gotoPlugin"></a>
+    </td>
     <td data-bind="text: version"></td>
     <td data-bind="text: description"></td>
     <td>
