@@ -333,9 +333,40 @@ Agocontrol.prototype = {
             }
 
             //CONFIGURATION PAGES
+            var categories = {};
             for( var i=0; i<result.config.length; i++ )
             {
-                self.configurations.push(result.config[i]);
+                //check missing category
+                if( result.config[i].category===undefined )
+                {
+                    result.config[i].category = 'Uncategorized';
+                }
+                //add new category if necessary
+                if( categories[result.config[i].category]===undefined )
+                {
+                    categories[result.config[i].category] = [];
+                }
+                //append page to its category
+                categories[result.config[i].category].push(result.config[i]);
+                //self.configurations.push(result.config[i]);
+            }
+            for( var category in categories )
+            {
+                var subMenus = [];
+                for( var i=0; i<categories[category].length; i++ )
+                {
+                    subMenus.push(categories[category][i]);
+                }
+                if( subMenus.length==1 )
+                {
+                    //no submenu
+                    self.configurations.push({'menu':subMenus[0], 'subMenus':null});
+                }
+                else
+                {
+                    //submenus
+                    self.configurations.push({'menu':category, 'subMenus':subMenus});
+                }
             }
 
             //SUPPORTED DEVICES

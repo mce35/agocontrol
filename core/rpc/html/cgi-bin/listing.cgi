@@ -23,8 +23,8 @@ def loadMetadatasInDir(d):
                     with open(path + "/" + fn) as data:
                         content = data.read()
                         obj = json.loads(content)
-                        obj["_name"] = os.path.basename(path)
-                        items[obj["_name"]] = obj
+                        obj["dir"] = os.path.basename(path)
+                        items[obj["dir"]] = obj
                 except Exception as error:
                     pass
     for key in sorted(items.iterkeys()):

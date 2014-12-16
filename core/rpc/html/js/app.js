@@ -282,7 +282,7 @@ function AgocontrolViewModel()
             }
             if( plugin )
             {
-                var basePath = "plugins/" + plugin._name;
+                var basePath = "plugins/" + plugin.dir;
                 self.loadTemplate(new Template(basePath, plugin.resources, plugin.template, null));
             }
             else
@@ -296,18 +296,35 @@ function AgocontrolViewModel()
         {
             //get config infos
             var config = null;
-            for( var i=0; i<self.agocontrol.configurations().length; i++ )
+            for( var category in self.agocontrol.configurations() )
             {
-                if( self.agocontrol.configurations()[i].name==this.params.name )
+                if( self.agocontrol.configurations()[category].subMenus===null )
                 {
-                    //config found
-                    config = self.agocontrol.configurations()[i];
-                    break;
+                    if( self.agocontrol.configurations()[category].menu.name==this.params.name )
+                    {
+                        config = self.agocontrol.configurations()[category].menu;
+                        break;
+                    }
+                }
+                else
+                {
+                    for( var i=0; i<self.agocontrol.configurations()[category].subMenus.length; i++ )
+                    {
+                        if( self.agocontrol.configurations()[category].subMenus[i].name==this.params.name )
+                        {
+                            config = self.agocontrol.configurations()[category].subMenus[i];
+                            break;
+                        }
+                    }
+                    if( config!=null )
+                    {
+                        break;
+                    }
                 }
             }
             if( config )
             {
-                var basePath = "configuration/" + config._name;
+                var basePath = "configuration/" + config.dir;
                 self.loadTemplate(new Template(basePath, null, config.template, null));
             }
             else
@@ -331,7 +348,7 @@ function AgocontrolViewModel()
             }
             if( help )
             {
-                var basePath = "help/" + help._name;
+                var basePath = "help/" + help.dir;
                 self.loadTemplate(new Template(basePath, null, help.template, null));
             }
             else

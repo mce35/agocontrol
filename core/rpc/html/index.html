@@ -106,7 +106,19 @@
                     </a>
                     <div class="dropdown">
                         <ul data-bind="foreach: agocontrol.configurations">
-                            <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
+                            <!-- ko ifnot: subMenus -->
+                                <li><a href="#" data-bind="text:menu.name, click:$root.gotoConfiguration.bind($data, menu)"></a></li>
+                            <!-- /ko -->
+                            <!-- ko if: subMenus -->
+                                <li>
+                                    <a href="#" data-bind="text:menu"></a>
+                                    <div class="dropdown">
+                                        <ul data-bind="foreach:subMenus">
+                                            <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            <!-- /ko -->
                         </ul>
                     </div>
                 </li>
