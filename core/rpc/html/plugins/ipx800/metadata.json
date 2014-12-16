@@ -5,6 +5,7 @@
         "listable": true,
         "template": "html/ipxConfig",
         "depends": "agoipx800.py",
+        "favorite": false,
         "resources": {
             "css": [
                 "ipx.css"

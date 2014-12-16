@@ -5,6 +5,7 @@
         "listable": true,
         "template": "html/zwaveConfig",
         "depends": "agozwave",
+        "favorite": true,
         "resources": {
             "js": [
                 "d3.v3.min.js"

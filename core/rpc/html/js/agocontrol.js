@@ -90,11 +90,11 @@ Agocontrol.prototype = {
     //return specified process or null if not found
     findProcess: function(proc)
     {
-        if( proc && $.trim(proc).length>0 )
+        var self = this;
+        if( proc && $.trim(proc).length>0 && self.processes().length>0 )
         {
             for( var i=0; i<self.processes().length; i++ )
             {
-                console.log(self.processes()[i]);
                 if( self.processes()[i].name===proc )
                 {
                     //process found
@@ -247,7 +247,7 @@ Agocontrol.prototype = {
 
         //PROCESSES (from agosystem)
         var content = {};
-        content.command = "getprocesslist";
+        content.command = "status";
         content.uuid = self.systemController;
         self.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -292,6 +292,8 @@ Agocontrol.prototype = {
                 {
                     var plugin = result.plugins[i];
                     plugin.ucName = ucFirst(plugin.name);
+                    plugin.favorite = true; //applications always displayed
+                    plugin.fav = ko.observable(plugin.favorite);
                     self.plugins.push(plugin);
                     break;
                 }
@@ -302,7 +304,7 @@ Agocontrol.prototype = {
                 if( result.plugins[i].name!='Applications list' )
                 {
                     var append = false;
-                    if( result.plugins[i].depends && $.trim(result.plugins[i].depends).length>0 )
+                    if( result.plugins[i].depends===undefined || (result.plugins[i].depends!==undefined && $.trim(result.plugins[i].depends).length==0) )
                     {
                         append = true;
                     }
@@ -320,6 +322,11 @@ Agocontrol.prototype = {
                     {
                         var plugin = result.plugins[i];
                         plugin.ucName = ucFirst(plugin.name);
+                        if( plugin.favorite===undefined )
+                        {
+                            plugin.favorite = false;
+                        }
+                        plugin.fav = ko.observable(plugin.favorite);
                         self.plugins.push(plugin);
                     }
                 }

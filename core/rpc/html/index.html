@@ -93,7 +93,9 @@
                     </a>
                     <div class="dropdown">
                         <ul data-bind="foreach: agocontrol.plugins">
-                            <li><a href="#" data-bind="text:ucName, click:$root.gotoPlugin"></a></li>
+                            <!-- ko if: fav -->
+                                <li><a href="#" data-bind="text:name, click:$root.gotoPlugin"></a></li>
+                            <!-- /ko -->
                         </ul>
                     </div>
                 </li>
