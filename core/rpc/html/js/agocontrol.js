@@ -288,7 +288,7 @@ Agocontrol.prototype = {
             //load plugins list at top of menu
             for( var i=0; i<result.plugins.length; i++ )
             {
-                if( result.plugins[i].name=='Applications list' )
+                if( result.plugins[i].name=='Application list' )
                 {
                     var plugin = result.plugins[i];
                     plugin.ucName = ucFirst(plugin.name);
@@ -301,7 +301,7 @@ Agocontrol.prototype = {
             //load all other plugins
             for( var i=0; i<result.plugins.length; i++ )
             {
-                if( result.plugins[i].name!='Applications list' )
+                if( result.plugins[i].name!='Application list' )
                 {
                     var append = false;
                     if( result.plugins[i].depends===undefined || (result.plugins[i].depends!==undefined && $.trim(result.plugins[i].depends).length==0) )
