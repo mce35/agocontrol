@@ -3,5 +3,6 @@
         "version": "1.0.0",
         "description": "Rooms configuration",
         "template": "html/rooms",
-        "listable": true
+        "listable": true,
+        "category": "Rooms"
 }

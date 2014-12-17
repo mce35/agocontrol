@@ -3,5 +3,6 @@
         "version": "1.0.0",
         "description": "Security configuration",
         "template": "html/security",
-        "listable": true
+        "listable": true,
+        "category": "Security"
 }

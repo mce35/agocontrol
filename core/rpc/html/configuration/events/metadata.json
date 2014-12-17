@@ -3,5 +3,6 @@
         "version": "1.0.0",
         "description": "Events configuration",
         "template": "html/events",
-        "listable": true
+        "listable": true,
+        "category": "events"
 }

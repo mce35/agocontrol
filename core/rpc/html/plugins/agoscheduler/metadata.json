@@ -1,9 +1,11 @@
 {
-    "name": "scheduler",
+    "name": "Scheduler",
     "version": "0.0.1",
     "description": "Schedule scenarios in a calendar",
     "listable": true,
     "template": "html/agoscheduler",
+    "depends": "agoscheduler.py",
+    "favorite": false,
     "resources": {
         "css": [
             "fullcalendar/fullcalendar.css"

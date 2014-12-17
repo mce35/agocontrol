@@ -1,9 +1,11 @@
 {
-        "name": "blockly",
+        "name": "Blockly",
         "version": "0.0.1",
         "description": "Create events easily using blocks",
         "listable": true,
         "template": "html/agoblockly",
+        "depends": "agolua",
+        "favorite": true,
         "resources": {
             "css": [
                 "prettify/prettify.css"

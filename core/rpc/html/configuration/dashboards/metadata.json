@@ -3,5 +3,6 @@
         "version": "1.0.0",
         "description": "Dashboards configuration",
         "template": "html/dashboards",
-        "listable": true
+        "listable": true,
+        "category": "Dashboards"
 }

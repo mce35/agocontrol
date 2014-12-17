@@ -1,7 +1,9 @@
 {
-        "name": "Applications list",
+        "name": "Application list",
         "version": "1.0.0",
         "description": "List of all available applications",
         "template": "html/plugins",
-        "listable": false
+        "listable": false,
+        "depends": "",
+        "favorite": false
 }

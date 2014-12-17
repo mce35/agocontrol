@@ -3,5 +3,6 @@
         "version": "1.0.0",
         "description": "Cloud activation",
         "template": "html/cloud",
-        "listable": true
+        "listable": true,
+        "category": "Cloud"
 }
