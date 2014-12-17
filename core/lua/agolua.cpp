@@ -286,7 +286,7 @@ int AgoLua::luaSetVariable(lua_State *L)
         refreshInventory = false;
     }
 
-    if( inventory.size()>0 )
+    if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         //update current inventory to reflect changes without reloading it (too long!!)
         qpid::types::Variant::Map variables = inventory["variables"].asMap();
@@ -327,14 +327,14 @@ int AgoLua::luaGetVariable(lua_State *L)
         refreshInventory = false;
     }
 
-    if( inventory.size()>0 )
+    if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
 
         //get variable name
         variableName = std::string(lua_tostring(L,1));
 
-        if( variableName.length()>0 )
+        if( variableName.length()>0 && !inventory["variables"].isVoid() )
         {
             qpid::types::Variant::Map variables = inventory["variables"].asMap();
             if( !variables[variableName].isVoid() )
@@ -381,7 +381,7 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
         refreshInventory = false;
     }
 
-    if( inventory.size()>0 )
+    if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
 
@@ -426,14 +426,17 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
             {
                 //search attribute in device values
                 bool found = false;
-                qpid::types::Variant::Map values = attributes["values"].asMap();
-                for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
+                if( !attributes["values"].isVoid() )
                 {
-                    //TODO return device value property (quantity, unit, latitude, longitude...)
-                    qpid::types::Variant::Map value = it->second.asMap();
-                    lua_pushstring(L, value[subAttribute].asString().c_str());
-                    found = true;
-                    break;
+                    qpid::types::Variant::Map values = attributes["values"].asMap();
+                    for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
+                    {
+                        //TODO return device value property (quantity, unit, latitude, longitude...)
+                        qpid::types::Variant::Map value = it->second.asMap();
+                        lua_pushstring(L, value[subAttribute].asString().c_str());
+                        found = true;
+                        break;
+                    }
                 }
 
                 //handle item not found
@@ -601,6 +604,12 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
  */
 bool AgoLua::canRunScript(qpid::types::Variant::Map content, const fs::path &script)
 {
+    //check integrity
+    if( scriptsInfos["scripts"].isVoid() )
+    {
+        return false;
+    }
+
     //check if file modified
     qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
     qpid::types::Variant::Map infos;
@@ -614,11 +623,14 @@ bool AgoLua::canRunScript(qpid::types::Variant::Map content, const fs::path &scr
     else
     {
         //script already referenced, check last modified date
-        infos = scripts[script.string()].asMap();
-        if( infos["updated"].asInt32()!=updated )
+        if( !scripts[script.string()].isVoid() )
         {
-            //script modified, parse again content
-            parseScript = true;
+            infos = scripts[script.string()].asMap();
+            if( infos["updated"].asInt32()!=updated )
+            {
+                //script modified, parse again content
+                parseScript = true;
+            }
         }
     }
     if( parseScript )

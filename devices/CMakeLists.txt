@@ -41,6 +41,7 @@ set (AGODEVICES
   zmcam
   ETAtouch
   oregon
+  yamaha
 )
 
 IF (FREEBSD)

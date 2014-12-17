@@ -728,8 +728,16 @@ int agocontrol::AgoConnection::isDeviceStale(const char* internalId)
     string uuid = internalIdToUuid(internalId);
     if (uuid.size() > 0)
     {
-        Variant::Map device = deviceMap[internalIdToUuid(internalId)].asMap();
-        return device["stale"].asInt8();
+        if( !deviceMap[internalIdToUuid(internalId)].isVoid() )
+        {
+            Variant::Map device = deviceMap[internalIdToUuid(internalId)].asMap();
+            return device["stale"].asInt8();
+        }
+        else
+        {
+            AGO_WARNING() << "internalid '" << internalId << "' doesn't exist in deviceMap";
+            return 0;
+        }
     }
     else
     {

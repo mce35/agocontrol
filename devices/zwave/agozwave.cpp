@@ -44,6 +44,10 @@ using namespace std;
 using namespace agocontrol;
 using namespace OpenZWave;
 
+  static  pthread_mutex_t g_criticalSection;
+static    pthread_cond_t  initCond = PTHREAD_COND_INITIALIZER;
+static    pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
+
 class AgoZwave: public AgoApp {
 private:
     bool polling;
@@ -62,9 +66,6 @@ private:
 
     map<ValueID, qpid::types::Variant> valueCache;
 
-    pthread_mutex_t g_criticalSection;
-    pthread_cond_t  initCond;
-    pthread_mutex_t initMutex;
 
     ZWaveNodes devices;
 
@@ -81,8 +82,8 @@ public:
         , unitsystem(0)
         , g_homeId(0)
         , g_initFailed(false)
-        , initCond(PTHREAD_COND_INITIALIZER)
-        , initMutex(PTHREAD_MUTEX_INITIALIZER)
+     //   , initCond(PTHREAD_COND_INITIALIZER)
+     //   , initMutex(PTHREAD_MUTEX_INITIALIZER)
         {}
 
 
@@ -92,7 +93,7 @@ public:
 
 void controller_update(Driver::ControllerState state,  Driver::ControllerError err, void *context) {
     AgoZwave *inst = static_cast<AgoZwave*>(context);
-    inst->_controller_update(state, err); 
+    if (inst != NULL) inst->_controller_update(state, err); 
 }
 
 void on_notification(Notification const* _notification, void *context) {
@@ -126,7 +127,16 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
         lineLen = vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
         va_end( saveargs );
     }
-    AGO_INFO() << string(lineBuf);
+    if (_level == LogLevel_StreamDetail) AGO_TRACE() << string(lineBuf);
+    else if (_level == LogLevel_Debug) AGO_DEBUG() << string(lineBuf);
+    else if (_level == LogLevel_Detail) AGO_DEBUG() << string(lineBuf);
+    else if (_level == LogLevel_Info) AGO_INFO() << string(lineBuf);
+    else if (_level == LogLevel_Alert) AGO_WARNING() << string(lineBuf);
+    else if (_level == LogLevel_Warning) AGO_WARNING() << string(lineBuf);
+    else if (_level == LogLevel_Error) AGO_ERROR() << string(lineBuf);
+    else if (_level == LogLevel_Fatal) AGO_FATAL() << string(lineBuf);
+    else if (_level == LogLevel_Always) AGO_FATAL() << string(lineBuf);
+    else AGO_FATAL() << string(lineBuf);
 }
 
 const char *AgoZwave::controllerErrorStr (Driver::ControllerError err) {
@@ -313,7 +323,7 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
                     string tempstring = tempstream.str();
                     ZWaveNode *device;
                     if (id.GetGenre() == ValueID::ValueGenre_Config) {
-                        AGO_INFO() << "Configuration parameter Value Added: Home " << std::hex <<  _notification->GetHomeId() << " Node: " << std::dec <<  _notification->GetNodeId() << " Genre: " << std::hex << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
+                        AGO_INFO() << "Configuration parameter Value Added: Home " << std::hex <<  _notification->GetHomeId() << " Node: " << std::dec << (int) _notification->GetNodeId() << " Genre: " << std::dec << (int) id.GetGenre() << " Class: " << std::hex << (int) id.GetCommandClassId()  << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
 
 
                     } else if (basic == BASIC_TYPE_CONTROLLER) {
@@ -475,7 +485,7 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
                                 }
                                 break;
                             default:
-                                AGO_INFO() << "Notification: Unassigned Value Added Home: " << std::hex << _notification->GetHomeId() << " Node: " << std::dec << _notification->GetNodeId() << " Genre: " << std::hex << id.GetGenre() << " Class: " << id.GetCommandClassId() << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType() << " Label: " << label;
+                                AGO_INFO() << "Notification: Unassigned Value Added Home: " << std::hex << _notification->GetHomeId() << " Node: " << std::dec << (int)_notification->GetNodeId() << " Genre: " << std::dec << (int)id.GetGenre() << " Class: " << std::hex << (int)id.GetCommandClassId() << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
 
                         }
                     }
@@ -1057,7 +1067,6 @@ void AgoZwave::setupApp() {
     if (getConfigSectionOption("system", "units", "SI") != "SI")
         unitsystem=1;
 
-
     pthread_mutexattr_t mutexattr;
 
     pthread_mutexattr_init ( &mutexattr );
@@ -1068,13 +1077,18 @@ void AgoZwave::setupApp() {
 
     pthread_mutex_lock( &initMutex );
 
+    AGO_INFO() << "Starting OZW driver ver " << Manager::getVersionAsString();
     // init open zwave
     Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
     if (getConfigOption("returnroutes", "true")=="true")
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
-    Options::Get()->AddOptionBool("ConsoleOutput", false ); 
+    Options::Get()->AddOptionBool("ConsoleOutput", true ); 
     if (getConfigOption("sis", "true")=="true")
         Options::Get()->AddOptionBool("EnableSIS", true ); 
+    if (getConfigOption("assumeawake", "false")=="false")
+        Options::Get()->AddOptionBool("AssumeAwake", false ); 
+    if (getConfigOption("validatevaluechanges", "false")=="true")
+        Options::Get()->AddOptionBool("ValidateValueChanges", true);
 
     Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
     Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
@@ -1085,11 +1099,12 @@ void AgoZwave::setupApp() {
 
     Options::Get()->Lock();
 
-    // MyLog *myLog = new MyLog;
+    MyLog *myLog = new MyLog;
     // OpenZWave::Log* pLog = OpenZWave::Log::Create(myLog);
-    OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
-    pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
-    pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+    OpenZWave::Log::SetLoggingClass(myLog);
+    // OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+    // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
+    // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
 
     Manager::Create();
     Manager::Get()->AddWatcher( on_notification, this );

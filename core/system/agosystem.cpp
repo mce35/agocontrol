@@ -30,8 +30,13 @@ public:
     AGOAPP_CONSTRUCTOR(AgoSystem);
 };
 
+<<<<<<< HEAD
 const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "agologger.py"};
 const int PROCESS_BLACKLIST_SIZE = sizeof(PROCESS_BLACKLIST)/sizeof(*PROCESS_BLACKLIST);
+=======
+const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem"};
+const int PROCESS_BLACKLIST_SIZE = 2;
+>>>>>>> origin/develop
 const char* BIN_DIR = "/opt/agocontrol/bin";
 const int MONITOR_INTERVAL = 5; //time between 2 monitoring (in seconds)
 
@@ -59,6 +64,7 @@ void AgoSystem::getCpuPercentage(qpid::types::Variant::Map& current, qpid::types
     uint32_t totalTimeDiff = current["cpuTotalTime"].asUint32() - last["cpuTotalTime"].asUint32();
     *ucpu = 100 * (double)(((current["utime"].asUint64() + current["cutime"].asUint64()) - (last["utime"].asUint64() + last["cutime"].asUint64())) / (double)totalTimeDiff);
     *scpu = 100 * (double)(((current["stime"].asUint64() + current["cstime"].asUint64()) - (last["stime"].asUint64() + last["cstime"].asUint64())) / (double)totalTimeDiff);
+<<<<<<< HEAD
     //fix wrong cpu usage if process restarted
     if( *ucpu<0 )
     {
@@ -68,6 +74,8 @@ void AgoSystem::getCpuPercentage(qpid::types::Variant::Map& current, qpid::types
     {
         *scpu = 0;
     }
+=======
+>>>>>>> origin/develop
 }
 
 /**
@@ -261,7 +269,10 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
                     {
                         //drop file
                         blackListed = true;
+<<<<<<< HEAD
                         break;
+=======
+>>>>>>> origin/develop
                     }
                 }
 
@@ -305,7 +316,11 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
     AGO_DEBUG() << "Command received:" << content;
     if (internalid == "systemcontroller")
     {
+<<<<<<< HEAD
         if (content["command"] == "getprocesslist")
+=======
+        if (content["command"] == "status")
+>>>>>>> origin/develop
         {
             processesMutex.lock();
             returnval = processes;
