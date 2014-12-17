@@ -69,7 +69,7 @@ function Plugins(agocontrol)
 
         //send changes
         $.ajax({
-            url : "cgi-bin/ui.cgi?key=plugins_"+item.dir+"&param=favorites&value="+state,
+            url : "cgi-bin/ui.cgi?key="+item.dir+"&param=favorites&value="+state,
             method : "GET",
             async : false,
         }).done(function(result) {

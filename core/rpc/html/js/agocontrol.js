@@ -346,13 +346,13 @@ Agocontrol.prototype = {
                     {
                         var plugin = result.plugins[i];
                         plugin.ucName = ucFirst(plugin.name);
-                        if( favorites[plugin.name]===undefined )
+                        if( favorites[plugin.dir]===undefined )
                         {
                             plugin.favorite = false;
                         }
                         else
                         {
-                            plugin.favorite = favorites[plugin.name];
+                            plugin.favorite = favorites[plugin.dir];
                         }
                         plugin.fav = ko.observable(plugin.favorite);
                         self.plugins.push(plugin);
