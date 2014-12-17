@@ -269,10 +269,7 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
                     {
                         //drop file
                         blackListed = true;
-<<<<<<< HEAD
                         break;
-=======
->>>>>>> origin/develop
                     }
                 }
 
@@ -316,11 +313,7 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
     AGO_DEBUG() << "Command received:" << content;
     if (internalid == "systemcontroller")
     {
-<<<<<<< HEAD
         if (content["command"] == "getprocesslist")
-=======
-        if (content["command"] == "status")
->>>>>>> origin/develop
         {
             processesMutex.lock();
             returnval = processes;
