@@ -247,7 +247,7 @@ Agocontrol.prototype = {
 
         //PROCESSES (from agosystem)
         var content = {};
-        content.command = "status";
+        content.command = "getprocesslist";
         content.uuid = self.systemController;
         self.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
