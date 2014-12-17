@@ -4,6 +4,5 @@
         "description": "MySensors configuration",
         "template": "html/mysensorsConfig",
         "listable": true,
-        "favorite": true,
         "depends": "agoMySensors"
 }

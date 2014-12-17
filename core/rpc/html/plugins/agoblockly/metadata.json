@@ -5,7 +5,6 @@
         "listable": true,
         "template": "html/agoblockly",
         "depends": "agolua",
-        "favorite": true,
         "resources": {
             "css": [
                 "prettify/prettify.css"

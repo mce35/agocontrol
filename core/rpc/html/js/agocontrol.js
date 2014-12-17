@@ -277,11 +277,35 @@ Agocontrol.prototype = {
             dashboard.editable = true;
             self.dashboards.push(dashboard);
         }
+
+        //FAVORITES
+        var favorites = {};
+        $.ajax({
+            url: "cgi-bin/ui.cgi?param=favorites",
+            method: "GET",
+            async: false
+        }).done(function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result==1 )
+            {
+                favorites = res.content;
+            }
+            else
+            {
+                if( res.result.error )
+                {
+                    console.error('Unable to get favorites: '+res.result.error);
+                }
+                else
+                {
+                    console.error('Unable to get favorites');
+                }
+            }
+        });
         
         $.ajax({
             url : "cgi-bin/listing.cgi?get=all",
             method : "GET",
-            async : false,
+            async : false
         }).done(function(result) {
 
             //PLUGINS
@@ -322,9 +346,13 @@ Agocontrol.prototype = {
                     {
                         var plugin = result.plugins[i];
                         plugin.ucName = ucFirst(plugin.name);
-                        if( plugin.favorite===undefined )
+                        if( favorites[plugin.name]===undefined )
                         {
                             plugin.favorite = false;
+                        }
+                        else
+                        {
+                            plugin.favorite = favorites[plugin.name];
                         }
                         plugin.fav = ko.observable(plugin.favorite);
                         self.plugins.push(plugin);

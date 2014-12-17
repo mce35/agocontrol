@@ -1,7 +1,6 @@
 {
 	"name": "eink",
 	"version": "0.0.1",
-    "favorite": false,
 	"description": "ago control eink",
         "resources": {
             "css": [
