@@ -111,7 +111,10 @@
                             <!-- /ko -->
                             <!-- ko if: subMenus -->
                                 <li>
-                                    <a href="#" data-bind="text:menu"></a>
+                                    <a href="#">
+                                        <span data-bind="text:menu"></span>
+                                        <i class="icon-right-open-mini"></i>
+                                    </a>
                                     <div class="dropdown">
                                         <ul data-bind="foreach:subMenus">
                                             <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
