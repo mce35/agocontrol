@@ -5,6 +5,7 @@
         "listable": true,
         "template": "html/agoblockly",
         "depends": "agolua",
+        "category": "events",
         "resources": {
             "css": [
                 "prettify/prettify.css"
