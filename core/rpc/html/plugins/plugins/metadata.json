@@ -4,6 +4,5 @@
         "description": "List of all available applications",
         "template": "html/plugins",
         "listable": false,
-        "depends": "",
-        "favorite": false
+        "depends": ""
 }

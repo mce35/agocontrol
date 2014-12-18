@@ -32,6 +32,10 @@ grep -q agocontrol /etc/qpid/qpidd.acl || (
 	invoke-rc.d qpidd restart
 )
 
+if [ ! -d /etc/opt/agocontrol/ui ]; then
+   mkdir -p /etc/opt/agocontrol/ui
+fi
+
 chown -R agocontrol:agocontrol /etc/opt/agocontrol
 
 # install datalogger 

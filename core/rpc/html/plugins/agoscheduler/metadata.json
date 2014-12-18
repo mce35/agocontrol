@@ -5,7 +5,6 @@
     "listable": true,
     "template": "html/agoscheduler",
     "depends": "agoscheduler.py",
-    "favorite": false,
     "resources": {
         "css": [
             "fullcalendar/fullcalendar.css"

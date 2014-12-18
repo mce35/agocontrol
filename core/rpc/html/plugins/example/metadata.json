@@ -3,7 +3,6 @@
     "version": "0.0.1",
     "description": "This is an example plugin",
     "listable": false,
-    "favorite": false,
     "template": "html/example",
     "depends": ""
 }
