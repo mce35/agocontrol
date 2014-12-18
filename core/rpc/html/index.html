@@ -136,7 +136,12 @@
                                 <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
                             <!-- /ko -->
                             <!-- ko ifnot:url===null -->
-                                <li><a href="#" data-bind="text:name, attr:{'href':url, 'target':'_blank'}"></a></li>
+                                <li>
+                                    <a href="#" data-bind="attr:{'href':url, 'target':'_blank'}">
+                                        <span data-bind="text:name"></span>
+                                        <i class="icon-link"></i>
+                                    </a>
+                                </li>
                             <!-- /ko -->
                         </ul>
                     </div>
