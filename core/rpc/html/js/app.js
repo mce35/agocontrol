@@ -325,7 +325,7 @@ function AgocontrolViewModel()
             if( config )
             {
                 var basePath = "configuration/" + config.dir;
-                self.loadTemplate(new Template(basePath, null, config.template, null));
+                self.loadTemplate(new Template(basePath, config.resources, config.template, null));
             }
             else
             {
@@ -349,7 +349,7 @@ function AgocontrolViewModel()
             if( help )
             {
                 var basePath = "help/" + help.dir;
-                self.loadTemplate(new Template(basePath, null, help.template, null));
+                self.loadTemplate(new Template(basePath, help.resources, help.template, null));
             }
             else
             {
