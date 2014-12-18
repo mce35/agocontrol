@@ -370,13 +370,13 @@ Agocontrol.prototype = {
                     result.config[i].category = 'Uncategorized';
                 }
                 //add new category if necessary
-                if( categories[result.config[i].category]===undefined )
+                var category = ucFirst(result.config[i].category);
+                if( categories[category]===undefined )
                 {
-                    categories[result.config[i].category] = [];
+                    categories[category] = [];
                 }
                 //append page to its category
-                categories[result.config[i].category].push(result.config[i]);
-                //self.configurations.push(result.config[i]);
+                categories[category].push(result.config[i]);
             }
             for( var category in categories )
             {
