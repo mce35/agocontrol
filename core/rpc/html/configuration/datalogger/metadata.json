@@ -5,6 +5,7 @@
         "listable": true,
         "template": "html/dataloggerConfig",
         "depends": "agodatalogger",
+        "category": "datalogger",
         "resources": {
             "css": [
                 "datalogger.css"
