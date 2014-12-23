@@ -1,0 +1,697 @@
+version: 0.1
+commands:
+  sendmail:
+    name: send an email
+    parameters:
+      to:
+        name: recipient
+        type: string
+      body:
+        name: message body
+        type: string
+      subject:
+        name: message subject
+        type: string
+  sendsms:
+    name: send SMS
+    parameters:
+      text:
+        name: message
+        type: string
+      to:
+        name: recipient
+        type: phonenumber
+  sendgtalk:
+    name: send GTalk message
+    parameters:
+      message:
+        name: message
+        type: string
+      to:
+        name: gtalk username
+        type: string
+  sendtweet:
+    name: send tweet
+    parameters:
+      tweet:
+        name: tweet
+        type: string
+  sendpush:
+    name: push message
+    parameters:
+      message:
+        name: message
+        type: string
+  getvideoframe:
+    name: get video frame
+  mute:
+    name: mute audio
+  unmute:
+    name: unmute audio
+  mutetoggle:
+    name: toggle mute
+  vol+:
+    name: volume up
+  vol-:
+    name: volume down
+  chan+:
+    name: next channel
+  chan-:
+    name: previous channel
+  setinput:
+    name: input selector
+    type: option
+    options: ["video1", "video1", "video3", "video4", "video5", "video6", "dvd", "fm", "am", "usb", "net", "up", "down"]
+  play:
+    name: play media
+  pause:
+    name: pause media
+  stop:
+    name: stop
+  getepg:
+    name: get electronic program guide
+  displaymessage:
+    name: display a message
+    parameters:
+      duration:
+        name: duration
+        type: integer
+      line2:
+        name: line2
+        type: string
+      line1:
+        name: line1
+        type: string
+  "allon":
+    name: turn all on
+  "alloff":
+    name: turn all off
+  push:
+    name: push button
+  settemperature:
+    name: set temperature
+    parameters:
+      temperature:
+        name: temperature to set
+        type: float
+      mode:
+        name: setpoint mode
+        type: option
+        options: ["auto", "cool", "heat"]
+  setthermostatmode:
+    name: adjust thermostat mode
+    parameters:
+      mode:
+        name: thermostat mode to set
+        type: option
+        options: ["heat", "cool", "auto"]
+  setthermostatfanmode:
+    name: adjust thermostat fan mode
+    parameters:
+      mode:
+        name: fan mode to set
+        type: option
+        options: ["on", "off", "auto"]
+  dial:
+    name: dial number
+    parameters:
+      number:
+        name: number to dial
+        type: string
+  setlevel:
+    name: set level
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 100]
+  setchannel:
+    name: set channel
+    parameters:
+      channel:
+        name: channel to set
+        type: integer
+        range: [0, 9999]
+  setcolor:
+    name: set color
+    parameters:
+      red:
+        name: level for red color
+        type: integer
+        range: [0, 100]
+      green:
+        name: level for green color
+        type: integer
+        range: [0, 100]
+      blue:
+        name: level for blue color
+        type: integer
+        range: [0, 100]
+  sendir:
+    name: send infrared remote code
+    parameters:
+      ircode:
+        name: infrared code to send
+        type: string
+  triggeralarm:
+    name: triggers an alarm
+    parameters:
+      duration:
+        name: duration in seconds
+        type: integer
+      cause:
+        name: cause of alarm
+        type: string
+      description:
+        name: description of alarm
+        type: string
+      detail:
+        name: more detail about alaram
+        type: string
+      importance:
+        name: numeric value that indicates how important the alarm is.
+        type: integer
+  clearalarm:
+    name: clears an alarm
+  "on":
+    name: turn on
+  "off":
+    name: turn off
+  "run":
+    name: run
+  setvariable:
+    name: set global variable
+    parameters:
+      value:
+         name: value to set
+         type: variant
+      variable:
+         name: name of the variable
+         type: string
+  delvariable:
+    name: delete global variable
+    parameters:
+      variable:
+         name: name of the variable
+         type: string
+  gethousemode:
+    name: gets the active house mode
+  sethousemode:
+    name: set the house mode
+    parameters:
+      mode:
+        name: house mode
+        type: string
+      pin:
+        name: security pin
+        type: integer
+        range: [0, 999999]
+  triggerzone:
+    name: trigger security zone
+    parameters:
+      zone:
+        name: zone to trigger
+        type: string
+  setzones:
+    name: define zones
+    parameters:
+      zonemap:
+        name: zone to housemode mapping
+        type: map
+      pin:
+        name: security pin
+        type: integer
+        range: [0, 999999]
+  cancel:
+    name: cancel operation
+    parameters:
+      pin:
+        name: security pin
+        type: integer
+        range: [0, 999999]
+  getdata:
+    name: get data from datalogger
+    parameters:
+      startdate:
+        name: start date
+        type: string
+      enddate:
+        name: end date
+        type: string
+      deviceid:
+        name: uuid of the device to fetch logger data from
+        type: string
+      env:
+        name: environment
+        type: string
+  inventory:
+    name: fetch the complete inventory
+  getdevice:
+    name: fetch a single device from the inventory
+    parameters:
+      device:
+        name: uuid of the device to fetch
+        type: string
+  getdeviceenvironments:
+    name: get environments for device from datalogger
+  getconfigtree:
+    name: get a tree of config settings
+  setconfig:
+    name: set a config parameter
+    parameters:
+      section:
+        name: config section
+        type: string
+      option:
+        name: config option
+        type: string
+      value:
+        name: value to set
+        type: string
+  setevent:
+    name: create new event
+    parameters:
+      eventmap:
+        name: event map
+        type: map
+      event:
+        name: uuid for the new event
+        type: string
+  getevent:
+    name: get event
+    parameters:
+      event:
+        name: uuid for the event to fetch
+        type: string
+  delevent:
+    name: delete event
+    parameters:
+      event:
+        name: uuid for the event to delete
+        type: string
+  setscenario:
+    name: create scenario
+    parameters:
+      scenariomap:
+        name: scenario map
+        type: map
+      scenario:
+        name: uuid for the new scenario
+        type: string
+  getscenario:
+    name: get scenario
+    parameters:
+      scenario:
+        name: uuid for the scenario to fetch
+        type: string
+  delscenario:
+    name: delete scenario
+    parameters:
+      scenario:
+        name: uuid of the scenario to delete
+        type: string
+  getscriptlist:
+    name: get list of scripts
+  getscript:
+    name: get script
+    parameters:
+      name:
+        name: name of the script to get
+        type: string
+  setscript:
+    name: set a script
+    parameters:
+      name:
+        name: name of the script to set
+        type: string
+      script:
+        name: script content
+        type: string
+  delscript:
+    name: delete a script
+    parameters:
+      name:
+        name: name of the script to delete
+        type: string
+  setroomname:
+    name: name a room
+    parameters:
+      name:
+        name: name for the room
+        type: string
+      room:
+        name: uuid of the room
+        type: string
+  setdeviceroom:
+    name: assign a device to a room
+    parameters:
+      device:
+        name: device uuid to assign
+        type: string
+      room:
+        name: room uuid for assignment
+        type: string
+  setdevicename:
+    name: name a device
+    parameters:
+      name:
+        name: name for the device
+        type: string
+      device:
+        name: uuid of the device
+        type: string
+  deleteroom:
+    name: delete a room
+    parameters:
+      room:
+        name: uuid of the room to delete
+        type: string
+  setfloorplanname:
+    name: set the name of a floorplan
+    parameters:
+      floorplan:
+        name: uuid of the floorplan
+        type: string
+      name:
+        name: name for the floorplan
+        type: string
+  setdevicefloorplan:
+    name: assign a device to a floorplan
+    parameters:
+      floorplan:
+        name: uuid of the floorplan
+        type: string
+      device:
+        name: uuid of the device
+        type: string
+      x:
+        name: x coordinate
+        type: integer
+      y:
+        name: y coordinate
+        type: integer
+  deletefloorplan:
+    name: delete a floorplan
+    parameters:
+      floorplan:
+        name: uuid of the floorplan
+        type: string
+devicetypes:
+  smtpgateway:
+    name: mail gateway
+    description: used to send emails
+    commands: [sendmail]
+  alertcontroller:
+    name: alert controller
+    description: internal device to send alerts
+    commands: [sendsms, sendpush, sendmail, sendtweet, sendgtalk]
+  camera:
+    name: Camera
+    description: Surveillance camera
+    commands: [getvideoframe, triggeralarm, clearalarm]
+  avreceiver:
+    name: AV receiver
+    description: AV receiver
+    commands: ["on", "off", mute, unmute, mutetoggle, vol+, vol-, setinput, setlevel]
+  tv:
+    name: TV
+    description: TV
+    commands: ["on", "off", mute, unmute, vol+, vol-, chan+, chan-, setchannel, setinput, setlevel]
+  squeezebox:
+    name: Squeezebox Player
+    description: Plays music
+    commands: ["on", "off", play, pause, stop, displaymessage]
+    events: [event.device.statechanged, event.device.mediastatechanged]
+    properties: [mediastate]
+  squeezeboxserver:
+    name: Squeezebox Server
+    description: Squeezebox player manager
+    commands: ["allon", "alloff", displaymessage]
+  settopbox:
+    name: Set top box
+    description: Receives TV Service
+    commands: ["on", "off", mute, unmute, mutetoggle, vol+, vol-, setlevel, setchannel, getepg]
+  pushbutton:
+    name: Pushbutton
+    description: momentary switch
+    commands: [push]
+  hdmicec:
+    name: HDMI CEC interface
+    description: control devices on the HDMI bus
+    commands: [alloff]
+  infaredblaster:
+    name: infraredblaster
+    description: send infrared remote commands
+    commands: [sendir]
+  phone:
+    name: telephone
+    description: a phone
+    commands: [dial]
+  binarysensor:
+    name: binary sensor
+    description: sensor for on off values
+    commands: []
+  multilevelsensor:
+    name: multilevel sensor
+    description: sensor for multilevel values
+    commands: [reset]
+  smokedetector:
+    name: smoke detector
+    description: smoke detector
+    commands: []
+  dimmerrgb:
+    name: RGB dimmer
+    description: allows to set different colors
+    commands: ["on", "off", setlevel, setcolor]
+  controller:
+    name: controller
+    description: generic controller
+    commands: []
+  thermostat:
+    name: thermostat
+    description: controls temperature
+    commands: [settemperature, setthermostatmode, setthermostatfanmode]
+  drapes:
+    name: drapes
+    description: window drapes or blinds
+    commands: ["on", "off", stop, setlevel]
+  dimmer:
+    name: dimmer
+    description: light dimmmer
+    commands: ["on", "off", setlevel]
+  switch:
+    name: switch
+    description: simple on off switch
+    commands: ["on", "off"]
+  computer:
+    name: General computer (for Wake on LAN)
+    description: A computer
+    commands: ["on"]
+  dataloggercontroller:
+    name: datalogger controller
+    description: internal device to control the datalogger
+    commands: [getdata, getdeviceenvironments]
+  eventcontroller:
+    name: event controller
+    description: internal device to control the events
+    commands: [setevent, getevent, delevent]
+  scenariocontroller:
+    name: scenario controller
+    description: internal device to control the scenarios
+    commands: [setscenario, getscenario, delscenario]
+  agocontroller:
+    name: resolver controller
+    description: internal device to control the resolver
+    commands: [setvariable, delvariable]
+    events: [event.system.roomnamechanged, event.system.devicenamechanged, event.system.roomdeleted, event.system.floorplannamechanged, event.system.floorplandevicechanged, event.system.floorplandeleted]
+  securitycontroller:
+    name: security system
+    description: ago control security system module
+    commands: [gethousemode, sethousemode, triggerzone, setzones]
+  luacontroller:
+    name: lua event scripting
+    description: use lua scripts to act on events
+    commands: [getscriptlist, getscript, setscript, delscript]
+  scenario:
+    name: scene
+    description: execute scenarios
+    commands: ["run"]
+  event:
+    name: event handler
+    description: respond to events
+    commands: []
+values:
+  channel:
+    name: channel
+    description: channel number
+  mediastate:
+    name: media state
+    description: media device media state
+    type: option
+    options: ["playing", "stopped", "paused", "streaming"]
+  level:
+    name: level
+    description: level value
+  callerid:
+    name: caller identity
+    description: the identity of a caller
+  extension:
+    name: phone extension
+    description: extension being called
+  data:
+    name: data
+    description: data field
+  scene:
+    name: scene
+    description: the scene number
+    type: integer
+  devicetype:
+    name: device type
+    description: device type
+  uuid:
+    name: uuid
+    description: unique id
+  product:
+    name: product
+    description: product
+  manufacturer:
+    name: manufacturer
+    description: manufacturer
+  unit:
+    name: unit
+    description: unit of a value
+  internalid:
+    name: internal id for a device
+    description: internal id used by interface device
+  handled-by:
+    name: instance name
+    description: instance which handles the device
+  minute:
+    name: minute
+    description: minute
+  hour:
+    name: hour
+    description: hour
+  second:
+    name: second
+    description: second
+  month:
+    name: month
+    description: month
+  day:
+    name: day
+    description: day
+  year:
+    name: year
+    description: year
+  weekday:
+    name: weekday
+    description: day of week
+  yday:
+    name: yday
+    description: nth day of year
+events:
+  event.mediaplayer.statechanged:
+    description: mediaplayer changed play state
+    parameters: [mediastate]
+  event.device.mediastatechanged:
+    description: device changed media state
+    parameters: [state]
+  event.telecom.call:
+    description: a call is originating
+    parameters: [uuid, callerid, extension]
+  event.telecom.hangup:
+    description: call hung up
+    parameters: [uuid]
+  event.device.scenechanged:
+    description: announces a scene change
+    parameters: [scene, uuid]
+  event.environment.counterchanged:
+    description: counter has changed
+    parameters: [level, uuid]
+  event.environment.temperaturechanged:
+    description: temperature has changed
+    parameters: [level, unit, uuid]
+  event.environment.brightnesschanged:
+    description: brightness has changed
+    parameters: [level, unit, uuid]
+  event.environment.humiditychanged:
+    description: humidity has changed
+    parameters: [level, unit, uuid]
+  event.security.sensortriggered:
+    description: sensor was triggererd
+    parameters: [level, uuid]
+  event.environment.energychanged:
+    description: energy has changed
+    parameters: [level, uuid]
+  event.proximity.ndef:
+    description: NFC NDEF tag within range
+    parameters: [data]
+  event.device.distancechanged:
+    description: distance from sensor has changed
+    parameters: [level, unit, uuid]
+  event.environment.forecastchanged:
+    description: forecast from sensor has changed
+    parameters: [forecast, uuid]
+  event.device.batterylevelchanged:
+    description: battery level has changed
+    parameters: [level, unit, uuid]
+  event.device.announce:
+    description: announces a device to the resolver
+    parameters: [devicetype, uuid, handled-by, internalid]
+  event.device.statechanged:
+    description: announces a status change of a device
+    parameters: [level, uuid]
+  event.environment.sunset:
+    description: sun has set
+  event.environment.sunrise:
+    description: sun did rise
+  event.environment.timechanged:
+    description: time did advance
+    parameters: [minute, hour, month, day, year, weekday, yday]
+  event.security.countdown:
+    description: intruder alarm
+    parameters: [zone, delay]
+  event.security.intruderalert:
+    description: intruder alarm
+    parameters: [zone]
+  event.system.roomnamechanged:
+    description: a room name has been changed
+    parameters: [name, uuid]
+  event.system.devicenamechanged:
+    description: a device name has been changed
+    parameters: [name, uuid]
+  event.system.roomdeleted:
+    description: a room has been deleted
+    parameters: [uuid]
+  event.system.floorplannamechanged:
+    description: a floorplan name has been changed
+    parameters: [name, uuid]
+  event.system.floorplandevicechanged:
+    description: a floorplan device association has been changed
+    parameters: [floorplan, uuid, x, y]
+  event.system.floorplandeleted:
+    description: a floorplan has been deleted
+    parameters: [uuid]
+  event.device.stale:
+    description: announce stale status of a device has changed
+    parameters: [uuid, internalid, stale]
+units:
+  degC:
+    label: "°C"
+    description: degree celcius
+  degF:
+    label: "°F"
+    description: degree farenheit
+  percent:
+    label: "%"
+    description: percent value
+  lux:
+    label: "lux"
+    description: brighness in lux
+  m:
+    label: "meters"
+    description: distance in meters
+  inch:
+    label: "inches"
+    description: distance in inches
