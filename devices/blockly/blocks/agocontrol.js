@@ -64,7 +64,7 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && duplicates.indexOf(device.devicetype)==-1 )
+            if( device.name.length>0 && duplicates.indexOf(device.devicetype)===-1 )
             {
                 types.push([device.devicetype, device.devicetype]);
                 duplicates.push(device.devicetype);
@@ -72,8 +72,32 @@ window.BlocklyAgocontrol = {
         }
         //prevent from js crash
         if( types.length===0 )
+        {
             types.push(['', '']);
+        }
         return types;
+    },
+
+    //get device names
+    getDeviceNames: function(deviceType) {
+        var names = [];
+        var duplicates = [];
+        var device;
+        for( var i=0; i<this.devices.length; i++ )
+        {
+            device = this.devices[i];
+            if( device.name.length>0 && device.devicetype===deviceType && duplicates.indexOf(device.name)===-1 )
+            {
+                names.push([device.name, device.name]);
+                duplicates.push(device.name);
+            }
+        }
+        //prevent from js crash
+        if( names.length===0 )
+        {
+            names.push(['', '']);
+        }
+        return names;
     },
 
     //get all events
@@ -458,8 +482,8 @@ Blockly.Blocks['agocontrol_deviceNo'] = {
     }
 };
 
-//device block
-Blockly.Blocks['agocontrol_device'] = {
+//device name
+Blockly.Blocks['agocontrol_deviceName'] = {
     init: function() {
         //members
         this.firstRun = true;
@@ -469,7 +493,57 @@ Blockly.Blocks['agocontrol_device'] = {
         //this.setHelpUrl('TODO');
         this.setColour(20);
         this.container = this.appendDummyInput()
-            .appendField("device")
+            .appendField("name")
+            .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
+            .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE");
+        this.setInputsInline(true);
+        this.setOutput(true, "String");
+        this.setTooltip('Return device name');
+    },
+
+    onchange: function() {
+        if( !this.workspace )
+            return;
+        var currentType = this.getFieldValue("TYPE");
+        var currentDevice = null;
+        if( this.firstRun )
+        {
+            currentDevice = this.getFieldValue("DEVICE");
+        }
+        if( this.lastType!=currentType )
+        {
+            this.lastType = currentType;
+            var names = window.BlocklyAgocontrol.getDeviceNames(currentType);
+            if( names.length===0 )
+                names.push(['','']);
+            this.container.removeField("DEVICE");
+            this.container.appendField(new Blockly.FieldDropdown(names), "DEVICE");
+            if( currentDevice )
+            {
+                var field = this.getField_("DEVICE");
+                if( field )
+                {
+                    field.setValue(currentDevice);
+                }
+            }
+        }
+        
+        this.firstRun = false;
+    }
+};
+
+//device block
+Blockly.Blocks['agocontrol_deviceUuid'] = {
+    init: function() {
+        //members
+        this.firstRun = true;
+        this.lastType = undefined;
+
+        //block definition
+        //this.setHelpUrl('TODO');
+        this.setColour(20);
+        this.container = this.appendDummyInput()
+            .appendField("uuid")
             .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
             .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE");
         this.setInputsInline(true);
@@ -1103,7 +1177,7 @@ Blockly.Blocks['agocontrol_setVariable'] = {
         //this.setHelpUrl('TODO');
         this.setColour(330);
         this.appendValueInput("VALUE")
-            .setCheck(null)
+            .setCheck("String")
             .appendField("set")
             .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getVariables()), "VARIABLE")
             .appendField("to");

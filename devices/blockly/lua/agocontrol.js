@@ -8,7 +8,12 @@ Blockly.Lua['agocontrol_deviceNo'] = function(block) {
     return ["''", Blockly.Lua.ORDER_ATOMIC];
 };
 
-Blockly.Lua['agocontrol_device'] = function(block) {
+Blockly.Lua['agocontrol_deviceName'] = function(block) {
+    var code = "'" + block.getFieldValue('DEVICE') + "'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
+Blockly.Lua['agocontrol_deviceUuid'] = function(block) {
     var code = "'" + block.getFieldValue('DEVICE') + "'";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
