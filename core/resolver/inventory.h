@@ -1,3 +1,6 @@
+#ifndef INVENTORY_H
+#define INVENTORY_H
+
 #include <qpid/messaging/Connection.h>
 #include <qpid/messaging/Message.h>
 #include <qpid/messaging/Receiver.h>
@@ -63,3 +66,5 @@ private:
     string getfirst(const char *query, int n, ...);
     bool createTableIfNotExist(std::string tablename, std::string createquery);
 };
+
+#endif

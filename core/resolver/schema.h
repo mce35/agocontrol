@@ -1,3 +1,6 @@
+#ifndef SCHEMA_H
+#define SCHEMA_H
+
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
@@ -21,3 +24,4 @@ Variant::List sequenceToVariantList(const YAML::Node &node);
 Variant::Map mapToVariantMap(const YAML::Node &node);
 Variant::Map parseSchema(const fs::path &filename);
 
+#endif
