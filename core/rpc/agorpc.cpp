@@ -766,6 +766,7 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         if( authFile!=NULL )
         {
             //check auth
+            rewind(authFile);
             result = mg_authorize_digest(conn, authFile);
         }
         else
@@ -987,6 +988,7 @@ void AgoRpc::cleanupApp() {
     for(list<boost::thread*>::iterator i = server_threads.begin(); i != server_threads.end(); i++) {
         delete *i;
     }
+    fclose(authFile);
 }
 
 AGOAPP_ENTRY_POINT(AgoRpc);
