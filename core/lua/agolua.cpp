@@ -47,9 +47,11 @@ private:
     std::string agocontroller;
     int filterByEvents;
     fs::path scriptdir;
+    qpid::types::Variant::Map scriptContexts;
 
     fs::path construct_script_name(fs::path input) ;
     void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) ;
+    void pullTableToMap(lua_State *L, qpid::types::Variant::Map& table);
 
     void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents) ;
     void purgeScripts() ;
@@ -210,12 +212,48 @@ void AgoLua::pushTableFromMap(lua_State *L, qpid::types::Variant::Map content)
                 lua_pushnil(L);
                 lua_settable(L, -3);
                 break;
-                //default:
+            //default:
                 //lua_pushstring(L,it->first.c_str());
                 //lua_pushstring(L,"unhandled");
                 //AGO_TRACE() << "undhandled type: " << it->second.getType();
                 //lua_settable(L, -3);
         }
+    }
+} 
+
+/**
+ * Fill specified cpp variant map with lua table content
+ * Before calling this function you need to call lua_getglobal(<lua obj>, <lua table name>)
+ */
+void AgoLua::pullTableToMap(lua_State *L, qpid::types::Variant::Map& table)
+{
+    lua_pushnil(L);
+    while( lua_next(L, -2)!=0 )
+    {
+        if( lua_isstring(L, -1) )
+        {
+            table[lua_tostring(L, -2)] = lua_tostring(L, -1);
+        }
+        else if( lua_isnumber(L, -1) )
+        {
+            table[lua_tostring(L, -2)] = lua_tonumber(L, -1);
+        }
+        else if( lua_isboolean(L, -1) )
+        {
+            table[lua_tostring(L, -2)] = lua_toboolean(L, -1);
+        }
+        else if( lua_isnoneornil(L, -1) )
+        {
+            //drop null field
+        }
+        else if( lua_istable(L, -1) )
+        {
+            qpid::types::Variant::Map newTable;
+            pullTableToMap(L, newTable);
+            table[lua_tostring(L, -2)] = newTable;
+        }
+
+        lua_pop(L, 1);
     }
 }
 
@@ -562,6 +600,19 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     }
     luaL_openlibs(L);
 
+    //load script context
+    qpid::types::Variant::Map context;
+    if( scriptContexts[script.string()].isVoid() )
+    {
+        //no context yet, create empty one
+        scriptContexts[script.string()] = context;
+    }
+    else
+    {
+        context = scriptContexts[script.string()].asMap();
+    }
+    AGO_DEBUG() << "context before:" << context;
+
 #define LUA_REGISTER_WRAPPER(L, lua_name, method_name) \
     lua_pushlightuserdata(L, this); \
     lua_pushcclosure(L, &method_name ## _wrapper, 1); \
@@ -576,6 +627,8 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
 
     pushTableFromMap(L, content);
     lua_setglobal(L, "content");
+    pushTableFromMap(L, context);
+    lua_setglobal(L, "context");
 
     AGO_TRACE() << "Loading " << script;
     int status = luaL_loadfile(L, script.c_str());
@@ -593,6 +646,13 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
         AGO_ERROR() << "Script " << script << " failed: " << lua_tostring(L, -1);
         lua_pop(L, 1); // remove error message
     }
+
+    //handle context value
+    lua_getglobal(L, "context");
+    pullTableToMap(L, context);
+    scriptContexts[script.string()] = context;
+
+    AGO_DEBUG() << "context after:" << context;
 
     lua_close(L);
     AGO_TRACE() << "Execution of " << script << " finished.";
