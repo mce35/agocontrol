@@ -76,8 +76,10 @@ void YamahaDeviceBase::disconnect() {
 
     connected = false;
     if(socket.get()) {
-        socket->shutdown(ip::tcp::socket::shutdown_both);
-        socket->close();
+        boost::system::error_code ec;
+        // Ignore errors
+        socket->shutdown(ip::tcp::socket::shutdown_both, ec);
+        socket->close(ec);
         socket.reset();
     }
 
