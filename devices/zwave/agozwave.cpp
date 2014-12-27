@@ -908,7 +908,11 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             returnval["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, mygroup);
             result = true;
         } else if (content["command"] == "removeassociation") {
-            Manager::Get()->RemoveAssociation(g_homeId, content["node"], content["group"], content["target"]);
+            int mynode = content["node"];
+            int mygroup = content["group"];
+            int mytarget = content["target"];
+            AGO_DEBUG() << "removing association: Node: " << mynode << " Group: " << mygroup << " Target: " << mytarget;
+            Manager::Get()->RemoveAssociation(g_homeId, mynode, mygroup, mytarget);
             result = true;
         } else if (content["command"] == "setconfigparam") {
             int mynode = content["node"];
