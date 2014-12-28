@@ -92,7 +92,7 @@ bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
                 while (nextga != NULL) {
                     AGO_DEBUG() << "GA: " << nextga->GetText() << " type: " << nextga->Attribute("type");
                     string type = nextga->Attribute("type");
-
+/*
                     if (type=="onoffstatus" || type=="levelstatus") {
                         AGO_DEBUG() << "Requesting current status: " << nextga->GetText();
                         Telegram *tg = new Telegram();
@@ -102,6 +102,7 @@ bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
                         tg->setType(EIBREAD);
                         tg->sendTo(eibcon);
                     }
+*/
                     content[nextga->Attribute("type")]=nextga->GetText();
                     nextga = nextga->NextSiblingElement();
                 }
