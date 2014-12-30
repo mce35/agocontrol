@@ -22,7 +22,7 @@ class AgoIscp(agoclient.AgoApp):
         for avr in avrs:
             self.connection.add_device("%s:%s" % (avr.host, avr.port), "avreceiver")
 
-    def message_handler(internalid, content):
+    def message_handler(self, internalid, content):
         if 'command' in content:
             avr = eISCP(str.split(internalid,':',2)[0], int(str.split(internalid,':',2)[1]))
             command = ''
