@@ -1,4 +1,4 @@
-<div id="contentarea" style="margin: 0px auto 10px auto; padding:15px;">
+<div id="contentarea" class="container">
     <!--notif messages-->
     <div style="display:none;">
         <_span data-translateable="true" id="nr">luacontroller is not responding. Unable to execute action.</_span>
@@ -15,6 +15,8 @@
         <_span data-translateable="true" id="rss">Script renamed successfully</_span>
         <_span data-translateable="true" id="rsf">Script not renamed</_span>
     </div>
+
+    <h3>Event configuration using blocks</h3>
 
     <!-- blockly configuration -->
     <xml id="toolbox" style="display: none">
@@ -197,7 +199,8 @@
                 <block type="agocontrol_deviceProperty"></block>
             </category>
             <category name="Device">
-                <block type="agocontrol_device"></block>
+                <block type="agocontrol_deviceUuid"></block>
+                <block type="agocontrol_deviceName"></block>
             </category>
             <category name="Event">
                 <block type="agocontrol_deviceEvent"></block>
@@ -230,7 +233,7 @@
             </ko>
         </div>
     </div>
-    <div data-bind="blockly:blocklyViewModel" id="blocklyDiv" style="height:800px; width:960px;"></div>
+    <div data-bind="blockly:blocklyViewModel" id="blocklyDiv" style="height:800px; width:1200px;"></div>
 
     <!-- lua dialog -->
     <div id="luaDialog">
@@ -241,16 +244,7 @@
     <div style="display:none;" id="loadDialog">
         <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px;">
             <legend><_span data-translateable="true" style="font-weight:bold;">Existing scripts</_span></legend>
-                <table style="width: 100%; margin-top: 15px; margin-bottom: 5px;" data-bind="dataTable: { dataSource:availableScripts, rowTemplate:'rowTemplate', columns:['name'], options:{fnRowCallback:uiRenameScript}}">
-                <thead>
-                <tr>
-                    <_th data-translateable="true">Script</_th>
-                    <_th data-translateable="true">Actions</_th>
-                </tr>
-                </thead>
-                <tbody>
-                </tbody>
-                </table>
+            <div data-bind="agoGrid:grid"></div>
         </fieldset>
         <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px; margin-top:10px;">
             <legend><_span data-translateable="true" style="font-weight:bold;">Import script</_span></legend>

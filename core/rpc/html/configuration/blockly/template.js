@@ -221,6 +221,7 @@ function agoBlocklyPlugin(devices, agocontrol)
     //load scripts
     self.loadScripts = function(callback) {
         //get scripts
+        self.agocontrol.block($('#agoGrid'));
         var content = {
             uuid: self.luaControllerUuid,
             command: 'getscriptlist'
@@ -242,6 +243,7 @@ function agoBlocklyPlugin(devices, agocontrol)
                 //callback
                 if( callback!==undefined )
                     callback();
+                self.agocontrol.unblock($('#agoGrid'));
             }
             else
             {
@@ -318,13 +320,13 @@ function agoBlocklyPlugin(devices, agocontrol)
             newname: 'blockly_'+newScript
         };
         self.agocontrol.sendCommand(content, function(res) {
-            console.log(res);
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
                 if( res.result.result===0 )
                 {   
                     item.attr('data-oldname', newScript);
                     notif.success('#rss');
+                    self.loadScripts();
                     return true;
                 }
                 else
@@ -573,11 +575,10 @@ function agoBlocklyPlugin(devices, agocontrol)
     };
 
     //rename script
-    self.uiRenameScript = function(row, item) {
-        window.setTimeout(function()
+    self.uiRenameScript = function(item, td, tr) {
+        if( $(td).hasClass('rename_script') )
         {
-            $(row).find('td.rename_script').editable(function(value, settings)
-            {
+            $(td).editable(function(value, settings) {
                 self.renameScript($(this), $(this).attr('data-oldname'), value);
                 return value;
             },
@@ -587,9 +588,19 @@ function agoBlocklyPlugin(devices, agocontrol)
                     return value;
                 },
                 onblur : "cancel"
-            });
-        }, 1);
+            }).click();
+        }
     };
+
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.availableScripts,
+        columns: [
+            {headerText:'Script', rowText:'name'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.uiRenameScript,
+        rowTemplate: 'rowTemplate'
+    });
 
     //delete script
     self.uiDeleteScript = function(script) {
