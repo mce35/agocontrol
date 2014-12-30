@@ -148,31 +148,29 @@ function AgocontrolViewModel()
                 }
                 if (resources.length > 0)
                 {
-                    yepnope({
-                        load : resources,
-                        complete : function() {
-                            // here, all resources are really loaded
-                            if (typeof init_template == 'function')
+                    head.load(resources, function() {
+                        // here, all resources are really loaded
+                        if (typeof init_template == 'function')
+                        {
+                            self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
+                            if( self.currentModel )
                             {
-                                self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
-                                if( self.currentModel )
-                                {
-                                    self.currentView(new View(template.path+'/'+template.template, self.currentModel));
-                                }
-                                else
-                                {
-                                    self.currentModel = null;
-                                    console.error('Failed to load template: no model returned by init_template. Please check your code.');
-                                    notif.fatal('Problem during page loading.');
-                                }
+                                self.currentView(new View(template.path+'/'+template.template, self.currentModel));
                             }
                             else
                             {
-                                console.error('Failed to load template: init_template function not defined. Please check your code.');
+                                self.currentModel = null;
+                                console.error('Failed to load template: no model returned by init_template. Please check your code.');
                                 notif.fatal('Problem during page loading.');
                             }
                             $.unblockUI();
                         }
+                        else
+                        {
+                            console.error('Failed to load template: init_template function not defined. Please check your code.');
+                            notif.fatal('Problem during page loading.');
+                        }
+                        $.unblockUI();
                     });
                 }
             }

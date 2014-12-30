@@ -336,62 +336,59 @@ Agocontrol.prototype.renderMap = function(values)
     var self = this;
 
     //load openlayers lib only when needed
-    yepnope({
-        load : 'js/libs/OpenLayers/OpenLayers.js',
-        complete : function() {
-            //configure openlayers lib
-            OpenLayers.ImgPath = 'js/libs/OpenLayers/img/';
+    head.load('js/libs/OpenLayers/OpenLayers.js', function() {
+        //configure openlayers lib
+        OpenLayers.ImgPath = 'js/libs/OpenLayers/img/';
 
-            //clear container
-            if( values.length>0 )
+        //clear container
+        if( values.length>0 )
+        {
+            //create map, layers and projection
+            var map = new OpenLayers.Map('graph');
+            var layer = new OpenLayers.Layer.OSM();
+            var markers = new OpenLayers.Layer.Markers("Markers");
+            var vectors = new OpenLayers.Layer.Vector("Lines");
+            var fromProjection = new OpenLayers.Projection("EPSG:4326");
+            var toProjection = new OpenLayers.Projection("EPSG:900913");
+            var lineStyle = {
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.5,
+                strokeWidth: 5
+            };
+
+            //add layers
+            map.addLayer(layer);
+            map.addLayer(markers);
+            map.addLayer(vectors);
+
+            //add markers
+            var prevPoint = null;
+            var features = [];
+            for( var i=0; i<values.length; i++ )
             {
-                //create map, layers and projection
-                var map = new OpenLayers.Map('graph');
-                var layer = new OpenLayers.Layer.OSM();
-                var markers = new OpenLayers.Layer.Markers("Markers");
-                var vectors = new OpenLayers.Layer.Vector("Lines");
-                var fromProjection = new OpenLayers.Projection("EPSG:4326");
-                var toProjection = new OpenLayers.Projection("EPSG:900913");
-                var lineStyle = {
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 0.5,
-                    strokeWidth: 5
-                };
-
-                //add layers
-                map.addLayer(layer);
-                map.addLayer(markers);
-                map.addLayer(vectors);
-
-                //add markers
-                var prevPoint = null;
-                var features = [];
-                for( var i=0; i<values.length; i++ )
+                var position = new OpenLayers.LonLat(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
+                var point = new OpenLayers.Geometry.Point(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
+                markers.addMarker(new OpenLayers.Marker(position));
+                if( prevPoint )
                 {
-                    var position = new OpenLayers.LonLat(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
-                    var point = new OpenLayers.Geometry.Point(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
-                    markers.addMarker(new OpenLayers.Marker(position));
-                    if( prevPoint )
-                    {
-                        //join markers
-                        var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
-                        features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
-                    }
-                    prevPoint = point;
+                    //join markers
+                    var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
+                    features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
                 }
-                vectors.addFeatures(features);
+                prevPoint = point;
+            }
+            vectors.addFeatures(features);
 
-                //center map to first position
-                var zoom = 13;
-                map.setCenter( new OpenLayers.LonLat(values[0].longitude, values[0].latitude).transform(fromProjection, toProjection), zoom);
-            }
-            else
-            {
-                notif.error('No data to display');
-            }
-            //show container
-            self.unblock($("#graph"));
+            //center map to first position
+            var zoom = 13;
+            map.setCenter( new OpenLayers.LonLat(values[0].longitude, values[0].latitude).transform(fromProjection, toProjection), zoom);
         }
+        else
+        {
+            notif.error('No data to display');
+        }
+        //show container
+        self.unblock($("#graph"));
     });
 };
 
