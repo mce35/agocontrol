@@ -632,7 +632,7 @@ function init_template(path, params, agocontrol)
             element.innerHTML = "";
             //inject blockly
             Blockly.inject( document.getElementById('blocklyDiv'), {
-                path: "/plugins/agoblockly/blockly/",
+                path: "/configuration/agoblockly/blockly/",
                 toolbox: document.getElementById('toolbox')
             });
             //init agoblockly
