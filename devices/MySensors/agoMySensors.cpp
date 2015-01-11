@@ -721,7 +721,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                     {
                         if( infos["value"].asString()=="1" )
                         {
-                            if( infos["protocol"].asString()=="1.4" )
+                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "0");
                             else
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "0");
@@ -735,7 +735,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                     {
                         if( infos["value"].asString()=="0" )
                         {
-                            if( infos["protocol"].asString()=="1.4" )
+                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "1");
                             else
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "1");
