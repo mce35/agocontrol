@@ -1682,7 +1682,7 @@ void *checkStale(void *param)
             qpid::types::Variant::Map devices = devicemap["devices"].asMap();
             for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
             {
-                if( !it->second.isVoid() )
+                if ( ( !it->second.isVoid() ) && (it->second.getType() == VAR_MAP ) ) 
                 {
                     qpid::types::Variant::Map infos = it->second.asMap();
                     std::string internalid = (std::string)it->first;
@@ -1708,6 +1708,8 @@ void *checkStale(void *param)
                             }
                         }
                     }
+                } else {
+                    cout << "Invalid entry in device map" << endl;
                 }
             }
         }
@@ -1850,23 +1852,27 @@ int main(int argc, char **argv)
 
     //register existing devices
     cout << "Register existing devices:" << endl;
-    if( !devicemap["devices"].isVoid() )
+    if( ( !devicemap["devices"].isVoid() ) && (devicemap["devices"].getType() == VAR_MAP ) )
     {
         qpid::types::Variant::Map devices = devicemap["devices"].asMap();
         for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
         {
-            qpid::types::Variant::Map infos = it->second.asMap();
-            std::string internalid = (std::string)it->first;
-            cout << " - " << internalid << ":" << infos["type"].asString().c_str();
-            if( internalid.length()>0 && checkInternalid(internalid) )
-            {
-                agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
+            if ( ( !it->second.isVoid() ) && (it->second.getType() == VAR_MAP ) ) {
+                qpid::types::Variant::Map infos = it->second.asMap();
+                std::string internalid = (std::string)it->first;
+                cout << " - " << internalid << ":" << infos["type"].asString().c_str();
+                if( internalid.length()>0 && checkInternalid(internalid) )
+                {
+                    agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
+                }
+                else
+                {
+                    cout << " [INVALID]";
+                }
+                cout << endl;
+            } else {
+                cout << "Invalid entry in device map" << endl;
             }
-            else
-            {
-                cout << " [INVALID]";
-            }
-            cout << endl;
         }
     }
     else
