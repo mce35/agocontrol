@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
-file (GLOB_RECURSE DEVICE_SOURCE_FILES *.c{,pp})
-message (STATUS "files: ${DEVICE_SOURCE_FILES}")
+file (GLOB_RECURSE DEVICE_SOURCE_FILES "*.cpp" "*.c")
+# message (STATUS "files: ${DEVICE_SOURCE_FILES}")
 set (DEVICE_EXTRA_LIBRARIES
      agoclient
 )
