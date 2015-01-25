@@ -1,4 +1,7 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
+
+SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache) 
 
 file (GLOB_RECURSE DEVICE_SOURCE_FILES "*.cpp" "*.c")
 # message (STATUS "files: ${DEVICE_SOURCE_FILES}")
