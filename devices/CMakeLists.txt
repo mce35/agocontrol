@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 set (AGODEVICES
+  onvif
   example
   enocean3
   blinkm
@@ -53,6 +54,7 @@ IF (FREEBSD)
 	  agodmx
 	  PLCBUS
 	  zmcam
+      onvif
   )
 ENDIF (FREEBSD)
 
