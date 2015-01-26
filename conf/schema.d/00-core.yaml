@@ -318,7 +318,7 @@ events:
     description: time did advance
     parameters: [minute, hour, month, day, year, weekday, yday]
   event.security.countdown:
-    description: intruder alarm
+    description: intruder alarm countdown
     parameters: [zone, delay]
   event.security.intruderalert:
     description: intruder alarm
