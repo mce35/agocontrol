@@ -215,7 +215,7 @@ void AgoSystem::checkProcessesStates(qpid::types::Variant::Map& processes)
                     //process is not running and it is monitored, send alarm
                     qpid::types::Variant::Map content;
                     content["process"] = it->first;
-                    agoConnection->emitEvent("systemcontroller", "event.system.processnotrunning", content);
+                    agoConnection->emitEvent("systemcontroller", "event.monitoring.processdead", content);
                     AGO_INFO() << "Process '" << it->first << "' is not running";
                     stats["alarmDead"] = true;
                 }
@@ -238,7 +238,7 @@ void AgoSystem::checkProcessesStates(qpid::types::Variant::Map& processes)
                     //process has reached memory threshold, send alarm
                     qpid::types::Variant::Map content;
                     content["process"] = it->first;
-                    agoConnection->emitEvent("systemcontroller", "event.system.memoryoverhead", content);
+                    agoConnection->emitEvent("systemcontroller", "event.monitoring.memoryoverhead", content);
                     AGO_INFO() << "Memory overhead detected for '" << it->first << "'";
                     stats["alarmMemory"] = true;
                 }
