@@ -7,6 +7,7 @@ using namespace agocontrol;
 namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
+using namespace qpid::types;
 
 class AgoSystem: public AgoApp {
 private:
@@ -16,6 +17,7 @@ private:
     qpid::types::Variant::Map getAgoProcessList();
     qpid::types::Variant::Map getAgoProcessListDebug(string procName);
     void fillProcessesStats(qpid::types::Variant::Map& processes);
+    void checkProcessesStates(qpid::types::Variant::Map& processes);
     uint32_t getCpuTotalTime();
     void getCpuPercentage(qpid::types::Variant::Map& current, qpid::types::Variant::Map& last, double* ucpu, double* scpu);
     void printProcess(qpid::types::Variant::Map process);
@@ -26,6 +28,7 @@ private:
 
     boost::mutex processesMutex;
     qpid::types::Variant::Map processes;
+    qpid::types::Variant::Map config;
 public:
     AGOAPP_CONSTRUCTOR(AgoSystem);
 };
@@ -34,6 +37,9 @@ const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "ago
 const int PROCESS_BLACKLIST_SIZE = sizeof(PROCESS_BLACKLIST)/sizeof(*PROCESS_BLACKLIST);
 const char* BIN_DIR = "/opt/agocontrol/bin";
 const int MONITOR_INTERVAL = 5; //time between 2 monitoring (in seconds)
+#ifndef SYSTEMMAPFILE
+#define SYSTEMMAPFILE "maps/systemmap.json"
+#endif
 
 
 /**
@@ -114,11 +120,31 @@ void AgoSystem::fillProcessesStats(qpid::types::Variant::Map& processes)
     //lock processes
     processesMutex.lock();
 
+    //init
+    qpid::types::Variant::List monitored = config["monitored"].asList();
+
     //update running flag (set to disabled)
     for( qpid::types::Variant::Map::iterator it=processes.begin(); it!=processes.end(); it++ )
     {
+        //get stats
         qpid::types::Variant::Map stats = it->second.asMap();
+
+        //update running state
         stats["running"] = false;
+
+        //update monitored state
+        int flag = false;
+        for( qpid::types::Variant::List::iterator it1=monitored.begin(); it1!=monitored.end(); it1++ )
+        {
+            if( (*it1).asString()==it->first )
+            {
+                flag = true;
+                break;
+            }
+        }
+        stats["monitored"] = flag;
+
+        //save stats
         processes[it->first] = stats;
     }
 
@@ -161,6 +187,71 @@ void AgoSystem::fillProcessesStats(qpid::types::Variant::Map& processes)
         }
     }
     closeproc(proc);
+
+    //unlock processes
+    processesMutex.unlock();
+}
+
+/**
+ * Check processes states and launch alarms if needed
+ */
+void AgoSystem::checkProcessesStates(qpid::types::Variant::Map& processes)
+{
+    //lock processes
+    processesMutex.lock();
+
+    for( qpid::types::Variant::Map::iterator it=processes.begin(); it!=processes.end(); it++ )
+    {
+        //get process stats
+        qpid::types::Variant::Map stats = it->second.asMap();
+
+        //check if process is running
+        if( !stats["running"].isVoid() && !stats["monitored"].isVoid() )
+        {
+            if( stats["running"].asBool()==false && stats["monitored"].asBool()==true )
+            {
+                if( stats["alarmDead"].asBool()==false )
+                {
+                    //process is not running and it is monitored, send alarm
+                    qpid::types::Variant::Map content;
+                    content["process"] = it->first;
+                    agoConnection->emitEvent("systemcontroller", "event.monitoring.processdead", content);
+                    AGO_INFO() << "Process '" << it->first << "' is not running";
+                    stats["alarmDead"] = true;
+                }
+            }
+            else
+            {
+                stats["alarmDead"] = false;
+            }
+        }
+
+        //check memory
+        int64_t memoryThreshold = config["memoryThreshold"].asInt64() * 1000000;
+        if( memoryThreshold>0 )
+        {
+            qpid::types::Variant::Map cs = stats["currentStats"].asMap();
+            if( cs["rss"].asInt64()>=memoryThreshold )
+            {
+                if( stats["alarmMemory"].asBool()==false )
+                {
+                    //process has reached memory threshold, send alarm
+                    qpid::types::Variant::Map content;
+                    content["process"] = it->first;
+                    agoConnection->emitEvent("systemcontroller", "event.monitoring.memoryoverhead", content);
+                    AGO_INFO() << "Memory overhead detected for '" << it->first << "'";
+                    stats["alarmMemory"] = true;
+                }
+            }
+            else
+            {
+                stats["alarmMemory"] = false;
+            }
+        }
+
+        //save process stats
+        processes[it->first] = stats;
+    }
 
     //unlock processes
     processesMutex.unlock();
@@ -232,6 +323,10 @@ qpid::types::Variant::Map AgoSystem::getProcessStructure()
     stats["lastStats"] = lastStats;
 
     stats["running"] = false;
+    stats["monitored"] = false;
+
+    stats["alarmMemory"] = false;
+    stats["alarmDead"] = false;
 
     return stats;
 }
@@ -301,14 +396,69 @@ void AgoSystem::eventHandler(std::string subject, qpid::types::Variant::Map cont
 qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map content)
 {
     qpid::types::Variant::Map returnval;
+    returnval["error"] = 0;
+    returnval["msg"] = "";
     std::string internalid = content["internalid"].asString();
     AGO_DEBUG() << "Command received:" << content;
     if (internalid == "systemcontroller")
     {
-        if (content["command"] == "getprocesslist")
+        if( content["command"]=="getprocesslist" )
         {
             processesMutex.lock();
             returnval = processes;
+            processesMutex.unlock();
+        }
+        else if( content["command"]=="getstatus" )
+        {
+            processesMutex.lock();
+            returnval["processes"] = processes;
+            returnval["memoryThreshold"] = config["memoryThreshold"].asInt64();
+            processesMutex.unlock();
+        }
+        else if( content["command"]=="setmonitoredprocesses" )
+        {
+            processesMutex.lock();
+            if( !content["processes"].isVoid() )
+            {
+                qpid::types::Variant::List monitored = content["processes"].asList();
+                //and save list to config file
+                config["monitored"] = monitored;
+                variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
+            }
+            processesMutex.unlock();
+        }
+        else if( content["command"]=="setmemorythreshold" )
+        {
+            processesMutex.lock();
+            if( !content["threshold"].isVoid() )
+            {
+                char* p;
+                long threshold = strtol(content["threshold"].asString().c_str(), &p, 10);
+                if( *p==0 )
+                {
+                    if( threshold<0 )
+                    {
+                        threshold = 0;
+                    }
+                    config["memoryThreshold"] = threshold;
+                    variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
+                }
+                else
+                {
+                    //unsupported threshold type
+                    AGO_ERROR() << "Invalid threshold type. Unable to convert";
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Invalid value";
+                    returnval["old"] = config["memoryThreshold"].asInt64();
+                }
+            }
+            else
+            {
+                //missing parameter
+                returnval["error"] = 1;
+                returnval["msg"] = "Missing parameter";
+                returnval["old"] = config["memoryThreshold"].asInt64();
+            }
             processesMutex.unlock();
         }
         else
@@ -335,9 +485,10 @@ void AgoSystem::monitorProcesses()
     while( !isExitSignaled() )
     {
         //update processes stats
-        AGO_DEBUG() << "Updating stats...";
         fillProcessesStats(processes);
-        //printProcess(processes["xcalc"].asMap());
+
+        //check process states
+        checkProcessesStates(processes);
 
         //pause
         sleep(MONITOR_INTERVAL);
@@ -346,6 +497,21 @@ void AgoSystem::monitorProcesses()
 
 void AgoSystem::setupApp()
 {
+    //open conf file
+    config = jsonFileToVariantMap(getConfigPath(SYSTEMMAPFILE));
+    //add missing config parameters
+    if( config["monitored"].isVoid() )
+    {
+        qpid::types::Variant::List monitored;
+        config["monitored"] = monitored;
+        variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
+    }
+    if( config["memoryThreshold"].isVoid() )
+    {
+        config["memoryThreshold"] = 0;
+        variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
+    }
+
     //launch monitoring thread
     boost::thread t(boost::bind(&AgoSystem::monitorProcesses, this));
     t.detach();
