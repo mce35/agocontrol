@@ -433,7 +433,7 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
             if( !content["threshold"].isVoid() )
             {
                 char* p;
-                long threshold = strtol(content["threshold"].asString().c_str(), &p, 10);
+                int64_t threshold = (int64_t)strtoll(content["threshold"].asString().c_str(), &p, 10);
                 if( *p==0 )
                 {
                     if( threshold<0 )
