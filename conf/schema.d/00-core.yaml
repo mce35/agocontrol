@@ -344,3 +344,9 @@ events:
   event.device.stale:
     description: announce stale status of a device has changed
     parameters: [uuid, internalid, stale]
+  event.monitoring.processdead:
+    description: event triggered when process is dead
+    parameters: [processname]
+  event.monitoring.memoryoverhead:
+    description: event triggered when process is consuming too much memory
+    parameters: [processname]
