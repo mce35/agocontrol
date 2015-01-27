@@ -1,0 +1,14 @@
+{
+    "depends": "agosystem",
+    "description": "System monitoring configuration",
+    "listable": true,
+    "name": "System monitoring",
+    "category": "core",
+    "resources": {
+        "css": [
+            "systemmonitoring.css"
+        ]
+    },
+    "template": "html/systemMonitoringConfig",
+    "version": "0.0.1"
+}
