@@ -1,5 +1,5 @@
 {
-        "name": "Blockly",
+        "name": "Blocks mode",
         "version": "0.0.1",
         "description": "Create events easily using blocks",
         "listable": true,
