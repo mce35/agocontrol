@@ -1363,6 +1363,9 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case S_LIGHT_LEVEL_V14:
                     newDevice(internalid, "brightnesssensor");
                     break;
+                case S_ARDUINO_RELAY_V14:
+                    newDevice(internalid, "networkrelay");
+                    break;
                 case S_LOCK_V14:
                     newDevice(internalid, "lock");
                     break;
