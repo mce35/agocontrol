@@ -1308,6 +1308,9 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case I_LOG_MESSAGE_V14:
                     //debug message from gateway. Already displayed with prettyPrint when debug activated
                     break;
+                case I_CONFIG_V14:
+                    //return config
+                    sendcommandV14(internalid, INTERNAL_V14, 0, I_CONFIG_V14, units.c_str());
                 default:
                     cout << "INTERNAL subtype '" << subType << "' not supported (protocol v1.4)" << endl;
             }
