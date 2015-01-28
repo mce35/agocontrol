@@ -1,5 +1,5 @@
 {
-        "name": "Events",
+        "name": "Expert mode",
         "version": "1.0.0",
         "description": "Events configuration",
         "template": "html/events",

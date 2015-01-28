@@ -46,10 +46,7 @@
 <script src="js/libs/ui/jquery.validation.js"></script>
 <script src="js/libs/gumby.init.js"></script>
 
-<script type="text/javascript" src="js/device.js"></script>
-<!--<script type="text/javascript" src="js/app.floorplan.js"></script>-->
-<script type="text/javascript" src="js/libs/yepnope.1.5.4-min.js"></script>
-
+<script type="text/javascript" src="js/libs/head.load.min.js"></script>
 <script type="text/javascript" src="js/libs/sammy.min.js"></script>
 
 <link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.css" />
@@ -87,7 +84,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="#" data-bind="click:$root.noclick">
+                    <a href="#">
                         <i class="icon-archive" title="Plugins"></i>
                         <span>Applications</span>
                     </a>
@@ -100,7 +97,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="#" data-bind="click:$root.noclick">
+                    <a href="#">
                         <i class="icon-tools" title="Configuration"></i>
                         <span>Configuration</span>
                     </a>
@@ -111,7 +108,10 @@
                             <!-- /ko -->
                             <!-- ko if: subMenus -->
                                 <li>
-                                    <a href="#" data-bind="text:menu"></a>
+                                    <a href="#">
+                                        <span data-bind="text:menu"></span>
+                                        <i class="icon-right-open-mini"></i>
+                                    </a>
                                     <div class="dropdown">
                                         <ul data-bind="foreach:subMenus">
                                             <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
@@ -123,7 +123,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="http://wiki.agocontrol.com" target="_blank">
+                    <a href="#">
                         <i class="icon-help" title="Help"></i>
                         <span>Help</span>
                     </a>
@@ -133,7 +133,12 @@
                                 <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
                             <!-- /ko -->
                             <!-- ko ifnot:url===null -->
-                                <li><a href="#" data-bind="text:name, attr:{'href':url, 'target':'_blank'}"></a></li>
+                                <li>
+                                    <a href="#" data-bind="attr:{'href':url, 'target':'_blank'}">
+                                        <span data-bind="text:name"></span>
+                                        <i class="icon-link"></i>
+                                    </a>
+                                </li>
                             <!-- /ko -->
                         </ul>
                     </div>
@@ -150,6 +155,7 @@
 </div>
 
 <script type="text/javascript" src="js/agocontrol.js"></script>
+<script type="text/javascript" src="js/device.js"></script>
 <script type="text/javascript" src="js/details.js"></script>
 <script type="text/javascript" src="js/uihelpers.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
