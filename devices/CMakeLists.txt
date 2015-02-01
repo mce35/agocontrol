@@ -41,6 +41,7 @@ set (AGODEVICES
   zmcam
   ETAtouch
   yamaha
+  gammu
 )
 
 IF (FREEBSD)
