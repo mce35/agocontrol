@@ -35,8 +35,8 @@ function securityConfig() {
         content.command = "getzones";
         content.uuid = self.securityController.uuid;
         sendCommand(content, function(res) {
-            if (res.result.result == 0 && res.result.zonemap) {
-                self.zoneMap(res.result.zonemap);
+            if (res.result.result.code == "success" && res.result.result.data.zonemap) {
+                self.zoneMap(res.result.result.data.zonemap);
             }
         });
     };
@@ -49,8 +49,8 @@ function securityConfig() {
         content.command = "gethousemode";
         content.uuid = self.securityController.uuid;
         sendCommand(content, function(res) {
-            if (res.result.result == 0 && res.result.housemode) {
-                self.housemode(res.result.housemode);
+            if (res.result.result.code == "success" && res.result.result.data.housemode) {
+                self.housemode(res.result.result.data.housemode);
             }
         });
     };

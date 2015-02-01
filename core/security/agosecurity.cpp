@@ -194,6 +194,7 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                 qpid::types::Variant::Map returndata;
                 returndata["housemode"]= securitymap["housemode"];
                 returncode["data"] = returndata;
+                returncode["code"]="success";
                 returncode["housemode"] = securitymap["housemode"]; // FIXME: added for backward compatibility
                 
                 returnval["result"]=returncode;
@@ -219,7 +220,8 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                                 wantSecurityThreadRunning = true;
                                 securityThread = boost::thread(boost::bind(&AgoSecurity::alarmthread, this, zone));
                                 isSecurityThreadRunning = true;
-                                returnval["result"] = 0;
+                                returncode["code"]="success";
+                                returnval["result"] = returncode;
                             }catch(std::exception& e){
                                 AGO_FATAL() << "failed to start alarmthread! " << e.what();
                                 returncode["code"]="error.security.alarmthreadfailed";
@@ -286,6 +288,7 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                 returndata["zonemap"] = securitymap["zones"].asMap();
                 returncode["data"] = returndata;
                 returncode["zonemap"] = securitymap["zones"].asMap(); // FIXME: added for backward compatibility
+                returncode["code"]="success";
                 returnval["result"]=returncode;
             } else {
                 AGO_ERROR() << "securitymap is empty";
