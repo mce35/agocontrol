@@ -125,6 +125,10 @@ int AgoSecurity::getZoneDelay(qpid::types::Variant::Map smap, std::string elem) 
 
 void AgoSecurity::alarmthread(std::string zone) {
     int delay=getZoneDelay(securitymap, zone);	
+    Variant::Map countdownstartedeventcontent;
+    countdownstartedeventcontent["delay"]=delay;
+    countdownstartedeventcontent["zone"]=zone;
+    agoConnection->emitEvent("securitycontroller", "event.security.countdown.started", countdownstartedeventcontent);
     try {
         Variant::Map content;
         content["zone"]=zone;
