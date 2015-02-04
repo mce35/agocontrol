@@ -18,8 +18,11 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#include <tinyxml2.h>
+
 #include <limits.h>
 #include <float.h>
+
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -40,11 +43,15 @@
 #include "ZWApi.h"
 #include "ZWaveNode.h"
 
+#define CONFIG_BASE_PATH "/etc/openzwave/"
+#define CONFIG_MANUFACTURER_SPECIFIC CONFIG_BASE_PATH "manufacturer_specific.xml"
+
 using namespace std;
 using namespace agocontrol;
 using namespace OpenZWave;
+using namespace tinyxml2;
 
-  static  pthread_mutex_t g_criticalSection;
+static  pthread_mutex_t g_criticalSection;
 static    pthread_cond_t  initCond = PTHREAD_COND_INITIALIZER;
 static    pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -63,15 +70,20 @@ private:
     } NodeInfo;
     
     list<NodeInfo*> g_nodes;
-
     map<ValueID, qpid::types::Variant> valueCache;
-
-
     ZWaveNodes devices;
+    qpid::types::Variant::Map configManufacturerSpecific;
 
     const char *controllerErrorStr (Driver::ControllerError err);
     NodeInfo* GetNodeInfo (Notification const* _notification);
     ValueID* getValueID(int nodeid, int instance, string label);
+
+    void fillAttribute(qpid::types::Variant::Map& content, XMLElement* element, const string attribute);
+    bool loadConfigManufacturerSpecific();
+    const string getDeviceConfigFile(const string manufacturer, const string device);
+    bool loadDeviceConfigFile(const string file, qpid::types::Variant::Map& config);
+    bool checkAllOZWConfigFiles();
+    void _loadOZWConfigFile(const string manufacturer, const string device);
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void setupApp();
@@ -88,7 +100,7 @@ public:
 
 
     void _OnNotification (Notification const* _notification);
-    Driver::pfnControllerCallback_t _controller_update(Driver::ControllerState state,  Driver::ControllerError err);
+    void _controller_update(Driver::ControllerState state,  Driver::ControllerError err);
 };
 
 void controller_update(Driver::ControllerState state,  Driver::ControllerError err, void *context) {
@@ -119,12 +131,11 @@ void MyLog::SetLogFileName(const string&) {
 }
 void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args ) {
     char lineBuf[1024] = {};
-    int lineLen = 0;
     if( _format != NULL && _format[0] != '\0' )
     {
         va_list saveargs;
         va_copy( saveargs, _args );
-        lineLen = vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
+        vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
         va_end( saveargs );
     }
     if (_level == LogLevel_StreamDetail) AGO_TRACE() << string(lineBuf);
@@ -172,7 +183,7 @@ const char *AgoZwave::controllerErrorStr (Driver::ControllerError err) {
     }
 }
 
-Driver::pfnControllerCallback_t AgoZwave::_controller_update(Driver::ControllerState state,  Driver::ControllerError err) {
+void AgoZwave::_controller_update(Driver::ControllerState state,  Driver::ControllerError err) {
     qpid::types::Variant::Map eventmap;
     eventmap["statecode"]=state;
     switch(state) {
@@ -255,6 +266,332 @@ Driver::pfnControllerCallback_t AgoZwave::_controller_update(Driver::ControllerS
     }
 }
 
+/**
+ * Fill specified map with xml element
+ */
+void AgoZwave::fillAttribute(qpid::types::Variant::Map& content, XMLElement* element, const string attribute)
+{
+    if( element )
+    {
+        const char* attr = element->Attribute(attribute.c_str());
+        if( attr )
+        {
+            content[attribute] = attr;
+        }
+        else
+        {
+            //no value for specified attribute, fill with empty string
+            content[attribute] = "";
+        }
+    }
+}
+
+/**
+ * Load manufacturer_specific.xml file
+ * @info save xml file content in class member configManufacturerSpecific
+ * @return false if error occured
+ */
+bool AgoZwave::loadConfigManufacturerSpecific()
+{
+    int result = 0;
+    int manufacturerCount = 0;
+    XMLDocument doc;
+
+    AGO_DEBUG() << "Loading " << CONFIG_MANUFACTURER_SPECIFIC << " file...";
+    result = doc.LoadFile(CONFIG_MANUFACTURER_SPECIFIC);
+    if( result!=XML_NO_ERROR )
+    {
+         AGO_TRACE() << "error loading XML file [" << result << "]";
+         return false;
+    }
+
+    XMLHandle handle(&doc);
+    XMLElement* manufacturerSpecificData = handle.FirstChildElement("ManufacturerSpecificData").ToElement();
+    if( manufacturerSpecificData )
+    {
+        XMLElement* manufacturer = manufacturerSpecificData->FirstChildElement("Manufacturer");
+        while( manufacturer!=NULL )
+        {
+            manufacturerCount++;
+            qpid::types::Variant::Map contentManufacturer;
+
+            //manufacturer infos
+            contentManufacturer["id"] = manufacturer->Attribute("id");
+
+            //products infos
+            qpid::types::Variant::Map allProducts;
+            XMLElement* product = manufacturer->FirstChildElement("Product");
+            while( product!=NULL )
+            {
+                qpid::types::Variant::Map contentProduct;
+                fillAttribute(contentProduct, product, "type");
+                fillAttribute(contentProduct, product, "id");
+                fillAttribute(contentProduct, product, "config");
+                allProducts[string(product->Attribute("name"))] = contentProduct;
+
+                //next product
+                product = product->NextSiblingElement();
+            }
+            contentManufacturer["products"] = allProducts;
+
+            //save manufacturer infos
+            configManufacturerSpecific[string(manufacturer->Attribute("name"))] = contentManufacturer;
+
+            //next manufacturer
+            manufacturer = manufacturer->NextSiblingElement();
+        }
+    }
+    else
+    {
+        //not awaited xml format
+        AGO_TRACE() << "Bad XML format";
+        return false;
+    }
+    AGO_TRACE() << "manufacturer_specific.xml : " << configManufacturerSpecific;
+    AGO_INFO() << manufacturerCount << " manufacturers loaded from manufacturer_specific.xml file";
+
+    return true;
+}
+
+/**
+ * Return config file for specified device
+ */
+const string AgoZwave::getDeviceConfigFile(const string manufacturer, const string device)
+{
+    string output = "";
+
+    qpid::types::Variant::Map::iterator search = configManufacturerSpecific.find(manufacturer);
+    if( search!=configManufacturerSpecific.end() )
+    {
+        qpid::types::Variant::Map manufacturer = search->second.asMap();
+        qpid::types::Variant::Map products = manufacturer["products"].asMap();
+        if( products.find(device)!=products.end() )
+        {
+            qpid::types::Variant::Map product = products[device].asMap();
+            output = product["config"].asString();
+        }
+        else
+        {
+            AGO_WARNING() << "Device '" << device << "' not found in manufacturer_specific.xml. Device not supported by OZW?";
+        }
+    }
+    else
+    {
+        AGO_WARNING() << "Manufacturer '" << manufacturer << "' not found in manufacturer_specific.xml. Manufacturer not supported by OZW?";
+    }
+
+    return output;
+}
+
+/**
+ * Load specified device config file
+ */
+bool AgoZwave::loadDeviceConfigFile(const string file, qpid::types::Variant::Map& config)
+{
+    int result = 0;
+    int commandClassCount = 0;
+    int protocolCount = 0;
+    XMLDocument doc;
+
+    if( strlen(file.c_str())==0 )
+    {
+        AGO_DEBUG() << "Specified config filename is empty";
+        return false;
+    }
+
+    string path = string(CONFIG_BASE_PATH) + file;
+    AGO_TRACE() << "Loading '" << path << "' device config file...";
+    result = doc.LoadFile(path.c_str());
+    if( result!=XML_NO_ERROR )
+    {
+         AGO_ERROR() << "Error loading XML file [" << result << "]";
+         return false;
+    }
+
+    XMLHandle handle(&doc);
+    XMLElement* product = handle.FirstChildElement("Product").ToElement();
+    if( product )
+    {
+        //CommandClass
+        XMLElement* commandClass = product->FirstChildElement("CommandClass");
+        while( commandClass!=NULL )
+        {
+            commandClassCount++;
+            qpid::types::Variant::Map commandClassInfos;
+
+            //get all attributes
+            for( const XMLAttribute* attr=commandClass->FirstAttribute(); attr!=0; attr=attr->Next() )
+            {
+                commandClassInfos[string(attr->Name())] = string(attr->Value());
+            }
+
+            //Value
+            XMLElement* value = commandClass->FirstChildElement("Value");
+            qpid::types::Variant::List allValue;
+            while( value!=NULL )
+            {
+                qpid::types::Variant::Map content;
+                fillAttribute(content, value, "type");
+                fillAttribute(content, value, "index");
+                fillAttribute(content, value, "genre");
+                fillAttribute(content, value, "label");
+                fillAttribute(content, value, "units");
+                fillAttribute(content, value, "min");
+                fillAttribute(content, value, "max");
+                fillAttribute(content, value, "value");
+                fillAttribute(content, value, "size");
+                fillAttribute(content, value, "write_only");
+                fillAttribute(content, value, "affects");
+
+                //Help
+                XMLElement* help = value->FirstChildElement("Help");
+                content["help"] = "";
+                if( help!=NULL )
+                {
+                    const char* text = help->GetText();
+                    if( text )
+                    {
+                        content["help"] = string(help->GetText());
+                    }
+                }
+
+                //Items
+                XMLElement* item = value->FirstChildElement("Item");
+                qpid::types::Variant::List items;
+                while( item!=NULL )
+                {
+                    qpid::types::Variant::Map itemContent;
+                    fillAttribute(itemContent, item, "label");
+                    fillAttribute(itemContent, item, "value");
+
+                    //save item
+                    items.push_back(itemContent);
+
+                    //next item
+                    item = item->NextSiblingElement();
+                }
+                content["items"] = items;
+
+                //save value infos
+                allValue.push_back(content);
+
+                //next value
+                value = value->NextSiblingElement();
+            }
+            commandClassInfos["values"] = allValue;
+                       
+            //Associations
+            XMLElement* associations = commandClass->FirstChildElement("Associations");
+            qpid::types::Variant::List groups;
+            if( associations )
+            {
+                //Group
+                XMLElement* group = associations->FirstChildElement("Group");
+                while( group!=NULL )
+                {
+                    qpid::types::Variant::Map groupContent;
+                    fillAttribute(groupContent, group, "index");
+                    fillAttribute(groupContent, group, "max_associations");
+                    fillAttribute(groupContent, group, "label");
+                    fillAttribute(groupContent, group, "auto");
+
+                    //save group
+                    groups.push_back(groupContent);
+
+                    //next group
+                    group = group->NextSiblingElement();
+                }
+            }
+            commandClassInfos["associations"] = groups;
+           
+            //save command class infos
+            config[string(commandClass->Attribute("id"))] = commandClassInfos;
+
+            //next command class
+            commandClass = commandClass->NextSiblingElement();
+        }
+
+        //Protocol
+        XMLElement* protocol = product->FirstChildElement("Protocol");
+        qpid::types::Variant::Map protocolInfos;
+        if( protocol )
+        {
+            for( const XMLAttribute* attr=protocol->FirstAttribute(); attr!=0; attr=attr->Next() )
+            {
+                protocolInfos[string(attr->Name())] = string(attr->Value());
+            }
+        }
+        config["protocol"] = protocolInfos;
+    }
+    else
+    {
+        //not awaited xml format
+        AGO_ERROR() << "Bad XML format";
+        return false;
+    }
+
+    AGO_TRACE() << commandClassCount << " CommandClass found";
+    AGO_TRACE() << protocolCount << " Protocol found";
+
+    return true;
+}
+
+/**
+ * Iterates over all config files specified in manufacturer_specific.xml and try to load them.
+ * The aim of this function is to detect problems during config loading
+ */
+bool AgoZwave::checkAllOZWConfigFiles()
+{
+    bool result = true;
+
+    AGO_DEBUG() << "Checking all OZW config files...";
+    for( qpid::types::Variant::Map::iterator it=configManufacturerSpecific.begin(); it!=configManufacturerSpecific.end(); it++ )
+    {
+        qpid::types::Variant::Map second = it->second.asMap();
+        qpid::types::Variant::Map products = second["products"].asMap();
+        AGO_TRACE() << it->first;
+        for( qpid::types::Variant::Map::iterator it2=products.begin(); it2!=products.end(); it2++ )
+        {
+            AGO_TRACE() << " - " << it2->first;
+            try
+            {
+                qpid::types::Variant::Map infos = it2->second.asMap();
+                if( !infos["config"].isVoid() )
+                {
+                    string file = infos["config"].asString();
+                    if( file.length()>0 )
+                    {
+                        const string conf = getDeviceConfigFile(it->first, it2->first);
+                        qpid::types::Variant::Map config;
+                        loadDeviceConfigFile(conf, config);
+                        AGO_TRACE() << config;
+                    }
+                }
+            }
+            catch( ... )
+            {
+                AGO_ERROR() << "Problem detected in config file for manufacturer '" << it->first << " and device '" << it2->first;
+                result = false;
+            }
+        }
+    }
+    AGO_DEBUG() << "Done";
+
+    return result;
+}
+
+/**
+ * Debug: Load and display specified OZW config file
+ */
+void AgoZwave::_loadOZWConfigFile(const string manufacturer, const string device)
+{
+    const string conf = getDeviceConfigFile(manufacturer, device);
+    AGO_DEBUG() << "config file: " << conf;
+    qpid::types::Variant::Map config;
+    loadDeviceConfigFile(conf, config);
+    AGO_DEBUG() << config;
+}
+
 //-----------------------------------------------------------------------------
 // <GetNodeInfo>
 // Callback that is triggered when a value, group or node changes
@@ -310,7 +647,7 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
                     nodeInfo->m_values.push_back( _notification->GetValueID() );
                     uint8 basic = Manager::Get()->GetNodeBasic(_notification->GetHomeId(),_notification->GetNodeId());
                     uint8 generic = Manager::Get()->GetNodeGeneric(_notification->GetHomeId(),_notification->GetNodeId());
-                    uint8 specific = Manager::Get()->GetNodeSpecific(_notification->GetHomeId(),_notification->GetNodeId());
+                    /*uint8 specific =*/ Manager::Get()->GetNodeSpecific(_notification->GetHomeId(),_notification->GetNodeId());
                     ValueID id = _notification->GetValueID();
                     string label = Manager::Get()->GetValueLabel(id);
                     stringstream tempstream;
@@ -511,7 +848,7 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
 
         case Notification::Type_ValueChanged:
             {
-                if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+                if( /*NodeInfo* nodeInfo =*/ GetNodeInfo( _notification ) )
                 {
                     // One of the node values has changed
                     // TBD...
@@ -662,7 +999,7 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
 
         case Notification::Type_NodeEvent:
             {
-                if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+                if( /*NodeInfo* nodeInfo =*/ GetNodeInfo( _notification ) )
                 {
                     // We have received an event from the node, caused by a
                     // basic_set or hail message.
@@ -684,7 +1021,7 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
             }
         case Notification::Type_SceneEvent:
             {
-                if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+                if( /*NodeInfo* nodeInfo =*/ GetNodeInfo( _notification ) )
                 {
                     int scene = _notification->GetSceneId();
                     ValueID id = _notification->GetValueID();
@@ -900,7 +1237,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             int mynode = content["node"];
             uint8_t *associations;
             uint32_t numassoc = Manager::Get()->GetAssociations(g_homeId, mynode, mygroup, &associations);
-            for (int assoc = 0; assoc < numassoc; assoc++) {
+            for (uint32_t assoc = 0; assoc < numassoc; assoc++) {
                 associationsmap[int2str(assoc)] = associations[assoc];
             }
             if (numassoc >0) delete associations;
@@ -1081,18 +1418,39 @@ void AgoZwave::setupApp() {
 
     pthread_mutex_lock( &initMutex );
 
+    //load config files
+    if( !loadConfigManufacturerSpecific() )
+    {
+        AGO_ERROR() << "Unable to load manufacturer config file. Stop now";
+        exit(1);
+    }
+    //check OZW config files
+    if( !checkAllOZWConfigFiles() )
+    {
+        AGO_ERROR() << "Problem detected in OZW config files! Stop now.";
+        exit(1);
+    }
+    
     AGO_INFO() << "Starting OZW driver ver " << Manager::getVersionAsString();
     // init open zwave
     Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
     if (getConfigOption("returnroutes", "true")=="true")
+    {
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
-    Options::Get()->AddOptionBool("ConsoleOutput", true ); 
+        Options::Get()->AddOptionBool("ConsoleOutput", true ); 
+    }
     if (getConfigOption("sis", "true")=="true")
+    {
         Options::Get()->AddOptionBool("EnableSIS", true ); 
+    }
     if (getConfigOption("assumeawake", "false")=="false")
+    {
         Options::Get()->AddOptionBool("AssumeAwake", false ); 
+    }
     if (getConfigOption("validatevaluechanges", "false")=="true")
+    {
         Options::Get()->AddOptionBool("ValidateValueChanges", true);
+    }
 
     Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
     Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
@@ -1122,7 +1480,6 @@ void AgoZwave::setupApp() {
 
     if( !g_initFailed )
     {
-
         Manager::Get()->WriteConfig( g_homeId );
         Driver::DriverData data;
         Manager::Get()->GetDriverStatistics( g_homeId, &data );
@@ -1132,13 +1489,14 @@ void AgoZwave::setupApp() {
 
         agoConnection->addDevice("zwavecontroller", "zwavecontroller");
         addCommandHandler();
-    } else {
+    }
+    else
+    {
         AGO_FATAL() << "unable to initialize OZW";
         Manager::Destroy();
         pthread_mutex_destroy( &g_criticalSection );
         throw StartupError();
     }	
-
 }
 
 void AgoZwave::cleanupApp() {

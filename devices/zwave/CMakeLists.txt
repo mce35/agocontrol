@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 file (GLOB_RECURSE DEVICE_SOURCE_FILES *.cpp)
 
 set (DEVICE_EXTRA_LIBRARIES
+     tinyxml2
      openzwave
      agoclient
      pthread
