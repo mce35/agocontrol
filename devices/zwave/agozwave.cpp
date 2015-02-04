@@ -1437,8 +1437,8 @@ void AgoZwave::setupApp() {
     if (getConfigOption("returnroutes", "true")=="true")
     {
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
-        Options::Get()->AddOptionBool("ConsoleOutput", true ); 
     }
+    Options::Get()->AddOptionBool("ConsoleOutput", true ); 
     if (getConfigOption("sis", "true")=="true")
     {
         Options::Get()->AddOptionBool("EnableSIS", true ); 
