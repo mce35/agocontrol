@@ -115,6 +115,11 @@ if (BUILD_CORE)
   install (FILES data/inventory.sql data/datalogger.sql DESTINATION ${DATADIR})
 endif()
 
+OPTION(BUILD_GATEWAYS "Build the gateways" ON)
+if (BUILD_GATEWAYS)
+  add_subdirectory (gateways) 
+endif()
+
 OPTION(BUILD_DEVICES "Build the devices" ON)
 if (BUILD_DEVICES)
   add_subdirectory (devices) 
