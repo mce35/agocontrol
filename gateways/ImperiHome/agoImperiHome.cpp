@@ -271,6 +271,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
         {
             // No suitable handler found, mark as not processed. Mongoose will
             // try to serve the request.
+		AGO_ERROR() << "No handler for URI: " << conn->uri;
             result = MG_FALSE;
         }
     }
