@@ -211,7 +211,14 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 
     if (event == MG_REQUEST)
     {
-        if (strcmp(conn->uri, "/devices") == 0)
+	AGO_TRACE() << "Trying to handle MG_REQUEST with URI: " << conn->uri;
+	if (strcmp(conn->uri, "/") == 0) {
+
+		mg_send_header(conn, "Content-Type", "text/html");
+		mg_printf(conn, "<HTML><BODY>ImperiHome Gateway</BODY></HTML>");
+		result = MG_TRUE;
+
+	} else if (strcmp(conn->uri, "/devices") == 0)
         {
 		qpid::types::Variant::List devicelist;
 		qpid::types::Variant::Map inventory = agoConnection->getInventory();
