@@ -215,7 +215,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
         {
 		qpid::types::Variant::List devicelist;
 		qpid::types::Variant::Map inventory = agoConnection->getInventory();
-		// if (!(inventory["rooms"].isVoid())) {
+		if( inventory.size()>0 && !inventory["devices"].isVoid() ) {
 			qpid::types::Variant::Map devices = inventory["devices"].asMap();
 			for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
 				qpid::types::Variant::Map device = it->second.asMap();
@@ -229,7 +229,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 				deviceinfo["id"]=it->first;
 				devicelist.push_back(deviceinfo);
 			}
-		//}	
+		}	
 		mg_send_header(conn, "Content-Type", "application/json");
 		qpid::types::Variant::Map finaldevices;
 		finaldevices["devices"] = devicelist;
@@ -249,7 +249,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
         {
 		qpid::types::Variant::List roomlist;
 		qpid::types::Variant::Map inventory = agoConnection->getInventory();
-		// if (!(inventory["rooms"].isVoid())) {
+		if( inventory.size()>0 && !inventory["rooms"].isVoid() ) {
 			qpid::types::Variant::Map rooms = inventory["rooms"].asMap();
 			for (qpid::types::Variant::Map::iterator it = rooms.begin(); it != rooms.end(); it++) {
 				qpid::types::Variant::Map room = it->second.asMap();
@@ -259,7 +259,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 				roominfo["id"]=it->first;
 				roomlist.push_back(roominfo);
 			}
-		//}	
+		}	
 		mg_send_header(conn, "Content-Type", "application/json");
 		qpid::types::Variant::Map finalrooms;
 		finalrooms["rooms"] = roomlist;
