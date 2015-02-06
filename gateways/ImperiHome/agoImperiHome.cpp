@@ -88,6 +88,8 @@ private:
 
     void setupApp();
     void cleanupApp();
+    std::string convertDeviceType(std::string devicetype);
+
 public:
     AGOAPP_CONSTRUCTOR(AgoImperiHome)
 
@@ -183,48 +185,22 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
     return false;
 }
 
-/**
- * Process one or more JSONRPC requests.
- *
- * Returns:
- * 	false if a response has been written, and no more output is to be written
- * 	true if further processing is required, and MG_POLL shall continue
- */
-bool AgoImperiHome::jsonrpc(struct mg_connection *conn)
-{
-    Json::Value root;
-    Json::Reader reader;
-    bool result = false;
-
-    //add header
-    mg_send_header(conn, "Content-Type", "application/json");
-
-    if ( reader.parse(conn->content, conn->content + conn->content_len, root, false) )
-    {
-        if (root.isArray())
-        {
-            mg_printf_data(conn, "[");
-            for (unsigned int i = 0; i< root.size(); i++)
-            {
-                // XXX: If any previous jsonrpcRequestHandler returned TRUE,
-                // that request will be silently dropped/unprocessed/not processed properly.
-                // result = jsonrpcRequestHandler(conn, root[i]);
-            }
-            mg_printf_data(conn, "]");
-        }
-        else
-        {
-            // result = jsonrpcRequestHandler(conn, root);
-        }
-    }
-    else
-    {
-        // mg_rpc_reply_error(conn, Json::Value(), JSONRPC_PARSE_ERROR, "Parse error");
-    }
-
-    return result;
+std::string AgoImperiHome::convertDeviceType(std::string devicetype) {
+	std::string result;
+	qpid::types::Variant::Map convertMap;
+	convertMap["camera"] = "DevCamera";
+	convertMap["co2sensor"] = "DevCO2";
+	convertMap["dimmer"] = "DevDimmer";
+	convertMap["multilevelsensor"] = "DevGenericSensor";
+	convertMap["luminance"] = "DevLuminosity";
+	convertMap["drapes"] = "DevShutter";
+	convertMap["smokedetector"] = "DevSmoke";
+	convertMap["switch"] = "DevSwitch";
+	convertMap["temperaturesensor"] = "DevTemperature";
+	convertMap["thermostat"] = "DevThermostat";
+	result = convertMap[devicetype].asString();
+	return result;
 }
-
 
 /**
  * Mongoose event handler
@@ -235,20 +211,61 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 
     if (event == MG_REQUEST)
     {
-        if (strcmp(conn->uri, "/jsonrpc") == 0)
+        if (strcmp(conn->uri, "/devices") == 0)
         {
-            if( jsonrpc(conn) )
-                result = MG_MORE;
-            else
-                result = MG_TRUE;
+		qpid::types::Variant::List devicelist;
+		qpid::types::Variant::Map inventory = agoConnection->getInventory();
+		// if (!(inventory["rooms"].isVoid())) {
+			qpid::types::Variant::Map devices = inventory["devices"].asMap();
+			for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
+				qpid::types::Variant::Map device = it->second.asMap();
+				if (device["name"].asString() == "") continue;
+				if (device["room"].asString() == "") continue;
+				AGO_TRACE() << device;
+				qpid::types::Variant::Map deviceinfo;
+				deviceinfo["name"]=device["name"];
+				deviceinfo["room"]=device["room"];
+				deviceinfo["type"]=convertDeviceType(device["devicetype"]);
+				deviceinfo["id"]=it->first;
+				devicelist.push_back(deviceinfo);
+			}
+		//}	
+		mg_send_header(conn, "Content-Type", "application/json");
+		qpid::types::Variant::Map finaldevices;
+		finaldevices["devices"] = devicelist;
+		mg_printmap(conn,finaldevices);	
+		result = MG_TRUE;
         }
-        else if( strcmp(conn->uri, "/upload") == 0)
+        else if( strcmp(conn->uri, "/system") == 0)
         {
-            result = MG_TRUE;
+		qpid::types::Variant::Map systeminfo;
+		systeminfo["apiversion"] = 1;
+		systeminfo["id"] = getConfigSectionOption("system", "uuid", "00000000-0000-0000-000000000000");
+		mg_send_header(conn, "Content-Type", "application/json");
+		mg_printmap(conn, systeminfo);	
+		result = MG_TRUE;
         }
-        else if( strcmp(conn->uri, "/download") == 0)
+        else if( strcmp(conn->uri, "/rooms") == 0)
         {
-                result = MG_TRUE;
+		qpid::types::Variant::List roomlist;
+		qpid::types::Variant::Map inventory = agoConnection->getInventory();
+		// if (!(inventory["rooms"].isVoid())) {
+			qpid::types::Variant::Map rooms = inventory["rooms"].asMap();
+			for (qpid::types::Variant::Map::iterator it = rooms.begin(); it != rooms.end(); it++) {
+				qpid::types::Variant::Map room = it->second.asMap();
+				AGO_TRACE() << room;
+				qpid::types::Variant::Map roominfo;
+				roominfo["name"]=room["name"];
+				roominfo["id"]=it->first;
+				roomlist.push_back(roominfo);
+			}
+		//}	
+		mg_send_header(conn, "Content-Type", "application/json");
+		qpid::types::Variant::Map finalrooms;
+		finalrooms["rooms"] = roomlist;
+		mg_printmap(conn,finalrooms);	
+		result = MG_TRUE;
+	
         }
         else
         {
