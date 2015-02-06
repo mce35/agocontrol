@@ -211,14 +211,14 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 
     if (event == MG_REQUEST)
     {
-	AGO_TRACE() << "Trying to handle MG_REQUEST with URI: " << conn->uri;
+	std::string uri = conn->uri;
+	AGO_TRACE() << "Trying to handle MG_REQUEST with URI: " << uri;
 	if (strcmp(conn->uri, "/") == 0) {
 
 		mg_send_header(conn, "Content-Type", "text/html");
 		mg_printf(conn, "<HTML><BODY>ImperiHome Gateway</BODY></HTML>");
 		result = MG_TRUE;
-
-	} else if (strcmp(conn->uri, "/devices") == 0)
+	} else if (uri=="/devices")
         {
 		qpid::types::Variant::List devicelist;
 		qpid::types::Variant::Map inventory = agoConnection->getInventory();
@@ -273,9 +273,25 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 		mg_printmap(conn,finalrooms);	
 		result = MG_TRUE;
 	
-        }
-        else
-        {
+	} else if ( uri.find ("/devices/",0) != std::string::npos && uri.find("/action/",0) != std::string::npos)  {
+		std::vector<std::string> items = split(uri, '/');
+		for (int i=0;i<items.size();i++) {
+			AGO_TRACE() << "Item " << i << ": " << items[i];
+		}
+		if ( items.size()>=5 && items.size()<=6 ) {
+			if (items[1] == "devices" && items[3]=="action") {
+				qpid::types::Variant::Map command;
+				/*
+				DevDimmer,DevSwitch,: setstatus Param 0/1
+				*/	
+				command["command"]=items[4];
+				command["uuid"]=items[2];
+				agoConnection->sendMessage("", command);
+				mg_send_header(conn, "Content-Type", "application/json");
+				result = MG_TRUE;
+			}
+		}
+	} else {
             // No suitable handler found, mark as not processed. Mongoose will
             // try to serve the request.
 		AGO_ERROR() << "No handler for URI: " << conn->uri;
@@ -307,39 +323,6 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
  */
 void AgoImperiHome::eventHandler(std::string subject, qpid::types::Variant::Map content)
 {
-    // don't flood clients with unneeded events
-    if( subject=="event.environment.timechanged")
-        return;
-
-    //remove empty command from content
-    Variant::Map::iterator it = content.find("command");
-    if( it!=content.end() && content["command"].isVoid() )
-    {
-        content.erase("command");
-    }
-
-    //prepare event content
-    content["event"] = subject;
-    if( subject.find("event.environment.")!=std::string::npos && subject.find("changed")!= std::string::npos )
-    {
-        string quantity = subject;
-        replaceString(quantity, "event.environment.", "");
-        replaceString(quantity, "changed", "");
-        content["quantity"] = quantity;
-    }
-    else if( subject=="event.device.batterylevelchanged" )
-    {
-        string quantity = subject;
-        replaceString(quantity, "event.device.", "");
-        replaceString(quantity, "changed", "");
-        content["quantity"] = quantity;
-    }
-
-    // Wake servers to let pending getEvent trigger
-    last_event = time(NULL);
-    for(list<mg_server*>::iterator i = all_servers.begin(); i != all_servers.end(); i++) {
-        mg_wakeup_server(*i);
-    }
 }
 
 /**
@@ -392,7 +375,7 @@ void AgoImperiHome::setupApp() {
     //get parameters
     port = getConfigOption("ports", "8088");
     htdocs = getConfigOption("htdocs", fs::path(BOOST_PP_STRINGIZE(DEFAULT_HTMLDIR)));
-    numthreads = getConfigOption("numthreads", "30");
+    numthreads = getConfigOption("numthreads", "3");
     domainname = getConfigOption("domainname", "agocontrol");
 
     //ports
