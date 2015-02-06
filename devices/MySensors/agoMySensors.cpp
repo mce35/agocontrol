@@ -58,23 +58,6 @@ string device = "";
 int staleThreshold = 86400;
 
 /**
- * Split specified string
- */
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-std::vector<std::string> split(const std::string &s, char delimiter) {
-    std::vector<std::string> elements;
-    split(s, delimiter, elements);
-    return elements;
-}
-
-/**
  * Convert timestamp to Human Readable date time string (19 chars)
  */
 std::string timestampToStr(const time_t* timestamp)

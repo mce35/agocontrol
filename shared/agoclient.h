@@ -35,6 +35,11 @@ namespace agocontrol {
 
     /// string replace helper.
     void replaceString(std::string& subject, const std::string& search, const std::string& replace);
+
+    // string split helper
+    std::vector<std::string> split(const std::string &s, char delimiter);
+    std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+
     /// convert a Variant::Map to JSON string representation.
     std::string variantMapToJSONString(qpid::types::Variant::Map map);
     /// convert a Variant::List to JSON string.
