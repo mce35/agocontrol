@@ -185,22 +185,6 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
     return false;
 }
 
-std::string AgoImperiHome::convertDeviceType(std::string devicetype) {
-	std::string result;
-	qpid::types::Variant::Map convertMap;
-	convertMap["camera"] = "DevCamera";
-	convertMap["co2sensor"] = "DevCO2";
-	convertMap["dimmer"] = "DevDimmer";
-	convertMap["multilevelsensor"] = "DevGenericSensor";
-	convertMap["luminance"] = "DevLuminosity";
-	convertMap["drapes"] = "DevShutter";
-	convertMap["smokedetector"] = "DevSmoke";
-	convertMap["switch"] = "DevSwitch";
-	convertMap["temperaturesensor"] = "DevTemperature";
-	convertMap["thermostat"] = "DevThermostat";
-	result = convertMap[devicetype].asString();
-	return result;
-}
 
 /**
  * Mongoose event handler
@@ -218,21 +202,81 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 		mg_send_header(conn, "Content-Type", "text/html");
 		mg_printf(conn, "<HTML><BODY>ImperiHome Gateway</BODY></HTML>");
 		result = MG_TRUE;
-	} else if (uri=="/devices")
-        {
+	} else if (uri=="/devices") {
+        // build device list as specified in http://www.imperihome.com/apidoc/systemapi/#!/devices/listDevices_get_0
 		qpid::types::Variant::List devicelist;
 		qpid::types::Variant::Map inventory = agoConnection->getInventory();
 		if( inventory.size()>0 && !inventory["devices"].isVoid() ) {
 			qpid::types::Variant::Map devices = inventory["devices"].asMap();
 			for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
 				qpid::types::Variant::Map device = it->second.asMap();
-				if (device["name"].asString() == "") continue;
-				if (device["room"].asString() == "") continue;
-				AGO_TRACE() << device;
+				if (device["name"].asString() == "") continue; // skip unnamed devices
+				if (device["room"].asString() == "") continue; // skip devices without room assignment
 				qpid::types::Variant::Map deviceinfo;
 				deviceinfo["name"]=device["name"];
 				deviceinfo["room"]=device["room"];
-				deviceinfo["type"]=convertDeviceType(device["devicetype"]);
+                qpid::types::Variant::Map values;
+                if (!device["values"].isVoid()) values = device["values"].asMap();
+
+                if (device["devicetype"] == "switch") {
+                    deviceinfo["type"]="DevSwitch";
+                    if (!values["state"].isVoid()) {
+                        qpid::types::Variant::Map param;
+                        qpid::types::Variant::List paramList;
+                        param["key"]="Status";
+                        param["value"]=values["state"].asInt64() == 0 ? "0" : "1";
+                        paramList.push_back(param);
+                        deviceinfo["params"]=paramList;
+                    }
+                } else if (device["devicetype"] == "dimmer") {
+                    AGO_DEBUG() << "Values for dimmer device: " << values;
+                    deviceinfo["type"]="DevDimmer";
+                    if (!values["state"].isVoid()) {
+                        qpid::types::Variant::Map param, param2;
+                        qpid::types::Variant::List paramList;
+                        param["key"]="Status";
+                        param["value"]=values["state"].asInt64() == 0 ? "0" : "1";
+                        paramList.push_back(param);
+                        param2["key"]="Level";
+                        param2["value"]=values["state"].asInt64() == 255 ? 100 : values["state"].asInt64();
+                        paramList.push_back(param2);
+                        deviceinfo["params"]=paramList;
+                    }
+                } else if (device["devicetype"] == "drapes") {
+                    AGO_DEBUG() << "Values for drapes/shutter device: " << values;
+                    deviceinfo["type"]="DevShutter";
+                    if (!values["state"].isVoid()) {
+                        qpid::types::Variant::Map param, param2, param3;
+                        qpid::types::Variant::List paramList;
+                        param["key"]="Level";
+                        param["value"]=values["state"].asInt64() == 0 ? "0" : "100"; // TODO: should reflect real level
+                        paramList.push_back(param);
+                        param2["key"]="stopable";
+                        param2["value"]=1; // TODO: add new device type to agocontrol so that we can distinguish
+                        paramList.push_back(param2);
+                        param2["key"]="pulseable";
+                        param2["value"]=1; // TODO: add new device type to agocontrol so that we can distinguish
+                        paramList.push_back(param3);
+                        deviceinfo["params"]=paramList;
+                    }
+
+                } else if (device["devicetype"] == "scenario") {
+                    deviceinfo["type"]="DevScene";
+                } else if (device["devicetype"] == "camera") {
+                    deviceinfo["type"]="DevCamera";
+                } else if (device["devicetype"] == "co2sensor") {
+                    deviceinfo["type"]="DevCO2";
+                } else if (device["devicetype"] == "multilevelsensor") {
+                    deviceinfo["type"]="DevGenericSensor";
+                } else if (device["devicetype"] == "brightnesssensor") {
+                    deviceinfo["type"]="DevLuminosity";
+                } else if (device["devicetype"] == "smokedetector") {
+                    deviceinfo["type"]="DevSmoke";
+                } else if (device["devicetype"] == "temperaturesensor") {
+                    deviceinfo["type"]="DevTemperature";
+                } else if (device["devicetype"] == "thermostat") {
+                    deviceinfo["type"]="DevThermostat";
+                } else continue;
 				deviceinfo["id"]=it->first;
 				devicelist.push_back(deviceinfo);
 			}
@@ -274,6 +318,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 		result = MG_TRUE;
 	
 	} else if ( uri.find ("/devices/",0) != std::string::npos && uri.find("/action/",0) != std::string::npos)  {
+        // parse the action URI as defined by http://www.imperihome.com/apidoc/systemapi/#!/devices/deviceAction_get_1
 		std::vector<std::string> items = split(uri, '/');
 		for (int i=0;i<items.size();i++) {
 			AGO_TRACE() << "Item " << i << ": " << items[i];
@@ -281,13 +326,45 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 		if ( items.size()>=5 && items.size()<=6 ) {
 			if (items[1] == "devices" && items[3]=="action") {
 				qpid::types::Variant::Map command;
-				/*
-				DevDimmer,DevSwitch,: setstatus Param 0/1
-				*/	
-				command["command"]=items[4];
+			    qpid::types::Variant::Map sendmessagereply, retval;
+
 				command["uuid"]=items[2];
-				agoConnection->sendMessage("", command);
+                if (items.size()==6) { // we got an action with paramter
+                    if (items[4] == "setStatus") {
+                        command["command"]= items[5]=="1" ? "on" : "off";
+                    } else  if (items[4] == "setLevel") {
+                        command["command"]="setlevel";
+                        command["level"]= atoi(items[5].c_str());
+                    } else  if (items[4] == "setArmed") {
+                        // TODO
+                    } else  if (items[4] == "setChoice") {
+                        // TODO
+                    } else  if (items[4] == "setMode") {
+                        command["command"]="setthermostatmode";
+                        command["mode"]=items[5];
+                    } else  if (items[4] == "setSetPoint") {
+                        command["command"]="settemperature";
+                        command["temperature"]=atof(items[5].c_str());
+                    } else  if (items[4] == "pulseShutter") {
+                        command["command"]= items[5]=="up" ? "on" : "off";
+                    }
+                } else { // we got action without parameter
+                    if (items[4] == "stopShutter") {
+                        command["command"]="stop";
+                    } else if (items[4] == "launchScene") {
+                        command["command"]="run";
+                    } else  if (items[4] == "setAck") {
+                        // TODO
+                    }
+                }
+
+				sendmessagereply = agoConnection->sendMessageReply("", command);
+                // TODO: parse sendmessagereply and adjust retval accordingly
+                retval["success"]=true;
+                retval["errormsg"]="ok";
+                AGO_DEBUG() << "sendMessage reply: " << sendmessagereply;
 				mg_send_header(conn, "Content-Type", "application/json");
+                mg_printmap(conn, retval);
 				result = MG_TRUE;
 			}
 		}
