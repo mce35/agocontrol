@@ -63,14 +63,25 @@ void AgoSystem::printProcess(qpid::types::Variant::Map process)
 void AgoSystem::getCpuPercentage(qpid::types::Variant::Map& current, qpid::types::Variant::Map& last, double* ucpu, double* scpu)
 {
     uint32_t totalTimeDiff = current["cpuTotalTime"].asUint32() - last["cpuTotalTime"].asUint32();
-    *ucpu = 100 * (double)(((current["utime"].asUint64() + current["cutime"].asUint64()) - (last["utime"].asUint64() + last["cutime"].asUint64())) / (double)totalTimeDiff);
-    *scpu = 100 * (double)(((current["stime"].asUint64() + current["cstime"].asUint64()) - (last["stime"].asUint64() + last["cstime"].asUint64())) / (double)totalTimeDiff);
-    //fix wrong cpu usage if process restarted
-    if( *ucpu<0 || *ucpu>=100 )
+
+    uint64_t totalCurrentU = current["utime"].asUint64() + current["cutime"].asUint64();
+    uint64_t totalLastU = last["utime"].asUint64() + last["cutime"].asUint64();
+    if( (totalCurrentU-totalLastU)>0 )
+    {
+        *ucpu = 100 * (double)((totalCurrentU - totalLastU) / (double)totalTimeDiff);
+    }
+    else
     {
         *ucpu = 0;
     }
-    if( *scpu<0 || *scpu>=100 )
+
+    uint64_t totalCurrentS = current["stime"].asUint64() + current["cstime"].asUint64();
+    uint64_t totalLastS = last["stime"].asUint64() + last["cstime"].asUint64();
+    if( (totalCurrentS-totalLastS)>0 )
+    {
+        *scpu = 100 * (double)((totalCurrentS - totalLastS) / (double)totalTimeDiff);
+    }
+    else
     {
         *scpu = 0;
     }
