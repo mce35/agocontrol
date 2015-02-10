@@ -66,11 +66,11 @@ void AgoSystem::getCpuPercentage(qpid::types::Variant::Map& current, qpid::types
     *ucpu = 100 * (double)(((current["utime"].asUint64() + current["cutime"].asUint64()) - (last["utime"].asUint64() + last["cutime"].asUint64())) / (double)totalTimeDiff);
     *scpu = 100 * (double)(((current["stime"].asUint64() + current["cstime"].asUint64()) - (last["stime"].asUint64() + last["cstime"].asUint64())) / (double)totalTimeDiff);
     //fix wrong cpu usage if process restarted
-    if( *ucpu<0 )
+    if( *ucpu<0 || *ucpu>=100 )
     {
         *ucpu = 0;
     }
-    if( *scpu<0 )
+    if( *scpu<0 || *scpu>=100 )
     {
         *scpu = 0;
     }
