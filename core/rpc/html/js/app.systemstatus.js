@@ -8,6 +8,30 @@ function systemStatus() {
     var self = this;
     self.processes = ko.observableArray([]);
     self.updateInterval = null;
+    self.systemController = null;
+    self.interval = null;
+
+    //get systemcontroller uuid
+    self.getUuid = function()
+    {
+	if( deviceMap!==undefined )
+        {
+            for( var i=0; i<deviceMap.length; i++ )
+            {
+                if( deviceMap[i].devicetype=='systemcontroller' )
+                {
+                    self.systemController = deviceMap[i].uuid;
+                }
+            }
+        }
+
+        if( self.systemController!=null )
+        {
+            self.updateInterval = window.setInterval(self.getStatus, 10000);
+            self.getStatus();
+            window.clearInterval(self.interval);
+        }
+    }
 
     //return human readable size
     //http://stackoverflow.com/a/20463021/3333386
@@ -19,7 +43,7 @@ function systemStatus() {
     self.getStatus = function()
     {
         var content = {};
-        content.uuid = self.agocontrol.systemController;
+        content.uuid = systemController;
         content.command = 'getprocesslist';
         sendCommand(content, function(res) {
             var procs = [];
@@ -38,8 +62,7 @@ function systemStatus() {
     };
 
     //launch autorefresh and get current status
-    self.updateInterval = window.setInterval(self.getStatus, 10000);
-    self.getStatus();
+    self.interval = window.setInterval(self.getUuid, 1000);
 }
 
 /**
@@ -47,5 +70,15 @@ function systemStatus() {
  */
 function init_systemStatus() {
     model = new systemStatus();
+
+    model.mainTemplate = function() {
+        return "systemStatus";
+    }.bind(model);
+
+    model.navigation = function() {
+        return "";
+    }.bind(model);
+
+    ko.applyBindings(model);
 }
 
