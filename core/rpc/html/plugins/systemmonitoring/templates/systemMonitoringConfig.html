@@ -1,0 +1,42 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+    </div>
+
+    <h3>System monitoring configuration</h3>
+    <br/>
+
+    <div data-bind="jqTabs:{}">
+        <ul>
+            <li><a href="#tabs-processes">Process monitoring</a></li>
+            <li><a href="#tabs-memory">Memory monitoring</a></li>
+        </ul>
+
+        <div id="tabs-processes">
+            <span>Agocontrol can trigger an event when a process is missing.</span>
+            <br/>
+            <select data-bind="options:processes, selectedOptions:monitoredProcesses" size="20" multiple="true"></select>
+            <div class="medium pretty primary btn">
+                <a href="#" data-bind="click:setMonitoredProcesses">Save list</a>
+            </div>
+        </div>
+
+        <div id="tabs-memory">
+            <ul>
+                <li>
+                    <span>Agocontrol can trigger an event when a process reach a memory threshold.</span>
+                </li>
+                <li class="prepend append field">
+                    <span class="adjoined">Memory threshold (in Mo)</span>
+                    <input class="xnarrow text input" type="text" placeholder="Memory threshold" data-bind="value:memoryThreshold"/>
+                    <div class="medium primary btn">
+                        <a href="#" data-bind="click:setMemoryThreshold">Set</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <br/>
+</div>
+
