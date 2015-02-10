@@ -26,16 +26,24 @@ window.BlocklyAgocontrol = {
         }
     },
 
-    //shorten event name to not overload block
-    shortenedEvent: function(event) {
-        var out = event.replace("event.", "");
-        out = out.replace("environment", "env");
-        out = out.replace("device", "dev");
-        out = out.replace("mediaplayer", "mplay");
-        out = out.replace("proximity", "prox");
-        out = out.replace("telecom", "tel");
-        out = out.replace("security", "sec");
-        return out;
+    //shortens event name to not overload block
+    shortensEventName: function(event) {
+        if( event.indexOf("system.")==0 )
+        {
+            //system event, drop it
+            return "";
+        }
+        else
+        {
+            var out = event.replace("event.", "");
+            out = out.replace("environment", "env");
+            out = out.replace("device", "dev");
+            out = out.replace("mediaplayer", "mplay");
+            out = out.replace("proximity", "prox");
+            out = out.replace("telecom", "tel");
+            out = out.replace("security", "sec");
+            return out;
+        }
     },
 
     //get devices
@@ -106,7 +114,13 @@ window.BlocklyAgocontrol = {
         for( var event in this.schema.events )
         {
             if( event!==undefined )
-                events.push([this.shortenedEvent(event), event]);
+            {
+                var evtName = this.shortensEventName(event);
+                if( evtName.length>0 )
+                {
+                    events.push([evtName, event]);
+                }
+            }
         }
         //prevent from js crash
         if( events.length===0 )
@@ -121,7 +135,11 @@ window.BlocklyAgocontrol = {
         {
             for( var i=0; i<this.schema.devicetypes[deviceType].events.length; i++ )
             {
-                events.push([this.shortenedEvent(this.schema.devicetypes[deviceType].events[i]), this.schema.devicetypes[deviceType].events[i]]);
+                var evtName = this.shortensEventName(this.schema.devicetypes[deviceType].events[i]);
+                if( evtName.length>0 )
+                {
+                    events.push([evtName, this.schema.devicetypes[deviceType].events[i]]);
+                }
             }
         }
         //prevent from js crash
@@ -292,7 +310,15 @@ window.BlocklyAgocontrol = {
         if( eventName.length>0 )
         {
             output.name = eventName;
-            output.shortName = this.shortenedEvent(eventName);
+            var shortName = this.shortensEventName(eventName);
+            if( shortName.length==0 )
+            {
+                output.shortName = shortName;
+            }
+            else
+            {
+                output.shortName = eventName;
+            }
             output.properties = this.getEventProperties(eventName);
         }
         return output;
