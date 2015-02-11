@@ -96,98 +96,148 @@ bool operator>=(qpid::types::Variant a, qpid::types::Variant b) {
 
 void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map content) {
     // ignore device announce events
-    if (subject == "event.device.announce") return;
+    if (subject == "event.device.announce")
+    {
+        return;
+    }
+
     // iterate event map and match for event name
     qpid::types::Variant::Map inventory = agoConnection->getInventory();
-    for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++) { 
+    for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++)
+    { 
         qpid::types::Variant::Map event;
-        if (!(it->second.isVoid())) {
+        if (!(it->second.isVoid()))
+        {
             event = it->second.asMap();
-        } else {
+        }
+        else
+        {
             AGO_ERROR() << "Eventmap entry is void";
         }
-        if (event["event"] == subject) {
+        if (event["event"] == subject)
+        {
             AGO_TRACE() << "Found matching event: " << event;
             // check if the event is disabled
-            if ((!(event["disabled"].isVoid())) && (event["disabled"].asBool() == true)) return;
+            if ((!(event["disabled"].isVoid())) && (event["disabled"].asBool() == true))
+            {
+                return;
+            }
 
             qpid::types::Variant::Map criteria; // this holds the criteria evaluation results for each criteria
             std::string nesting = event["nesting"].asString();
-            if (!event["criteria"].isVoid()) for (qpid::types::Variant::Map::const_iterator crit = event["criteria"].asMap().begin(); crit!= event["criteria"].asMap().end(); crit++) {
+            if (!event["criteria"].isVoid()) for (qpid::types::Variant::Map::const_iterator crit = event["criteria"].asMap().begin(); crit!= event["criteria"].asMap().end(); crit++)
+            {
                 AGO_TRACE() << "criteria[" << crit->first << "] - " << crit->second;
                 qpid::types::Variant::Map element;
-                if (!(crit->second.isVoid())) {
+                if (!(crit->second.isVoid()))
+                {
                     element = crit->second.asMap();
-                } else {
+                }
+                else
+                {
                     AGO_ERROR() << "Criteria element is void";
                 }
-                try {
+                try
+                {
                     // AGO_TRACE() << "LVAL: " << element["lval"];
                     qpid::types::Variant::Map lvalmap;
                     qpid::types::Variant lval;
-                    if (!element["lval"].isVoid()) {
-                        if (element["lval"].getType()==qpid::types::VAR_STRING) {
+                    if (!element["lval"].isVoid())
+                    {
+                        if (element["lval"].getType()==qpid::types::VAR_STRING)
+                        {
                             // legacy eventmap entry
                             lvalmap["type"] = "event";
                             lvalmap["parameter"] = element["lval"];
-                        } else {
+                        }
+                        else
+                        {
                             lvalmap = element["lval"].asMap();
                         }
                     }
                     // determine lval depending on type
-                    if (lvalmap["type"] == "variable") {
+                    if (lvalmap["type"] == "variable")
+                    {
                         qpid::types::Variant::Map variables;
                         std::string name = lvalmap["name"];
-                        if (!inventory["variables"].isVoid()) variables = inventory["variables"].asMap();
+                        if (!inventory["variables"].isVoid())
+                        {
+                            variables = inventory["variables"].asMap();
+                        }
                         lval = variables[name];	
 
-                    } else if (lvalmap["type"] == "device") {
+                    }
+                    else if (lvalmap["type"] == "device")
+                    {
                         std::string uuid = lvalmap["uuid"].asString();
                         qpid::types::Variant::Map devices = inventory["devices"].asMap();
                         qpid::types::Variant::Map device = devices[uuid].asMap();
-                        if (lvalmap["parameter"] == "state") {
+                        if (lvalmap["parameter"] == "state")
+                        {
                             lval = device["state"];
-                        } else {
+                        }
+                        else
+                        {
                             qpid::types::Variant::Map values = device["values"].asMap();
                             std::string parameter = lvalmap["parameter"].asString();
                             qpid::types::Variant::Map value = values[parameter].asMap();
                             lval = value["level"];
                         }
-                    } else { // event
+                    }
+                    else //event
+                    {
                         lval = content[lvalmap["parameter"].asString()];
                     }
                     qpid::types::Variant rval = element["rval"];
                     AGO_TRACE() << "lval: " << lval << " (" << getTypeName(lval.getType()) << ")";
                     AGO_TRACE() << "rval: " << rval << " (" << getTypeName(rval.getType()) << ")";
 
-                    if (element["comp"] == "eq") {
-                        if (lval.getType()==qpid::types::VAR_STRING || rval.getType()==qpid::types::VAR_STRING) { // compare as string
+                    if (element["comp"] == "eq")
+                    {
+                        if (lval.getType()==qpid::types::VAR_STRING || rval.getType()==qpid::types::VAR_STRING) // compare as string
+                        {
                             criteria[crit->first] = lval.asString() == rval.asString(); 
-                        } else {
+                        }
+                        else
+                        {
                             criteria[crit->first] = lval.isEqualTo(rval);
                         }
-                    } else if (element["comp"] == "lt") {
+                    }
+                    else if (element["comp"] == "lt")
+                    {
                         criteria[crit->first] = lval < rval;
-                    } else if (element["comp"] == "gt") {
+                    }
+                    else if (element["comp"] == "gt")
+                    {
                         criteria[crit->first] = lval > rval;
-                    } else if (element["comp"] == "gte") {
+                    }
+                    else if (element["comp"] == "gte")
+                    {
                         criteria[crit->first] = lval >= rval;
-                    } else if (element["comp"] == "lte") {
+                    }
+                    else if (element["comp"] == "lte")
+                    {
                         criteria[crit->first] = lval <= rval;
-                    } else {
+                    }
+                    else
+                    {
                         criteria[crit->first] = false;
                     }
                     AGO_TRACE() << lval << " " << element["comp"] << " " << rval << " : " << criteria[crit->first];
-                } catch ( const std::exception& error) {
+                }
+                catch ( const std::exception& error)
+                {
                     stringstream errorstring;
                     errorstring << error.what();
                     AGO_ERROR() << "Exception occured: " << errorstring.str();
                     criteria[crit->first] = false;
                 }
+
                 // this is for converted legacy scenario maps
                 stringstream token; token << "criteria[\"" << crit->first << "\"]";
                 stringstream boolval; boolval << criteria[crit->first];
                 replaceString(nesting, token.str(), boolval.str()); 
+
                 // new javascript editor sends criteria[x] not criteria["x"]
                 stringstream token2; token2 << "criteria[" << crit->first << "]";
                 stringstream boolval2; boolval2 << criteria[crit->first];
@@ -197,7 +247,8 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
             replaceString(nesting, "or", "|");
             nesting += ";";
             AGO_TRACE() << "nesting prepared: " << nesting;
-            if (evaluateNesting(nesting)) {
+            if (evaluateNesting(nesting))
+            {
                 AGO_DEBUG() << "sending event action as command";
                 agoConnection->sendMessage(event["action"].asMap());
             }
@@ -206,12 +257,16 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
 
 }
 
-qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map content) {
+qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map content)
+{
     qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
-    if (internalid == "eventcontroller") {
-        if (content["command"] == "setevent") {
-            try {
+    if (internalid == "eventcontroller")
+    {
+        if (content["command"] == "setevent")
+        {
+            try
+            {
                 AGO_DEBUG() << "setevent request";
                 qpid::types::Variant::Map newevent = content["eventmap"].asMap();
                 AGO_TRACE() << "event content:" << newevent;
@@ -220,39 +275,56 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
                 AGO_TRACE() << "event uuid:" << eventuuid;
                 eventmap[eventuuid] = newevent;
                 agoConnection->addDevice(eventuuid.c_str(), "event", true);
-                if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE))) {
+                if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
+                {
                     returnval["result"] = 0;
                     returnval["event"] = eventuuid;
-                } else {
+                }
+                else
+                {
                     returnval["result"] = -1;
                 }
-            } catch (qpid::types::InvalidConversion) {
+            }
+            catch (qpid::types::InvalidConversion)
+            {
                 returnval["result"] = -1;
-            } catch (...) {
+            }
+            catch (...)
+            {
                 returnval["result"] = -1;
                 returnval["error"] = "exception";
             }
-        } else if (content["command"] == "getevent") {
-            try {
+        }
+        else if (content["command"] == "getevent")
+        {
+            try
+            {
                 std::string event = content["event"].asString();
                 AGO_DEBUG() << "getevent request:" << event;
                 returnval["result"] = 0;
                 returnval["eventmap"] = eventmap[event].asMap();
                 returnval["event"] = event;
-            } catch (qpid::types::InvalidConversion) {
+            }
+            catch (qpid::types::InvalidConversion)
+            {
                 returnval["result"] = -1;
             }
-        } else if (content["command"] == "delevent") {
+        }
+        else if (content["command"] == "delevent")
+        {
             std::string event = content["event"].asString();
             AGO_DEBUG() << "delevent request:" << event;
             returnval["result"] = -1;
-            if (event != "") {
+            if (event != "")
+            {
                 qpid::types::Variant::Map::iterator it = eventmap.find(event);
-                if (it != eventmap.end()) {
+                if (it != eventmap.end())
+                {
                     AGO_TRACE() << "removing ago device" << event;
                     agoConnection->removeDevice(it->first.c_str());
                     eventmap.erase(it);
-                    if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE))) {
+                    if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
+                    {
                         returnval["result"] = 0;
                     }
                 }
@@ -262,7 +334,8 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
     return returnval;
 }
 
-void AgoEvent::setupApp() {
+void AgoEvent::setupApp()
+{
     AGO_DEBUG() << "parsing eventmap file" << endl;
     fs::path file = ensureParentDirExists(getConfigPath(EVENTMAPFILE));
     eventmap = jsonFileToVariantMap(file);
@@ -272,7 +345,8 @@ void AgoEvent::setupApp() {
 
     agoConnection->addDevice("eventcontroller", "eventcontroller");
 
-    for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++) {
+    for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++)
+    {
         AGO_DEBUG() << "adding event:" << it->first << ":" << it->second << endl;	
         agoConnection->addDevice(it->first.c_str(), "event", true);
     }
