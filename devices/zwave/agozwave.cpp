@@ -1803,7 +1803,7 @@ void AgoZwave::setupApp()
         Options::Get()->AddOptionBool("ValidateValueChanges", true);
     }
 
-    Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Debug );
+    Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
     Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
     Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
 
