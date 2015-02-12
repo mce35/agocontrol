@@ -1512,6 +1512,13 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
                     break;
                 case V_VAR1_V14:
+                    valid = 1;
+                    {
+                        qpid::types::Variant::Map payloadMap;
+                        payloadMap["pin"]=payload;
+                        agoConnection->emitEvent(internalid.c_str(), "event.security.pinentered", payloadMap);
+                    }
+
                     break;
                 case V_VAR2_V14:
                     break;
