@@ -25,7 +25,18 @@ function Zwave(deviceMap) {
         var found;
         for( var i=0; i<count; i++ )
         {
-            titles.push(""+nodes[i].type+"("+(i+1)+")");
+            var nodeName = nodes[i].type;
+            if( nodes[i].product.length>0 )
+            {
+                //replace node type with node product info
+                nodeName = nodes[i].product;
+            }
+            if( nodes[i].manufacturer.length>0 )
+            {
+                //and append manufacturer if available
+                nodeName += ' (' + nodes[i].manufacturer + ')';
+            }
+            titles.push(""+nodeName+" ("+(i+1)+")");
             ids.push(""+(i+1));
             var deps = [];
             for( var j=0; j<count; j++ )
@@ -1030,6 +1041,7 @@ function zwaveConfig(zwave) {
     self.port = ko.observable();
     self.nodeInfos = ko.observableArray([]);
     self.nodeStatus = ko.observableArray([]);
+    self.nodeParameters = ko.observableArray([]);
     self.nodeAssociations = ko.observableArray([]);
     self.nodesForAssociation = ko.observableArray([]);
     self.stats = ko.observableArray([]);
@@ -1065,6 +1077,8 @@ function zwaveConfig(zwave) {
             self.nodeInfos.pop();
         while( self.nodeStatus().length>0 )
             self.nodeStatus.pop();
+        while( self.nodeParameters().length>0 )
+            self.nodeParameters.pop();
         while( self.nodeAssociations().length>0 )
             self.nodeAssociations.pop();
         while( self.nodesForAssociation().length>0 )
@@ -1103,6 +1117,24 @@ function zwaveConfig(zwave) {
             {
                 self.nodesForAssociation.push({key:self.nodes[i].id, value:self.nodes[i].type+'('+self.nodes[i].id+')'});
             }
+        }
+
+        //get node parameters
+        for( i=0; i<self.selectedNode.params.length; i++ )
+        {
+            /*self.nodeParameters.push({
+                'currentvalue': ko.observable(self.selectedNode.params[i].currentvalue),
+                'help': self.selectedNode.params[i].help,
+                'invalid': self.selectedNode.params[i].invalid,
+                'items': (self.selectedNode.params[i].items===undefined) ? null : self.selectedNode.params[i].items,
+                'label': self.selectedNode.params[i].label,
+                'max': self.selectedNode.params[i].max,
+                'min': self.selectedNode.params[i].min,
+                'readonly': self.selectedNode.params[i].readonly,
+                'type': self.selectedNode.params[i].type,
+                'units': self.selectedNode.params[i].units
+            });*/
+            self.nodeParameters.push(self.selectedNode.params[i]);
         }
 
         //get node associations
