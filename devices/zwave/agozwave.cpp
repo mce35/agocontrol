@@ -507,6 +507,7 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
     return output;
 }
 
+
 //-----------------------------------------------------------------------------
 // <GetNodeInfo>
 // Callback that is triggered when a value, group or node changes
@@ -548,6 +549,7 @@ ValueID* AgoZwave::getValueID(int nodeid, int instance, string label)
     return NULL;
 }
 
+
 //-----------------------------------------------------------------------------
 // <OnNotification>
 // Callback that is triggered when a value, group or node changes
@@ -559,6 +561,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
     pthread_mutex_lock( &g_criticalSection );
 
     AGO_DEBUG() << "Notification " << _notification->GetType() << " received";
+
     switch( _notification->GetType() )
     {
         case Notification::Type_ValueAdded:
@@ -581,10 +584,10 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                 tempstream << label;
                 string tempstring = tempstream.str();
                 ZWaveNode *device;
+
                 if (id.GetGenre() == ValueID::ValueGenre_Config)
                 {
-                    AGO_INFO() << "Configuration parameter Value Added: Home " << std::hex <<  _notification->GetHomeId() << " Node: " << std::dec << (int) _notification->GetNodeId() << " Genre: " << std::dec << (int) id.GetGenre() << " Class: " << std::hex << (int) id.GetCommandClassId()  << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
-
+                    AGO_INFO() << "Configuration parameter Value Added: Home " << std::hex <<  _notification->GetHomeId() << " Node: " << std::dec << (int) _notification->GetNodeId() << " Genre: " << std::dec << (int) id.GetGenre() << " Class: " << getHRCommandClassId(id.GetCommandClassId())  << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
                 }
                 else if (basic == BASIC_TYPE_CONTROLLER)
                 {
@@ -838,6 +841,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             break;
                         default:
                             AGO_INFO() << "Notification: Unassigned Value Added Home: " << std::hex << _notification->GetHomeId() << " Node: " << std::dec << (int)_notification->GetNodeId() << " Genre: " << std::dec << (int)id.GetGenre() << " Class: " << getHRCommandClassId(id.GetCommandClassId()) << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
+
                     }
                 }
             }
@@ -1236,7 +1240,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 if (!(content["count"].isVoid()))
                 {
                     count=content["count"];
-                   }
+                }
                 Manager::Get()->TestNetworkNode(g_homeId, mynode, count);
                 result = true;
             }
@@ -1286,7 +1290,6 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
 
                     //get node specific parameters
                     uint8_t commandClassId = it2->GetCommandClassId();
-                    AGO_DEBUG() << "++++++++++++++++++++++++commandclassid=" << getHRCommandClassId(commandClassId);
                     if( commandClassId==COMMAND_CLASS_CONFIGURATION )
                     {
                         qpid::types::Variant::Map param;
@@ -1434,6 +1437,8 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 node["type"]=Manager::Get()->GetNodeType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
                 node["producttype"]=Manager::Get()->GetNodeProductType(nodeInfo->m_homeId,nodeInfo->m_nodeId);
                 node["numgroups"]=Manager::Get()->GetNumGroups(nodeInfo->m_homeId,nodeInfo->m_nodeId);
+
+                //fill node status
                 status["querystage"]=Manager::Get()->GetNodeQueryStage(nodeInfo->m_homeId,nodeInfo->m_nodeId);
                 status["awake"]=(Manager::Get()->IsNodeAwake(nodeInfo->m_homeId,nodeInfo->m_nodeId) ? 1 : 0);
                 status["listening"]=(Manager::Get()->IsNodeListeningDevice(nodeInfo->m_homeId,nodeInfo->m_nodeId) || 
@@ -1803,7 +1808,7 @@ void AgoZwave::setupApp()
         Options::Get()->AddOptionBool("ValidateValueChanges", true);
     }
 
-    Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Detail );
+    Options::Get()->AddOptionInt( "SaveLogLevel", LogLevel_Debug );
     Options::Get()->AddOptionInt( "QueueLogLevel", LogLevel_Debug );
     Options::Get()->AddOptionInt( "DumpTrigger", LogLevel_Error );
 
