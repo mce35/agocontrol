@@ -435,7 +435,7 @@ Agocontrol.prototype.renderGraph = function(device, environment)
     else
     {
         var content = {};
-        content.uuid = self.agocontrol.dataLoggerController;
+        content.uuid = self.dataLoggerController;
         content.command = "getdata";
         content.deviceid = device.uuid;
         content.start = startDate.toISOString();
