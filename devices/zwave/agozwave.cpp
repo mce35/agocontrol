@@ -821,6 +821,19 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 break;
+                            case COMMAND_CLASS_SENSOR_ALARM:
+                                if (label == "Sensor" || label == "Alarm Level" || label == "Flood") {
+                                    if ((device = devices.findId(tempstring)) != NULL) {
+                                        device->addValue(label, id);
+                                    } else {
+                                        device = new ZWaveNode(tempstring, "binarysensor");	
+                                        device->addValue(label, id);
+                                        devices.add(device);
+                                        agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                                    }
+                                    // Manager::Get()->EnablePoll(id);
+                                }
+                                break;
                             default:
                                 AGO_INFO() << "Notification: Unassigned Value Added Home: " << std::hex << _notification->GetHomeId() << " Node: " << std::dec << (int)_notification->GetNodeId() << " Genre: " << std::dec << (int)id.GetGenre() << " Class: " << std::hex << (int)id.GetCommandClassId() << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
 
@@ -929,6 +942,9 @@ void AgoZwave::_OnNotification (Notification const* _notification) {
                         }
                         if (label == "Fan State") {
                             eventtype="event.environment.fanstatechanged";
+                        }
+                        if (label == "Flood") {
+                            eventtype="event.security.sensortriggered";
                         }
                         if (eventtype != "") {	
                             ZWaveNode *device = devices.findValue(id);
