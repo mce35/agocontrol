@@ -293,10 +293,45 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                     deviceinfo["params"]=paramList;
                 } else if (device["devicetype"] == "brightnesssensor") {
                     deviceinfo["type"]="DevLuminosity";
+                    qpid::types::Variant::List paramList;
+                    if (!(values["brightness"]).isVoid()) {
+                        qpid::types::Variant::Map agoValue;
+                        qpid::types::Variant::Map param;
+                        agoValue = (values["brightness"]).asMap();
+                        param["key"]="Value";
+                        param["value"]=agoValue["level"].asString();
+                        param["unit"]=agoValue["unit"];
+                        param["graphable"]="false";
+                        paramList.push_back(param);
+                    }
                 } else if (device["devicetype"] == "smokedetector") {
                     deviceinfo["type"]="DevSmoke";
                 } else if (device["devicetype"] == "temperaturesensor") {
                     deviceinfo["type"]="DevTemperature";
+                    qpid::types::Variant::List paramList;
+                    if (!(values["temperature"]).isVoid()) {
+                        qpid::types::Variant::Map agoValue;
+                        qpid::types::Variant::Map param;
+                        agoValue = (values["temperature"]).asMap();
+                        param["key"]="Value";
+                        param["value"]=agoValue["level"].asString();
+                        param["unit"]=agoValue["unit"];
+                        param["graphable"]="false";
+                        paramList.push_back(param);
+                    }
+                } else if (device["devicetype"] == "humiditysensor") {
+                    deviceinfo["type"]="DevHygrometry";
+                    qpid::types::Variant::List paramList;
+                    if (!(values["humidity"]).isVoid()) {
+                        qpid::types::Variant::Map agoValue;
+                        qpid::types::Variant::Map param;
+                        agoValue = (values["humidity"]).asMap();
+                        param["key"]="Value";
+                        param["value"]=agoValue["level"].asString();
+                        param["unit"]=agoValue["unit"];
+                        param["graphable"]="false";
+                        paramList.push_back(param);
+                    }
                 } else if (device["devicetype"] == "thermostat") {
                     deviceinfo["type"]="DevThermostat";
                 } else continue;
