@@ -18,16 +18,11 @@ function DeviceConfig(agocontrol)
             var dev = self.agocontrol.devices()[i];
             if (dev.room)
             {
-                if (tagMap["room_" + dev.room])
-                {
-                    tagMap["room_" + dev.room].w++;
-                }
-                else
+                if( !tagMap["room_" + dev.room] )
                 {
                     tagMap["room_" + dev.room] = {
                         column : "room",
                         value : dev.room,
-                        w : 1,
                         selected : false,
                         className : "default label"
                     };
@@ -46,7 +41,9 @@ function DeviceConfig(agocontrol)
         }
 
         roomList.sort(function(a, b) {
-            return b.w - a.w;
+            if( a.value<b.value ) return -1;
+            else if( a.value>b.value ) return 1;
+            else return 0;
         });
 
         self.roomFilters(roomList);
@@ -58,16 +55,11 @@ function DeviceConfig(agocontrol)
         for ( var i = 0; i < self.agocontrol.devices().length; i++)
         {
             var dev = self.agocontrol.devices()[i];
-            if (tagMap["type_" + dev.devicetype])
-            {
-                tagMap["type_" + dev.devicetype].w++;
-            }
-            else
+            if( !tagMap["type_" + dev.devicetype] )
             {
                 tagMap["type_" + dev.devicetype] = {
                     column : "devicetype",
                     value : dev.devicetype,
-                    w : 1,
                     selected : false,
                     className : "default label"
                 };
@@ -85,7 +77,9 @@ function DeviceConfig(agocontrol)
         }
 
         devList.sort(function(a, b) {
-            return b.w - a.w;
+            if( a.value<b.value ) return -1;
+            else if( a.value>b.value ) return 1;
+            else return 0;
         });
 
         self.deviceTypeFilters(devList);
