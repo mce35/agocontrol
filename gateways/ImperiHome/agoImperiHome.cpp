@@ -209,6 +209,10 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 		if( inventory.size()>0 && !inventory["devices"].isVoid() ) {
 			qpid::types::Variant::Map devices = inventory["devices"].asMap();
 			for (qpid::types::Variant::Map::iterator it = devices.begin(); it != devices.end(); it++) {
+                if (it->second.isVoid()) {
+                    AGO_ERROR() << "No device map for " << it->first;
+                    continue;
+                }
 				qpid::types::Variant::Map device = it->second.asMap();
 				if (device["name"].asString() == "") continue; // skip unnamed devices
 				if (device["room"].asString() == "") continue; // skip devices without room assignment
@@ -264,10 +268,29 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                     deviceinfo["type"]="DevScene";
                 } else if (device["devicetype"] == "camera") {
                     deviceinfo["type"]="DevCamera";
+                    qpid::types::Variant::Map param;
+                    param["key"]="localjpegurl";
+                    param["value"]=device["internalid"];
+                    qpid::types::Variant::List paramList;
+                    paramList.push_back(param);
+                    deviceinfo["params"]=paramList;
                 } else if (device["devicetype"] == "co2sensor") {
                     deviceinfo["type"]="DevCO2";
                 } else if (device["devicetype"] == "multilevelsensor") {
                     deviceinfo["type"]="DevGenericSensor";
+                    qpid::types::Variant::List paramList;
+                    for (qpid::types::Variant::Map::iterator paramIt= values.begin(); paramIt != values.end(); paramIt++) {
+                        qpid::types::Variant::Map agoValue;
+                        qpid::types::Variant::Map param;
+                        if (!(paramIt->second).isVoid()) agoValue = (paramIt->second).asMap();
+                        //param["key"]=paramIt->first;
+                        param["key"]="Value";
+                        param["value"]=agoValue["level"].asString();
+                        param["unit"]=agoValue["unit"];
+                        param["graphable"]="false";
+                        paramList.push_back(param);
+                    }
+                    deviceinfo["params"]=paramList;
                 } else if (device["devicetype"] == "brightnesssensor") {
                     deviceinfo["type"]="DevLuminosity";
                 } else if (device["devicetype"] == "smokedetector") {
