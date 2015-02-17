@@ -18,8 +18,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <tinyxml2.h>
-
 #include <limits.h>
 #include <float.h>
 
@@ -72,9 +70,14 @@ private:
     map<ValueID, qpid::types::Variant> valueCache;
     ZWaveNodes devices;
 
-    const char *controllerErrorStr (Driver::ControllerError err);
-    NodeInfo* GetNodeInfo (Notification const* _notification);
+    const char *controllerErrorStr(Driver::ControllerError err);
+    NodeInfo* getNodeInfo(Notification const* _notification);
+    NodeInfo* getNodeInfo(uint32 homeId, uint8 nodeId);
     ValueID* getValueID(int nodeid, int instance, string label);
+    qpid::types::Variant::Map getCommandClassConfigurationParameter(OpenZWave::ValueID* valueID);
+    qpid::types::Variant::Map getCommandClassWakeUpParameter(OpenZWave::ValueID* valueID);
+    bool setCommandClassParameter(uint32 homeId, uint8 nodeId, uint8 commandClassId, uint8 index, string newValue);
+    void requestAllNodeConfigParameters();
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void setupApp();
@@ -509,10 +512,10 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
 
 
 //-----------------------------------------------------------------------------
-// <GetNodeInfo>
+// <getNodeInfo>
 // Callback that is triggered when a value, group or node changes
 //-----------------------------------------------------------------------------
-AgoZwave::NodeInfo* AgoZwave::GetNodeInfo (Notification const* _notification)
+AgoZwave::NodeInfo* AgoZwave::getNodeInfo (Notification const* _notification)
 {
     uint32 const homeId = _notification->GetHomeId();
     uint8 const nodeId = _notification->GetNodeId();
@@ -526,6 +529,23 @@ AgoZwave::NodeInfo* AgoZwave::GetNodeInfo (Notification const* _notification)
     }
 
     return NULL;
+}
+
+AgoZwave::NodeInfo* AgoZwave::getNodeInfo(uint32 homeId, uint8 nodeId)
+{
+    NodeInfo* result = NULL;
+
+    for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
+    {
+        NodeInfo* nodeInfo = *it;
+        if( nodeInfo->m_homeId==homeId && nodeInfo->m_nodeId==nodeId )
+        {
+            result = nodeInfo;
+            break;
+        }
+    }
+
+    return result;
 }
 
 
@@ -549,6 +569,229 @@ ValueID* AgoZwave::getValueID(int nodeid, int instance, string label)
     return NULL;
 }
 
+/**
+ * Get COMMAND_CLASS_CONFIGURATION parameter
+ * @return map containing all parameter infos
+ */
+qpid::types::Variant::Map AgoZwave::getCommandClassConfigurationParameter(OpenZWave::ValueID* valueID)
+{
+    //init
+    qpid::types::Variant::Map param;
+    if( valueID==NULL )
+    {
+        return param;
+    }
+
+    //add invalid parameter property
+    //give info to ui that parameter is invalid
+    param["invalid"] = false;
+
+    //get parameter type
+    vector<string> ozwItems;
+    qpid::types::Variant::List items;
+    switch( valueID->GetType() )
+    {
+        case ValueID::ValueType_Decimal:
+            //Represents a non-integer value as a string, to avoid floating point accuracy issues. 
+            param["type"] = "float";
+            break;
+        case ValueID::ValueType_Bool:
+            //Boolean, true or false 
+            param["type"] = "bool";
+            break;
+        case ValueID::ValueType_Byte:
+            //8-bit unsigned value 
+            param["type"] = "byte";
+            break;
+        case ValueID::ValueType_Short:
+            //16-bit signed value 
+            param["type"] = "short";
+            break;
+        case ValueID::ValueType_Int:
+            //32-bit signed value 
+            param["type"] = "int";
+            break;
+        case ValueID::ValueType_Button:
+            //A write-only value that is the equivalent of pressing a button to send a command to a device
+            param["type"] = "button";
+            param["invalid"] = true;
+            break;
+        case ValueID::ValueType_List:
+            //List from which one item can be selected 
+            param["type"] = "list";
+
+            //get list items
+            Manager::Get()->GetValueListItems(*valueID, &ozwItems);
+            for( vector<string>::iterator it3=ozwItems.begin(); it3!=ozwItems.end(); it3++ )
+            {
+                items.push_back(*it3);
+            }
+            param["items"] = items;
+            break;
+        case ValueID::ValueType_Schedule:
+            //Complex type used with the Climate Control Schedule command class
+            param["type"] = "notsupported";
+            param["invalid"] = true;
+            break;
+        case ValueID::ValueType_String:
+            //Text string
+            param["type"] = "string";
+            break;
+        case ValueID::ValueType_Raw:
+            //A collection of bytes 
+            param["type"] = "notsupported";
+            param["invalid"] = true;
+            break;
+        default:
+            param["invalid"] = true;
+            param["type"] = "unknown";
+    }
+
+    //get parameter value
+    string currentValue = "";
+    if( Manager::Get()->GetValueAsString(*valueID, &currentValue) )
+    {
+        param["currentvalue"] = currentValue;
+    }
+    else
+    {
+        //unable to get current value
+        param["invalid"] = true;
+        param["currentvalue"] = "";
+    }
+
+    //get other infos
+    param["label"] = Manager::Get()->GetValueLabel(*valueID);
+    param["units"] = Manager::Get()->GetValueUnits(*valueID);
+    param["help"] = Manager::Get()->GetValueHelp(*valueID);
+    param["min"] = Manager::Get()->GetValueMin(*valueID);
+    param["max"] = Manager::Get()->GetValueMax(*valueID);
+    param["readonly"] = Manager::Get()->IsValueReadOnly(*valueID);
+    param["commandclassid"] = COMMAND_CLASS_CONFIGURATION;
+    param["instance"] = valueID->GetInstance();
+    param["index"] = valueID->GetIndex();
+
+
+    return param;
+}
+
+/**
+ * Get COMMAND_CLASS_WAKE_UP parameter
+ * @return map containing all parameter infos
+ */
+qpid::types::Variant::Map AgoZwave::getCommandClassWakeUpParameter(OpenZWave::ValueID* valueID)
+{
+    qpid::types::Variant::Map param;
+    string currentValue = "";
+
+    if( Manager::Get()->GetValueAsString(*valueID, &currentValue) )
+    {
+        //everything's good, fill param
+        param["currentvalue"] = currentValue;
+        param["type"] = "int";
+        param["label"] = Manager::Get()->GetValueLabel(*valueID);
+        param["units"] = Manager::Get()->GetValueUnits(*valueID);
+        param["help"] = Manager::Get()->GetValueHelp(*valueID);
+        param["readonly"] = Manager::Get()->IsValueReadOnly(*valueID);
+        param["min"] = Manager::Get()->GetValueMin(*valueID);
+        param["max"] = Manager::Get()->GetValueMax(*valueID);
+        param["invalid"] = 0;
+        param["commandclassid"] = COMMAND_CLASS_WAKE_UP;
+        param["instance"] = valueID->GetInstance();
+        param["index"] = valueID->GetIndex();
+    }
+
+    return param;
+}
+
+/**
+ * Set device parameter
+ * @return true if parameter found and set successfully
+ */
+bool AgoZwave::setCommandClassParameter(uint32 homeId, uint8 nodeId, uint8 commandClassId, uint8 index, string newValue)
+{
+    bool result = false;
+
+    //get node info
+    NodeInfo* nodeInfo = getNodeInfo(homeId, nodeId);
+
+    if( nodeInfo!=NULL )
+    {
+        for( list<ValueID>::iterator it=nodeInfo->m_values.begin(); it!=nodeInfo->m_values.end(); it++ )
+        {
+            AGO_DEBUG() << "--> commandClassId=" << getHRCommandClassId(it->GetCommandClassId()) << " index=" << std::dec << (int)it->GetIndex();
+            if( it->GetCommandClassId()==commandClassId && it->GetIndex()==index )
+            {
+                //parameter found
+
+                //check if value has been modified
+                string oldValue;
+                Manager::Get()->GetValueAsString(*it, &oldValue);
+
+                if( oldValue!=newValue )
+                {                  
+                    if( it->GetType()==ValueID::ValueType_List )
+                    {
+                        //set list value
+                        result = Manager::Get()->SetValueListSelection(*it, newValue);
+                        if( !result )
+                        {
+                            AGO_ERROR() << "Unable to set value list selection with newValue=" << newValue;
+                        }
+                    }
+                    else
+                    {
+                        //set value
+                        result = Manager::Get()->SetValue(*it, newValue);
+                        if( !result )
+                        {
+                            AGO_ERROR() << "Unable to set value with newValue=" << newValue;
+                        }
+                    }
+                }
+                else
+                {
+                    //oldValue == newValue. Nothing done but return true anyway
+                    AGO_DEBUG() << "setCommandClassParameter: try to set parameter with same value [" << oldValue << "=" << newValue << "]. Nothing done.";
+                    result = true;
+                }
+
+                //stop statement
+                break;
+            }
+        }
+    }
+
+    //handle error
+    if( result==false )
+    {
+        if( nodeInfo==NULL )
+        {
+            //node not found!
+            AGO_ERROR() << "Node not found! (homeId=" << homeId << " nodeId=" << nodeId << " commandClassId=" << commandClassId << " index=" << index << ")";
+        }
+        else
+        {
+            //ValueID not found!
+            AGO_ERROR() << "ValueID not found! (homeId=" << homeId << " nodeId=" << nodeId << " commandClassId=" << commandClassId << " index=" << index << ")";
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Request config parameters for all nodes
+ */
+void AgoZwave::requestAllNodeConfigParameters()
+{
+    for( list<NodeInfo*>::iterator it=g_nodes.begin(); it!=g_nodes.end(); ++it )
+    {
+        NodeInfo* nodeInfo = *it;
+        Manager::Get()->RequestAllConfigParams(nodeInfo->m_homeId, nodeInfo->m_nodeId);
+    }
+}
+
 
 //-----------------------------------------------------------------------------
 // <OnNotification>
@@ -566,7 +809,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
     {
         case Notification::Type_ValueAdded:
         {
-            if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+            if( NodeInfo* nodeInfo = getNodeInfo( _notification ) )
             {
                 // Add the new value to our list
                 nodeInfo->m_values.push_back( _notification->GetValueID() );
@@ -587,7 +830,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
 
                 if (id.GetGenre() == ValueID::ValueGenre_Config)
                 {
-                    AGO_INFO() << "Configuration parameter Value Added: Home " << std::hex <<  _notification->GetHomeId() << " Node: " << std::dec << (int) _notification->GetNodeId() << " Genre: " << std::dec << (int) id.GetGenre() << " Class: " << getHRCommandClassId(id.GetCommandClassId())  << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
+                    AGO_INFO() << "Configuration parameter Value Added: Home=" << std::hex <<  _notification->GetHomeId() << " Node=" << std::dec << (int) _notification->GetNodeId() << " Genre=" << std::dec << (int) id.GetGenre() << " Class=" << getHRCommandClassId(id.GetCommandClassId())  << " Instance=" << (int)id.GetInstance() << " Index=" << (int)id.GetIndex() << " Type=" << (int)id.GetType() << " Label=" << label;
                 }
                 else if (basic == BASIC_TYPE_CONTROLLER)
                 {
@@ -634,14 +877,14 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         case COMMAND_CLASS_BATTERY:
                             if( label=="Battery Level" )
                             {
-                                if ((device = devices.findId(nodeinstance)) != NULL)
+                                if ((device = devices.findId(tempstring)) != NULL)
                                 {
                                     AGO_DEBUG() << "Battery: append batterysensor [" << label << "]";
                                     device->addValue(label, id);
                                 }
                                 else
                                 {
-                                    device = new ZWaveNode(nodeinstance, "batterysensor");	
+                                    device = new ZWaveNode(tempstring, "batterysensor");
                                     device->addValue(label, id);
                                     devices.add(device);
                                     AGO_DEBUG() << "Battery: add new batterysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -688,17 +931,17 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             if (label == "Sensor")
                             {
                                 if ((device = devices.findId(tempstring)) != NULL)
-                                    {
-                                        device->addValue(label, id);
-                                    }
-                                    else
-                                    {
-                                        device = new ZWaveNode(tempstring, "binarysensor");	
-                                        device->addValue(label, id);
-                                        devices.add(device);
-                                        agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-                                    }
-                                    // Manager::Get()->EnablePoll(id);
+                                {
+                                    device->addValue(label, id);
+                                }
+                                else
+                                {
+                                    device = new ZWaveNode(tempstring, "binarysensor");	
+                                    device->addValue(label, id);
+                                    devices.add(device);
+                                    agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                                }
+                                // Manager::Get()->EnablePoll(id);
                             }
                             break;
                         case COMMAND_CLASS_SENSOR_MULTILEVEL:
@@ -840,7 +1083,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             }
                             break;
                         default:
-                            AGO_INFO() << "Notification: Unassigned Value Added Home: " << std::hex << _notification->GetHomeId() << " Node: " << std::dec << (int)_notification->GetNodeId() << " Genre: " << std::dec << (int)id.GetGenre() << " Class: " << getHRCommandClassId(id.GetCommandClassId()) << " Instance: " << std::dec << (int)id.GetInstance() << " Index: " << std::dec << (int)id.GetIndex() << " Type: " << (int)id.GetType() << " Label: " << label;
+                            AGO_INFO() << "Notification: Unassigned Value Added Home=" << std::hex << _notification->GetHomeId() << " Node=" << std::dec << (int)_notification->GetNodeId() << " Genre=" << std::dec << (int)id.GetGenre() << " Class=" << getHRCommandClassId(id.GetCommandClassId()) << " Instance=" << std::dec << (int)id.GetInstance() << " Index=" << std::dec << (int)id.GetIndex() << " Type=" << (int)id.GetType() << " Label: " << label;
 
                     }
                 }
@@ -849,7 +1092,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
         case Notification::Type_ValueRemoved:
         {
-            if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+            if( NodeInfo* nodeInfo = getNodeInfo( _notification ) )
             {
                 // Remove the value from out list
                 for( list<ValueID>::iterator it = nodeInfo->m_values.begin(); it != nodeInfo->m_values.end(); ++it )
@@ -865,22 +1108,23 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
 
         case Notification::Type_ValueRefreshed:
-            AGO_DEBUG() << "ValueRefreshed";
+            AGO_DEBUG() << "Notification='ValueRefreshed'";
             break;
 
         case Notification::Type_ValueChanged:
         {
-            if( /*NodeInfo* nodeInfo =*/ GetNodeInfo( _notification ) )
+            if( /*NodeInfo* nodeInfo =*/ getNodeInfo( _notification ) )
             {
                 // One of the node values has changed
                 // TBD...
                 // nodeInfo = nodeInfo;
                 ValueID id = _notification->GetValueID();
                 string str;
-                AGO_INFO() << "Notification: Value Changed Home: " << _notification->GetHomeId() << " Node: " << _notification->GetNodeId() << " Genre: " << id.GetGenre() << " Class: " << getHRCommandClassId(id.GetCommandClassId()) << " Instance: " << id.GetInstance() << " Index: " << id.GetIndex() << " Type: " << id.GetType();
+                AGO_INFO() << "Notification='Value Changed' Home=" << std::hex << _notification->GetHomeId() << " Node=" << std::dec << (int)_notification->GetNodeId() << " Genre=" << std::dec << (int)id.GetGenre() << " Class=" << getHRCommandClassId(id.GetCommandClassId()) << std::dec << " Type=" << id.GetType() << " Genre=" << id.GetGenre();
 
                 if (Manager::Get()->GetValueAsString(id, &str))
                 {
+                    ZWaveNode* device = NULL;
                     qpid::types::Variant cachedValue;
                     cachedValue.parse(str);
                     valueCache[id] = cachedValue;
@@ -890,18 +1134,24 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     // TODO: send proper types and don't convert everything to string
                     string level = str;
                     string eventtype = "";
-                    if (str == "True") level="255";
-                    if (str == "False") level="0";
-                    AGO_DEBUG() << "Value: " << str << " Label: " << label << " Units: " << units;
+                    if (str == "True")
+                    {
+                        level="255";
+                    }
+                    if (str == "False")
+                    {
+                        level="0";
+                    }
+                    AGO_DEBUG() << "Value=" << str << " Label=" << label << " Units=" << units;
                     if ((label == "Basic") || (label == "Switch") || (label == "Level"))
                     {
                         eventtype="event.device.statechanged";
                     }
-                    if (label == "Luminance")
+                    else if (label == "Luminance")
                     {
                         eventtype="event.environment.brightnesschanged";
                     }
-                    if (label == "Temperature")
+                    else if (label == "Temperature")
                     {
                         eventtype="event.environment.temperaturechanged";
                         if (units=="F" && unitsystem==0)
@@ -917,69 +1167,89 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             level = str;
                         }
                     }
-                    if (label == "Relative Humidity")
+                    else if (label == "Relative Humidity")
                     {
                         eventtype="event.environment.humiditychanged";
                     }
-                    if (label == "Battery Level")
+                    else if (label == "Battery Level")
                     {
+                        //check if battery sensor already exists. If not create new device.
+                        device = devices.findValue(id);
+                        if( device==NULL || device->getDevicetype()!="batterysensor" )
+                        {
+                            //create new device before sending event
+                            stringstream tempstream;
+                            tempstream << (int)_notification->GetNodeId() << "/1-" << label;
+
+                            device = new ZWaveNode(tempstream.str(), "batterysensor");
+                            device->addValue(label, id);
+                            devices.add(device);
+                            AGO_DEBUG() << "Battery: add new batterysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
+                            agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                        }
                         eventtype="event.device.batterylevelchanged";
                     }
-                    if (label == "Alarm Level")
+                    else if (label == "Alarm Level")
                     {
                         eventtype="event.security.alarmlevelchanged";
                     }
-                    if (label == "Alarm Type")
+                    else if (label == "Alarm Type")
                     {
                         eventtype="event.security.alarmtypechanged";
                     }
-                    if (label == "Sensor")
+                    else if (label == "Sensor")
                     {
                         eventtype="event.security.sensortriggered";
                     }
-                    if (label == "Energy")
+                    else if (label == "Energy")
                     {
                         eventtype="event.environment.energychanged";
                     }
-                    if (label == "Power")
+                    else if (label == "Power")
                     {
                         eventtype="event.environment.powerchanged";
                     }
-                    if (label == "Mode")
+                    else if (label == "Mode")
                     {
                         eventtype="event.environment.modechanged";
                     }
-                    if (label == "Fan Mode")
+                    else if (label == "Fan Mode")
                     {
                         eventtype="event.environment.fanmodechanged";
                     }
-                    if (label == "Fan State")
+                    else if (label == "Fan State")
                     {
                         eventtype="event.environment.fanstatechanged";
                     }
-                    if (label == "Operating State")
+                    else if (label == "Operating State")
                     {
                         eventtype="event.environment.operatingstatechanged";
                     }
-                    if (label == "Cooling 1")
+                    else if (label == "Cooling 1")
                     {
                         eventtype="event.environment.coolsetpointchanged";
                     }
-                    if (label == "Heating 1")
+                    else if (label == "Heating 1")
                     {
                         eventtype="event.environment.heatsetpointchanged";
                     }
-                    if (label == "Fan State")
+                    else if (label == "Fan State")
                     {
                         eventtype="event.environment.fanstatechanged";
                     }
-                    if (label == "Flood")
+                    else if (label == "Flood")
                     {
                         eventtype="event.security.sensortriggered";
                     }
+
                     if (eventtype != "")
                     {
-                        ZWaveNode *device = devices.findValue(id);
+                        //search device
+                        if( device==NULL )
+                        {
+                            device = devices.findValue(id);
+                        }
+
                         if (device != NULL)
                         {
                             AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
@@ -992,7 +1262,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
         case Notification::Type_Group:
         {
-            if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+            if( NodeInfo* nodeInfo = getNodeInfo( _notification ) )
             {
                 // One of the node's association groups has changed
                 // TBD...
@@ -1048,22 +1318,25 @@ void AgoZwave::_OnNotification (Notification const* _notification)
 
         case Notification::Type_NodeEvent:
         {
-            if( /*NodeInfo* nodeInfo =*/ GetNodeInfo( _notification ) )
+            if( /*NodeInfo* nodeInfo =*/ getNodeInfo( _notification ) )
             {
                 // We have received an event from the node, caused by a
                 // basic_set or hail message.
                 ValueID id = _notification->GetValueID();
-                AGO_DEBUG() << "nodeevent: HomeId=" << id.GetHomeId() << " NodeId=" << id.GetNodeId() << " Genre=" << id.GetGenre() << " CommandClassId=" << getHRCommandClassId(id.GetCommandClassId()) << " Instance=" << id.GetInstance() << " Index="<< id.GetIndex() << " Type="<< id.GetType() << " Id="<< id.GetId();
+                AGO_DEBUG() << "NodeEvent: HomeId=" << id.GetHomeId() << " NodeId=" << id.GetNodeId() << " Genre=" << id.GetGenre() << " CommandClassId=" << getHRCommandClassId(id.GetCommandClassId()) << " Instance=" << id.GetInstance() << " Index="<< id.GetIndex() << " Type="<< id.GetType() << " Id="<< id.GetId();
                 string label = Manager::Get()->GetValueLabel(id);
                 stringstream level;
                 level << (int) _notification->GetByte();
                 string eventtype = "event.device.statechanged";
                 ZWaveNode *device = devices.findValue(id);
-                if (device != NULL) {
+                if (device != NULL)
+                {
                     AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
                     agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.str().c_str(), "");	
-                } else {
-                    AGO_WARNING() << "no agocontrol device found for node event - Label: " << label << " Level: " << level;
+                }
+                else
+                {
+                    AGO_WARNING() << "no agocontrol device found for node event: Label=" << label << " Level=" << level;
                 }
 
             }
@@ -1071,7 +1344,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
         case Notification::Type_SceneEvent:
         {
-            if( /*NodeInfo* nodeInfo =*/ GetNodeInfo( _notification ) )
+            if( /*NodeInfo* nodeInfo =*/ getNodeInfo( _notification ) )
             {
                 int scene = _notification->GetSceneId();
                 ValueID id = _notification->GetValueID();
@@ -1082,13 +1355,16 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                 string nodeinstance = tempstream.str();
                 string eventtype = "event.device.scenechanged";
                 ZWaveNode *device;
-                if ((device = devices.findId(nodeinstance)) != NULL) {
+                if ((device = devices.findId(nodeinstance)) != NULL)
+                {
                     AGO_DEBUG() << "Sending " << eventtype << " for scene " << scene << " event from child " << device->getId();
                     qpid::types::Variant::Map content;
                     content["scene"]=scene;
                     agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), content);	
-                } else {
-                    AGO_WARNING() << "no agocontrol device found for scene event. Node: " << nodeinstance << " Scene: " << scene;
+                }
+                else
+                {
+                    AGO_WARNING() << "no agocontrol device found for scene event: Node=" << nodeinstance << " Scene=" << scene;
                 }
 
             }
@@ -1096,7 +1372,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
         case Notification::Type_PollingDisabled:
         {
-            if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+            if( NodeInfo* nodeInfo = getNodeInfo( _notification ) )
             {
                 nodeInfo->m_polled = false;
             }
@@ -1105,7 +1381,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
 
         case Notification::Type_PollingEnabled:
         {
-            if( NodeInfo* nodeInfo = GetNodeInfo( _notification ) )
+            if( NodeInfo* nodeInfo = getNodeInfo( _notification ) )
             {
                 nodeInfo->m_polled = true;
             }
@@ -1282,7 +1558,8 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
 
                 for (list<ValueID>::iterator it2 = (*it)->m_values.begin(); it2 != (*it)->m_values.end(); it2++ )
                 {
-                    ZWaveNode *device = devices.findValue(*it2);
+                    OpenZWave::ValueID currentValueID = *it2;
+                    ZWaveNode *device = devices.findValue(currentValueID);
                     if (device != NULL)
                     {
                         valuesList.push_back(device->getId());
@@ -1292,134 +1569,22 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     uint8_t commandClassId = it2->GetCommandClassId();
                     if( commandClassId==COMMAND_CLASS_CONFIGURATION )
                     {
-                        qpid::types::Variant::Map param;
-
-                        //add invalid parameter property
-                        //give info to ui that parameter is invalid
-                        param["invalid"] = false;
-
-                        //get parameter index
-                        param["index"] = it2->GetIndex();
-
-                        //get parameter type
-                        vector<string> ozwItems;
-                        qpid::types::Variant::List items;
-                        switch( it2->GetType() )
+                        qpid::types::Variant::Map param = getCommandClassConfigurationParameter(&currentValueID);
+                        if( param.size()>0 )
                         {
-                            case ValueID::ValueType_Decimal:
-                                //Represents a non-integer value as a string, to avoid floating point accuracy issues. 
-                                param["type"] = "float";
-                                break;
-                            case ValueID::ValueType_Bool:
-                                //Boolean, true or false 
-                                param["type"] = "bool";
-                                break;
-                            case ValueID::ValueType_Byte:
-                                //8-bit unsigned value 
-                                param["type"] = "byte";
-                                break;
-                            case ValueID::ValueType_Short:
-                                //16-bit signed value 
-                                param["type"] = "short";
-                                break;
-                            case ValueID::ValueType_Int:
-                                //32-bit signed value 
-                                param["type"] = "int";
-                                break;
-                            case ValueID::ValueType_Button:
-                                //A write-only value that is the equivalent of pressing a button to send a command to a device
-                                param["type"] = "button";
-                                param["invalid"] = true;
-                                break;
-                            case ValueID::ValueType_List:
-                                //List from which one item can be selected 
-                                param["type"] = "list";
-
-                                //get list items
-                                Manager::Get()->GetValueListItems(*it2, &ozwItems);
-                                for( vector<string>::iterator it3=ozwItems.begin(); it3!=ozwItems.end(); it3++ )
-                                {
-                                    items.push_back(*it3);
-                                }
-                                param["items"] = items;
-                                break;
-                            case ValueID::ValueType_Schedule:
-                                //Complex type used with the Climate Control Schedule command class
-                                param["type"] = "notsupported";
-                                param["invalid"] = true;
-                                break;
-                            case ValueID::ValueType_String:
-                                //Text string
-                                param["type"] = "string";
-                                break;
-                            case ValueID::ValueType_Raw:
-                                //A collection of bytes 
-                                param["type"] = "notsupported";
-                                param["invalid"] = true;
-                                break;
-                            default:
-                                param["invalid"] = true;
-                                param["type"] = "unknown";
+                            params.push_back(param);
                         }
-                        
-                        //get parameter value
-                        string currentValue = "";
-                        if( Manager::Get()->GetValueAsString(*it2, &currentValue) )
-                        {
-                            param["currentvalue"] = currentValue;
-                        }
-                        else
-                        {
-                            //unable to get current value
-                            param["invalid"] = true;
-                            param["currentvalue"] = "";
-                        }
-                        
-                        //get parameter label
-                        param["label"] = Manager::Get()->GetValueLabel(*it2);
-
-                        //get parameter units
-                        param["units"] = Manager::Get()->GetValueUnits(*it2);
-
-                        //get parameter full help
-                        param["help"] = Manager::Get()->GetValueHelp(*it2);
-
-                        //get min
-                        param["min"] = Manager::Get()->GetValueMin(*it2);
-
-                        //get max
-                        param["max"] = Manager::Get()->GetValueMax(*it2);
-
-                        //get readonly status
-                        param["readonly"] = Manager::Get()->IsValueReadOnly(*it2);
-
-                        //save param
-                        params.push_back(param);
                     }
                     else if( commandClassId==COMMAND_CLASS_WAKE_UP )
                     {
                         //need to know wake up interval
-                        if( it2->GetGenre()==ValueID::ValueGenre_System && it2->GetInstance()==1 )
+                        if( currentValueID.GetGenre()==ValueID::ValueGenre_System && currentValueID.GetInstance()==1 )
                         {
-                            if( Manager::Get()->GetValueLabel(*it2)=="Wake-up Interval" )
+                            if( Manager::Get()->GetValueLabel(currentValueID)=="Wake-up Interval" )
                             {
-                                qpid::types::Variant::Map param;
-                                string currentValue = "";
-
-                                if( Manager::Get()->GetValueAsString(*it2, &currentValue) )
+                                qpid::types::Variant::Map param = getCommandClassWakeUpParameter(&currentValueID);
+                                if( param.size()>0 )
                                 {
-                                    //everything's good, fill param
-                                    param["currentvalue"] = currentValue;
-                                    param["type"] = "int";
-                                    param["label"] = Manager::Get()->GetValueLabel(*it2);
-                                    param["units"] = Manager::Get()->GetValueUnits(*it2);
-                                    param["help"] = Manager::Get()->GetValueHelp(*it2);
-                                    param["readonly"] = Manager::Get()->IsValueReadOnly(*it2);
-                                    param["min"] = Manager::Get()->GetValueMin(*it2);
-                                    param["max"] = Manager::Get()->GetValueMax(*it2);
-                                    param["invalid"] = 0;
-
-                                    //save param
                                     params.push_back(param);
                                 }
                             }
@@ -1452,7 +1617,6 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 uint8 nodeid = nodeInfo->m_nodeId;
                 index = static_cast<ostringstream*>( &(ostringstream() << nodeid) )->str();
                 nodelist[index.c_str()] = node;
-                //	if( ( nodeInfo->m_homeId == homeId ) && ( nodeInfo->m_nodeId == nodeId ) )
             }
             returnval["nodelist"]=nodelist;
             result = true;
@@ -1462,7 +1626,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             int mynode = content["node"];
             int mygroup = content["group"];
             int mytarget = content["target"];
-            AGO_DEBUG() << "adding association: Node: " << mynode << " Group: " << mygroup << " Target: " << mytarget;
+            AGO_DEBUG() << "adding association: Node=" << mynode << " Group=" << mygroup << " Target=" << mytarget;
             Manager::Get()->AddAssociation(g_homeId, mynode, mygroup, mytarget);
             result = true;
         }
@@ -1487,18 +1651,25 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             int mynode = content["node"];
             int mygroup = content["group"];
             int mytarget = content["target"];
-            AGO_DEBUG() << "removing association: Node: " << mynode << " Group: " << mygroup << " Target: " << mytarget;
+            AGO_DEBUG() << "removing association: Node=" << mynode << " Group=" << mygroup << " Target=" << mytarget;
             Manager::Get()->RemoveAssociation(g_homeId, mynode, mygroup, mytarget);
             result = true;
         }
         else if (content["command"] == "setconfigparam")
         {
-            int mynode = content["node"];
-            int myparam = content["param"];
-            int myvalue = content["value"];
-            int mysize = content["size"];
-            AGO_DEBUG() << "setting config param: node: " << mynode << " param: " << myparam << " size: " << mysize << " value: " << myvalue;
-            result = Manager::Get()->SetConfigParam(g_homeId,mynode,myparam,myvalue,mysize); 
+            int nodeId = content["node"];
+            int commandClassId = content["commandclassid"];
+            int index = content["index"];
+            string value = string(content["value"]);
+            AGO_DEBUG() << "setting config param: nodeId=" << nodeId << " commandClassId=" << commandClassId << " index=" << index << " value=" << value;
+            result = setCommandClassParameter(g_homeId, nodeId, commandClassId, index, value);
+        }
+        else if( content["command"]=="requestallconfigparams" )
+        {
+            result = true;
+            int node = content["node"];
+            AGO_DEBUG() << "RequestAllConfigParams: node=" << node;
+            Manager::Get()->RequestAllConfigParams(g_homeId, node);
         }
         else if (content["command"] == "downloadconfig")
         {
@@ -1839,6 +2010,9 @@ void AgoZwave::setupApp()
         Manager::Get()->WriteConfig( g_homeId );
         Driver::DriverData data;
         Manager::Get()->GetDriverStatistics( g_homeId, &data );
+
+        //get device parameters
+        requestAllNodeConfigParameters();
 
         AGO_DEBUG() << "\n\n\n=================================";
         AGO_INFO() << "OZW startup complete";
