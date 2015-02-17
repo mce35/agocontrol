@@ -210,6 +210,15 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description:  ETAtouch REST API device for ago control
  
+Package: agocontrol-gammu
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-gammu
+Description: Gammu based SMS gateway for ago control
+
+Package: agocontrol-imperihome
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0
+Description: ImperiHome App gateway for agocontrol
+
 Package: agocontrol-tellstick
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
