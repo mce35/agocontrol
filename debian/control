@@ -211,6 +211,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description:  ETAtouch REST API device for ago control
  
 Package: agocontrol-gammu
+Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-gammu
 Description: Gammu based SMS gateway for ago control
 
