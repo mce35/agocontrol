@@ -33,6 +33,7 @@ set (AGODEVICES
   ipx800
   raspiCamera
   scheduler
+  tellstick
   knx
   agodmx
   PLCBUS
