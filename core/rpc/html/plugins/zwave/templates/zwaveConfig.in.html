@@ -179,13 +179,13 @@
                                     <input type="checkbox" data-bind="checked:currentvalue" />
                                 </ko>
                                 <ko opts="if: type=='button'">
-                                    <input type="button" data-bind="attr:{'value':label}, click:function(data, event){ alert('TODO'); }" />
+                                    <button data-bind="text:label, click:function(data, event){ alert('TODO'); }"></button>
                                 </ko>
                             </ko>
                         </td>
                         <td>
                             <ko opts="if: invalid==0">
-                            <input type="button" value="Set" data-bind="click:function(data,event){ alert('TODO'); }" />
+                            <button data-bind="click:$parent.setParameter">Set</button>
                             </ko>
                         </td>
                     </tr>
@@ -209,6 +209,10 @@
                         <_span data-translateable="true">Remove this node from network</_span>
                         <div data-bind="event:{mousedown:removeNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Remove</_a></div>
                     </li>
+                    <li>
+                        <_span data-translateable="true">Request configuration parameters</_span>
+                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Request parameters</_a></div>
+                    </li>
                 </ul>
             </div>
 
@@ -229,12 +233,59 @@
     <!-- main tabs  -->
     <div data-bind="jqTabs:{}">
         <ul>
+            <li><_a data-translateable="true" href="#main-devices">Devices</_a></li>
             <li><_a data-translateable="true" href="#main-graph">Dependencies</_a></li>
             <li><_a data-translateable="true" href="#main-general">General</_a></li>
             <li><_a data-translateable="true" href="#main-actions">Actions</_a></li>
             <li><_a data-translateable="true" href="#main-stats">Statistics</_a></li>
             <li><_a data-translateable="true" href="#main-advanced">Advanced</_a></li>
         </ul>
+
+        <div id="main-devices">
+            <table style="width:850px;" class="agoTable">
+                <thead>
+                <tr>
+                    <td>Id</td>
+                    <td>Name</td>
+                    <td>Type</td>
+                    <td>Awake</td>
+                    <td>Failed</td>
+                </tr>
+                </thead>
+                <tbody data-bind="foreach: nodes">
+                <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                    <td data-bind="text: id"></td>
+                    <td>
+                        <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetails($index()); }">
+                        <ko opts="if: product.length>0">
+                            <span data-bind="text: manufacturer+' ('+product+')'"></span>
+                        </ko>
+                        <ko opts="if: product.length==0 and manufacturer.length>0">
+                            <span data-bind="text: manufacturer"></span>
+                        </ko>
+                        <ko opts="if: product.length==0 and manufacturer.length==0">
+                            <span style="font-style:italic;">No name</span>
+                        </ko>
+                        </a>
+                    </td>
+                    <td data-bind="text: type"></td>
+                    <ko opts="if: status.awake==1">
+                    <td><span>True</span></td>
+                    </ko>
+                    <ko opts="if: status.awake==0">
+                    <td><span>False</span></td>
+                    </ko>
+                    <ko opts="if: status.failed==1">
+                    <td><span style="color:red;">True</span></td>
+                    </ko>
+                    <ko opts="if: status.failed==0">
+                    <td><span>False</span></td>
+                    </ko>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
         <div id="main-graph">
             <div class="row">
                 <div class="six columns">
@@ -287,6 +338,10 @@
                     <_span data-translateable="true">Test network</_span>
                     <div data-bind="event:{mousedown:testNetwork}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Test</_a></div>
                     <div class="ttip" data-translateable="true" _data-tooltip="Launch some test procedures over all nodes. This command lasts some time!"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <span>Heal network</span>
+                    <div data-bind="event:{mousedown:healNetwork}" class="pretty medium primary btn"><a href="#">Heal network</a></div>
                 </li>
             </ul>
         </div>
