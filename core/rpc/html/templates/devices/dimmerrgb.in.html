@@ -34,30 +34,30 @@
     </div>
 
     <div class="row dashboard-widget-content dashboard-widget-content-buttons">
-        <ul class="two_up tiles">
+        <ul class="two_up tiles" style="margin-bottom:0px;">
             <li class="dashboard-widget-content-button">
-		        <ko opts="if: state ">
-                <div class="pretty small default btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
+            <ko opts="if: state ">
+                <div class="pretty default btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
                 </ko>
                 <ko opts="ifnot: state">
-                <div class="pretty small primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
+                <div class="pretty primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
                 </ko>
             </li>
             <li class="dashboard-widget-content-button">
-		        <ko opts="if: state">
-		        <div class="pretty small primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
-    		    </ko>
+                <ko opts="if: state">
+                    <div class="pretty primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
+                </ko>
                 <ko opts="ifnot: state">
-                <div class="pretty small default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
+                    <div class="pretty default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
                 </ko> 
             </li>
         </ul>
-        <ul class="two_up">
+        <ul class="two_up tiles">
             <li class="dashboard-widget-content-button">
-				<div class="pretty small primary btn btn btn-full"><a href="#" data-bind="click: setColor">SETCOLOR</a></div>
+                <div class="pretty primary btn btn-full" data-bind="attr { 'id':'color-'+uuid, 'uuid':uuid }, click:openPicker">SETCOLOR</div>
             </li>
-            <li class="dashboard-widget-content-button">
-				<div class="slider" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}" ></div>
+            <li class="dashboard-widget-content-button" style="padding-top:6px;">
+                <div class="slider" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}" ></div>
             </li>
         </ul>
     </div>

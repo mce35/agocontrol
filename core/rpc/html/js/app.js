@@ -780,37 +780,6 @@ function subscribe() {
     $.post(url, JSON.stringify(request), handleSubscribe, "json");
 }
 
-$(function() {
-    $("#colorPickerDialog").dialog({
-        autoOpen : false,
-        modal : true,
-        minHeight : 300,
-        minWidth : 300,
-        buttons : {
-            Cancel : function() {
-                $(this).dialog("close");
-            },
-            OK : function() {
-                var content = {};
-                content.uuid = $("#colorPickerDialog").data('uuid');
-                content.command = "setcolor";
-                var color = $('#colorValue').val();
-                content.red = ~~(parseInt(color.substring(0, 2), 16) * 100 / 255);
-                content.green = ~~(parseInt(color.substring(2, 4), 16) * 100 / 255);
-                content.blue = ~~(parseInt(color.substring(4, 6), 16) * 100 / 255);
-                sendCommand(content);
-                $(this).dialog("close");
-            }
-        }
-    });
-});
-
-/* Opens color picker */
-function openColorPicker(uuid) {
-    $("#colorPickerDialog").data('uuid', uuid);
-    $("#colorPickerDialog").dialog("open");
-}
-
 /**
  * Opens details page for the given device
  * 
