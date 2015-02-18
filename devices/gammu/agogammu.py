@@ -5,6 +5,8 @@ import sys
 
 import agoclient
 
+CONFIGFILE = CONFDIR + "/gammu/gammu.rc"
+
 class AgoGammu(agoclient.AgoApp):
     def message_handler(self, internalid, content):
         returnvalue = {}
@@ -50,8 +52,8 @@ class AgoGammu(agoclient.AgoApp):
         self.log.info("Initialising gammu")
         # Create object for talking with phone
         self.sm = gammu.StateMachine()
-        # Read the configuration (~/.gammurc)
-        self.sm.ReadConfig()
+        # Read the configuration
+        self.sm.ReadConfig(CONFIGFILE)
         # Connect to the phone
         self.sm.Init()
 
