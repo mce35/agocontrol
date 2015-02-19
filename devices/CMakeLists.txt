@@ -43,6 +43,7 @@ set (AGODEVICES
   ETAtouch
   yamaha
   gammu
+  axisaudiotransmit
 )
 
 IF (FREEBSD)
