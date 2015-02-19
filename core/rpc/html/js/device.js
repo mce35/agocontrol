@@ -49,6 +49,10 @@ function device(obj, uuid) {
         scenarioController = uuid;
     }
 
+    if (this.devicetype == "systemcontroller") {
+        systemController = uuid;
+    }
+
     if (this.devicetype == "dimmerrgb") {
         this.openPicker = function() {
             var picker = $('#color-'+uuid).colpick({

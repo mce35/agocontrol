@@ -82,6 +82,7 @@ var eventController = null;
 var dataLoggerController = null;
 var scenarioController = null;
 var alertControler = null;
+var systemControler = null;
 var model = null;
 var initialized = false;
 
