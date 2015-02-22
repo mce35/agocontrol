@@ -2,5 +2,7 @@
         "name": "MySensors",
         "version": "0.0.1",
         "description": "MySensors configuration",
-        "dashboardAccess": true
+        "template": "html/mysensorsConfig",
+        "listable": true,
+        "depends": "agoMySensors"
 }

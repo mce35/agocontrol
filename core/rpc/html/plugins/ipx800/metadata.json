@@ -2,7 +2,9 @@
         "name": "IPX800 board",
         "version": "0.0.1",
         "description": "IPX800 board",
-        "dashboardAccess": true,
+        "listable": true,
+        "template": "html/ipxConfig",
+        "depends": "agoipx800.py",
         "resources": {
             "css": [
                 "ipx.css"

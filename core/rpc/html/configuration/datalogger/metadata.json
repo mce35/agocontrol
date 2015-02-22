@@ -1,0 +1,14 @@
+{
+        "name": "Datalogger",
+        "version": "0.0.2",
+        "description": "Datalogger configuration",
+        "listable": true,
+        "template": "html/dataloggerConfig",
+        "depends": "agodatalogger",
+        "category": "core",
+        "resources": {
+            "css": [
+                "datalogger.css"
+            ]
+        }
+}

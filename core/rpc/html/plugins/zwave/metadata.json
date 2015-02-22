@@ -2,7 +2,9 @@
         "name": "Z-Wave",
         "version": "0.0.1",
         "description": "Z-Wave configuration",
-        "dashboardAccess": true,
+        "listable": true,
+        "template": "html/zwaveConfig",
+        "depends": "agozwave",
         "resources": {
             "js": [
                 "d3.v3.min.js"

@@ -1,5 +1,7 @@
 {
-	"name": "drain",
+	"name": "Drain",
 	"version": "0.0.2",
-	"description": "Get all system events displayed"
+	"description": "Get all system events displayed",
+    "template": "html/agodrain",
+    "listable": true
 }

@@ -1,0 +1,8 @@
+{
+        "name": "Variables",
+        "version": "1.0.0",
+        "description": "Variables configuration",
+        "template": "html/variables",
+        "listable": true,
+        "variables": "Variables"
+}

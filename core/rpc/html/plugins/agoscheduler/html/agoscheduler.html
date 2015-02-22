@@ -1,0 +1,103 @@
+<div style="margin: 0px auto 10px auto; padding:15px;" id="contentarea">
+
+
+<div style="display:none;">
+    <span id="ie" data-translateable="true">Internal error</span>
+    <span xml:lang="de" id="ie" data-translateable="true">Interner Fehler</span>
+    <span xml:lang="fr" id="ie" data-translateable="true">Erreur interne</span>
+    <span xml:lang="nl" id="ie" data-translateable="true">Interne fout</span>
+    <span id="nr" data-translateable="true">Agoscheduler is not responding. Unable to display schedules.</span>
+    <span xml:lang="de" id="nr" data-translateable="true">agoscheduler antwortet nicht. Kann die geplanten Aufgaben nicht anzeigen.</span>
+    <span xml:lang="fr" id="nr" data-translateable="true">Agoscheduler ne répond pas. Impossible d'afficher les tâches.</span>
+    <span xml:lang="nl" id="nr" data-translateable="true">Agoscheduler reageert niet. Weergave van de agenda mislukt.</span>
+    <span id="a" data-translateable="true">Schedule(s) added successfully.</span>
+    <span xml:lang="de" id="a" data-translateable="true">Aufgabe wurde erfolgreich hinzugefügt.</span>
+    <span xml:lang="fr" id="a" data-translateable="true">La tâche a été ajoutée.</span>
+    <span xml:lang="nl" id="a" data-translateable="true">Agenda item(s) toegevoegd.</span>
+    <span id="na" data-translateable="true">Unable to add schedule(s).</span>
+    <span xml:lang="de" id="na" data-translateable="true">Kann die Aufgabe(n) nicht hinzufügen.</span>
+    <span xml:lang="fr" id="na" data-translateable="true">Problème lors de l'ajout de la tâche</span>
+    <span xml:lang="nl" id="na" data-translateable="true">Toevoegen mislukt.</span>
+    <span id="u" data-translateable="true">Schedule(s) updated successfully.</span>
+    <span xml:lang="de" id="u" data-translateable="true">Aufgabe wurde erfolgreich gespeichert.</span>
+    <span xml:lang="fr" id="u" data-translateable="true">La tâche a été mise à jour.</span>
+    <span xml:lang="nl" id="u" data-translateable="true">Agenda item(s) bijgewerkt.</span>
+    <span id="nu" data-translateable="true">Unable to update schedule(s).</span>
+    <span xml:lang="de" id="nu" data-translateable="true">Kann Aufgabe nicht aktualisieren</span>
+    <span xml:lang="fr" id="nu" data-translateable="true">Problème lors de la mise à jour de la tâche.</span>
+    <span xml:lang="nl" id="nu" data-translateable="true">Bijwerken mislukt.</span>
+    <span id="d" data-translateable="true">Schedule(s) deleted successfully.</span>
+    <span xml:lang="de" id="d" data-translateable="true">Aufgabe wurde erfolgreich gelöscht.</span>
+    <span xml:lang="fr" id="d" data-translateable="true">La tâche a été supprimée.</span>
+    <span xml:lang="nl" id="d" data-translateable="true">Agenda item(s) verwijderd.</span>
+    <span id="nd" data-translateable="true">Unable to delete schedule(s).</span>
+    <span xml:lang="de" id="nd" data-translateable="true">Kann Aufgabe nicht löschen.</span>
+    <span xml:lang="fr" id="nd" data-translateable="true">Problème lors de la suppression de la tâche.</span>
+    <span xml:lang="nl" id="nd" data-translateable="true">Verwijderen mislukt.</span>
+</div>
+
+
+<div id="schedulerCalendar" data-bind="fullCalendar: calendarViewModel"/>
+
+
+<div style="display:none;" id="schedulerDialog">
+    <span data-translateable="true">At</span>
+    <span xml:lang="de" data-translateable="true">bei</span>
+    <span xml:lang="fr" data-translateable="true">A</span>
+    <span xml:lang="nl" data-translateable="true">In</span> <span style="font-weight:bold;" data-bind="text:scheduleStart"/>
+    <br/>
+    <span data-translateable="true">execute scenario</span>
+    <span xml:lang="de" data-translateable="true">Szenario ausführen</span>
+    <span xml:lang="fr" data-translateable="true">Exécuter le scénario</span>
+    <span xml:lang="nl" data-translateable="true">voer scenario uit</span> <select data-bind="options:availableStartScenarios, value:selectedStartScenario, optionsText:'text'"/>
+    <br/>
+    <span data-translateable="true">And at</span>
+    <span xml:lang="de" data-translateable="true">Und um</span>
+    <span xml:lang="fr" data-translateable="true">Et à</span>
+    <span xml:lang="nl" data-translateable="true">En in</span> <span style="font-weight:bold;" data-bind="text:scheduleEnd"/>
+    <br/>
+    <span data-translateable="true">execute scenario</span>
+    <span xml:lang="de" data-translateable="true">Szenario ausführen</span>
+    <span xml:lang="fr" data-translateable="true">Exécuter le scénario</span>
+    <span xml:lang="nl" data-translateable="true">voer scenario uit</span> <select data-bind="options:availableEndScenarios, value:selectedEndScenario, optionsText:'text'"/>
+    <br/>
+    <br/>
+    <span data-translateable="true">Repeat schedule</span>
+    <span xml:lang="de" data-translateable="true">Aufgabe wiederholen</span>
+    <span xml:lang="fr" data-translateable="true">Répète la tâche</span>
+    <span xml:lang="nl" data-translateable="true">Herhaal</span>  : 
+    <select data-bind="value:selectedRepeat, enable:enableRepeat">
+        <option value="0" data-translateable="true">Never</option>
+        <option xml:lang="de" value="0" data-translateable="true">Nie</option>
+        <option xml:lang="fr" value="0" data-translateable="true">Jamais</option>
+        <option xml:lang="nl" value="0" data-translateable="true">Nooit</option>
+        <option value="1" data-translateable="true">Every day</option>
+        <option xml:lang="de" value="1" data-translateable="true">Jeden Tag</option>
+        <option xml:lang="fr" value="1" data-translateable="true">Tous les jours</option>
+        <option xml:lang="nl" value="1" data-translateable="true">Elke dag</option>
+        <option value="7" data-translateable="true">Every week</option>
+        <option xml:lang="de" value="7" data-translateable="true">Jede Woche</option>
+        <option xml:lang="fr" value="7" data-translateable="true">Toutes les semaines</option>
+        <option xml:lang="nl" value="7" data-translateable="true">Elke week</option>
+        <option value="31" data-translateable="true">Every month</option>
+        <option xml:lang="de" value="31" data-translateable="true">Jeden Monat</option>
+        <option xml:lang="fr" value="31" data-translateable="true">Tous les mois</option>
+        <option xml:lang="nl" value="31" data-translateable="true">Elke maand</option>
+        <option value="365" data-translateable="true">Every year</option>
+        <option xml:lang="de" value="365" data-translateable="true">Jedes Jahr</option>
+        <option xml:lang="fr" value="365" data-translateable="true">Tous les ans</option>
+        <option xml:lang="nl" value="365" data-translateable="true">Elk jaar</option>
+    </select>
+    <br/>
+    <i class="icon-info-circled"/><small data-translateable="true">Recurring schedules are linked each others. If you update one of them, all will be updated too.</small>
+    <small xml:lang="de" data-translateable="true">Wiederkehrende Termine sind mit anderen verbunden. Wenn Du einen von ihnen aktualisierst werden alle anderen aktualisiert.</small>
+    <small xml:lang="fr" data-translateable="true">Les tâches répétées sont liées entre elles. Si vous mettez à jour l'uned'entre elles, les autres seront mise à jour automatiquement.</small>
+    <small xml:lang="nl" data-translateable="true">Herhalende items zijn gekoppeld. Als je er een wijzigd, worden ze allen gewijzigd.</small>
+    <br/>
+    <span data-translateable="true">Schedule's color</span>
+    <span xml:lang="de" data-translateable="true">Farbe der Aufgabe</span>
+    <span xml:lang="fr" data-translateable="true">Couleur de la tâche</span>
+    <span xml:lang="nl" data-translateable="true">Item kleur</span> : <input id="schedulerColorPicker" data-bind="value: selectedColor"/>
+</div>
+
+</div>

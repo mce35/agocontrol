@@ -1,0 +1,28 @@
+/* Force gumby style overwritten by jquery tabs */
+div.btn a {
+    color: white;
+}
+
+.ui-widget-content a {
+    color: #C03D20
+}
+
+fieldset {
+    border: 2px groove;
+    padding-left: 15px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    -moz-border-radius:4px;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+
+fieldset legend {
+    margin-left: 5px;
+}
+
+/*ul {
+    padding-left: 20px;
+    list-style-type: disc;
+}*/
+

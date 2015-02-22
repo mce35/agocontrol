@@ -1,0 +1,8 @@
+{
+        "name": "Expert mode",
+        "version": "1.0.0",
+        "description": "Events configuration",
+        "template": "html/events",
+        "listable": true,
+        "category": "events"
+}

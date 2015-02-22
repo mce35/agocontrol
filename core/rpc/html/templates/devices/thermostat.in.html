@@ -1,16 +1,16 @@
-<div data-bind="attr: {'data-uuid': uuid}" class="four columns">
+<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
 
     <div class="row dashboard-widget-header">
         <ul class="two_up tiles">
             <li class="dashboard-widget-header-icon">
                 <ko opts="if: stale">
                     <div class="pretty large danger btn">
-                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-gauge"></i>
+                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-gauge"></i>
                     </div>
                 </ko>
                 <ko opts="ifnot: stale">
                     <div class="pretty large primary btn">
-                        <i data-bind="click: function(data, event) { showDetails(data) }" class="icon-gauge"></i>
+                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-gauge"></i>
                     </div>
                 </ko>
             </li>

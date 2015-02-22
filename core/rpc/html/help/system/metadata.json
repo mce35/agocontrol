@@ -1,0 +1,7 @@
+{
+        "name": "System informations",
+        "version": "1.0.0",
+        "description": "display system version, processes list, inventory",
+        "template": "html/system",
+        "listable": true
+}

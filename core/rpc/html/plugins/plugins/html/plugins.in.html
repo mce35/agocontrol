@@ -1,0 +1,28 @@
+<div id="contentarea" class="container">
+
+<script id="rowTemplate" type="text/html">
+    <td>
+        <a href="#" data-bind="text:name, click:$root.gotoPlugin"></a>
+    </td>
+    <td data-bind="text: version"></td>
+    <td data-bind="text: description"></td>
+    <td>
+        <ko opts="if: fav">
+            <a class="primary label" href="#" data-bind="click:$parent.favoriteClick">Yes</a>
+            <a class="default label" href="#" data-bind="click:$parent.favoriteClick">No</a>
+        </ko>
+        <ko opts="ifnot: fav">
+            <a class="default label" href="#" data-bind="click:$parent.favoriteClick">Yes</a>
+            <a class="primary label" href="#" data-bind="click:$parent.favoriteClick">No</a>
+        </ko>
+    </td>
+</script>
+
+	<div class="row">
+		<_h3 data-translateable="true">Available applications</_h3>
+        <div data-bind="agoGrid:grid"/>
+        <div style="text-align:right">
+            <span data-bind="text:favoritesMax"></span> <_span data-translateable="true">favorites applications max</_span>
+        </div>
+	</div>
+</div>

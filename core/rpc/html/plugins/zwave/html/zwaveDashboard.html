@@ -1,0 +1,30 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <span id="nr" data-translateable="true">zwavecontroller is not responding. Unable to execute action.</span>
+        <span xml:lang="de" id="nr" data-translateable="true">Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden.</span>
+        <span xml:lang="fr" id="nr" data-translateable="true">zwavecontroller ne répond pas. Impossible d'exécuter l'action.</span>
+    </div>
+
+    <h3>Z-Wave statistics</h3>
+    <br/>
+    <table class="agoTable">
+        <thead>
+            <tr>
+                <th data-translateable="true">Statistic</th>
+                <th xml:lang="de" data-translateable="true">Statistik</th>
+                <th xml:lang="fr" data-translateable="true">Statistiques</th>
+                <th data-translateable="true">Value</th>
+                <th xml:lang="de" data-translateable="true">Wert</th>
+                <th xml:lang="fr" data-translateable="true">Valeur</th>
+                <th xml:lang="nl" data-translateable="true">Waarde</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: stats">
+        <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+            <td data-bind="text: stat"/>
+            <td data-bind="text: value"/>
+        </tr>
+        </tbody>
+    </table>
+    <br/>
+</div>

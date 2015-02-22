@@ -1,0 +1,8 @@
+{
+    "name": "Custom dashboard",
+    "version": "0.0.1",
+    "description": "Custom dashboard",
+    "template": "html/dashboard",
+    "listable": false,
+    "resources": null
+}

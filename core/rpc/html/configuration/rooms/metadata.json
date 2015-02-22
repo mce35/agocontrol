@@ -1,0 +1,8 @@
+{
+        "name": "Rooms",
+        "version": "1.0.0",
+        "description": "Rooms configuration",
+        "template": "html/rooms",
+        "listable": true,
+        "category": "Rooms"
+}

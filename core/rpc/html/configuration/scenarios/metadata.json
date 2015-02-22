@@ -1,0 +1,8 @@
+{
+        "name": "Scenarios",
+        "version": "1.0.0",
+        "description": "Scenarios configuration",
+        "template": "html/scenarios",
+        "listable": true,
+        "category": "Scenarios"
+}

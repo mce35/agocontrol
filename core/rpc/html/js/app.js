@@ -1,805 +1,13 @@
-infuser.defaults.templateUrl = "templates";
-
-Array.prototype.chunk = function(chunkSize) {
+/**
+ * Add chunk function to Array object
+ */
+Array.prototype.chunk = function(chunkSize)
+{
     var array = this;
     return [].concat.apply([], array.map(function(elem, i) {
         return i % chunkSize ? [] : [ array.slice(i, i + chunkSize) ];
     }));
 };
-
-if (!Date.prototype.toISOString) {
-    (function() {
-
-        function pad(number) {
-            var r = String(number);
-            if (r.length === 1) {
-                r = '0' + r;
-            }
-            return r;
-        }
-
-        Date.prototype.toISOString = function() {
-            return this.getUTCFullYear() + '-' + pad(this.getUTCMonth() + 1) + '-' + pad(this.getUTCDate()) + 'T' + pad(this.getUTCHours()) + ':' + pad(this.getUTCMinutes()) + ':'
-                + pad(this.getUTCSeconds()) + '.' + String((this.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5) + 'Z';
-        };
-
-    }());
-}
-
-ko.bindingHandlers.slider = {
-    init : function(element, valueAccessor, allBindingsAccessor) {
-        var options = allBindingsAccessor().sliderOptions || {};
-        $(element).slider(options);
-        ko.utils.registerEventHandler(element, "slidechange", function(event, ui) {
-            var observable = valueAccessor();
-            observable(ui.value);
-            // Hack to avoid setting the level on startup
-            // So we call the syncLevel method when we have
-            // a mouse event (means user triggered).
-            if (options.dev && event.clientX) {
-                options.dev.syncLevel();
-            }
-        });
-        ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-            $(element).slider("destroy");
-        });
-    },
-    update : function(element, valueAccessor) {
-        var value = valueAccessor();
-        if (isNaN(value))
-            value = 0;
-        $(element).slider("value", value);
-    }
-};
-
-/* Enable caching for ajax requests */
-$.ajaxSetup({
-    cache : true
-});
-
-function getPage() {
-    var query = window.location.search.substring(1);
-    query = query.split("&")[0];
-    return query ? query : "dashboard";
-}
-
-var subscription = null;
-var url = "jsonrpc";
-
-var schema = {};
-var deviceMap = [];
-var rooms = {};
-var floorPlans = {};
-var pluginNames = {};
-var systemvar = {};
-var variables = {};
-var environment = {};
-var inventory = ko.observable({});
-var currentFloorPlan = ko.observable({});
-
-var agoController = null;
-var eventController = null;
-var dataLoggerController = null;
-var scenarioController = null;
-var alertControler = null;
-var systemControler = null;
-var model = null;
-var initialized = false;
-
-var supported_devices = [];
-var deferredThumbsLoading = [];
-var thumbs = [];
-
-function buildfloorPlanList(model) {
-    model.floorPlans = ko.observableArray([]);
-    for ( var k in floorPlans) {
-        model.floorPlans.push({
-            uuid : k,
-            name : floorPlans[k].name,
-            action : '', // dummy for table
-
-                /* Called from link onClick in navigation/main.html */
-            showFloorplan : function(data, event) {
-                if (getPage() !== 'floorplan')
-                    return true; // Let href act instead; no support for
-                // reloading page-script
-
-                setFloorPlan(this.uuid);
-                return false;
-            }
-        });
-    }
-}
-
-function buildPluginNamesList(model) {
-    model.pluginNames = ko.observableArray([]);
-    for ( var i=0; i<pluginNames.length; i++ ) {
-        //filter plugins that are not accessible from dashboard (using dropdown button)
-        if( pluginNames[i].dashboardAccess===undefined || pluginNames[i].dashboardAccess==true ) {
-            model.pluginNames.push({
-                name : pluginNames[i].name,
-                _name : pluginNames[i]._name
-            });
-        }
-    }
-}
-/**
- * This gets set when the GUI needs to be initalized after loading the
- * inventory.
- */
-var deferredInit = null;
-
-function loadPlugin(fromDashboard) {
-    // lock ui
-    $.blockUI({
-        message : '<div>Please wait ...</div>',
-        css : {
-            border : '3px solid #a00'
-        }
-    });
-
-    /* Get plugin name from query string */
-    var name = window.location.search.substring(1);
-    var tmp = name.split("&");
-    for ( var i = 0; i < tmp.length; i++) {
-        if (tmp[i].indexOf("name=") == 0) {
-            name = tmp[i].split("=")[1];
-        }
-    }
-    name = name.replace(/\//g, "");
-    $.getScript("plugins/" + name + "/plugin.js", function() {
-        $.ajax({
-            url : "cgi-bin/pluginlist.cgi",
-            method : "GET",
-            async : true,
-        }).done(function(result) {
-            var plugin = result.filter(function(p) {
-                return p._name.toLowerCase() == name.toLowerCase();
-            })[0];
-            templatePath = "../plugins/" + name + "/templates/";
-            /* Load the plugins resources if any */
-            if (plugin.resources) {
-                var resources = [];
-                if (plugin.resources.css && plugin.resources.css.length > 0) {
-                    for ( var i = 0; i < plugin.resources.css.length; i++) {
-                        resources.push("plugins/" + name + "/" + plugin.resources.css[i]);
-                    }
-                }
-                if (plugin.resources.js && plugin.resources.js.length > 0) {
-                    for ( var i = 0; i < plugin.resources.js.length; i++) {
-                        resources.push("plugins/" + name + "/" + plugin.resources.js[i]);
-                    }
-                }
-                if (resources.length > 0) {
-                    yepnope({
-                        load : resources,
-                        complete : function() {
-                            // here, all resources are really loaded
-                            var model = init_plugin(fromDashboard);
-                            if( model )
-                            {
-                                if( (!model.hasNavigation || (model.hasNavigation && model.hasNavigation()==true)) && !model.navigation )
-                                {
-                                    //force default navigation
-                                    model.navigation = function() {
-                                        return "../templates/navigation/configuration";
-                                    }.bind(model);
-                                    if( !model.hasNavigation )
-                                    {
-                                        model.hasNavigation = ko.observable(true);
-                                    }
-                                }
-                                ko.applyBindings(model);
-                            }
-                            // unlock ui
-                            $.unblockUI();
-                        }
-                    });
-                }
-            } else {
-                var model = init_plugin(fromDashboard);
-                if( model )
-                {
-                    if( (!model.hasNavigation || (model.hasNavigation && model.hasNavigation()==true)) && !model.navigation )
-                    {
-                        //force default navigation
-                        model.navigation = function() {
-                            return "../templates/navigation/configuration";
-                        }.bind(model);
-                        if( !model.hasNavigation )
-                        {
-                            model.hasNavigation = ko.observable(true);
-                        }
-                    }
-                    ko.applyBindings(model);
-                }
-                $.unblockUI();
-            }
-        });
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-        $.unblockUI();
-        notif.fatal("Error: Failed to load plugin!");
-        console.log("Unable to load plugin: ["+textStatus+"] "+errorThrown.message);
-    });
-}
-function loadPluginDashboard() {
-    loadPlugin(true);
-}
-
-function getPluginNames() {  
-    $.ajax({
-        url : "cgi-bin/pluginlist.cgi",
-        method : "GET",
-        async : false,
-    }).done(function(result) {
-        pluginNames = result;
-    });
-}
-
-function initGUI() {
-    var page = getPage();
-    if (page == "dashboard") {
-        //load plugin names only in dashboard
-        getPluginNames();
-        deferredInit = init_dashBoard;
-    } else if (page == "floorplan") {
-        deferredInit = init_floorPlan;
-    } else if (page == "roomConfig") {
-        init_roomConfig();
-    } else if (page == "variablesConfig") {
-        init_variablesConfig();
-    } else if (page == "floorplanConfig") {
-        init_floorplanConfig();
-    } else if (page == "configuration") {
-        deferredInit = init_configuration;
-    } else if (page == "cloudConfig") {
-        deferredInit = init_cloudConfig;
-    } else if (page == "deviceConfig") {
-        init_deviceConfig();
-    } else if (page == "systemConfig") {
-        deferredInit = init_systemConfig;
-    } else if (page == "eventConfig") {
-        init_eventConfig();
-    } else if (page == "scenarioConfig") {
-        init_scenarioConfig();
-    } else if (page == "securityConfig") {
-        init_securityConfig();
-    } else if (page == "inventoryView") {
-        deferredInit = init_inventoryView;
-    } else if (page == "systemStatus") {
-        init_systemStatus();
-    } else if (page == "pluginsConfig") {
-        deferredInit = init_pluginsConfig;
-    } else if (page == "plugin") {
-        deferredInit = loadPlugin;
-    } else if (page == "pluginDashboard") {
-        deferredInit = loadPluginDashboard;
-    }
-
-    /* Parse floorplan uuid */
-    var fp = window.location.search.substring(1);
-    var tmp = fp.split("&");
-    for ( var i = 0; i < tmp.length; i++) {
-        if (tmp[i].indexOf("fp=") == 0) {
-            fp = tmp[i].split("=")[1];
-        }
-    }
-
-    // When inventory is ready, assign initial floorplan
-    if (!fp)
-        return;
-
-    var obs = inventory.subscribe(function(inv) {
-        // Never push state on page-load
-        setFloorPlan(fp, true);
-        obs.dispose();
-    });
-}
-
-function getStartJSFile() {
-    var page = getPage();
-
-    if (page == "dashboard") {
-        return "js/app.dashboard.js";
-    } else if (page == "floorplan") {
-        return "js/app.floorplan.js";
-    } else if (page == "roomConfig") {
-        return "js/app.config.rooms.js";
-    } else if (page == "variablesConfig") {
-        return "js/app.config.variables.js";
-    } else if (page == "floorplanConfig") {
-        return "js/app.config.floorplan.js";
-    } else if (page == "configuration") {
-        return "js/app.configuration.js";
-    } else if (page == "cloudConfig") {
-        return "js/app.config.cloud.js";
-    } else if (page == "deviceConfig") {
-        return "js/app.config.devices.js";
-    } else if (page == "systemConfig") {
-        return "js/app.config.system.js";
-    } else if (page == "eventConfig") {
-        return "js/app.config.events.js";
-    } else if (page == "scenarioConfig") {
-        return "js/app.config.scenarios.js";
-    } else if (page == "inventoryView") {
-        return "js/app.inventory.js";
-    } else if (page == "systemStatus") {
-        return "js/app.systemstatus.js";
-    } else if (page == "pluginsConfig") {
-        return "js/app.config.plugins.js";
-    } else if (page == "securityConfig") {
-        return "js/app.config.security.js";
-    }
-
-    return null;
-}
-
-/**
- * Loads the userinterface and initates the subscription
- * 
- * @param msg
- */
-function loadInterface(msg) {
-    supported_devices = msg;
-    sessionStorage.supported_devices = JSON.stringify(msg);
-    var startfile = getStartJSFile();
-    if (startfile !== null) {
-        $.getScript(startfile, function() {
-            initGUI();
-            if (localStorage.inventoryCache) {
-                handleInventory(null);
-            }
-            subscribe();
-        });
-    } else {
-        initGUI();
-        if (localStorage.inventoryCache) {
-            handleInventory(null);
-        }
-        subscribe();
-    }
-}
-
-/* Load the device template names before loading the gui */
-if (sessionStorage.supported_devices) {
-    loadInterface(JSON.parse(sessionStorage.supported_devices));
-} else {
-    $.ajax({
-        url : "cgi-bin/listing.cgi?devices=1",
-        type : "GET"
-    }).done(loadInterface);
-}
-
-// --- AGO --- //
-
-var securityPromted = false;
-
-function handleEvent(requestSucceed, response) {
-    if( requestSucceed )
-    {
-        if (response.result.event == "event.security.countdown" && !securityPromted) {
-            securityPromted = true;
-            var pin = window.prompt("Alarm please entry pin:");
-            var content = {};
-            content.command = "cancel";
-            content.uuid = response.result.uuid;
-            content.pin = pin;
-            sendCommand(content, function(res) {
-                if (res.result.error) {
-                    notif.error(res.result.error);
-                }
-                securityPromted = false;
-            });
-            return;
-        } else if (response.result.event == "event.security.intruderalert") {
-            notif.error("INTRODUCER ALERT!");
-            return;
-        }
-        for ( var i = 0; i < deviceMap.length; i++) {
-            if (deviceMap[i].uuid == response.result.uuid ) {
-                // update device last seen datetime
-                deviceMap[i].timeStamp(formatDate(new Date()));
-                //update device level
-                if( response.result.level !== undefined) {
-                    // update custom device member
-                    if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1) {
-                        // event that update device member
-                        var member = response.result.event.replace('event.device.', '').replace('changed', '');
-                        if (deviceMap[i][member] !== undefined) {
-                            deviceMap[i][member](response.result.level);
-                        }
-                    }
-                    // Binary sensor has its own event
-                    else if (response.result.event == "event.security.sensortriggered") {
-                        if (deviceMap[i]['state'] !== undefined) {
-                            deviceMap[i]['state'](response.result.level);
-                        }
-                    }
-                }
-                //update device stale
-                if( response.result.event=="event.device.stale" && response.result.stale!==undefined )
-                {
-                    console.log('device '+response.result.internalid+' stale='+response.result.stale);
-                    deviceMap[i]['stale'](response.result.stale);
-                }
-                //update quantity
-                if (response.result.quantity) {
-                    var values = deviceMap[i].values();
-                    /* We have no values so reload from inventory */
-                    if (values[response.result.quantity] === undefined) {
-                        getInventory(function(inv) {
-                            var tmpInv = cleanInventory(inv.result.devices);
-                            if (tmpInv[response.result.uuid] !== undefined) {
-                                if (tmpInv[response.result.uuid].values) {
-                                    deviceMap[i].values(tmpInv[response.result.uuid].values);
-                                }
-                            }
-                        });
-                        break;
-                    }
-                    if( response.result.level !== undefined ) {
-                        if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
-                        {
-                            //update forecast value for barometer sensor only if string specified
-                            deviceMap[i].forecast(response.result.level);
-                        }
-                        //save new level
-                        values[response.result.quantity].level = response.result.level;
-                    }
-                    else if( response.result.latitude!==undefined && response.result.longitude!==undefined ) {
-                        values[response.result.quantity].latitude = response.result.latitude;
-                        values[response.result.quantity].longitude = response.result.longitude;
-                    }
-                    deviceMap[i].values(values);
-                }
-                break;
-            }
-        }
-    }
-    getEvent();
-}
-
-function getEvent() {
-    var request = {};
-    request.method = "getevent";
-    request.params = {};
-    request.params.uuid = subscription;
-    request.id = 1;
-    request.jsonrpc = "2.0";
-
-    $.post(url, JSON.stringify(request), null, "json")
-        .done( function(data, textStatus, jqXHR) {
-            //request succeed
-            if( data.error!==undefined )
-            {
-                if(data.error.code == -32602) {
-                    // Subscription not found, server restart or we've been gone
-                    // for too long. Setup new subscription
-                    subscribe();
-                    return;
-                }
-
-                // request timeout (server side), continue polling
-                handleEvent(false, data);
-            }
-            else
-            {
-                handleEvent(true, data);
-            }
-        })
-    .fail(function(jqXHR, textStatus, errorThrown) {
-        //request failed, retry in a bit
-        setTimeout(function(){
-            getEvent();
-        }, 1000);
-    });
-}
-
-function cleanInventory(data) {
-    for ( var k in data)
-    {
-        if (!data[k])
-        {
-            delete data[k];
-        }
-    }
-    return data;
-}
-
-/* Mark the local cache as invalid */
-function purgeInventoryCache() {
-    delete localStorage.inventoryCache;
-}
-
-function handleInventory(response)
-{
-    if (response != null && response.result.match !== undefined && response.result.match(/^exception/)) {
-        notif.error("RPC ERROR: " + response.result);
-        return;
-    }
-
-    if (response == null) {
-        response = {
-            result : JSON.parse(localStorage.inventoryCache)
-        };
-    } else {
-        localStorage.inventoryCache = JSON.stringify(response.result);
-    }
-
-    rooms = response.result.rooms;
-    systemvar = response.result.system;
-    schema = response.result.schema;
-    floorPlans = response.result.floorplans;
-    variables = response.result.variables;
-    environment = response.result.environment;
-
-    var inv = cleanInventory(response.result.devices);
-    var found;
-    for ( var uuid in inv)
-    {
-        if (inv[uuid].room !== undefined && inv[uuid].room)
-        {
-            inv[uuid].roomUID = inv[uuid].room;
-            if (rooms[inv[uuid].room] !== undefined)
-            {
-                inv[uuid].room = rooms[inv[uuid].room].name;
-            }
-            else
-            {
-                inv[uuid].room = "";
-            }
-        }
-        else
-        {
-            inv[uuid].room = "";
-        }
-
-        found = false;
-        for ( var i = 0; i < deviceMap.length; i++)
-        {
-            if (deviceMap[i].uuid === uuid)
-            {
-                // device already exists in deviceMap array. Update its content
-                deviceMap[i].update(inv[uuid], uuid);
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-        {
-            deviceMap.push(new device(inv[uuid], uuid));
-        }
-    }
-
-    // Notify global observable about new inventory
-    inventory(inv);
-
-    if (deferredInit && !initialized)
-    {
-        deferredInit();
-        initialized = true;
-    }
-
-    if (!model)
-    {
-        return;
-    }
-
-    if (model.deviceCount !== undefined)
-    {
-        if (deviceMap.length != model.deviceCount())
-        {
-            model.deviceCount(deviceMap.length);
-        }
-    }
-
-    if (model.devices !== undefined)
-    {
-        if (JSON.stringify(deviceMap) != JSON.stringify(model.devices()))
-        {
-            model.devices(deviceMap);
-        }
-    }
-
-    if (model.inventory !== undefined)
-    {
-        if (JSON.stringify(response.result) != JSON.stringify(model.inventory()))
-        {
-            model.inventory(response.result);
-        }
-    }
-
-    if (model.rooms !== undefined && model.rooms.slice !== undefined)
-    {
-        /* get uuid into rooms */
-        model.rooms([]);
-        for ( var uuid in rooms)
-        {
-            var tmp = rooms[uuid];
-            tmp.uuid = uuid;
-            tmp.action = ''; // dummy for table
-            model.rooms.push(tmp);
-        }
-    }
-
-    if (model.floorplans !== undefined)
-    {
-        /* get uuid into floorplans */
-        var fpList = [];
-        for ( var uuid in floorPlans)
-        {
-            var tmp = floorPlans[uuid];
-            tmp.uuid = uuid;
-            tmp.action = ''; // dummy for table
-            fpList.push(tmp);
-        }
-
-        if (JSON.stringify(fpList) != JSON.stringify(model.floorplans()))
-        {
-            model.floorplans(fpList);
-        }
-    }
-
-    if (model.variables !== undefined)
-    {
-        /* build variable pairs */
-        var varList = [];
-        for ( var key in variables)
-        {
-            var tmp = {};
-            tmp.variable = key;
-            tmp.value = variables[key];
-            tmp.action = ''; // dummy for table
-            varList.push(tmp);
-        }
-
-        if (JSON.stringify(varList) != JSON.stringify(model.variables()))
-        {
-            model.variables(varList);
-        }
-    }
-}
-
-/**
- * Lookup floorplan by uuid, and assign currentFloorPlan observable. Also tries
- * to set HTML5 history state object for re-navigation.
- * 
- * Parameter replaceState can have the following values: - undefined/false to
- * use pushState (new page navigation) - true to use replaceState (fresh page
- * load, where we just want to assign a state object to the current view) - null
- * to not do any state management (i.e. after called from onpopstate)
- */
-function setFloorPlan(fp, replaceState) {
-    // No change?
-    if (currentFloorPlan().uuid === fp)
-        return;
-
-    for ( var k in floorPlans) {
-        if (k == fp) {
-            var tmp;
-            tmp = floorPlans[k];
-            tmp.uuid = k;
-            currentFloorPlan(tmp);
-            break;
-        }
-    }
-
-    if (replaceState === null)
-        return;
-
-    // Not a floor plan page so don't do anything
-    if (getPage() != "floorplan") {
-        return;
-    }
-
-    // HTML5 push/pop-state support
-    try {
-        if (history && history.pushState && history.replaceState) {
-            var fn = replaceState ? history.replaceState : history.pushState;
-            fn.apply(history, [ {
-                page : 'floorplan',
-                fp : fp
-            }, document.title, '?floorplan&fp=' + fp ]);
-        }
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-/*
- * If HTML5 history state is available, this will trigger when user navigates
- * back/forth. If a history.pushState event has been executed, we can find out
- * what page to render. Currently only supports floorplan
- */
-window.onpopstate = function(event) {
-    if (event.state && event.state.page === 'floorplan') {
-        setFloorPlan(event.state.fp, null);
-    }
-};
-
-function getInventory(customCb) {
-    var cb = customCb || handleInventory;
-    var content = {};
-    content.command = "inventory";
-    sendCommand(content, cb);
-}
-
-function unsubscribe() {
-    var request = {};
-    request.method = "unsubscribe";
-    request.id = 1;
-    request.jsonrpc = "2.0";
-    request.params = {};
-    request.params.uuid = subscription;
-
-    $.post(url, JSON.stringify(request), function() {
-    }, "json");
-}
-
-function handleSubscribe(response) {
-    if (response.result) {
-        subscription = response.result;
-        getInventory();
-        getEvent();
-        window.onbeforeunload = function(event) {
-            unsubscribe();
-        };
-    }
-}
-
-function sendCommand(content, callback, timeout) {
-    var request = {};
-    request.method = "message";
-    request.params = {};
-    request.params.content = content;
-    if (timeout) {
-        request.params.replytimeout = timeout;
-    }
-    request.id = 1;
-    request.jsonrpc = "2.0";
-
-    $.ajax({
-        type : 'POST',
-        url : url,
-        data : JSON.stringify(request),
-        success : function(r) {
-            if (callback !== undefined) {
-                callback(r);
-            }
-        },
-        dataType : "json",
-        async : true
-    });
-}
-
-function subscribe() {
-    var request = {};
-    request.method = "subscribe";
-    request.id = 1;
-    request.jsonrpc = "2.0";
-
-    $.post(url, JSON.stringify(request), handleSubscribe, "json");
-}
-
-/**
- * Opens details page for the given device
- * 
- * @param device
- * @param environment
- */
-function showDetails(device, environment) {
-    /* Check if we have a template if yes use it otherwise fall back to default */
-    $.ajax({
-        type : 'HEAD',
-        url : "templates/details/" + device.devicetype + ".html",
-        success : function() {
-            doShowDetails(device, device.devicetype, environment);
-        },
-        error : function() {
-            doShowDetails(device, "default");
-        }
-    });
-}
 
 /**
  * Formats a date object
@@ -808,66 +16,24 @@ function showDetails(device, environment) {
  * @param simple
  * @returns {String}
  */
-function formatDate(date) {
+function formatDate(date)
+{
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 };
 
 /**
- * Shows the command selector for the detail pages
- * 
- * @param container
- * @param device
+ * Format specified string to lower case except first letter to uppercase
  */
-function showCommandList(container, device) {
-    var commandSelect = document.createElement("select");
-    var commandParams = document.createElement("span");
-    commandSelect.id = "commandSelect";
-    var type = device.devicetype;
-    if( type && schema.devicetypes[type] ) {
-        for ( var i = 0; i < schema.devicetypes[type].commands.length; i++) {
-            commandSelect.options[i] = new Option(schema.commands[schema.devicetypes[type].commands[i]].name, schema.devicetypes[type].commands[i]);
-        }
-    }
-
-    commandSelect.onchange = function() {
-        if (commandSelect.options.length == 0) {
-            return 0;
-        }
-        var cmd = schema.commands[commandSelect.options[commandSelect.selectedIndex].value];
-        commandParams.innerHTML = "";
-        if (cmd.parameters !== undefined) {
-            commandParams.style.display = "";
-            for ( var param in cmd.parameters) {
-                if (cmd.parameters[param].type == 'option') {
-                    var select = document.createElement("select");
-                    select.name = param;
-                    select.className = "cmdParam";
-                    for ( var i = 0; i < cmd.parameters[param].options.length; i++)
-                        select.options[select.options.length] = new Option(cmd.parameters[param].options[i], cmd.parameters[param].options[i]);
-                    commandParams.appendChild(select);
-                } else {
-                    var input = document.createElement("input");
-                    input.name = param;
-                    input.className = "cmdParam";
-                    input.placeholder = cmd.parameters[param].name;
-                    commandParams.appendChild(input);
-                }
-            }
-        } else {
-            commandParams.style.display = "none";
-        }
-    };
-
-    commandSelect.onchange();
-
-    container.appendChild(commandSelect);
-    container.appendChild(commandParams);
+function ucFirst(str)
+{
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 /**
  * Convert string under format "d.m.y h:m" to js Date object
  */
-function stringToDatetime(str) {
+function stringToDatetime(str)
+{
     var dt = str.match(/(\d+).(\d+).(\d+)\s+(\d+):(\d+)/);
     return new Date(dt[3], parseInt(dt[2])-1, dt[1], dt[4], dt[5]);
 }
@@ -875,7 +41,8 @@ function stringToDatetime(str) {
 /**
  * Convert datetime js object to string under format "d.m.y h:m"
  */
-function datetimeToString(dt) {
+function datetimeToString(dt)
+{
     var str = $.datepicker.formatDate('dd.mm.yy', dt);
     str += ' ';
     str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
@@ -884,435 +51,332 @@ function datetimeToString(dt) {
     return str;
 }
 
-/**
- * Shows the detail page of a device
- * 
- * @param device
- * @param template
- * @param environment
- */
-function doShowDetails(device, template, environment)
+//View object
+//dynamic page loading inspired from : http://jsfiddle.net/rniemeyer/PctJz/
+function View(templateName, model)
 {
-    ko.renderTemplate("details/" + template, device, {
-        afterRender : function() {
-            var dialogWidth = 800;
-            var dialogHeight = 300;
+    this.templateName = templateName;
+    this.model = model; 
+};
 
-            if (document.getElementById('commandList'))
-            {
-                showCommandList(document.getElementById('commandList'), device);
-            }
-
-            if (device.devicetype == "camera")
-            {
-                dialogHeight = 620;
-                device.getVideoFrame();
-            }
-
-            if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype=="multigraph"))
-            {
-                //refresh button
-                $('#get_graph').click(function() {
-                    renderGraph(device, document.getElementById('graph')._environment);
-                });
-
-                /* Setup start date */
-                var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
-                var startEl = $('#start_date');
-                startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
-                startEl.datetimepicker({
-                    closeOnDateSelect: true,
-                    //value: $.datepicker.formatDate('dd.mm.yy', start) + ' 00:00',
-                    format: 'd.m.Y H:i',
-                    onChangeDateTime: function(dp,$input) {
-                        //check date
-                        var sd = stringToDatetime($('#start_date').val());
-                        var ed = stringToDatetime($('#end_date').val());
-                        if( sd.getTime()>ed.getTime() )
-                        {
-                            //invalid date
-                            notif.warning('Specified datetime is invalid');
-                            sd = new Date(ed.getTime() - 24 * 3600 * 1000);
-                            $('#start_date').val( datetimeToString(sd) );
-                        }
-                    }
-                });
-
-                /* Setup end date */
-                var endEl = $('#end_date');
-                endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
-                endEl.datetimepicker({
-                    closeOnDateSelect: true,
-                    format:'d.m.Y H:i',
-                    onChangeDateTime: function(dp,$input) {
-                        //check date
-                        var sd = stringToDatetime($('#start_date').val());
-                        var ed = stringToDatetime($('#end_date').val());
-                        if( sd.getTime()>ed.getTime() ) {
-                            //invalid date
-                            notif.warning('Specified datetime is invalid');
-                            ed = new Date(sd.getTime() + 24 * 3600 * 1000);
-                            $('#end_date').val( datetimeToString(ed) );
-                        }
-                    }
-                });
-
-                if (device.devicetype == "binarysensor")
-                {
-                    environment = "device.state";
-                }
-                else if (device.devicetype == "multigraph")
-                {
-                    environment = "device.state";
-                }
-
-                renderGraph(device, environment ? environment : device.valueList()[0].name);
-
-                for( var i=0; i<document.getElementsByName("displayType").length; i++ )
-                {
-                    document.getElementsByName("displayType")[i].onchange = function() {
-                        renderGraph(device, environment ? environment : device.valueList()[0].name);
-                    }
-                }
-
-                var reset = function()
-                {
-                    if (device !== undefined)
-                        device.reset();
-                };
-
-                dialogWidth = 1000;
-                dialogHeight = 720;
-            }
-
-            if (document.getElementById("detailsTitle"))
-            {
-                $("#detailsPage").dialog({
-                    title : document.getElementById("detailsTitle").innerHTML,
-                    modal : true,
-                    width : Math.min(dialogWidth, Math.round(screen.width * 0.8)),
-                    height : Math.min(dialogHeight, Math.round(screen.height * 0.8)),
-                    close : function() {
-                        var graphContainer = document.getElementById('graph');
-                        if (graphContainer)
-                        {
-                            graphContainer.parentNode.removeChild(graphContainer);
-                        }
-                    },
-                    open : function() {
-                        $("#detailsPage").css("overflow", "visible");
-                        if (device.dialogopened !== undefined)
-                            device.dialogopened(this);
-                    }
-                });
-            }
-        }
-    }, document.getElementById("detailsPage"));
+//Template object
+function Template(path, resources, template, params)
+{
+    this.path = path;
+    this.resources = resources;
+    this.template = template;
+    this.params = params; //data passed to loaded template
 }
 
-/**
- * Render RRDtool graph
- */
-function renderRRDgraph(device, startDate, endDate)
+//Agocontrol viewmodel
+//based on knockout webmail example
+//http://learn.knockoutjs.com/WebmailExampleStandalone.html
+function AgocontrolViewModel()
 {
-    //fix end date
-    now = new Date();
-    if( endDate.getTime()>now.getTime() )
-        endDate = now;
+    //MEMBERS
+    var self = this;
+    self.currentView = ko.observable();
+    self.agocontrol = new Agocontrol();
+    self.currentModel = null;
 
-    //prepare content
-    $('#graph').empty();
-    var img = $('<img src="" id="graphRRD" style="display: none"/>');
-    $('#graph').append(img);
-
-    //get graph
-    device.getRrdGraph(device.uuid, Math.round(startDate.getTime()/1000), Math.round(endDate.getTime()/1000));
-
-    unblockDiv("#graph");
-}
-
-/**
- * Render plots graph
- */
-function renderPlots(device, environment, unit, data, values, startDate, endDate)
-{
-    //need data to render something else
-    var max_ticks = 25; // User option?
-
-    /* Split the values into buckets */
-    var num_buckets = Math.max(1, Math.floor(values.length / max_ticks));
-    var buckets = values.chunk(num_buckets);
-    var labels = [];
-    var i = 0;
-
-    /*
-     * Compute average for each bucket and pick a representative time to
-     * display
-     */
-    for ( var j = 0; j < buckets.length; j++)
+    //disable click event
+    self.noclick = function()
     {
-        var bucket = buckets[j];
-        var ts = bucket[0].time + (bucket[bucket.length - 1].time - bucket[0].time) / 2;
-        labels.push(new Date(Math.floor(ts) * 1000));
-        var value = 0;
-        for ( var k = 0; k < bucket.length; k++)
-        {
-            value += bucket[k].level;
-        }
-        data.push([ i, value / k ]);
-        i++;
-    }
+        return false;
+    };
 
-    /* Render the graph */
-    var container = document.getElementById('graph');
-    container._environment = environment;
-    Flotr.draw(container, [ data ], {
-        HtmlText : false,
-        title : environment,
-        mode : "time",
-        yaxis : {
-            tickFormatter : function(x) {
-                return x + " " + unit;
-            },
-        },
-        mouse : {
-            track : true,
-            relative : true,
-            trackFormatter : function(o) {
-                return formatDate(labels[Math.round(o.x)]) + " - " + o.y + " " + unit;
-            }
-        },
-        xaxis : {
-            noTicks : i,
-            labelsAngle : 90,
-            tickDecimals : 0,
-            tickFormatter : function(x) {
-                return formatDate(labels[x]);
-            }
-        }
-    });
-
-    /* We have no data ... */
-    if (data.length == 0)
+    //route functions
+    self.gotoDashboard = function(dashboard, edit)
     {
-        var canvas = document.getElementsByClassName("flotr-overlay")[0];
-        var context = canvas.getContext("2d");
-        var x = canvas.width / 2;
-        var y = canvas.height / 2;
+        if( edit===true )
+        {
+            location.hash = 'dashboard/' + dashboard.name + '/edit';
+        }
+        else
+        {
+            location.hash = 'dashboard/' + dashboard.name;
+        }
+    };
 
-        context.font = "30pt Arial";
-        context.textAlign = "center";
-        context.fillStyle = "red";
-        context.fillText('No data found for given time frame!', x, y);
-    }
-
-    unblockDiv("#graph");
-}
-
-/**
- * Render data list
- */
-function renderList(device, environment, unit, data, values, startDate, endDate)
-{
-    values.sort(function(a, b) {
-        return b.time - a.time;
-    });
-
-    if( values.length>0 )
+    self.gotoConfiguration = function(config)
     {
-        if( values[0].level )
+        location.hash = 'config/' + config.name;
+    };
+
+    self.gotoPlugin = function(plugin)
+    {
+        location.hash = 'plugin/' + plugin.name;
+    };
+
+    self.gotoHelp = function(help)
+    {
+        location.hash = 'help/' + help.name;
+    };
+
+    //load template
+    self.loadTemplate = function(template)
+    {
+        //block ui
+        $.blockUI({ message: '<img src="img/loading.gif" />  Loading...' });
+
+        //reset current template
+        if( typeof reset_template == 'function' )
         {
-            for ( var i = 0; i < values.length; i++)
-            {
-                values[i].date = formatDate(new Date(values[i].time * 1000));
-                values[i].value = values[i].level + " " + unit;
-                delete values[i].level;
-            }
+            reset_template(self.currentModel);
         }
-        else if( values[0].latitude && values[0].longitude )
+
+        //reset some old stuff
+        delete reset_template;
+        delete init_template;
+        delete afterrender_template;
+
+        //load template script file
+        $.getScript(template.path+'/template.js' , function()
         {
-            for ( var i = 0; i < values.length; i++)
+            //Load the plugins resources if any
+            if( template.resources && ((template.resources.css && template.resources.css.length>0) || (template.resources.js && template.resources.js.length>0)) )
             {
-                values[i].date = formatDate(new Date(values[i].time * 1000));
-                values[i].value = values[i].latitude + "," + values[i].longitude;
-                delete values[i].latitude;
-                delete values[i].longitude;
-            }
-        }
-    }
-
-    ko.renderTemplate("details/datalist", {
-        data : values,
-        environment : environment
-    }, {}, document.getElementById("dataList"));
-
-    unblockDiv("#dataList");
-}
-
-/*
- * Render map to display GPS positions
- */
-function renderMap(values)
-{
-    //load openlayers lib only when needed
-    yepnope({
-        load : 'js/libs/OpenLayers/OpenLayers.js',
-        complete : function() {
-            //configure openlayers lib
-            OpenLayers.ImgPath = 'js/libs/OpenLayers/img/';
-
-            //clear container
-
-            if( values.length>0 )
-            {
-                //create map, layers and projection
-                var map = new OpenLayers.Map('graph');
-                var layer = new OpenLayers.Layer.OSM();
-                var markers = new OpenLayers.Layer.Markers("Markers");
-                var vectors = new OpenLayers.Layer.Vector("Lines");
-                var fromProjection = new OpenLayers.Projection("EPSG:4326");
-                var toProjection = new OpenLayers.Projection("EPSG:900913");
-                var lineStyle = { strokeColor: '#FF0000',
-                    strokeOpacity: 0.5,
-                    strokeWidth: 5 };
-
-                //add layers
-                map.addLayer(layer);
-                map.addLayer(markers);
-                map.addLayer(vectors);
-
-                //add markers
-                var prevPoint = null;
-                var features = [];
-                for( var i=0; i<values.length; i++ )
+                var resources = [];
+                if (template.resources.css && template.resources.css.length > 0)
                 {
-                    var position = new OpenLayers.LonLat(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
-                    var point = new OpenLayers.Geometry.Point(values[i].longitude, values[i].latitude).transform(fromProjection, toProjection);
-                    markers.addMarker(new OpenLayers.Marker(position));
-                    if( prevPoint )
+                    for ( var i = 0; i < template.resources.css.length; i++)
                     {
-                        //join markers
-                        var line = new OpenLayers.Geometry.LineString([prevPoint, point]);
-                        features.push( new OpenLayers.Feature.Vector(line, null, lineStyle) );
+                        resources.push(template.path + "/" + template.resources.css[i]);
                     }
-                    prevPoint = point;
                 }
-                vectors.addFeatures(features);
-
-                //center map to first position
-                var zoom = 13;
-                map.setCenter( new OpenLayers.LonLat(values[0].longitude, values[0].latitude).transform(fromProjection, toProjection), zoom);
+                if (template.resources.js && template.resources.js.length > 0)
+                {
+                    for ( var i = 0; i < template.resources.js.length; i++)
+                    {
+                        resources.push(template.path + "/" + template.resources.js[i]);
+                    }
+                }
+                if (resources.length > 0)
+                {
+                    head.load(resources, function() {
+                        // here, all resources are really loaded
+                        if (typeof init_template == 'function')
+                        {
+                            self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
+                            if( self.currentModel )
+                            {
+                                self.currentView(new View(template.path+'/'+template.template, self.currentModel));
+                            }
+                            else
+                            {
+                                self.currentModel = null;
+                                console.error('Failed to load template: no model returned by init_template. Please check your code.');
+                                notif.fatal('Problem during page loading.');
+                            }
+                        }
+                        else
+                        {
+                            console.error('Failed to load template: init_template function not defined. Please check your code.');
+                            notif.fatal('Problem during page loading.');
+                        }
+                        $.unblockUI();
+                    });
+                }
             }
             else
             {
-                notif.error('No data to display');
-            }
-            //show container
-            unblockDiv("#graph");
-        }
-    });
-}
-
-/**
- * Block/unblock specified div
- */
-function blockDiv(divName)
-{
-    $(divName).empty();
-    $(divName).block({
-        message : '<div>Please wait ...</div>',
-        css : { 
-            border : '3px solid #a00'
-        }
-    });
-}
-function unblockDiv(divName)
-{
-    $(divName).unblock();
-}
-
-/**
- * Renders the graph for the given device and environment
- * 
- * @param device
- * @param environment
- */
-function renderGraph(device, environment)
-{
-    var renderType = $($('input[name="displayType"]:checked')[0]).val();
-
-    var endDate = stringToDatetime($('#end_date').val());
-    var startDate = stringToDatetime($('#start_date').val());
-    var renderType = $($('input[name="displayType"]:checked')[0]).val();
-
-    blockDiv("#graph");
-
-    if( renderType=="graph" )
-    {
-        //render rrdtool graph
-        $("#graph").show();
-        $("#dataList").hide();
-        renderRRDgraph(device, startDate, endDate);
-    }
-    else
-    {
-
-        var content = {};
-        content.uuid = dataLoggerController;
-        content.command = "getdata";
-        content.deviceid = device.uuid;
-        content.start = startDate.toISOString();
-        content.end = endDate.toISOString();
-        content.env = environment.toLowerCase();
-
-        sendCommand(content, function(res) {
-            if (!res.result || !res.result.result || !res.result.result.values)
-            {
-                notif.fatal("Error while loading Graph!");
-                unblockDiv('#graph');
-                return;
-            }
-
-            /* Get the unit */
-            var unit = "";
-            for ( var k = 0; k < device.valueList().length; k++)
-            {
-                if (device.valueList()[k].name == environment)
+                if (typeof init_template == 'function')
                 {
-                    unit = device.valueList()[k].unit;
+                    self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
+                    if( self.currentModel )
+                    {
+                        self.currentView(new View(template.path+'/'+template.template, self.currentModel));
+                    }
+                    else
+                    {
+                        self.currentModel = null;
+                        console.error('Failed to load template: no model returned by init_template. Please check your code.');
+                        notif.fatal('Problem during page loading.');
+                    }
+                }
+                else
+                {
+                    console.error('Failed to load template: init_template function not defined. Please check your code.');
+                    notif.fatal('Problem during page loading.');
+                }
+                $.unblockUI();
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            $.unblockUI();
+            console.error("Failed to load template: ["+textStatus+"] "+errorThrown.message);
+            console.error(errorThrown);
+            notif.fatal('Problem during page loading.');
+        });
+    };
+
+    //call afterrender_template if available.
+    //the afterrender_template can be directly called from index.html but to make it understandable, we put here the call
+    self.afterRender = function() {
+        if( typeof afterrender_template == 'function' )
+        {
+            afterrender_template(self.currentModel);
+        }
+    };
+
+    //configure routes using sammy.js framework
+    Sammy(function ()
+    {
+        //load agocontrol inventory
+        self.agocontrol.getInventory(null, false);
+
+        function getDashboard(name)
+        {
+            var dashboard = null;
+            for( var i=0; i<self.agocontrol.dashboards().length; i++ )
+            {
+                if( self.agocontrol.dashboards()[i].name==name )
+                {
+                    dashboard = self.agocontrol.dashboards()[i];
                     break;
                 }
             }
+            return dashboard;
+        };
 
-            /* Prepare the data */
-            var data = [];
-            var values = res.result.result.values;
+        //dashboard loading
+        this.get('#dashboard/:name', function()
+        {
+            if( this.params.name==='all' )
+            {
+                //special case for main dashboard (all devices)
+                var basePath = 'dashboard/all';
+                self.loadTemplate(new Template(basePath, null, 'html/dashboard', null));
+            }
+            else
+            {
+                var dashboard = getDashboard(this.params.name);
+                if( dashboard )
+                {
+                    var basePath = 'dashboard/custom';
+                    self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:false}));
+                }
+                else
+                {
+                    notif.fatal('Specified custom dashboard not found!');
+                }
+            }
+        });
 
-            if (renderType == "list")
+        //custom dashboard edition
+        this.get('#dashboard/:name/edit', function()
+        {
+            var dashboard = getDashboard(this.params.name);
+            if( dashboard )
             {
-                $("#graph").hide();
-                $("#dataList").show();
-                blockDiv("#dataList");
-                renderList(device, environment, unit, data, values, startDate, endDate);
-                unblockDiv("#dataList");
+                var basePath = 'dashboard/custom';
+                self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:true}));
             }
-            else if( renderType=="map" )
+            else
             {
-                $("#graph").show();
-                $("#dataList").hide();
-                blockDiv("#graph");
-                renderMap(valuest);
-                unblockDiv("#graph");
+                notif.fatal('Specified custom dashboard not found!');
             }
-            else if( renderType=="plots" )
+        });
+
+        //plugin loading
+        this.get('#plugin/:name', function()
+        {
+            //get plugin infos from members
+            var plugin = null;
+            for( var i=0; i<self.agocontrol.plugins().length; i++ )
             {
-                $("#graph").show();
-                $("#dataList").hide();
-                blockDiv("#graph");
-                renderPlots(device, environment, unit, data, values, startDate, endDate);
-                unblockDiv("#graph");
+                if( self.agocontrol.plugins()[i].name==this.params.name )
+                {
+                    //plugin found
+                    plugin = self.agocontrol.plugins()[i];
+                    break;
+                }
             }
-        }, 30);
-    }
-}
+            if( plugin )
+            {
+                var basePath = "plugins/" + plugin.dir;
+                self.loadTemplate(new Template(basePath, plugin.resources, plugin.template, null));
+            }
+            else
+            {
+                notif.fatal('Specified plugin not found!');
+            }
+        });
+
+        //configuration loading
+        this.get('#config/:name', function()
+        {
+            //get config infos
+            var config = null;
+            for( var category in self.agocontrol.configurations() )
+            {
+                if( self.agocontrol.configurations()[category].subMenus===null )
+                {
+                    if( self.agocontrol.configurations()[category].menu.name==this.params.name )
+                    {
+                        config = self.agocontrol.configurations()[category].menu;
+                        break;
+                    }
+                }
+                else
+                {
+                    for( var i=0; i<self.agocontrol.configurations()[category].subMenus.length; i++ )
+                    {
+                        if( self.agocontrol.configurations()[category].subMenus[i].name==this.params.name )
+                        {
+                            config = self.agocontrol.configurations()[category].subMenus[i];
+                            break;
+                        }
+                    }
+                    if( config!=null )
+                    {
+                        break;
+                    }
+                }
+            }
+            if( config )
+            {
+                var basePath = "configuration/" + config.dir;
+                self.loadTemplate(new Template(basePath, config.resources, config.template, null));
+            }
+            else
+            {
+                notif.fatal('Specified config page not found');
+            }
+        });
+
+        //help
+        this.get('#help/:name', function()
+        {
+            var help = null;
+            for( var i=0; i<self.agocontrol.helps().length; i++ )
+            {
+                if( self.agocontrol.helps()[i].name==this.params.name )
+                {
+                    //page found
+                    help = self.agocontrol.helps()[i];
+                    break;
+                }
+            }
+            if( help )
+            {
+                var basePath = "help/" + help.dir;
+                self.loadTemplate(new Template(basePath, help.resources, help.template, null));
+            }
+            else
+            {
+                notif.fatal('Specified help page not found');
+            }
+        });
+
+        //startup page (dashboard)
+        this.get('', function ()
+        {
+            this.app.runRoute('get', '#dashboard/all');
+        });
+    }).run();
+
+    self.agocontrol.subscribe();
+};
+
+ko.applyBindings(new AgocontrolViewModel());
 

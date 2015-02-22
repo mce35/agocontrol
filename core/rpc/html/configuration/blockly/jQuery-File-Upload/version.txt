@@ -1,0 +1,2 @@
+jquery-file-upload: 9.8.0
+minifier: http://closure-compiler.appspot.com/home
