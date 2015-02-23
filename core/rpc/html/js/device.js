@@ -58,9 +58,22 @@ function device(agocontrol, obj, uuid) {
 
     if (this.devicetype == "dimmerrgb")
     {
-        this.setColor = function()
-        {
-            openColorPicker(uuid);
+        this.openColorPicker = function() {
+            var picker = $('#color-'+uuid).colpick({
+                layout:'hex',
+                onSubmit: function(hsb,hex,rgb,el) {
+                    var content = {};
+                    content.uuid = $(el).attr('uuid');
+                    content.command = "setcolor";
+                    content.red = rgb.r;
+                    content.green = rgb.g;
+                    content.blue = rgb.b;
+                    self.agocontrol.sendCommand(content);
+  
+                    $(el).colpickHide();
+                },
+            });
+            picker.colpickShow();
         };
     }
 
