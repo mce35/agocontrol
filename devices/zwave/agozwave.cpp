@@ -1173,20 +1173,6 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     }
                     else if (label == "Battery Level")
                     {
-                        //check if battery sensor already exists. If not create new device.
-                        device = devices.findValue(id);
-                        if( device==NULL || device->getDevicetype()!="batterysensor" )
-                        {
-                            //create new device before sending event
-                            stringstream tempstream;
-                            tempstream << (int)_notification->GetNodeId() << "/1-" << label;
-
-                            device = new ZWaveNode(tempstream.str(), "batterysensor");
-                            device->addValue(label, id);
-                            devices.add(device);
-                            AGO_DEBUG() << "Battery: add new batterysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
-                            agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
-                        }
                         eventtype="event.device.batterylevelchanged";
                     }
                     else if (label == "Alarm Level")
