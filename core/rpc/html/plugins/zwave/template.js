@@ -16,8 +16,8 @@ function Zwave(devices, agocontrol)
     self.buildChordGraph = function(content, nodes, onNodeDetails) {
         //code from: http://bl.ocks.org/AndrewRP/7468330
         //click example: http://jsfiddle.net/mdml/K6FHW/
-        var width = 890;
-        var height = 890;
+        var width = 1100;
+        var height = 1100;
         var outerRadius = Math.min(width, height) / 2 - 10;
         var innerRadius = outerRadius - 24;
         var titles = [];
@@ -39,6 +39,7 @@ function Zwave(devices, agocontrol)
                 nodeName += ' (' + nodes[i].manufacturer + ')';
             }
             titles.push(""+nodeName+" ("+(i+1)+")");
+            //ids.push(""+(i+1));
             ids.push(nodes[i].id);
             var deps = [];
             for( var j=0; j<count; j++ )
@@ -499,6 +500,7 @@ function Zwave(devices, agocontrol)
         //create nodes elements
         for( i=0; i<zwnodes.length; i++ )
         {
+
             var n = node(zwnodes[i].type, zwnodes[i].id, positions[i].x, positions[i].y, zwnodes[i].neighbors);
             nodes.push(n);
         }
@@ -845,7 +847,7 @@ function Zwave(devices, agocontrol)
             command: 'healnetwork'
         };
 
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -984,7 +986,7 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        sendCommand(content, function(res)
+        self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
@@ -1189,6 +1191,7 @@ function zwaveConfig(zwave) {
                 'index': self.selectedNode.params[i].index,
                 'commandclassid': self.selectedNode.params[i].commandclassid
             });
+            //self.nodeParameters.push(self.selectedNode.params[i]);
         }
 
         //get node associations
@@ -1251,27 +1254,29 @@ function zwaveConfig(zwave) {
         //configure and open popup
         $("#nodeDetails").dialog({
             title: self.selectedNode.type,
-            width: 800,
-            height: 575,
+            width: 1024,
+            height: 700,
             modal: true
         });
     };
     
     //get nodes and build nodes graph
-    zwave.getNodes(function(nodelist) {
-        for( var id in nodelist ) 
-        {
-            var newNode = nodelist[id];
-            newNode.id = id;
-            self.nodes.push(newNode);
-        }
-        self.nodesCount(self.nodes().length);
-        if( self.nodes().length>0 )
-        {
-            zwave.buildChordGraph('#nodesDependency', self.nodes, self.openNodeDetails);
-            //zwave.buildDirectedGraph('#nodesDependency', self.nodes, self.openNodeDetails);
-        }
-    });
+    self.init = function() {
+        zwave.getNodes(function(nodelist) {
+            for( var id in nodelist ) 
+            {
+                var newNode = nodelist[id];
+                newNode.id = id;
+                self.nodes.push(newNode);
+            }
+            self.nodesCount(self.nodes().length);
+            if( self.nodes().length>0 )
+            {
+                zwave.buildChordGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
+                //zwave.buildDirectedGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
+            }
+        });
+    };
 
     //reset controller
     self.reset = function() {
@@ -1393,28 +1398,6 @@ function zwaveConfig(zwave) {
 }
 
 /**
- * Dashboard Zwave model
- */
-function zwaveDashboard(zwave) {
-    //members
-    var self = this;
-    self.zwave = zwave;
-    self.stats = ko.observableArray([]);
-
-    //get and set zwave controller uuid
-    var zwaveControllerUuid = zwave.getControllerUuid();
-    zwave.setControllerUuid(zwaveControllerUuid);
-
-    //get statitics
-    zwave.getStatistics(function(statistics) {
-        for( var key in statistics )
-        {
-            self.stats.push({'stat':key, 'value':statistics[key]});
-        }
-    });
-}
-
-/**
  * Entry point: mandatory!
  */
 function init_template(path, params, agocontrol)
@@ -1427,8 +1410,17 @@ function init_template(path, params, agocontrol)
             setTimeout( function() { $(element).tabs(options); }, 0);
         }
     };
-    
+
     var model = new zwaveConfig(zwave);
+
     return model;
 }
 
+function afterrender_template(model)
+{
+    //template is rendered, we can build graph
+    if( model )
+    {
+        model.init();
+    }
+}

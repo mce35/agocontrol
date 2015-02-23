@@ -34,7 +34,7 @@
                 <li><_a data-translateable="true" href="#details-status">Status</_a></li>
                 <li><_a data-translateable="true" href="#details-actions">Actions</_a></li>
                 <li><_a data-translateable="true" href="#details-associations">Associations</_a></li>
-                <li><_a href="#details-configuration" data-translateable="true">Configuration</_a></li>
+                <li><_a data-translateable="true" href="#details-configuration">Configuration</_a>
                 <li><_a data-translateable="true" href="#details-advanced">Advanced</_a></li>
             </ul>
             <div id="details-infos">
@@ -210,8 +210,8 @@
                         <div data-bind="event:{mousedown:removeNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Remove</_a></div>
                     </li>
                     <li>
-                        <_span data-translateable="true">Request configuration parameters</_span>
-                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Request parameters</_a></div>
+                        <_span data-translateable="true">Request node configuration parameters</_span>
+                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="pretty medium primary btn"><_a style="color:white;" data-bind="click:$root.noclick" href="#">Request parameters</_a></div>
                     </li>
                 </ul>
             </div>
@@ -233,7 +233,7 @@
     <!-- main tabs  -->
     <div data-bind="jqTabs:{}">
         <ul>
-            <li><_a data-translateable="true" href="#main-devices">Devices</_a></li>
+            <li><_a href="#main-devices" data-translateable="true">Devices</_a></li>
             <li><_a data-translateable="true" href="#main-graph">Dependencies</_a></li>
             <li><_a data-translateable="true" href="#main-general">General</_a></li>
             <li><_a data-translateable="true" href="#main-actions">Actions</_a></li>
@@ -256,7 +256,7 @@
                 <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
                     <td data-bind="text: id"></td>
                     <td>
-                        <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetails($index()); }">
+                        <a href="#" data-bind="click: function(data,event) { console.log($index()); $parent.openNodeDetails($index()); }">
                         <ko opts="if: product.length>0">
                             <span data-bind="text: manufacturer+' ('+product+')'"></span>
                         </ko>
@@ -340,8 +340,8 @@
                     <div class="ttip" data-translateable="true" _data-tooltip="Launch some test procedures over all nodes. This command lasts some time!"><i class="icon-help-circled"></i></div>
                 </li>
                 <li>
-                    <span>Heal network</span>
-                    <div data-bind="event:{mousedown:healNetwork}" class="pretty medium primary btn"><a href="#">Heal network</a></div>
+                    <_span data-translateable="true">Heal network</_span>
+                    <div data-bind="event:{mousedown:healNetwork}" class="pretty medium primary btn"><_a data-translateable="true" href="#" data-bind="click:$root.noclick">Heal network</_a></div>
                 </li>
             </ul>
         </div>
