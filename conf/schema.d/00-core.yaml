@@ -349,7 +349,7 @@ events:
     parameters: [uuid, internalid, stale]
   event.monitoring.processdead:
     description: event triggered when process is dead
-    parameters: [processname]
+    parameters: [process]
   event.monitoring.memoryoverhead:
     description: event triggered when process is consuming too much memory
-    parameters: [processname]
+    parameters: [process]
