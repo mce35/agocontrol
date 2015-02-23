@@ -80,8 +80,8 @@ function VariablesConfig(agocontrol)
         };
         buttons[button_yes] = function()
         {
-            self.doDeleteVariable(item, event);
             $("#confirmDelete").dialog("close");
+            self.doDeleteVariable(item, event);
         };
         $("#confirmDelete").dialog({
             modal : true,
