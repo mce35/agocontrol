@@ -8,7 +8,7 @@ div.btn a {
 }
 
 /* Customize some Gumby style to fit our needs */
-.ttip:after {
+/*.ttip:after {
     min-width: 300px;
 }
 
@@ -23,5 +23,5 @@ div.btn a {
 ul {
     padding-left: 20px;
     list-style-type: disc;
-}
+}*/
 
