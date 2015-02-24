@@ -50,9 +50,9 @@ function SecurityConfig(agocontrol)
         content.command = "getzones";
         content.uuid = self.securityController;
         self.agocontrol.sendCommand(content, function(res) {
-            if (res.result.result.code == "success" && res.result.result.data.zonemap)
+            if (res.result.result == 0 && res.result.zonemap)
             {
-                self.zoneMap(res.result.result.data.zonemap);
+                self.zoneMap(res.result.zonemap);
             }
         });
     };
@@ -66,9 +66,9 @@ function SecurityConfig(agocontrol)
         content.command = "gethousemode";
         content.uuid = self.securityController;
         self.agocontrol.sendCommand(content, function(res) {
-            if (res.result.result.code == "success" && res.result.result.data.housemode)
+            if (res.result.result == 0 && res.result.housemode)
             {
-                self.housemode(res.result.result.data.housemode);
+                self.housemode(res.result.housemode);
             }
         });
     };
