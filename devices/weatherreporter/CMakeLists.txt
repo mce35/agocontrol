@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-install (PROGRAMS weatherreporter.py            DESTINATION ${BINDIR})
+install (PROGRAMS agoweatherreporter.py DESTINATION ${BINDIR})
 
 
 
