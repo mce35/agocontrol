@@ -376,6 +376,7 @@ function AgocontrolViewModel()
     }).run();
 
     self.agocontrol.subscribe();
+    self.agocontrol.initSpecificKnockoutBindings();
 };
 
 ko.applyBindings(new AgocontrolViewModel());
