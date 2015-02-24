@@ -1,0 +1,2 @@
+lib/systemd/system/agoweatherreporter.service
+opt/agocontrol/bin/agoweatherreporter.py

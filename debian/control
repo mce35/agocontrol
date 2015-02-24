@@ -229,3 +229,9 @@ Package: agocontrol-axisaudiotransmit
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description: Plays audio samples via built in speaker of an Axis IP Camera
+
+Package: agocontrol-weatherreporter
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Description: Reports weather conditions to crowd sourced weather sites
+

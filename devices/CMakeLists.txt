@@ -44,6 +44,7 @@ set (AGODEVICES
   yamaha
   gammu
   axisaudiotransmit
+  weatherreporter
 )
 
 IF (FREEBSD)
