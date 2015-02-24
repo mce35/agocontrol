@@ -17,8 +17,7 @@ function SystemConfig(agocontrol)
             {headerText:'Process', rowText:'name'},
             {headerText:'Is running', rowText:'running'},
             {headerText:'CPU usage', rowText:'cpu'},
-            {headerText:'Memory (res)', rowText:'memRes'},
-            {headerText:'Memory (virt)', rowText:'memVirt'},
+            {headerText:'Memory (res)', rowText:'memRes'}
         ],
         rowTemplate: 'rowTemplate'
     });
@@ -45,6 +44,7 @@ function SystemConfig(agocontrol)
                 proc.cpu = (Math.round((res.result[name].currentStats.ucpu + res.result[name].currentStats.scpu)*10)/10)+'%';
                 proc.memVirt = res.result[name].currentStats.vsize;
                 proc.memRes = res.result[name].currentStats.rss;
+                proc.monitored = res.result[name].monitored;
                 procs.push(proc);
             }
             self.processes(procs);
