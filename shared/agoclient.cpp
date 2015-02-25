@@ -401,11 +401,10 @@ void agocontrol::AgoConnection::run() {
                                 encode(responsemap, response);
                                 response.setSubject(instance);
                                 replysender.send(response);
-                                replysession.close();
                             } catch(const std::exception& error) {
                                 AGO_ERROR() << "Failed to send reply: " << error.what();;
-                                replysession.close();
                             }
+                            replysession.close();
                         }
                     }
                 } else if (!eventHandler.empty()) {
@@ -661,17 +660,19 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
     Message message;
     qpid::types::Variant::Map responseMap;
     Receiver responseReceiver;
+    Session recvsession = connection.createSession();
     try {
         encode(content, message);
-        message.setSubject(subject);
+        if(*subject != 0)
+            message.setSubject(subject);
         Address responseQueue("#response-queue; {create:always, delete:always}");
-        responseReceiver = session.createReceiver(responseQueue);
+        responseReceiver = recvsession.createReceiver(responseQueue);
         message.setReplyTo(responseQueue);
 
         AGO_TRACE() << "Sending message [sub=" << subject << ", reply=" << responseQueue <<"]" << content;
         sender.send(message);
         Message response = responseReceiver.fetch(Duration::SECOND * 3);
-        session.acknowledge();
+        recvsession.acknowledge();
         if (response.getContentSize() > 3) {
             decode(response,responseMap);
         } else {
@@ -684,11 +685,7 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
     } catch(const std::exception& error) {
         AGO_ERROR() << "Exception in sendMessageReply: " << error.what();
     }
-    try {
-        responseReceiver.close();
-    } catch(const std::exception& error) {
-        AGO_ERROR() << "Cleanup error in in sendMessageReply: " << error.what();
-    }
+    recvsession.close();
     return responseMap;
 }
 
@@ -772,26 +769,23 @@ qpid::types::Variant::Map agocontrol::AgoConnection::getInventory() {
     Variant::Map content;
     Variant::Map responseMap;
     content["command"] = "inventory";
+    Session recvsession = connection.createSession();
+    Address responseQueue("#response-queue; {create:always, delete:always}");
+    Receiver responseReceiver = recvsession.createReceiver(responseQueue);
     Message message;
     encode(content, message);
-    Address responseQueue("#response-queue; {create:always, delete:always}");
-    Receiver responseReceiver = session.createReceiver(responseQueue);
     message.setReplyTo(responseQueue);
     sender.send(message);
     try {
         Message response = responseReceiver.fetch(Duration::SECOND * 3);
-        session.acknowledge();
+        recvsession.acknowledge();
         if (response.getContentSize() > 3) {	
             decode(response,responseMap);
         }
     } catch (qpid::messaging::NoMessageAvailable) {
         AGO_WARNING() << "No getInventory response";
     }
-    try {
-        responseReceiver.close();
-    } catch(const std::exception& error) {
-        AGO_ERROR() << "Exception in getInventory cleanup: " << error.what();
-    }
+    recvsession.close();
     return responseMap;
 }
 
