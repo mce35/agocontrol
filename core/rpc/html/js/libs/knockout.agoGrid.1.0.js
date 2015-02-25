@@ -313,7 +313,7 @@
                                       <!-- /ko -->\
                                   <!-- /ko -->\
                                   <!-- ko if: rowText=='' -->\
-                                      <span style="text-overflow:ellipsis;" data-bind=\"text:headerText\"></span>\
+                                      <span style=\"text-overflow:ellipsis;\" data-bind=\"text:headerText\"></span>\
                                   <!-- /ko -->\
                                </th>\
                             </tr>\
