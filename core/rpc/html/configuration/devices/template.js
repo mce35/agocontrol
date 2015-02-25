@@ -9,25 +9,20 @@ function DeviceConfig(agocontrol)
     self.agocontrol = agocontrol;
     self.roomFilters = ko.observableArray([]);
     self.deviceTypeFilters = ko.observableArray([]);
+    self.handlerFilters = ko.observableArray([]);
 
-    self.updateRoomFilters = function()
-    {
+    self.updateRoomFilters = function() {
         var tagMap = {};
         for ( var i = 0; i < self.agocontrol.devices().length; i++)
         {
             var dev = self.agocontrol.devices()[i];
             if (dev.room)
             {
-                if (tagMap["room_" + dev.room])
-                {
-                    tagMap["room_" + dev.room].w++;
-                }
-                else
+                if( !tagMap["room_" + dev.room] )
                 {
                     tagMap["room_" + dev.room] = {
                         column : "room",
                         value : dev.room,
-                        w : 1,
                         selected : false,
                         className : "default label"
                     };
@@ -46,28 +41,24 @@ function DeviceConfig(agocontrol)
         }
 
         roomList.sort(function(a, b) {
-            return b.w - a.w;
+            if( a.value<b.value ) return -1;
+            else if( a.value>b.value ) return 1;
+            else return 0;
         });
 
         self.roomFilters(roomList);
     };
 
-    self.updateDeviceTypeFilters = function()
-    {
+    self.updateDeviceTypeFilters = function() {
         var tagMap = {};
         for ( var i = 0; i < self.agocontrol.devices().length; i++)
         {
             var dev = self.agocontrol.devices()[i];
-            if (tagMap["type_" + dev.devicetype])
-            {
-                tagMap["type_" + dev.devicetype].w++;
-            }
-            else
+            if( !tagMap["type_" + dev.devicetype] )
             {
                 tagMap["type_" + dev.devicetype] = {
                     column : "devicetype",
                     value : dev.devicetype,
-                    w : 1,
                     selected : false,
                     className : "default label"
                 };
@@ -85,14 +76,50 @@ function DeviceConfig(agocontrol)
         }
 
         devList.sort(function(a, b) {
-            return b.w - a.w;
+            if( a.value<b.value ) return -1;
+            else if( a.value>b.value ) return 1;
+            else return 0;
         });
 
         self.deviceTypeFilters(devList);
     };
 
-    self.findDevice = function(uuid)
-    {
+    self.updateHandlerFilters = function() {
+        var tagMap = {};
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
+        {
+            var dev = self.agocontrol.devices()[i];
+            if( !tagMap["handler_" + dev.handledBy] )
+            {
+                tagMap["handler_" + dev.handledBy] = {
+                        column : "handledBy",
+                        value : dev.handledBy,
+                        selected : false,
+                        className : "default label"
+                };
+            }
+        }
+
+        var handlerList = [];
+        for( var k in tagMap )
+        {
+            var entry = tagMap[k];
+            if( entry.column=="handledBy" )
+            {
+                handlerList.push(entry);
+            }
+        }
+
+        handlerList.sort(function(a,b) {
+            if( a.value<b.value ) return -1;
+            else if( a.value>b.value ) return 1;
+            else return 0;
+        });
+
+        self.handlerFilters(handlerList);
+    }
+
+    self.findDevice = function(uuid) {
         var l = self.agocontrol.devices().filter(function(d) {
             return d.uuid==uuid;
         });
@@ -101,8 +128,7 @@ function DeviceConfig(agocontrol)
         return null;
     };
 
-    self.findRoom = function(uuid)
-    {
+    self.findRoom = function(uuid) {
         var l = self.agocontrol.rooms().filter(function(d) {
             return d.uuid==uuid;
         });
@@ -111,8 +137,7 @@ function DeviceConfig(agocontrol)
         return null;
     };
 
-    self.addFilter = function(item)
-    {
+    self.addFilter = function(item) {
         var tmp = "";
         var i = 0;
         if (item.column == "devicetype")
@@ -132,14 +157,13 @@ function DeviceConfig(agocontrol)
                         self.deviceTypeFilters()[i].selected = false;
                         self.deviceTypeFilters()[i].className = "default label";
                     }
-                    //self.deviceTypeFilters()[i].className = item.className == "default label" ? "primary label" : "default label";
                 }
             }
             tmp = self.deviceTypeFilters();
             self.deviceTypeFilters([]);
             self.deviceTypeFilters(tmp);
         }
-        else
+        else if( item.column=="room" )
         {
             //update selected room filters
             for ( i = 0; i < self.roomFilters().length; i++)
@@ -148,20 +172,42 @@ function DeviceConfig(agocontrol)
                 {
                     if( item.className == "default label" )
                     {
-                        item.selected = true;
+                        self.roomFilters()[i].selected = true;
                         self.roomFilters()[i].className = "primary label";
                     }
                     else
                     {
-                        item.selected = false;
+                        self.roomFilters()[i].selected = false;
                         self.roomFilters()[i].className = "default label";
                     }
-                    //self.roomFilters()[i].className = item.className == "default label" ? "primary label" : "default label";
                 }
             }
             tmp = self.roomFilters();
             self.roomFilters([]);
             self.roomFilters(tmp);
+        }
+        else if( item.column=="handledBy" )
+        {
+            //update selected handler filters
+            for( i=0; i<self.handlerFilters().length; i++ )
+            {
+                if( self.handlerFilters()[i].value==item.value )
+                {
+                    if( item.className=="default label" )
+                    {
+                        self.handlerFilters()[i].selected = true;
+                        self.handlerFilters()[i].className = "primary label";
+                    }
+                    else
+                    {
+                        self.handlerFilters()[i].selected = false;
+                        self.handlerFilters()[i].className = "default label";
+                    }
+                }
+            }
+            tmp = self.handlerFilters();
+            self.handlerFilters([]);
+            self.handlerFilters(tmp);
         }
 
         //apply filters to grid
@@ -180,10 +226,16 @@ function DeviceConfig(agocontrol)
                 self.grid.addFilter('devicetype', self.deviceTypeFilters()[i].value);
             }
         }
+        for( var i=0; i<self.handlerFilters().length; i++ )
+        {
+            if( self.handlerFilters()[i].selected )
+            {
+                self.grid.addFilter('handledBy', self.handlerFilters()[i].value);
+            }
+        }
     };
 
-    self.makeEditable = function(item, td, tr)
-    {
+    self.makeEditable = function(item, td, tr) {
         if( $(td).hasClass('edit_device') )
         {
             $(td).editable(function(value, settings) {
@@ -301,8 +353,7 @@ function DeviceConfig(agocontrol)
         rowTemplate: 'rowTemplate'
     });
 
-    self.deleteDevice = function(item, event)
-    {
+    self.deleteDevice = function(item, event) {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
         var buttons = {};
@@ -321,8 +372,7 @@ function DeviceConfig(agocontrol)
         });
     };
 
-    self.doDeleteDevice = function(item, event)
-    {
+    self.doDeleteDevice = function(item, event) {
         self.agocontrol.block($('#agoGrid'));
         var request = {};
         request.method = "message";
@@ -359,6 +409,7 @@ function DeviceConfig(agocontrol)
     //update filters
     self.updateRoomFilters();
     self.updateDeviceTypeFilters();
+    self.updateHandlerFilters();
 }
 
 /**

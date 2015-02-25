@@ -261,7 +261,9 @@
 	self.options.templateId = templateId;
 	if (self.options && self.options.afterRender) {
 	    origAfterRender = self.options.afterRender;
-	    self.options.afterRender = function() {
+            //fix for afterRender called twice
+            //https://github.com/fazzamar/Knockout.js-External-Template-Engine/commit/5b053acd0465cd5c98b947d97cbd4d2e675c9f52
+            options.afterRender = function() {
 		if (self.loaded) {
 		    origAfterRender.apply(self.options, arguments);
 		}

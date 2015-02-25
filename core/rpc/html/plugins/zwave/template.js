@@ -7,6 +7,7 @@ function Zwave(devices, agocontrol)
     //members
     var self = this;
     self.devices = devices;
+    self.agocontrol = agocontrol;
     self.controllerUuid = null;
    
     /********
@@ -1324,7 +1325,7 @@ function zwaveDashboard(zwave) {
  */
 function init_template(path, params, agocontrol)
 {
-    var zwave = new Zwave(agocontrol.devices());
+    var zwave = new Zwave(agocontrol.devices(), agocontrol);
 
     ko.bindingHandlers.jqTabs = {
         init: function(element, valueAccessor) {

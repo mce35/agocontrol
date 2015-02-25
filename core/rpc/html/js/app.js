@@ -125,6 +125,11 @@ function AgocontrolViewModel()
             reset_template(self.currentModel);
         }
 
+        //reset some old stuff
+        delete reset_template;
+        delete init_template;
+        delete afterrender_template;
+
         //load template script file
         $.getScript(template.path+'/template.js' , function()
         {
@@ -163,7 +168,6 @@ function AgocontrolViewModel()
                                 console.error('Failed to load template: no model returned by init_template. Please check your code.');
                                 notif.fatal('Problem during page loading.');
                             }
-                            $.unblockUI();
                         }
                         else
                         {
@@ -203,6 +207,15 @@ function AgocontrolViewModel()
             console.error(errorThrown);
             notif.fatal('Problem during page loading.');
         });
+    };
+
+    //call afterrender_template if available.
+    //the afterrender_template can be directly called from index.html but to make it understandable, we put here the call
+    self.afterRender = function() {
+        if( typeof afterrender_template == 'function' )
+        {
+            afterrender_template(self.currentModel);
+        }
     };
 
     //configure routes using sammy.js framework

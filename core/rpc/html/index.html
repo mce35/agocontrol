@@ -84,7 +84,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="#" data-bind="click:$root.noclick">
                         <i class="icon-archive" title="Plugins"></i>
                         <span>Applications</span>
                     </a>
@@ -97,7 +97,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="#" data-bind="click:$root.noclick">
                         <i class="icon-tools" title="Configuration"></i>
                         <span>Configuration</span>
                     </a>
@@ -123,7 +123,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="#" data-bind="click:$root.noclick">
                         <i class="icon-help" title="Help"></i>
                         <span>Help</span>
                     </a>
@@ -150,7 +150,7 @@
 
 <!-- CONTENT -->
 <div id="main" data-bind="with:currentView">
-    <div class="row" style="min-height:500px;" data-bind="template: {name:templateName, data:model, afterRender:model.afterRender}" >
+    <div class="row" style="min-height:500px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}" >
     </div>
 </div>
 
