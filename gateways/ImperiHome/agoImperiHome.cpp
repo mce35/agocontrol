@@ -166,6 +166,27 @@ static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
     mg_printf_data(conn, "}");
 }
 
+/* USELESS
+static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
+    //	Json::Value r(result);
+    //	mg_rpc_reply_result(conn, request_or_id, r);
+    Json::Value request_id;
+    if(request_or_id.type() == Json::objectValue) {
+        request_id = request_or_id.get("id", Json::Value());
+    }else
+        request_id = request_or_id;
+
+    Json::FastWriter writer;
+    std::string request_idstr = writer.write(request_id);
+
+    // XXX: Write without building full JSON
+    mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
+    mg_printmap(conn, responseMap);
+    mg_printf_data(conn, ", \"id\": %s}", request_idstr.c_str());
+    return false;
+}*/
+
+
 /**
  * Mongoose event handler
  */
@@ -358,7 +379,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
 	} else if ( uri.find ("/devices/",0) != std::string::npos && uri.find("/action/",0) != std::string::npos)  {
         // parse the action URI as defined by http://www.imperihome.com/apidoc/systemapi/#!/devices/deviceAction_get_1
 		std::vector<std::string> items = split(uri, '/');
-		for (int i=0;i<items.size();i++) {
+		for (unsigned int i=0;i<items.size();i++) {
 			AGO_TRACE() << "Item " << i << ": " << items[i];
 		}
 		if ( items.size()>=5 && items.size()<=6 ) {
