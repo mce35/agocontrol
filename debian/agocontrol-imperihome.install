@@ -1,0 +1,2 @@
+lib/systemd/system/agoimperihome.service
+opt/agocontrol/bin/agoImperiHome

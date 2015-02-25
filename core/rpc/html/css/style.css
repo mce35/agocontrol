@@ -27,6 +27,15 @@ table > tbody > tr > td > div.btn {
     margin-bottom: 0px;
 }
 
+/* Fix multiple select element (add style) */
+select[multiple] {
+    padding: 5px;
+    font: inherit;
+    border: 1px solid #C0C0C0;
+    border-radius: 2px;
+}
+
+
 /* == 
 ago control Styles 
 */

@@ -55,7 +55,7 @@ def getP12(SYSTEM_UUID, username, password, pin):
 sys.stdout.write("Content-Type: text/html\n\n")
 
 form = cgi.FieldStorage()
-uuid = agoclient.getConfigOption("system", "uuid", "")
+uuid = agoclient.get_config_option("system", "uuid", "")
 
 if "action" not in form:
 	if not read_cert(certdir, uuid):

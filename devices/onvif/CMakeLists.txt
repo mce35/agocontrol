@@ -1,12 +1,19 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 
-file (GLOB_RECURSE DEVICE_SOURCE_FILES *.c{,pp})
-message (STATUS "files: ${DEVICE_SOURCE_FILES}")
+SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache) 
+
+file (GLOB_RECURSE DEVICE_SOURCE_FILES "*.cpp" "*.c")
+# message (STATUS "files: ${DEVICE_SOURCE_FILES}")
 set (DEVICE_EXTRA_LIBRARIES
      agoclient
+     crypto
+     ssl
 )
 
 set (DEVICE "agoonvif")
+
+ADD_DEFINITIONS( -DWITH_OPENSSL )
 
 # add the executable
 add_executable (${DEVICE} ${DEVICE_SOURCE_FILES})

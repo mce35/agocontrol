@@ -37,15 +37,17 @@ ROOT = ow.Sensor('/')
 
 for _sensor in ROOT.sensors():
     if _sensor._type == 'DS18S20' or _sensor._type == 'DS18B20':
-        CLIENT.add_device(_sensor._path, "multilevelsensor")
+        CLIENT.add_device(_sensor._path, "temperaturesensor")
     if _sensor._type == 'DS2438':
         try:
             if ow.owfs_get('%s/MultiSensor/type' % _sensor._path) == 'MS-TL':
-                CLIENT.add_device(_sensor._path, "multilevelsensor")
+                CLIENT.add_device(_sensor._path, "temperaturesensor")
+                CLIENT.add_device(_sensor._path + "-brightness", "brightnesssensor")
             if ow.owfs_get('%s/MultiSensor/type' % _sensor._path) == 'MS-TH':
-                CLIENT.add_device(_sensor._path, "multilevelsensor")
+                CLIENT.add_device(_sensor._path, "temperaturesensor")
+                CLIENT.add_device(_sensor._path + "-humidity", "humiditysensor")
             if ow.owfs_get('%s/MultiSensor/type' % _sensor._path) == 'MS-T':
-                CLIENT.add_device(_sensor._path, "multilevelsensor")
+                CLIENT.add_device(_sensor._path, "temperaturesensor")
         except ow.exUnknownSensor, exception:
             print exception
     if _sensor._type == 'DS2406':
@@ -114,12 +116,12 @@ class read_bus(threading.Thread):
                                 if 'light' in SENSORS[sensor._path]:
                                     if (abs(SENSORS[sensor._path]['light'] -
                                         lightlevel) > 5):
-                                        CLIENT.emit_event(sensor._path,
+                                        CLIENT.emit_event(sensor._path + "-brightness",
                                             "event.environment.brightnesschanged",
                                             lightlevel, "percent")
                                         SENSORS[sensor._path]['light'] = lightlevel
                                 else:
-                                    CLIENT.emit_event(sensor._path,
+                                    CLIENT.emit_event(sensor._path + "-brightness",
                                         "event.environment.brightnesschanged",
                                         lightlevel, "percent")
                                     SENSORS[sensor._path]['light'] = lightlevel
@@ -128,12 +130,12 @@ class read_bus(threading.Thread):
                                 humidity = round(float(humraw))
                                 if 'hum' in SENSORS[sensor._path]:
                                     if abs(SENSORS[sensor._path]['hum'] - humidity) > 2:
-                                        CLIENT.emit_event(sensor._path,
+                                        CLIENT.emit_event(sensor._path + "-humidity",
                                             "event.environment.humiditychanged",
                                             humidity, "percent")
                                         SENSORS[sensor._path]['hum'] = humidity
                                 else:
-                                    CLIENT.emit_event(sensor._path,
+                                    CLIENT.emit_event(sensor._path + "-humidity",
                                         "event.environment.humiditychanged",
                                         humidity, "percent")
                                     SENSORS[sensor._path]['hum'] = humidity

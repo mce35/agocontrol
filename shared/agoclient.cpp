@@ -49,6 +49,24 @@ void agocontrol::replaceString(std::string& subject, const std::string& search, 
     }
 }
 
+/**
+ * Split specified string
+ */
+std::vector<std::string> &agocontrol::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+std::vector<std::string> agocontrol::split(const std::string &s, char delimiter) {
+    std::vector<std::string> elements;
+    split(s, delimiter, elements);
+    return elements;
+}
+
+
 std::string agocontrol::int2str(int i) {
     stringstream sstream;
     sstream << i;

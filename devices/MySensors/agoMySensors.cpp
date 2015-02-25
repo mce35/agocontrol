@@ -58,23 +58,6 @@ string device = "";
 int staleThreshold = 86400;
 
 /**
- * Split specified string
- */
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-std::vector<std::string> split(const std::string &s, char delimiter) {
-    std::vector<std::string> elements;
-    split(s, delimiter, elements);
-    return elements;
-}
-
-/**
  * Convert timestamp to Human Readable date time string (19 chars)
  */
 std::string timestampToStr(const time_t* timestamp)
@@ -721,7 +704,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                     {
                         if( infos["value"].asString()=="1" )
                         {
-                            if( infos["protocol"].asString()=="1.4" )
+                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "0");
                             else
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "0");
@@ -735,7 +718,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                     {
                         if( infos["value"].asString()=="0" )
                         {
-                            if( infos["protocol"].asString()=="1.4" )
+                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "1");
                             else
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "1");
@@ -1308,6 +1291,9 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case I_LOG_MESSAGE_V14:
                     //debug message from gateway. Already displayed with prettyPrint when debug activated
                     break;
+                case I_CONFIG_V14:
+                    //return config
+                    sendcommandV14(internalid, INTERNAL_V14, 0, I_CONFIG_V14, units.c_str());
                 default:
                     cout << "INTERNAL subtype '" << subType << "' not supported (protocol v1.4)" << endl;
             }
@@ -1362,6 +1348,9 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     break;
                 case S_LIGHT_LEVEL_V14:
                     newDevice(internalid, "brightnesssensor");
+                    break;
+                case S_ARDUINO_RELAY_V14:
+                    newDevice(internalid, "networkrelay");
                     break;
                 case S_LOCK_V14:
                     newDevice(internalid, "lock");
@@ -1523,6 +1512,13 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
                     break;
                 case V_VAR1_V14:
+                    valid = 1;
+                    {
+                        qpid::types::Variant::Map payloadMap;
+                        payloadMap["pin"]=payload;
+                        agoConnection->emitEvent(internalid.c_str(), "event.security.pinentered", payloadMap);
+                    }
+
                     break;
                 case V_VAR2_V14:
                     break;
@@ -1682,7 +1678,7 @@ void *checkStale(void *param)
             qpid::types::Variant::Map devices = devicemap["devices"].asMap();
             for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
             {
-                if( !it->second.isVoid() )
+                if ( ( !it->second.isVoid() ) && (it->second.getType() == VAR_MAP ) ) 
                 {
                     qpid::types::Variant::Map infos = it->second.asMap();
                     std::string internalid = (std::string)it->first;
@@ -1708,6 +1704,8 @@ void *checkStale(void *param)
                             }
                         }
                     }
+                } else {
+                    cout << "Invalid entry in device map" << endl;
                 }
             }
         }
@@ -1850,23 +1848,27 @@ int main(int argc, char **argv)
 
     //register existing devices
     cout << "Register existing devices:" << endl;
-    if( !devicemap["devices"].isVoid() )
+    if( ( !devicemap["devices"].isVoid() ) && (devicemap["devices"].getType() == VAR_MAP ) )
     {
         qpid::types::Variant::Map devices = devicemap["devices"].asMap();
         for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
         {
-            qpid::types::Variant::Map infos = it->second.asMap();
-            std::string internalid = (std::string)it->first;
-            cout << " - " << internalid << ":" << infos["type"].asString().c_str();
-            if( internalid.length()>0 && checkInternalid(internalid) )
-            {
-                agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
+            if ( ( !it->second.isVoid() ) && (it->second.getType() == VAR_MAP ) ) {
+                qpid::types::Variant::Map infos = it->second.asMap();
+                std::string internalid = (std::string)it->first;
+                cout << " - " << internalid << ":" << infos["type"].asString().c_str();
+                if( internalid.length()>0 && checkInternalid(internalid) )
+                {
+                    agoConnection->addDevice(it->first.c_str(), (infos["type"].asString()).c_str());
+                }
+                else
+                {
+                    cout << " [INVALID]";
+                }
+                cout << endl;
+            } else {
+                cout << "Invalid entry in device map" << endl;
             }
-            else
-            {
-                cout << " [INVALID]";
-            }
-            cout << endl;
         }
     }
     else

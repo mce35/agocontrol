@@ -318,7 +318,10 @@ events:
     description: time did advance
     parameters: [minute, hour, month, day, year, weekday, yday]
   event.security.countdown:
-    description: intruder alarm
+    description: intruder alarm countdown couting down
+    parameters: [zone, delay]
+  event.security.countdown.started:
+    description: intruder alarm countdown started
     parameters: [zone, delay]
   event.security.intruderalert:
     description: intruder alarm
@@ -346,7 +349,7 @@ events:
     parameters: [uuid, internalid, stale]
   event.monitoring.processdead:
     description: event triggered when process is dead
-    parameters: [processname]
+    parameters: [process]
   event.monitoring.memoryoverhead:
     description: event triggered when process is consuming too much memory
-    parameters: [processname]
+    parameters: [process]

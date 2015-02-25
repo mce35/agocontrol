@@ -8,7 +8,12 @@ Blockly.Lua['agocontrol_deviceNo'] = function(block) {
     return ["''", Blockly.Lua.ORDER_ATOMIC];
 };
 
-Blockly.Lua['agocontrol_device'] = function(block) {
+Blockly.Lua['agocontrol_deviceName'] = function(block) {
+    var code = "'" + block.getFieldValue('DEVICE') + "'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
+Blockly.Lua['agocontrol_deviceUuid'] = function(block) {
     var code = "'" + block.getFieldValue('DEVICE') + "'";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
@@ -127,7 +132,7 @@ Blockly.Lua['agocontrol_setVariable'] = function(block) {
     if( name.length>0 )
     {
         code = "setVariable('"+name+"',";
-        code += ("'" +Blockly.Lua.valueToCode(block, 'VALUE', Blockly.Lua.ORDER_NONE)+"'") || 'nil';
+        code += Blockly.Lua.valueToCode(block, 'VALUE', Blockly.Lua.ORDER_NONE) || 'nil';
         code += ")\n";
         return code;
     }

@@ -66,3 +66,22 @@ Blockly.Blocks['common_execute'] = {
   }
 };
 
+Blockly.Blocks['text_format'] = {
+  /**
+   * Block for test formatting
+   * @this Blockly.Block
+   */
+  init: function() {
+    //this.setHelpUrl('http://www.example.com/');
+    this.setColour(160);
+    this.appendValueInput("ITEM")
+        .appendField("format");
+    this.appendValueInput("FORMAT")
+        .setCheck("String")
+        .appendField("to");
+    this.setInputsInline(true);
+    this.setOutput(true, "String");
+    this.setTooltip('Format input to specified format');
+  }
+};
+

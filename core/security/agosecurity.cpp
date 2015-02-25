@@ -125,6 +125,10 @@ int AgoSecurity::getZoneDelay(qpid::types::Variant::Map smap, std::string elem) 
 
 void AgoSecurity::alarmthread(std::string zone) {
     int delay=getZoneDelay(securitymap, zone);	
+    Variant::Map countdownstartedeventcontent;
+    countdownstartedeventcontent["delay"]=delay;
+    countdownstartedeventcontent["zone"]=zone;
+    agoConnection->emitEvent("securitycontroller", "event.security.countdown.started", countdownstartedeventcontent);
     try {
         Variant::Map content;
         content["zone"]=zone;
@@ -152,7 +156,10 @@ void AgoSecurity::alarmthread(std::string zone) {
 qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map content) {
     AGO_TRACE() << "handling command: " << content;
     qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map returncode;
+
     std::string internalid = content["internalid"].asString();
+
     if (internalid == "securitycontroller") {
         if (content["command"] == "sethousemode") {
             // TODO: handle delay
@@ -166,26 +173,39 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                     agoConnection->emitEvent("securitycontroller", "event.security.housemodechanged", eventcontent);
 
                     if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE))) {
-                        returnval["result"] = 0;
+                        returncode["code"]="success";
+                        returncode["message"]="housemode changed";
+                        returnval["result"] = returncode;
                     } else {
-                        returnval["result"] = -1;
+                        returncode["code"]="error.security.housemodechange";
+                        returncode["message"]="cannot write securitymap on housemode change";
+                        returnval["error"] = returncode;
                     }
                 } else {
                     AGO_ERROR() << "invalid pin";
-                    returnval["result"] = -1;
-                    returnval["error"] = "invalid pin";
+                    returncode["code"]="error.security.invalidpin";
+                    returncode["message"]="invalid pin specified";
+                    returnval["error"] = returncode;
                 }
             } else {
-                returnval["result"] = -1;
+                returncode["code"]="error.parameter.missing";
+                returncode["message"]="parameter 'housemode' is missing";
+                returnval["error"] = returncode;
             }
 
         } else if (content["command"] == "gethousemode") {
             if (!(securitymap["housemode"].isVoid())) {
-                returnval["housemode"] = securitymap["housemode"];
-                returnval["result"]=0;
+                qpid::types::Variant::Map returndata;
+                returndata["housemode"]= securitymap["housemode"];
+                returncode["data"] = returndata;
+                returncode["code"]="success";
+                returncode["housemode"] = securitymap["housemode"]; // FIXME: added for backward compatibility
+                
+                returnval["result"]=returncode;
             } else {
-                returnval["result"] = -1;
-                returnval["error"] = "No housemode set";
+                returncode["code"] = "error.security.housemodenotset";
+                returncode["message"] = "No housemode set";
+                returnval["error"] = returncode;
             }
         } else if (content["command"] == "triggerzone") {
             std::string zone = content["zone"];
@@ -204,26 +224,34 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                                 wantSecurityThreadRunning = true;
                                 securityThread = boost::thread(boost::bind(&AgoSecurity::alarmthread, this, zone));
                                 isSecurityThreadRunning = true;
-                                returnval["result"] = 0;
+                                returncode["code"]="success";
+                                returnval["result"] = returncode;
                             }catch(std::exception& e){
                                 AGO_FATAL() << "failed to start alarmthread! " << e.what();
-                                returnval["result"] = -1;
+                                returncode["code"]="error.security.alarmthreadfailed";
+                                returncode["message"]="failed to start alarmthread";
+                                returnval["error"] = returncode;
                             }
                         } else {
                             AGO_DEBUG() << "alarmthread already running";
-                            returnval["result"] = 0;
+                            returncode["code"]="success";
+                            returncode["message"]="alarmthread already running";
+                            returnval["result"] = returncode;
                         }
                     } else {
-                        returnval["result"] = -1;
-                        returnval["error"] = "no such zone in this housemode";
+                        returncode["message"] = "no such zone in this housemode";
+                        returncode["code"] = "success";
+                        returnval["result"] = returncode;
                     }
                 } else {
-                    returnval["result"] = -1;
-                    returnval["error"] = "invalid map, zonemap[housemode] is not a list!";
+                    returncode["code"]="error.security.invalidmap";
+                    returncode["message"]="invalid map, zonemap[housemode] is not a list!";
+                    returnval["error"] = returncode;
                 }	
             } else {
-                returnval["result"] = -1;
-                returnval["error"] = "invalid map, zonemap[housemode] is void!";
+                returncode["code"]="error.security.invalidmap";
+                returncode["message"]="invalid map, zonemap[housemode] is void!";
+                returnval["error"] = returncode;
             }
         } else if (content["command"] == "setzones") {
             try {
@@ -234,33 +262,43 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                     AGO_TRACE() << "zone content:" << newzones;
                     securitymap["zones"] = newzones;
                     if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE))) {
-                        returnval["result"] = 0;
+                        returncode["code"]="success";
+                        returnval["result"] = returncode;
                     } else {
-                        returnval["result"] = -1;
-                        returnval["error"]="cannot save securitymap";
+                        returncode["message"]="cannot save securitymap";
+                        returncode["code"]="error.security.setzones";
+                        returnval["error"] = returncode;
                     }
                 } else {
                     AGO_ERROR() << "invalid pin";
-                    returnval["result"] = -1;
-                    returnval["error"] = "invalid pin";
+                    returncode["code"]="error.security.invalidpin";
+                    returncode["message"]="invalid pin specified";
+                    returnval["error"] = returncode;
                 }
             } catch (qpid::types::InvalidConversion) {
                 AGO_ERROR() << "invalid conversion";
-                returnval["result"] = -1;
-                returnval["error"] = "invalid conversion";
+                returncode["message"]="invalid conversion when parsing securitymap";
+                returncode["code"]="error.security.setzones";
+                returnval["error"] = returncode;
             } catch (const exception& e) {
                 AGO_ERROR() << "exception in setzones: " << e.what();
-                returnval["result"] = -1;
-                returnval["error"] = "exception";
+                returncode["message"]="exception when parsing securitymap";
+                returncode["code"]="error.security.setzones";
+                returnval["error"] = returncode;
             }
         } else if (content["command"] == "getzones") {
             if (!(securitymap["zones"].isVoid())) {
-                returnval["zonemap"] = securitymap["zones"].asMap();
-                returnval["result"]=0;
+                qpid::types::Variant::Map returndata;
+                returndata["zonemap"] = securitymap["zones"].asMap();
+                returncode["data"] = returndata;
+                returncode["zonemap"] = securitymap["zones"].asMap(); // FIXME: added for backward compatibility
+                returncode["code"]="success";
+                returnval["result"]=returncode;
             } else {
                 AGO_ERROR() << "securitymap is empty";
-                returnval["result"] = -1;
-                returnval["error"] = "empty securitymap";
+                returncode["message"]="securitymap is empty";
+                returncode["code"]="error.security.invalidmap";
+                returnval["error"] = returncode;
             }
 
         } else if (content["command"] == "cancel") {
@@ -270,33 +308,38 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                     try {
                         securityThread.interrupt();
                         isSecurityThreadRunning = false;
-                        returnval["result"] = 0;
                         AGO_INFO() << "alarm cancelled";
+                        returncode["code"]="success";
+                        returncode["message"]="alarm cancelled";
+                        returnval["result"] = returncode;
                     }catch(std::exception& e){
                         AGO_ERROR() << "cannot cancel alarm thread!";
-                        returnval["result"] = -1;
-                        returnval["error"] = "cancel failed";
+                        returncode["message"]="cannot cancel alarm thread";
+                        returncode["code"]="error.security.alarmthreadcancelfailed";
+                        returnval["error"] = returncode;
                     }
 
                 } else {
                     AGO_ERROR() << "no alarm thread running";
-                    returnval["result"] = -1;
-                    returnval["error"] = "no alarm thread";
+                    returncode["message"]="no alarm thread running";
+                    returncode["code"]="error.security.alarmthreadcancelfailed";
+                    returnval["error"] = returncode;
                 }
             } else {
                 AGO_ERROR() << "invalid pin in cancel command";
-                returnval["result"] = -1;
-                returnval["error"] = "invalid pin";
+                returncode["code"]="error.security.invalidpin";
+                returncode["message"]="invalid pin specified";
+                returnval["error"] = returncode;
             }
         } else {
             AGO_ERROR() << "no such command";
-            returnval["result"] = -1;
-            returnval["error"] = "unknown command";
+            returncode["code"]="error.command.invalid";
+            returnval["error"] = returncode;
         }
 
     } else {
-        returnval["result"] = -1;
-        returnval["error"] = "unknown device";
+        returncode["code"]="error.device.invalid";
+        returnval["error"] = returncode;
     }
     return returnval;
 }
@@ -308,14 +351,7 @@ void AgoSecurity::setupApp() {
     std::string housemode = securitymap["housemode"];
     AGO_DEBUG() << "Current house mode: " << housemode;
     agoConnection->setGlobalVariable("housemode", housemode);
-    /*
-       qpid::types::Variant::List armedZones;
-       armedZones.push_back("hull");
-       zonemap["armed"] = armedZones;
 
-       securitymap["zones"] = zonemap;
-       variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE));
-       */
     agoConnection->addDevice("securitycontroller", "securitycontroller");
     addCommandHandler();
 }

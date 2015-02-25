@@ -92,7 +92,7 @@ bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
                 while (nextga != NULL) {
                     AGO_DEBUG() << "GA: " << nextga->GetText() << " type: " << nextga->Attribute("type");
                     string type = nextga->Attribute("type");
-
+/*
                     if (type=="onoffstatus" || type=="levelstatus") {
                         AGO_DEBUG() << "Requesting current status: " << nextga->GetText();
                         Telegram *tg = new Telegram();
@@ -102,6 +102,7 @@ bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
                         tg->setType(EIBREAD);
                         tg->sendTo(eibcon);
                     }
+*/
                     content[nextga->Attribute("type")]=nextga->GetText();
                     nextga = nextga->NextSiblingElement();
                 }
@@ -173,7 +174,8 @@ void *AgoKnx::listener() {
             case(-1): 
                 AGO_WARNING() << "cannot poll bus";
                 try {
-                    boost::this_thread::sleep(pt::seconds(3));
+                    //boost::this_thread::sleep(pt::seconds(3)); FIXME: check why boost sleep interferes with EIB_Poll_complete, causing delays on status feedback
+                    sleep(3);
                 } catch(boost::thread_interrupted &e) {
                     AGO_DEBUG() << "listener thread cancelled";
                     break;
@@ -200,7 +202,8 @@ void *AgoKnx::listener() {
                 ;;
             case(0)	:
                 try {
-                    boost::this_thread::sleep(pt::milliseconds(polldelay));
+                    //boost::this_thread::sleep(pt::milliseconds(polldelay)); FIXME: check why boost sleep interferes with EIB_Poll_complete, causing delays on status feedback
+                    usleep(polldelay);
                 } catch(boost::thread_interrupted &e) {
                     AGO_DEBUG() << "listener thread cancelled";
                 }

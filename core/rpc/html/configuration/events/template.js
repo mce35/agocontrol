@@ -25,16 +25,6 @@ function EventsConfig(agocontrol)
         return events;
     });
 
-    //script entry point
-    self.afterRender = function()
-    {
-        if( document.getElementsByClassName("eventBuilder")[0] )
-        {
-            //template fully rendered, render event builder
-            self.initBuilder();
-        }
-    };
-
     /**
      * Initalizes the empty event creation builder
      */
@@ -1224,5 +1214,14 @@ function init_template(path, params, agocontrol)
 {
     var model = new EventsConfig(agocontrol);
     return model;
+}
+
+function afterrender_template(model)
+{
+    //template is rendered, we can build graph
+    if( model )
+    {
+        model.initBuilder();
+    }
 }
 

@@ -36,6 +36,7 @@ opt/agocontrol/bin/rpc-htpasswd
 opt/agocontrol/bin/agosecurity
 opt/agocontrol/bin/agoctrl.sh
 opt/agocontrol/bin/agodatalogger
+opt/agocontrol/bin/agosystem
 opt/agocontrol/bin/agososreport.sh
 opt/agocontrol/bin/agosystem
 opt/agocontrol/html

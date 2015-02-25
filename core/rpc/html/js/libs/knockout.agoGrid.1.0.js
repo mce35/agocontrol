@@ -302,7 +302,7 @@
                             <tr data-bind=\"foreach: columns\">\
                                <th>\
                                   <!-- ko ifnot: rowText=='' -->\
-                                      <span style=\"cursor:pointer;\" data-bind=\"text:headerText, click:sortBy.bind($data, $context, rowText)\"></span>\
+                                      <span style=\"cursor:pointer; text-overflow:ellipsis;\" data-bind=\"text:headerText, click:sortBy.bind($data, $context, rowText)\"></span>\
                                       <!-- ko if:rowText==sortKey() -->\
                                           <!-- ko if:sortAsc() -->\
                                               <span><i class=\"icon-up-dir\"></i></span>\
@@ -313,7 +313,7 @@
                                       <!-- /ko -->\
                                   <!-- /ko -->\
                                   <!-- ko if: rowText=='' -->\
-                                      <span data-bind=\"text:headerText\"></span>\
+                                      <span style="text-overflow:ellipsis;" data-bind=\"text:headerText\"></span>\
                                   <!-- /ko -->\
                                </th>\
                             </tr>\

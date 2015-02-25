@@ -54,14 +54,14 @@ def messageHandler(internalid, content):
 				GPIO.output(internalid, False)
 			else:
 				GPIO.output(internalid, True)
-			client.emit_event(internalid, "event.device.statechanged", "255", "")
+			client.emit_event(internalid, "event.device.statechanged", 255, "")
 		if content["command"] == "off":
 			#print "switching off: ", internalid
 			if reverse=="1":
 				GPIO.output(internalid, True)
 			else:
 				GPIO.output(internalid, False)
-			client.emit_event(internalid, "event.device.statechanged", "0", "")
+			client.emit_event(internalid, "event.device.statechanged", 0, "")
 
 client.add_handler(messageHandler)
 

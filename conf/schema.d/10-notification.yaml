@@ -46,6 +46,10 @@ devicetypes:
     name: mail gateway
     description: used to send emails
     commands: [sendmail]
+  smsgateway:
+    name: SMS gateway
+    description: used to send short messages
+    commands: [sendsms]
   alertcontroller:
     name: alert controller
     description: internal device to send alerts

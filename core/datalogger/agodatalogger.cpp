@@ -780,7 +780,7 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
     int rc;
     string result;
 
-    if( dataLogging && subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" )
+    if( gpsLogging && subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" )
     {
         AGO_DEBUG() << "specific environment case: position";
         string lat = content["latitude"].asString();
@@ -799,14 +799,12 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
         sqlite3_bind_text(stmt, 3, lon.c_str(), -1, NULL);
         sqlite3_bind_int(stmt, 4, time(NULL));
     }
-    else if( gpsLogging && content["level"].asString() != "")
+    else if( dataLogging && content["level"].asString() != "")
     {
         replaceString(subject, "event.environment.", "");
         replaceString(subject, "event.device.", "");
         replaceString(subject, "changed", "");
         replaceString(subject, "event.", "");
-
-        string level = content["level"].asString();
 
         string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
         rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
@@ -815,9 +813,25 @@ void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Vari
             return;
         }
 
+        string level = content["level"].asString();
+
         sqlite3_bind_text(stmt, 1, uuid.c_str(), -1, NULL);
         sqlite3_bind_text(stmt, 2, subject.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 3, level.c_str(), -1, NULL);
+
+        double value;
+        switch(content["level"].getType()) {
+            case qpid::types::VAR_DOUBLE:
+                value = content["level"].asDouble();
+                sqlite3_bind_double(stmt,3,value);
+                break;
+            case qpid::types::VAR_FLOAT:
+                value = content["level"].asFloat();
+                sqlite3_bind_double(stmt,3,value);
+                break;
+            default:
+                sqlite3_bind_text(stmt, 3, level.c_str(), -1, NULL);
+        }
+
         sqlite3_bind_int(stmt, 4, time(NULL));
     }
 
@@ -1348,7 +1362,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     AGO_ERROR() << "Unable to save dataLogging status to config file";
                 }
 
-                if( content["igpsLogging"].asBool() )
+                if( content["gpsLogging"].asBool() )
                 {
                     gpsLogging = true;
                     AGO_INFO() << "GPS logging enabled";

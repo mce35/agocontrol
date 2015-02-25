@@ -1,25 +1,29 @@
 <div id="contentarea" class="container">
 <div class="row">
-	<div class="twelve columns">
-		<h2>System Status</h2>
-		<table style="width: 80%;margin-left: 10%">
-			<tr>
-				<th><strong>Service</strong></th>
-				<th><strong>State</strong></th>
-			</tr>
-			<tbody data-bind="foreach: data">
-				<tr>
-					<td data-bind="text: name" />
-					<ko opts="if: state == 'active'">
-						<td><span class="success alert" data-bind="text: state"/></td>
-					</ko>
-					<ko opts="if: state != 'active'">
-						<td><span class="warning alert" data-bind="text: state"/></td>
-					</ko>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+    <div class="twelve columns">
+        <h2>System Status</h2>
+        <table style="width: 80%;margin-left: 10%">
+            <tr>
+                <th><strong>Service</strong></th>
+                <th><strong>Running</strong></th>
+                <th><strong>CPU</strong></th>
+                <th><strong>Memory</strong></th>
+            </tr>
+            <tbody data-bind="foreach: processes">
+                <tr>
+                    <td data-bind="text: name"></td>
+                    <ko opts="if: running">
+                        <td><i style="color:green; font-weight:bold;" class="icon-check"></i></td>
+                    </ko>
+                    <ko opts="ifnot: running">
+                        <td><i style="color:red; font-weight:bold;" class="icon-cancel"></i></td>
+                    </ko>
+                    <td data-bind="text: cpu"></td>
+                    <td data-bind="text: $parent.sizeToHRSize(memRes)"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 </div>

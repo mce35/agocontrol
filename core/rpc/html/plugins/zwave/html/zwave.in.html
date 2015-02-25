@@ -34,6 +34,7 @@
                 <li><_a data-translateable="true" href="#details-status">Status</_a></li>
                 <li><_a data-translateable="true" href="#details-actions">Actions</_a></li>
                 <li><_a data-translateable="true" href="#details-associations">Associations</_a></li>
+                <li><_a data-translateable="true" href="#details-configuration">Configuration</_a>
                 <li><_a data-translateable="true" href="#details-advanced">Advanced</_a></li>
             </ul>
             <div id="details-infos">
@@ -132,6 +133,74 @@
                         </table>
             </div>
 
+            <div id="details-configuration">
+                <table style="width:700px;" class="agoTable">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <ko opts="if: nodeParameters().length>0">
+                <tbody data-bind="foreach: nodeParameters">
+                    <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                        <td>
+                        <ko opts="if: help.length>0">
+                            <div data-translateable="true" class="ttip" data-bind="attr:{'data-tooltip':help}"><i class="icon-help-circled"/></div>
+                        </ko>
+                        </td>
+                        <td>
+                            <ko opts="if: invalid==1">
+                                <div data-translateable="true" class="ttip" data-tooltip="This parameter has something invalid. It is displayed only for information."><i class="icon-alert" style="color:red"/></div>
+                            </ko>
+                            <ko opts="if: type!='button'">
+                                <ko opts="if: units.length==0">
+                                <span data-bind="text:label" />
+                                </ko>
+                                <ko opts="if: units.length>0">
+                                <span data-bind="text:label+' ('+units+')'" />
+                                </ko>
+                            </ko>
+                        </td>
+                        <td>
+                            <ko opts="if: readonly==1">
+                                <span data-bind="text:currentvalue" />
+                            </ko>
+                            <ko opts="if: readonly==0">
+                                <ko opts="if: type=='list'">
+                                    <select data-bind="options:items, value:currentvalue"></select>
+                                </ko>
+                                <ko opts="if: type=='int' || type=='float' || type=='byte' || type=='short' || type=='string'">
+                                    <input type="text" data-bind="value:currentvalue" style="width:100px;"/>
+                                </ko>
+                                <ko opts="if: type=='bool'">
+                                    <input type="checkbox" data-bind="checked:currentvalue" />
+                                </ko>
+                                <ko opts="if: type=='button'">
+                                    <button data-bind="text:label, click:function(data, event){ alert('TODO'); }"></button>
+                                </ko>
+                            </ko>
+                        </td>
+                        <td>
+                            <ko opts="if: invalid==0">
+                            <button data-bind="click:$parent.setParameter">Set</button>
+                            </ko>
+                        </td>
+                    </tr>
+                </tbody>
+                </ko>
+                <ko opts="if: nodeParameters().length==0">
+                <tbody>
+                    <tr>
+                        <td colspan="4">No parameter</td>
+                    </tr>
+                </tbody>
+                </ko>
+                </table>
+            </div>
+
             <div id="details-advanced">
                 <_span data-translateable="true">This tab is reserved to experts that knows what they do. Be careful!</_span>
                 <br/><br/>
@@ -141,12 +210,8 @@
                         <div data-bind="event:{mousedown:removeNode}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Remove</_a></div>
                     </li>
                     <li>
-                        <_span data-translateable="true">Set parameter</_span>
-                        <div class="picker"><select></select></div>
-                        <_span data-translateable="true">to</_span>
-                        <div class="field" style="display:inline;"><input class="xnarrow input" type="text" placeholder="Value"/></div>
-                        <div data-bind="event:{mousedown:setConfigParam}" class="pretty medium primary btn"><_a data-translateable="true" href="#" style="color:white;">Set value</_a></div>
-                        <div class="ttip" data-translateable="true" _data-tooltip="Force selected node parameter to specified value"><i class="icon-help-circled"></i></div>
+                        <_span data-translateable="true">Request node configuration parameters</_span>
+                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="pretty medium primary btn"><_a style="color:white;" data-bind="click:$root.noclick" href="#">Request parameters</_a></div>
                     </li>
                 </ul>
             </div>
@@ -168,12 +233,59 @@
     <!-- main tabs  -->
     <div data-bind="jqTabs:{}">
         <ul>
+            <li><_a href="#main-devices" data-translateable="true">Devices</_a></li>
             <li><_a data-translateable="true" href="#main-graph">Dependencies</_a></li>
             <li><_a data-translateable="true" href="#main-general">General</_a></li>
             <li><_a data-translateable="true" href="#main-actions">Actions</_a></li>
             <li><_a data-translateable="true" href="#main-stats">Statistics</_a></li>
             <li><_a data-translateable="true" href="#main-advanced">Advanced</_a></li>
         </ul>
+
+        <div id="main-devices">
+            <table style="width:850px;" class="agoTable">
+                <thead>
+                <tr>
+                    <td>Id</td>
+                    <td>Name</td>
+                    <td>Type</td>
+                    <td>Awake</td>
+                    <td>Failed</td>
+                </tr>
+                </thead>
+                <tbody data-bind="foreach: nodes">
+                <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
+                    <td data-bind="text: id"></td>
+                    <td>
+                        <a href="#" data-bind="click: function(data,event) { console.log($index()); $parent.openNodeDetails($index()); }">
+                        <ko opts="if: product.length>0">
+                            <span data-bind="text: manufacturer+' ('+product+')'"></span>
+                        </ko>
+                        <ko opts="if: product.length==0 and manufacturer.length>0">
+                            <span data-bind="text: manufacturer"></span>
+                        </ko>
+                        <ko opts="if: product.length==0 and manufacturer.length==0">
+                            <span style="font-style:italic;">No name</span>
+                        </ko>
+                        </a>
+                    </td>
+                    <td data-bind="text: type"></td>
+                    <ko opts="if: status.awake==1">
+                    <td><span>True</span></td>
+                    </ko>
+                    <ko opts="if: status.awake==0">
+                    <td><span>False</span></td>
+                    </ko>
+                    <ko opts="if: status.failed==1">
+                    <td><span style="color:red;">True</span></td>
+                    </ko>
+                    <ko opts="if: status.failed==0">
+                    <td><span>False</span></td>
+                    </ko>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
         <div id="main-graph">
             <div class="row">
                 <div class="six columns">
@@ -226,6 +338,10 @@
                     <_span data-translateable="true">Test network</_span>
                     <div data-bind="event:{mousedown:testNetwork}" class="pretty medium primary btn"><_a data-translateable="true" href="#">Test</_a></div>
                     <div class="ttip" data-translateable="true" _data-tooltip="Launch some test procedures over all nodes. This command lasts some time!"><i class="icon-help-circled"></i></div>
+                </li>
+                <li>
+                    <_span data-translateable="true">Heal network</_span>
+                    <div data-bind="event:{mousedown:healNetwork}" class="pretty medium primary btn"><_a data-translateable="true" href="#" data-bind="click:$root.noclick">Heal network</_a></div>
                 </li>
             </ul>
         </div>

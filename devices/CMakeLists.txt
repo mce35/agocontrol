@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 set (AGODEVICES
   ATAlarm
+#  onvif
   example
   enocean3
   blinkm
@@ -33,6 +34,7 @@ set (AGODEVICES
   ipx800
   raspiCamera
   scheduler
+  tellstick
   knx
   agodmx
   PLCBUS
@@ -42,6 +44,9 @@ set (AGODEVICES
   ETAtouch
   oregon
   yamaha
+  gammu
+  axisaudiotransmit
+  weatherreporter
 )
 
 IF (FREEBSD)
@@ -55,6 +60,7 @@ IF (FREEBSD)
 	  agodmx
 	  PLCBUS
 	  zmcam
+      onvif
   )
 ENDIF (FREEBSD)
 
