@@ -166,26 +166,6 @@ static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
     mg_printf_data(conn, "}");
 }
 
-static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
-    //	Json::Value r(result);
-    //	mg_rpc_reply_result(conn, request_or_id, r);
-    Json::Value request_id;
-    if(request_or_id.type() == Json::objectValue) {
-        request_id = request_or_id.get("id", Json::Value());
-    }else
-        request_id = request_or_id;
-
-    Json::FastWriter writer;
-    std::string request_idstr = writer.write(request_id);
-
-    // XXX: Write without building full JSON
-    mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
-    mg_printmap(conn, responseMap);
-    mg_printf_data(conn, ", \"id\": %s}", request_idstr.c_str());
-    return false;
-}
-
-
 /**
  * Mongoose event handler
  */
