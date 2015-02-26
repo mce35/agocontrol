@@ -273,7 +273,7 @@ class AgoTellstick(agoclient.AgoApp):
 
                 message = Message(content=content)
                 self.connection.send_message (None, content)
-                self.log.debug("'setdevicename' message sent for %s, name=", deviceUUID, name)
+                self.log.debug("'setdevicename' message sent for %s, name=%s", deviceUUID, name)
 
         # Get devices from Telldus, announce to Ago Control
         self.log.info("Getting switches and dimmers")
