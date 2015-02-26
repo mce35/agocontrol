@@ -988,7 +988,9 @@ void AgoRpc::cleanupApp() {
     for(list<boost::thread*>::iterator i = server_threads.begin(); i != server_threads.end(); i++) {
         delete *i;
     }
-    fclose(authFile);
+    if(authFile)
+        fclose(authFile);
+    authFile = NULL;
 }
 
 AGOAPP_ENTRY_POINT(AgoRpc);
