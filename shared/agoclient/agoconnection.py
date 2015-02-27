@@ -224,9 +224,13 @@ class AgoConnection:
         return self.send_message_reply(content)
 
     def emit_event(self, internal_id, event_type, level, unit):
-        """This will send an event."""
+        """This will send an event. Ensure level is of correct data type for the event!"""
         content = {}
         content["uuid"] = self.internal_id_to_uuid(internal_id)
+        # XXX: C++ version will call Variant.parse on any string values,
+        # which may convert it to other type i.e. int if it is
+        # a plain int. There does not seem to be any similar qpid
+        # function in Python.
         content["level"] = level
         content["unit"] = unit
         return self.send_message(event_type, content)
