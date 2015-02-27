@@ -305,8 +305,6 @@ body {
     border-radius:5px;
     overflow:scroll;
     overflow-x:hidden;
-
-    /*background-image: url('/img/icon_trash-48.png');*/
 }
 
 .device-list-active {
@@ -332,6 +330,9 @@ body {
     text-overflow:clip;
     white-space:nowrap;
     background-color:#DFDFDF;
+}
+
+.device-list-item-draggable {
     cursor:move;
 }
 

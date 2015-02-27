@@ -165,6 +165,7 @@ function Dashboard(dashboard, edition, agocontrol)
         //list items draggable
         $('.device-list-item').each(function()
         {
+            $(this).addClass('device-list-item-draggable');
             $(this).draggable({
                 opacity: 0.7,
                 cursor: 'move',
