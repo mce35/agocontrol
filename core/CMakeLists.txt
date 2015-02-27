@@ -68,8 +68,9 @@ if (BUILD_CORE_security)
   add_subdirectory (security)
 endif()
 
-OPTION(BUILD_CORE_system "Build agosystem" ON)
-if (BUILD_CORE_system)
-  add_subdirectory (system)
+IF (NOT FREEBSD)
+    OPTION(BUILD_CORE_system "Build agosystem" ON)
+    if (BUILD_CORE_system)
+      add_subdirectory (system)
+    endif()
 endif()
-
