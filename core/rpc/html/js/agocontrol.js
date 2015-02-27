@@ -38,13 +38,7 @@ Agocontrol.prototype = {
         var self = this;
 
         if( async===undefined )
-        {
             async = true;
-        }
-        else
-        {
-            async = false;
-        }
 
         var request = {};
         request.method = "message";
@@ -263,7 +257,7 @@ Agocontrol.prototype = {
             {
                 console.error('Unable to get processes list!');
             }
-        }, 5, false);
+        }, 5);
         
         //LISTING
         //dashboards
