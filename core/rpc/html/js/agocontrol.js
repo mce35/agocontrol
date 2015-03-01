@@ -1,6 +1,7 @@
 //Agocontrol object
 function Agocontrol()
 {
+    this.init();
 };
 
 Agocontrol.prototype = {
@@ -15,15 +16,19 @@ Agocontrol.prototype = {
     environment: ko.observableArray([]),
     rooms: ko.observableArray([]),
     schema: ko.observable(),
-    system: ko.observable(), 
+    system: ko.observable(),
     variables: ko.observableArray([]),
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
 
-    plugins: ko.observableArray([]),
+    plugins: null, // computed in init()
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
+
+    _allPlugins: ko.observableArray([]),
+    _favorites: ko.observable(),
+    _noProcesses: ko.observable(false),
 
     agoController: null,
     scenarioController: null,
@@ -32,14 +37,70 @@ Agocontrol.prototype = {
     dataLoggerController: null,
     systemController: null,
 
-    //send command   
-    sendCommand: function(content, callback, timeout, async)
+    init : function(){
+        /**
+         * Update plugins list when we have raw list of plugins, favorites
+         * and processes list
+         */
+        this.plugins = ko.computed(function(){
+            var allPlugins = this._allPlugins();
+            var favorites = this._favorites();
+            var processes = this.processes();
+            // Hack to get around lack of process list on FreeBSD
+            var noProcesses = this._noProcesses();
+
+            if(!allPlugins.length || !favorites || (!noProcesses && !processes.length))
+            {
+                //console.log("Not all data ready, trying later");
+                return;
+            }
+
+            var plugins = [];
+            for( var i=0; i < allPlugins.length; i++ )
+            {
+                var plugin = allPlugins[i];
+
+                var append = false;
+
+                if( plugin.name=='Application list' )
+                {
+                    append = true;
+                    plugin.favorite = true; //applications always displayed
+                }
+                else
+                {
+                    plugin.favorite = !!favorites[plugin.dir];
+                    if( plugin.depends===undefined ||
+                            (plugin.depends!==undefined && $.trim(plugin.depends).length==0) )
+                    {
+                        append = true;
+                    }
+                    else
+                    {
+                        //check if process is installed (and not if it's currently running!)
+                        var proc = this.findProcess(plugin.depends);
+                        if( proc )
+                        {
+                            append = true;
+                        }
+                    }
+                }
+
+                if(append)
+                {
+                    plugin.fav = ko.observable(plugin.favorite);
+                    plugins.push(plugin);
+                }
+            }
+
+            return plugins;
+        }, this);
+    },
+
+    //send command
+    sendCommand: function(content, callback, timeout)
     {
         var self = this;
-
-        if( async===undefined )
-            async = true;
-
         var request = {};
         request.method = "message";
         request.params = {};
@@ -61,8 +122,7 @@ Agocontrol.prototype = {
                     callback(r);
                 }
             },
-            dataType : "json",
-            async : async
+            dataType : "json"
         });
     },
 
@@ -100,7 +160,7 @@ Agocontrol.prototype = {
     },
 
     //refresh devices list
-    refreshDevices: function(async)
+    refreshDevices: function()
     {
         var self = this;
 
@@ -143,11 +203,11 @@ Agocontrol.prototype = {
                     self.devices.push(new device(self, devs[uuid], uuid));
                 }
             }
-        }, async);
+        });
     },
 
     //refresh dashboards list
-    refreshDashboards: function(async)
+    refreshDashboards: function()
     {
         var self = this;
 
@@ -165,7 +225,7 @@ Agocontrol.prototype = {
                 dashboard.editable = true;
                 self.dashboards.push(dashboard);
             }
-        }, async);
+        });
     },
 
     //handle inventory
@@ -246,16 +306,20 @@ Agocontrol.prototype = {
         self.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
+                var values = [];
                 for( var procName in res.result )
                 {
                     var proc = res.result[procName];
                     proc.name = procName;
-                    self.processes.push(proc);
+                    values.push(proc);
                 }
+
+                self.processes.pushAll(values);
             }
             else
             {
                 console.error('Unable to get processes list!');
+                self._noProcesses(true);
             }
         }, 5);
         
@@ -273,15 +337,13 @@ Agocontrol.prototype = {
         }
 
         //FAVORITES
-        var favorites = {};
         $.ajax({
             url: "cgi-bin/ui.cgi?param=favorites",
-            method: "GET",
-            async: false
+            method: "GET"
         }).done(function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result==1 )
             {
-                favorites = res.content;
+                self._favorites(res.content);
             }
             else
             {
@@ -298,61 +360,20 @@ Agocontrol.prototype = {
         
         $.ajax({
             url : "cgi-bin/listing.cgi?get=all",
-            method : "GET",
-            async : false
+            method : "GET"
         }).done(function(result) {
+            var plugins = [];
 
             //PLUGINS
-            //load plugins list at top of menu
             for( var i=0; i<result.plugins.length; i++ )
             {
-                if( result.plugins[i].name=='Application list' )
-                {
-                    var plugin = result.plugins[i];
-                    plugin.ucName = ucFirst(plugin.name);
-                    plugin.favorite = true; //applications always displayed
-                    plugin.fav = ko.observable(plugin.favorite);
-                    self.plugins.push(plugin);
-                    break;
-                }
+                var plugin = result.plugins[i];
+                plugin.ucName = ucFirst(plugin.name);
+                plugins.push(plugin);
             }
-            //load all other plugins
-            for( var i=0; i<result.plugins.length; i++ )
-            {
-                if( result.plugins[i].name!='Application list' )
-                {
-                    var append = false;
-                    if( result.plugins[i].depends===undefined || (result.plugins[i].depends!==undefined && $.trim(result.plugins[i].depends).length==0) )
-                    {
-                        append = true;
-                    }
-                    else
-                    {
-                        //check if process is installed (and not if it's currently running!)
-                        var proc = self.findProcess(result.plugins[i].depends);
-                        if( proc )
-                        {
-                            append = true;
-                        }
-                    }
 
-                    if( append )
-                    {
-                        var plugin = result.plugins[i];
-                        plugin.ucName = ucFirst(plugin.name);
-                        if( favorites[plugin.dir]===undefined )
-                        {
-                            plugin.favorite = false;
-                        }
-                        else
-                        {
-                            plugin.favorite = favorites[plugin.dir];
-                        }
-                        plugin.fav = ko.observable(plugin.favorite);
-                        self.plugins.push(plugin);
-                    }
-                }
-            }
+            // Update internal observable
+            self._allPlugins(plugins);
 
             //CONFIGURATION PAGES
             var categories = {};
@@ -407,21 +428,17 @@ Agocontrol.prototype = {
     },
 
     //get inventory
-    getInventory: function(callback, async)
+    getInventory: function(callback)
     {
         var self = this;
 
-        if( async===undefined )
-        {
-            async = false;
-        }
         if( !callback )
         {
             callback = self.handleInventory.bind(self);
         }
         var content = {};
         content.command = "inventory";
-        self.sendCommand(content, callback, 10, async);
+        self.sendCommand(content, callback, 10);
     },
 
     //get event
@@ -442,7 +459,6 @@ Agocontrol.prototype = {
             url: self.url,
             data: JSON.stringify(request),
             dataType: 'json',
-            async: true,
             success: function(data, textStatus, jqXHR)
             {
                 //request succeed
@@ -491,7 +507,7 @@ Agocontrol.prototype = {
                 content.uuid = response.result.uuid;
                 content.pin = pin;
                 self.sendCommand(content, function(res) {
-                    if (res.result.error) 
+                    if (res.result.error)
                     {
                         notif.error(res.result.error);
                     }

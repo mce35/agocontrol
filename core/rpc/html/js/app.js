@@ -10,6 +10,18 @@ Array.prototype.chunk = function(chunkSize)
 };
 
 /**
+ * Allow adding multiple items to a observableArray in one shot,
+ * without firing an event for each new item
+ */
+ko.observableArray.fn.pushAll = function(valuesToPush) {
+    var underlyingArray = this();
+    this.valueWillMutate();
+    ko.utils.arrayPushAll(underlyingArray, valuesToPush);
+    this.valueHasMutated();
+    return this;  //optional
+};
+
+/**
  * Formats a date object
  * 
  * @param date
