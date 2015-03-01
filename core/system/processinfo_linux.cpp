@@ -65,7 +65,7 @@ void AgoSystem::getProcessInfo()
     memset(&proc_info, 0, sizeof(proc_info));
     while (readproc(proc, &proc_info) != NULL)
     {
-        string procName = string(proc_info.cmd);
+        std::string procName = std::string(proc_info.cmd);
         if( processes.find(procName)!=processes.end()  )
         {
             qpid::types::Variant::Map stats = processes[procName].asMap();
