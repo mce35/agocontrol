@@ -1,5 +1,5 @@
 #include <proc/readproc.h>
-#include <inttypes.h>
+#include "agosystem.h"
 
 /**
  * Return total CPU time from /proc/stat file
