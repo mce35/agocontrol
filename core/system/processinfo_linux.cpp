@@ -6,7 +6,7 @@
  *
  * @return 0 if error occured
  */
-static uint32_t getCpuTotalTime() {
+static uint32_t getCpuTotalTime()
 {
     uint32_t cpuTotalTime = 0;
     int i = 0;
