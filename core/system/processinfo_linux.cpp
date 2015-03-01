@@ -1,4 +1,5 @@
 #include <proc/readproc.h>
+#include <inttypes.h>
 
 /**
  * Return total CPU time from /proc/stat file
