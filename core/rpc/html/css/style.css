@@ -525,6 +525,7 @@ div.dashboard-widget-header ul li.dashboard-widget-header-infos {
 
 div.dashboard-widget-content-buttons ul.one_up {
     padding-left:10px;
+    padding-right:10px;
 }
 
 .dashboard-widget-header-infos h3 {
