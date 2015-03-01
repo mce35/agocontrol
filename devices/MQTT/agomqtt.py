@@ -55,7 +55,7 @@ class MQTTThread(threading.Thread):
             self.app.connection.add_device(str(msg.topic), "humiditysensor")
             self.app.connection.emit_event(str(msg.topic), "event.environment.humiditychanged", float(msg.payload), "%")
         if topic.find("pressure") != -1:
-            self.app.connection.add_device(str(msg.topic), "barometricsensor")
+            self.app.connection.add_device(str(msg.topic), "barometersensor")
             self.app.connection.emit_event(str(msg.topic), "event.environment.pressurechanged", float(msg.payload), "mBar")
 
     def run(self):
