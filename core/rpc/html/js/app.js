@@ -115,9 +115,9 @@ function AgocontrolViewModel()
         location.hash = 'config/' + config.name;
     };
 
-    self.gotoPlugin = function(plugin)
+    self.gotoApplication = function(application)
     {
-        location.hash = 'plugin/' + plugin.name;
+        location.hash = 'app/' + application.name;
     };
 
     self.gotoHelp = function(help)
@@ -145,7 +145,7 @@ function AgocontrolViewModel()
         //load template script file
         $.getScript(template.path+'/template.js' , function()
         {
-            //Load the plugins resources if any
+            //Load the application resources if any
             if( template.resources && ((template.resources.css && template.resources.css.length>0) || (template.resources.js && template.resources.js.length>0)) )
             {
                 var resources = [];
@@ -289,28 +289,28 @@ function AgocontrolViewModel()
             }
         });
 
-        //plugin loading
-        this.get('#plugin/:name', function()
+        //application loading
+        this.get('#app/:name', function()
         {
-            //get plugin infos from members
-            var plugin = null;
-            for( var i=0; i<self.agocontrol.plugins().length; i++ )
+            //get application infos from members
+            var application = null;
+            for( var i=0; i<self.agocontrol.applications().length; i++ )
             {
-                if( self.agocontrol.plugins()[i].name==this.params.name )
+                if( self.agocontrol.applications()[i].name==this.params.name )
                 {
-                    //plugin found
-                    plugin = self.agocontrol.plugins()[i];
+                    //application found
+                    application = self.agocontrol.applications()[i];
                     break;
                 }
             }
-            if( plugin )
+            if( application )
             {
-                var basePath = "plugins/" + plugin.dir;
-                self.loadTemplate(new Template(basePath, plugin.resources, plugin.template, null));
+                var basePath = "applications/" + application.dir;
+                self.loadTemplate(new Template(basePath, application.resources, application.template, null));
             }
             else
             {
-                notif.fatal('Specified plugin not found!');
+                notif.fatal('Specified application not found!');
             }
         });
 

@@ -3,7 +3,7 @@
 #Returns all or specified directory structure
 #@params get: all|plugins|configs|helps|supported
 # - all: returns all items
-# - plugins: returns plugins list
+# - applications: returns applications list
 # - config: returns configuration pages
 # - help: returns help pages
 # - supported: returns supported devices
@@ -49,14 +49,14 @@ get = 'all'
 args = cgi.FieldStorage()
 for key in args.keys():
     if key=='get':
-        if args[key].value in ['all', 'plugins', 'config', 'help', 'supported']:
+        if args[key].value in ['all', 'applications', 'config', 'help', 'supported']:
             get = args[key].value
             break
 
 #get content
 try:
     if get=='all':
-        result['plugins'] = loadMetadatasInDir('../plugins/')
+        result['applications'] = loadMetadatasInDir('../applications/')
         result['config'] = loadMetadatasInDir('../configuration/')
         result['help'] = loadMetadatasInDir('../help/')
         result['supported'] = getSupportedDevices()
@@ -64,8 +64,8 @@ try:
         result = loadMetadatasInDir('../configuration/')
     elif get=='help':
         result = loadMetadatasInDir('../help/')
-    elif get=='plugins':
-        result = loadMetadatasInDir('../plugins/')
+    elif get=='applications':
+        result = loadMetadatasInDir('../applications/')
     elif get=='supported':
         result = getSupportedDevices()
 

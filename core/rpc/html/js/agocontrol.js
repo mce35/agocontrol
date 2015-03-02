@@ -11,7 +11,7 @@ Agocontrol.prototype = {
     multigraphThumbs: [],
     deferredMultigraphThumbs: [],
     eventHandlers: [],
-    _allPlugins: ko.observableArray([]),
+    _allApplications: ko.observableArray([]),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -24,7 +24,7 @@ Agocontrol.prototype = {
     variables: ko.observableArray([]),
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
-    plugins: null, // computed in init()
+    applications: null, // computed in init()
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
@@ -38,51 +38,51 @@ Agocontrol.prototype = {
 
     init : function(){
         /**
-         * Update plugins list when we have raw list of plugins, favorites
+         * Update application list when we have raw list of application, favorites
          * and processes list
          */
-        this.plugins = ko.computed(function(){
-            var allPlugins = this._allPlugins();
+        this.applications = ko.computed(function(){
+            var allApplications = this._allApplications();
             var favorites = this._favorites();
             var processes = this.processes();
             // Hack to get around lack of process list on FreeBSD
             var noProcesses = this._noProcesses();
 
-            if(!allPlugins.length || !favorites || (!noProcesses && !processes.length))
+            if(!allApplications.length || !favorites || (!noProcesses && !processes.length))
             {
                 //console.log("Not all data ready, trying later");
                 return;
             }
 
-            var plugins = [];
-            //always display "application list" plugin on top of list
-            for( var i=0; i<allPlugins.length; i++ )
+            var applications = [];
+            //always display "application list" app on top of list
+            for( var i=0; i<allApplications.length; i++ )
             {
-                var plugin = allPlugins[i];
-                if( plugin.name=='Application list' )
+                var application = allApplications[i];
+                if( application.name=='Application list' )
                 {
-                    plugin.favorite = true; //applications always displayed
-                    plugin.fav = ko.observable(plugin.favorite);
-                    plugins.push(plugin);
+                    application.favorite = true; //applications always displayed
+                    application.fav = ko.observable(application.favorite);
+                    applications.push(application);
                 }
             }
-            for( var i=0; i<allPlugins.length; i++ )
+            for( var i=0; i<allApplications.length; i++ )
             {
-                var plugin = allPlugins[i];
+                var application = allApplications[i];
                 var append = false;
 
-                if( plugin.name!='Application list' )
+                if( application.name!='Application list' )
                 {
-                    plugin.favorite = !!favorites[plugin.dir];
-                    if( plugin.depends===undefined ||
-                            (plugin.depends!==undefined && $.trim(plugin.depends).length==0) )
+                    application.favorite = !!favorites[application.dir];
+                    if( application.depends===undefined ||
+                            (application.depends!==undefined && $.trim(application.depends).length==0) )
                     {
                         append = true;
                     }
                     else
                     {
                         //check if process is installed (and not if it's currently running!)
-                        var proc = this.findProcess(plugin.depends);
+                        var proc = this.findProcess(application.depends);
                         if( proc )
                         {
                             append = true;
@@ -92,12 +92,12 @@ Agocontrol.prototype = {
 
                 if(append)
                 {
-                    plugin.fav = ko.observable(plugin.favorite);
-                    plugins.push(plugin);
+                    application.fav = ko.observable(application.favorite);
+                    applications.push(application);
                 }
             }
 
-            return plugins;
+            return applications;
         }, this);
     },
 
@@ -366,18 +366,17 @@ Agocontrol.prototype = {
             url : "cgi-bin/listing.cgi?get=all",
             method : "GET"
         }).done(function(result) {
-            var plugins = [];
-
-            //PLUGINS
-            for( var i=0; i<result.plugins.length; i++ )
+            //APPLICATIONS
+            var applications = [];
+            for( var i=0; i<result.applications.length; i++ )
             {
-                var plugin = result.plugins[i];
-                plugin.ucName = ucFirst(plugin.name);
-                plugins.push(plugin);
+                var application = result.applications[i];
+                application.ucName = ucFirst(application.name);
+                applications.push(application);
             }
 
             // Update internal observable
-            self._allPlugins(plugins);
+            self._allApplications(applications);
 
             //CONFIGURATION PAGES
             var categories = {};
@@ -629,7 +628,6 @@ Agocontrol.prototype = {
     cleanInventory: function(data)
     {
         var self = this;
-
         for ( var k in data)
         {
             if (!data[k])
