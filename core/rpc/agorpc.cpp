@@ -763,6 +763,7 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
     }
     else if (event == MG_AUTH)
     {
+        /* FIXME: Check mongoose authentication. Disabling this for now to let the default .htpasswd mechanism work 
         if( authFile!=NULL )
         {
             //check auth
@@ -773,7 +774,8 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         {
             //no auth
             result = MG_TRUE;
-        }
+        }*/
+        result = MG_TRUE;
     }
 
     return result;
