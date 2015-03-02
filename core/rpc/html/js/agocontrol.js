@@ -56,18 +56,23 @@ Agocontrol.prototype = {
             }
 
             var plugins = [];
-            for( var i=0; i < allPlugins.length; i++ )
+            //always display "application list" plugin on top of list
+            for( var i=0; i<allPlugins.length; i++ )
             {
                 var plugin = allPlugins[i];
-
-                var append = false;
-
                 if( plugin.name=='Application list' )
                 {
-                    append = true;
                     plugin.favorite = true; //applications always displayed
+                    plugin.fav = ko.observable(plugin.favorite);
+                    plugins.push(plugin);
                 }
-                else
+            }
+            for( var i=0; i<allPlugins.length; i++ )
+            {
+                var plugin = allPlugins[i];
+                var append = false;
+
+                if( plugin.name!='Application list' )
                 {
                     plugin.favorite = !!favorites[plugin.dir];
                     if( plugin.depends===undefined ||
