@@ -10,6 +10,10 @@ Agocontrol.prototype = {
     url: 'jsonrpc',
     multigraphThumbs: [],
     deferredMultigraphThumbs: [],
+    eventHandlers: [],
+    _allPlugins: ko.observableArray([]),
+    _favorites: ko.observable(),
+    _noProcesses: ko.observable(false),
 
     //public members
     devices: ko.observableArray([]),
@@ -20,15 +24,10 @@ Agocontrol.prototype = {
     variables: ko.observableArray([]),
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
-
     plugins: null, // computed in init()
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
-
-    _allPlugins: ko.observableArray([]),
-    _favorites: ko.observable(),
-    _noProcesses: ko.observable(false),
 
     agoController: null,
     scenarioController: null,
@@ -503,6 +502,13 @@ Agocontrol.prototype = {
 
         if( requestSucceed )
         {
+            //send event to other handlers
+            for( var i=0; i<self.eventHandlers.length; i++ )
+            {
+                self.eventHandlers[i](response.result);
+            }
+    
+            //then process event for the core
             if (response.result.event == "event.security.countdown" && !securityPromted)
             {
                 securityPromted = true;
@@ -606,6 +612,17 @@ Agocontrol.prototype = {
             }
         }
         self.getEvent();
+    },
+
+    //add event handler
+    //useful to get copy of received event, like in agodrain
+    addEventHandler: function(callback)
+    {
+        var self = this;
+        if( callback )
+        {
+            self.eventHandlers.push(callback);
+        }
     },
 
     //clean inventory
