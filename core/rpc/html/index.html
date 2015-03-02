@@ -143,6 +143,9 @@
     </div>
 </nav>
 
+<!-- PLUGINS -->
+<div id="plugins" data-bind="template: {name:'templates/plugins/plugins', data:plugins, afterRender:afterRenderPlugins}"></div>
+
 <!-- CONTENT -->
 <div id="main" data-bind="with:currentView">
     <div class="row" style="min-height:500px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}" >
@@ -153,6 +156,7 @@
 <script type="text/javascript" src="js/device.js"></script>
 <script type="text/javascript" src="js/details.js"></script>
 <script type="text/javascript" src="js/uihelpers.js"></script>
+<script type="text/javascript" src="js/plugins.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
 
 </body>

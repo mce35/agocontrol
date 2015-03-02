@@ -90,6 +90,7 @@ function AgocontrolViewModel()
     self.currentView = ko.observable();
     self.agocontrol = new Agocontrol();
     self.currentModel = null;
+    self.plugins = {};
 
     //disable click event
     self.noclick = function()
@@ -230,11 +231,25 @@ function AgocontrolViewModel()
         }
     };
 
+    //call afterRender function of plugins if available
+    self.afterRenderPlugins = function() {
+        for( var plugin in self.plugins )
+        {
+            if( typeof self.plugins[plugin].afterRender == 'function' )
+            {
+                self.plugins[plugin].afterRender();
+            }
+        }
+    };
+
     //configure routes using sammy.js framework
     Sammy(function ()
     {
         //load agocontrol inventory
         self.agocontrol.getInventory(null, false);
+
+        //load ui plugins
+        self.plugins = self.agocontrol.initPlugins();
 
         function getDashboard(name)
         {
