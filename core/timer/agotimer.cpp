@@ -159,7 +159,7 @@ sunevent_t AgoTimer::next_sunevent() {
     if (now < (sunrise + sunriseoffset)) {
         evt.next_state = SUNRISE;
         evt.next_at = sunrise + sunriseoffset;
-    } else if (now > (sunset + sunsetoffset)) {
+    } else if (now >= (sunset + sunsetoffset)) {
         if (now < (sunrise_tomorrow+sunriseoffset)) {
             evt.next_state = SUNRISE;
             evt.next_at = sunrise_tomorrow + sunriseoffset;
