@@ -246,7 +246,7 @@ function AgocontrolViewModel()
     Sammy(function ()
     {
         //load agocontrol inventory
-        self.agocontrol.getInventory(null, false);
+        self.agocontrol.getInventory(null);
 
         //load ui plugins
         self.plugins = self.agocontrol.initPlugins();
@@ -307,26 +307,16 @@ function AgocontrolViewModel()
         //application loading
         this.get('#app/:name', function()
         {
-            //get application infos from members
-            var application = null;
-            for( var i=0; i<self.agocontrol.applications().length; i++ )
-            {
-                if( self.agocontrol.applications()[i].name==this.params.name )
-                {
-                    //application found
-                    application = self.agocontrol.applications()[i];
-                    break;
-                }
-            }
-            if( application )
-            {
-                var basePath = "applications/" + application.dir;
-                self.loadTemplate(new Template(basePath, application.resources, application.template, null));
-            }
-            else
-            {
-                notif.fatal('Specified application not found!');
-            }
+            self.agocontrol.findApplication(this.params.name)
+                .then(function(application){
+                        var basePath = "applications/" + application.dir;
+                        self.loadTemplate(new Template(basePath, application.resources, application.template, null));
+                    },
+                    function(err){
+                        // XXX: notif is not available here
+                        notif.fatal('Specified application not found!');
+                    }
+                );
         });
 
         //configuration loading

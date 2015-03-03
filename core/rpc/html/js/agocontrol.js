@@ -51,7 +51,7 @@ Agocontrol.prototype = {
             if(!allApplications.length || !favorites || (!noProcesses && !processes.length))
             {
                 //console.log("Not all data ready, trying later");
-                return;
+                return [];
             }
 
             var applications = [];
@@ -442,6 +442,43 @@ Agocontrol.prototype = {
         var content = {};
         content.command = "inventory";
         self.sendCommand(content, callback, 10);
+    },
+
+    /**
+     * Find a specific application.
+     * This may not be available directly (until fetched from remote). For this reason
+     * it returns a jquery promise object which will be resolved
+     * with the found application, or rejected if not found.
+     */
+    findApplication: function(appName) {
+        var self = this;
+        var dfd = $.Deferred();
+        function done(){
+            var apps = self.applications();
+            for(var i=0; i < apps.length; i++) {
+                if(apps[i].name == appName)
+                {
+                    dfd.resolve(apps[i]);
+                    return;
+                }
+            }
+            dfd.reject(null);
+        }
+
+        if(self.applications().length == 0) {
+            // not loaded yet (we dont have Application List). continue when we get it
+            var s = self.applications.subscribe(function(newValue){
+                if(newValue.length == 0)
+                    // recomputed, but still not filled up
+                    return;
+                done();
+                s.dispose();
+            });
+        }else{
+            done();
+        }
+
+        return dfd.promise();
     },
 
     //get event

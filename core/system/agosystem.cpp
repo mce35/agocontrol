@@ -261,6 +261,21 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
             }
             ++it;
         }
+    }else {
+        // Temp dummy
+        qpid::types::Variant::Map stats = getProcessStructure();
+        output["agoresolver"] = stats;
+
+        stats = getProcessStructure();
+        output["agorpc"] = stats;
+
+        stats = getProcessStructure();
+        output["agoscenario"] = stats;
+
+        stats = getProcessStructure();
+        output["agoevent"] = stats;
+        stats = getProcessStructure();
+        output["agotimer"] = stats;
     }
 
     //append qpid
