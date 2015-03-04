@@ -34,7 +34,7 @@
                 "width":"100%",
                 "top":"0px",
                 "left":"0px",
-                "z-index":"1000",
+                "z-index":"1000000", //must be greater than gumby's modal
                 "position":"fixed"
             }).attr("name", self.name);
             self.container.appendTo($(document.body));
