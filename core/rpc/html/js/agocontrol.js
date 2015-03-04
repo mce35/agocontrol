@@ -120,7 +120,7 @@ Agocontrol.prototype = {
         request.id = 1;
         request.jsonrpc = "2.0";
 
-        $.ajax({
+        return $.ajax({
             type : 'POST',
             url : self.url,
             data : JSON.stringify(request),
@@ -448,7 +448,7 @@ Agocontrol.prototype = {
         }
         var content = {};
         content.command = "inventory";
-        self.sendCommand(content, callback, 10);
+        return self.sendCommand(content, callback, 10);
     },
 
     /**
