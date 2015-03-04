@@ -12,6 +12,7 @@ Agocontrol.prototype = {
     deferredMultigraphThumbs: [],
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
+    _getApplications: $.Deferred(),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -24,7 +25,7 @@ Agocontrol.prototype = {
     variables: ko.observableArray([]),
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
-    applications: null, // computed in init()
+    applications: ko.observableArray([]),
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
@@ -41,7 +42,7 @@ Agocontrol.prototype = {
          * Update application list when we have raw list of application, favorites
          * and processes list
          */
-        this.applications = ko.computed(function(){
+        ko.computed(function(){
             var allApplications = this._allApplications();
             var favorites = this._favorites();
             var processes = this.processes();
@@ -51,7 +52,7 @@ Agocontrol.prototype = {
             if(!allApplications.length || !favorites || (!noProcesses && !processes.length))
             {
                 //console.log("Not all data ready, trying later");
-                return [];
+                return;
             }
 
             var applications = [];
@@ -64,8 +65,10 @@ Agocontrol.prototype = {
                     application.favorite = true; //applications always displayed
                     application.fav = ko.observable(application.favorite);
                     applications.push(application);
+                    break;
                 }
             }
+
             for( var i=0; i<allApplications.length; i++ )
             {
                 var application = allApplications[i];
@@ -97,7 +100,8 @@ Agocontrol.prototype = {
                 }
             }
 
-            return applications;
+            this.applications(applications);
+            this._getApplications.resolve();
         }, this);
     },
 
