@@ -1,7 +1,7 @@
 //Agocontrol object
 function Agocontrol()
 {
-    this.init();
+    this._init();
 };
 
 Agocontrol.prototype = {
@@ -37,7 +37,7 @@ Agocontrol.prototype = {
     dataLoggerController: null,
     systemController: null,
 
-    init : function(){
+    _init : function(){
         /**
          * Update application list when we have raw list of application, favorites
          * and processes list
@@ -104,6 +104,22 @@ Agocontrol.prototype = {
             this._getApplications.resolve();
         }, this);
     },
+
+    /**
+     * Main entrypoint for application.
+     * Fetches inventory and other important data. The returned deferred
+     * is resolved when basic stuff such as inventory, applications, help pages
+     * etc have been loaded (getInventory + updateListing).
+     *
+     * Application availability is NOT guaranteed to be loaded immediately.
+     */
+    initialize : function() {
+        var p1 = this.getInventory();
+        var p2 = this.updateListing();
+
+        return $.when(p1, p2);
+    },
+
 
     //send command
     sendCommand: function(content, callback, timeout)
@@ -223,6 +239,20 @@ Agocontrol.prototype = {
         self.getInventory(function(response) {
             self.handleDashboards(response.result.floorplan);
         });
+    },
+
+    //get inventory
+    getInventory: function(callback)
+    {
+        var self = this;
+
+        if( !callback )
+        {
+            callback = self.handleInventory.bind(self);
+        }
+        var content = {};
+        content.command = "inventory";
+        return self.sendCommand(content, callback, 10);
     },
 
     //handle inventory
@@ -376,7 +406,7 @@ Agocontrol.prototype = {
 
     updateListing: function(){
         var self = this;
-        $.ajax({
+        return $.ajax({
             url : "cgi-bin/listing.cgi?get=all",
             method : "GET"
         }).done(function(result) {
@@ -447,20 +477,6 @@ Agocontrol.prototype = {
             helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
             self.helps.replaceAll(helps);
         });
-    },
-
-    //get inventory
-    getInventory: function(callback)
-    {
-        var self = this;
-
-        if( !callback )
-        {
-            callback = self.handleInventory.bind(self);
-        }
-        var content = {};
-        content.command = "inventory";
-        return self.sendCommand(content, callback, 10);
     },
 
     getApplication: function(appName) {

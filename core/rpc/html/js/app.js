@@ -255,10 +255,10 @@ function AgocontrolViewModel()
         }
     };
 
-    /* Load agocontrol inventory.
-     * When have initial inventory, configure routes
+    /* Initialize agocontrol inventory.
+     * When basic init is done, configure routes
      * using sammy.js framework */
-    self.agocontrol.getInventory()
+    self.agocontrol.initialize()
         .then(function() {
             Sammy(self.sammyApp).run();
         });
