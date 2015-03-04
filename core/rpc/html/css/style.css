@@ -310,7 +310,7 @@ body {
 .device-list-active {
     border:1px solid #3085D6;
     overflow:hidden;
-    background-image: url('/img/icon_trash.png');
+    background-image: url('../img/icon_trash.png');
     background-repeat: no-repeat;
     background-position: center;
 }
