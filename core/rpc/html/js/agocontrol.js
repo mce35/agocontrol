@@ -233,7 +233,7 @@ Agocontrol.prototype = {
         // Trigger subsequent remote calls
         self.updateProcessList();
         self.updateFavorites();
-        self.updateApplications();
+        self.updateListing();
 
         //check errors
         if (response != null && response.result.match !== undefined && response.result.match(/^exception/))
@@ -374,7 +374,7 @@ Agocontrol.prototype = {
         });
     },
 
-    updateApplications : function(){
+    updateListing: function(){
         var self = this;
         $.ajax({
             url : "cgi-bin/listing.cgi?get=all",
@@ -410,6 +410,8 @@ Agocontrol.prototype = {
                 //append page to its category
                 categories[category].push(result.config[i]);
             }
+
+            var configurations = [];
             for( var category in categories )
             {
                 var subMenus = [];
@@ -420,27 +422,30 @@ Agocontrol.prototype = {
                 if( subMenus.length==1 )
                 {
                     //no submenu
-                    self.configurations.push({'menu':subMenus[0], 'subMenus':null});
+                    configurations.push({'menu':subMenus[0], 'subMenus':null});
                 }
                 else
                 {
                     //submenus
-                    self.configurations.push({'menu':category, 'subMenus':subMenus});
+                    configurations.push({'menu':category, 'subMenus':subMenus});
                 }
             }
+            self.configurations.replaceAll(configurations);
 
             //SUPPORTED DEVICES
             self.supported_devices(result.supported)
 
             //HELP PAGES
+            var helps = [];
             for( var i=0; i<result.help.length; i++ )
             {
                 var help = result.help[i];
                 help.url = null;
-                self.helps.push(help);
+                helps.push(help);
             }
-            self.helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
-            self.helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
+            helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
+            helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
+            self.helps.replaceAll(helps);
         });
     },
 
