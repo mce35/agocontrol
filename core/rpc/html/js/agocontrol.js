@@ -451,41 +451,30 @@ Agocontrol.prototype = {
         return self.sendCommand(content, callback, 10);
     },
 
-    /**
-     * Find a specific application.
-     * This may not be available directly (until fetched from remote). For this reason
-     * it returns a jquery promise object which will be resolved
-     * with the found application, or rejected if not found.
-     */
-    findApplication: function(appName) {
+    getApplication: function(appName) {
         var self = this;
-        var dfd = $.Deferred();
-        function done(){
-            var apps = self.applications();
-            for(var i=0; i < apps.length; i++) {
-                if(apps[i].name == appName)
-                {
-                    dfd.resolve(apps[i]);
-                    return;
+        return this._getApplications
+            .then(function(){
+                var apps = self.applications();
+                for(var i=0; i < apps.length; i++) {
+                    if(apps[i].name == appName)
+                    {
+                        return apps[i];
+                    }
                 }
-            }
-            dfd.reject(null);
-        }
-
-        if(self.applications().length == 0) {
-            // not loaded yet (we dont have Application List). continue when we get it
-            var s = self.applications.subscribe(function(newValue){
-                if(newValue.length == 0)
-                    // recomputed, but still not filled up
-                    return;
-                done();
-                s.dispose();
+                return null;
             });
-        }else{
-            done();
+    },
+    getDashboard:function(name){
+        var dashboards = this.dashboards();
+        for( var i=0; i < dashboards.length; i++ )
+        {
+            if(dashboards[i].name == name )
+            {
+                return dashboards[i];
+            }
         }
-
-        return dfd.promise();
+        return null;
     },
 
     //get event

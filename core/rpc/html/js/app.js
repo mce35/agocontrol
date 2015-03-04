@@ -255,28 +255,17 @@ function AgocontrolViewModel()
         }
     };
 
-    //configure routes using sammy.js framework
-    Sammy(function ()
-    {
-        //load agocontrol inventory
-        self.agocontrol.getInventory(null);
+    /* Load agocontrol inventory.
+     * When have initial inventory, configure routes
+     * using sammy.js framework */
+    self.agocontrol.getInventory()
+        .then(function() {
+            Sammy(self.sammyApp).run();
+        });
 
+    self.sammyApp = function(){
         //load ui plugins
         self.plugins = self.agocontrol.initPlugins();
-
-        function getDashboard(name)
-        {
-            var dashboard = null;
-            for( var i=0; i<self.agocontrol.dashboards().length; i++ )
-            {
-                if( self.agocontrol.dashboards()[i].name==name )
-                {
-                    dashboard = self.agocontrol.dashboards()[i];
-                    break;
-                }
-            }
-            return dashboard;
-        };
 
         //dashboard loading
         this.get('#dashboard/:name', function()
@@ -289,14 +278,11 @@ function AgocontrolViewModel()
             }
             else
             {
-                var dashboard = getDashboard(this.params.name);
-                if( dashboard )
-                {
+                var dashboard = self.agocontrol.getDashboard(this.params.name)
+                if(dashboard) {
                     var basePath = 'dashboard/custom';
                     self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:false}));
-                }
-                else
-                {
+                }else{
                     notif.fatal('Specified custom dashboard not found!');
                 }
             }
@@ -305,14 +291,11 @@ function AgocontrolViewModel()
         //custom dashboard edition
         this.get('#dashboard/:name/edit', function()
         {
-            var dashboard = getDashboard(this.params.name);
-            if( dashboard )
-            {
+            var dashboard = self.agocontrol.getDashboard(this.params.name)
+            if(dashboard) {
                 var basePath = 'dashboard/custom';
                 self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:true}));
-            }
-            else
-            {
+            }else{
                 notif.fatal('Specified custom dashboard not found!');
             }
         });
@@ -320,7 +303,8 @@ function AgocontrolViewModel()
         //application loading
         this.get('#app/:name', function()
         {
-            self.agocontrol.findApplication(this.params.name)
+            // Apps may be loaded async; getApplication returns a promise
+            self.agocontrol.getApplication(this.params.name)
                 .then(function(application){
                         var basePath = "applications/" + application.dir;
                         self.loadTemplate(new Template(basePath, application.resources, application.template, null));
@@ -403,7 +387,7 @@ function AgocontrolViewModel()
         {
             this.app.runRoute('get', '#dashboard/all');
         });
-    }).run();
+    };
 
     self.agocontrol.subscribe();
     self.agocontrol.initSpecificKnockoutBindings();
