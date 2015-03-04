@@ -221,19 +221,7 @@ Agocontrol.prototype = {
 
         //TODO for now refresh all inventory
         self.getInventory(function(response) {
-            var dashboards = [];
-            dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
-            for( uuid in response.result.floorplans )
-            {
-                //add new items
-                var dashboard = response.result.floorplans[uuid];
-                dashboard.uuid = uuid;
-                dashboard.action = '';
-                dashboard.ucName = ucFirst(dashboard.name);
-                dashboard.editable = true;
-                dashboards.push(dashboard);
-            }
-            self.dashboards.replaceAll(dashboards);
+            self.handleDashboards(response.result.floorplan);
         });
     },
 
@@ -241,6 +229,11 @@ Agocontrol.prototype = {
     handleInventory: function(response)
     {
         var self = this;
+
+        // Trigger subsequent remote calls
+        self.updateProcessList();
+        self.updateFavorites();
+        self.updateApplications();
 
         //check errors
         if (response != null && response.result.match !== undefined && response.result.match(/^exception/))
@@ -308,7 +301,29 @@ Agocontrol.prototype = {
             self.devices.push(new device(self, devs[uuid], uuid));
         }
 
-        //PROCESSES (from agosystem)
+        // Handle dashboards/floorplans
+        self.handleDashboards(response.result.floorplans);
+    },
+
+    // Handle dashboard-part of inventory
+    handleDashboards : function(floorplans) {
+        var dashboards = [];
+        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+        for( uuid in floorplans )
+        {
+            var dashboard = floorplans[uuid];
+            dashboard.uuid = uuid;
+            dashboard.action = '';
+            dashboard.ucName = dashboard.name;
+            dashboard.editable = true;
+            dashboards.push(dashboard);
+        }
+        this.dashboards.replaceAll(dashboards);
+    },
+
+    // Fetch process-list from agosystem
+    updateProcessList : function() {
+        var self = this;
         var content = {};
         content.command = "getprocesslist";
         content.uuid = self.systemController;
@@ -331,21 +346,10 @@ Agocontrol.prototype = {
                 self._noProcesses(true);
             }
         }, 5);
-        
-        //LISTING
-        //dashboards
-        var dashboards = [];
-        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
-        for( uuid in response.result.floorplans )
-        {
-            var dashboard = response.result.floorplans[uuid];
-            dashboard.uuid = uuid;
-            dashboard.action = '';
-            dashboard.ucName = dashboard.name;
-            dashboard.editable = true;
-            dashboards.push(dashboard);
-        }
-        self.dashboards.pushAll(dashboards);
+    },
+
+    updateFavorites: function() {
+        var self = this;
 
         //FAVORITES
         $.ajax({
@@ -368,7 +372,10 @@ Agocontrol.prototype = {
                 }
             }
         });
-        
+    },
+
+    updateApplications : function(){
+        var self = this;
         $.ajax({
             url : "cgi-bin/listing.cgi?get=all",
             method : "GET"
@@ -482,6 +489,7 @@ Agocontrol.prototype = {
     {
         var self = this;
 
+        // Long-poll for events
         var request = {};
         request.method = "getevent";
         request.params = {};
