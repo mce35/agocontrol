@@ -22,6 +22,19 @@ ko.observableArray.fn.pushAll = function(valuesToPush) {
 };
 
 /**
+ * Remove all items, then adding multiple items to a observableArray in one shot,
+ * without firing an event for each change
+ */
+ko.observableArray.fn.replaceAll = function(valuesToPush) {
+    var underlyingArray = this();
+    this.valueWillMutate();
+    underlyingArray.splice(0, underlyingArray.length);
+    ko.utils.arrayPushAll(underlyingArray, valuesToPush);
+    this.valueHasMutated();
+    return this;  //optional
+};
+
+/**
  * Formats a date object
  * 
  * @param date

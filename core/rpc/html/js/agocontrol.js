@@ -221,8 +221,8 @@ Agocontrol.prototype = {
 
         //TODO for now refresh all inventory
         self.getInventory(function(response) {
-            self.dashboards.removeAll();
-            self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+            var dashboards = [];
+            dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
             for( uuid in response.result.floorplans )
             {
                 //add new items
@@ -231,8 +231,9 @@ Agocontrol.prototype = {
                 dashboard.action = '';
                 dashboard.ucName = ucFirst(dashboard.name);
                 dashboard.editable = true;
-                self.dashboards.push(dashboard);
+                dashboards.push(dashboard);
             }
+            self.dashboards.replaceAll(dashboards);
         });
     },
 
@@ -333,7 +334,8 @@ Agocontrol.prototype = {
         
         //LISTING
         //dashboards
-        self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+        var dashboards = [];
+        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
         for( uuid in response.result.floorplans )
         {
             var dashboard = response.result.floorplans[uuid];
@@ -341,8 +343,9 @@ Agocontrol.prototype = {
             dashboard.action = '';
             dashboard.ucName = dashboard.name;
             dashboard.editable = true;
-            self.dashboards.push(dashboard);
+            dashboards.push(dashboard);
         }
+        self.dashboards.pushAll(dashboards);
 
         //FAVORITES
         $.ajax({
