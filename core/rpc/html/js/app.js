@@ -255,15 +255,17 @@ function AgocontrolViewModel()
         }
     };
 
+
+    var sammyApp;
     /* Initialize agocontrol inventory.
-     * When basic init is done, configure routes
-     * using sammy.js framework */
+     * when basic init is done, fire up sammy app*/
     self.agocontrol.initialize()
         .then(function() {
-            Sammy(self.sammyApp).run();
+            sammyApp.run();
         });
 
-    self.sammyApp = function(){
+    /* While waiting, configure routes using sammy.js framework */
+    sammyApp = Sammy(function(){
         //load ui plugins
         self.plugins = self.agocontrol.initPlugins();
 
@@ -387,7 +389,8 @@ function AgocontrolViewModel()
         {
             this.app.runRoute('get', '#dashboard/all');
         });
-    };
+    });
+
 
     self.agocontrol.subscribe();
     self.agocontrol.initSpecificKnockoutBindings();
