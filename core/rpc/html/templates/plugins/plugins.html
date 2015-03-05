@@ -1,3 +1,71 @@
-<div style="display:none">
+<div>
+
+<!-- security plugin -->
+<div>
+    <div class="modal" id="securityPanel">
+        <div class="content" style="width:350px;">
+            <div class="row">
+                <div class="twelve columns" style="text-align:center;">
+                    <ko opts="if: security.countdown>=0">
+                    <span>Time remaining</span>: <span data-bind="text:security.countdown"></span>
+                    </ko>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'1')" href="#">1</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'2')" href="#">2</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'3')" href="#">3</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'4')" href="#">4</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'5')" href="#">5</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'6')" href="#">6</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'7')" href="#">7</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'8')" href="#">8</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'9')" href="#">9</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'*')" href="#">*</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'0')" href="#">0</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:security.keyPressed.bind($data,'#')" href="#">#</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="twelve columns" style="text-align:center;">
+                    <div class="append field">
+                        <input class="narrow text input" type="password" placeholder="pin code" disabled="disabled" data-bind="value:security.currentPin"/>
+                        <div class="medium primary btn"><a href="#" data-bind="click:security.resetPin">X</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 

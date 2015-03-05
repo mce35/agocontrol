@@ -1,0 +1,13 @@
+{
+    "name": "Security",
+    "version": "1.0.0",
+    "description": "Security",
+    "template": "html/security",
+    "listable": true,
+    "category": "security",
+    "resources": {
+        "css": [
+            "security.css"
+        ]
+    }
+}

@@ -1,0 +1,333 @@
+<div id="contentarea" class="container" data-bind="initTabs: $root">
+
+    <!-- security pin panel -->
+    <div class="modal" id="pinPanel">
+        <div class="content" style="width:350px;">
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'1')" href="#">1</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'2')" href="#">2</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'3')" href="#">3</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'4')" href="#">4</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'5')" href="#">5</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'6')" href="#">6</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'7')" href="#">7</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'8')" href="#">8</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'9')" href="#">9</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'*')" href="#">*</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'0')" href="#">0</a></div>
+                </div>
+                <div class="four columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'#')" href="#">#</a></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="twelve columns" style="text-align:center;">
+                    <div class="append field">
+                        <input class="narrow text input" type="password" placeholder="pin code" disabled="disabled" data-bind="value:currentPin"/>
+                        <div class="medium primary btn"><a href="#" data-bind="click:resetPin">X</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- security tabs -->
+    <h3 data-translateable="true">Security</h3>
+    <section class="tabs">
+        <ul class="tab-nav">
+            <li class="active"><a data-translateable="true" href="#">Status</a></li>
+            <li><a data-translateable="true" href="#">Pin configuration</a></li>
+            <li><a data-translateable="true" href="#">Security Configuration</a></li>
+        </ul>
+
+        <!-- status -->
+        <div class="tab-content active">
+            <div class="section row">
+                <i class="icon-doc-landscape"></i>
+                <span>Housemode</span>:
+            </div>
+            <div class="row">
+                <div class="three columns">
+                    <span>Current housemode</span>
+                </div>
+                <div class="nine columns">
+                    <div class="picker">
+                        <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:currentHousemode"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="three columns">
+                </div>
+                <div class="nine columns">
+                    <div class="medium primary btn icon-left entypo icon-floppy">
+                        <a href="#" data-bind="click:checkPin.bind($data, setHousemode)">Save</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- pin update -->
+        <div class="tab-content">
+
+            <!-- new pin code -->
+            <div class="section row">
+                <i class="icon-key"></i>
+                <span>Add new pin code</span>:
+            </div>
+            <div class="row">
+                <div class="four columns"></div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'1')" href="#">1</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'2')" href="#">2</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'3')" href="#">3</a></div>
+                </div>
+                <div class="five columns"></div>
+            </div>
+            <div class="row">
+                <div class="four columns"></div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'4')" href="#">4</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'5')" href="#">5</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'6')" href="#">6</a></div>
+                </div>
+                <div class="five columns"></div>
+            </div>
+            <div class="row">
+                <div class="four columns"></div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'7')" href="#">7</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'8')" href="#">8</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'9')" href="#">9</a></div>
+                </div>
+                <div class="five columns"></div>
+            </div>
+            <div class="row">
+                <div class="four columns"></div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'*')" href="#">*</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'0')" href="#">0</a></div>
+                </div>
+                <div class="one columns">
+                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'#')" href="#">#</a></div>
+                </div>
+                <div class="five columns"></div>
+            </div>
+            <div class="row">
+                <div class="four columns"></div>
+                <div class="three columns" style="text-align:center;">
+                    <div class="append field">
+                        <input class="normal text input" type="password" placeholder="pin code" disabled="disabled" data-bind="value:currentPin"/>
+                        <div class="medium primary btn"><a href="#" data-bind="click:resetPin">X</a></div>
+                    </div>
+                </div>
+                <div class="five columns"></div>
+            </div>
+
+            <!-- pin codes management -->
+            <div class="section row">
+                <i class="icon-key"></i>
+                <span>Pin code managements</span>:
+            </div>
+            <div class="row">
+                <span>TODO</span>
+            </div>
+
+        </div>
+
+        <!-- configuration -->
+        <div class="tab-content">
+
+            <div class="section row">
+                <i class="icon-doc-landscape"></i>
+                <span>Housemodes and zones configuration</span>:
+            </div>
+
+            <!-- HOUSEMODES/ZONES EDITOR -->
+            <div id="housemodeEditor" class="housemode-editor">
+                <div class="row">
+                    <div class="six columns">
+                        <i class="icon-cog"></i><span>Security devices</span>
+                        <div class="device-list security-device-list" data-bind="template: {name:listDeviceTemplate, foreach:triggerableDevices }" style="margin:0px;"></div>
+                    </div>
+                    <div class="six columns">
+                        <i class="icon-bell"></i><span>Alarms</span>
+                        <div class="device-list security-alarm-list" data-bind="template: {name:listDeviceTemplate, foreach:alarmableDevices }" style="margin:0px;"></div>
+                    </div>
+                </div>
+                <div class="row" style="text-align:right; margin-top:10px;">
+                    <div class="medium primary btn icon-left entypo icon-floppy">
+                        <a href="#" data-bind="click:stopEditHousemode">Save</a>
+                    </div>
+                    <div class="medium primary btn icon-left entypo icon-cancel-circled">
+                        <a href="#" data-bind="click:cancelEditHousemode">Cancel</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOUSEMODES/ZONES CONFIG -->
+            <table class="rounded striped" id="securityTable">
+            <thead>
+                <tr>
+                    <th>
+                        <i class="icon-down-dir"></i>Housemodes\Zones<i class="icon-right-dir"></i>
+                    </th>
+                    <ko opts="foreach: zones">
+                    <th style="text-align:center;">
+                        <span data-bind="text: name"></span>
+                        <div class="small primary btn" style="margin-bottom:0px;">
+                            <i data-translateable="true" data-bind="click:$parent.delZone.bind($data,name)" class="icon-cancel" title="Delete zone" alt="Delete zone"></i>
+                        </div>
+                    </th>
+                    </ko>
+                </tr>
+            </thead>
+            <tbody id="housemodesTable" data-bind="foreach: housemodes">
+                <tr data-bind="attr:{'id':name}">
+                    <td>
+                        <span data-bind="text: name" class="housemode"></span>
+                        <br/>
+                        <div class="small default btn">
+                            <i data-translateable="true" data-bind="click:$parent.delHousemode.bind($data,name)" class="icon-cancel" title="Delete housemode" alt="Delete housemode"></i>
+                        </div>
+                        <div class="small default btn">
+                            <i data-translateable="true" data-bind="click:$parent.startEditHousemode.bind($data,name)" class="icon-pencil" title="Edit" alt="Edit"></i>
+                        </div>
+                    </td>
+                    <ko opts="foreach: configs">
+                    <td>
+                        <div class="row">
+                            <div class="one columns ttip" data-tooltip="Delay (s)">
+                                <i class="icon-hourglass"></i>
+                            </div>
+                            <div class="eleven columns">
+                                <div class="picker" style="width:235px;">
+                                    <select class="delay" disabled="disabled" style="cursor:auto;" data-bind="options:$parents[1].possibleDelays, value:$data.delay, optionsText:'label', optionsValue:'value'"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="one columns ttip" data-tooltip="Security devices">
+                                <i class="icon-cog"></i>
+                            </div>
+                            <div class="eleven columns">
+                                <div class="housemode-item-list housemode-device-list" data-bind="template:{name:$parents[1].housemodeDevicesTemplate, foreach:$data.devices}, attr:{'data-hm':$data.hm, 'data-zn':$data.zn}"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="one columns ttip" data-tooltip="Alarms">
+                                <i class="icon-bell"></i>
+                            </div>
+                            <div class="eleven columns">
+                                <div class="housemode-item-list housemode-alarm-list" data-bind="template:{name:$parents[1].housemodeDevicesTemplate, foreach:$data.alarms}, attr:{'data-hm':$data.hm, 'data-zn':$data.zn}"></div>
+                            </div>
+                        </div>
+                    </td>
+                    </ko>
+                </tr>
+            </tbody>
+            </table>
+
+            <div class="row">
+                <div class="six columns">
+                    <div class="append field">
+                        <input class="normal text input" type="text" placeholder="New housemode name" data-bind="value:newHousemode "/>
+                        <div class="medium primary btn"><a data-bind="click:addHousemode" href="#">Add housemode</a></div>
+                    </div>
+                </div>
+                <div class="six columns">
+                    <div class="append field">
+                        <input class="normal text input" type="text" placeholder="New zone name" data-bind="value:newZone "/>
+                        <div class="medium primary btn"><a data-bind="click:addZone" href="#">Add zone</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CONFIG -->
+            <br/>
+            <div class="section row">
+                <i class="icon-key"></i>
+                <span>Security configuration</span>:
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <span>Alarm message to send when alarm is armed</span>
+                </div>
+                <div class="eight columns field">
+                    <input class="wide text input" type="text" placeholder="message" data-bind="value:armedMessage" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <span>Alarm message to send when alarm is disarmed</span>
+                </div>
+                <div class="eight columns field">
+                    <input class="wide text input" type="text" placeholder="message" data-bind="value:disarmedMessage"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                    <span>Default housemode (activated after valid pin is entered)</span>
+                </div>
+                <div class="eight columns field">
+                    <div class="picker">
+                        <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:defaultHousemode"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                </div>
+                <div class="eight columns field">
+                    <div class="medium primary btn icon-left entypo icon-floppy">
+                        <a href="#" data-bind="click:checkPin.bind($data, saveConfig)">Save</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+</div>
+

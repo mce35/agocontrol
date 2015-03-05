@@ -35,6 +35,12 @@ select[multiple] {
     border-radius: 2px;
 }
 
+/* remove too important top margin */
+form > fieldset {
+    margin-top: 0px;
+    padding-top: 10px;
+}
+
 
 /* == 
 ago control Styles 
@@ -726,5 +732,11 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         height:20px;
     }
 
+}
+
+/* Parameter style (used to display configuration page) */
+div.section {
+    margin-bottom: 15px;
+    font-size: 150%;
 }
 

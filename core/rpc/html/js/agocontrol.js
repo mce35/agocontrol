@@ -568,30 +568,6 @@ Agocontrol.prototype = {
                 self.eventHandlers[i](response.result);
             }
     
-            //then process event for the core
-            if (response.result.event == "event.security.countdown" && !securityPromted)
-            {
-                securityPromted = true;
-                var pin = window.prompt("Alarm please entry pin:");
-                var content = {};
-                content.command = "cancel";
-                content.uuid = response.result.uuid;
-                content.pin = pin;
-                self.sendCommand(content, function(res) {
-                    if (res.result.error)
-                    {
-                        notif.error(res.result.error);
-                    }
-                    securityPromted = false;
-                });
-                return;
-            }
-            else if (response.result.event == "event.security.intruderalert")
-            {
-                notif.error("INTRUDER ALERT!");
-                return;
-            }
-
             for ( var i = 0; i < self.devices().length; i++)
             {
                 if (self.devices()[i].uuid == response.result.uuid )
