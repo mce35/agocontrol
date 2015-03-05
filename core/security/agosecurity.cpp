@@ -277,7 +277,7 @@ void AgoSecurity::disableAlarm(std::string zone, std::string housemode)
             //virtual email device
             content["command"] = "sendmail";
             content["uuid"] = alertControllerUuid;
-            content["to"] = "tanguy.bonneau@gmail.com";
+            content["to"] = "TODO";
             content["subject"] = "Agocontrol security";
             content["body"] = message + "[" + zone + "]";
         }
@@ -286,7 +286,7 @@ void AgoSecurity::disableAlarm(std::string zone, std::string housemode)
             //virtual sms device
             content["command"] = "sendsms";
             content["uuid"] = alertControllerUuid;
-            content["to"] = "0660677086";
+            content["to"] = "TODO";
             content["text"] = message + "[" + zone + "]";
         }
         else if( uuid=="push" )
