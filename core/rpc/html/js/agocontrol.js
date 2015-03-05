@@ -118,7 +118,6 @@ Agocontrol.prototype = {
         var p2 = this.updateListing();
 
         // Required but non-dependent
-        this.updateProcessList();
         this.updateFavorites();
 
         return $.when(p1, p2);
@@ -332,6 +331,9 @@ Agocontrol.prototype = {
 
         // Handle dashboards/floorplans
         self.handleDashboards(response.result.floorplans);
+
+        // Devices loaded, we now have systemController property set..via device
+        self.updateProcessList();
     },
 
     // Handle dashboard-part of inventory
