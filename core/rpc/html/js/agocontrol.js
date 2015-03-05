@@ -117,6 +117,10 @@ Agocontrol.prototype = {
         var p1 = this.getInventory();
         var p2 = this.updateListing();
 
+        // Required but non-dependent
+        this.updateProcessList();
+        this.updateFavorites();
+
         return $.when(p1, p2);
     },
 
@@ -259,11 +263,6 @@ Agocontrol.prototype = {
     handleInventory: function(response)
     {
         var self = this;
-
-        // Trigger subsequent remote calls
-        self.updateProcessList();
-        self.updateFavorites();
-        self.updateListing();
 
         //check errors
         if (response != null && response.result.match !== undefined && response.result.match(/^exception/))
