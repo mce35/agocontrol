@@ -10,6 +10,7 @@ Agocontrol.prototype = {
     url: 'jsonrpc',
     multigraphThumbs: [],
     deferredMultigraphThumbs: [],
+    refreshMultigraphThumbsInterval: null,
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
     _getApplications: $.Deferred(),
