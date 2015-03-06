@@ -302,9 +302,11 @@ agocontrol::AgoConnection::AgoConnection(const char *interfacename)
     ::agocontrol::log::log_container::initDefault();
 
     Variant::Map connectionOptions;
-    std::string broker = getConfigSectionOption("system", "broker", "localhost:5672");
-    connectionOptions["username"] = getConfigSectionOption("system", "username", "agocontrol");
-    connectionOptions["password"] = getConfigSectionOption("system", "password", "letmein");
+    ConfigNameList cfgfiles = ConfigNameList(interfacename)
+        .add("system");
+    std::string broker = getConfigSectionOption("system", "broker", "localhost:5672", cfgfiles);
+    connectionOptions["username"] = getConfigSectionOption("system", "username", "agocontrol", cfgfiles);
+    connectionOptions["password"] = getConfigSectionOption("system", "password", "letmein", cfgfiles);
     connectionOptions["reconnect"] = "true";
 
     filterCommands = true; // only pass commands for child devices to handler by default

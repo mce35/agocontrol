@@ -1001,7 +1001,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                     newDevice(internalid, "humiditysensor");
                     break;
                 case S_BARO_V13:
-                    newDevice(internalid, "barometricsensor");
+                    newDevice(internalid, "barometersensor");
                     break;
                 case S_WIND_V13:
                     newDevice(internalid, "windsensor");
@@ -1326,7 +1326,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     newDevice(internalid, "humiditysensor");
                     break;
                 case S_BARO_V14:
-                    newDevice(internalid, "barometricsensor");
+                    newDevice(internalid, "barometersensor");
                     break;
                 case S_WIND_V14:
                     newDevice(internalid, "windsensor");

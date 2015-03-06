@@ -10,6 +10,31 @@ Array.prototype.chunk = function(chunkSize)
 };
 
 /**
+ * Allow adding multiple items to a observableArray in one shot,
+ * without firing an event for each new item
+ */
+ko.observableArray.fn.pushAll = function(valuesToPush) {
+    var underlyingArray = this();
+    this.valueWillMutate();
+    ko.utils.arrayPushAll(underlyingArray, valuesToPush);
+    this.valueHasMutated();
+    return this;  //optional
+};
+
+/**
+ * Remove all items, then adding multiple items to a observableArray in one shot,
+ * without firing an event for each change
+ */
+ko.observableArray.fn.replaceAll = function(valuesToPush) {
+    var underlyingArray = this();
+    this.valueWillMutate();
+    underlyingArray.splice(0, underlyingArray.length);
+    ko.utils.arrayPushAll(underlyingArray, valuesToPush);
+    this.valueHasMutated();
+    return this;  //optional
+};
+
+/**
  * Formats a date object
  * 
  * @param date
@@ -78,6 +103,7 @@ function AgocontrolViewModel()
     self.currentView = ko.observable();
     self.agocontrol = new Agocontrol();
     self.currentModel = null;
+    self.plugins = {};
 
     //disable click event
     self.noclick = function()
@@ -103,9 +129,9 @@ function AgocontrolViewModel()
         location.hash = 'config/' + config.name;
     };
 
-    self.gotoPlugin = function(plugin)
+    self.gotoApplication = function(application)
     {
-        location.hash = 'plugin/' + plugin.name;
+        location.hash = 'app/' + application.name;
     };
 
     self.gotoHelp = function(help)
@@ -133,7 +159,7 @@ function AgocontrolViewModel()
         //load template script file
         $.getScript(template.path+'/template.js' , function()
         {
-            //Load the plugins resources if any
+            //Load the application resources if any
             if( template.resources && ((template.resources.css && template.resources.css.length>0) || (template.resources.js && template.resources.js.length>0)) )
             {
                 var resources = [];
@@ -218,25 +244,30 @@ function AgocontrolViewModel()
         }
     };
 
-    //configure routes using sammy.js framework
-    Sammy(function ()
-    {
-        //load agocontrol inventory
-        self.agocontrol.getInventory(null, false);
-
-        function getDashboard(name)
+    //call afterRender function of plugins if available
+    self.afterRenderPlugins = function() {
+        for( var plugin in self.plugins )
         {
-            var dashboard = null;
-            for( var i=0; i<self.agocontrol.dashboards().length; i++ )
+            if( typeof self.plugins[plugin].afterRender == 'function' )
             {
-                if( self.agocontrol.dashboards()[i].name==name )
-                {
-                    dashboard = self.agocontrol.dashboards()[i];
-                    break;
-                }
+                self.plugins[plugin].afterRender();
             }
-            return dashboard;
-        };
+        }
+    };
+
+
+    var sammyApp;
+    /* Initialize agocontrol inventory.
+     * when basic init is done, fire up sammy app*/
+    self.agocontrol.initialize()
+        .then(function() {
+            sammyApp.run();
+        });
+
+    /* While waiting, configure routes using sammy.js framework */
+    sammyApp = Sammy(function(){
+        //load ui plugins
+        self.plugins = self.agocontrol.initPlugins();
 
         //dashboard loading
         this.get('#dashboard/:name', function()
@@ -249,14 +280,11 @@ function AgocontrolViewModel()
             }
             else
             {
-                var dashboard = getDashboard(this.params.name);
-                if( dashboard )
-                {
+                var dashboard = self.agocontrol.getDashboard(this.params.name)
+                if(dashboard) {
                     var basePath = 'dashboard/custom';
                     self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:false}));
-                }
-                else
-                {
+                }else{
                     notif.fatal('Specified custom dashboard not found!');
                 }
             }
@@ -265,41 +293,29 @@ function AgocontrolViewModel()
         //custom dashboard edition
         this.get('#dashboard/:name/edit', function()
         {
-            var dashboard = getDashboard(this.params.name);
-            if( dashboard )
-            {
+            var dashboard = self.agocontrol.getDashboard(this.params.name)
+            if(dashboard) {
                 var basePath = 'dashboard/custom';
                 self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:true}));
-            }
-            else
-            {
+            }else{
                 notif.fatal('Specified custom dashboard not found!');
             }
         });
 
-        //plugin loading
-        this.get('#plugin/:name', function()
+        //application loading
+        this.get('#app/:name', function()
         {
-            //get plugin infos from members
-            var plugin = null;
-            for( var i=0; i<self.agocontrol.plugins().length; i++ )
-            {
-                if( self.agocontrol.plugins()[i].name==this.params.name )
-                {
-                    //plugin found
-                    plugin = self.agocontrol.plugins()[i];
-                    break;
-                }
-            }
-            if( plugin )
-            {
-                var basePath = "plugins/" + plugin.dir;
-                self.loadTemplate(new Template(basePath, plugin.resources, plugin.template, null));
-            }
-            else
-            {
-                notif.fatal('Specified plugin not found!');
-            }
+            // Apps may be loaded async; getApplication returns a promise
+            self.agocontrol.getApplication(this.params.name)
+                .then(function(application){
+                        var basePath = "applications/" + application.dir;
+                        self.loadTemplate(new Template(basePath, application.resources, application.template, null));
+                    },
+                    function(err){
+                        // XXX: notif is not available here
+                        notif.fatal('Specified application not found!');
+                    }
+                );
         });
 
         //configuration loading
@@ -373,7 +389,8 @@ function AgocontrolViewModel()
         {
             this.app.runRoute('get', '#dashboard/all');
         });
-    }).run();
+    });
+
 
     self.agocontrol.subscribe();
     self.agocontrol.initSpecificKnockoutBindings();

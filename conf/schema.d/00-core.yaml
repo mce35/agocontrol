@@ -244,7 +244,7 @@ devicetypes:
   securitycontroller:
     name: security system
     description: ago control security system module
-    commands: [gethousemode, sethousemode, triggerzone, setzones]
+    commands: [gethousemode, sethousemode, triggerzone, setzones, cancel]
   luacontroller:
     name: lua event scripting
     description: use lua scripts to act on events
@@ -323,6 +323,8 @@ events:
   event.security.countdown.started:
     description: intruder alarm countdown started
     parameters: [zone, delay]
+  event.security.countdown.cancelled:
+    description: intruder alarm countdown cancelled
   event.security.intruderalert:
     description: intruder alarm
     parameters: [zone]

@@ -12,3 +12,4 @@ messagesend/messagesend
 rpc/rpc-htpasswd
 rpc/get_table_lang.cgi
 agocontrol-init-script.sh
+system/agosystem

@@ -1,37 +1,7 @@
-#include <proc/readproc.h>
 #include <boost/algorithm/string/predicate.hpp>
-#include "agoapp.h"
-
+#include "agosystem.h"
 using namespace std;
-using namespace agocontrol;
 namespace fs = ::boost::filesystem;
-
-using namespace agocontrol;
-using namespace qpid::types;
-
-class AgoSystem: public AgoApp {
-private:
-    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
-    void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
-
-    qpid::types::Variant::Map getAgoProcessList();
-    qpid::types::Variant::Map getAgoProcessListDebug(string procName);
-    void fillProcessesStats(qpid::types::Variant::Map& processes);
-    void checkProcessesStates(qpid::types::Variant::Map& processes);
-    uint32_t getCpuTotalTime();
-    void getCpuPercentage(qpid::types::Variant::Map& current, qpid::types::Variant::Map& last, double* ucpu, double* scpu);
-    void printProcess(qpid::types::Variant::Map process);
-    void monitorProcesses();
-    qpid::types::Variant::Map getProcessStructure();
-
-    void setupApp();
-
-    boost::mutex processesMutex;
-    qpid::types::Variant::Map processes;
-    qpid::types::Variant::Map config;
-public:
-    AGOAPP_CONSTRUCTOR(AgoSystem);
-};
 
 const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "agologger.py"};
 const int PROCESS_BLACKLIST_SIZE = sizeof(PROCESS_BLACKLIST)/sizeof(*PROCESS_BLACKLIST);
@@ -50,66 +20,17 @@ void AgoSystem::printProcess(qpid::types::Variant::Map process)
     AGO_DEBUG() << "running=" << process["running"];
     AGO_DEBUG() << "current stats:";
     qpid::types::Variant::Map cs = process["currentStats"].asMap();
+#ifndef FREEBSD
     AGO_DEBUG() << " utime=" << cs["utime"] << " cutime=" << cs["cutime"] << " stime=" << cs["stime"] << " cstime=" << cs["cstime"] << " cpuTotalTime=" << cs["cpuTotalTime"] << " ucpu=" << cs["ucpu"] << " scpu=" << cs["scpu"];
     AGO_DEBUG() << "last stats:";
     qpid::types::Variant::Map ls = process["lastStats"].asMap();
     AGO_DEBUG() << " utime=" << ls["utime"] << " cutime=" << ls["cutime"] << " stime=" << ls["stime"] << " cstime=" << ls["cstime"] << " cpuTotalTime=" << ls["cpuTotalTime"] << " ucpu=" << ls["ucpu"] << " scpu=" << cs["scpu"];
-}
-
-/**
- * Calculates the elapsed CPU percentage between 2 measuring points.
- * CPU usage calculation extracted from https://github.com/fho/code_snippets/blob/master/c/getusage.c
- */
-void AgoSystem::getCpuPercentage(qpid::types::Variant::Map& current, qpid::types::Variant::Map& last, double* ucpu, double* scpu)
-{
-    uint32_t totalTimeDiff = current["cpuTotalTime"].asUint32() - last["cpuTotalTime"].asUint32();
-    *ucpu = 100 * (double)(((current["utime"].asUint64() + current["cutime"].asUint64()) - (last["utime"].asUint64() + last["cutime"].asUint64())) / (double)totalTimeDiff);
-    *scpu = 100 * (double)(((current["stime"].asUint64() + current["cstime"].asUint64()) - (last["stime"].asUint64() + last["cstime"].asUint64())) / (double)totalTimeDiff);
-    //fix wrong cpu usage if process restarted
-    if( *ucpu<0 )
-    {
-        *ucpu = 0;
-    }
-    if( *scpu<0 )
-    {
-        *scpu = 0;
-    }
-}
-
-/**
- * return CPU total time from /proc/stat file
- * @return 0 if error occured
- */
-uint32_t AgoSystem::getCpuTotalTime()
-{
-    uint32_t cpuTotalTime = 0;
-    int i = 0;
-
-    FILE *fstat = fopen("/proc/stat", "r");
-    if (fstat == NULL)
-    {
-        perror("FOPEN ERROR ");
-        fclose(fstat);
-        return 0;
-    }
-    long unsigned int cpu_time[10];
-    bzero(cpu_time, sizeof(cpu_time));
-    if (fscanf(fstat, "%*s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
-                &cpu_time[0], &cpu_time[1], &cpu_time[2], &cpu_time[3],
-                &cpu_time[4], &cpu_time[5], &cpu_time[6], &cpu_time[7],
-                &cpu_time[8], &cpu_time[9]) == EOF)
-    {
-        fclose(fstat);
-        return 0;
-    }
-    fclose(fstat);
-
-    for(i=0; i < 10;i++)
-    {
-        cpuTotalTime += cpu_time[i];
-    }
-
-    return cpuTotalTime;
+#else
+    AGO_DEBUG() << " ucpu=" << cs["ucpu"];
+    AGO_DEBUG() << "last stats:";
+    qpid::types::Variant::Map ls = process["lastStats"].asMap();
+    AGO_DEBUG() << " ucpu=" << ls["ucpu"];
+#endif
 }
 
 /**
@@ -148,45 +69,8 @@ void AgoSystem::fillProcessesStats(qpid::types::Variant::Map& processes)
         processes[it->first] = stats;
     }
 
-    //get processes statistics
-    PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS);
-    proc_t proc_info;
-    memset(&proc_info, 0, sizeof(proc_info));
-    while (readproc(proc, &proc_info) != NULL)
-    {
-        string procName = string(proc_info.cmd);
-        if( processes.find(procName)!=processes.end()  )
-        {
-            qpid::types::Variant::Map stats = processes[procName].asMap();
-            qpid::types::Variant::Map cs = stats["currentStats"].asMap();
-            qpid::types::Variant::Map ls = stats["lastStats"].asMap();
-
-            //update current stats
-            cs["utime"] = (uint64_t)proc_info.utime;
-            cs["stime"] = (uint64_t)proc_info.stime;
-            cs["cutime"] = (uint64_t)proc_info.cutime;
-            cs["cstime"] = (uint64_t)proc_info.cstime;
-            cs["vsize"] = (uint64_t)proc_info.vm_size * 1024;
-            cs["rss"] = (uint64_t)proc_info.vm_rss * 1024;
-            cs["cpuTotalTime"] = (uint32_t)getCpuTotalTime();
-            double ucpu=0, scpu=0;
-            if( ls["utime"].asUint64()!=0 )
-            {
-                getCpuPercentage(cs, ls, &ucpu, &scpu);
-            }
-            cs["ucpu"] = (double)ucpu;
-            cs["scpu"] = (double)scpu;
-
-            //update last stats
-            stats["lastStats"] = cs;
-
-            //finalize
-            stats["currentStats"] = cs;
-            stats["running"] = true;
-            processes[procName] = stats;
-        }
-    }
-    closeproc(proc);
+    // get processes statistics, platform dependent
+    getProcessInfo();
 
     //unlock processes
     processesMutex.unlock();
@@ -299,25 +183,29 @@ qpid::types::Variant::Map AgoSystem::getProcessStructure()
     qpid::types::Variant::Map stats;
 
     qpid::types::Variant::Map currentStats;
+#ifndef FREEBSD
     currentStats["utime"] = (uint64_t)0;
     currentStats["cutime"] = (uint64_t)0;
     currentStats["stime"] = (uint64_t)0;
     currentStats["cstime"] = (uint64_t)0;
+    currentStats["cpuTotalTime"] = (uint32_t)0;
+#endif
     currentStats["vsize"] = (uint64_t)0;
     currentStats["rss"] = (uint64_t)0;
-    currentStats["cpuTotalTime"] = (uint32_t)0;
     currentStats["ucpu"] = (uint32_t)0;
     currentStats["scpu"] = (uint32_t)0;
     stats["currentStats"] = currentStats;
 
     qpid::types::Variant::Map lastStats;
+#ifndef FREEBSD
     lastStats["utime"] = (uint64_t)0;
     lastStats["cutime"] = (uint64_t)0;
     lastStats["stime"] = (uint64_t)0;
     lastStats["cstime"] = (uint64_t)0;
+    lastStats["cpuTotalTime"] = (uint32_t)0;
+#endif
     lastStats["vsize"] = (uint64_t)0;
     lastStats["rss"] = (uint64_t)0;
-    lastStats["cpuTotalTime"] = (uint32_t)0;
     lastStats["ucpu"] = (uint32_t)0;
     lastStats["scpu"] = (uint32_t)0;
     stats["lastStats"] = lastStats;
@@ -373,6 +261,21 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
             }
             ++it;
         }
+    }else {
+        // Temp dummy
+        qpid::types::Variant::Map stats = getProcessStructure();
+        output["agoresolver"] = stats;
+
+        stats = getProcessStructure();
+        output["agorpc"] = stats;
+
+        stats = getProcessStructure();
+        output["agoscenario"] = stats;
+
+        stats = getProcessStructure();
+        output["agoevent"] = stats;
+        stats = getProcessStructure();
+        output["agotimer"] = stats;
     }
 
     //append qpid
@@ -381,13 +284,6 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
     AGO_INFO() << " - qpidd";
 
     return output;
-}
-
-/**
- * Event handler
- */
-void AgoSystem::eventHandler(std::string subject, qpid::types::Variant::Map content)
-{
 }
 
 /**
@@ -506,6 +402,7 @@ void AgoSystem::setupApp()
         config["monitored"] = monitored;
         variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
     }
+
     if( config["memoryThreshold"].isVoid() )
     {
         config["memoryThreshold"] = 0;

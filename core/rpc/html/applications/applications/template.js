@@ -1,7 +1,7 @@
 /**
- * List of available plugins
+ * List of available applications
  */
-function Plugins(agocontrol)
+function Applications(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
@@ -10,23 +10,23 @@ function Plugins(agocontrol)
     
     //filter dashboard that don't need to be displayed
     //need to do that because datatable odd is broken when filtering items using knockout
-    self.plugins = ko.computed(function() {
-        var plugins = [];
-        for( var i=0; i<self.agocontrol.plugins().length; i++ )
+    self.applications = ko.computed(function() {
+        var applications = [];
+        for( var i=0; i<self.agocontrol.applications().length; i++ )
         {
-            if( self.agocontrol.plugins()[i].listable )
+            if( self.agocontrol.applications()[i].listable )
             {
-                plugins.push(self.agocontrol.plugins()[i]);
+                applications.push(self.agocontrol.applications()[i]);
             }
         }
-        return plugins;
+        return applications;
     });
 
     self.initFavorites = ko.computed(function() {
         var favCount = 0;
-        for( var i=0; i<self.agocontrol.plugins().length; i++ )
+        for( var i=0; i<self.agocontrol.applications().length; i++ )
         {
-            if( self.agocontrol.plugins()[i].listable && self.agocontrol.plugins()[i].favorite===true )
+            if( self.agocontrol.applications()[i].listable && self.agocontrol.applications()[i].favorite===true )
             {
                 favCount++;
             }
@@ -35,7 +35,7 @@ function Plugins(agocontrol)
     });
 
     self.grid = new ko.agoGrid.viewModel({
-        data: self.plugins,
+        data: self.applications,
         columns: [
             {headerText:'Name', rowText:'name'},
             {headerText:'Version', rowText:'version'},
@@ -100,7 +100,7 @@ function Plugins(agocontrol)
  */
 function init_template(path, params, agocontrol)
 {
-    var model = new Plugins(agocontrol);
+    var model = new Applications(agocontrol);
     return model;
 }
 

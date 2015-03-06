@@ -26,6 +26,9 @@ function device(agocontrol, obj, uuid) {
     if (this.devicetype == "dimmer" || this.devicetype == "dimmerrgb")
     {
         this.level = ko.observable(currentState);
+        this.state.subscribe(function(v){
+            this.level(v);
+        }, this);
         this.syncLevel = function()
         {
             var content = {};

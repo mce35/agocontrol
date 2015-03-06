@@ -1,0 +1,46 @@
+/*.security-editor {
+    display: none;
+    height: 200px;
+    width: 100%;
+    background-color: #EFEFEF;
+    border: 1px solid #C0C0C0;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}*/
+
+.housemode-editor {
+    display: none;
+    height: 230px;
+    width: 100%;
+    background-color: #EFEFEF;
+    border: 1px solid #C0C0C0;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.housemode-item-list {
+    width: 235px;
+    height: 100px;
+    background-color: #EFEFEF;
+    border: 1px solid #C0C0C0;
+    border-radius: 5px;
+    margin: 2px;
+    padding: 2px;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.housemode-list-active {
+    border: 1px solid #3085D6;
+    overflow:hidden;
+    background-image: url('/img/icon_drop_into.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.housemode-list-hover {
+    background-color: #3085D6;
+}
+

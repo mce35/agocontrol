@@ -61,6 +61,7 @@ IF (FREEBSD)
 	  PLCBUS
 	  zmcam
       onvif
+      MySensors
   )
 ENDIF (FREEBSD)
 

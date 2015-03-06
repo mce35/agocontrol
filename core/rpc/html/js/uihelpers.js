@@ -37,7 +37,7 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
             });
         },
         update : function(element, valueAccessor) {
-            var value = valueAccessor();
+            var value = ko.unwrap(valueAccessor());
             if (isNaN(value))
             {
                 value = 0;

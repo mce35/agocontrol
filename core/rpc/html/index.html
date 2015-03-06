@@ -63,7 +63,7 @@
     <div class="row">
         <a class="toggle" gumby-trigger="#navbar-main-nav #main-nav" href="#"><i class="icon-menu"></i></a>
         <h1 class="three columns logo">
-            <a href="http://www.agocontrol.com" target="_blank"><img src="/img/agocontrol_logo.png" gumby-retina /></a>
+            <a href="http://www.agocontrol.com" target="_blank"><img src="img/agocontrol_logo.png" gumby-retina /></a>
         </h1>
         <nav class="eight columns pull_right">
             <ul id="main-nav">
@@ -80,13 +80,13 @@
                 </li>
                 <li>
                     <a href="#" data-bind="click:$root.noclick">
-                        <i class="icon-archive" title="Plugins"></i>
+                        <i class="icon-archive" title="Applications"></i>
                         <span>Applications</span>
                     </a>
                     <div class="dropdown">
-                        <ul data-bind="foreach: agocontrol.plugins">
+                        <ul data-bind="foreach: agocontrol.applications">
                             <!-- ko if: fav -->
-                                <li><a href="#" data-bind="text:name, click:$root.gotoPlugin"></a></li>
+                                <li><a href="#" data-bind="text:name, click:$root.gotoApplication"></a></li>
                             <!-- /ko -->
                         </ul>
                     </div>
@@ -103,7 +103,7 @@
                             <!-- /ko -->
                             <!-- ko if: subMenus -->
                                 <li>
-                                    <a href="#">
+                                    <a href="#" data-bind="click:$root.noclick">
                                         <span data-bind="text:menu"></span>
                                         <i class="icon-right-open-mini"></i>
                                     </a>
@@ -143,6 +143,9 @@
     </div>
 </nav>
 
+<!-- PLUGINS -->
+<div id="plugins" data-bind="template: {name:'templates/plugins/plugins', data:plugins, afterRender:afterRenderPlugins}"></div>
+
 <!-- CONTENT -->
 <div id="main" data-bind="with:currentView">
     <div class="row" style="min-height:500px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}" >
@@ -153,6 +156,7 @@
 <script type="text/javascript" src="js/device.js"></script>
 <script type="text/javascript" src="js/details.js"></script>
 <script type="text/javascript" src="js/uihelpers.js"></script>
+<script type="text/javascript" src="js/plugins.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
 
 </body>

@@ -117,7 +117,7 @@ try:
             path = os.path.join('/etc/opt/agocontrol/ui/', param+'.json')
             result['result'] = 1
             if not os.path.exists(path):
-                result['content'] = '{}'
+                result['content'] = {}
             else:
                 result['content'] = loadFile(path)
 

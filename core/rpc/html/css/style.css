@@ -35,6 +35,12 @@ select[multiple] {
     border-radius: 2px;
 }
 
+/* remove too important top margin */
+form > fieldset {
+    margin-top: 0px;
+    padding-top: 10px;
+}
+
 
 /* == 
 ago control Styles 
@@ -305,14 +311,12 @@ body {
     border-radius:5px;
     overflow:scroll;
     overflow-x:hidden;
-
-    /*background-image: url('/img/icon_trash-48.png');*/
 }
 
 .device-list-active {
     border:1px solid #3085D6;
     overflow:hidden;
-    background-image: url('/img/icon_trash.png');
+    background-image: url('../img/icon_trash.png');
     background-repeat: no-repeat;
     background-position: center;
 }
@@ -332,6 +336,9 @@ body {
     text-overflow:clip;
     white-space:nowrap;
     background-color:#DFDFDF;
+}
+
+.device-list-item-draggable {
     cursor:move;
 }
 
@@ -524,6 +531,7 @@ div.dashboard-widget-header ul li.dashboard-widget-header-infos {
 
 div.dashboard-widget-content-buttons ul.one_up {
     padding-left:10px;
+    padding-right:10px;
 }
 
 .dashboard-widget-header-infos h3 {
@@ -724,5 +732,11 @@ div.dashboard-widget-content ul li.dashboard-widget-content-button {
         height:20px;
     }
 
+}
+
+/* Parameter style (used to display configuration page) */
+div.section {
+    margin-bottom: 15px;
+    font-size: 150%;
 }
 

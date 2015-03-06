@@ -1,6 +1,7 @@
 //Agocontrol object
 function Agocontrol()
 {
+    this._init();
 };
 
 Agocontrol.prototype = {
@@ -9,18 +10,22 @@ Agocontrol.prototype = {
     url: 'jsonrpc',
     multigraphThumbs: [],
     deferredMultigraphThumbs: [],
+    eventHandlers: [],
+    _allApplications: ko.observableArray([]),
+    _getApplications: $.Deferred(),
+    _favorites: ko.observable(),
+    _noProcesses: ko.observable(false),
 
     //public members
     devices: ko.observableArray([]),
     environment: ko.observableArray([]),
     rooms: ko.observableArray([]),
     schema: ko.observable(),
-    system: ko.observable(), 
+    system: ko.observable(),
     variables: ko.observableArray([]),
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
-
-    plugins: ko.observableArray([]),
+    applications: ko.observableArray([]),
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
@@ -32,20 +37,97 @@ Agocontrol.prototype = {
     dataLoggerController: null,
     systemController: null,
 
-    //send command   
-    sendCommand: function(content, callback, timeout, async)
+    _init : function(){
+        /**
+         * Update application list when we have raw list of application, favorites
+         * and processes list
+         */
+        ko.computed(function(){
+            var allApplications = this._allApplications();
+            var favorites = this._favorites();
+            var processes = this.processes();
+            // Hack to get around lack of process list on FreeBSD
+            var noProcesses = this._noProcesses();
+
+            if(!allApplications.length || !favorites || (!noProcesses && !processes.length))
+            {
+                //console.log("Not all data ready, trying later");
+                return;
+            }
+
+            var applications = [];
+            //always display "application list" app on top of list
+            for( var i=0; i<allApplications.length; i++ )
+            {
+                var application = allApplications[i];
+                if( application.name=='Application list' )
+                {
+                    application.favorite = true; //applications always displayed
+                    application.fav = ko.observable(application.favorite);
+                    applications.push(application);
+                    break;
+                }
+            }
+
+            for( var i=0; i<allApplications.length; i++ )
+            {
+                var application = allApplications[i];
+                var append = false;
+
+                if( application.name!='Application list' )
+                {
+                    application.favorite = !!favorites[application.dir];
+                    if( application.depends===undefined ||
+                            (application.depends!==undefined && $.trim(application.depends).length==0) )
+                    {
+                        append = true;
+                    }
+                    else
+                    {
+                        //check if process is installed (and not if it's currently running!)
+                        var proc = this.findProcess(application.depends);
+                        if( proc )
+                        {
+                            append = true;
+                        }
+                    }
+                }
+
+                if(append)
+                {
+                    application.fav = ko.observable(application.favorite);
+                    applications.push(application);
+                }
+            }
+
+            this.applications(applications);
+            this._getApplications.resolve();
+        }, this);
+    },
+
+    /**
+     * Main entrypoint for application.
+     * Fetches inventory and other important data. The returned deferred
+     * is resolved when basic stuff such as inventory, applications, help pages
+     * etc have been loaded (getInventory + updateListing).
+     *
+     * Application availability is NOT guaranteed to be loaded immediately.
+     */
+    initialize : function() {
+        var p1 = this.getInventory();
+        var p2 = this.updateListing();
+
+        // Required but non-dependent
+        this.updateFavorites();
+
+        return $.when(p1, p2);
+    },
+
+
+    //send command
+    sendCommand: function(content, callback, timeout)
     {
         var self = this;
-
-        if( async===undefined )
-        {
-            async = true;
-        }
-        else
-        {
-            async = false;
-        }
-
         var request = {};
         request.method = "message";
         request.params = {};
@@ -57,7 +139,7 @@ Agocontrol.prototype = {
         request.id = 1;
         request.jsonrpc = "2.0";
 
-        $.ajax({
+        return $.ajax({
             type : 'POST',
             url : self.url,
             data : JSON.stringify(request),
@@ -67,8 +149,7 @@ Agocontrol.prototype = {
                     callback(r);
                 }
             },
-            dataType : "json",
-            async : async
+            dataType : "json"
         });
     },
 
@@ -106,7 +187,7 @@ Agocontrol.prototype = {
     },
 
     //refresh devices list
-    refreshDevices: function(async)
+    refreshDevices: function()
     {
         var self = this;
 
@@ -149,29 +230,32 @@ Agocontrol.prototype = {
                     self.devices.push(new device(self, devs[uuid], uuid));
                 }
             }
-        }, async);
+        });
     },
 
     //refresh dashboards list
-    refreshDashboards: function(async)
+    refreshDashboards: function()
     {
         var self = this;
 
         //TODO for now refresh all inventory
         self.getInventory(function(response) {
-            self.dashboards.removeAll();
-            self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
-            for( uuid in response.result.floorplans )
-            {
-                //add new items
-                var dashboard = response.result.floorplans[uuid];
-                dashboard.uuid = uuid;
-                dashboard.action = '';
-                dashboard.ucName = ucFirst(dashboard.name);
-                dashboard.editable = true;
-                self.dashboards.push(dashboard);
-            }
-        }, async);
+            self.handleDashboards(response.result.floorplan);
+        });
+    },
+
+    //get inventory
+    getInventory: function(callback)
+    {
+        var self = this;
+
+        if( !callback )
+        {
+            callback = self.handleInventory.bind(self);
+        }
+        var content = {};
+        content.command = "inventory";
+        return self.sendCommand(content, callback, 10);
     },
 
     //handle inventory
@@ -245,49 +329,67 @@ Agocontrol.prototype = {
             self.devices.push(new device(self, devs[uuid], uuid));
         }
 
-        //PROCESSES (from agosystem)
+        // Handle dashboards/floorplans
+        self.handleDashboards(response.result.floorplans);
+
+        // Devices loaded, we now have systemController property set..via device
+        self.updateProcessList();
+    },
+
+    // Handle dashboard-part of inventory
+    handleDashboards : function(floorplans) {
+        var dashboards = [];
+        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+        for( uuid in floorplans )
+        {
+            var dashboard = floorplans[uuid];
+            dashboard.uuid = uuid;
+            dashboard.action = '';
+            dashboard.ucName = dashboard.name;
+            dashboard.editable = true;
+            dashboards.push(dashboard);
+        }
+        this.dashboards.replaceAll(dashboards);
+    },
+
+    // Fetch process-list from agosystem
+    updateProcessList : function() {
+        var self = this;
         var content = {};
         content.command = "getprocesslist";
         content.uuid = self.systemController;
         self.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
+                var values = [];
                 for( var procName in res.result )
                 {
                     var proc = res.result[procName];
                     proc.name = procName;
-                    self.processes.push(proc);
+                    values.push(proc);
                 }
+
+                self.processes.pushAll(values);
             }
             else
             {
                 console.error('Unable to get processes list!');
+                self._noProcesses(true);
             }
-        }, 5, false);
-        
-        //LISTING
-        //dashboards
-        self.dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
-        for( uuid in response.result.floorplans )
-        {
-            var dashboard = response.result.floorplans[uuid];
-            dashboard.uuid = uuid;
-            dashboard.action = '';
-            dashboard.ucName = dashboard.name;
-            dashboard.editable = true;
-            self.dashboards.push(dashboard);
-        }
+        }, 5);
+    },
+
+    updateFavorites: function() {
+        var self = this;
 
         //FAVORITES
-        var favorites = {};
         $.ajax({
             url: "cgi-bin/ui.cgi?param=favorites",
-            method: "GET",
-            async: false
+            method: "GET"
         }).done(function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result==1 )
             {
-                favorites = res.content;
+                self._favorites(res.content);
             }
             else
             {
@@ -301,64 +403,25 @@ Agocontrol.prototype = {
                 }
             }
         });
-        
-        $.ajax({
+    },
+
+    updateListing: function(){
+        var self = this;
+        return $.ajax({
             url : "cgi-bin/listing.cgi?get=all",
-            method : "GET",
-            async : false
+            method : "GET"
         }).done(function(result) {
-
-            //PLUGINS
-            //load plugins list at top of menu
-            for( var i=0; i<result.plugins.length; i++ )
+            //APPLICATIONS
+            var applications = [];
+            for( var i=0; i<result.applications.length; i++ )
             {
-                if( result.plugins[i].name=='Application list' )
-                {
-                    var plugin = result.plugins[i];
-                    plugin.ucName = ucFirst(plugin.name);
-                    plugin.favorite = true; //applications always displayed
-                    plugin.fav = ko.observable(plugin.favorite);
-                    self.plugins.push(plugin);
-                    break;
-                }
+                var application = result.applications[i];
+                application.ucName = ucFirst(application.name);
+                applications.push(application);
             }
-            //load all other plugins
-            for( var i=0; i<result.plugins.length; i++ )
-            {
-                if( result.plugins[i].name!='Application list' )
-                {
-                    var append = false;
-                    if( result.plugins[i].depends===undefined || (result.plugins[i].depends!==undefined && $.trim(result.plugins[i].depends).length==0) )
-                    {
-                        append = true;
-                    }
-                    else
-                    {
-                        //check if process is installed (and not if it's currently running!)
-                        var proc = self.findProcess(result.plugins[i].depends);
-                        if( proc )
-                        {
-                            append = true;
-                        }
-                    }
 
-                    if( append )
-                    {
-                        var plugin = result.plugins[i];
-                        plugin.ucName = ucFirst(plugin.name);
-                        if( favorites[plugin.dir]===undefined )
-                        {
-                            plugin.favorite = false;
-                        }
-                        else
-                        {
-                            plugin.favorite = favorites[plugin.dir];
-                        }
-                        plugin.fav = ko.observable(plugin.favorite);
-                        self.plugins.push(plugin);
-                    }
-                }
-            }
+            // Update internal observable
+            self._allApplications(applications);
 
             //CONFIGURATION PAGES
             var categories = {};
@@ -378,6 +441,8 @@ Agocontrol.prototype = {
                 //append page to its category
                 categories[category].push(result.config[i]);
             }
+
+            var configurations = [];
             for( var category in categories )
             {
                 var subMenus = [];
@@ -388,46 +453,57 @@ Agocontrol.prototype = {
                 if( subMenus.length==1 )
                 {
                     //no submenu
-                    self.configurations.push({'menu':subMenus[0], 'subMenus':null});
+                    configurations.push({'menu':subMenus[0], 'subMenus':null});
                 }
                 else
                 {
                     //submenus
-                    self.configurations.push({'menu':category, 'subMenus':subMenus});
+                    configurations.push({'menu':category, 'subMenus':subMenus});
                 }
             }
+            self.configurations.replaceAll(configurations);
 
             //SUPPORTED DEVICES
             self.supported_devices(result.supported)
 
             //HELP PAGES
+            var helps = [];
             for( var i=0; i<result.help.length; i++ )
             {
                 var help = result.help[i];
                 help.url = null;
-                self.helps.push(help);
+                helps.push(help);
             }
-            self.helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
-            self.helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
+            helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
+            helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
+            self.helps.replaceAll(helps);
         });
     },
 
-    //get inventory
-    getInventory: function(callback, async)
-    {
+    getApplication: function(appName) {
         var self = this;
-
-        if( async===undefined )
+        return this._getApplications
+            .then(function(){
+                var apps = self.applications();
+                for(var i=0; i < apps.length; i++) {
+                    if(apps[i].name == appName)
+                    {
+                        return apps[i];
+                    }
+                }
+                return null;
+            });
+    },
+    getDashboard:function(name){
+        var dashboards = this.dashboards();
+        for( var i=0; i < dashboards.length; i++ )
         {
-            async = false;
+            if(dashboards[i].name == name )
+            {
+                return dashboards[i];
+            }
         }
-        if( !callback )
-        {
-            callback = self.handleInventory.bind(self);
-        }
-        var content = {};
-        content.command = "inventory";
-        self.sendCommand(content, callback, 10, async);
+        return null;
     },
 
     //get event
@@ -435,6 +511,7 @@ Agocontrol.prototype = {
     {
         var self = this;
 
+        // Long-poll for events
         var request = {};
         request.method = "getevent";
         request.params = {};
@@ -448,7 +525,6 @@ Agocontrol.prototype = {
             url: self.url,
             data: JSON.stringify(request),
             dataType: 'json',
-            async: true,
             success: function(data, textStatus, jqXHR)
             {
                 //request succeed
@@ -488,29 +564,12 @@ Agocontrol.prototype = {
 
         if( requestSucceed )
         {
-            if (response.result.event == "event.security.countdown" && !securityPromted)
+            //send event to other handlers
+            for( var i=0; i<self.eventHandlers.length; i++ )
             {
-                securityPromted = true;
-                var pin = window.prompt("Alarm please entry pin:");
-                var content = {};
-                content.command = "cancel";
-                content.uuid = response.result.uuid;
-                content.pin = pin;
-                self.sendCommand(content, function(res) {
-                    if (res.result.error) 
-                    {
-                        notif.error(res.result.error);
-                    }
-                    securityPromted = false;
-                });
-                return;
+                self.eventHandlers[i](response.result);
             }
-            else if (response.result.event == "event.security.intruderalert")
-            {
-                notif.error("INTRUDER ALERT!");
-                return;
-            }
-
+    
             for ( var i = 0; i < self.devices().length; i++)
             {
                 if (self.devices()[i].uuid == response.result.uuid )
@@ -593,11 +652,21 @@ Agocontrol.prototype = {
         self.getEvent();
     },
 
+    //add event handler
+    //useful to get copy of received event, like in agodrain
+    addEventHandler: function(callback)
+    {
+        var self = this;
+        if( callback )
+        {
+            self.eventHandlers.push(callback);
+        }
+    },
+
     //clean inventory
     cleanInventory: function(data)
     {
         var self = this;
-
         for ( var k in data)
         {
             if (!data[k])
