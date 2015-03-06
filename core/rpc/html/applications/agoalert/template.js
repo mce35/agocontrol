@@ -7,9 +7,6 @@ function agoAlertPlugin(devices, agocontrol)
     //members
     var self = this;
     self.agocontrol = agocontrol;
-    self.gtalkStatus = ko.observable(self.gtalkStatus);
-    self.gtalkUsername = ko.observable(self.gtalkUsername);
-    self.gtalkPassword = ko.observable(self.gtalkPassword);
     self.smsStatus = ko.observable(self.smsStatus);
     self.selectedSmsProvider = ko.observable(self.selectedSmsProvider);
     self.twelvevoipUsername = ko.observable(self.twelvevoipUsername);
@@ -55,12 +52,6 @@ function agoAlertPlugin(devices, agocontrol)
         self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                self.gtalkStatus(res.result.gtalk.configured);
-                if (res.result.gtalk.configured)
-                {
-                    self.gtalkUsername(res.result.gtalk.username);
-                    self.gtalkPassword(res.result.gtalk.password);
-                }
                 self.mailStatus(res.result.mail.configured);
                 if (res.result.mail.configured)
                 {
@@ -253,50 +244,6 @@ function agoAlertPlugin(devices, agocontrol)
             {
                  notif.fatal('#nr');
                  console.log('Agoalert is not responding: Unable to send sms test');
-            }
-        });
-    };
-
-    this.gtalkConfig = function()
-    {
-        var content = {};
-        content.uuid = self.agoalertUuid;
-        content.command = 'setconfig';
-        content.param1 = 'gtalk';
-        content.param2 = self.gtalkUsername();
-        content.param3 = self.gtalkPassword();
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if (res.result.error == 1)
-                {
-                    notif.error(res.result.msg);
-                }
-                self.getAlertsConfigs();
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to save gtalk config');
-            }
-        });
-    };
-
-    this.gtalkTest = function()
-    {
-        var content = {};
-        content.uuid = self.agoalertUuid;
-        content.command = 'test';
-        content.param1 = 'gtalk';
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                notif.info(res.result.msg);
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to send gtalk test');
             }
         });
     };

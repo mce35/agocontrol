@@ -21,15 +21,6 @@ commands:
       to:
         name: recipient
         type: phonenumber
-  sendgtalk:
-    name: send GTalk message
-    parameters:
-      message:
-        name: message
-        type: string
-      to:
-        name: gtalk username
-        type: string
   sendtweet:
     name: send tweet
     parameters:
@@ -404,7 +395,7 @@ devicetypes:
   alertcontroller:
     name: alert controller
     description: internal device to send alerts
-    commands: [sendsms, sendpush, sendmail, sendtweet, sendgtalk]
+    commands: [sendsms, sendpush, sendmail, sendtweet]
   camera:
     name: Camera
     description: Surveillance camera
