@@ -1787,6 +1787,10 @@ int main(int argc, char **argv)
     bool error = false;
     std::string line = "";
     cout << "Waiting for the gateway starts..." << endl << flush;
+    if (line.find("check wires") != string::npos)
+    {
+        AGO_ERROR() << "The serial gateway arduino sketch can't talk to the NRF24 module! Check wires and power supply!";
+    }
     while( !error && line.find("Gateway startup complete")==string::npos )
     {
         line = readLine(&error);
