@@ -640,25 +640,35 @@ function init_template(path, params, agocontrol)
 
     ko.bindingHandlers.blockly = {
         update: function(element, viewmodel) {
-            element.innerHTML = "";
-            //inject blockly
-            Blockly.inject( document.getElementById('blocklyDiv'), {
-                path: "configuration/blockly/blockly/",
-                toolbox: document.getElementById('toolbox')
-            });
-            //init agoblockly
-            if( BlocklyAgocontrol!==null && BlocklyAgocontrol.init!==undefined )
-            {
-                BlocklyAgocontrol.init(agocontrol.schema(), agocontrol.devices(), agocontrol.variables());
-                //handle workspace changing event
-                Blockly.addChangeListener(viewmodel().onWorkspaceChanged);
-            }
-            else
-            {
-                notif.error('Unable to configure Blockly! Event builder shouldn\'t work.');
-            }
-            //init blocks
-            viewmodel().addDefaultBlocks();
+            //hack to make sure Blockly lib is completely evaluated
+            var interval = window.setInterval(function() {
+                if( typeof Blockly != 'object' )
+                {
+                    //Blockly not yet available
+                    return;
+                }
+                window.clearInterval(interval);
+
+                element.innerHTML = "";
+                //inject blockly
+                Blockly.inject( document.getElementById('blocklyDiv'), {
+                    path: "configuration/blockly/blockly/",
+                    toolbox: document.getElementById('toolbox')
+                });
+                //init agoblockly
+                if( BlocklyAgocontrol!==null && BlocklyAgocontrol.init!==undefined )
+                {
+                    BlocklyAgocontrol.init(agocontrol.schema(), agocontrol.devices(), agocontrol.variables());
+                    //handle workspace changing event
+                    Blockly.addChangeListener(viewmodel().onWorkspaceChanged);
+                }
+                else
+                {
+                    notif.error('Unable to configure Blockly! Event builder shouldn\'t work.');
+                }
+                //init blocks
+                viewmodel().addDefaultBlocks();
+            }, 250);
         }
     };
 
