@@ -112,6 +112,12 @@ function device(agocontrol, obj, uuid) {
     //refresh dashboard multigraph thumb
     self.refreshMultigraphThumbs = function()
     {
+        //clear call to this function if no thumb on dashboard
+        if( self.agocontrol.multigraphThumbs.length==0 )
+        {
+            window.clearInterval(self.agocontrol.refreshMultigraphThumbsInterval);
+        }
+
         for( var i=0; i<self.agocontrol.multigraphThumbs.length; i++ )
         {
             self.getMultigraphThumb(self.agocontrol.multigraphThumbs[i]);
@@ -128,10 +134,10 @@ function device(agocontrol, obj, uuid) {
         }
         self.agocontrol.deferredMultigraphThumbs = [];
         //auto resfresh thumbs periodically
-        window.setInterval(self.refreshMultigraphThumbs, 120000);
+        self.agocontrol.refreshMultigraphThumbsInterval = window.setInterval(self.refreshMultigraphThumbs, 120000);
     }
 
-    if (self.devicetype == "multigraph")
+    if( self.devicetype=="multigraph" && $.trim(self.name).length>0 )
     {
         var def = {'internalid':obj.internalid, 'observable':self.multigraphThumb};
         if( self.agocontrol.dataLoggerController )

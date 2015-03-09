@@ -105,7 +105,6 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
     // iterate event map and match for event name
     if( eventmap.size()>0 )
     {
-        qpid::types::Variant::Map inventory = agoConnection->getInventory();
         for (qpid::types::Variant::Map::const_iterator it = eventmap.begin(); it!=eventmap.end(); it++)
         { 
             qpid::types::Variant::Map event;
@@ -126,6 +125,7 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
                     return;
                 }
 
+                qpid::types::Variant::Map inventory; // this will hold the inventory from the resolver if we need it during evaluation
                 qpid::types::Variant::Map criteria; // this holds the criteria evaluation results for each criteria
                 std::string nesting = event["nesting"].asString();
                 if (!event["criteria"].isVoid()) for (qpid::types::Variant::Map::const_iterator crit = event["criteria"].asMap().begin(); crit!= event["criteria"].asMap().end(); crit++)
@@ -163,6 +163,7 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
                         {
                             qpid::types::Variant::Map variables;
                             std::string name = lvalmap["name"];
+                            if (inventory["system"].isVoid()) inventory = agoConnection->getInventory(); // fetch inventory as it is needed for eval but has not yet been pulled
                             if (!inventory["variables"].isVoid())
                             {
                                 variables = inventory["variables"].asMap();
@@ -173,6 +174,7 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
                         else if (lvalmap["type"] == "device")
                         {
                             std::string uuid = lvalmap["uuid"].asString();
+                            if (inventory["system"].isVoid()) inventory = agoConnection->getInventory(); // fetch inventory as it is needed for eval but has not yet been pulled
                             qpid::types::Variant::Map devices = inventory["devices"].asMap();
                             qpid::types::Variant::Map device = devices[uuid].asMap();
                             if (lvalmap["parameter"] == "state")

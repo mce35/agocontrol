@@ -11,7 +11,6 @@
     <div data-bind="jqTabs:{}">
         <ul>
             <li><a href="#tabs-twitter">Twitter</a></li>
-            <li><a href="#tabs-gtalk">GTalk</a></li>
             <li><a href="#tabs-sms">SMS</a></li>
             <li><a href="#tabs-mail">Mail</a></li>
             <li><a href="#tabs-push">Push</a></li>
@@ -59,43 +58,6 @@
             </div>
         </div>
 
-        <div id="tabs-gtalk">
-            <div><div style="float:left; margin-right:10px; margin-top:10px;"><i style="font-size:xx-large" class="icon-gplus"></i></div><div><_h4 data-translateable="true">Google Talk configuration</_h4></div></div>
-            <_span data-translateable="true">Agocontrol needs your Google credentials to connect GTalk and send alerts.</_span>
-            <br/>
-            <ko opts="if: gtalkStatus()"> 
-                <_span data-translateable="true" class="success badge">GTalk is configured</_span>
-            </ko>
-            <ko opts="ifnot: gtalkStatus()"> 
-                <_span data-translateable="true" class="warning badge">GTalk is not configured</_span>
-            </ko>
-            <hr/>
-            <_span data-translateable="true">To connect to service use your usual Google credentials</_span>:
-            <ul>
-                <li class="prepend field">
-                    <_span data-translateable="true" class="adjoined">Username</_span>
-                    <input data-translateable="true" class="normal input" type="text" data-bind="value:gtalkUsername" _placeholder="Google username"/>
-                </li>
-                <li>
-                    <_span data-translateable="true">If you are using 2-Step verification, generate password</_span> <_a data-translateable="true" href="https://www.google.com/settings/security" target="_blank">clicking here</_a>
-                </li>
-                <li class="prepend field">
-                    <_span data-translateable="true" class="adjoined">Password</_span>
-                    <input data-translateable="true" class="normal input" type="password" data-bind="value:gtalkPassword" _placeholder="Google password"/>
-                </li>
-                <li>
-                    <div class="medium default pretty btn">
-                        <_a data-translateable="true" href="#" data-bind="click: gtalkConfig">Save</_a>
-                    </div>
-                </li>
-            </ul>
-            <hr/>
-            <_span data-translateable="true">To send you a test message on GTalk, click on button</_span>
-            <div class="medium default pretty btn">
-                <_a data-translateable="true" href="#" data-bind="click: gtalkTest">Test</_a>
-            </div>
-        </div>
-        
         <div id="tabs-sms">
             <div><div style="float:left; margin-right:10px; margin-top:10px;"><i style="font-size:xx-large" class="icon-comment"></i></div><div><_h4 data-translateable="true">SMS configuration</_h4></div></div>
             <_span data-translateable="true">Agocontrol can send alert through SMS</_span>

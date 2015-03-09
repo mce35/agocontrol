@@ -10,8 +10,6 @@ import threading
 import time
 import logging
 from Queue import Queue
-#gtalk libs
-import xmpp
 #twitter libs
 import tweepy
 #mail libs
@@ -33,12 +31,9 @@ client = None
 twitter = None
 mail = None
 sms = None
-gtalk = None
 hangout = None
 push = None
 
-STATE_GTALK_CONFIGURED = '11'
-STATE_GTALK_NOT_CONFIGURED = '10'
 STATE_MAIL_CONFIGURED = '21'
 STATE_MAIL_NOT_CONFIGURED = '20'
 STATE_SMS_CONFIGURED = '31'
@@ -240,67 +235,6 @@ class SMS12voip(AgoAlert):
         lines = req.readlines()
         req.close()
         logging.debug(url)
-
-class GTalk(AgoAlert):
-    """Class for GTalk message sending"""
-    def __init__(self, username, password):
-        """constructor"""
-        AgoAlert.__init__(self)
-        self.username = username
-        self.password = password
-        self.name = 'gtalk'
-        if username and len(username)>0 and password and len(password)>0:
-            self.__configured = True
-            client.emit_event('alertcontroller', "event.device.statechanged", STATE_GTALK_CONFIGURED, "")
-        else:
-            self.__configured = False
-            client.emit_event('alertcontroller', "event.device.statechanged", STATE_GTALK_NOT_CONFIGURED, "")
-
-    def getConfig(self):
-        configured = 0
-        if self.__configured:
-            configured = 1
-        return {'configured':configured, 'username':self.username, 'password':self.password}
-
-    def setConfig(self, username, password):
-        """set gtalk config
-           @param username: must be your google username (ending with @gmail.com)
-           @param password: your password or 2-step verification token
-           @info generate token here : https://www.google.com/settings/security""" 
-        if not username or len(username)==0 or not password or len(password)==0:
-            logging.error('GTalk: Unable to add message because all parameters are mandatory')
-            return False
-        if not agoclient.set_config_option(self.name, 'username', username, 'alert') or not agoclient.set_config_option(self.name, 'password', password, 'alert'):
-            logging.error('GTalk: unable to save config')
-            return False
-        self.username = username
-        self.password = password
-        self.__configured = True
-        client.emit_event('alertcontroller', "event.device.statechanged", STATE_GTALK_CONFIGURED, "")
-        return True
-
-    def addMessage(self, to, message):
-        """Add GTalk message"""
-        if self.__configured:
-            #check parameters
-            if not to or len(to)==0 or not message or len(message)==0:
-                logging.error('GTalk: Unable to add message because all parameters are mandatory')
-                return False
-            #queue message
-            self._addMessage({'to':to, 'message':message})
-            return True
-        else:
-            logging.error('GTalk: unable to add message because not configured')
-            return False
-
-    def _send_message(self, message):
-       jid = xmpp.protocol.JID( self.username )
-       connection = xmpp.Client('gmail.com', debug=[])
-       #connection = xmpp.Client('gmail.com', debug=[]) #no debug
-       connection.connect( ( 'talk.google.com', 5222 ) )
-       connection.auth( jid.getNode( ), self.password, 'agocontrol' )
-       connection.sendInitPresence()
-       connection.send( xmpp.protocol.Message( message['to'], message['message'], typ='chat' ) )
 
 class Twitter(AgoAlert):
     """Class for tweet sending"""
@@ -761,7 +695,7 @@ class Notifymyandroid(AgoAlert):
 #=================================
 def quit(msg):
     """Exit application"""
-    global sms, hangout, mail, twitter, gtalk, push
+    global sms, hangout, mail, twitter, push
     global client
     if client:
         del client
@@ -778,10 +712,6 @@ def quit(msg):
         hangout.stop()
         del hangout
         hangout = None
-    if gtalk:
-        gtalk.stop()
-        del gtalk
-        gtalk = None
     if mail:
         mail.stop()
         del mail
@@ -800,7 +730,7 @@ def quit(msg):
 def commandHandler(internalid, content):
     """ago command handler"""
     logging.info('commandHandler: %s, %s' % (internalid,content))
-    global twitter, push, mail, gtalk, sms
+    global twitter, push, mail, sms
     global client
     command = None
 
@@ -814,7 +744,7 @@ def commandHandler(internalid, content):
     if command=='status':
         #return module status
         try:
-            return {'error':0, 'msg':'', 'twitter':twitter.getConfig(), 'mail':mail.getConfig(), 'sms':sms.getConfig(), 'gtalk':gtalk.getConfig(), 'push':push.getConfig()}
+            return {'error':0, 'msg':'', 'twitter':twitter.getConfig(), 'mail':mail.getConfig(), 'sms':sms.getConfig(), 'push':push.getConfig()}
         except Exception as e:
             logging.exception('commandHandler: configured exception [%s]' % str(e))
             return {'error':1, 'msg':'Internal error'}
@@ -860,14 +790,6 @@ def commandHandler(internalid, content):
             else:
                 logging.error('commandHandler: parameters missing for SMS')
                 return {'error':1, 'msg':'Internal error'}
-
-        elif type=='gtalk':
-            #test gtalk
-            if gtalk.addMessage(gtalk.username, 'agocontrol gtalk test'):
-                return {'error':0, 'msg':'Gtalk message sent succesfully'}
-            else:
-                logging.error('CommandHandler: failed to send GTalk message [test]')
-                return {'error':1, 'msg':'Failed to send GTalk message'}
 
         elif type=='push':
             #test push
@@ -927,17 +849,6 @@ def commandHandler(internalid, content):
                 return {'error':1, 'msg':'Failed to send email'}
         else:
             logging.error('commandHandler: parameters missing for email')
-            return {'error':1, 'msg':'Internal error'}
-    elif command=='sendgtalk':
-        #send gtalk message
-        if content.has_key('to') and content.has_key('message'):
-            if gtalk.addMessage(content['to'], content['message']):
-                return {'error':0, 'msg':''}
-            else:
-                logging.warning('CommandHandler: failed to send GTalk message [to:%s, message:%s]' % (str(content['to']), str(content['message'])))
-                return {'error':1, 'msg':'Failed to send GTalk message'}
-        else:
-            logging.error('commandHandler: parameters missing for GTalk')
             return {'error':1, 'msg':'Internal error'}
     elif command=='sendpush':
         #send push
@@ -1053,16 +964,6 @@ def commandHandler(internalid, content):
             else:
                 logging.error('commandHandler: parameters missing for Mail config')
                 return {'error':1, 'msg':'Internal error'}
-        elif type=='gtalk':
-            #set gtalk config
-            if content.has_key('param2') and content.has_key('param3'):
-                if gtalk.setConfig(content['param2'], content['param3']):
-                    return {'error':0, 'msg':''}
-                else:
-                    return {'error':1, 'msg':'Unable to save config'}
-            else:
-                logging.error('commandHandler: parameters missing for GTalk config')
-                return {'error':1, 'msg':'Internal error'}
         elif type=='push':
             #set push config
             if content.has_key('param2'):
@@ -1154,8 +1055,6 @@ try:
     configMailTls = agoclient.get_config_option("mail", "tls", "", "alert")
     configTwitterKey = agoclient.get_config_option("twitter", "key", "", "alert")
     configTwitterSecret = agoclient.get_config_option("twitter", "secret", "", "alert")
-    configGTalkUsername = agoclient.get_config_option("gtalk", "username", "", "alert")
-    configGTalkPassword = agoclient.get_config_option("gtalk", "password", "", "alert")
     configSmsProvider = agoclient.get_config_option("sms", "provider", "", "alert")
     config12VoipUsername = agoclient.get_config_option("12voip", "username", "", "alert")
     config12VoipPassword = agoclient.get_config_option("12voip", "password", "", "alert")
@@ -1177,7 +1076,6 @@ try:
         sms = SMS12voip(config12VoipUsername, config12VoipPassword)
     elif configSmsProvider=='freemobile':
         sms = SMSFreeMobile(configFreeMobileUser, configFreeMobileApikey)
-    gtalk = GTalk(configGTalkUsername, configGTalkPassword)
     if configPushProvider=='':
         logging.info('Create dummy push')
         push = Dummy()
@@ -1192,7 +1090,6 @@ try:
     mail.start()
     twitter.start()
     sms.start()
-    gtalk.start()
     push.start()
 
     #add client handlers

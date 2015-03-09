@@ -334,7 +334,7 @@ function SecurityConfig(agocontrol)
 
         //SELECT DELAY
         //enable select elements
-        $('#securityTable > select').removeAttr('disabled').css('cursor', 'pointer');
+        $('#securityTable').find('select').removeAttr('disabled').css('cursor', 'pointer');
     };
 
     //make device items trashables
@@ -444,7 +444,7 @@ function SecurityConfig(agocontrol)
         });
 
         //disable select elements
-        $('#securityTable > select').attr('disabled', 'disabled').css('cursor', 'auto');
+        $('#securityTable').find('select').attr('disabled', 'disabled').css('cursor', 'auto');
     };
 
     //triggerable devices

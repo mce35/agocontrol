@@ -205,6 +205,7 @@ class CommandReceiver():
 		while running:
 			try:
 				message = receiver.fetch(timeout=1)
+                session.acknowledge()
 				if message.content:
 					if 'command' in message.content:
 						if 'uuid' in message.content:
