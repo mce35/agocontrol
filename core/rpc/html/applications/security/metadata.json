@@ -5,6 +5,7 @@
     "template": "html/security",
     "listable": true,
     "category": "security",
+    "depends": "agosecurity",
     "resources": {
         "css": [
             "security.css"
