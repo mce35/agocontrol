@@ -844,6 +844,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         device = new ZWaveNode(nodeinstance, "remote");	
                         device->addValue(label, id);
                         devices.add(device);
+                        AGO_DEBUG() << "Controller: add new remote [" << device->getId() << ", " << device->getDevicetype() << "]";
                         agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                     }
                 }
@@ -856,6 +857,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             {
                                 device = new ZWaveNode(nodeinstance, "thermostat");
                                 devices.add(device);
+                                AGO_DEBUG() << "Thermostat: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             break;
@@ -864,6 +866,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             {
                                 device = new ZWaveNode(nodeinstance, "dimmer");
                                 devices.add(device);
+                                AGO_DEBUG() << "Switch multilevel: add new dimmer [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             break;
@@ -905,6 +908,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "dimmer");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Switch multilevel: add new dimmer [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
@@ -922,6 +926,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "switch");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Switch binary: add new switch [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
@@ -939,6 +944,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(tempstring, "binarysensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Sensor binary: add new binarysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
@@ -950,6 +956,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(tempstring, "brightnesssensor");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Sensor multilevel: add new brightnesssensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             else if (label == "Temperature")
@@ -965,6 +972,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                         device = new ZWaveNode(nodeinstance, "thermostat");	
                                         device->addValue(label, id);
                                         devices.add(device);
+                                        AGO_DEBUG() << "Sensor multilevel: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
                                         agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                     }
                                 }
@@ -973,6 +981,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(tempstring, "temperaturesensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Sensor multilevel: add new temperaturesensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
@@ -988,6 +997,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "multilevelsensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Sensor multilevel: add new multisensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
@@ -999,6 +1009,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(tempstring, "powermeter");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Meter: add new powermeter [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             else if (label == "Energy")
@@ -1006,6 +1017,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(tempstring, "energymeter");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Meter: add new energymeter [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             else
@@ -1020,6 +1032,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "multilevelsensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Meter: add new multilevelsensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
@@ -1037,6 +1050,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(nodeinstance, "drapes");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Basic window covering: add new drapes [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             // Manager::Get()->EnablePoll(id);
@@ -1062,9 +1076,11 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(nodeinstance, "thermostat");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Thermostat: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             break;
+                        case COMMAND_CLASS_ALARM:
                         case COMMAND_CLASS_SENSOR_ALARM:
                             if (label == "Sensor" || label == "Alarm Level" || label == "Flood")
                             {
@@ -1077,6 +1093,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(tempstring, "binarysensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Alarm: add new binarysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
