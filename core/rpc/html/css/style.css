@@ -740,3 +740,12 @@ div.section {
     font-size: 150%;
 }
 
+/* small gumby modal (confirmation popup like) */
+div.small-modal .content {
+    top: 25%;
+    max-height: none;
+    min-height: 10%;
+    height: 200px; /* size for 1 title line + 1 field line + 1 buttons line*/
+    width: 500px;
+}
+
