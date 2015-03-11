@@ -395,27 +395,14 @@ function agoBlocklyPlugin(devices, agocontrol)
         //request script filename if necessary
         if( self.scriptName()==='untitled' )
         {
-            $( "#saveDialog" ).dialog({
+            $("#saveDialog").addClass('active');
+            /*$( "#saveDialog" ).dialog({
                 modal: true,
                 title: "Save script",
                 height: 175,
                 width: 375,
                 buttons: {
                     "Ok": function() {
-                        if( self.scriptName().length===0 || self.scriptName()==='untitled' )
-                        {
-                            //invalid script name
-                            notif.warning('#sn');
-                            self.scriptName('untitled');
-                            $(this).dialog("close");
-                            return;
-                        }
-                        else
-                        {
-                            //save script
-                            self.saveScript();
-                        }
-                        $(this).dialog("close");
                     },
                     "Cancel": function() {
                         notif.info('#ns');
@@ -423,13 +410,35 @@ function agoBlocklyPlugin(devices, agocontrol)
                         return;
                     }
                 }
-            });
+            });*/
         }
         else
         {
             //script name already specified, save script
             self.saveScript();
         }
+    };
+
+    //save dialog ok button
+    self.saveOk = function() {
+        if( self.scriptName().length===0 || self.scriptName()==='untitled' )
+        {
+            //invalid script name
+            notif.warning('#sn');
+            self.scriptName('untitled');
+        }
+        else
+        {
+            //save script
+            self.saveScript();
+        }
+        $("#saveDialog").removeClass('active');
+    };
+
+    //save dialog cancel button
+    self.saveCancel = function() {
+        notif.info('#ns');
+        $("#saveDialog").removeClass('active');
     };
 
     //delete script
@@ -506,7 +515,8 @@ function agoBlocklyPlugin(devices, agocontrol)
         self.loadScripts(function()
         {
             //open script dialog
-            $( "#loadDialog" ).dialog({
+            $("#loadDialog").addClass('active');
+            /*$( "#loadDialog" ).dialog({
                 modal: true,
                 title: "Load script",
                 height: 700,
@@ -516,7 +526,7 @@ function agoBlocklyPlugin(devices, agocontrol)
                         $(this).dialog("close");
                     }
                 }
-            });
+            });*/
         });
     };
 
@@ -537,12 +547,13 @@ function agoBlocklyPlugin(devices, agocontrol)
             content.innerHTML = code;
         }
         //open dialog
-        $( "#luaDialog" ).dialog({
+        $("#luaDialog").addClass('active');
+        /*$( "#luaDialog" ).dialog({
             modal: true,
             title: "LUA script",
             height: 600,
             width: 1024
-        });
+        });*/
     };
 
     //load script
@@ -570,7 +581,8 @@ function agoBlocklyPlugin(devices, agocontrol)
             {
                notif.fatal('#nr');
             }
-            $("#loadDialog").dialog("close");
+            //$("#loadDialog").dialog("close");
+            $("#loadDialog").removeClass('active');
         });
     };
 
@@ -640,11 +652,9 @@ function init_template(path, params, agocontrol)
 
     ko.bindingHandlers.blockly = {
         update: function(element, viewmodel) {
-            //hack to make sure Blockly lib is completely evaluated
             var interval = window.setInterval(function() {
                 if( typeof Blockly != 'object' )
                 {
-                    //Blockly not yet available
                     return;
                 }
                 window.clearInterval(interval);
