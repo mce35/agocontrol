@@ -69,7 +69,7 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
 
                 $(this).parent().toggleClass('active');
 
-                this.$el = $('.content');
+                this.$el = $('.tabs');
                 var index = $(this).parent().index();
                 this.$content = this.$el.find(".tab-content");
                 this.$nav = $(this).parent().find('li');
