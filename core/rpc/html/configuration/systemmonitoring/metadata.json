@@ -9,6 +9,6 @@
             "systemmonitoring.css"
         ]
     },
-    "template": "html/systemMonitoringConfig",
+    "template": "html/systemmonitoring",
     "version": "0.0.1"
 }
