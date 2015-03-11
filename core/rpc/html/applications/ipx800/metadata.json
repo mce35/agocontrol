@@ -1,9 +1,9 @@
 {
-        "name": "IPX800 board",
+        "name": "IPX800",
         "version": "0.0.1",
-        "description": "IPX800 board",
+        "description": "IPX800 relay board",
         "listable": true,
-        "template": "html/ipxConfig",
+        "template": "html/ipx800",
         "depends": "agoipx800.py",
         "resources": {
             "css": [
