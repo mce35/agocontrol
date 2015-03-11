@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 11:38+0100\n"
+"POT-Creation-Date: 2015-03-11 14:49+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -233,7 +233,7 @@ msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
 #: ../applications/zwave/html/zwave.xml.in.h:100
-#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
@@ -939,7 +939,7 @@ msgid "Cancel running controller command"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:91
-#: ../configuration/blockly/html/agoblockly.xml.in.h:27
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr ""
 
@@ -1035,42 +1035,69 @@ msgstr "Script opgeslagen"
 msgid "Script not renamed"
 msgstr "Script niet opgeslagen"
 
+#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+#, fuzzy
+msgid "Event builder by blocks"
+msgstr "Gebeurtenis Configuratie"
+
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15
+#, fuzzy
+msgid "Save your script"
+msgstr "Script opgeslagen"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
+msgid "Load existing scripts"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:18
 msgid "Load"
 msgstr "Laden"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
-msgid "Check"
-msgstr "Controleer"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
-msgid "View"
-msgstr "Bekijk"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:18
-msgid "Clear"
-msgstr "Wissen"
-
 #: ../configuration/blockly/html/agoblockly.xml.in.h:19
-msgid "saved"
+msgid "Check blocks"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:20
+msgid "Check"
+msgstr "Controleer"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+msgid "View your blocks under script format"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+msgid "View"
+msgstr "Bekijk"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
+#, fuzzy
+msgid "Clear all blocks on workspace"
+msgstr "Geen block gedefinieert."
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
+msgid "Clear"
+msgstr "Wissen"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:25
+msgid "saved"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:26
 #, fuzzy
 msgid "modified"
 msgstr "Script gewijzigd"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+#: ../configuration/blockly/html/agoblockly.xml.in.h:27
 #, fuzzy
 msgid "My scripts"
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+#: ../configuration/blockly/html/agoblockly.xml.in.h:28
 #, fuzzy
 msgid "Script import"
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
+#: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
 #: ../configuration/events/html/events.xml.in.h:5
@@ -1080,15 +1107,15 @@ msgstr "Script opgeslagen"
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
+#: ../configuration/blockly/html/agoblockly.xml.in.h:30
 msgid "Export"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:25
+#: ../configuration/blockly/html/agoblockly.xml.in.h:31
 msgid "Enter script name"
 msgstr "Geef script naam"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:26
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 #, fuzzy
 msgid "Script name"
 msgstr "Script opgeslagen"

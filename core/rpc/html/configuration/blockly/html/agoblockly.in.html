@@ -16,7 +16,7 @@
         <_span data-translateable="true" id="rsf">Script not renamed</_span>
     </div>
 
-    <h3>Event configuration using blocks</h3>
+    <_h3>Event builder by blocks</_h3>
 
     <!-- blockly configuration -->
     <xml id="toolbox" style="display: none">
@@ -219,20 +219,20 @@
     
     <!-- blockly -->
     <div class="row" style="margin-bottom:0px">
-        <div class="medium primary btn icon-left icon-install"><_a href="#" title="Save your script" data-bind="click:save" data-translateable="true">Save</_a></div>
-        <div class="medium primary btn icon-left icon-up"><_a href="#" data-translateable="true" title="Load existing script" data-bind="click:load">Load</_a></div>
-        <div class="medium primary btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Check blocks" data-bind="click:check">Check</_a></div>
-        <div class="medium primary btn icon-left icon-eye"><_a data-translateable="true" href="#" title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
-        <div class="medium primary btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
+        <div class="medium primary btn icon-left icon-install"><_a href="#" _title="Save your script" data-bind="click:save" data-translateable="true">Save</_a></div>
+        <div class="medium primary btn icon-left icon-up"><_a href="#" data-translateable="true" _title="Load existing scripts" data-bind="click:load">Load</_a></div>
+        <div class="medium primary btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Check blocks" data-bind="click:check">Check</_a></div>
+        <div class="medium primary btn icon-left icon-eye"><_a data-translateable="true" href="#" _title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
+        <div class="medium primary btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
         <div style="margin-left:20px; display: inline-block;">
             <ko opts="if:scriptSaved">
             <li class="default label">
-                <span data-bind="text:scriptName"></span> <_span data-translate="true">saved</_span>
+                <span data-bind="text:scriptName"></span> <_span data-translateable="true">saved</_span>
             </li>
             </ko>
             <ko opts="ifnot:scriptSaved">
             <li class="warning label">
-                <span data-bind="text:scriptName"></span> <_span data-translate="true">modified</_span>
+                <span data-bind="text:scriptName"></span> <_span data-translateable="true">modified</_span>
             </li>
             </ko>
         </div>
@@ -287,7 +287,7 @@
                 <div class="twelve columns centered text-center">
                     <div class="row">
                         <div class="six columns text-right">
-                            <_span data-translateable="true">Script name</_span>:
+                            <_span data-translateable="true">Script name</_span>
                         </div>
                         <div class="six columns text-left">
                             <div class="field">
@@ -297,7 +297,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row text-center">
                 <div class="medium primary btn icon-left icon-check">
                     <_a href="#" data-translateable="true" data-bind="click:saveOk">Save</_a>
                 </div>

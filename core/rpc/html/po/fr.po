@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 11:38+0100\n"
+"POT-Creation-Date: 2015-03-11 14:49+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -234,7 +234,7 @@ msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
 #: ../applications/zwave/html/zwave.xml.in.h:100
-#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
@@ -937,7 +937,7 @@ msgid "Cancel running controller command"
 msgstr "Annuler la commande en cours"
 
 #: ../applications/zwave/html/zwave.xml.in.h:91
-#: ../configuration/blockly/html/agoblockly.xml.in.h:27
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -1032,39 +1032,63 @@ msgstr "Le script a été renommé."
 msgid "Script not renamed"
 msgstr "Le script n'a pas été renommé"
 
+#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+msgid "Event builder by blocks"
+msgstr "Création d'évènements par blocs"
+
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15
+msgid "Save your script"
+msgstr "Enregistrer le script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
+msgid "Load existing scripts"
+msgstr "Charger les scripts existants"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:18
 msgid "Load"
 msgstr "Ouvrir"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+msgid "Check blocks"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:20
 msgid "Check"
 msgstr "Vérifier"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+msgid "View your blocks under script format"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
 msgid "View"
 msgstr "Voir"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:18
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
+msgid "Clear all blocks on workspace"
+msgstr "Effacer tous les blocs"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
 msgid "Clear"
 msgstr "Effacer"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#: ../configuration/blockly/html/agoblockly.xml.in.h:25
 msgid "saved"
 msgstr "sauvé"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:20
+#: ../configuration/blockly/html/agoblockly.xml.in.h:26
 msgid "modified"
 msgstr "modifié"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+#: ../configuration/blockly/html/agoblockly.xml.in.h:27
 msgid "My scripts"
 msgstr "Mes scripts"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+#: ../configuration/blockly/html/agoblockly.xml.in.h:28
 msgid "Script import"
 msgstr "Importer un script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
+#: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
 #: ../configuration/events/html/events.xml.in.h:5
@@ -1074,15 +1098,15 @@ msgstr "Importer un script"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
+#: ../configuration/blockly/html/agoblockly.xml.in.h:30
 msgid "Export"
 msgstr "Exporter"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:25
+#: ../configuration/blockly/html/agoblockly.xml.in.h:31
 msgid "Enter script name"
 msgstr "Entrer un nom de script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:26
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 msgid "Script name"
 msgstr "Nom du script"
 
