@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 14:49+0100\n"
+"POT-Creation-Date: 2015-03-11 15:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -536,6 +536,61 @@ msgstr ""
 msgid "favorites applications max"
 msgstr ""
 
+#: ../applications/mysensors/html/mysensors.xml.in.h:1
+msgid "mysensorscontroller is not responding. Unable to execute action."
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:2
+msgid "Serial port configured successfully."
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:3
+msgid "Counters resetted successfully."
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:4
+msgid "Device removed successfully."
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:5
+msgid "MySensors configuration"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
+msgid "Configure serial port"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/zwave/html/zwave.xml.in.h:48
+msgid "Set"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
+msgid "Reset device counters"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/zwave/html/zwave.xml.in.h:94
+msgid "Reset"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
+msgid "Reset all counters"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
+msgid "Reset all"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
+msgid "Remove device"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
+#: ../applications/zwave/html/zwave.xml.in.h:52
+msgid "Remove"
+msgstr ""
+
 #: ../applications/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
 msgstr ""
@@ -722,10 +777,6 @@ msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:48
-msgid "Set"
-msgstr ""
-
 #: ../applications/zwave/html/zwave.xml.in.h:49
 msgid "No parameter"
 msgstr ""
@@ -736,10 +787,6 @@ msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:51
 msgid "Remove this node from network"
-msgstr ""
-
-#: ../applications/zwave/html/zwave.xml.in.h:52
-msgid "Remove"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:53
@@ -910,10 +957,6 @@ msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:93
 msgid "Reset controller"
-msgstr ""
-
-#: ../applications/zwave/html/zwave.xml.in.h:94
-msgid "Reset"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:95

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 14:49+0100\n"
+"POT-Creation-Date: 2015-03-11 15:57+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -551,6 +551,61 @@ msgstr "Applications disponibles"
 msgid "favorites applications max"
 msgstr "nombre maximum de favoris"
 
+#: ../applications/mysensors/html/mysensors.xml.in.h:1
+msgid "mysensorscontroller is not responding. Unable to execute action."
+msgstr "MySensor controller ne répond pas. Impossible d'exécuter l'action."
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:2
+msgid "Serial port configured successfully."
+msgstr "Le port série est configuré"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:3
+msgid "Counters resetted successfully."
+msgstr "Les compteurs ont été effacés"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:4
+msgid "Device removed successfully."
+msgstr "Le périphérique a été supprimé"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:5
+msgid "MySensors configuration"
+msgstr "Configuration de MySensors"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
+msgid "Configure serial port"
+msgstr "Configurer le port série du contrôleur"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/zwave/html/zwave.xml.in.h:48
+msgid "Set"
+msgstr "Sauver"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
+msgid "Reset device counters"
+msgstr "Effacer les compteurs du périphérique"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/zwave/html/zwave.xml.in.h:94
+msgid "Reset"
+msgstr "Effacer"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
+msgid "Reset all counters"
+msgstr "Effacer tous les compteurs"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
+msgid "Reset all"
+msgstr "Tout effacer"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
+msgid "Remove device"
+msgstr "Supprimer un périphérique"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
+#: ../applications/zwave/html/zwave.xml.in.h:52
+msgid "Remove"
+msgstr "Supprimer"
+
 #: ../applications/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
 msgstr "zwavecontroller ne répond pas. Impossible d'exécuter l'action."
@@ -749,10 +804,6 @@ msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr "Le paramètre semble invalide. Il est affiché pour information"
 
-#: ../applications/zwave/html/zwave.xml.in.h:48
-msgid "Set"
-msgstr "Sauver"
-
 #: ../applications/zwave/html/zwave.xml.in.h:49
 msgid "No parameter"
 msgstr "Aucun paramètre"
@@ -766,10 +817,6 @@ msgstr ""
 #: ../applications/zwave/html/zwave.xml.in.h:51
 msgid "Remove this node from network"
 msgstr "Supprimer ce périphérique du réseau"
-
-#: ../applications/zwave/html/zwave.xml.in.h:52
-msgid "Remove"
-msgstr "Supprimer"
 
 #: ../applications/zwave/html/zwave.xml.in.h:53
 msgid "Request node configuration parameters"
@@ -949,10 +996,6 @@ msgstr "Cette action annule la commande en cours d'exécution"
 msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
 
-#: ../applications/zwave/html/zwave.xml.in.h:94
-msgid "Reset"
-msgstr "Remise à zéro"
-
 #: ../applications/zwave/html/zwave.xml.in.h:95
 msgid "This action will clear everything from your controller!"
 msgstr ""
@@ -1050,7 +1093,7 @@ msgstr "Ouvrir"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:19
 msgid "Check blocks"
-msgstr ""
+msgstr "Vérifier les blocs"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:20
 msgid "Check"
@@ -1058,7 +1101,7 @@ msgstr "Vérifier"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:21
 msgid "View your blocks under script format"
-msgstr ""
+msgstr "Voir le script généré à partir des blocs"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:22
 msgid "View"

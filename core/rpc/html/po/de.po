@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 14:49+0100\n"
+"POT-Creation-Date: 2015-03-11 15:57+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -548,6 +548,72 @@ msgstr ""
 msgid "favorites applications max"
 msgstr ""
 
+#: ../applications/mysensors/html/mysensors.xml.in.h:1
+#, fuzzy
+msgid "mysensorscontroller is not responding. Unable to execute action."
+msgstr ""
+"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:2
+#, fuzzy
+msgid "Serial port configured successfully."
+msgstr "Script wurde erfolgreich geladen."
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:3
+#, fuzzy
+msgid "Counters resetted successfully."
+msgstr "Aufgabe wurde erfolgreich gelöscht."
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:4
+#, fuzzy
+msgid "Device removed successfully."
+msgstr "Verbindung wurde erfolgreich entfernt"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:5
+#, fuzzy
+msgid "MySensors configuration"
+msgstr "SMS Konfiguration"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#, fuzzy
+msgid "Configure serial port"
+msgstr "USB Port vom Controller"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/zwave/html/zwave.xml.in.h:48
+msgid "Set"
+msgstr "Setzen"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#, fuzzy
+msgid "Reset device counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/zwave/html/zwave.xml.in.h:94
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#, fuzzy
+msgid "Reset all counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#, fuzzy
+msgid "Reset all"
+msgstr "Zurücksetzen"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#, fuzzy
+msgid "Remove device"
+msgstr "Entfernen"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
+#: ../applications/zwave/html/zwave.xml.in.h:52
+msgid "Remove"
+msgstr "Entfernen"
+
 #: ../applications/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
 msgstr ""
@@ -746,10 +812,6 @@ msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:48
-msgid "Set"
-msgstr "Setzen"
-
 #: ../applications/zwave/html/zwave.xml.in.h:49
 #, fuzzy
 msgid "No parameter"
@@ -763,10 +825,6 @@ msgstr ""
 #: ../applications/zwave/html/zwave.xml.in.h:51
 msgid "Remove this node from network"
 msgstr "Diesen Node vom Netzwerk entfernen"
-
-#: ../applications/zwave/html/zwave.xml.in.h:52
-msgid "Remove"
-msgstr "Entfernen"
 
 #: ../applications/zwave/html/zwave.xml.in.h:53
 #, fuzzy
@@ -949,10 +1007,6 @@ msgstr "Dieser Befehl wird alle laufenden Befehle abbrechen"
 #: ../applications/zwave/html/zwave.xml.in.h:93
 msgid "Reset controller"
 msgstr "Controller Zurücksetzen"
-
-#: ../applications/zwave/html/zwave.xml.in.h:94
-msgid "Reset"
-msgstr "Zurücksetzen"
 
 #: ../applications/zwave/html/zwave.xml.in.h:95
 msgid "This action will clear everything from your controller!"
