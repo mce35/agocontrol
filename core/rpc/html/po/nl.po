@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 15:57+0100\n"
+"POT-Creation-Date: 2015-03-11 19:23+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1124,6 +1124,7 @@ msgid "Clear all blocks on workspace"
 msgstr "Geen block gedefinieert."
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
+#: ../help/debug/html/debug.xml.in.h:5
 msgid "Clear"
 msgstr "Wissen"
 
@@ -1568,6 +1569,23 @@ msgstr ""
 #: ../help/system/html/system.xml.in.h:6
 msgid "System"
 msgstr "Systeem"
+
+#: ../help/debug/html/debug.xml.in.h:1
+msgid "Debug tools"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:2
+#, fuzzy
+msgid "Events draining"
+msgstr "Gebeurtenis Configuratie"
+
+#: ../help/debug/html/debug.xml.in.h:3
+msgid "Start"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:4
+msgid "Stop"
+msgstr ""
 
 #~ msgid "Dashboard and Floorplans"
 #~ msgstr "Hoofdpagina en plattegronden"

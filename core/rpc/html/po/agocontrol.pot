@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 15:57+0100\n"
+"POT-Creation-Date: 2015-03-11 19:23+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1072,6 +1072,7 @@ msgid "Clear all blocks on workspace"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
+#: ../help/debug/html/debug.xml.in.h:5
 msgid "Clear"
 msgstr ""
 
@@ -1480,4 +1481,20 @@ msgstr ""
 
 #: ../help/system/html/system.xml.in.h:6
 msgid "System"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:1
+msgid "Debug tools"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:2
+msgid "Events draining"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:3
+msgid "Start"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:4
+msgid "Stop"
 msgstr ""

@@ -1,0 +1,7 @@
+{
+    "name": "Debug",
+    "version": "1.0.0",
+    "description": "Useful tools to debug agocontrol",
+    "template": "html/debug",
+    "listable": true
+}
