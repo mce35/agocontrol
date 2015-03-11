@@ -219,40 +219,52 @@
     
     <!-- blockly -->
     <div class="row" style="margin-bottom:0px">
-        <div class="pretty medium info btn icon-left icon-install"><a href="#" title="Save your script" data-bind="click:save"><_span data-translateable="true">Save</_span> <span data-bind="text:scriptName" style="font-style:bold;"></span></a></div>
-        <div class="pretty medium info btn icon-left icon-up"><_a href="#" data-translateable="true" title="Load existing script" data-bind="click:load">Load</_a></div>
-        <div class="pretty medium info btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Check blocks" data-bind="click:check">Check</_a></div>
-        <div class="pretty medium info btn icon-left icon-eye"><_a data-translateable="true" href="#" title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
-        <div class="pretty medium info btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
+        <div class="medium primary btn icon-left icon-install"><_a href="#" title="Save your script" data-bind="click:save" data-translateable="true">Save</_a></div>
+        <div class="medium primary btn icon-left icon-up"><_a href="#" data-translateable="true" title="Load existing script" data-bind="click:load">Load</_a></div>
+        <div class="medium primary btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Check blocks" data-bind="click:check">Check</_a></div>
+        <div class="medium primary btn icon-left icon-eye"><_a data-translateable="true" href="#" title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
+        <div class="medium primary btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
         <div style="margin-left:20px; display: inline-block;">
             <ko opts="if:scriptSaved">
-            <_li data-translateable="true" class="default label">Script saved</_li>
+            <li class="default label">
+                <span data-bind="text:scriptName"></span> <_span data-translate="true">saved</_span>
+            </li>
             </ko>
             <ko opts="ifnot:scriptSaved">
-            <_li data-translateable="true" class="warning label">Script modified</_li>
+            <li class="warning label">
+                <span data-bind="text:scriptName"></span> <_span data-translate="true">modified</_span>
+            </li>
             </ko>
         </div>
     </div>
     <div data-bind="blockly:blocklyViewModel" id="blocklyDiv" style="height:700px; width:1200px;"></div>
 
     <!-- lua dialog -->
-    <div id="luaDialog">
-        <pre id="luaContent" style="width:100%; height:100%;"></pre>
+    <div class="modal" id="luaDialog" data-bind="gumbyModal:$root">
+        <div class="content">
+            <a class="close switch"><i class="icon-cancel"></i></a>
+            <pre id="luaContent" style="width:100%; height:100%;"></pre>
+        </div>
     </div>
 
     <!-- load dialog -->
-    <div style="display:none;" id="loadDialog">
-        <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px;">
-            <legend><_span data-translateable="true" style="font-weight:bold;">Existing scripts</_span></legend>
-            <div data-bind="agoGrid:grid"></div>
-        </fieldset>
-        <fieldset style="border:1px solid #C0C0C0; padding:5px; border-radius:4px; margin-top:10px;">
-            <legend><_span data-translateable="true" style="font-weight:bold;">Import script</_span></legend>
-            <input id="fileupload" type="file" name="files" data-url="/upload"/>
-            <div id="progress" style="width:100%; border:1px solid #ddd; padding:1px; border-radius:3px; margin-top:10px;">
-                <div class="bar" style="width:0%; height:10px; background:#72D940; border-radius:3px;"></div>
+    <div class="modal" id="loadDialog" data-bind="gumbyModal:$root">
+        <div class="content" data-bind="gumbyTabs:$root">
+            <a class="close switch"><i class="icon-cancel"></i></a>
+            <ul class="tab-nav">
+                <li><_a href="#" data-translateable="true" class="active">My scripts</_a></li>
+                <li><_a href="#" data-translateable="true">Script import</_a></li>
+            </ul>
+            <div class="tab-content active">
+                <div data-bind="agoGrid:grid"></div>
             </div>
-        </fieldset>
+            <div class="tab-content">
+                <input id="fileupload" type="file" name="files" data-url="/upload"/>
+                <div id="progress" style="width:100%; border:1px solid #ddd; padding:1px; border-radius:3px; margin-top:10px;">
+                    <div class="bar" style="width:0%; height:10px; background:#72D940; border-radius:3px;"></div>
+                </div>
+            </div>
+        </div>
     </div>
     <script id="rowTemplate" type="text/html">
         <td class="rename_script" data-bind="attr: {'data-oldname': name}, text: name"></td>
@@ -264,10 +276,35 @@
     </script>
 
     <!-- save dialog -->
-    <div id="saveDialog" style="display:none;">
-        <_span data-translateable="true">Script name</_span>:
-        <div class="field">
-            <input class="input" data-bind="value:scriptName"></input>
+    <div class="modal small-modal" id="saveDialog" data-bind="gumbyModal:$root">
+        <div class="content">
+            <div class="row">
+                <div class="twelve columns centered text-center">
+                    <_h3 data-translateable="true">Enter script name</_h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="twelve columns centered text-center">
+                    <div class="row">
+                        <div class="six columns text-right">
+                            <_span data-translateable="true">Script name</_span>:
+                        </div>
+                        <div class="six columns text-left">
+                            <div class="field">
+                                <input class="input" data-bind="value:scriptName"></input>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="medium primary btn icon-left icon-check">
+                    <_a href="#" data-translateable="true" data-bind="click:saveOk">Save</_a>
+                </div>
+                <div class="medium primary btn icon-left icon-cancel">
+                    <_a href="#" data-translateable="true" data-bind="click:saveCancel">Cancel</_a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
