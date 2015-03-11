@@ -17,6 +17,7 @@ Agocontrol.prototype.unblock = function(el)
 //Init specific knockout bindings
 Agocontrol.prototype.initSpecificKnockoutBindings = function()
 {
+    //dashboard widget slider bindings
     ko.bindingHandlers.slider = {
         init : function(element, valueAccessor, allBindingsAccessor) {
             var options = allBindingsAccessor().sliderOptions || {};
@@ -45,5 +46,39 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
             $(element).slider("value", value);
         }
     };
+
+    //gumby modal bindings
+    ko.bindingHandlers.gumbyModal = {
+        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            //handle close button
+            $('.close.switch').click(function() {
+                $(this).parents('.modal').removeClass('active');
+                return false; //prevent from bubbling
+            });
+        }
+    };
+
+    //gumby tabs bindings
+    ko.bindingHandlers.gumbyTabs = {
+        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            //handle tab changing
+            $('.tab-nav li > a').click(function() {
+                $(".tab-nav li").each(function() {
+                    $(this).removeClass('active');
+                });
+
+                $(this).parent().toggleClass('active');
+
+                this.$el = $('.content');
+                var index = $(this).parent().index();
+                this.$content = this.$el.find(".tab-content");
+                this.$nav = $(this).parent().find('li');
+                this.$nav.add(this.$content).removeClass("active");
+                this.$nav.eq(index).add(this.$content.eq(index)).addClass("active");
+                return false; //prevent from bubbling
+            });
+        }
+    };
+
 };
 
