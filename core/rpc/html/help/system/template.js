@@ -17,7 +17,7 @@ function SystemConfig(agocontrol)
             {headerText:'Process', rowText:'name'},
             {headerText:'Is running', rowText:'running'},
             {headerText:'CPU usage', rowText:'cpu'},
-            {headerText:'Memory (res)', rowText:'memRes'}
+            {headerText:'Memory', rowText:'memRes'}
         ],
         rowTemplate: 'rowTemplate'
     });
