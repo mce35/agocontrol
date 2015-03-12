@@ -369,6 +369,8 @@ bool setConfigSectionOption(const char* section, const char* option, const bool 
 
 
 bool setConfigSectionOption(const char* section, const char* option, const char* value, const char *app) {
+    AGO_DEBUG() << "setConfigSectionOption: section=" << section << " option=" << option << " value=" << value << " app=" << app;
+
     if (augeas==NULL){
         if(!augeas_init()) {
             AGO_ERROR() << "Save failed: augeas not inited";
