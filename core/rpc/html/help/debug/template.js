@@ -20,7 +20,9 @@ function Debug(agocontrol)
             }
             else if( type=='start' || type=='stop' )
             {
-                $('#drainContainer > ul').append('<li style="font-size:small;" class="primary alert">'+d+' : '+JSON.stringify(eve
+                $('#drainContainer > ul').append('<li style="font-size:small;" class="primary alert">'+d+' : '+JSON.stringify(event)+'</i>');
+            }
+        }
     };
 
     //start drain
