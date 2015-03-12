@@ -83,6 +83,7 @@ private:
     void setupApp();
     void cleanupApp();
     string getHRCommandClassId(uint8_t commandClassId);
+    string getHRNotification(Notification::NotificationType notificationType);
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
         , polling(false)
@@ -506,6 +507,106 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
         case COMMAND_CLASS_ZIP_SERVICES:
             output="COMMAND_CLASS_ZIP_SERVICES";
             break;
+        default:
+            output="COMMAND_UNKNOWN";
+    }
+    return output;
+}
+
+/**
+ * Return human readable notification type
+ */
+string AgoZwave::getHRNotification(Notification::NotificationType notificationType)
+{
+    string output;
+    switch( notificationType )
+    {
+        case Notification::Type_ValueAdded:
+            output="Type_ValueAdded";
+            break;
+        case Notification::Type_ValueRemoved:
+            output="Type_ValueRemoved";
+            break;
+        case Notification::Type_ValueChanged:
+            output="Type_ValueChanged";
+            break;
+        case Notification::Type_ValueRefreshed:
+            output="Type_ValueRefreshed";
+            break;
+        case Notification::Type_Group:
+            output="Type_Group";
+            break;
+        case Notification::Type_NodeNew:
+            output="Type_NodeNew";
+            break;
+        case Notification::Type_NodeAdded:
+            output="Type_NodeAdded";
+            break;
+        case Notification::Type_NodeRemoved:
+            output="Type_NodeRemoved";
+            break;
+        case Notification::Type_NodeProtocolInfo:
+            output="Type_NodeProtocolInfo";
+            break;
+        case Notification::Type_NodeNaming:
+            output="Type_NodeNaming";
+            break;
+        case Notification::Type_NodeEvent:
+            output="Type_NodeEvent";
+            break;
+        case Notification::Type_PollingDisabled:
+            output="Type_PollingDisabled";
+            break;
+        case Notification::Type_PollingEnabled:
+            output="Type_PollingEnabled";
+            break;
+        case Notification::Type_SceneEvent:
+            output="Type_SceneEvent";
+            break;
+        case Notification::Type_CreateButton:
+            output="Type_CreateButton";
+            break;
+        case Notification::Type_DeleteButton:
+            output="Type_DeleteButton";
+            break;
+        case Notification::Type_ButtonOn:
+            output="Type_ButtonOn";
+            break;
+        case Notification::Type_ButtonOff:
+            output="Type_ButtonOff";
+            break;
+        case Notification::Type_DriverReady:
+            output="Type_DriverReady";
+            break;
+        case Notification::Type_DriverFailed:
+            output="Type_DriverFailed";
+            break;
+        case Notification::Type_DriverReset:
+            output="Type_DriverReset";
+            break;
+        case Notification::Type_EssentialNodeQueriesComplete:
+            output="Type_EssentialNodeQueriesComplete";
+            break;
+        case Notification::Type_NodeQueriesComplete:
+            output="Type_NodeQueriesComplete";
+            break;
+        case Notification::Type_AwakeNodesQueried:
+            output="Type_AwakeNodesQueried";
+            break;
+        case Notification::Type_AllNodesQueriedSomeDead:
+            output="Type_AllNodesQueriedSomeDead";
+            break;
+        case Notification::Type_AllNodesQueried:
+            output="Type_AllNodesQueried";
+            break;
+        case Notification::Type_Notification:
+            output="Type_Notification";
+            break;
+        case Notification::Type_DriverRemoved:
+            output="Type_DriverRemoved";
+            break;
+        default:
+            output="Type_Unknown";
     }
     return output;
 }
@@ -803,7 +904,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
     // Must do this inside a critical section to avoid conflicts with the main thread
     pthread_mutex_lock( &g_criticalSection );
 
-    AGO_DEBUG() << "Notification " << _notification->GetType() << " received";
+    AGO_DEBUG() << "Notification " << getHRNotification(_notification->GetType()) << " received";
 
     switch( _notification->GetType() )
     {
