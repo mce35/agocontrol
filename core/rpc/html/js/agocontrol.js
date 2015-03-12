@@ -144,11 +144,20 @@ Agocontrol.prototype = {
             type : 'POST',
             url : self.url,
             data : JSON.stringify(request),
-            success : function(r) {
+            success : function(r)
+            {
                 if (callback !== undefined)
                 {
                     callback(r);
                 }
+            },
+            error : function()
+            {
+                //error occured during request
+                console.error('sendCommand failed for:');
+                console.error(content);
+                console.error('with errors:');
+                console.error(arguments);
             },
             dataType : "json"
         });
