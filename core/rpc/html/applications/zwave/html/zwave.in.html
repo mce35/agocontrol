@@ -258,7 +258,7 @@
                 <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
                     <td data-bind="text: id"></td>
                     <td>
-                        <a href="#" data-bind="click: function(data,event) { console.log($index()); $parent.openNodeDetails($index()); }">
+                        <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetails($index()); }">
                         <ko opts="if: product.length>0">
                             <span data-bind="text: manufacturer+' ('+product+')'"></span>
                         </ko>
