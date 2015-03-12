@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 19:23+0100\n"
+"POT-Creation-Date: 2015-03-12 15:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -229,6 +229,7 @@ msgid "Finally click on button to save access code"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
+#: ../applications/security/html/security.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:100
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
@@ -591,6 +592,113 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
+#. security tabs
+#: ../applications/security/html/security.xml.in.h:2
+msgid "Security"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:3
+#: ../applications/zwave/html/zwave.xml.in.h:23
+msgid "Status"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:4
+msgid "Pin configuration"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:5
+msgid "Housemodes/zones Configuration"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:6
+msgid "Security Configuration"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:7
+msgid "Change current housemode"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:9
+msgid "Change pin code"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:10
+msgid "Security devices"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:11
+msgid "Alarms"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:12
+#: ../applications/zwave/html/zwave.xml.in.h:91
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+msgid "Cancel"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:13
+msgid "Housemodes\\Zones"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:14
+msgid "Delete zone"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:15
+msgid "Delete housemode"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:16
+#: ../configuration/dashboards/html/dashboards.xml.in.h:4
+#: ../configuration/events/html/events.xml.in.h:4
+#: ../configuration/scenarios/html/scenarios.xml.in.h:6
+msgid "Edit"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:17
+msgid "Delay (s)"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:18
+msgid "Add new housemode"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:19
+msgid "New housemode name"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:20
+msgid "Add housemode"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:21
+msgid "Add new zone"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:22
+msgid "New zone name"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:23
+msgid "Add zone"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:24
+msgid "Alarm message to send when alarm is armed"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:25
+msgid "message"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:26
+msgid "Alarm message to send when alarm is disarmed"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:27
+msgid "Default housemode (activated after valid pin is entered)"
+msgstr ""
+
 #: ../applications/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
 msgstr ""
@@ -677,10 +785,6 @@ msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:22
 msgid "Infos"
-msgstr ""
-
-#: ../applications/zwave/html/zwave.xml.in.h:23
-msgid "Status"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:24
@@ -944,11 +1048,6 @@ msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:90
 msgid "Cancel running controller command"
-msgstr ""
-
-#: ../applications/zwave/html/zwave.xml.in.h:91
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
-msgid "Cancel"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:92
@@ -1222,12 +1321,6 @@ msgstr ""
 #: ../configuration/scenarios/html/scenarios.xml.in.h:3
 #: ../configuration/variables/html/variables.xml.in.h:3
 msgid "No"
-msgstr ""
-
-#: ../configuration/dashboards/html/dashboards.xml.in.h:4
-#: ../configuration/events/html/events.xml.in.h:4
-#: ../configuration/scenarios/html/scenarios.xml.in.h:6
-msgid "Edit"
 msgstr ""
 
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6

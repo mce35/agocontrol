@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-11 19:23+0100\n"
+"POT-Creation-Date: 2015-03-12 15:22+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -230,6 +230,7 @@ msgid "Finally click on button to save access code"
 msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
+#: ../applications/security/html/security.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:100
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
@@ -614,6 +615,122 @@ msgstr "Entfernen"
 msgid "Remove"
 msgstr "Entfernen"
 
+#. security tabs
+#: ../applications/security/html/security.xml.in.h:2
+msgid "Security"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:3
+#: ../applications/zwave/html/zwave.xml.in.h:23
+msgid "Status"
+msgstr "Status"
+
+#: ../applications/security/html/security.xml.in.h:4
+#, fuzzy
+msgid "Pin configuration"
+msgstr "Push Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:5
+#, fuzzy
+msgid "Housemodes/zones Configuration"
+msgstr "Ereignis Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:6
+msgid "Security Configuration"
+msgstr "Security Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:7
+#, fuzzy
+msgid "Change current housemode"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:9
+#, fuzzy
+msgid "Change pin code"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:10
+#, fuzzy
+msgid "Security devices"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:11
+msgid "Alarms"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:12
+#: ../applications/zwave/html/zwave.xml.in.h:91
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: ../applications/security/html/security.xml.in.h:13
+msgid "Housemodes\\Zones"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:14
+#, fuzzy
+msgid "Delete zone"
+msgstr "Löschen"
+
+#: ../applications/security/html/security.xml.in.h:15
+#, fuzzy
+msgid "Delete housemode"
+msgstr "Hausmodus hinzufügen"
+
+#: ../applications/security/html/security.xml.in.h:16
+#: ../configuration/dashboards/html/dashboards.xml.in.h:4
+#: ../configuration/events/html/events.xml.in.h:4
+#: ../configuration/scenarios/html/scenarios.xml.in.h:6
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: ../applications/security/html/security.xml.in.h:17
+msgid "Delay (s)"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:18
+msgid "Add new housemode"
+msgstr "Neuen Hausmodus hinzufügen"
+
+#: ../applications/security/html/security.xml.in.h:19
+#, fuzzy
+msgid "New housemode name"
+msgstr "Neuer Raumname"
+
+#: ../applications/security/html/security.xml.in.h:20
+msgid "Add housemode"
+msgstr "Hausmodus hinzufügen"
+
+#: ../applications/security/html/security.xml.in.h:21
+msgid "Add new zone"
+msgstr "Neue Zone hinzufügen"
+
+#: ../applications/security/html/security.xml.in.h:22
+#, fuzzy
+msgid "New zone name"
+msgstr "Neuer Raumname"
+
+#: ../applications/security/html/security.xml.in.h:23
+msgid "Add zone"
+msgstr "Neue Zone hinzufügen"
+
+#: ../applications/security/html/security.xml.in.h:24
+msgid "Alarm message to send when alarm is armed"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:25
+msgid "message"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:26
+msgid "Alarm message to send when alarm is disarmed"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:27
+msgid "Default housemode (activated after valid pin is entered)"
+msgstr ""
+
 #: ../applications/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
 msgstr ""
@@ -702,10 +819,6 @@ msgstr "Controller zurücksetzen (alle Konfigurationen gehen verloren!)"
 #: ../applications/zwave/html/zwave.xml.in.h:22
 msgid "Infos"
 msgstr "Informationen"
-
-#: ../applications/zwave/html/zwave.xml.in.h:23
-msgid "Status"
-msgstr "Status"
 
 #: ../applications/zwave/html/zwave.xml.in.h:24
 msgid "Actions"
@@ -995,11 +1108,6 @@ msgstr "Erweiterte Controller Befehle"
 msgid "Cancel running controller command"
 msgstr "Laufenden Controller Befehl abbrechen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:91
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
-msgid "Cancel"
-msgstr "Abbrechen"
-
 #: ../applications/zwave/html/zwave.xml.in.h:92
 msgid "This action will cancel currently running command"
 msgstr "Dieser Befehl wird alle laufenden Befehle abbrechen"
@@ -1288,12 +1396,6 @@ msgstr "Ja"
 #: ../configuration/variables/html/variables.xml.in.h:3
 msgid "No"
 msgstr "Nein"
-
-#: ../configuration/dashboards/html/dashboards.xml.in.h:4
-#: ../configuration/events/html/events.xml.in.h:4
-#: ../configuration/scenarios/html/scenarios.xml.in.h:6
-msgid "Edit"
-msgstr "Bearbeiten"
 
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
 #, fuzzy
@@ -1613,9 +1715,6 @@ msgstr ""
 #~ msgid "Cloud"
 #~ msgstr "Cloud"
 
-#~ msgid "Security"
-#~ msgstr "Security"
-
 #~ msgid "Plugins"
 #~ msgstr "Plugins"
 
@@ -1667,26 +1766,8 @@ msgstr ""
 #~ msgid "Description"
 #~ msgstr "Beschreibung"
 
-#~ msgid "Security Configuration"
-#~ msgstr "Security Konfiguration"
-
-#~ msgid "Add new zone"
-#~ msgstr "Neue Zone hinzufügen"
-
 #~ msgid "Input zone name"
 #~ msgstr "Namen der Zone eingeben"
-
-#~ msgid "Add zone"
-#~ msgstr "Neue Zone hinzufügen"
-
-#~ msgid "Add new housemode"
-#~ msgstr "Neuen Hausmodus hinzufügen"
-
-#~ msgid "Add housemode"
-#~ msgstr "Hausmodus hinzufügen"
-
-#~ msgid "Change housemode"
-#~ msgstr "Aktiven Hausmodus setzen"
 
 #~ msgid "Please enter a zone name."
 #~ msgstr "Bitte Zonen Namen eingeben"
