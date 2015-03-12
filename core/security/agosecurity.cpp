@@ -813,8 +813,7 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         {
             if( !content["pin"].isVoid() )
             {
-                std::string pin = content["pin"].asString();
-                if( checkPin(pin) )
+                if( checkPin(content["pin"].asString() ) )
                 {
                     returncode["code"]="success";
                     returnval["result"] = returncode;
@@ -837,19 +836,30 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         }
         else if( content["command"]=="setpin" )
         {
-            if( !content["pin"].isVoid() )
+            if( !content["pin"].isVoid() && !content["newpin"].isVoid() )
             {
-                std::string pin = content["pin"].asString();
-                if( setPin(pin) )
+                //check pin
+                if (checkPin(content["pin"].asString()))
                 {
-                    returncode["code"]="success";
-                    returnval["result"] = returncode;
+                    if( setPin(content["newpin"].asString()) )
+                    {
+                        returncode["code"]="success";
+                        returnval["result"] = returncode;
+                    }   
+                    else
+                    {
+                        AGO_ERROR() << "Command 'setpin': unable to save pin";
+                        returncode["message"] = "Unable to save new pin code";
+                        returncode["code"] = "error.security.setpin";
+                        returnval["error"] = returncode;
+                    }
                 }
                 else
                 {
-                    AGO_ERROR() << "Command 'setpin': unable to save pin";
-                    returncode["message"] = "Unable to save new pin code";
-                    returncode["code"] = "error.security.setpin";
+                    //wrong pin specified
+                    AGO_WARNING() << "Command 'setpin': invalid pin";
+                    returncode["message"] = "Invalid pin specified";
+                    returncode["code"] = "error.security.invalidpin";
                     returnval["error"] = returncode;
                 }
             }
