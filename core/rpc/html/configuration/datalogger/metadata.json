@@ -3,7 +3,7 @@
         "version": "0.0.2",
         "description": "Datalogger configuration",
         "listable": true,
-        "template": "html/dataloggerConfig",
+        "template": "html/datalogger",
         "depends": "agodatalogger",
         "category": "core",
         "resources": {

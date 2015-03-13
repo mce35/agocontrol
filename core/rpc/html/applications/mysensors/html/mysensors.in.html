@@ -1,0 +1,56 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+        <_span id="nr" data-translateable="true">mysensorscontroller is not responding. Unable to execute action.</_span>
+        <_span id="sp" data-translateable="true">Serial port configured successfully.</_span>
+        <_span id="rc" data-translateable="true">Counters resetted successfully.</_span>
+        <_span id="ds" data-translateable="true">Device removed successfully.</_span>
+    </div>
+
+    <_h3 data-translateable="true">MySensors configuration</_h3>
+    <div class="row">
+        <div class="four columns text-right">
+            <_span data-translateable="true">Configure serial port</_span>
+        </div>
+        <div class="three columns text-left field">
+            <input class="wide input" type="text" placeholder="/dev/ttyACM0" />
+        </div>
+        <div class="three columns text-left">
+            <div data-bind="event:{mousedown:setPort}" class="medium primary btn"><_a data-translateable="true" href="#">Set</_a></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns text-right">
+            <_span data-translateable="true">Reset device counters</_span>
+        </div>
+        <div class="three columns text-left field">
+            <div class="picker">
+                <select class="padding-right: 10px;" data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedCountersDevice"></select>
+            </div>
+        </div>
+        <div class="three columns text-left">
+            <div data-bind="event:{mousedown:resetCounters}" class="medium primary btn"><_a data-translateable="true" href="#">Reset</_a></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns text-right">
+            <_span data-translateable="true">Reset all counters</_span>
+        </div>
+        <div class="three columns text-left">
+            <div data-bind="event:{mousedown:resetAllCounters}" class="medium primary btn"><_a data-translateable="true" href="#">Reset all</_a></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns text-right">
+            <_span data-translateable="true">Remove device</_span>
+        </div>
+        <div class="three columns text-left field">
+            <div class="picker">
+                <select class="padding-right: 10px;" data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedRemoveDevice"></select>
+            </div>
+        </div>
+        <div class="three columns text-left">
+            <div data-bind="event:{mousedown:removeDevice}" class="medium primary btn"><_a data-translateable="true" href="#">Remove</_a></div>
+        </div>
+    </div>
+</div>
+

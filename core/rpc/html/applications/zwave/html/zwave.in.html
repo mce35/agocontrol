@@ -109,7 +109,7 @@
                                     <td><span data-bind="text:asso"/></td>
                                     <td>
                                         <div class="pretty medium default btn">
-                                            <i data-translateable="true" data-bind="click: $root.removeAssociation" class="icon-cancel" title="Delete node association" alt="Delete node association"></i>
+                                            <_i data-translateable="true" data-bind="click: $root.removeAssociation" class="icon-cancel" _title="Delete node association" _alt="Delete node association"></_i>
                                         </div>
                                     </td>
                                 </tr>
@@ -121,7 +121,7 @@
                                     </td>
                                     <td>
                                         <div class="pretty medium default btn">
-                                            <i data-translateable="true" data-bind="click: $root.addAssociation" class="icon-plus" title="Add association" alt="Add association"></i>
+                                            <_i data-translateable="true" data-bind="click: $root.addAssociation" class="icon-plus" _title="Add association" _alt="Add association"></_i>
                                         </div>
                                     </td>
                                 </tr>
@@ -148,12 +148,12 @@
                     <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
                         <td>
                         <ko opts="if: help.length>0">
-                            <div data-translateable="true" class="ttip" data-bind="attr:{'data-tooltip':help}"><i class="icon-help-circled"/></div>
+                            <div class="ttip" data-bind="attr:{'data-tooltip':help}"><i class="icon-help-circled"/></div>
                         </ko>
                         </td>
                         <td>
                             <ko opts="if: invalid==1">
-                                <div data-translateable="true" class="ttip" data-tooltip="This parameter has something invalid. It is displayed only for information."><i class="icon-alert" style="color:red"/></div>
+                                <div data-translateable="true" class="ttip" _data-tooltip="This parameter has something invalid. It is displayed only for information."><i class="icon-alert" style="color:red"/></div>
                             </ko>
                             <ko opts="if: type!='button'">
                                 <ko opts="if: units.length==0">
@@ -185,7 +185,7 @@
                         </td>
                         <td>
                             <ko opts="if: invalid==0">
-                            <button data-bind="click:$parent.setParameter">Set</button>
+                            <_button data-translateable="true" data-bind="click:$parent.setParameter">Set</_button>
                             </ko>
                         </td>
                     </tr>
@@ -194,7 +194,7 @@
                 <ko opts="if: nodeParameters().length==0">
                 <tbody>
                     <tr>
-                        <td colspan="4">No parameter</td>
+                        <_td data-translateable="true" colspan="4">No parameter</_td>
                     </tr>
                 </tbody>
                 </ko>
@@ -211,7 +211,9 @@
                     </li>
                     <li>
                         <_span data-translateable="true">Request node configuration parameters</_span>
-                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="pretty medium primary btn"><_a style="color:white;" data-bind="click:$root.noclick" href="#">Request parameters</_a></div>
+                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="pretty medium primary btn">
+                            <_a data-translateable="true" style="color:white;" data-bind="click:$root.noclick" href="#">Request parameters</_a>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -233,7 +235,7 @@
     <!-- main tabs  -->
     <div data-bind="jqTabs:{}">
         <ul>
-            <li><_a href="#main-devices" data-translateable="true">Devices</_a></li>
+            <li><_a data-translateable="true" href="#main-devices">Devices</_a></li>
             <li><_a data-translateable="true" href="#main-graph">Dependencies</_a></li>
             <li><_a data-translateable="true" href="#main-general">General</_a></li>
             <li><_a data-translateable="true" href="#main-actions">Actions</_a></li>
@@ -245,18 +247,18 @@
             <table style="width:850px;" class="agoTable">
                 <thead>
                 <tr>
-                    <td>Id</td>
-                    <td>Name</td>
-                    <td>Type</td>
-                    <td>Awake</td>
-                    <td>Failed</td>
+                    <_td data-translateable="true">Id</_td>
+                    <_td data-translateable="true">Name</_td>
+                    <_td data-translateable="true">Type</_td>
+                    <_td data-translateable="true">Awake</_td>
+                    <_td data-translateable="true">Failed</_td>
                 </tr>
                 </thead>
                 <tbody data-bind="foreach: nodes">
                 <tr data-bind="css: { 'odd': ($index() % 2 == 0), 'even': ($index() % 2 == 1) }">
                     <td data-bind="text: id"></td>
                     <td>
-                        <a href="#" data-bind="click: function(data,event) { console.log($index()); $parent.openNodeDetails($index()); }">
+                        <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetails($index()); }">
                         <ko opts="if: product.length>0">
                             <span data-bind="text: manufacturer+' ('+product+')'"></span>
                         </ko>
@@ -270,16 +272,16 @@
                     </td>
                     <td data-bind="text: type"></td>
                     <ko opts="if: status.awake==1">
-                    <td><span>True</span></td>
+                    <td><_span data-translateable="true">True</_span></td>
                     </ko>
                     <ko opts="if: status.awake==0">
-                    <td><span>False</span></td>
+                    <td><_span data-translateable="true">False</_span></td>
                     </ko>
                     <ko opts="if: status.failed==1">
-                    <td><span style="color:red;">True</span></td>
+                    <td><_span data-translateable="true" style="color:red;">True</_span></td>
                     </ko>
                     <ko opts="if: status.failed==0">
-                    <td><span>False</span></td>
+                    <td><_span data-translateable="true">False</_span></td>
                     </ko>
                 </tr>
                 </tbody>

@@ -1,0 +1,22 @@
+<div id="contentarea" class="container">
+    <_h3 data-translateable="true">Debug tools</_h3>
+    <section class="tabs" data-bind="gumbyTabs:$root">
+        <ul class="tab-nav">
+            <li class="active"><_a data-translateable="true" href="#">Events draining</_a></li>
+        </ul>
+
+        <div class="tab-content active">
+            <div class="row">
+                <div data-bind="event{'click':startDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Start</_a></div>
+                <div data-bind="event{'click':stopDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Stop</_a></div>
+                <div data-bind="event{'click':clear}" class="medium primary btn"><_a data-translateable="true" href="#">Clear</_a></div>
+            </div>
+            <div>
+                <div id="drainContainer">
+                    <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

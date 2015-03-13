@@ -83,6 +83,7 @@ private:
     void setupApp();
     void cleanupApp();
     string getHRCommandClassId(uint8_t commandClassId);
+    string getHRNotification(Notification::NotificationType notificationType);
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
         , polling(false)
@@ -506,6 +507,106 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
         case COMMAND_CLASS_ZIP_SERVICES:
             output="COMMAND_CLASS_ZIP_SERVICES";
             break;
+        default:
+            output="COMMAND_UNKNOWN";
+    }
+    return output;
+}
+
+/**
+ * Return human readable notification type
+ */
+string AgoZwave::getHRNotification(Notification::NotificationType notificationType)
+{
+    string output;
+    switch( notificationType )
+    {
+        case Notification::Type_ValueAdded:
+            output="Type_ValueAdded";
+            break;
+        case Notification::Type_ValueRemoved:
+            output="Type_ValueRemoved";
+            break;
+        case Notification::Type_ValueChanged:
+            output="Type_ValueChanged";
+            break;
+        case Notification::Type_ValueRefreshed:
+            output="Type_ValueRefreshed";
+            break;
+        case Notification::Type_Group:
+            output="Type_Group";
+            break;
+        case Notification::Type_NodeNew:
+            output="Type_NodeNew";
+            break;
+        case Notification::Type_NodeAdded:
+            output="Type_NodeAdded";
+            break;
+        case Notification::Type_NodeRemoved:
+            output="Type_NodeRemoved";
+            break;
+        case Notification::Type_NodeProtocolInfo:
+            output="Type_NodeProtocolInfo";
+            break;
+        case Notification::Type_NodeNaming:
+            output="Type_NodeNaming";
+            break;
+        case Notification::Type_NodeEvent:
+            output="Type_NodeEvent";
+            break;
+        case Notification::Type_PollingDisabled:
+            output="Type_PollingDisabled";
+            break;
+        case Notification::Type_PollingEnabled:
+            output="Type_PollingEnabled";
+            break;
+        case Notification::Type_SceneEvent:
+            output="Type_SceneEvent";
+            break;
+        case Notification::Type_CreateButton:
+            output="Type_CreateButton";
+            break;
+        case Notification::Type_DeleteButton:
+            output="Type_DeleteButton";
+            break;
+        case Notification::Type_ButtonOn:
+            output="Type_ButtonOn";
+            break;
+        case Notification::Type_ButtonOff:
+            output="Type_ButtonOff";
+            break;
+        case Notification::Type_DriverReady:
+            output="Type_DriverReady";
+            break;
+        case Notification::Type_DriverFailed:
+            output="Type_DriverFailed";
+            break;
+        case Notification::Type_DriverReset:
+            output="Type_DriverReset";
+            break;
+        case Notification::Type_EssentialNodeQueriesComplete:
+            output="Type_EssentialNodeQueriesComplete";
+            break;
+        case Notification::Type_NodeQueriesComplete:
+            output="Type_NodeQueriesComplete";
+            break;
+        case Notification::Type_AwakeNodesQueried:
+            output="Type_AwakeNodesQueried";
+            break;
+        case Notification::Type_AllNodesQueriedSomeDead:
+            output="Type_AllNodesQueriedSomeDead";
+            break;
+        case Notification::Type_AllNodesQueried:
+            output="Type_AllNodesQueried";
+            break;
+        case Notification::Type_Notification:
+            output="Type_Notification";
+            break;
+        case Notification::Type_DriverRemoved:
+            output="Type_DriverRemoved";
+            break;
+        default:
+            output="Type_Unknown";
     }
     return output;
 }
@@ -803,7 +904,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
     // Must do this inside a critical section to avoid conflicts with the main thread
     pthread_mutex_lock( &g_criticalSection );
 
-    AGO_DEBUG() << "Notification " << _notification->GetType() << " received";
+    AGO_DEBUG() << "Notification " << getHRNotification(_notification->GetType()) << " received";
 
     switch( _notification->GetType() )
     {
@@ -844,6 +945,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         device = new ZWaveNode(nodeinstance, "remote");	
                         device->addValue(label, id);
                         devices.add(device);
+                        AGO_DEBUG() << "Controller: add new remote [" << device->getId() << ", " << device->getDevicetype() << "]";
                         agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                     }
                 }
@@ -856,6 +958,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             {
                                 device = new ZWaveNode(nodeinstance, "thermostat");
                                 devices.add(device);
+                                AGO_DEBUG() << "Thermostat: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             break;
@@ -864,6 +967,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             {
                                 device = new ZWaveNode(nodeinstance, "dimmer");
                                 devices.add(device);
+                                AGO_DEBUG() << "Switch multilevel: add new dimmer [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             break;
@@ -905,6 +1009,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "dimmer");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Switch multilevel: add new dimmer [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
@@ -922,6 +1027,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "switch");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Switch binary: add new switch [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
@@ -939,6 +1045,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(tempstring, "binarysensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Sensor binary: add new binarysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
@@ -950,6 +1057,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(tempstring, "brightnesssensor");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Sensor multilevel: add new brightnesssensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             else if (label == "Temperature")
@@ -965,6 +1073,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                         device = new ZWaveNode(nodeinstance, "thermostat");	
                                         device->addValue(label, id);
                                         devices.add(device);
+                                        AGO_DEBUG() << "Sensor multilevel: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
                                         agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                     }
                                 }
@@ -973,6 +1082,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(tempstring, "temperaturesensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Sensor multilevel: add new temperaturesensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
@@ -988,6 +1098,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "multilevelsensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Sensor multilevel: add new multisensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
@@ -999,6 +1110,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(tempstring, "powermeter");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Meter: add new powermeter [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             else if (label == "Energy")
@@ -1006,6 +1118,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(tempstring, "energymeter");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Meter: add new energymeter [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             else
@@ -1020,6 +1133,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(nodeinstance, "multilevelsensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Meter: add new multilevelsensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
@@ -1037,6 +1151,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(nodeinstance, "drapes");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Basic window covering: add new drapes [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             // Manager::Get()->EnablePoll(id);
@@ -1062,9 +1177,11 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 device = new ZWaveNode(nodeinstance, "thermostat");	
                                 device->addValue(label, id);
                                 devices.add(device);
+                                AGO_DEBUG() << "Thermostat: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             break;
+                        case COMMAND_CLASS_ALARM:
                         case COMMAND_CLASS_SENSOR_ALARM:
                             if (label == "Sensor" || label == "Alarm Level" || label == "Flood")
                             {
@@ -1077,6 +1194,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     device = new ZWaveNode(tempstring, "binarysensor");	
                                     device->addValue(label, id);
                                     devices.add(device);
+                                    AGO_DEBUG() << "Alarm: add new binarysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 // Manager::Get()->EnablePoll(id);
