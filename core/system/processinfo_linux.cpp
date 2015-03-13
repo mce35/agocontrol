@@ -85,8 +85,8 @@ void AgoSystem::getProcessInfo()
             {
                 getCpuPercentage(cs, ls, &ucpu, &scpu);
             }
-            cs["ucpu"] = (double)ucpu;
-            cs["scpu"] = (double)scpu;
+            cs["ucpu"] = (uint64_t)ucpu;
+            cs["scpu"] = (uint64_t)scpu;
 
             //update last stats
             stats["lastStats"] = cs;
