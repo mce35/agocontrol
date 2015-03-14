@@ -31,8 +31,8 @@ function Debug(agocontrol)
         if( !self.draining )
         {
             //add event handler
-            self.agocontrol.addEventHandler(self.eventHandler, 'start');
-            self.eventHandler('Drain started');
+            self.agocontrol.addEventHandler(self.eventHandler);
+            self.eventHandler('Drain started', 'start');
             self.draining = true;
         }
     };
@@ -42,8 +42,8 @@ function Debug(agocontrol)
     {
         if( self.draining )
         {
-            self.agocontrol.removeEventHandler(self.eventHandler, 'stop');
-            self.eventHandler('Drain stopped');
+            self.agocontrol.removeEventHandler(self.eventHandler);
+            self.eventHandler('Drain stopped', 'stop');
             self.draining = false;
         }
     };
