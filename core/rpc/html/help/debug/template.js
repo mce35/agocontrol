@@ -8,7 +8,7 @@ function Debug(agocontrol)
     self.draining = false;
 
     //append received event
-    self.eventHandler = function(event)
+    self.eventHandler = function(event, type)
     {
         if( event )
         {
@@ -31,7 +31,7 @@ function Debug(agocontrol)
         if( !self.draining )
         {
             //add event handler
-            self.agocontrol.addEventHandler(self.eventHandler);
+            self.agocontrol.addEventHandler(self.eventHandler, 'start');
             self.eventHandler('Drain started');
             self.draining = true;
         }
@@ -42,7 +42,7 @@ function Debug(agocontrol)
     {
         if( self.draining )
         {
-            self.agocontrol.removeEventHandler(self.eventHandler);
+            self.agocontrol.removeEventHandler(self.eventHandler, 'stop');
             self.eventHandler('Drain stopped');
             self.draining = false;
         }
