@@ -59,17 +59,6 @@ Blockly.Lua['agocontrol_deviceProperty'] = function(block) {
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
-Blockly.Lua['agocontrol_eventProperty'] = function(block) {
-    var code = "";
-    var prop = block.getFieldValue("PROP");
-    code = "content." + prop;
-    if( prop=='level' )
-    {
-        //level from agolua is a string, convert it to number
-        code = "tonumber(" + code + ")";
-    }
-    return [code, Blockly.Lua.ORDER_ATOMIC];
-};
 
 Blockly.Lua['agocontrol_sendMessage'] = function(block) {
     var code = "";
@@ -85,6 +74,14 @@ Blockly.Lua['agocontrol_sendMessage'] = function(block) {
         code += ", '"+fields[field]+"=' .. "+value;
     }
     return "sendMessage("+code+")\n";
+};
+
+Blockly.Lua['agocontrol_printContent'] = function(block) {
+    var code = "print 'Event content:'\n";
+    code += "for key,value in pairs(content) do\n";
+    code += "  print(' - ' .. key .. '=' .. value .. ' [' .. type(value) .. ']' )\n";
+    code += "end\n";
+    return code;
 };
 
 Blockly.Lua['agocontrol_content'] = function(block) {
@@ -103,7 +100,14 @@ Blockly.Lua['agocontrol_content'] = function(block) {
 };
 
 Blockly.Lua['agocontrol_contentProperty'] = function(block) {
-    var code = "content." + block.getFieldValue("PROP");
+    var code = "";
+    var prop = block.getFieldValue("PROP");
+    code = "content." + prop;
+    if( prop=='level' )
+    {
+        //level from agolua is a string, convert it to number
+        code = "tonumber(" + code + ")";
+    }
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 

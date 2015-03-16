@@ -1263,6 +1263,18 @@ Blockly.Blocks['agocontrol_sleep'] = {
     }
 };
 
+//print event content to output
+Blockly.Blocks['agocontrol_printContent'] = {
+    init: function() {
+        this.setColour(160);
+        this.appendDummyInput()
+            .appendField("Print event content");
+        this.setPreviousStatement(true);
+        this.setNextStatement(true);
+        this.setTooltip('Print event content');
+    }
+};
+
 //content block
 Blockly.Blocks['agocontrol_content'] = {
     init: function() {
