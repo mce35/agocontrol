@@ -78,6 +78,7 @@ public:
     int luaGetDeviceInventory(lua_State *L);
     int luaGetInventory(lua_State *L);
     int luaPause(lua_State *L);
+    int luaGetDeviceName(lua_State *L);
 };
 
 
@@ -93,6 +94,7 @@ LUA_WRAPPER(luaGetVariable);
 LUA_WRAPPER(luaGetDeviceInventory);
 LUA_WRAPPER(luaGetInventory);
 LUA_WRAPPER(luaPause);
+LUA_WRAPPER(luaGetDeviceName);
 
 const luaL_Reg loadedlibs[] = {
     {"_G", luaopen_base},
@@ -530,6 +532,65 @@ int AgoLua::luaPause(lua_State *L)
 }
 
 /**
+ * Get device name according to specified uuid
+ */
+int AgoLua::luaGetDeviceName(lua_State* L)
+{
+    //init
+    std::string uuid;
+
+    //refresh inventory only once (performance optimization)
+    if( refreshInventory )
+    {
+        inventory = agoConnection->getInventory();
+        refreshInventory = false;
+    }
+
+    if( inventory.size()>0 && !inventory["devices"].isVoid() )
+    {
+        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+
+        //get uuid
+        uuid = std::string(lua_tostring(L,1));
+        if( uuid.length()>0 && !inventory["devices"].isVoid() )
+        {
+            qpid::types::Variant::Map devices = inventory["devices"].asMap();
+            if( !devices[uuid].isVoid() )
+            {
+                qpid::types::Variant::Map device = devices[uuid].asMap();
+                if( !device["name"].isVoid() )
+                {
+                    lua_pushstring(L, device["name"].asString().c_str());
+                }
+                else
+                {
+                    //no field name for found device
+                    lua_pushnil(L);
+                }
+            }
+            else
+            {
+                //unknown device
+                lua_pushnil(L);
+            }
+        }
+        else
+        {
+            //no uuid, function failed
+            lua_pushnil(L);
+        }
+    }
+    else
+    {
+        //no inventory available
+        refreshInventory = true;
+        lua_pushnil(L);
+    }
+
+    return 1;
+}
+
+/**
  * Search triggered events in specified script
  * @param scriptPath: script path to parse
  * @return foundEvents: fill map with found script events
@@ -611,7 +672,7 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     {
         context = scriptContexts[script.string()].asMap();
     }
-    AGO_DEBUG() << "context before:" << context;
+    AGO_TRACE() << "context before:" << context;
 
 #define LUA_REGISTER_WRAPPER(L, lua_name, method_name) \
     lua_pushlightuserdata(L, this); \
@@ -624,8 +685,9 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     LUA_REGISTER_WRAPPER(L, "getDeviceInventory", luaGetDeviceInventory);
     LUA_REGISTER_WRAPPER(L, "getInventory", luaGetInventory);
     LUA_REGISTER_WRAPPER(L, "pause", luaPause);
+    LUA_REGISTER_WRAPPER(L, "getDeviceName", luaGetDeviceName);
 
-    pushTableFromMap(L, content);
+    pushTableFromMap(L, stringContent);
     lua_setglobal(L, "content");
     pushTableFromMap(L, context);
     lua_setglobal(L, "context");
@@ -652,7 +714,7 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     pullTableToMap(L, context);
     scriptContexts[script.string()] = context;
 
-    AGO_DEBUG() << "context after:" << context;
+    AGO_TRACE() << "context after:" << context;
 
     lua_close(L);
     AGO_TRACE() << "Execution of " << script << " finished.";

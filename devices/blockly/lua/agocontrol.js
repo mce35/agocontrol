@@ -9,7 +9,8 @@ Blockly.Lua['agocontrol_deviceNo'] = function(block) {
 };
 
 Blockly.Lua['agocontrol_deviceName'] = function(block) {
-    var code = "'" + block.getFieldValue('DEVICE') + "'";
+    var uuid = Blockly.Lua.valueToCode(block, 'UUID', Blockly.Lua.ORDER_NONE) || '';
+    var code = "getDeviceName("+uuid+")";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
