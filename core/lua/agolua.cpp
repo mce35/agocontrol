@@ -687,7 +687,7 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     LUA_REGISTER_WRAPPER(L, "pause", luaPause);
     LUA_REGISTER_WRAPPER(L, "getDeviceName", luaGetDeviceName);
 
-    pushTableFromMap(L, stringContent);
+    pushTableFromMap(L, content);
     lua_setglobal(L, "content");
     pushTableFromMap(L, context);
     lua_setglobal(L, "context");
