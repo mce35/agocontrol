@@ -13,6 +13,8 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.scriptName = ko.observable('untitled');
     self.scriptSaved = ko.observable(true);
     self.scriptLoaded = false;
+    self.debugData = ko.observable('{}');
+    self.debugging = false;
 
     //luacontroller uuid
     if( devices!==undefined )
@@ -530,6 +532,119 @@ function agoBlocklyPlugin(devices, agocontrol)
         });
     };
 
+    //debug event handler
+    self.debugEventHandler = function(event) {
+        if( event.event==='event.system.debugscript' )
+        {
+            //append debug message
+            if( event.type===0 )
+            {
+                //start message
+                $('#debugContainer > ul').append('<li style="font-size:small;" class="primary alert">'+JSON.stringify(event.msg)+'</i>');
+            }
+            else if( event.type===1 )
+            {
+                //end message
+                $('#debugContainer > ul').append('<li style="font-size:small;" class="primary alert">'+JSON.stringify(event.msg)+'</i>');
+                //stop debugging
+                self.stopDebug();
+            }
+            else if( event.type===2 )
+            {
+                //error message
+                $('#debugContainer > ul').append('<li style="font-size:small;" class="danger alert">'+JSON.stringify(event.msg)+'</i>');
+            }
+            else if( event.type===3 )
+            {
+                //default message
+                $('#debugContainer > ul').append('<li style="font-size:small;" class="default alert">'+JSON.stringify(event.msg)+'</i>');
+            }
+
+        }
+    };
+
+    //start debugging
+    self.startDebug = function()
+    {
+        if( self.debugging )
+        {
+            notif.info('Already debugging');
+            return;
+        }
+        self.debugging = true;
+
+        //add event handler
+        self.agocontrol.addEventHandler(self.debugEventHandler);
+
+        //clear debug area
+        self.clearDebug();
+
+        //check specified data
+        var data = null;
+        try
+        {
+            data = JSON.parse(self.debugData());
+        }
+        catch(err)
+        {
+            notif.warning(err);
+            self.debugging = false;
+            return;
+        }
+
+        //launch debug command
+        var content = {
+            uuid: self.luaControllerUuid,
+            command: 'debugscript',
+            script: self.getLua(),
+            data: data
+        };
+        self.agocontrol.sendCommand(content, function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
+            {
+                if( res.result.result===0 )
+                {
+                    //notif.success('Debug started');
+                }
+                else
+                {
+                    if( res.result.error.length>0 )
+                    {
+                        notif.error(res.result.error);
+                    }
+                    else
+                    {
+                        notif.error('Unable to start debugging');
+                    }
+                }
+            }
+            else
+            {
+                notif.fatal('#nr');
+            }
+        });
+    };
+
+    //stop debug
+    self.stopDebug = function()
+    {
+        //remove handler
+        self.agocontrol.removeEventHandler(self.debugEventHandler);
+        self.debugging = false;
+    };
+
+    //clear debug area
+    self.clearDebug = function()
+    {
+        $('#debugContainer > ul').empty();
+    };
+
+    //debug script
+    self.openDebug = function() {
+        //open dialog
+        $("#debugDialog").addClass('active');
+    };
+
     //view lua source code
     self.viewlua = function() {
         //check code first
@@ -548,12 +663,6 @@ function agoBlocklyPlugin(devices, agocontrol)
         }
         //open dialog
         $("#luaDialog").addClass('active');
-        /*$( "#luaDialog" ).dialog({
-            modal: true,
-            title: "LUA script",
-            height: 600,
-            width: 1024
-        });*/
     };
 
     //load script

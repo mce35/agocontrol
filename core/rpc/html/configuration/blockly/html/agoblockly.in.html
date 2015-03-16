@@ -224,6 +224,7 @@
         <div class="medium primary btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Check blocks" data-bind="click:check">Check</_a></div>
         <div class="medium primary btn icon-left icon-eye"><_a data-translateable="true" href="#" _title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
         <div class="medium primary btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
+        <div class="medium primary btn icon-left icon-flash" style="margin-left:20px;"><a href="#" data-bind="click:openDebug">Debug</a></div>
         <div style="margin-left:20px; display: inline-block;">
             <ko opts="if:scriptSaved">
             <li class="default label">
@@ -307,5 +308,26 @@
             </div>
         </div>
     </div>
+
+    <div id="debugDialog" data-bind="gumbyModal:$root" class="modal">
+        <div class="content" style="top:15%; min-height:90%; max-height:90%; width:60%">
+            <a class="close switch" gumby-trigger="|#debugDialog"><i class="icon-cancel" ></i></a>
+            <div class="row">
+                <div class="medium primary btn"><a href="#" data-bind="click:startDebug">Start</a></div>
+                <div class="medium primary btn"><a href="#" data-bind="click:stopDebug">Stop</a></div>
+                <div class="medium primary btn"><a href="#" data-bind="click:clearDebug">Clear</a></div>
+            </div>
+            <div class="row field">
+                <textarea data-bind="value:debugData" class="input textarea" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}"></textarea>
+            </div>
+            <div class="row">
+                <div id="debugContainer">
+                    <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
