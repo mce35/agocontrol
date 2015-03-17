@@ -10,7 +10,6 @@
                 "d3.v3.min.js"
             ],
             "css": [
-                "zwave.css",
                 "chord.css"
             ]
         }
