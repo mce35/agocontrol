@@ -20,16 +20,19 @@ window.BlocklyAgocontrol = {
         this.schema = schema;
         this.devices = devices;
         //only variable names are useful
-        for( var variable in variables )
+        for( var i=0; i<variables.length; i++ )
         {
-            this.variables.push(variable);
+            if( variables[i].variable )
+            {
+                this.variables.push(variables[i].variable);
+            }
         }
     },
 
     //shortens event name to not overload block
     shortensEventName: function(event) {
-        if( event.indexOf("system.")==0 )
-        {
+        if( event.indexOf("system.")!==-1 )
+        { 
             //system event, drop it
             return "";
         }
@@ -90,7 +93,7 @@ window.BlocklyAgocontrol = {
     getDeviceNames: function(deviceType) {
         var names = [];
         var duplicates = [];
-        var device;
+        var device = null;
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
@@ -311,13 +314,13 @@ window.BlocklyAgocontrol = {
         {
             output.name = eventName;
             var shortName = this.shortensEventName(eventName);
-            if( shortName.length==0 )
+            if( shortName.length===0 )
             {
-                output.shortName = shortName;
+                output.shortName = eventName;
             }
             else
             {
-                output.shortName = eventName;
+                output.shortName = shortName;
             }
             output.properties = this.getEventProperties(eventName);
         }
@@ -410,7 +413,6 @@ window.BlocklyAgocontrol = {
                 }
             }
         }
-        //else if( child.type==="agocontrol_deviceEvent" || child.type==="agocontrol_eventAll" || child.type==="agocontrol_eventProperty" || child.type==="agocontrol_contentproperty" )
         else if( child.type==="agocontrol_contentProperty" )
         {
             //update blocks array
@@ -503,7 +505,7 @@ Blockly.Blocks['agocontrol_deviceNo'] = {
         this.setColour(20);
         this.appendDummyInput()
             .appendField("No device");
-        this.setOutput(true, "Device");
+        this.setOutput(true, "String");
         this.setTooltip('Return empty device uuid');
     }
 };
@@ -519,42 +521,12 @@ Blockly.Blocks['agocontrol_deviceName'] = {
         //this.setHelpUrl('TODO');
         this.setColour(20);
         this.container = this.appendDummyInput()
-            .appendField("name")
-            .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
-            .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE");
+            .appendField("device name of uuid");
+        this.appendValueInput("UUID")
+            .setCheck(["String", "Device"]);
         this.setInputsInline(true);
         this.setOutput(true, "String");
         this.setTooltip('Return device name');
-    },
-
-    onchange: function() {
-        if( !this.workspace )
-            return;
-        var currentType = this.getFieldValue("TYPE");
-        var currentDevice = null;
-        if( this.firstRun )
-        {
-            currentDevice = this.getFieldValue("DEVICE");
-        }
-        if( this.lastType!=currentType )
-        {
-            this.lastType = currentType;
-            var names = window.BlocklyAgocontrol.getDeviceNames(currentType);
-            if( names.length===0 )
-                names.push(['','']);
-            this.container.removeField("DEVICE");
-            this.container.appendField(new Blockly.FieldDropdown(names), "DEVICE");
-            if( currentDevice )
-            {
-                var field = this.getField_("DEVICE");
-                if( field )
-                {
-                    field.setValue(currentDevice);
-                }
-            }
-        }
-        
-        this.firstRun = false;
     }
 };
 
@@ -573,7 +545,7 @@ Blockly.Blocks['agocontrol_deviceUuid'] = {
             .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
             .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE");
         this.setInputsInline(true);
-        this.setOutput(true, "Device");
+        this.setOutput(true, "String");
         this.setTooltip('Return device uuid');
     },
 
@@ -771,13 +743,13 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
         //this.setHelpUrl('TODO');
         this.setColour(140);
         this.container = this.appendDummyInput()
-            .appendField("device value")
+            .appendField("device property value")
             .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
             .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE")
             .appendField(" ", "SEP")
             .appendField(new Blockly.FieldDropdown([['','']]), "PROP");
         this.setInputsInline(true);
-        this.setOutput(true, "DeviceProperty");
+        this.setOutput(true, "String");
         this.setTooltip('Return device property value');
     },
 
@@ -866,7 +838,7 @@ Blockly.Blocks['agocontrol_eventProperty'] = {
             .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getAllEvents()), "EVENT")
             .appendField(new Blockly.FieldDropdown([['','']]), "PROP");
         this.setInputsInline(true);
-        this.setOutput(true, "EventProperty");
+        this.setOutput(true, "String");
         this.setTooltip('Return event property name');
     },
   
@@ -953,7 +925,6 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
             .appendField("command")
             .setAlign(Blockly.ALIGN_RIGHT)
             .appendField(new Blockly.FieldDropdown([['','']]), "COMMAND");
-        //this.setOutput(true, "Command");
         this.setPreviousStatement(true, "null");
         this.setNextStatement(true, "null");
         this.setTooltip('Send a message to execute a command on agocontrol');
@@ -1292,6 +1263,18 @@ Blockly.Blocks['agocontrol_sleep'] = {
     }
 };
 
+//print event content to output
+Blockly.Blocks['agocontrol_printContent'] = {
+    init: function() {
+        this.setColour(160);
+        this.appendDummyInput()
+            .appendField("Print event content");
+        this.setPreviousStatement(true);
+        this.setNextStatement(true);
+        this.setTooltip('Print event content');
+    }
+};
+
 //content block
 Blockly.Blocks['agocontrol_content'] = {
     init: function() {
@@ -1440,7 +1423,7 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
             .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getAllEvents()), "EVENT")
             .appendField(new Blockly.FieldDropdown([['','']]), "PROP");
         this.setInputsInline(true);
-        this.setOutput(true, "EventProperty");
+        this.setOutput(true); //no way to determine output
         this.setTooltip('Return content property');
     },
   
@@ -1513,7 +1496,7 @@ Blockly.Blocks['agocontrol_range'] = {
         this.appendDummyInput()
             .appendField(new Blockly.FieldDropdown([["<", "LT"], ["<=", "LTE"]]), "SIGN_MIN");
         this.appendValueInput("PROP")
-            .setCheck(["DeviceProperty","EventProperty"]);
+            .setCheck("String");
         this.appendDummyInput()
             .appendField(new Blockly.FieldDropdown([["<", "LT"], ["<=", "LTE"]]), "SIGN_MAX");
         this.appendValueInput("MAX")

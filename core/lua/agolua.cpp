@@ -37,6 +37,13 @@ using namespace agocontrol;
 const char reAll[] = "--.*--\\[\\[(.*)\\]\\](.*)";
 const char reEvent[] = "(event\\.\\w+\\.\\w+)";
 
+enum DebugMsgType {
+    DBG_START = 0, //display start message
+    DBG_END, //display end message
+    DBG_ERROR, //display error message
+    DBG_INFO //display info message
+};
+
 class AgoLua: public AgoApp {
 private:
     qpid::types::Variant::Map inventory;
@@ -55,8 +62,11 @@ private:
 
     void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents) ;
     void purgeScripts() ;
-    void runScript(qpid::types::Variant::Map content, const fs::path &script);
-    bool canRunScript(qpid::types::Variant::Map content, const fs::path &script);
+    void initScript(lua_State* L, qpid::types::Variant::Map& content, const std::string& script, qpid::types::Variant::Map& context, bool debug);
+    void finalizeScript(lua_State* L, qpid::types::Variant::Map& content, const std::string& script, qpid::types::Variant::Map& context);
+    void debugScript(qpid::types::Variant::Map content, const std::string script);
+    void executeScript(qpid::types::Variant::Map content, const fs::path &script);
+    bool canExecuteScript(qpid::types::Variant::Map content, const fs::path &script);
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
     void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
 
@@ -78,6 +88,9 @@ public:
     int luaGetDeviceInventory(lua_State *L);
     int luaGetInventory(lua_State *L);
     int luaPause(lua_State *L);
+    int luaDebugPause(lua_State *L);
+    int luaGetDeviceName(lua_State *L);
+    int luaDebugPrint(lua_State* L);
 };
 
 
@@ -93,6 +106,9 @@ LUA_WRAPPER(luaGetVariable);
 LUA_WRAPPER(luaGetDeviceInventory);
 LUA_WRAPPER(luaGetInventory);
 LUA_WRAPPER(luaPause);
+LUA_WRAPPER(luaDebugPause);
+LUA_WRAPPER(luaGetDeviceName);
+LUA_WRAPPER(luaDebugPrint);
 
 const luaL_Reg loadedlibs[] = {
     {"_G", luaopen_base},
@@ -530,6 +546,92 @@ int AgoLua::luaPause(lua_State *L)
 }
 
 /**
+ * Pause script execution (debug mode)
+ */
+int AgoLua::luaDebugPause(lua_State* L)
+{
+    //disable pause in debug mode
+    lua_pushnil(L);
+    return 1;
+}
+
+/**
+ * Print function (debug mode)
+ */
+int AgoLua::luaDebugPrint(lua_State* L)
+{
+    //init
+    qpid::types::Variant::Map printResult;
+    std::string msg = std::string(lua_tostring(L,1));
+
+    AGO_DEBUG() << "Debug script: print " << msg;
+    printResult["type"] = DBG_INFO;
+    printResult["msg"] = msg;
+    agoConnection->emitEvent("luacontroller", "event.system.debugscript", printResult);
+    lua_pushnil(L);
+    return 1;
+}
+
+/**
+ * Get device name according to specified uuid
+ */
+int AgoLua::luaGetDeviceName(lua_State* L)
+{
+    //init
+    std::string uuid;
+
+    //refresh inventory only once (performance optimization)
+    if( refreshInventory )
+    {
+        inventory = agoConnection->getInventory();
+        refreshInventory = false;
+    }
+
+    if( inventory.size()>0 && !inventory["devices"].isVoid() )
+    {
+        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
+
+        //get uuid
+        uuid = std::string(lua_tostring(L,1));
+        if( uuid.length()>0 && !inventory["devices"].isVoid() )
+        {
+            qpid::types::Variant::Map devices = inventory["devices"].asMap();
+            if( !devices[uuid].isVoid() )
+            {
+                qpid::types::Variant::Map device = devices[uuid].asMap();
+                if( !device["name"].isVoid() )
+                {
+                    lua_pushstring(L, device["name"].asString().c_str());
+                }
+                else
+                {
+                    //no field name for found device
+                    lua_pushnil(L);
+                }
+            }
+            else
+            {
+                //unknown device
+                lua_pushnil(L);
+            }
+        }
+        else
+        {
+            //no uuid, function failed
+            lua_pushnil(L);
+        }
+    }
+    else
+    {
+        //no inventory available
+        refreshInventory = true;
+        lua_pushnil(L);
+    }
+
+    return 1;
+}
+
+/**
  * Search triggered events in specified script
  * @param scriptPath: script path to parse
  * @return foundEvents: fill map with found script events
@@ -583,16 +685,12 @@ void AgoLua::purgeScripts()
 }
 
 /**
- * Execute LUA script (blocking).
- * Called in separate thread.
+ * Init script execution
  */
-void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script)
+void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const std::string& script, qpid::types::Variant::Map& context, bool debug)
 {
-    refreshInventory = true;
-    lua_State *L;
+    //load libs
     const luaL_Reg *lib;
-
-    L = luaL_newstate();
     for (lib = loadedlibs; lib->func; lib++)
     {
         luaL_requiref(L, lib->name, lib->func, 1);
@@ -600,19 +698,19 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     }
     luaL_openlibs(L);
 
-    //load script context
-    qpid::types::Variant::Map context;
-    if( scriptContexts[script.string()].isVoid() )
+    //load script context (from local variables)
+    if( scriptContexts[script].isVoid() )
     {
         //no context yet, create empty one
-        scriptContexts[script.string()] = context;
+        scriptContexts[script] = context;
     }
     else
     {
-        context = scriptContexts[script.string()].asMap();
+        context = scriptContexts[script].asMap();
     }
-    AGO_DEBUG() << "context before:" << context;
+    AGO_TRACE() << "context before:" << context;
 
+    //add mapped functions
 #define LUA_REGISTER_WRAPPER(L, lua_name, method_name) \
     lua_pushlightuserdata(L, this); \
     lua_pushcclosure(L, &method_name ## _wrapper, 1); \
@@ -623,13 +721,117 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
     LUA_REGISTER_WRAPPER(L, "getVariable", luaGetVariable);
     LUA_REGISTER_WRAPPER(L, "getDeviceInventory", luaGetDeviceInventory);
     LUA_REGISTER_WRAPPER(L, "getInventory", luaGetInventory);
-    LUA_REGISTER_WRAPPER(L, "pause", luaPause);
+    if( !debug )
+    {
+        LUA_REGISTER_WRAPPER(L, "pause", luaPause);
+    }
+    else
+    {
+        LUA_REGISTER_WRAPPER(L, "pause", luaDebugPause);
+    }
+    LUA_REGISTER_WRAPPER(L, "getDeviceName", luaGetDeviceName);
+    if( debug )
+    {
+        LUA_REGISTER_WRAPPER(L, "print", luaDebugPrint);
+    }
 
     pushTableFromMap(L, content);
     lua_setglobal(L, "content");
     pushTableFromMap(L, context);
     lua_setglobal(L, "context");
+}
 
+/**
+ * Finalize script execution
+ */
+void AgoLua::finalizeScript(lua_State* L, qpid::types::Variant::Map& content, const std::string& script, qpid::types::Variant::Map& context)
+{
+    //handle context value
+    lua_getglobal(L, "context");
+    pullTableToMap(L, context);
+    scriptContexts[script] = context;
+    AGO_TRACE() << "context after:" << context;
+}
+
+/**
+ * Debug script (threaded)
+ */
+void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string script)
+{
+    //init
+    qpid::types::Variant::Map debugResult;
+    refreshInventory = true;
+    qpid::types::Variant::Map context;
+    lua_State *L;
+
+    try
+    {
+        //create new lua
+        L = luaL_newstate();
+
+        //init script
+        initScript(L, content, "debug", context, true);
+
+        //execute script
+        AGO_TRACE() << "Debugging script";
+        debugResult["type"] = DBG_START;
+        debugResult["msg"] = "Script debugging started";
+        agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
+        int status = luaL_loadstring(L, script.c_str());
+        int result = 0;
+        if(status == LUA_OK)
+        {
+            result = lua_pcall(L, 0, LUA_MULTRET, 0);
+        }
+        else
+        {
+            AGO_ERROR()<< "Could not load debug script";
+            debugResult["type"] = DBG_ERROR;
+            debugResult["msg"] = "Could not load debug script";
+            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
+        }
+        if ( result!=0 )
+        {
+            std::string err = lua_tostring(L, -1);
+            AGO_ERROR() << "Debug failed: " << err;
+            debugResult["type"] = DBG_ERROR;
+            debugResult["msg"] = err;
+            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
+            lua_pop(L, 1); // remove error message
+        }
+    
+        //finalize script
+        finalizeScript(L, content, "debug", context);
+        lua_close(L);
+        AGO_TRACE() << "Debug execution finished.";
+        debugResult["type"] = DBG_END;
+        debugResult["msg"] = "Script debugging terminated";
+        agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
+    }
+    catch(...)
+    {
+        debugResult["type"] = DBG_ERROR;
+        debugResult["msg"] = "Script debugging crashed";
+        agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
+    }
+}
+
+/**
+ * Execute LUA script (blocking).
+ * Called in separate thread.
+ */
+void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &script)
+{
+    //init
+    refreshInventory = true;
+    qpid::types::Variant::Map context;
+    lua_State *L;
+    L = luaL_newstate();
+
+    //init script
+    initScript(L, content, script.string(), context, false);
+
+    //execute script
     AGO_TRACE() << "Loading " << script;
     int status = luaL_loadfile(L, script.c_str());
     int result = 0;
@@ -647,22 +849,16 @@ void AgoLua::runScript(qpid::types::Variant::Map content, const fs::path &script
         lua_pop(L, 1); // remove error message
     }
 
-    //handle context value
-    lua_getglobal(L, "context");
-    pullTableToMap(L, context);
-    scriptContexts[script.string()] = context;
-
-    AGO_DEBUG() << "context after:" << context;
-
+    //finalize script
+    finalizeScript(L, content, script.string(), context);
     lua_close(L);
     AGO_TRACE() << "Execution of " << script << " finished.";
-
 }
 
 /**
- * Return true if script can be run
+ * Return true if script can be executed
  */
-bool AgoLua::canRunScript(qpid::types::Variant::Map content, const fs::path &script)
+bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path &script)
 {
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -876,6 +1072,28 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 }
             }
         }
+        else if( content["command"]=="debugscript" )
+        {
+            AGO_DEBUG() << "debug received: " << content;
+            if( !content["script"].isVoid() && !content["data"].isVoid() )
+            {
+                std::string script = content["script"].asString();
+                qpid::types::Variant::Map data = content["data"].asMap();
+                AGO_DEBUG() << "Debug script: script=" << script << " content=" << data;
+
+                boost::thread t( boost::bind(&AgoLua::debugScript, this, data, script) );
+                t.detach();
+
+                AGO_INFO() << "Command 'debugscript': debug started";
+                returnval["result"] = 0;
+            }
+            else
+            {
+                AGO_ERROR() << "Command 'debugscript': missing parameter";
+                returnval["error"] = "Unable to debug script: missing parameter";
+                returnval["result"] = -1;
+            }
+        }
         else if (content["command"] == "uploadfile")
         {
             //import script
@@ -990,9 +1208,9 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 if (fs::is_regular_file(*it) && (it->path().extension().string() == ".lua") &&
                         (it->path().filename().string() != "helper.lua"))
                 {
-                    if( canRunScript(content, it->path()) )
+                    if( canExecuteScript(content, it->path()) )
                     {
-                        boost::thread t(boost::bind(&AgoLua::runScript, this, content, it->path()));
+                        boost::thread t( boost::bind(&AgoLua::executeScript, this, content, it->path()) );
                         t.detach();
                     }
                 }

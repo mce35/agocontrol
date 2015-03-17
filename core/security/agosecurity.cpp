@@ -222,6 +222,20 @@ void AgoSecurity::enableAlarm(std::string zone, std::string housemode, int16_t d
         //alarm has been canceled by user
         AGO_DEBUG() << "Alarm thread cancelled";
         agoConnection->emitEvent("securitycontroller", "event.security.alarmcanceled", content);
+
+        //finally change housemode to default one
+        //this is implemented to toggle automatically to another housemode that disable alarm (but it's not mandatory)
+        if( !securitymap["defaultHousemode"].isVoid() )
+        {
+            if( !changeHousemode(securitymap["defaultHousemode"].asString()) )
+            {
+                AGO_ERROR() << "Unable to write config file saving default housemode";
+            }
+        }
+        else
+        {
+            AGO_DEBUG() << "enableAlarm: no default housemode, so current housemode is not changed";
+        }
     }
 
     isSecurityThreadRunning = false;

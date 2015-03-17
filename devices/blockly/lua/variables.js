@@ -36,7 +36,7 @@ Blockly.Lua['variables_get'] = function(block) {
   // Variable getter.
   var code = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR'),
       Blockly.Variables.NAME_TYPE);
-  if( code.indexOf('g_')===0 )
+  if( code.indexOf('ago_')===0 )
   {
       //variable is a context variable
       code = 'context.'+code;
@@ -50,7 +50,7 @@ Blockly.Lua['variables_set'] = function(block) {
       Blockly.Lua.ORDER_NONE) || '0';
   var varName = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR'),
       Blockly.Variables.NAME_TYPE);
-  if( varName.indexOf('g_')===0 )
+  if( varName.indexOf('ago_')===0 )
   {
       //variable is a context variable
       varName = 'context.'+varName;

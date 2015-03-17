@@ -33,6 +33,12 @@ typedef enum {
     UNKNOWN, SUNRISE, SUNSET
 } sunstate_t;
 
+const char* sunstate_names[] = {
+    "unknown",
+    "sunrise",
+    "sunset"
+};
+
 typedef struct {
     sunstate_t next_state;
     time_t next_at;
@@ -212,15 +218,17 @@ void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_s
     agoConnection->setGlobalVariable("isDaytime", isDaytime);
 
     if(new_state == SUNRISE) {
+        AGO_DEBUG() << "Distributing sun-state " << sunstate_names[new_state];
         agoConnection->sendMessage("event.environment.sunrise", empty);
     }
     else if(new_state == SUNSET) {
+        AGO_DEBUG() << "Distributing sun-state " << sunstate_names[new_state];
         agoConnection->sendMessage("event.environment.sunset", empty);
     }
 
     pt::ptime next_at = pt::from_time_t(sun.next_at);
     AGO_DEBUG() << "Next sun-event is "
-        << ((sun.next_state == SUNSET) ? "sunset":"sunrise")
+        << sunstate_names[sun.next_state]
         << " at " <<
         pt::to_simple_string(local_adj::utc_to_local(next_at));
 

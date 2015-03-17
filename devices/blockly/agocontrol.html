@@ -271,10 +271,18 @@
             setTimeout(function() { block.unselect(); },i+150);
         }
     };
+
+    var variables = [
+        {'day':1},
+        {'hour':2},
+        {'month':3},
+        {'year':4},
+        {'minute':5}
+    ];
   
     var schema = YAML.load('http://192.168.1.1/schema.yaml');
     var deviceMap = YAML.load('http://192.168.1.1/deviceMap.yaml');
-    var variables = YAML.load('http://192.168.1.1/variables.yaml');
+    //var variables = YAML.load('http://192.168.1.1/variables.yaml');
     console.log("schema:");
     console.log(schema);
     console.log("deviceMap:");
@@ -320,7 +328,9 @@
         lua.textContent = code;
     };
     load.onclick = function() {
-        var xml = "<xml><block type=\"controls_if\" id=\"30\" inline=\"false\" x=\"47\" y=\"58\"><value name=\"IF0\"><block type=\"agocontrol_content\" id=\"22\" inline=\"false\"><value name=\"EVENT\"><block type=\"agocontrol_eventAll\" id=\"23\"><field name=\"EVENT\">event.environment.timechanged</field></block></value></block></value><statement name=\"DO0\"><block type=\"variables_set\" id=\"102\" inline=\"true\"><field name=\"VAR\">item</field><value name=\"VALUE\"><block type=\"agocontrol_contentProperty\" id=\"43\"><field name=\"EVENT\">event.environment.timechanged</field><field name=\"PROP\">minute</field></block></value><next><block type=\"agocontrol_setVariable\" id=\"99\" inline=\"true\"><field name=\"VARIABLE\">isDaytime</field><value name=\"VALUE\"><block type=\"math_arithmetic\" id=\"127\" inline=\"true\"><field name=\"OP\">MULTIPLY</field><value name=\"A\"><block type=\"variables_get\" id=\"130\"><field name=\"VAR\">item</field></block></value><value name=\"B\"><block type=\"math_number\" id=\"150\"><field name=\"NUM\">60</field></block></value></block></value></block></next></block></statement></block></xml>";
+        //var xml = "<xml><block type=\"controls_if\" id=\"30\" inline=\"false\" x=\"47\" y=\"58\"><value name=\"IF0\"><block type=\"agocontrol_content\" id=\"22\" inline=\"false\"><value name=\"EVENT\"><block type=\"agocontrol_eventAll\" id=\"23\"><field name=\"EVENT\">event.environment.timechanged</field></block></value></block></value><statement name=\"DO0\"><block type=\"variables_set\" id=\"102\" inline=\"true\"><field name=\"VAR\">item</field><value name=\"VALUE\"><block type=\"agocontrol_contentProperty\" id=\"43\"><field name=\"EVENT\">event.environment.timechanged</field><field name=\"PROP\">minute</field></block></value><next><block type=\"agocontrol_setVariable\" id=\"99\" inline=\"true\"><field name=\"VARIABLE\">isDaytime</field><value name=\"VALUE\"><block type=\"math_arithmetic\" id=\"127\" inline=\"true\"><field name=\"OP\">MULTIPLY</field><value name=\"A\"><block type=\"variables_get\" id=\"130\"><field name=\"VAR\">item</field></block></value><value name=\"B\"><block type=\"math_number\" id=\"150\"><field name=\"NUM\">60</field></block></value></block></value></block></next></block></statement></block></xml>";
+        //var xml = "<xml><block type=\"controls_if\" id=\"7\" inline=\"false\" x=\"66\" y=\"21\"><value name=\"IF0\"><block type=\"agocontrol_content\" id=\"11\" inline=\"false\"><value name=\"EVENT\"><block type=\"agocontrol_eventAll\" id=\"12\"><field name=\"EVENT\">event.device.statechanged</field></block></value></block></value><statement name=\"DO0\"><block type=\"text_print\" id=\"20\" inline=\"false\"><value name=\"TEXT\"><block type=\"agocontrol_deviceName\" id=\"26\" inline=\"true\"><value name=\"UUID\"><block type=\"agocontrol_contentProperty\" id=\"32\"><field name=\"EVENT\">event.device.statechanged</field><field name=\"PROP\">uuid</field></block></value></block></value></block></statement></block></xml>";
+        console.log(xml);
         Blockly.Xml.domToWorkspace(xml);
     };
   </script>
