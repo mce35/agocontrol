@@ -27,7 +27,7 @@
 
     <!-- node details popup -->
     <div id="nodeDetails" class="modal" data-bind="gumbyModal:$root">
-        <div class="content">
+      <div class="content" style="top:10%; max-height:80%; min-height:50%;">
         <a class="close switch"><i class="icon-cancel"></i></a>
         <section data-bind="gumbyTabs:$root" class="tabs">
             <ul class="tab-nav">
@@ -65,7 +65,9 @@
                         </div>
                     </div>
                     <div class="four columns text-left field">
-                        <div data-bind="click:createAssociation" class="medium primary btn"><_a style="color:white;" href="#" data-translateable="true">Create</_a>
+                        <div data-bind="click:createAssociation" class="medium primary btn">
+                            <_a style="color:white;" href="#" data-translateable="true">Create</_a>
+                        </div>
                     </div>
                 </div>
                 <style type="text/html" id="nodeAssociationsRowTemplate">
@@ -159,7 +161,9 @@
                         <_span data-translateable="true">Heal this node</_span>
                     </div>
                     <div class="three columns text-left field">
-                        <div data-bind="event:{mousedown:healNode}" class="medium primary btn"><_a style="color:white;" href="#" data-translateable="true">Heal</_a></div>
+                        <div data-bind="event:{mousedown:healNode}" class="medium primary btn">
+                            <_a style="color:white;" href="#" data-translateable="true">Heal</_a>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -167,7 +171,9 @@
                         <_span data-translateable="true">Refresh node informations</_span>
                     </div>
                     <div class="three columns text-left field">
-                        <div data-bind="event:{mousedown:refreshNode}" class="medium primary btn"><_a style="color:white;" href="#" data-translateable="true">Refresh</_a></div>
+                        <div data-bind="event:{mousedown:refreshNode}" class="medium primary btn">
+                            <_a style="color:white;" href="#" data-translateable="true">Refresh</_a>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -175,7 +181,9 @@
                         <_span data-translateable="true">Test this node</_span>
                     </div>
                     <div class="three columns text-left field">
-                        <div data-bind="event:{mousedown:testNode}" class="medium primary btn"><_a style="color:white;" href="#" data-translateable="true">Test</_a></div>
+                        <div data-bind="event:{mousedown:testNode}" class="medium primary btn">
+                            <_a style="color:white;" href="#" data-translateable="true">Test</_a>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -183,7 +191,9 @@
                         <_span data-translateable="true">Remove this node from network</_span>
                     </div>
                     <div class="three columns text-left field">
-                        <div data-bind="event:{mousedown:removeNode}" class="medium primary btn"><_a style="color:white;" href="#" data-translateable="true">Remove</_a></div>
+                        <div data-bind="event:{mousedown:removeNode}" class="medium primary btn">
+                            <_a style="color:white;" href="#" data-translateable="true">Remove</_a>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -191,13 +201,14 @@
                         <_span data-translateable="true">Request node configuration parameters</_span>
                     </div>
                     <div class="three columns text-left field">
-                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="medium primary btn"><_a style="color:white;" href="#" data-translateable="true" data-bind="click:$root.noclick">Request parameters</_a></div>
+                        <div data-bind="event:{mousedown:requestAllConfigParams}" class="medium primary btn">
+                            <_a style="color:white;" href="#" data-translateable="true" data-bind="click:$root.noclick">Request parameters</_a>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        </div>
+      </div>
     </div>
 
     <!-- main tabs -->
