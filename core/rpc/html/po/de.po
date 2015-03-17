@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 14:44+0100\n"
+"POT-Creation-Date: 2015-03-17 15:49+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -571,45 +571,40 @@ msgstr "Verbindung wurde erfolgreich entfernt"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
 #, fuzzy
-msgid "MySensors configuration"
-msgstr "SMS Konfiguration"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
-#, fuzzy
 msgid "Configure serial port"
 msgstr "USB Port vom Controller"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
 #: ../applications/zwave/html/zwave.xml.in.h:33
 msgid "Set"
 msgstr "Setzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
 #, fuzzy
 msgid "Reset device counters"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
 #, fuzzy
 msgid "Reset all counters"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 #, fuzzy
 msgid "Reset all"
 msgstr "Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 #, fuzzy
 msgid "Remove device"
 msgstr "Entfernen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:13
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr "Entfernen"
@@ -1541,6 +1536,10 @@ msgstr ""
 #: ../help/debug/html/debug.xml.in.h:4
 msgid "Stop"
 msgstr ""
+
+#, fuzzy
+#~ msgid "MySensors configuration"
+#~ msgstr "SMS Konfiguration"
 
 #~ msgid "Actions"
 #~ msgstr "Befehle"

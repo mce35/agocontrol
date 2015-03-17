@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 14:44+0100\n"
+"POT-Creation-Date: 2015-03-17 15:49+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -568,40 +568,36 @@ msgid "Device removed successfully."
 msgstr "Le périphérique a été supprimé"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
-msgid "MySensors configuration"
-msgstr "Configuration de MySensors"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
 msgid "Configure serial port"
 msgstr "Configurer le port série du contrôleur"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
 #: ../applications/zwave/html/zwave.xml.in.h:33
 msgid "Set"
 msgstr "Sauver"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
 msgid "Reset device counters"
 msgstr "Effacer les compteurs du périphérique"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr "Effacer"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
 msgid "Reset all counters"
 msgstr "Effacer tous les compteurs"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 msgid "Reset all"
 msgstr "Tout effacer"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 msgid "Remove device"
 msgstr "Supprimer un périphérique"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:13
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr "Supprimer"
