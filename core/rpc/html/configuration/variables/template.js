@@ -7,6 +7,7 @@ function VariablesConfig(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
+    self.newVariable = ko.observable('');
 
     self.makeEditable = function(item, td, tr)
     {
@@ -48,7 +49,7 @@ function VariablesConfig(agocontrol)
     {
         self.agocontrol.block($('#agoGrid'));
         var content = {};
-        content.variable = $("#varName").val();
+        content.variable = self.newVariable();
         content.value = "True";
         content.command = 'setvariable';
         content.uuid = self.agocontrol.agoController;
@@ -60,6 +61,7 @@ function VariablesConfig(agocontrol)
                     value : content.value,
                     action : ""
                 });
+                self.newVariable('');
             }
             else
             {
