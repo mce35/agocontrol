@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 15:49+0100\n"
+"POT-Creation-Date: 2015-03-17 17:16+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -1031,7 +1031,7 @@ msgstr "Script wurde nicht umbenannt"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:14
 #, fuzzy
-msgid "Event builder by blocks"
+msgid "Event builder using blocks"
 msgstr "Ereignis Konfiguration"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15

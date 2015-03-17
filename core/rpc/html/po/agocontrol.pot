@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 15:49+0100\n"
+"POT-Creation-Date: 2015-03-17 17:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -989,7 +989,7 @@ msgid "Script not renamed"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:14
-msgid "Event builder by blocks"
+msgid "Event builder using blocks"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15

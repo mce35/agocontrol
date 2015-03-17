@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 15:49+0100\n"
+"POT-Creation-Date: 2015-03-17 17:16+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -1008,7 +1008,7 @@ msgid "Script not renamed"
 msgstr "Le script n'a pas été renommé"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:14
-msgid "Event builder by blocks"
+msgid "Event builder using blocks"
 msgstr "Création d'évènements par blocs"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15
@@ -1487,4 +1487,3 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:4
 msgid "Stop"
 msgstr "Arrêter"
-
