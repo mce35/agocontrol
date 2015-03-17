@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-12 15:22+0100\n"
+"POT-Creation-Date: 2015-03-17 14:44+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -212,7 +212,6 @@ msgid "Click"
 msgstr "Cliquer"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:13
-#: ../applications/zwave/html/zwave.xml.in.h:39
 msgid "here"
 msgstr "ici"
 
@@ -234,7 +233,7 @@ msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
 #: ../applications/security/html/security.xml.in.h:8
-#: ../applications/zwave/html/zwave.xml.in.h:100
+#: ../applications/zwave/html/zwave.xml.in.h:66
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
@@ -246,7 +245,7 @@ msgid "To send test tweet on your account, click on button"
 msgstr "Pour envoyer un tweet de test, cliquer sur le bouton:"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:20
-#: ../applications/zwave/html/zwave.xml.in.h:36
+#: ../applications/zwave/html/zwave.xml.in.h:39
 msgid "Test"
 msgstr "Test"
 
@@ -577,7 +576,7 @@ msgid "Configure serial port"
 msgstr "Configurer le port série du contrôleur"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:7
-#: ../applications/zwave/html/zwave.xml.in.h:48
+#: ../applications/zwave/html/zwave.xml.in.h:33
 msgid "Set"
 msgstr "Sauver"
 
@@ -586,7 +585,7 @@ msgid "Reset device counters"
 msgstr "Effacer les compteurs du périphérique"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:9
-#: ../applications/zwave/html/zwave.xml.in.h:94
+#: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr "Effacer"
 
@@ -603,7 +602,7 @@ msgid "Remove device"
 msgstr "Supprimer un périphérique"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:13
-#: ../applications/zwave/html/zwave.xml.in.h:52
+#: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -646,7 +645,7 @@ msgid "Alarms"
 msgstr "Dispositif d'alarme"
 
 #: ../applications/security/html/security.xml.in.h:12
-#: ../applications/zwave/html/zwave.xml.in.h:91
+#: ../applications/zwave/html/zwave.xml.in.h:60
 #: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr "Annuler"
@@ -807,320 +806,158 @@ msgid "Infos"
 msgstr "Infos"
 
 #: ../applications/zwave/html/zwave.xml.in.h:24
-msgid "Actions"
-msgstr "Actions"
-
-#: ../applications/zwave/html/zwave.xml.in.h:25
 msgid "Associations"
 msgstr "Associations"
 
-#: ../applications/zwave/html/zwave.xml.in.h:26
+#: ../applications/zwave/html/zwave.xml.in.h:25
 msgid "Configuration"
 msgstr "Configuration"
 
+#: ../applications/zwave/html/zwave.xml.in.h:26
+msgid "Commands"
+msgstr "Commandes"
+
 #: ../applications/zwave/html/zwave.xml.in.h:27
-msgid "Advanced"
-msgstr "Avancé"
-
-#: ../applications/zwave/html/zwave.xml.in.h:28
-msgid "In this tab you can perform some basic actions on selected Z-Wave node"
-msgstr ""
-"Dans cet onglet vous pouvez lancer des commands basiques sur le périphérique "
-"Z-Wave sélectionné"
-
-#: ../applications/zwave/html/zwave.xml.in.h:29
-msgid "Heal this node"
-msgstr "Réparer ce périphérique"
-
-#: ../applications/zwave/html/zwave.xml.in.h:30
-msgid "Heal"
-msgstr "Réparer"
-
-#: ../applications/zwave/html/zwave.xml.in.h:31
-msgid ""
-"If you have troubles with this node, heal action can repair and diagnose the "
-"problem"
-msgstr ""
-"Si vous rencontrez des problèmes avec ce périphérique, cette action pourra "
-"réparer et diagnostiquer le problème."
-
-#: ../applications/zwave/html/zwave.xml.in.h:32
-msgid "Refresh node informations"
-msgstr "Mettre à jour les informations du périphérique"
-
-#: ../applications/zwave/html/zwave.xml.in.h:33
-msgid "Refresh"
-msgstr "Mettre à jour"
-
-#: ../applications/zwave/html/zwave.xml.in.h:34
-msgid ""
-"Force controller to get node informations. This command lasts some time."
-msgstr "Force le contrôleur à mettre à jour les informations du périphérique."
-
-#: ../applications/zwave/html/zwave.xml.in.h:35
-msgid "Test this node"
-msgstr "Tester ce périphérique"
-
-#: ../applications/zwave/html/zwave.xml.in.h:37
-msgid "Launch some test procedures on this node. This command lasts some time!"
-msgstr ""
-"Exécute des procédures de test sur ce périphérique. Cette commande dure "
-"quelque temps!"
-
-#: ../applications/zwave/html/zwave.xml.in.h:38
-msgid ""
-"Here you can manage associations for this node. More informations are "
-"available"
-msgstr ""
-"Ici vous pouvez gérer les associations de ce périphérique. Pour plus "
-"d'informations cliquer"
-
-#: ../applications/zwave/html/zwave.xml.in.h:40
 msgid "Create new association with"
 msgstr "Créer une association avec"
 
-#: ../applications/zwave/html/zwave.xml.in.h:41
+#: ../applications/zwave/html/zwave.xml.in.h:28
 msgid "Create"
 msgstr "Créer"
 
-#: ../applications/zwave/html/zwave.xml.in.h:42
-msgid "List of existing associations"
-msgstr "Liste des associations existantes"
-
-#: ../applications/zwave/html/zwave.xml.in.h:43
-msgid "no association"
-msgstr "Aucune association"
-
-#: ../applications/zwave/html/zwave.xml.in.h:44
+#: ../applications/zwave/html/zwave.xml.in.h:29
 msgid "Delete node association"
 msgstr "Supprimer l'association avec le noeud"
 
-#: ../applications/zwave/html/zwave.xml.in.h:45
+#: ../applications/zwave/html/zwave.xml.in.h:30
 msgid "Add association with"
 msgstr "Ajouter une association avec"
 
-#: ../applications/zwave/html/zwave.xml.in.h:46
+#: ../applications/zwave/html/zwave.xml.in.h:31
 msgid "Add association"
 msgstr "Ajouter une association"
 
-#: ../applications/zwave/html/zwave.xml.in.h:47
+#: ../applications/zwave/html/zwave.xml.in.h:32
 msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr "Le paramètre semble invalide. Il est affiché pour information"
 
-#: ../applications/zwave/html/zwave.xml.in.h:49
-msgid "No parameter"
-msgstr "Aucun paramètre"
+#: ../applications/zwave/html/zwave.xml.in.h:34
+msgid "Heal this node"
+msgstr "Réparer ce périphérique"
 
-#: ../applications/zwave/html/zwave.xml.in.h:50
-msgid "This tab is reserved to experts that knows what they do. Be careful!"
-msgstr ""
-"Cet onglet est réservé aux personnes expérimentées qui savent ce qu'elles "
-"font!"
+#: ../applications/zwave/html/zwave.xml.in.h:35
+msgid "Heal"
+msgstr "Réparer"
 
-#: ../applications/zwave/html/zwave.xml.in.h:51
+#: ../applications/zwave/html/zwave.xml.in.h:36
+msgid "Refresh node informations"
+msgstr "Mettre à jour les informations du périphérique"
+
+#: ../applications/zwave/html/zwave.xml.in.h:37
+msgid "Refresh"
+msgstr "Mettre à jour"
+
+#: ../applications/zwave/html/zwave.xml.in.h:38
+msgid "Test this node"
+msgstr "Tester ce périphérique"
+
+#: ../applications/zwave/html/zwave.xml.in.h:40
 msgid "Remove this node from network"
 msgstr "Supprimer ce périphérique du réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:53
+#: ../applications/zwave/html/zwave.xml.in.h:42
 msgid "Request node configuration parameters"
 msgstr "Demander les paramètres de configuration au noeud"
 
-#: ../applications/zwave/html/zwave.xml.in.h:54
+#: ../applications/zwave/html/zwave.xml.in.h:43
 msgid "Request parameters"
 msgstr "Demander les paramètre"
 
-#: ../applications/zwave/html/zwave.xml.in.h:55
-msgid "Outer circle represents devices"
-msgstr "Le cercle extérieur représente les périphériques"
-
-#: ../applications/zwave/html/zwave.xml.in.h:56
-msgid "Nodes dependencies are displayed inside the circle"
-msgstr ""
-"Les dépendances entre les périphériques sont affichées à l'intérieur du "
-"cercle"
-
-#: ../applications/zwave/html/zwave.xml.in.h:57
-msgid "Click on outer circle open selected device details"
-msgstr ""
-"Cliquer sur le cercle extérieur pour afficher des infos sur le périphérique "
-"sélectionné"
-
-#: ../applications/zwave/html/zwave.xml.in.h:58
-msgid ""
-"Mouse over a dependency shows relationship between source and target nodes"
-msgstr ""
-"Le passage de la souris sur une dépendance affiche les relations avec les "
-"périphériques"
-
-#: ../applications/zwave/html/zwave.xml.in.h:59
-msgid "Zoom graph using your mouse wheel"
-msgstr "Pour zoomer, utiliser la molette de la souris"
-
-#: ../applications/zwave/html/zwave.xml.in.h:60
+#: ../applications/zwave/html/zwave.xml.in.h:44
 #: ../help/configuration/html/configuration.xml.in.h:7
 msgid "Devices"
 msgstr "Périphériques"
 
-#: ../applications/zwave/html/zwave.xml.in.h:61
+#: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Dependencies"
 msgstr "Dépendances"
 
-#: ../applications/zwave/html/zwave.xml.in.h:62
-msgid "General"
-msgstr "Général"
-
-#: ../applications/zwave/html/zwave.xml.in.h:63
+#: ../applications/zwave/html/zwave.xml.in.h:46
 msgid "Statistics"
 msgstr "Statistiques"
 
-#: ../applications/zwave/html/zwave.xml.in.h:64
-msgid "Id"
-msgstr "Id"
+#: ../applications/zwave/html/zwave.xml.in.h:47
+msgid "General commands"
+msgstr "Commandes générales"
 
-#: ../applications/zwave/html/zwave.xml.in.h:65
-#: ../configuration/events/html/events.xml.in.h:10
-#: ../configuration/scenarios/html/scenarios.xml.in.h:12
-msgid "Name"
-msgstr "Nom"
+#: ../applications/zwave/html/zwave.xml.in.h:48
+msgid "USB port"
+msgstr "Port USB"
 
-#: ../applications/zwave/html/zwave.xml.in.h:66
-msgid "Type"
-msgstr "Type"
-
-#: ../applications/zwave/html/zwave.xml.in.h:67
-msgid "Awake"
-msgstr "Réveillé"
-
-#: ../applications/zwave/html/zwave.xml.in.h:68
-msgid "Failed"
-msgstr "Échec"
-
-#: ../applications/zwave/html/zwave.xml.in.h:69
+#: ../applications/zwave/html/zwave.xml.in.h:49
 msgid "True"
 msgstr "Vrai"
 
-#: ../applications/zwave/html/zwave.xml.in.h:70
+#: ../applications/zwave/html/zwave.xml.in.h:50
 msgid "False"
 msgstr "Faux"
 
-#: ../applications/zwave/html/zwave.xml.in.h:71
-msgid "nodes found in your network"
-msgstr "périphériques trouvés"
+#: ../applications/zwave/html/zwave.xml.in.h:51
+msgid "Pair/unpair node to your network"
+msgstr "Associer/dissocier le périphérique du réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:72
-msgid "Building graph..."
-msgstr "Construction des dépendances..."
-
-#: ../applications/zwave/html/zwave.xml.in.h:73
-msgid "General Z-Wave configuration"
-msgstr "Configuration Z-Wave"
-
-#: ../applications/zwave/html/zwave.xml.in.h:74
-msgid "Configure controller USB port"
-msgstr "Configurer le port USB du contrôleur"
-
-#: ../applications/zwave/html/zwave.xml.in.h:75
-msgid "Basic commands that can be launched on controller"
-msgstr "Les commandes basiques qui peuvent être exécutées par le contrôleur"
-
-#: ../applications/zwave/html/zwave.xml.in.h:76
-msgid "Pair node to your network"
-msgstr "Associer le périphérique au réseau"
-
-#: ../applications/zwave/html/zwave.xml.in.h:77
+#: ../applications/zwave/html/zwave.xml.in.h:52
 msgid "Pair"
 msgstr "Associer"
 
-#: ../applications/zwave/html/zwave.xml.in.h:78
-msgid "Activate pairing mode of your Z-Wave controller"
-msgstr "Activer l'association du contrôleur Z-Wave"
-
-#: ../applications/zwave/html/zwave.xml.in.h:79
-msgid "Unpair node from your network"
-msgstr "Dissocier le périphérique du réseau"
-
-#: ../applications/zwave/html/zwave.xml.in.h:80
+#: ../applications/zwave/html/zwave.xml.in.h:53
 msgid "Unpair"
 msgstr "Dissocier"
 
-#: ../applications/zwave/html/zwave.xml.in.h:81
-msgid "Remove node from your Z-Wave controller"
-msgstr "Supprimer le périphérique Z-Wave"
-
-#: ../applications/zwave/html/zwave.xml.in.h:82
+#: ../applications/zwave/html/zwave.xml.in.h:54
 msgid "Turn on/off all devices"
 msgstr "Allumer/éteindre tous les périphériques"
 
-#: ../applications/zwave/html/zwave.xml.in.h:83
+#: ../applications/zwave/html/zwave.xml.in.h:55
 msgid "On"
 msgstr "On"
 
-#: ../applications/zwave/html/zwave.xml.in.h:84
+#: ../applications/zwave/html/zwave.xml.in.h:56
 msgid "Off"
 msgstr "Off"
 
-#: ../applications/zwave/html/zwave.xml.in.h:85
+#: ../applications/zwave/html/zwave.xml.in.h:57
 msgid "Test network"
 msgstr "Tester le réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:86
-msgid ""
-"Launch some test procedures over all nodes. This command lasts some time!"
-msgstr ""
-"Exécute des procédures de test sur tous les périphériques. Cette commande "
-"peut prendre du temps!"
-
-#: ../applications/zwave/html/zwave.xml.in.h:87
+#: ../applications/zwave/html/zwave.xml.in.h:58
 msgid "Heal network"
 msgstr "Réparer le réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:88
-msgid "Z-Wave controller reports some statistics displayed below"
-msgstr "Le contrôleur Z-Wave fournit les statistiques suivantes"
-
-#: ../applications/zwave/html/zwave.xml.in.h:89
-msgid "Advanced controller commands"
-msgstr "Les commandes avancées du contrôleur"
-
-#: ../applications/zwave/html/zwave.xml.in.h:90
+#: ../applications/zwave/html/zwave.xml.in.h:59
 msgid "Cancel running controller command"
 msgstr "Annuler la commande en cours"
 
-#: ../applications/zwave/html/zwave.xml.in.h:92
-msgid "This action will cancel currently running command"
-msgstr "Cette action annule la commande en cours d'exécution"
-
-#: ../applications/zwave/html/zwave.xml.in.h:93
+#: ../applications/zwave/html/zwave.xml.in.h:61
 msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
 
-#: ../applications/zwave/html/zwave.xml.in.h:95
-msgid "This action will clear everything from your controller!"
-msgstr ""
-"Cette action supprimera la totalité de la configuration de votre contrôleur"
-
-#: ../applications/zwave/html/zwave.xml.in.h:96
+#: ../applications/zwave/html/zwave.xml.in.h:63
 msgid "Download configuration"
 msgstr "Télécharger la configuration"
 
-#: ../applications/zwave/html/zwave.xml.in.h:97
+#: ../applications/zwave/html/zwave.xml.in.h:64
 msgid "Download"
 msgstr "Télécharger"
 
-#: ../applications/zwave/html/zwave.xml.in.h:98
-msgid "Download network config from primary controller to dongle"
-msgstr ""
-"Télécharge la configuration du réseau du contrôleur principal vers le "
-"contrôleur USB"
-
-#: ../applications/zwave/html/zwave.xml.in.h:99
+#: ../applications/zwave/html/zwave.xml.in.h:65
 msgid "Save configuration"
 msgstr "Sauvegarder la configuration"
 
-#: ../applications/zwave/html/zwave.xml.in.h:101
-msgid "????"
-msgstr "????"
+#: ../applications/zwave/html/zwave.xml.in.h:67
+msgid "Configure controller USB port"
+msgstr "Configurer le port USB du contrôleur"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
 msgid "luacontroller is not responding. Unable to execute action."
@@ -1434,6 +1271,11 @@ msgstr "Critère"
 msgid "Action"
 msgstr "Action"
 
+#: ../configuration/events/html/events.xml.in.h:10
+#: ../configuration/scenarios/html/scenarios.xml.in.h:12
+msgid "Name"
+msgstr "Nom"
+
 #: ../configuration/events/html/events.xml.in.h:11
 msgid "Input event name"
 msgstr "Entrer le nom de l'évènement"
@@ -1649,3 +1491,4 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:4
 msgid "Stop"
 msgstr "Arrêter"
+
