@@ -66,7 +66,7 @@
                     </div>
                     <div class="four columns text-left field">
                         <div data-bind="click:createAssociation" class="medium primary btn">
-                            <_a style="color:white;" href="#" data-translateable="true">Create</_a>
+                            <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Create</_a>
                         </div>
                     </div>
                 </div>
@@ -162,7 +162,7 @@
                     </div>
                     <div class="three columns text-left field">
                         <div data-bind="event:{mousedown:healNode}" class="medium primary btn">
-                            <_a style="color:white;" href="#" data-translateable="true">Heal</_a>
+                            <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Heal</_a>
                         </div>
                     </div>
                 </div>
@@ -172,7 +172,7 @@
                     </div>
                     <div class="three columns text-left field">
                         <div data-bind="event:{mousedown:refreshNode}" class="medium primary btn">
-                            <_a style="color:white;" href="#" data-translateable="true">Refresh</_a>
+                            <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Refresh</_a>
                         </div>
                     </div>
                 </div>
@@ -182,7 +182,7 @@
                     </div>
                     <div class="three columns text-left field">
                         <div data-bind="event:{mousedown:testNode}" class="medium primary btn">
-                            <_a style="color:white;" href="#" data-translateable="true">Test</_a>
+                            <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Test</_a>
                         </div>
                     </div>
                 </div>
@@ -192,7 +192,7 @@
                     </div>
                     <div class="three columns text-left field">
                         <div data-bind="event:{mousedown:removeNode}" class="medium primary btn">
-                            <_a style="color:white;" href="#" data-translateable="true">Remove</_a>
+                            <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Remove</_a>
                         </div>
                     </div>
                 </div>
@@ -202,7 +202,7 @@
                     </div>
                     <div class="three columns text-left field">
                         <div data-bind="event:{mousedown:requestAllConfigParams}" class="medium primary btn">
-                            <_a style="color:white;" href="#" data-translateable="true" data-bind="click:$root.noclick">Request parameters</_a>
+                            <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Request parameters</_a>
                         </div>
                     </div>
                 </div>
@@ -280,8 +280,12 @@
                     <_span data-translateable="true">Pair/unpair node to your network</_span>
                 </div>
                 <div class="three columns text-left field">
-                   <div data-bind="event:{mousedown:addNode}" class="medium primary btn"><_a href="#" data-translateable="true">Pair</_a></div>
-                   <div data-bind="event:{mousedown:removeNode}" class="medium primary btn"><_a href="#" data-translateable="true">Unpair</_a></div>
+                    <div data-bind="event:{mousedown:addNode}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Pair</_a>
+                    </div>
+                    <div data-bind="event:{mousedown:removeNode}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Unpair</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -289,8 +293,12 @@
                     <_span data-translateable="true">Turn on/off all devices</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:allOn}" class="medium primary btn"><_a href="#" data-translateable="true">On</_a></div>
-                    <div data-bind="event:{mousedown:allOff}" class="medium primary btn"><_a href="#" data-translateable="true">Off</_a></div>
+                    <div data-bind="event:{mousedown:allOn}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">On</_a>
+                    </div>
+                    <div data-bind="event:{mousedown:allOff}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Off</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -298,7 +306,9 @@
                     <_span data-translateable="true">Test network</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:testNetwork}" class="medium primary btn"><_a href="#" data-translateable="true">Test</_a></div>
+                    <div data-bind="event:{mousedown:testNetwork}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Test</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -306,7 +316,9 @@
                     <_span data-translateable="true">Heal network</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:healNetwork}" class="medium primary btn"><_a href="#" data-translateable="true" data-bind="click:$root.noclick">Heal network</_a></div>
+                    <div data-bind="event:{mousedown:healNetwork}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Heal network</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -314,7 +326,9 @@
                     <_span data-translateable="true">Cancel running controller command</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:cancel}" class="medium primary btn"><_a href="#" data-translateable="true">Cancel</_a></div>
+                    <div data-bind="event:{mousedown:cancel}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Cancel</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -322,7 +336,9 @@
                     <_span data-translateable="true">Reset controller</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:reset}" class="medium primary btn"><_a href="#" data-translateable="true">Reset</_a></div>
+                    <div data-bind="event:{mousedown:reset}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Reset</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -330,7 +346,9 @@
                     <_span data-translateable="true">Download configuration</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:downloadConfig}" class="medium primary btn"><_a href="#" data-translateable="true">Download</_a></div>
+                    <div data-bind="event:{mousedown:downloadConfig}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Download</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -338,7 +356,9 @@
                     <_span data-translateable="true">Save configuration</_span>
                 </div>
                 <div class="three columns text-left field">
-                    <div data-bind="event:{mousedown:saveConfig}" class="medium primary btn"><_a href="#" data-translateable="true">Save</_a></div>
+                    <div data-bind="event:{mousedown:saveConfig}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Save</_a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -352,7 +372,9 @@
                     <input type="text" placeholder="/dev/ttyACM0" id="setport" data-bind="value: port" class="xwide text input"/>
                 </div>
                 <div class="three columns text-left">
-                    <div data-bind="event:{mousedown:setPort}" class="medium primary btn"><_a href="#" data-translateable="true">Set</_a></div>
+                    <div data-bind="event:{mousedown:setPort}" class="medium primary btn">
+                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Set</_a>
+                    </div>
                 </div>
             </div>
         </div>
