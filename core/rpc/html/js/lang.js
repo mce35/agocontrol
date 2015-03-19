@@ -89,11 +89,8 @@ function prepareTemplate(doc)
             supportedLanguages[lang] = true;
         }
     }
-    console.log('supportedLanguages:');
-    console.log(supportedLanguages);
 
     targetLang = supportedLanguages[targetLang] ? targetLang : null;
-    console.log(targetLang);
 
     /* Remove tags which have a different language or have no translation */
     var killList = [];
