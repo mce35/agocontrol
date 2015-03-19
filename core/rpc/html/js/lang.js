@@ -136,7 +136,6 @@ function prepareTemplate(doc)
             //translated elem
 
             //filter elem that doesn't fit to browser lang
-            var l = tag.getAttribute("xml:lang");
             if( tag.getAttribute("xml:lang")!=targetLang )
             {
                 killList.push(tag);
