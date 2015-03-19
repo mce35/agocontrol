@@ -98,14 +98,12 @@ public:
     time_t inited;
     time_t lastPoll;
     int timeout;
-    bool processed;
 
-    GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_, bool processed_)
+    GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_)
         : subscriptionId(subscriptionId_)
           , rpcRequestId(rpcRequestId_)
           , lastPoll(0)
           , timeout(GETEVENT_DEFAULT_TIMEOUT)
-          , processed(processed_)
     {
         inited = time(NULL);
     }
@@ -130,7 +128,6 @@ private:
 
     list<mg_server*> all_servers;
     list<boost::thread*> server_threads;
-    time_t last_event;
 
     bool getEventRequest(struct mg_connection *conn, GetEventState* state);
     bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) ;
@@ -316,6 +313,15 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
     return false;
 }
 
+/* Free any GetEventState struct on the connection */
+static void mg_clear_event_state (struct mg_connection *conn) {
+    if( conn->connection_param )
+    {
+        delete (GetEventState*)conn->connection_param;
+        conn->connection_param = NULL;
+    }
+}
+
 /**
  * Handle getEvent polling request
  * Return true if an event wasn't found to say to mongoose request is not over (return MG_MORE).
@@ -324,6 +330,9 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
  *
  * Connection parameters are stored directly into mg_connection object inside connection_param variable.
  * Thanks to this variable its possible to call many times getEventRequest.
+ *
+ * As soon as we've written a response, we free the state object and clear
+ * the connection parameter, as the connection may be reused at any time after this.
  */
 bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
 {
@@ -338,6 +347,7 @@ bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
     {
         lock.unlock();
         mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
+        mg_clear_event_state(conn);
         return false;
     }
 
@@ -353,10 +363,8 @@ bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
         mg_printmap(conn, event);
         mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
-        //flag as processed
-        state->processed = true;
-
         result = false;
+        mg_clear_event_state(conn);
     }
 
     return result;
@@ -478,7 +486,7 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         }
 
         //add connection param (used to get connection param when polling see MG_POLL)
-        GetEventState *state = new GetEventState(content.asString(), id, false);
+        GetEventState *state = new GetEventState(content.asString(), id);
 
         Json::Value timeout = params["timeout"];
         if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT)
@@ -486,6 +494,7 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
             state->timeout = timeout.asInt();
         }
 
+        assert(!conn->connection_param);
         conn->connection_param = state;
         return getEventRequest(conn, state);
     }
@@ -770,35 +779,30 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         if( conn->connection_param )
         {
             GetEventState* state = (GetEventState*)conn->connection_param;
-            if( !state->processed )
+            if( !getEventRequest(conn, state) )
             {
-                if( !getEventRequest(conn, state) )
-                {
-                    //event found. Stop polling request
-                    result = MG_TRUE;
-                }
+                // event found & response written. Stop polling request
+                result = MG_TRUE;
             }
-            state->lastPoll = time(NULL);
 
             if(result == MG_FALSE)
             {
+                assert(conn->connection_param); // not free'd in getEventRequest
+
+                state->lastPoll = time(NULL);
                 if((state->lastPoll - state->inited) > state->timeout)
                 {
                     // close connection now (before mongoose close connection)
                     mg_rpc_reply_error(conn, state->rpcRequestId, AGO_JSONRPC_NO_EVENT, "no messages for subscription");
                     result = MG_TRUE;
+                    mg_clear_event_state(conn);
                 }
             }
         }
     }
     else if( event==MG_CLOSE )
     {
-        if( conn->connection_param )
-        {
-            GetEventState* state = (GetEventState*)conn->connection_param;
-            delete state;
-            conn->connection_param = NULL;
-        }
+        mg_clear_event_state(conn);
     }
     else if (event == MG_AUTH)
     {
@@ -869,7 +873,6 @@ void AgoRpc::eventHandler(std::string subject, qpid::types::Variant::Map content
     }
 
     // Wake servers to let pending getEvent trigger
-    last_event = time(NULL);
     for(list<mg_server*>::iterator i = all_servers.begin(); i != all_servers.end(); i++) {
         mg_wakeup_server(*i);
     }
