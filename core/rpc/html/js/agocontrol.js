@@ -250,7 +250,7 @@ Agocontrol.prototype = {
 
         //TODO for now refresh all inventory
         self.getInventory(function(response) {
-            self.handleDashboards(response.result.floorplan);
+            self.handleDashboards(response.result.floorplans);
         });
     },
 

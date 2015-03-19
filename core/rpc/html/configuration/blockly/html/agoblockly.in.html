@@ -16,7 +16,7 @@
         <_span data-translateable="true" id="rsf">Script not renamed</_span>
     </div>
 
-    <_h3 data-translateable="true">Event builder by blocks</_h3>
+    <_h3 data-translateable="true">Event builder using blocks</_h3>
 
     <!-- blockly configuration -->
     <xml id="toolbox" style="display: none">
@@ -253,7 +253,7 @@
         <div class="content tabs" data-bind="gumbyTabs:$root">
             <a class="close switch"><i class="icon-cancel"></i></a>
             <ul class="tab-nav">
-                <li><_a href="#" data-translateable="true" class="active">My scripts</_a></li>
+                <li class="active"><_a href="#" data-translateable="true">My scripts</_a></li>
                 <li><_a href="#" data-translateable="true">Script import</_a></li>
             </ul>
             <div class="tab-content active">
@@ -309,9 +309,10 @@
         </div>
     </div>
 
+    <!-- debug dialog -->
     <div id="debugDialog" data-bind="gumbyModal:$root" class="modal">
         <div class="content" style="top:15%; min-height:90%; max-height:90%; width:60%">
-            <a class="close switch" gumby-trigger="|#debugDialog"><i class="icon-cancel" ></i></a>
+            <a class="close switch"><i class="icon-cancel" ></i></a>
             <div class="row">
                 <div class="medium primary btn"><a href="#" data-bind="click:startDebug">Start</a></div>
                 <div class="medium primary btn"><a href="#" data-bind="click:stopDebug">Stop</a></div>

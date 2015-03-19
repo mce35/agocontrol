@@ -1,7 +1,0 @@
-{
-        "name": "How to configure agocontrol",
-        "version": "1.0.0",
-        "description": "Configuration presentation",
-        "template": "html/configuration",
-        "listable": true
-}

@@ -62,14 +62,14 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
     ko.bindingHandlers.gumbyTabs = {
         init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             //handle tab changing
-            $('.tab-nav li > a').click(function() {
-                $(".tab-nav li").each(function() {
+            $(element).find('.tab-nav li > a').click(function() {
+                //update style
+                $(element).find(".tab-nav li").each(function() {
                     $(this).removeClass('active');
                 });
+                $(this).parent().addClass('active');
 
-                $(this).parent().toggleClass('active');
-
-                this.$el = $('.tabs');
+                this.$el = $(element);
                 var index = $(this).parent().index();
                 this.$content = this.$el.find(".tab-content");
                 this.$nav = $(this).parent().find('li');

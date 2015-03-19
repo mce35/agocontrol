@@ -66,10 +66,6 @@ function Zwave(devices, agocontrol)
 
         var colors = d3.scale.category20c();
 
-        var zoom = d3.behavior.zoom()
-                     .scaleExtent([1, 10])
-                     .on("zoom", zoomed);
-
         var arc = d3.svg.arc()
                     .innerRadius(innerRadius)
                     .outerRadius(outerRadius);
@@ -87,8 +83,7 @@ function Zwave(devices, agocontrol)
                     .attr("height", height)
                     .append("g")
                     .attr("id", "circle")
-                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-                    .call(zoom);
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
         svg.append("circle")
            .attr("r", outerRadius);
@@ -165,10 +160,6 @@ function Zwave(devices, agocontrol)
             chord.classed("fade", function(p) {
                 return p.source.index!=i && p.target.index!=i;
             });
-        }
-
-        function zoomed() {
-            container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
         }
     };
 
@@ -1102,6 +1093,77 @@ function zwaveConfig(zwave) {
     self.stats = ko.observableArray([]);
     self.selectedNodeForAssociation = ko.observable();
     self.selectedNode = null;
+    self.nodeInfosGrid = new ko.agoGrid.viewModel({
+        data: self.nodeInfos,
+        columns: [
+            {headerText:'Info', rowText:'info'},
+            {headerText:'Value', rowText:'value'}
+        ],
+        rowTemplate: 'nodeInfosRowTemplate',
+        displayRowCount: false,
+        displaySearch: false,
+        displayPagination: false
+    });
+    self.nodeStatusGrid = new ko.agoGrid.viewModel({
+        data: self.nodeStatus,
+        columns: [
+            {headerText:'Status', rowText:'status'},
+            {headerText:'Value', rowText:'value'}
+        ],
+        rowTemplate: 'nodeStatusRowTemplate',
+        displayRowCount: false,
+        displaySearch: false,
+        displayPagination: false
+    });
+    self.nodeAssociationsGrid = new ko.agoGrid.viewModel({
+        data: self.nodeAssociations,
+        columns: [
+            {headerText:'Status', rowText:'status'},
+            {headerText:'Value', rowText:'value'}
+        ],
+        rowTemplate: 'nodeAssociationsRowTemplate',
+        displayRowCount: false,
+        displaySearch: false,
+        displayPagination: false
+    });
+    self.statsGrid = new ko.agoGrid.viewModel({
+        data: self.stats,
+        columns: [
+            {headerText:'Stat', rowText:'stat'},
+            {headerText:'Value', rowText:'value'}
+        ],
+        rowTemplate: 'statsRowTemplate',
+        displayRowCount: false,
+        displaySearch: false,
+        displayPagination: false
+    });
+    self.nodeParametersGrid = new ko.agoGrid.viewModel({
+        data: self.nodeParameters,
+        columns: [
+            {headerText:'', rowText:''},
+            {headerText:'Parameter', rowText:''},
+            {headerText:'Value', rowText:''},
+            {headerText:'', rowText:''}
+        ],
+        rowTemplate: 'nodeParametersRowTemplate',
+        displayRowCount: false,
+        displaySearch: false,
+        displayPagination: false
+    });
+    self.nodesGrid = new ko.agoGrid.viewModel({
+        data: self.nodes,
+        columns: [
+            {headerText:'Id', rowText:'id'},
+            {headerText:'Device', rowText:'manufacturer'},
+            {headerText:'Type', rowText:'type'},
+            {headerText:'Awake', rowText:'awake'},
+            {headerText:'Failed', rowText:'failed'}
+        ],
+        rowTemplate: 'nodesRowTemplate',
+        displayRowCount: false,
+        displaySearch: false,
+        displayPagination: false
+    });
 
     //get and set zwave controller uuid
     var zwaveControllerUuid = zwave.getControllerUuid();
@@ -1191,7 +1253,6 @@ function zwaveConfig(zwave) {
                 'index': self.selectedNode.params[i].index,
                 'commandclassid': self.selectedNode.params[i].commandclassid
             });
-            //self.nodeParameters.push(self.selectedNode.params[i]);
         }
 
         //get node associations
@@ -1246,9 +1307,13 @@ function zwaveConfig(zwave) {
                 });
             }
         }
+        
+
+        //open modal
+        $('#nodeDetails').addClass('active');
 
         //prepare popup tabs
-        $("#nodeDetails-tabs").tabs({
+        /*$("#nodeDetails-tabs").tabs({
             active: 0
         });
         //configure and open popup
@@ -1257,7 +1322,7 @@ function zwaveConfig(zwave) {
             width: 1024,
             height: 700,
             modal: true
-        });
+        });*/
     };
     
     //get nodes and build nodes graph
@@ -1403,16 +1468,7 @@ function zwaveConfig(zwave) {
 function init_template(path, params, agocontrol)
 {
     var zwave = new Zwave(agocontrol.devices(), agocontrol);
-
-    ko.bindingHandlers.jqTabs = {
-        init: function(element, valueAccessor) {
-            var options = valueAccessor() || {};
-            setTimeout( function() { $(element).tabs(options); }, 0);
-        }
-    };
-
     var model = new zwaveConfig(zwave);
-
     return model;
 }
 
