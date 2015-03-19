@@ -98,14 +98,17 @@ public:
     time_t inited;
     time_t lastPoll;
     int timeout;
+    bool processed;
 
-    GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_)
+    GetEventState(std::string subscriptionId_, const Json::Value rpcRequestId_, bool processed_)
         : subscriptionId(subscriptionId_)
           , rpcRequestId(rpcRequestId_)
           , lastPoll(0)
-          , timeout(GETEVENT_DEFAULT_TIMEOUT)	{
-              inited = time(NULL);
-          }
+          , timeout(GETEVENT_DEFAULT_TIMEOUT)
+          , processed(processed_)
+    {
+        inited = time(NULL);
+    }
 };
 
 // helper to determine last element
@@ -252,7 +255,8 @@ static bool mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result") {
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result")
+{
     Json::Value root(Json::objectValue);
     root[result_key] = result;
     return mg_rpc_reply(conn, request_or_id, root);
@@ -263,7 +267,8 @@ static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &r
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result) {
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result)
+{
     Json::Value r(result);
     return mg_rpc_reply_result(conn, request_or_id, r);
 }
@@ -273,7 +278,8 @@ static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &r
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message) {
+static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message)
+{
     Json::Value error(Json::objectValue);
     error["code"] = code;
     error["message"] = message;
@@ -286,14 +292,19 @@ static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &re
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
+static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap)
+{
     //	Json::Value r(result);
     //	mg_rpc_reply_result(conn, request_or_id, r);
     Json::Value request_id;
-    if(request_or_id.type() == Json::objectValue) {
+    if(request_or_id.type() == Json::objectValue)
+    {
         request_id = request_or_id.get("id", Json::Value());
-    }else
+    }
+    else
+    {
         request_id = request_or_id;
+    }
 
     Json::FastWriter writer;
     std::string request_idstr = writer.write(request_id);
@@ -323,7 +334,8 @@ bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
     boost::unique_lock<boost::mutex> lock(mutexSubscriptions);
     map<string,Subscriber>::iterator it = subscriptions.find(state->subscriptionId);
 
-    if(it == subscriptions.end()) {
+    if(it == subscriptions.end())
+    {
         lock.unlock();
         mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
         return false;
@@ -340,6 +352,9 @@ bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
         mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
         mg_printmap(conn, event);
         mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
+
+        //flag as processed
+        state->processed = true;
 
         result = false;
     }
@@ -362,13 +377,16 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
     const string version = request.get("jsonrpc", "unspec").asString();
 
     myId = writer.write(id);
-    if (version != "2.0") {
+    if (version != "2.0")
+    {
         return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
     }
 
     const Json::Value params = request.get("params", Json::Value());
-    if (method == "message" ) {
-        if (!params.isObject() || params.empty()) {
+    if (method == "message" )
+    {
+        if (!params.isObject() || params.empty())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params");
         }
 
@@ -383,7 +401,8 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         if(responseMap.size() == 0 || id.isNull() ) // only send reply when id is not null
         {
             // no response
-            if(responseMap.size() == 0) {
+            if(responseMap.size() == 0)
+            {
                 AGO_ERROR() << "No reply message to fetch. Failed message: " << "subject=" <<subject<<": " << command;
             }
 
@@ -393,14 +412,18 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         //AGO_TRACE() << "Response: " << responseMap;
         return mg_rpc_reply_map(conn, request, responseMap);
 
-    } else if (method == "subscribe") {
+    }
+    else if (method == "subscribe")
+    {
         string subscriberName = generateUuid();
-        if (id.isNull()) {
+        if (id.isNull())
+        {
             // JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
         }
 
-        if (subscriberName == "") {
+        if (subscriberName == "")
+        {
             // uuid is empty so malloc probably failed, we seem to be out of memory
             return mg_rpc_reply_error(conn, request, JSONRPC_INTERNAL_ERROR, "Out of memory");
         }
@@ -415,13 +438,17 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         }
         return mg_rpc_reply_result(conn, request, subscriberName);
 
-    } else if (method == "unsubscribe") {
-        if (!params.isObject()) {
+    }
+    else if (method == "unsubscribe")
+    {
+        if (!params.isObject())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
         Json::Value content = params["uuid"];
-        if (!content.isString()) {
+        if (!content.isString())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
@@ -429,27 +456,33 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         {
             boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
             map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
-            if (it != subscriptions.end()) {
+            if (it != subscriptions.end())
+            {
                 subscriptions.erase(content.asString());
             }
         }
 
         return mg_rpc_reply_result(conn, request, std::string("success"));
-    } else if (method == "getevent") {
-        if (!params.isObject()) {
+    }
+    else if (method == "getevent")
+    {
+        if (!params.isObject())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
         Json::Value content = params["uuid"];
-        if (!content.isString()){
+        if (!content.isString())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
         //add connection param (used to get connection param when polling see MG_POLL)
-        GetEventState *state = new GetEventState(content.asString(), id);
+        GetEventState *state = new GetEventState(content.asString(), id, false);
 
         Json::Value timeout = params["timeout"];
-        if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT) {
+        if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT)
+        {
             state->timeout = timeout.asInt();
         }
 
@@ -520,8 +553,8 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
 
     //upload files
     while ((ofs = mg_parse_multipart(conn->content + ofs, conn->content_len - ofs, var_name, sizeof(var_name),
-                    file_name, sizeof(file_name), &data, &data_len)) > 0) {
-
+                    file_name, sizeof(file_name), &data, &data_len)) > 0)
+    {
         if( strlen(file_name)>0 )
         {
             // Sanitize filename, it should only be a filename.
@@ -705,9 +738,13 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         if (strcmp(conn->uri, "/jsonrpc") == 0)
         {
             if( jsonrpc(conn) )
+            {
                 result = MG_MORE;
+            }
             else
+            {
                 result = MG_TRUE;
+            }
         }
         else if( strcmp(conn->uri, "/upload") == 0)
         {
@@ -733,7 +770,7 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         if( conn->connection_param )
         {
             GetEventState* state = (GetEventState*)conn->connection_param;
-            if (last_event >= state->lastPoll)
+            if( !state->processed )
             {
                 if( !getEventRequest(conn, state) )
                 {
@@ -743,8 +780,10 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
             }
             state->lastPoll = time(NULL);
 
-            if(result == MG_FALSE) {
-                if((state->lastPoll - state->inited) > state->timeout) {
+            if(result == MG_FALSE)
+            {
+                if((state->lastPoll - state->inited) > state->timeout)
+                {
                     // close connection now (before mongoose close connection)
                     mg_rpc_reply_error(conn, state->rpcRequestId, AGO_JSONRPC_NO_EVENT, "no messages for subscription");
                     result = MG_TRUE;
