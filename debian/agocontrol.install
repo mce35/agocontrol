@@ -10,6 +10,7 @@ lib/systemd/system/agosystem.service
 etc/opt/agocontrol/conf.d/system.conf
 etc/opt/agocontrol/conf.d/rpc.conf
 etc/opt/agocontrol/schema.d/00-core.yaml
+etc/opt/agocontrol/schema.d/05-system.yaml
 etc/opt/agocontrol/schema.d/10-automation.yaml
 etc/opt/agocontrol/schema.d/10-common.yaml
 etc/opt/agocontrol/schema.d/10-media.yaml
