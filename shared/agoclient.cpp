@@ -130,6 +130,7 @@ std::string agocontrol::variantMapToJSONString(qpid::types::Variant::Map map) {
                 }
             case VAR_STRING:
                 tmpstring = it->second.asString();
+                replaceString(tmpstring, "\\", "\\\\");	
                 replaceString(tmpstring, "\"", "\\\"");	
                 result += "\"" +  tmpstring + "\"";
                 break;
@@ -167,6 +168,7 @@ std::string agocontrol::variantListToJSONString(qpid::types::Variant::List list)
                 break;
             case VAR_STRING:
                 tmpstring = it->asString();
+                replaceString(tmpstring, "\\", "\\\\");	
                 replaceString(tmpstring, "\"", "\\\"");	
                 result += "\"" +  tmpstring + "\"";
                 break;
