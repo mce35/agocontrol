@@ -128,6 +128,7 @@ std::string agocontrol::variantMapToJSONString(qpid::types::Variant::Map map) {
                 } else {
                     result += "0";
                 }
+                break;
             case VAR_STRING:
                 tmpstring = it->second.asString();
                 replaceString(tmpstring, "\\", "\\\\");	
