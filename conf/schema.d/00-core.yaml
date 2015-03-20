@@ -245,10 +245,12 @@ devicetypes:
     name: security system
     description: ago control security system module
     commands: [gethousemode, sethousemode, triggerzone, setzones, cancel]
+    events: [event.security.housemodechanged, event.security.countdown.started, event.security.countdown, event.security.intruderalert, event.security.alarmcanceled]
   luacontroller:
     name: lua event scripting
     description: use lua scripts to act on events
     commands: [getscriptlist, getscript, setscript, delscript]
+    events: [event.system.debugscript]
   scenario:
     name: scene
     description: execute scenarios
@@ -303,6 +305,12 @@ values:
   yday:
     name: yday
     description: nth day of year
+  message:
+    name: message
+    description: a message
+  debuglevel:
+    name: debug level
+    description: debug level
 events:
   event.device.announce:
     description: announces a device to the resolver
@@ -355,3 +363,6 @@ events:
   event.monitoring.memoryoverhead:
     description: event triggered when process is consuming too much memory
     parameters: [process]
+  event.system.debugscript:
+    description: used by agolua to send debug messages to the blockly based event editor
+    parameters: [debuglevel, message]

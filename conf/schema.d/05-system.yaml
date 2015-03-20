@@ -1,0 +1,38 @@
+commands:
+  getprocesslist:
+    name: get process list
+    description: get list of processes
+  getstatus:
+    name: get system status
+    description: get system status
+  setmonitoredprocesses:
+    name: set processes to montor
+    description: define which processes are monitored by the systemcontroller
+    parameters:
+      processes:
+        name: process list
+        type: list
+  setmemorythreshold:
+    name: set memory threshold
+    description: set memory threshold for process inspection
+    parameters:
+      threshold:
+        name: memory threshold
+        type: integer
+devicetypes:
+  systemcontroller:
+    name: system controller
+    description: operating system inspection
+    commands: [getprocesslist, getstatus, setmonitoredprocesses, setmemorythreshold]
+    events: [event.monitoring.processdead, event.monitoring.memoryoverhead]
+values:
+  process:
+    name: process name
+    description: name of a process
+events:
+  event.monitoring.processdead:
+    description: event triggered when process is dead
+    parameters: [process]
+  event.monitoring.memoryoverhead:
+    description: event triggered when process is consuming too much memory
+    parameters: [process]
