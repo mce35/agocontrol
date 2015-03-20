@@ -3,6 +3,7 @@
     <section class="tabs" data-bind="gumbyTabs:$root">
         <ul class="tab-nav">
             <li class="active"><_a data-translateable="true" href="#">Events draining</_a></li>
+            <li><_a data-translateable="true" href="#">Configuration overview</_a></li>
         </ul>
 
         <div class="tab-content active">
@@ -17,6 +18,14 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <div class="tab-content">
+            <script type="text/html" id="configTreeRowTemplate">
+                <td><span data-bind="text: name"/></td>
+                <td><span data-bind="text: value"/></td>
+            </script>
+            <div data-bind="agoGrid:configTreeGrid"></div>
         </div>
     </section>
 </div>

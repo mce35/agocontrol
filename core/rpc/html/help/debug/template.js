@@ -5,6 +5,10 @@ function Debug(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
+
+    //===============
+    //DRAIN
+    //===============
     self.draining = false;
 
     //append received event
@@ -53,6 +57,56 @@ function Debug(agocontrol)
     {
         $('#drainContainer > ul').empty();
     };
+
+    //==============
+    //CONFIGURATION
+    //==============
+    self.configTree = ko.observableArray([]);
+    self.configTreeGrid = new ko.agoGrid.viewModel({
+        data: self.configTree,
+        columns: [
+            {headerText:'Parameter', rowText:'name'},
+            {headerText:'Value', rowText:'value'}
+        ],
+        rowTemplate: 'configTreeRowTemplate',
+        pageSize: 100
+    });
+
+    //get config tree
+    self.getConfigTree = function()
+    {
+        var content = {};
+        content.command = 'getconfigtree';
+        content.uuid = self.agocontrol.agoController;
+        self.agocontrol.sendCommand(content, function(res) {
+            if( true ) //TODO
+            {
+                var configs = [];
+                for( var module in res.result.config )
+                {
+                    for( var section in res.result.config[module] )
+                    {
+                        for( var param in res.result.config[module][section] )
+                        {
+                            //filter comments
+                            if( param.indexOf('#')!=0 )
+                            {
+                                configs.push({
+                                    name : module+'/'+section+'/'+param,
+                                    module: module,
+                                    section: section,
+                                    param: param,
+                                    value: res.result.config[module][section][param]
+                                });
+                            }
+                        }
+                    }
+                }
+                self.configTree(configs);
+            }
+        });
+    };
+    self.getConfigTree();
 };
 
 /**
