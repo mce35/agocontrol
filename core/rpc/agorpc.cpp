@@ -160,63 +160,13 @@ static int mg_event_handler_wrapper(struct mg_connection *conn, enum mg_event ev
 static void mg_printmap(struct mg_connection *conn, Variant::Map map);
 
 static void mg_printlist(struct mg_connection *conn, Variant::List list) {
-    mg_printf_data(conn, "[");
-    for (Variant::List::const_iterator it = list.begin(); it != list.end(); ++it) {
-        switch(it->getType()) {
-            case VAR_MAP:
-                mg_printmap(conn, it->asMap());
-                break;
-            case VAR_STRING:
-                mg_printf_data(conn, "\"%s\"", it->asString().c_str());
-                break;
-            case VAR_BOOL:
-                if( it->asBool() )
-                    mg_printf_data(conn, "1");
-                else
-                    mg_printf_data(conn, "0");
-                break;
-            default:
-                if (it->asString().size() != 0) {
-                    mg_printf_data(conn, "%s", it->asString().c_str());
-                } else {
-                    mg_printf_data(conn, "null");
-                }
-        }
-        if ((it != list.end()) && (next(it) != list.end())) mg_printf_data(conn, ",");
-    }
-    mg_printf_data(conn, "]");
+    std::string json = variantListToJSONString(list);
+    mg_printf_data(conn, json.c_str());
 }
 
 static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
-    mg_printf_data(conn, "{");
-    for (Variant::Map::const_iterator it = map.begin(); it != map.end(); ++it) {
-        mg_printf_data(conn, "\"%s\":", it->first.c_str());
-        switch (it->second.getType()) {
-            case VAR_MAP:
-                mg_printmap(conn, it->second.asMap());
-                break;
-            case VAR_LIST:
-                mg_printlist(conn, it->second.asList());
-                break;
-            case VAR_STRING:
-                mg_printf_data(conn, "\"%s\"", it->second.asString().c_str());
-                break;
-            case VAR_BOOL:
-                if( it->second.asBool() )
-                    mg_printf_data(conn, "1");
-                else
-                    mg_printf_data(conn, "0");
-                break;
-            default:
-                if (it->second.asString().size() != 0) {
-                    mg_printf_data(conn, "%s", it->second.asString().c_str());
-                } else {
-                    mg_printf_data(conn, "null");
-                }
-        }
-        if ((it != map.end()) && (next(it) != map.end())) mg_printf_data(conn, ",");
-    }
-    mg_printf_data(conn, "}");
+    std::string json = variantMapToJSONString(map);
+    mg_printf_data(conn, json.c_str());
 }
 
 /**
