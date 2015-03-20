@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 17:16+0100\n"
+"POT-Creation-Date: 2015-03-20 19:14+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -871,7 +871,6 @@ msgid "Request parameters"
 msgstr "Demander les paramètre"
 
 #: ../applications/zwave/html/zwave.xml.in.h:44
-#: ../help/configuration/html/configuration.xml.in.h:7
 msgid "Devices"
 msgstr "Périphériques"
 
@@ -1044,7 +1043,7 @@ msgid "Clear all blocks on workspace"
 msgstr "Effacer tous les blocs"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
-#: ../help/debug/html/debug.xml.in.h:5
+#: ../help/debug/html/debug.xml.in.h:6
 msgid "Clear"
 msgstr "Effacer"
 
@@ -1352,102 +1351,6 @@ msgstr "Nom de la variable"
 msgid "Create variable"
 msgstr "Créer une variable"
 
-#: ../help/configuration/html/configuration.xml.in.h:1
-msgid "ago control Configuration"
-msgstr "Configuration de ago control"
-
-#: ../help/configuration/html/configuration.xml.in.h:2
-msgid "Welcome"
-msgstr "Bienvenue"
-
-#: ../help/configuration/html/configuration.xml.in.h:3
-msgid "Dashboards"
-msgstr "Tableaux de bord"
-
-#: ../help/configuration/html/configuration.xml.in.h:4
-msgid "Rooms and Variables"
-msgstr "Pièces et variables"
-
-#: ../help/configuration/html/configuration.xml.in.h:5
-msgid "Scenarios"
-msgstr "Scénarios"
-
-#: ../help/configuration/html/configuration.xml.in.h:6
-msgid "Events"
-msgstr "Evènements"
-
-#: ../help/configuration/html/configuration.xml.in.h:8
-msgid "System and Cloud"
-msgstr "Système et Cloud"
-
-#: ../help/configuration/html/configuration.xml.in.h:9
-msgid ""
-"Welcome to the configuration page. You can find useful information and help "
-"for the configuration menu records in the left tabs."
-msgstr ""
-"Bienvenue sur la page de configuration. Vous trouverez tout l'aide "
-"nécessaire afin de configurer ago control dans le menu sur votre gauche."
-
-#: ../help/configuration/html/configuration.xml.in.h:10
-msgid "Help and Documentation"
-msgstr "Aide et documentation"
-
-#: ../help/configuration/html/configuration.xml.in.h:11
-msgid "ago control Documentation"
-msgstr "Documentation de ago control"
-
-#: ../help/configuration/html/configuration.xml.in.h:12
-msgid "ago control Forum"
-msgstr "Forum ago control"
-
-#: ../help/configuration/html/configuration.xml.in.h:13
-msgid "Contribute"
-msgstr "Contribuer au projet"
-
-#: ../help/configuration/html/configuration.xml.in.h:14
-msgid ""
-"If you want to join the development community or if you like ago control and "
-"want to help us with your donation!"
-msgstr ""
-"Si vous souhaitez participer à ce projet n'hésiter pas à rejoindre la "
-"communauté de développeurs ou si tout simplement vous aimez ago control, "
-"vous pouvez toujours nous soutenir grâce à une donation. "
-
-#: ../help/configuration/html/configuration.xml.in.h:15
-msgid "Contribute to ago control"
-msgstr "Contribuer à ago control"
-
-#: ../help/configuration/html/configuration.xml.in.h:16
-msgid ""
-"You can easly design your Dashboard or add new custom dashboard which are "
-"shown in the left main menu. Easily drag and drop your devices from the "
-"device tree on the left side to the grid and save it. You also can have "
-"multiple pages on a single grid. If you want to reorder the devices on the "
-"grid you just drag and drop it on the grid."
-msgstr ""
-"Vous pouvez très facilement créer votre page d'acceuil ou ajouter de "
-"nouvelles zones qui seront accessibles dans le menu de gauche. Choisissez "
-"vos périphériques dans la liste du bas et glisser-déposer les sur la grille "
-"d'agencement. Vous pouvez aussi avoir plusieurs pages pour une même zone. "
-"Pour réorganiser vos périphéques, glisser-déposer les à nouveau sur la "
-"grille."
-
-#: ../help/configuration/html/configuration.xml.in.h:17
-msgid "Open scenario editor"
-msgstr "Ouvrir l'éditeur de scénario"
-
-#: ../help/configuration/html/configuration.xml.in.h:18
-msgid "Open event editor"
-msgstr "Ouvrir l'éditeur d'évènement"
-
-#: ../help/configuration/html/configuration.xml.in.h:19
-msgid "Open device setup"
-msgstr "Ouvrir la page de configuration des périphériques"
-
-#: ../help/configuration/html/configuration.xml.in.h:20
-msgid "Open Cloud setup"
-msgstr "Ouvrir la page de configuration du Cloud"
-
 #: ../help/system/html/system.xml.in.h:1
 msgid "System informations"
 msgstr "Informations système"
@@ -1481,9 +1384,14 @@ msgid "Events draining"
 msgstr "Évènements"
 
 #: ../help/debug/html/debug.xml.in.h:3
+msgid "Configuration overview"
+msgstr "Configuration"
+
+#: ../help/debug/html/debug.xml.in.h:4
 msgid "Start"
 msgstr "Démarrer"
 
-#: ../help/debug/html/debug.xml.in.h:4
+#: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
+
