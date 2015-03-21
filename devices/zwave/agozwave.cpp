@@ -2087,7 +2087,17 @@ void AgoZwave::setupApp()
 
     AGO_INFO() << "Starting OZW driver ver " << Manager::getVersionAsString();
     // init open zwave
-    Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
+    MyLog *myLog = new MyLog;
+    // OpenZWave::Log* pLog = OpenZWave::Log::Create(myLog);
+    OpenZWave::Log::SetLoggingClass(myLog);
+    // OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+    // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
+    // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+
+    if(Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" ) == NULL) {
+	   AGO_ERROR() << "Failed to configure OpenZWave";
+	   throw StartupError();
+	}
     if (getConfigOption("returnroutes", "true")=="true")
     {
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
@@ -2114,13 +2124,6 @@ void AgoZwave::setupApp()
     OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
 
     Options::Get()->Lock();
-
-    MyLog *myLog = new MyLog;
-    // OpenZWave::Log* pLog = OpenZWave::Log::Create(myLog);
-    OpenZWave::Log::SetLoggingClass(myLog);
-    // OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
-    // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
-    // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
 
     Manager::Create();
     Manager::Get()->AddWatcher( on_notification, this );
