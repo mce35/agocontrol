@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-20 19:14+0100\n"
+"POT-Creation-Date: 2015-03-21 08:31+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -570,41 +570,51 @@ msgid "Device removed successfully."
 msgstr "Verbindung wurde erfolgreich entfernt"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
+#: ../applications/zwave/html/zwave.xml.in.h:46
+msgid "Statistics"
+msgstr "Statistiken"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/zwave/html/zwave.xml.in.h:25
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
 #, fuzzy
 msgid "Configure serial port"
 msgstr "USB Port vom Controller"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:33
 msgid "Set"
 msgstr "Setzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
 #, fuzzy
 msgid "Reset device counters"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 #, fuzzy
 msgid "Reset all counters"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 #, fuzzy
 msgid "Reset all"
 msgstr "Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
 #, fuzzy
 msgid "Remove device"
 msgstr "Entfernen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr "Entfernen"
@@ -818,10 +828,6 @@ msgstr "Informationen"
 msgid "Associations"
 msgstr "Verbindungen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
-msgid "Configuration"
-msgstr "Konfiguration"
-
 #: ../applications/zwave/html/zwave.xml.in.h:26
 #, fuzzy
 msgid "Commands"
@@ -895,10 +901,6 @@ msgstr "Geräte"
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Dependencies"
 msgstr "Abhängigkeiten"
-
-#: ../applications/zwave/html/zwave.xml.in.h:46
-msgid "Statistics"
-msgstr "Statistiken"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
 #, fuzzy
