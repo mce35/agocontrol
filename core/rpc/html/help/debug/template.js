@@ -66,7 +66,8 @@ function Debug(agocontrol)
         data: self.configTree,
         columns: [
             {headerText:'Parameter', rowText:'name'},
-            {headerText:'Value', rowText:'value'}
+            {headerText:'Value', rowText:''},
+            {headerText:'Action', rowText:''}
         ],
         rowTemplate: 'configTreeRowTemplate',
         pageSize: 100
@@ -79,34 +80,74 @@ function Debug(agocontrol)
         content.command = 'getconfigtree';
         content.uuid = self.agocontrol.agoController;
         self.agocontrol.sendCommand(content, function(res) {
-            if( true ) //TODO
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                var configs = [];
-                for( var module in res.result.config )
+                if( res.result.config )
                 {
-                    for( var section in res.result.config[module] )
+                    var configs = [];
+                    for( var module in res.result.config )
                     {
-                        for( var param in res.result.config[module][section] )
+                        for( var section in res.result.config[module] )
                         {
-                            //filter comments
-                            if( param.indexOf('#')!=0 )
+                            for( var option in res.result.config[module][section] )
                             {
-                                configs.push({
-                                    name : module+'/'+section+'/'+param,
-                                    module: module,
-                                    section: section,
-                                    param: param,
-                                    value: res.result.config[module][section][param]
-                                });
+                                //filter comments
+                                if( option.indexOf('#')!=0 )
+                                {
+                                    configs.push({
+                                        name : module+'/'+section+'/'+option,
+                                        module: module,
+                                        section: section,
+                                        option: option,
+                                        oldValue: res.result.config[module][section][option],
+                                        value: ko.observable(res.result.config[module][section][option])
+                                    });
+                                }
                             }
                         }
                     }
+                    self.configTree(configs);
                 }
-                self.configTree(configs);
+                else
+                {
+                    notif.fatal('agoresolver is not responding');
+                }
             }
         });
     };
     self.getConfigTree();
+
+    //save specified config param
+    self.setConfig = function(param)
+    {
+        var content = {};
+        content.uuid = self.agocontrol.agoController;
+        content.command = 'setconfig';
+        content.module = param.module;
+        content.section = param.section;
+        content.option = param.option;
+        content.value = param.value(); //observable
+        self.agocontrol.sendCommand(content, function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
+            {
+                if( res.result.returncode===0 )
+                {
+                    //success
+                    notif.success('Parameter value updated');
+                }
+                else
+                {
+                    //unable to set param, revert update
+                    notif.error('Unable to set parameter');
+                    param.value(param.oldValue);
+                }
+            }
+            else
+            {
+                notif.fatal('agoresolver is not responding');
+            }
+        });
+    };
 };
 
 /**

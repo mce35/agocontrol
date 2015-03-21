@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-21 08:31+0100\n"
+"POT-Creation-Date: 2015-03-21 10:34+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -583,6 +583,7 @@ msgstr "Configurer le port série du contrôleur"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:33
+#: ../help/debug/html/debug.xml.in.h:7
 msgid "Set"
 msgstr "Sauver"
 

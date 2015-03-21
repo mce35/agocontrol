@@ -23,7 +23,14 @@
         <div class="tab-content">
             <script type="text/html" id="configTreeRowTemplate">
                 <td><span data-bind="text: name"/></td>
-                <td><span data-bind="text: value"/></td>
+                <td class="field">
+                    <input class="xwide input" type="text" data-bind="value:value"/>
+                </td>
+                <td>
+                    <div data-bind="event:{mousedown:$parent.setConfig}" class="small primary btn">
+                        <_a data-translateable="true" href="#">Set</_a>
+                    </div>
+                </td>
             </script>
             <div data-bind="agoGrid:configTreeGrid"></div>
         </div>
