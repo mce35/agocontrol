@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-20 19:14+0100\n"
+"POT-Creation-Date: 2015-03-21 08:31+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -568,36 +568,46 @@ msgid "Device removed successfully."
 msgstr "Le périphérique a été supprimé"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
+#: ../applications/zwave/html/zwave.xml.in.h:46
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/zwave/html/zwave.xml.in.h:25
+msgid "Configuration"
+msgstr "Configuration"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
 msgid "Configure serial port"
 msgstr "Configurer le port série du contrôleur"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:33
 msgid "Set"
 msgstr "Sauver"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
 msgid "Reset device counters"
 msgstr "Effacer les compteurs du périphérique"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr "Effacer"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 msgid "Reset all counters"
 msgstr "Effacer tous les compteurs"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 msgid "Reset all"
 msgstr "Tout effacer"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
 msgid "Remove device"
 msgstr "Supprimer un périphérique"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr "Supprimer"
@@ -805,10 +815,6 @@ msgstr "Infos"
 msgid "Associations"
 msgstr "Associations"
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
-msgid "Configuration"
-msgstr "Configuration"
-
 #: ../applications/zwave/html/zwave.xml.in.h:26
 msgid "Commands"
 msgstr "Commandes"
@@ -877,10 +883,6 @@ msgstr "Périphériques"
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Dependencies"
 msgstr "Dépendances"
-
-#: ../applications/zwave/html/zwave.xml.in.h:46
-msgid "Statistics"
-msgstr "Statistiques"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
 msgid "General commands"
@@ -1394,4 +1396,3 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
-

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-20 19:14+0100\n"
+"POT-Creation-Date: 2015-03-21 08:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -553,36 +553,46 @@ msgid "Device removed successfully."
 msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
-msgid "Configure serial port"
+#: ../applications/zwave/html/zwave.xml.in.h:46
+msgid "Statistics"
 msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/zwave/html/zwave.xml.in.h:25
+msgid "Configuration"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
+msgid "Configure serial port"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:33
 msgid "Set"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
 msgid "Reset device counters"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 msgid "Reset all counters"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 msgid "Reset all"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
 msgid "Remove device"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr ""
@@ -786,10 +796,6 @@ msgstr ""
 msgid "Associations"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
-msgid "Configuration"
-msgstr ""
-
 #: ../applications/zwave/html/zwave.xml.in.h:26
 msgid "Commands"
 msgstr ""
@@ -857,10 +863,6 @@ msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Dependencies"
-msgstr ""
-
-#: ../applications/zwave/html/zwave.xml.in.h:46
-msgid "Statistics"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
