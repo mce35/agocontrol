@@ -22,9 +22,9 @@
 
         <div class="tab-content">
             <script type="text/html" id="configTreeRowTemplate">
-                <td><span data-bind="text: name"/></td>
+                <td><span data-bind="text:name"/></td>
                 <td class="field">
-                    <input class="xwide input" type="text" data-bind="value:value"/>
+                    <input class="xwide input" type="text" data-bind="textInput:value"/>
                 </td>
                 <td>
                     <div data-bind="event:{mousedown:$parent.setConfig}" class="small primary btn">
