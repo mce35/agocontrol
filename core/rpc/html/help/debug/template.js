@@ -85,22 +85,22 @@ function Debug(agocontrol)
                 if( res.result.config )
                 {
                     var configs = [];
-                    for( var module in res.result.config )
+                    for( var app in res.result.config )
                     {
-                        for( var section in res.result.config[module] )
+                        for( var section in res.result.config[app] )
                         {
-                            for( var option in res.result.config[module][section] )
+                            for( var option in res.result.config[app][section] )
                             {
                                 //filter comments
                                 if( option.indexOf('#')!=0 )
                                 {
                                     configs.push({
-                                        name : module+'/'+section+'/'+option,
-                                        module: module,
+                                        name : app+'/'+section+'/'+option,
+                                        app: app,
                                         section: section,
                                         option: option,
-                                        oldValue: res.result.config[module][section][option],
-                                        value: ko.observable(res.result.config[module][section][option])
+                                        oldValue: res.result.config[app][section][option],
+                                        value: ko.observable(res.result.config[app][section][option])
                                     });
                                 }
                             }
@@ -123,7 +123,7 @@ function Debug(agocontrol)
         var content = {};
         content.uuid = self.agocontrol.agoController;
         content.command = 'setconfig';
-        content.module = param.module;
+        content.app = param.app;
         content.section = param.section;
         content.option = param.option;
         content.value = param.value(); //observable
