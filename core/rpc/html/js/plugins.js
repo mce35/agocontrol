@@ -29,18 +29,46 @@ function SecurityPlugin(agocontrol)
     self.currentPin = ko.observable('');
     self.alarmStateInterval = null;
     self.countdown = ko.observable(-1);
+    self.securityIsRunning = true;
 
     //get security controller
     self.getSecurityControllerUuid = function()
     {
-         for( var i=0; i<self.agocontrol.devices().length; i++ )
-         {
-             if( self.agocontrol.devices()[i].devicetype=='securitycontroller' )
-             {
-                 self.securityController = self.agocontrol.devices()[i].uuid;
-                 break;
-             }
-         }
+        //check if security module is running
+        if( self.agocontrol.processes().length>0 )
+        {
+            //process list loaded
+            var found = false;
+            for( var i=0; i<self.agocontrol.processes().length; i++ )
+            {
+                if( self.agocontrol.processes()[i].name==='agosecurity' )
+                {
+                    //security found
+                    if( self.agocontrol.processes()[i].running==0 )
+                    {
+                        self.securityIsRunning = false;
+                    }
+                    found = true;
+                    break;
+                }
+            }
+
+            if( !found )
+            {
+                self.securityIsRunning = false;
+            }
+        }
+
+        //get uuid
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
+        {
+            if( self.agocontrol.devices()[i].devicetype=='securitycontroller' )
+            {
+                self.securityController = self.agocontrol.devices()[i].uuid;
+                break;
+            }
+        }
+
     };
 
     //get alarm state
@@ -50,6 +78,13 @@ function SecurityPlugin(agocontrol)
         if( !self.securityController )
         {
             self.getSecurityControllerUuid();
+        }
+
+        //clear interval if security is not running
+        if( !self.securityIsRunning )
+        {
+            clearInterval(self.alarmStateInterval);
+            return;
         }
 
         if( self.securityController )
