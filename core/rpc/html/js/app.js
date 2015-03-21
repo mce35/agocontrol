@@ -160,6 +160,8 @@ function AgocontrolViewModel()
         $.ajax({
 			   crossDomain: true, // Enforce loading using <script> tag so we can debug
 			   url: template.path+'/template.js',
+				// TODO(stromnet): verify overall caching in whole project before disabling cache-block here
+				//cache: true, // disable adding of _=<random>, to allow keeping debugger breakpoints between refresh
 			   dataType: "script",
 			   success: function() {
             //Load the application resources if any
