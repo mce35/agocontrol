@@ -2,11 +2,11 @@ cmake_minimum_required (VERSION 2.6)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/agocontrol-init-script.sh.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/agocontrol-init-script.sh"
-    @ONLY
-)
+# configure_file (
+#     "${CMAKE_CURRENT_SOURCE_DIR}/agocontrol-init-script.sh.in"
+#     "${CMAKE_CURRENT_BINARY_DIR}/agocontrol-init-script.sh"
+#     @ONLY
+# )
 
 set_property( DIRECTORY
 	APPEND PROPERTY
