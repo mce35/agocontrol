@@ -348,8 +348,11 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             reply["returncode"] = 0;
         } else if (content["command"] == "setconfig") {
             if ((content["section"].asString() != "") && (content["option"].asString() != "") && (content["value"].asString() != "")&& (content["app"].asString() != "")) {
-                setConfigSectionOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str(),content["app"].asString().c_str());
-                reply["returncode"]=0;
+                if (setConfigSectionOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str(),content["app"].asString().c_str())) {
+                    reply["returncode"]=0;
+                } else {
+                    reply["returncode"]=-1;
+                }
             } else {
                 reply["returncode"]=-1;
             }
