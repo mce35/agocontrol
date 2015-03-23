@@ -59,6 +59,14 @@ function SecurityPlugin(agocontrol)
             }
         }
 
+        //remove event handler is security is not running
+        if( !self.securityIsRunning )
+        {
+            self.agocontrol.removeEventHandler(self.eventHandler);
+            //no need to get controller uuid, stop here
+            return;
+        }
+
         //get uuid
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
@@ -71,68 +79,26 @@ function SecurityPlugin(agocontrol)
 
     };
 
-    //get alarm state
-    self.getAlarmState = function()
+    //event handler, need to catch
+    self.eventHandler = function(event)
     {
-        //get security controller uuid if necessary
+        //get controller uuid if necessary
         if( !self.securityController )
         {
             self.getSecurityControllerUuid();
         }
 
-        //clear interval if security is not running
-        if( !self.securityIsRunning )
+        if( event.event=='event.security.countdown.started' || event.event=='event.security.countdown' )
         {
-            clearInterval(self.alarmStateInterval);
-            return;
-        }
-
-        if( self.securityController )
-        {
-            //check only once so clear interval
-            clearInterval(self.alarmStateInterval);
-
-            var content = {};
-            content.uuid = self.securityController;
-            content.command = 'getalarmstate';
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
-                    if( res.result.result && res.result.result.code && res.result.result.code=="success" )
-                    {
-                        if( res.result.result.data===1 )
-                        {
-                            //alarm is running, open pin panel right now
-                            self.openPanel();
-                        }
-                    }
-                    else
-                    {
-                        console.error('Unable to get alarm status');
-                    }
-                }
-            });
-        }
-    };
-    self.alarmStateInterval = setInterval(self.getAlarmState, 1000);
-
-    //event handler, need to catch
-    self.eventHandler = function(event)
-    {
-        if( event.event=='event.security.countdown.started' )
-        {
-            //display security panel
+            //open pin code panel
             self.openPanel();
+            //handle countdown
+            self.countdown(event.delay);
         }
         else if( event.event=='event.security.alarmcanceled' )
         {
             //alarm has been canceled elsewhere, close panel
             self.closePanel();
-        }
-        else if( event.event=='event.security.countdown' )
-        {
-            //handle countdown
-            self.countdown(event.delay);
         }
     };
     self.agocontrol.addEventHandler(self.eventHandler);
