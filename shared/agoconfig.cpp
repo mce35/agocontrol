@@ -440,23 +440,32 @@ qpid::types::Variant::Map getConfigTree() {
         const char *val;
         aug_get(augeas, matches[i], &val);
         if (val != NULL) {
-            // TODO: split augeas path into section and option
+            std::vector<std::string> elements;
             std::string match = matches[i];
+            AGO_TRACE() << "getConfigTree:augeas match result[" << i << "]:" << match << ": " << val;
             replaceString(match, prefix, "");
-            size_t pos = match.find(".conf");
-            std::string section = match.substr(0,pos);
-            replaceString(match, section, "");
-            replaceString(match, ".conf/", "");
-            std::string option = match.substr(1); // skip trailing slash
-            if (!(tree[section].isVoid())) {
-                qpid::types::Variant::Map sectionMap = tree[section].asMap();
-                sectionMap[option] = val;
-                tree[section] = sectionMap;
-            } else {
-                qpid::types::Variant::Map sectionMap;
-                sectionMap[option] = val;
-                tree[section] = sectionMap;
+            replaceString(match, ".conf", "");
+            elements = split(match, '/');
+            if (elements.size() != 3) {
+                AGO_ERROR() << "augeas match ignored: does not split by / in three parts: " << match;
+                continue;
             }
+            std::string file = elements[0];
+            std::string section = elements[1];
+            std::string option = elements[2];
+            AGO_TRACE() << "File: " << file << " Section: " << section << " Option: " << option;
+
+            qpid::types::Variant::Map fileMap;
+            qpid::types::Variant::Map sectionMap;
+            if (!(tree[file].isVoid())) {
+                fileMap = tree[file].asMap();
+            }
+            if (!(fileMap[section].isVoid())) {
+                sectionMap = fileMap[section].asMap();
+            }
+            sectionMap[option] = val;
+            fileMap[section] = sectionMap;
+            tree[file] = fileMap;
         }
         free((void *) matches[i]);
     }

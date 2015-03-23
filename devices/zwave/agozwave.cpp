@@ -110,11 +110,12 @@ void on_notification(Notification const* _notification, void *context) {
 }
 
 class MyLog : public i_LogImpl {
-    virtual void Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args );
-    virtual void QueueDump();
-    virtual void QueueClear();
-    virtual void SetLoggingState(OpenZWave::LogLevel, OpenZWave::LogLevel, OpenZWave::LogLevel);
-    virtual void SetLogFileName(const string&);
+    void Write( LogLevel _level, uint8 const _nodeId, char const* _format, va_list _args );
+    void QueueDump();
+    void QueueClear();
+    void SetLoggingState(OpenZWave::LogLevel, OpenZWave::LogLevel, OpenZWave::LogLevel);
+    void SetLogFileName(const string&);
+    std::string GetNodeString(uint8 const _nodeId);
 };
 
 void MyLog::QueueDump() {
@@ -134,16 +135,38 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
         vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
         va_end( saveargs );
     }
-    if (_level == LogLevel_StreamDetail) AGO_TRACE() << "OZW " <<string(lineBuf);
-    else if (_level == LogLevel_Debug) AGO_DEBUG() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Detail) AGO_DEBUG() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Info) AGO_INFO() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Alert) AGO_WARNING() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Warning) AGO_WARNING() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Error) AGO_ERROR() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Fatal) AGO_FATAL() << "OZW " << string(lineBuf);
-    else if (_level == LogLevel_Always) AGO_FATAL() << "OZW " << string(lineBuf);
-    else AGO_FATAL() << string(lineBuf);
+	std::string nodeString = GetNodeString(_nodeId);
+
+    if (_level == LogLevel_StreamDetail) AGO_TRACE() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Debug) AGO_DEBUG() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Detail) AGO_DEBUG() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Info) AGO_INFO() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Alert) AGO_WARNING() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Warning) AGO_WARNING() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Error) AGO_ERROR() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Fatal) AGO_FATAL() << "OZW " << nodeString << string(lineBuf);
+    else if (_level == LogLevel_Always) AGO_FATAL() << "OZW " << nodeString << string(lineBuf);
+    else AGO_FATAL() << "OZW (Unknown level) << " << nodeString << string(lineBuf);
+}
+
+// Copied directly from open-zwave LogImpl
+std::string MyLog::GetNodeString(uint8 const _nodeId)
+{
+    if( _nodeId == 0 )
+    {
+        return "";
+    }
+    else if( _nodeId == 255 )
+    {
+        // should make distinction between broadcast and controller better for SwitchAll broadcast
+        return "contrlr, ";
+    }
+    else
+    {
+        char buf[20];
+        snprintf( buf, sizeof(buf), "Node%03d, ", _nodeId );
+        return buf;
+    }
 }
 
 const char *AgoZwave::controllerErrorStr (Driver::ControllerError err) {
@@ -2064,7 +2087,17 @@ void AgoZwave::setupApp()
 
     AGO_INFO() << "Starting OZW driver ver " << Manager::getVersionAsString();
     // init open zwave
-    Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" );
+    MyLog *myLog = new MyLog;
+    // OpenZWave::Log* pLog = OpenZWave::Log::Create(myLog);
+    OpenZWave::Log::SetLoggingClass(myLog);
+    // OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+    // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
+    // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
+
+    if(Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" ) == NULL) {
+	   AGO_ERROR() << "Failed to configure OpenZWave";
+	   throw StartupError();
+	}
     if (getConfigOption("returnroutes", "true")=="true")
     {
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
@@ -2091,13 +2124,6 @@ void AgoZwave::setupApp()
     OpenZWave::Options::Get()->AddOptionInt("RetryTimeout", retryTimeout);
 
     Options::Get()->Lock();
-
-    MyLog *myLog = new MyLog;
-    // OpenZWave::Log* pLog = OpenZWave::Log::Create(myLog);
-    OpenZWave::Log::SetLoggingClass(myLog);
-    // OpenZWave::Log* pLog = OpenZWave::Log::Create("/var/log/zwave.log", true, false, OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
-    // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
-    // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
 
     Manager::Create();
     Manager::Get()->AddWatcher( on_notification, this );

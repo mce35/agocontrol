@@ -1,7 +1,7 @@
 /**
  * MySensors plugin
  */
-function mysensorsConfig(devices, agocontrol)
+function MySensors(devices, agocontrol)
 {
     //members
     var self = this;
@@ -11,6 +11,19 @@ function mysensorsConfig(devices, agocontrol)
     self.devices = ko.observableArray();
     self.selectedRemoveDevice = ko.observable();
     self.selectedCountersDevice = ko.observable();
+    self.counters = ko.observableArray([]);
+    self.countersGrid = new ko.agoGrid.viewModel({
+        data: self.counters,
+        columns: [
+            {headerText: 'Device', rowText:'device'},
+            {headerText: 'Sent', rowText:'counter_sent'},
+            {headerText: 'Retries', rowText:'counter_retries'},
+            {headerText: 'Failed', rowText:'counter_failed'},
+            {headerText: 'Received', rowText:'counter_received'}
+        ],
+        rowTemplate: 'countersRowTemplate',
+        pageSize: 25
+    });
 
     //MySensor controller uuid
     if( devices!==undefined )
@@ -177,31 +190,6 @@ function mysensorsConfig(devices, agocontrol)
         }
     };
 
-    //init ui
-    self.getPort();
-    self.getDevices();
-}
-
-function mysensorsDashboard(devices) {
-    //members
-    var self = this;
-    self.mysensorsControllerUuid = null;
-    self.port = ko.observable();
-    self.counters = ko.observableArray([]);
-
-    //MySensor controller uuid
-    if( devices!==undefined )
-    {
-        for( var i=0; i<devices.length; i++ )
-        {
-            if( devices[i].devicetype=='mysensorscontroller' )
-            {
-                self.mysensorsControllerUuid = devices[i].uuid;
-                break;
-            }
-        }
-    }
-
     //get counters
     self.getCounters = function() {
         var content = {
@@ -225,7 +213,9 @@ function mysensorsDashboard(devices) {
         });
     };
 
-    //get counters
+    //init ui
+    self.getPort();
+    self.getDevices();
     self.getCounters();
 }
 
@@ -234,7 +224,7 @@ function mysensorsDashboard(devices) {
  */
 function init_template(path, params, agocontrol)
 {
-    var model = new mysensorsConfig(agocontrol.devices(), agocontrol);
+    var model = new MySensors(agocontrol.devices(), agocontrol);
     return model;
 }
 

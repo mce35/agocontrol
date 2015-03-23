@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 17:16+0100\n"
+"POT-Creation-Date: 2015-03-21 10:34+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -570,41 +570,52 @@ msgid "Device removed successfully."
 msgstr "Verbindung wurde erfolgreich entfernt"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
+#: ../applications/zwave/html/zwave.xml.in.h:46
+msgid "Statistics"
+msgstr "Statistiken"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/zwave/html/zwave.xml.in.h:25
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:7
 #, fuzzy
 msgid "Configure serial port"
 msgstr "USB Port vom Controller"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
+#: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:33
+#: ../help/debug/html/debug.xml.in.h:7
 msgid "Set"
 msgstr "Setzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
 #, fuzzy
 msgid "Reset device counters"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 #, fuzzy
 msgid "Reset all counters"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 #, fuzzy
 msgid "Reset all"
 msgstr "Zurücksetzen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
 #, fuzzy
 msgid "Remove device"
 msgstr "Entfernen"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr "Entfernen"
@@ -818,10 +829,6 @@ msgstr "Informationen"
 msgid "Associations"
 msgstr "Verbindungen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
-msgid "Configuration"
-msgstr "Konfiguration"
-
 #: ../applications/zwave/html/zwave.xml.in.h:26
 #, fuzzy
 msgid "Commands"
@@ -889,17 +896,12 @@ msgid "Request parameters"
 msgstr "Setze Parameter"
 
 #: ../applications/zwave/html/zwave.xml.in.h:44
-#: ../help/configuration/html/configuration.xml.in.h:7
 msgid "Devices"
 msgstr "Geräte"
 
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Dependencies"
 msgstr "Abhängigkeiten"
-
-#: ../applications/zwave/html/zwave.xml.in.h:46
-msgid "Statistics"
-msgstr "Statistiken"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
 #, fuzzy
@@ -1070,7 +1072,7 @@ msgid "Clear all blocks on workspace"
 msgstr "Kein Block im Arbeitsbereich definiert."
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
-#: ../help/debug/html/debug.xml.in.h:5
+#: ../help/debug/html/debug.xml.in.h:6
 msgid "Clear"
 msgstr "Löschen"
 
@@ -1391,108 +1393,6 @@ msgstr "Namen für Variable eingeben"
 msgid "Create variable"
 msgstr "Variable erstellen"
 
-#: ../help/configuration/html/configuration.xml.in.h:1
-msgid "ago control Configuration"
-msgstr "ago control Konfiguration"
-
-#: ../help/configuration/html/configuration.xml.in.h:2
-msgid "Welcome"
-msgstr "Willkommen"
-
-#: ../help/configuration/html/configuration.xml.in.h:3
-#, fuzzy
-msgid "Dashboards"
-msgstr "Übersicht"
-
-#: ../help/configuration/html/configuration.xml.in.h:4
-msgid "Rooms and Variables"
-msgstr "Räume und Variablen"
-
-#: ../help/configuration/html/configuration.xml.in.h:5
-msgid "Scenarios"
-msgstr "Szenarien"
-
-#: ../help/configuration/html/configuration.xml.in.h:6
-msgid "Events"
-msgstr "Ereignisse"
-
-#: ../help/configuration/html/configuration.xml.in.h:8
-msgid "System and Cloud"
-msgstr "System und Cloud"
-
-#: ../help/configuration/html/configuration.xml.in.h:9
-msgid ""
-"Welcome to the configuration page. You can find useful information and help "
-"for the configuration menu records in the left tabs."
-msgstr ""
-"Willkommen auf der Konfigurationsseite. In den linken Reitern findest Du "
-"eine kurze Anleitung zu den jeweiligen Menüpunkten."
-
-#: ../help/configuration/html/configuration.xml.in.h:10
-msgid "Help and Documentation"
-msgstr "Hilfe und Dokumentation"
-
-#: ../help/configuration/html/configuration.xml.in.h:11
-msgid "ago control Documentation"
-msgstr "ago control Dokumentation"
-
-#: ../help/configuration/html/configuration.xml.in.h:12
-msgid "ago control Forum"
-msgstr "ago control Forum"
-
-#: ../help/configuration/html/configuration.xml.in.h:13
-msgid "Contribute"
-msgstr "Mitarbeiten"
-
-#: ../help/configuration/html/configuration.xml.in.h:14
-msgid ""
-"If you want to join the development community or if you like ago control and "
-"want to help us with your donation!"
-msgstr ""
-"Wenn Du zur Entwickler Gemeinschaft beitreten willst oder wenn Dir ago "
-"control gefällt und Du uns mit einer Spende unterstützen willst!"
-
-#: ../help/configuration/html/configuration.xml.in.h:15
-msgid "Contribute to ago control"
-msgstr "Einen Beitrag für ago control leisten"
-
-#: ../help/configuration/html/configuration.xml.in.h:16
-#, fuzzy
-msgid ""
-"You can easly design your Dashboard or add new custom dashboard which are "
-"shown in the left main menu. Easily drag and drop your devices from the "
-"device tree on the left side to the grid and save it. You also can have "
-"multiple pages on a single grid. If you want to reorder the devices on the "
-"grid you just drag and drop it on the grid."
-msgstr ""
-"In der Übersicht findest Du alle Geräte die einen Namen haben. Wenn ein "
-"Gerät keinen Namen hat, dann kannst Du diesen auf der Geräte Seite vergeben. "
-"Um einen neuen Raumplan zu erstellen klickst Du auf Raumpläne, vergibtst "
-"einen Namen und klickst dann auf Raumplan erstellen. Auf den neuen Raumplan "
-"oder auch auf vorhandene kann man Geräte aus dem Raum-Klappmenü links unten "
-"auf die einzelnen Felder ziehen. Um ein Gerät zu entfernen zieht man es "
-"zurück auf das Raum-Klappmenü. Wenn man ein Gerät auf einer anderen Position "
-"haben möchte, dann einfach am Symbol geklickt halten und auf eine andere "
-"Position ziehen. Mit einem Klick auf das Symbol von einem Gerät bekommst Du "
-"alle Details und Funtkionen."
-
-#: ../help/configuration/html/configuration.xml.in.h:17
-#, fuzzy
-msgid "Open scenario editor"
-msgstr "Namen für Szenario eingeben"
-
-#: ../help/configuration/html/configuration.xml.in.h:18
-msgid "Open event editor"
-msgstr ""
-
-#: ../help/configuration/html/configuration.xml.in.h:19
-msgid "Open device setup"
-msgstr ""
-
-#: ../help/configuration/html/configuration.xml.in.h:20
-msgid "Open Cloud setup"
-msgstr ""
-
 #: ../help/system/html/system.xml.in.h:1
 #, fuzzy
 msgid "System informations"
@@ -1530,12 +1430,91 @@ msgid "Events draining"
 msgstr "Ereignis Konfiguration"
 
 #: ../help/debug/html/debug.xml.in.h:3
+#, fuzzy
+msgid "Configuration overview"
+msgstr "Konfiguration"
+
+#: ../help/debug/html/debug.xml.in.h:4
 msgid "Start"
 msgstr ""
 
-#: ../help/debug/html/debug.xml.in.h:4
+#: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr ""
+
+#~ msgid "ago control Configuration"
+#~ msgstr "ago control Konfiguration"
+
+#~ msgid "Welcome"
+#~ msgstr "Willkommen"
+
+#, fuzzy
+#~ msgid "Dashboards"
+#~ msgstr "Übersicht"
+
+#~ msgid "Rooms and Variables"
+#~ msgstr "Räume und Variablen"
+
+#~ msgid "Scenarios"
+#~ msgstr "Szenarien"
+
+#~ msgid "Events"
+#~ msgstr "Ereignisse"
+
+#~ msgid "System and Cloud"
+#~ msgstr "System und Cloud"
+
+#~ msgid ""
+#~ "Welcome to the configuration page. You can find useful information and "
+#~ "help for the configuration menu records in the left tabs."
+#~ msgstr ""
+#~ "Willkommen auf der Konfigurationsseite. In den linken Reitern findest Du "
+#~ "eine kurze Anleitung zu den jeweiligen Menüpunkten."
+
+#~ msgid "Help and Documentation"
+#~ msgstr "Hilfe und Dokumentation"
+
+#~ msgid "ago control Documentation"
+#~ msgstr "ago control Dokumentation"
+
+#~ msgid "ago control Forum"
+#~ msgstr "ago control Forum"
+
+#~ msgid "Contribute"
+#~ msgstr "Mitarbeiten"
+
+#~ msgid ""
+#~ "If you want to join the development community or if you like ago control "
+#~ "and want to help us with your donation!"
+#~ msgstr ""
+#~ "Wenn Du zur Entwickler Gemeinschaft beitreten willst oder wenn Dir ago "
+#~ "control gefällt und Du uns mit einer Spende unterstützen willst!"
+
+#~ msgid "Contribute to ago control"
+#~ msgstr "Einen Beitrag für ago control leisten"
+
+#, fuzzy
+#~ msgid ""
+#~ "You can easly design your Dashboard or add new custom dashboard which are "
+#~ "shown in the left main menu. Easily drag and drop your devices from the "
+#~ "device tree on the left side to the grid and save it. You also can have "
+#~ "multiple pages on a single grid. If you want to reorder the devices on "
+#~ "the grid you just drag and drop it on the grid."
+#~ msgstr ""
+#~ "In der Übersicht findest Du alle Geräte die einen Namen haben. Wenn ein "
+#~ "Gerät keinen Namen hat, dann kannst Du diesen auf der Geräte Seite "
+#~ "vergeben. Um einen neuen Raumplan zu erstellen klickst Du auf Raumpläne, "
+#~ "vergibtst einen Namen und klickst dann auf Raumplan erstellen. Auf den "
+#~ "neuen Raumplan oder auch auf vorhandene kann man Geräte aus dem Raum-"
+#~ "Klappmenü links unten auf die einzelnen Felder ziehen. Um ein Gerät zu "
+#~ "entfernen zieht man es zurück auf das Raum-Klappmenü. Wenn man ein Gerät "
+#~ "auf einer anderen Position haben möchte, dann einfach am Symbol geklickt "
+#~ "halten und auf eine andere Position ziehen. Mit einem Klick auf das "
+#~ "Symbol von einem Gerät bekommst Du alle Details und Funtkionen."
+
+#, fuzzy
+#~ msgid "Open scenario editor"
+#~ msgstr "Namen für Szenario eingeben"
 
 #, fuzzy
 #~ msgid "MySensors configuration"

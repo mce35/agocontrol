@@ -103,9 +103,10 @@ public:
         : subscriptionId(subscriptionId_)
           , rpcRequestId(rpcRequestId_)
           , lastPoll(0)
-          , timeout(GETEVENT_DEFAULT_TIMEOUT)	{
-              inited = time(NULL);
-          }
+          , timeout(GETEVENT_DEFAULT_TIMEOUT)
+    {
+        inited = time(NULL);
+    }
 };
 
 // helper to determine last element
@@ -127,7 +128,6 @@ private:
 
     list<mg_server*> all_servers;
     list<boost::thread*> server_threads;
-    time_t last_event;
 
     bool getEventRequest(struct mg_connection *conn, GetEventState* state);
     bool jsonrpcRequestHandler(struct mg_connection *conn, Json::Value request) ;
@@ -160,63 +160,13 @@ static int mg_event_handler_wrapper(struct mg_connection *conn, enum mg_event ev
 static void mg_printmap(struct mg_connection *conn, Variant::Map map);
 
 static void mg_printlist(struct mg_connection *conn, Variant::List list) {
-    mg_printf_data(conn, "[");
-    for (Variant::List::const_iterator it = list.begin(); it != list.end(); ++it) {
-        switch(it->getType()) {
-            case VAR_MAP:
-                mg_printmap(conn, it->asMap());
-                break;
-            case VAR_STRING:
-                mg_printf_data(conn, "\"%s\"", it->asString().c_str());
-                break;
-            case VAR_BOOL:
-                if( it->asBool() )
-                    mg_printf_data(conn, "1");
-                else
-                    mg_printf_data(conn, "0");
-                break;
-            default:
-                if (it->asString().size() != 0) {
-                    mg_printf_data(conn, "%s", it->asString().c_str());
-                } else {
-                    mg_printf_data(conn, "null");
-                }
-        }
-        if ((it != list.end()) && (next(it) != list.end())) mg_printf_data(conn, ",");
-    }
-    mg_printf_data(conn, "]");
+    std::string json = variantListToJSONString(list);
+    mg_printf_data(conn, json.c_str());
 }
 
 static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
-    mg_printf_data(conn, "{");
-    for (Variant::Map::const_iterator it = map.begin(); it != map.end(); ++it) {
-        mg_printf_data(conn, "\"%s\":", it->first.c_str());
-        switch (it->second.getType()) {
-            case VAR_MAP:
-                mg_printmap(conn, it->second.asMap());
-                break;
-            case VAR_LIST:
-                mg_printlist(conn, it->second.asList());
-                break;
-            case VAR_STRING:
-                mg_printf_data(conn, "\"%s\"", it->second.asString().c_str());
-                break;
-            case VAR_BOOL:
-                if( it->second.asBool() )
-                    mg_printf_data(conn, "1");
-                else
-                    mg_printf_data(conn, "0");
-                break;
-            default:
-                if (it->second.asString().size() != 0) {
-                    mg_printf_data(conn, "%s", it->second.asString().c_str());
-                } else {
-                    mg_printf_data(conn, "null");
-                }
-        }
-        if ((it != map.end()) && (next(it) != map.end())) mg_printf_data(conn, ",");
-    }
-    mg_printf_data(conn, "}");
+    std::string json = variantMapToJSONString(map);
+    mg_printf_data(conn, json.c_str());
 }
 
 /**
@@ -252,7 +202,8 @@ static bool mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result") {
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result")
+{
     Json::Value root(Json::objectValue);
     root[result_key] = result;
     return mg_rpc_reply(conn, request_or_id, root);
@@ -263,7 +214,8 @@ static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &r
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result) {
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const std::string result)
+{
     Json::Value r(result);
     return mg_rpc_reply_result(conn, request_or_id, r);
 }
@@ -273,7 +225,8 @@ static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &r
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message) {
+static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message)
+{
     Json::Value error(Json::objectValue);
     error["code"] = code;
     error["message"] = message;
@@ -286,14 +239,19 @@ static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &re
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap) {
+static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap)
+{
     //	Json::Value r(result);
     //	mg_rpc_reply_result(conn, request_or_id, r);
     Json::Value request_id;
-    if(request_or_id.type() == Json::objectValue) {
+    if(request_or_id.type() == Json::objectValue)
+    {
         request_id = request_or_id.get("id", Json::Value());
-    }else
+    }
+    else
+    {
         request_id = request_or_id;
+    }
 
     Json::FastWriter writer;
     std::string request_idstr = writer.write(request_id);
@@ -305,6 +263,15 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
     return false;
 }
 
+/* Free any GetEventState struct on the connection */
+static void mg_clear_event_state (struct mg_connection *conn) {
+    if( conn->connection_param )
+    {
+        delete (GetEventState*)conn->connection_param;
+        conn->connection_param = NULL;
+    }
+}
+
 /**
  * Handle getEvent polling request
  * Return true if an event wasn't found to say to mongoose request is not over (return MG_MORE).
@@ -313,6 +280,9 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
  *
  * Connection parameters are stored directly into mg_connection object inside connection_param variable.
  * Thanks to this variable its possible to call many times getEventRequest.
+ *
+ * As soon as we've written a response, we free the state object and clear
+ * the connection parameter, as the connection may be reused at any time after this.
  */
 bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
 {
@@ -323,9 +293,11 @@ bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
     boost::unique_lock<boost::mutex> lock(mutexSubscriptions);
     map<string,Subscriber>::iterator it = subscriptions.find(state->subscriptionId);
 
-    if(it == subscriptions.end()) {
+    if(it == subscriptions.end())
+    {
         lock.unlock();
         mg_rpc_reply_error(conn, state->rpcRequestId, JSONRPC_INVALID_PARAMS, "Invalid params: no current subscription for uuid");
+        mg_clear_event_state(conn);
         return false;
     }
 
@@ -342,6 +314,7 @@ bool AgoRpc::getEventRequest(struct mg_connection *conn, GetEventState* state)
         mg_printf_data(conn, ", \"id\": %s}", myId.c_str());
 
         result = false;
+        mg_clear_event_state(conn);
     }
 
     return result;
@@ -362,13 +335,16 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
     const string version = request.get("jsonrpc", "unspec").asString();
 
     myId = writer.write(id);
-    if (version != "2.0") {
+    if (version != "2.0")
+    {
         return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
     }
 
     const Json::Value params = request.get("params", Json::Value());
-    if (method == "message" ) {
-        if (!params.isObject() || params.empty()) {
+    if (method == "message" )
+    {
+        if (!params.isObject() || params.empty())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params");
         }
 
@@ -383,7 +359,8 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         if(responseMap.size() == 0 || id.isNull() ) // only send reply when id is not null
         {
             // no response
-            if(responseMap.size() == 0) {
+            if(responseMap.size() == 0)
+            {
                 AGO_ERROR() << "No reply message to fetch. Failed message: " << "subject=" <<subject<<": " << command;
             }
 
@@ -393,14 +370,18 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         //AGO_TRACE() << "Response: " << responseMap;
         return mg_rpc_reply_map(conn, request, responseMap);
 
-    } else if (method == "subscribe") {
+    }
+    else if (method == "subscribe")
+    {
         string subscriberName = generateUuid();
-        if (id.isNull()) {
+        if (id.isNull())
+        {
             // JSON-RPC notification is invalid here as we need to return the subscription UUID somehow..
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_REQUEST, "Invalid Request");
         }
 
-        if (subscriberName == "") {
+        if (subscriberName == "")
+        {
             // uuid is empty so malloc probably failed, we seem to be out of memory
             return mg_rpc_reply_error(conn, request, JSONRPC_INTERNAL_ERROR, "Out of memory");
         }
@@ -415,13 +396,17 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         }
         return mg_rpc_reply_result(conn, request, subscriberName);
 
-    } else if (method == "unsubscribe") {
-        if (!params.isObject()) {
+    }
+    else if (method == "unsubscribe")
+    {
+        if (!params.isObject())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
         Json::Value content = params["uuid"];
-        if (!content.isString()) {
+        if (!content.isString())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
@@ -429,19 +414,24 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         {
             boost::lock_guard<boost::mutex> lock(mutexSubscriptions);
             map<string,Subscriber>::iterator it = subscriptions.find(content.asString());
-            if (it != subscriptions.end()) {
+            if (it != subscriptions.end())
+            {
                 subscriptions.erase(content.asString());
             }
         }
 
         return mg_rpc_reply_result(conn, request, std::string("success"));
-    } else if (method == "getevent") {
-        if (!params.isObject()) {
+    }
+    else if (method == "getevent")
+    {
+        if (!params.isObject())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
         Json::Value content = params["uuid"];
-        if (!content.isString()){
+        if (!content.isString())
+        {
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params: need uuid parameter");
         }
 
@@ -449,10 +439,12 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         GetEventState *state = new GetEventState(content.asString(), id);
 
         Json::Value timeout = params["timeout"];
-        if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT) {
+        if(timeout.isInt() && timeout <= GETEVENT_DEFAULT_TIMEOUT)
+        {
             state->timeout = timeout.asInt();
         }
 
+        assert(!conn->connection_param);
         conn->connection_param = state;
         return getEventRequest(conn, state);
     }
@@ -520,8 +512,8 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
 
     //upload files
     while ((ofs = mg_parse_multipart(conn->content + ofs, conn->content_len - ofs, var_name, sizeof(var_name),
-                    file_name, sizeof(file_name), &data, &data_len)) > 0) {
-
+                    file_name, sizeof(file_name), &data, &data_len)) > 0)
+    {
         if( strlen(file_name)>0 )
         {
             // Sanitize filename, it should only be a filename.
@@ -705,9 +697,13 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         if (strcmp(conn->uri, "/jsonrpc") == 0)
         {
             if( jsonrpc(conn) )
+            {
                 result = MG_MORE;
+            }
             else
+            {
                 result = MG_TRUE;
+            }
         }
         else if( strcmp(conn->uri, "/upload") == 0)
         {
@@ -733,33 +729,30 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
         if( conn->connection_param )
         {
             GetEventState* state = (GetEventState*)conn->connection_param;
-            if (last_event >= state->lastPoll)
+            if( !getEventRequest(conn, state) )
             {
-                if( !getEventRequest(conn, state) )
-                {
-                    //event found. Stop polling request
-                    result = MG_TRUE;
-                }
+                // event found & response written. Stop polling request
+                result = MG_TRUE;
             }
-            state->lastPoll = time(NULL);
 
-            if(result == MG_FALSE) {
-                if((state->lastPoll - state->inited) > state->timeout) {
+            if(result == MG_FALSE)
+            {
+                assert(conn->connection_param); // not free'd in getEventRequest
+
+                state->lastPoll = time(NULL);
+                if((state->lastPoll - state->inited) > state->timeout)
+                {
                     // close connection now (before mongoose close connection)
                     mg_rpc_reply_error(conn, state->rpcRequestId, AGO_JSONRPC_NO_EVENT, "no messages for subscription");
                     result = MG_TRUE;
+                    mg_clear_event_state(conn);
                 }
             }
         }
     }
     else if( event==MG_CLOSE )
     {
-        if( conn->connection_param )
-        {
-            GetEventState* state = (GetEventState*)conn->connection_param;
-            delete state;
-            conn->connection_param = NULL;
-        }
+        mg_clear_event_state(conn);
     }
     else if (event == MG_AUTH)
     {
@@ -830,7 +823,6 @@ void AgoRpc::eventHandler(std::string subject, qpid::types::Variant::Map content
     }
 
     // Wake servers to let pending getEvent trigger
-    last_event = time(NULL);
     for(list<mg_server*>::iterator i = all_servers.begin(); i != all_servers.end(); i++) {
         mg_wakeup_server(*i);
     }

@@ -157,8 +157,13 @@ function AgocontrolViewModel()
         delete afterrender_template;
 
         //load template script file
-        $.getScript(template.path+'/template.js' , function()
-        {
+        $.ajax({
+			   crossDomain: true, // Enforce loading using <script> tag so we can debug
+			   url: template.path+'/template.js',
+				// TODO(stromnet): verify overall caching in whole project before disabling cache-block here
+				//cache: true, // disable adding of _=<random>, to allow keeping debugger breakpoints between refresh
+			   dataType: "script",
+			   success: function() {
             //Load the application resources if any
             if( template.resources && ((template.resources.css && template.resources.css.length>0) || (template.resources.js && template.resources.js.length>0)) )
             {
@@ -227,7 +232,7 @@ function AgocontrolViewModel()
                 }
                 $.unblockUI();
             }
-        }).fail(function(jqXHR, textStatus, errorThrown) {
+        }}).fail(function(jqXHR, textStatus, errorThrown) {
             $.unblockUI();
             console.error("Failed to load template: ["+textStatus+"] "+errorThrown.message);
             console.error(errorThrown);

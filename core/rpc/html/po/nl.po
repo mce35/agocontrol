@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-17 17:16+0100\n"
+"POT-Creation-Date: 2015-03-21 10:34+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -580,37 +580,48 @@ msgid "Device removed successfully."
 msgstr "Script opgeslagen"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
-msgid "Configure serial port"
+#: ../applications/zwave/html/zwave.xml.in.h:46
+msgid "Statistics"
 msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:6
-#: ../applications/zwave/html/zwave.xml.in.h:33
-msgid "Set"
-msgstr ""
+#: ../applications/zwave/html/zwave.xml.in.h:25
+msgid "Configuration"
+msgstr "Configuratie"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:7
-msgid "Reset device counters"
+msgid "Configure serial port"
 msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:8
+#: ../applications/zwave/html/zwave.xml.in.h:33
+#: ../help/debug/html/debug.xml.in.h:7
+msgid "Set"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:9
+msgid "Reset device counters"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Reset"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
+#: ../applications/mysensors/html/mysensors.xml.in.h:11
 #, fuzzy
 msgid "Reset all counters"
 msgstr "Registreer een Cloud gebruiker"
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
+#: ../applications/mysensors/html/mysensors.xml.in.h:12
 msgid "Reset all"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
+#: ../applications/mysensors/html/mysensors.xml.in.h:13
 msgid "Remove device"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
+#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Remove"
 msgstr ""
@@ -831,10 +842,6 @@ msgstr ""
 msgid "Associations"
 msgstr "Actie"
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
-msgid "Configuration"
-msgstr "Configuratie"
-
 #: ../applications/zwave/html/zwave.xml.in.h:26
 #, fuzzy
 msgid "Commands"
@@ -902,16 +909,11 @@ msgid "Request parameters"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:44
-#: ../help/configuration/html/configuration.xml.in.h:7
 msgid "Devices"
 msgstr "Apparaat"
 
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Dependencies"
-msgstr ""
-
-#: ../applications/zwave/html/zwave.xml.in.h:46
-msgid "Statistics"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
@@ -1082,7 +1084,7 @@ msgid "Clear all blocks on workspace"
 msgstr "Geen block gedefinieert."
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
-#: ../help/debug/html/debug.xml.in.h:5
+#: ../help/debug/html/debug.xml.in.h:6
 msgid "Clear"
 msgstr "Wissen"
 
@@ -1403,103 +1405,6 @@ msgstr "Geef variabele naam"
 msgid "Create variable"
 msgstr "Maak variabele"
 
-#: ../help/configuration/html/configuration.xml.in.h:1
-msgid "ago control Configuration"
-msgstr "ago control Configuratie"
-
-#: ../help/configuration/html/configuration.xml.in.h:2
-msgid "Welcome"
-msgstr "Welkom"
-
-#: ../help/configuration/html/configuration.xml.in.h:3
-#, fuzzy
-msgid "Dashboards"
-msgstr "Hoofdpagina"
-
-#: ../help/configuration/html/configuration.xml.in.h:4
-msgid "Rooms and Variables"
-msgstr "Kamers en Variabelen"
-
-#: ../help/configuration/html/configuration.xml.in.h:5
-msgid "Scenarios"
-msgstr "Scenarios"
-
-#: ../help/configuration/html/configuration.xml.in.h:6
-msgid "Events"
-msgstr "Gebeurtenis"
-
-#: ../help/configuration/html/configuration.xml.in.h:8
-msgid "System and Cloud"
-msgstr "Systeem en Cloud"
-
-#: ../help/configuration/html/configuration.xml.in.h:9
-msgid ""
-"Welcome to the configuration page. You can find useful information and help "
-"for the configuration menu records in the left tabs."
-msgstr ""
-"Welkom op de configuratiepagina. Extra informatie en hulp voor het "
-"configuratiemenu is te vinden in het linker tabblad."
-
-#: ../help/configuration/html/configuration.xml.in.h:10
-msgid "Help and Documentation"
-msgstr "Hulp en Documentatie"
-
-#: ../help/configuration/html/configuration.xml.in.h:11
-msgid "ago control Documentation"
-msgstr "ago control Documentatie"
-
-#: ../help/configuration/html/configuration.xml.in.h:12
-msgid "ago control Forum"
-msgstr "ago control Forum"
-
-#: ../help/configuration/html/configuration.xml.in.h:13
-msgid "Contribute"
-msgstr "Draag bij"
-
-#: ../help/configuration/html/configuration.xml.in.h:14
-msgid ""
-"If you want to join the development community or if you like ago control and "
-"want to help us with your donation!"
-msgstr ""
-"Indien je mee wilt helpen met de ontwikkeling of als je ago control geweldig "
-"vindt en wilt helpen met je donatie!"
-
-#: ../help/configuration/html/configuration.xml.in.h:15
-msgid "Contribute to ago control"
-msgstr "Draag bij aan ago control"
-
-#: ../help/configuration/html/configuration.xml.in.h:16
-#, fuzzy
-msgid ""
-"You can easly design your Dashboard or add new custom dashboard which are "
-"shown in the left main menu. Easily drag and drop your devices from the "
-"device tree on the left side to the grid and save it. You also can have "
-"multiple pages on a single grid. If you want to reorder the devices on the "
-"grid you just drag and drop it on the grid."
-msgstr ""
-"Je kunt eenvoudig de hoofdpagina ontwerpen of nieuwe plattegronden "
-"toevoegen. Klik en sleep om eenvoudig je apparaten vanuit het linker "
-"selectiescherm op het raster te plaatsen en op te slaan. Je kunt meerdere "
-"pagina's hebben om een enkel raster. Klik en sleep op het raster om "
-"apparaten te rangschikken."
-
-#: ../help/configuration/html/configuration.xml.in.h:17
-#, fuzzy
-msgid "Open scenario editor"
-msgstr "Geef scenario naam"
-
-#: ../help/configuration/html/configuration.xml.in.h:18
-msgid "Open event editor"
-msgstr ""
-
-#: ../help/configuration/html/configuration.xml.in.h:19
-msgid "Open device setup"
-msgstr ""
-
-#: ../help/configuration/html/configuration.xml.in.h:20
-msgid "Open Cloud setup"
-msgstr ""
-
 #: ../help/system/html/system.xml.in.h:1
 #, fuzzy
 msgid "System informations"
@@ -1537,12 +1442,86 @@ msgid "Events draining"
 msgstr "Gebeurtenis Configuratie"
 
 #: ../help/debug/html/debug.xml.in.h:3
+#, fuzzy
+msgid "Configuration overview"
+msgstr "Configuratie"
+
+#: ../help/debug/html/debug.xml.in.h:4
 msgid "Start"
 msgstr ""
 
-#: ../help/debug/html/debug.xml.in.h:4
+#: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr ""
+
+#~ msgid "ago control Configuration"
+#~ msgstr "ago control Configuratie"
+
+#~ msgid "Welcome"
+#~ msgstr "Welkom"
+
+#, fuzzy
+#~ msgid "Dashboards"
+#~ msgstr "Hoofdpagina"
+
+#~ msgid "Rooms and Variables"
+#~ msgstr "Kamers en Variabelen"
+
+#~ msgid "Scenarios"
+#~ msgstr "Scenarios"
+
+#~ msgid "Events"
+#~ msgstr "Gebeurtenis"
+
+#~ msgid "System and Cloud"
+#~ msgstr "Systeem en Cloud"
+
+#~ msgid ""
+#~ "Welcome to the configuration page. You can find useful information and "
+#~ "help for the configuration menu records in the left tabs."
+#~ msgstr ""
+#~ "Welkom op de configuratiepagina. Extra informatie en hulp voor het "
+#~ "configuratiemenu is te vinden in het linker tabblad."
+
+#~ msgid "Help and Documentation"
+#~ msgstr "Hulp en Documentatie"
+
+#~ msgid "ago control Documentation"
+#~ msgstr "ago control Documentatie"
+
+#~ msgid "ago control Forum"
+#~ msgstr "ago control Forum"
+
+#~ msgid "Contribute"
+#~ msgstr "Draag bij"
+
+#~ msgid ""
+#~ "If you want to join the development community or if you like ago control "
+#~ "and want to help us with your donation!"
+#~ msgstr ""
+#~ "Indien je mee wilt helpen met de ontwikkeling of als je ago control "
+#~ "geweldig vindt en wilt helpen met je donatie!"
+
+#~ msgid "Contribute to ago control"
+#~ msgstr "Draag bij aan ago control"
+
+#, fuzzy
+#~ msgid ""
+#~ "You can easly design your Dashboard or add new custom dashboard which are "
+#~ "shown in the left main menu. Easily drag and drop your devices from the "
+#~ "device tree on the left side to the grid and save it. You also can have "
+#~ "multiple pages on a single grid. If you want to reorder the devices on "
+#~ "the grid you just drag and drop it on the grid."
+#~ msgstr ""
+#~ "Je kunt eenvoudig de hoofdpagina ontwerpen of nieuwe plattegronden "
+#~ "toevoegen. Klik en sleep om eenvoudig je apparaten vanuit het linker "
+#~ "selectiescherm op het raster te plaatsen en op te slaan. Je kunt meerdere "
+#~ "pagina's hebben om een enkel raster. Klik en sleep op het raster om "
+#~ "apparaten te rangschikken."
+
+#, fuzzy
+#~ msgid "Open scenario editor"
+#~ msgstr "Geef scenario naam"
 
 #, fuzzy
 #~ msgid "MySensors configuration"

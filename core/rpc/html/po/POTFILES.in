@@ -55,7 +55,6 @@ configuration/rooms/html/rooms.xml.in
 configuration/scenarios/html/scenarios.xml.in
 configuration/systemmonitoring/html/systemmonitoring.xml.in
 configuration/variables/html/variables.xml.in
-help/configuration/html/configuration.xml.in
 help/system/html/system.xml.in
 help/debug/html/debug.xml.in
 

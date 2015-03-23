@@ -122,8 +122,16 @@ std::string agocontrol::variantMapToJSONString(qpid::types::Variant::Map map) {
             case VAR_LIST:
                 result += variantListToJSONString(it->second.asList());
                 break;
+            case VAR_BOOL:
+                if( it->second.asBool() ) {
+                    result += "1";
+                } else {
+                    result += "0";
+                }
+                break;
             case VAR_STRING:
                 tmpstring = it->second.asString();
+                replaceString(tmpstring, "\\", "\\\\");	
                 replaceString(tmpstring, "\"", "\\\"");	
                 result += "\"" +  tmpstring + "\"";
                 break;
@@ -137,7 +145,6 @@ std::string agocontrol::variantMapToJSONString(qpid::types::Variant::Map map) {
         if ((it != map.end()) && (next(it) != map.end())) result += ",";
     }
     result += "}";
-
     return result;
 }
 
@@ -153,8 +160,16 @@ std::string agocontrol::variantListToJSONString(qpid::types::Variant::List list)
             case VAR_LIST:
                 result += variantListToJSONString(it->asList());
                 break;
+            case VAR_BOOL:
+                if( it->asBool() ) {
+                    result += "1";
+                } else {
+                    result += "0";
+                }
+                break;
             case VAR_STRING:
                 tmpstring = it->asString();
+                replaceString(tmpstring, "\\", "\\\\");	
                 replaceString(tmpstring, "\"", "\\\"");	
                 result += "\"" +  tmpstring + "\"";
                 break;
