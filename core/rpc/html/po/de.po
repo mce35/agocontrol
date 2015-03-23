@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-21 10:34+0100\n"
+"POT-Creation-Date: 2015-03-23 22:05+0100\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -230,7 +230,7 @@ msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
 #: ../applications/security/html/security.xml.in.h:8
-#: ../applications/zwave/html/zwave.xml.in.h:66
+#: ../applications/zwave/html/zwave.xml.in.h:70
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
@@ -243,7 +243,7 @@ msgstr ""
 "Um einen Test Tweet auf den Twitter-Konto senden, klicke auf den Button"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:20
-#: ../applications/zwave/html/zwave.xml.in.h:39
+#: ../applications/zwave/html/zwave.xml.in.h:43
 msgid "Test"
 msgstr "Test"
 
@@ -570,12 +570,12 @@ msgid "Device removed successfully."
 msgstr "Verbindung wurde erfolgreich entfernt"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:5
-#: ../applications/zwave/html/zwave.xml.in.h:46
+#: ../applications/zwave/html/zwave.xml.in.h:50
 msgid "Statistics"
 msgstr "Statistiken"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:6
-#: ../applications/zwave/html/zwave.xml.in.h:25
+#: ../applications/zwave/html/zwave.xml.in.h:29
 msgid "Configuration"
 msgstr "Konfiguration"
 
@@ -585,7 +585,7 @@ msgid "Configure serial port"
 msgstr "USB Port vom Controller"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:8
-#: ../applications/zwave/html/zwave.xml.in.h:33
+#: ../applications/zwave/html/zwave.xml.in.h:37
 #: ../help/debug/html/debug.xml.in.h:7
 msgid "Set"
 msgstr "Setzen"
@@ -596,7 +596,7 @@ msgid "Reset device counters"
 msgstr "Controller Zurücksetzen"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:10
-#: ../applications/zwave/html/zwave.xml.in.h:62
+#: ../applications/zwave/html/zwave.xml.in.h:66
 msgid "Reset"
 msgstr "Zurücksetzen"
 
@@ -616,7 +616,7 @@ msgid "Remove device"
 msgstr "Entfernen"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:14
-#: ../applications/zwave/html/zwave.xml.in.h:41
+#: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -626,7 +626,7 @@ msgid "Security"
 msgstr "Security"
 
 #: ../applications/security/html/security.xml.in.h:3
-#: ../applications/zwave/html/zwave.xml.in.h:23
+#: ../applications/zwave/html/zwave.xml.in.h:27
 msgid "Status"
 msgstr "Status"
 
@@ -664,7 +664,7 @@ msgid "Alarms"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:12
-#: ../applications/zwave/html/zwave.xml.in.h:60
+#: ../applications/zwave/html/zwave.xml.in.h:64
 #: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -822,159 +822,179 @@ msgid "Reset controller (everything will be lost!)"
 msgstr "Controller zurücksetzen (alle Konfigurationen gehen verloren!)"
 
 #: ../applications/zwave/html/zwave.xml.in.h:22
+#, fuzzy
+msgid "Refresh node infos command sent"
+msgstr "Node Informationen aktualisieren"
+
+#: ../applications/zwave/html/zwave.xml.in.h:23
+#, fuzzy
+msgid "Refresh node infos command failed"
+msgstr "Test Node Befehl fehlgeschalgen"
+
+#: ../applications/zwave/html/zwave.xml.in.h:24
+#, fuzzy
+msgid "Request node parameters sent"
+msgstr "Setze Parameter"
+
+#: ../applications/zwave/html/zwave.xml.in.h:25
+#, fuzzy
+msgid "Request node parameters failed"
+msgstr "Setze Parameter"
+
+#: ../applications/zwave/html/zwave.xml.in.h:26
 msgid "Infos"
 msgstr "Informationen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:24
+#: ../applications/zwave/html/zwave.xml.in.h:28
 msgid "Associations"
 msgstr "Verbindungen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:26
+#: ../applications/zwave/html/zwave.xml.in.h:30
 #, fuzzy
 msgid "Commands"
 msgstr "Befehl:"
 
-#: ../applications/zwave/html/zwave.xml.in.h:27
+#: ../applications/zwave/html/zwave.xml.in.h:31
 msgid "Create new association with"
 msgstr "Erstelle neue Verbindung mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:28
+#: ../applications/zwave/html/zwave.xml.in.h:32
 msgid "Create"
 msgstr "Erstellen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:29
+#: ../applications/zwave/html/zwave.xml.in.h:33
 #, fuzzy
 msgid "Delete node association"
 msgstr "Keine Verbindung"
 
-#: ../applications/zwave/html/zwave.xml.in.h:30
+#: ../applications/zwave/html/zwave.xml.in.h:34
 msgid "Add association with"
 msgstr "Verbindung hinzufügen mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:31
+#: ../applications/zwave/html/zwave.xml.in.h:35
 #, fuzzy
 msgid "Add association"
 msgstr "Verbindung hinzufügen mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:32
+#: ../applications/zwave/html/zwave.xml.in.h:36
 msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:34
+#: ../applications/zwave/html/zwave.xml.in.h:38
 msgid "Heal this node"
 msgstr "Diesen Node heilen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:35
+#: ../applications/zwave/html/zwave.xml.in.h:39
 msgid "Heal"
 msgstr "Heilen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:36
+#: ../applications/zwave/html/zwave.xml.in.h:40
 msgid "Refresh node informations"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:37
+#: ../applications/zwave/html/zwave.xml.in.h:41
 msgid "Refresh"
 msgstr "Aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:38
+#: ../applications/zwave/html/zwave.xml.in.h:42
 msgid "Test this node"
 msgstr "Diesen Node testen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:40
+#: ../applications/zwave/html/zwave.xml.in.h:44
 msgid "Remove this node from network"
 msgstr "Diesen Node vom Netzwerk entfernen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:42
+#: ../applications/zwave/html/zwave.xml.in.h:46
 #, fuzzy
 msgid "Request node configuration parameters"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:43
+#: ../applications/zwave/html/zwave.xml.in.h:47
 #, fuzzy
 msgid "Request parameters"
 msgstr "Setze Parameter"
 
-#: ../applications/zwave/html/zwave.xml.in.h:44
+#: ../applications/zwave/html/zwave.xml.in.h:48
 msgid "Devices"
 msgstr "Geräte"
 
-#: ../applications/zwave/html/zwave.xml.in.h:45
+#: ../applications/zwave/html/zwave.xml.in.h:49
 msgid "Dependencies"
 msgstr "Abhängigkeiten"
 
-#: ../applications/zwave/html/zwave.xml.in.h:47
+#: ../applications/zwave/html/zwave.xml.in.h:51
 #, fuzzy
 msgid "General commands"
 msgstr "Allgemein"
 
-#: ../applications/zwave/html/zwave.xml.in.h:48
+#: ../applications/zwave/html/zwave.xml.in.h:52
 msgid "USB port"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:49
+#: ../applications/zwave/html/zwave.xml.in.h:53
 msgid "True"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:50
+#: ../applications/zwave/html/zwave.xml.in.h:54
 msgid "False"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:51
+#: ../applications/zwave/html/zwave.xml.in.h:55
 #, fuzzy
 msgid "Pair/unpair node to your network"
 msgstr "Node ins Netzwerk koppeln"
 
-#: ../applications/zwave/html/zwave.xml.in.h:52
+#: ../applications/zwave/html/zwave.xml.in.h:56
 msgid "Pair"
 msgstr "Kopple"
 
-#: ../applications/zwave/html/zwave.xml.in.h:53
+#: ../applications/zwave/html/zwave.xml.in.h:57
 msgid "Unpair"
 msgstr "Entkoppeln"
 
-#: ../applications/zwave/html/zwave.xml.in.h:54
+#: ../applications/zwave/html/zwave.xml.in.h:58
 msgid "Turn on/off all devices"
 msgstr "Schalte alle Geräte ein/aus"
 
-#: ../applications/zwave/html/zwave.xml.in.h:55
+#: ../applications/zwave/html/zwave.xml.in.h:59
 msgid "On"
 msgstr "Ein"
 
-#: ../applications/zwave/html/zwave.xml.in.h:56
+#: ../applications/zwave/html/zwave.xml.in.h:60
 msgid "Off"
 msgstr "Aus"
 
-#: ../applications/zwave/html/zwave.xml.in.h:57
+#: ../applications/zwave/html/zwave.xml.in.h:61
 msgid "Test network"
 msgstr "Teste Netzwerk"
 
-#: ../applications/zwave/html/zwave.xml.in.h:58
+#: ../applications/zwave/html/zwave.xml.in.h:62
 #, fuzzy
 msgid "Heal network"
 msgstr "Teste Netzwerk"
 
-#: ../applications/zwave/html/zwave.xml.in.h:59
+#: ../applications/zwave/html/zwave.xml.in.h:63
 msgid "Cancel running controller command"
 msgstr "Laufenden Controller Befehl abbrechen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:61
+#: ../applications/zwave/html/zwave.xml.in.h:65
 msgid "Reset controller"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:63
+#: ../applications/zwave/html/zwave.xml.in.h:67
 msgid "Download configuration"
 msgstr "Konfiguration herunterladen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:64
+#: ../applications/zwave/html/zwave.xml.in.h:68
 msgid "Download"
 msgstr "Herunterladen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:65
+#: ../applications/zwave/html/zwave.xml.in.h:69
 msgid "Save configuration"
 msgstr "Konfiguration speichern"
 
-#: ../applications/zwave/html/zwave.xml.in.h:67
+#: ../applications/zwave/html/zwave.xml.in.h:71
 msgid "Configure controller USB port"
 msgstr "USB Port vom Controller"
 
