@@ -19,6 +19,7 @@ from email.mime.text import MIMEText
 #sms libs
 import urllib
 import urllib2
+import ssl
 #pushover
 import httplib
 import json
@@ -163,7 +164,8 @@ class SMSFreeMobile(AgoAlert):
         params = {'user':self.user, 'pass':self.apikey, 'msg':message['text']}
         url = 'https://smsapi.free-mobile.fr/sendmsg?'
         url += urllib.urlencode(params)
-        req = urllib2.urlopen(url)
+        gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)  # Only for gangstars
+        req = urllib2.urlopen(url, context=gcontext)
         lines = req.readlines()
         req.close()
         logging.debug(url)
