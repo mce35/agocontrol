@@ -983,12 +983,12 @@ function Zwave(devices, agocontrol)
             {
                 if( res.result.result!==undefined && res.result.result!==-1)
                 {
-                    notif.success('Command successful');
+                    notif.success('#requestparamsok');
                 }
                 else 
                 {
                     //error occured
-                    notif.error('Command failed');
+                    notif.error('#requestparamsko');
                 }
             }
             else

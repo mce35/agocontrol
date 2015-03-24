@@ -336,7 +336,7 @@ events:
   event.security.intruderalert:
     description: intruder alarm
     parameters: [zone]
-  event.system.roomnamechanged:
+  event.system.roomnamechanged: 
     description: a room name has been changed
     parameters: [name, uuid]
   event.system.devicenamechanged:
@@ -357,12 +357,11 @@ events:
   event.device.stale:
     description: announce stale status of a device has changed
     parameters: [uuid, internalid, stale]
-  event.monitoring.processdead:
-    description: event triggered when process is dead
-    parameters: [process]
-  event.monitoring.memoryoverhead:
-    description: event triggered when process is consuming too much memory
-    parameters: [process]
   event.system.debugscript:
     description: used by agolua to send debug messages to the blockly based event editor
     parameters: [debuglevel, message]
+categories:
+  coredevices:
+    name: agocontrol core devices
+    description: core devices implement the backend functionality of ago control
+    devicetypes: [dataloggercontroller, eventcontroller, scenariocontroller, agocontroller, securitycontroller, luacontroller]

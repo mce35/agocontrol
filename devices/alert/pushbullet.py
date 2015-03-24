@@ -10,6 +10,7 @@ import mimetypes
 import os
 from mimetypes import MimeTypes
 import requests
+from requests.auth import HTTPBasicAuth
 
 HOST = "https://api.pushbullet.com/v2";
 
@@ -25,67 +26,83 @@ class PushBullet():
         self.apiKey = apiKey
 
     def _request(self, url, payload=None, post=True):
-        auth = "%s:" % (self.apiKey)
-        auth = auth.encode('ascii')
-        auth = b64encode(auth)
-        auth = b"Basic "+auth
-        headers = {}
-        headers['Accept'] = 'application/json'
-        headers['Content-type'] = 'application/json'
-        headers['Authorization'] = auth
-        headers['User-Agent'] = 'pyPushBullet'
+        auth = HTTPBasicAuth(self.apiKey, '')
+        headers = {'Content-Type': 'application/json'}
         if post:
             if payload:
                 payload = json.dumps(payload)
-                r = requests.post(url, data=payload, headers=headers)
+                r = requests.post(url, data=payload, headers=headers, auth=auth)
             else:
-                r = requests.post(url, headers=headers)
+                r = requests.post(url, headers=headers, auth=auth)
         else:
             if payload:
                 payload = json.dumps(payload)
-                r = requests.get(url, headers=headers)
+                r = requests.get(url, headers=headers, auth=auth)
             else:
-                r = requests.get(url, data=payload, headers=headers)
-        return r.json()
+                r = requests.get(url, data=payload, headers=headers, auth=auth)
+        if r.status_code==200:
+            return r.status_code, r.json
+        else:
+            return r.status_code, self.getResponseMessage(r.status_code)
         
     def _request_multiform(self, url, payload, files):
         return requests.post(url, data=payload, files=files)
         
     def getDevices(self):
-        r = self._request(HOST + "/devices", None, False)
-        if r.has_key('devices'):
+        (s,r) = self._request(HOST + "/devices", None, False)
+	if s==200 and r.has_key('devices'):
             return r['devices']
         else:
             return []
+       
+    #https://docs.pushbullet.com/#http
+    def getResponseMessage(self, status):
+        if status==200:
+            return "OK"
+        elif status==400:
+            return "Bad request"
+        elif status==401:
+            return "Unauthorized"
+        elif status==403:
+            return "Forbidden"
+        elif status==404:
+            return "Not found"
+        elif str(status).startswith("5"):
+            return "Server error"
+        else:
+            return "Unknown"
 
     def pushNote(self, device, title, body):
         data = {'type'       : 'note',
                 'device_iden': device,
                 'title'      : title,
                 'body'       : body}
-        return self._request(HOST + "/pushes", data)
+        (s,r) = self._request(HOST + "/pushes", data)
+        return r
 
     def pushAddress(self, device, name, address):
         data = {'type'       : 'address',
                 'device_iden': device,
                 'name'       : name,
                 'address'    : address}
-        return self._request(HOST + "/pushes", data)
+        (s,r) = self._request(HOST + "/pushes", data)
+        return r
 
     def pushList(self, device, title, items):
         data = {'type'       : 'list',
                 'device_iden': device,
                 'title'      : title,
                 'items'      : items}
-        return self._request(HOST + "/pushes", data)
-
+        (s,r) = self._request(HOST + "/pushes", data)
+        return r
 
     def pushLink(self, device, title, url):
         data = {'type'       : 'link',
                 'device_iden': device,
                 'title'      : title,
                 'url'        : url}
-        return self._request(HOST + "/pushes", data)
+        (s,r) = self._request(HOST + "/pushes", data)
+        return r
 
     def pushFile(self, device, file):
         #get upload file authorization
@@ -108,7 +125,8 @@ class PushBullet():
                              'file_name': filename,
                              'file_type': mimetype,
                              'file_url' : authResp['file_url']}
-                    return self._request(HOST + '/pushes', data)
+                    (s,r) = self._request(HOST + '/pushes', data)
+                    return r
         except:
             return None
 

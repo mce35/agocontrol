@@ -36,3 +36,6 @@ events:
   event.monitoring.memoryoverhead:
     description: event triggered when process is consuming too much memory
     parameters: [process]
+categories:
+  coredevices:
+    devicetypes: [systemcontroller]
