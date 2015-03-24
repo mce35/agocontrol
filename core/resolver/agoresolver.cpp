@@ -505,8 +505,8 @@ void AgoResolver::scanSchemaDir(const fs::path &schemaPrefix) {
     std::sort(schemaArray.begin(), schemaArray.end());
 
     fs::path schemaFile = schemaPrefix / schemaArray.front();
-    schema = parseSchema(schemaFile);
     AGO_DEBUG() << "parsing schema file:" << schemaFile;
+    schema = parseSchema(schemaFile);
     for (size_t i = 1; i < schemaArray.size(); i++) {
         schemaFile = schemaPrefix / schemaArray[i];
         AGO_DEBUG() << "parsing additional schema file:" << schemaFile;
