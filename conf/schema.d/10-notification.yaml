@@ -45,3 +45,8 @@ devicetypes:
     name: alert controller
     description: internal device to send alerts
     commands: [sendsms, sendpush, sendmail, sendtweet]
+categories:
+  usernotification:
+    name: user notification
+    description: device types to notify the user
+    devicetypes: [alertcontroller, smsgateway, smtpgateway]
