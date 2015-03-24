@@ -38,4 +38,4 @@ events:
     parameters: [process]
 categories:
   coredevices:
-  devicetypes: [systemcontroller]
+    devicetypes: [systemcontroller]
