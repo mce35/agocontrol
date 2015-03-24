@@ -336,7 +336,8 @@ events:
   event.security.intruderalert:
     description: intruder alarm
     parameters: [zone]
-  event.system.roomnamechanged: description: a room name has been changed
+  event.system.roomnamechanged: 
+    description: a room name has been changed
     parameters: [name, uuid]
   event.system.devicenamechanged:
     description: a device name has been changed
