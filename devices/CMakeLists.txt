@@ -45,6 +45,7 @@ set (AGODEVICES
   gammu
   axisaudiotransmit
   weatherreporter
+  MQTT
 )
 
 IF (FREEBSD)
