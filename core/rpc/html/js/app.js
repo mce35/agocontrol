@@ -76,6 +76,63 @@ function datetimeToString(dt)
     return str;
 }
 
+/**
+ * Loads a new JavaScript using <script> element.
+ *
+ * This is used instead of $.ajax(), since ajax only uses <script> elements
+ * if we force it to run crossdomain. And if we do not load it with script headers,
+ * Chrome debugger fails to find the script.
+ * Why not use that? Because by default, crossdomain <script> loads does not handle onError,
+ * and thus jQuery does not implement that...
+ *
+ * This is inspired by jQuery's 'script' transport.
+ */
+function loadScript(url) {
+    var dfd = $.Deferred();
+
+    var head = document.head || jQuery("head")[0] || document.documentElement;
+    var script = document.createElement("script");
+    script.async = true;
+    script.src = url;
+
+    function cleanup(){
+        // Handle memory leak in IE
+        script.onload = script.onreadystatechange = null;
+
+        // Remove the script
+        if ( script.parentNode ) {
+            script.parentNode.removeChild( script );
+        }
+
+        // Dereference the script
+        script = null;
+    }
+
+    // Attach handlers for all browsers
+    script.onload = script.onreadystatechange = function( _, isAbort ) {
+        if ( isAbort || !script.readyState || /loaded|complete/.test( script.readyState ) ) {
+            cleanup();
+
+            // Callback if not abort
+            if ( !isAbort ) {
+                dfd.resolve();
+            }
+        }
+    };
+
+    script.onerror = function() {
+        // Unfortunately no meaningfull errors here
+        cleanup();
+        dfd.reject();
+    };
+
+    // Circumvent IE6 bugs with base elements (#2709 and #4378) by prepending
+    // Use native DOM manipulation to avoid our domManip AJAX trickery
+    head.insertBefore( script, head.firstChild );
+
+    return dfd.promise();
+}
+
 //View object
 //dynamic page loading inspired from : http://jsfiddle.net/rniemeyer/PctJz/
 function View(templateName, model)
@@ -156,61 +213,43 @@ function AgocontrolViewModel()
         delete init_template;
         delete afterrender_template;
 
-        //load template script file
-        $.ajax({
-			   crossDomain: true, // Enforce loading using <script> tag so we can debug
-			   url: template.path+'/template.js',
-				// TODO(stromnet): verify overall caching in whole project before disabling cache-block here
-				//cache: true, // disable adding of _=<random>, to allow keeping debugger breakpoints between refresh
-			   dataType: "script",
-			   success: function() {
-            //Load the application resources if any
-            if( template.resources && ((template.resources.css && template.resources.css.length>0) || (template.resources.js && template.resources.js.length>0)) )
+        // Load template script file
+        var scriptPromise = loadScript(template.path+'/template.js');
+        var resourcePromise;
+
+        // Load other required resources in parallel
+        if( template.resources )
+        {
+            var resources = [];
+            if (template.resources.css && template.resources.css.length > 0)
             {
-                var resources = [];
-                if (template.resources.css && template.resources.css.length > 0)
+                for ( var i = 0; i < template.resources.css.length; i++)
                 {
-                    for ( var i = 0; i < template.resources.css.length; i++)
-                    {
-                        resources.push(template.path + "/" + template.resources.css[i]);
-                    }
-                }
-                if (template.resources.js && template.resources.js.length > 0)
-                {
-                    for ( var i = 0; i < template.resources.js.length; i++)
-                    {
-                        resources.push(template.path + "/" + template.resources.js[i]);
-                    }
-                }
-                if (resources.length > 0)
-                {
-                    head.load(resources, function() {
-                        // here, all resources are really loaded
-                        if (typeof init_template == 'function')
-                        {
-                            self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
-                            if( self.currentModel )
-                            {
-                                self.currentView(new View(template.path+'/'+template.template, self.currentModel));
-                            }
-                            else
-                            {
-                                self.currentModel = null;
-                                console.error('Failed to load template: no model returned by init_template. Please check your code.');
-                                notif.fatal('Problem during page loading.');
-                            }
-                        }
-                        else
-                        {
-                            console.error('Failed to load template: init_template function not defined. Please check your code.');
-                            notif.fatal('Problem during page loading.');
-                        }
-                        $.unblockUI();
-                    });
+                    resources.push(template.path + "/" + template.resources.css[i]);
                 }
             }
-            else
+            if (template.resources.js && template.resources.js.length > 0)
             {
+                for ( var i = 0; i < template.resources.js.length; i++)
+                {
+                    resources.push(template.path + "/" + template.resources.js[i]);
+                }
+            }
+            if (resources.length > 0)
+            {
+                var dfd = $.Deferred();
+                resourcePromise = dfd.promise();
+                head.load(resources, function() {
+                    // head.load does not have any failure mechanism
+                    dfd.resolve();
+                });
+            }
+        }
+
+        // Compound promise which fires when both above are ready
+        $.when(scriptPromise, resourcePromise)
+            .then(function(){
+                // Template script and Resources ready
                 if (typeof init_template == 'function')
                 {
                     self.currentModel = init_template(template.path+'/', template.params, self.agocontrol);
@@ -231,13 +270,13 @@ function AgocontrolViewModel()
                     notif.fatal('Problem during page loading.');
                 }
                 $.unblockUI();
-            }
-        }}).fail(function(jqXHR, textStatus, errorThrown) {
-            $.unblockUI();
-            console.error("Failed to load template: ["+textStatus+"] "+errorThrown.message);
-            console.error(errorThrown);
-            notif.fatal('Problem during page loading.');
-        });
+            })
+            .fail(function(d1, d2) {
+                // Note that jquery fails our compound promise as soon as ANY fails.
+                $.unblockUI();
+                console.error("Failed to load template or template resources");
+                notif.fatal('Problem during page loading.');
+            });
     };
 
     //call afterrender_template if available.
