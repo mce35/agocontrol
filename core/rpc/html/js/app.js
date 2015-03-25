@@ -269,13 +269,14 @@ function AgocontrolViewModel()
                     console.error('Failed to load template: init_template function not defined. Please check your code.');
                     notif.fatal('Problem during page loading.');
                 }
-                $.unblockUI();
             })
             .fail(function(d1, d2) {
                 // Note that jquery fails our compound promise as soon as ANY fails.
-                $.unblockUI();
                 console.error("Failed to load template or template resources");
                 notif.fatal('Problem during page loading.');
+            })
+            .always(function(){
+                $.unblockUI();
             });
     };
 
