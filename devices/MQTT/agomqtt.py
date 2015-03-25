@@ -9,7 +9,10 @@
 # to use the client library we have to import it
 
 import agoclient
-import paho.mqtt.client as mqtt
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    import agomqttpahoclient as mqtt
 
 import threading
 import time
@@ -50,11 +53,15 @@ class MQTTThread(threading.Thread):
         self.app = app
         self.connected = False
 
-    def on_connect(self, client, userdata, rc, rest):
+    def on_connect(self, client, obj, flags, rc):
         self.app.log.info("Connected to MQTT broker: %s", str(rc))
+        self.app.log.info("Subscribing to: %s",self.app.get_config_option("topic", "sensors/#"))
         self.client.subscribe(self.app.get_config_option("topic", "sensors/#"))
 
-    def on_message(self, client, userdata, msg):
+    def on_subscribe(self, client, obj, mid, granted_qos):
+        self.app.log.info("Subscribed to topic: %s", str(mid))
+
+    def on_message(self, client, obj, msg):
         self.app.log.info("Received MQTT message on topic %s: %s", str(msg.topic),str(msg.payload))
         topic = str(msg.topic)
         if topic.find("temperature") != -1:
