@@ -965,7 +965,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     }
                     else
                     {
-                        device = new ZWaveNode(nodeinstance, "remote");	
+                        device = new ZWaveNode(nodeinstance, "remote");
                         device->addValue(label, id);
                         devices.add(device);
                         AGO_DEBUG() << "Controller: add new remote [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1077,7 +1077,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         case COMMAND_CLASS_SENSOR_MULTILEVEL:
                             if (label == "Luminance")
                             {
-                                device = new ZWaveNode(tempstring, "brightnesssensor");	
+                                device = new ZWaveNode(tempstring, "brightnesssensor");
                                 device->addValue(label, id);
                                 devices.add(device);
                                 AGO_DEBUG() << "Sensor multilevel: add new brightnesssensor [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1093,7 +1093,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                     }
                                     else
                                     {
-                                        device = new ZWaveNode(nodeinstance, "thermostat");	
+                                        device = new ZWaveNode(nodeinstance, "thermostat");
                                         device->addValue(label, id);
                                         devices.add(device);
                                         AGO_DEBUG() << "Sensor multilevel: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1102,23 +1102,31 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 }
                                 else
                                 {
-                                    device = new ZWaveNode(tempstring, "temperaturesensor");	
+                                    device = new ZWaveNode(tempstring, "temperaturesensor");
                                     device->addValue(label, id);
                                     devices.add(device);
                                     AGO_DEBUG() << "Sensor multilevel: add new temperaturesensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                     agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                             }
+                            else if( label.find("Humidity")!=std::string::npos )
+                            {
+                                device = new ZWaveNode(tempstring, "humiditysensor");
+                                device->addValue(label, id);
+                                devices.add(device);
+                                AGO_DEBUG() << "Sensor multilevel: add new humiditysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
+                                agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                            }
                             else
                             {
-                                AGO_WARNING() << "unhandled label for SENSOR_MULTILEVEL. Adding generic multilevelsensor for label: " << label;
+                                AGO_WARNING() << "Unhandled label for SENSOR_MULTILEVEL. Adding generic multilevelsensor for label: " << label;
                                 if ((device = devices.findId(nodeinstance)) != NULL)
                                 {
                                     device->addValue(label, id);
                                 }
                                 else
                                 {
-                                    device = new ZWaveNode(nodeinstance, "multilevelsensor");	
+                                    device = new ZWaveNode(nodeinstance, "multilevelsensor");
                                     device->addValue(label, id);
                                     devices.add(device);
                                     AGO_DEBUG() << "Sensor multilevel: add new multisensor [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1130,7 +1138,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         case COMMAND_CLASS_METER:
                             if (label == "Power")
                             {
-                                device = new ZWaveNode(tempstring, "powermeter");	
+                                device = new ZWaveNode(tempstring, "powermeter");
                                 device->addValue(label, id);
                                 devices.add(device);
                                 AGO_DEBUG() << "Meter: add new powermeter [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1138,7 +1146,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             }
                             else if (label == "Energy")
                             {
-                                device = new ZWaveNode(tempstring, "energymeter");	
+                                device = new ZWaveNode(tempstring, "energymeter");
                                 device->addValue(label, id);
                                 devices.add(device);
                                 AGO_DEBUG() << "Meter: add new energymeter [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1153,7 +1161,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 }
                                 else
                                 {
-                                    device = new ZWaveNode(nodeinstance, "multilevelsensor");	
+                                    device = new ZWaveNode(nodeinstance, "multilevelsensor");
                                     device->addValue(label, id);
                                     devices.add(device);
                                     AGO_DEBUG() << "Meter: add new multilevelsensor [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1171,14 +1179,14 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             }
                             else
                             {
-                                device = new ZWaveNode(nodeinstance, "drapes");	
+                                device = new ZWaveNode(nodeinstance, "drapes");
                                 device->addValue(label, id);
                                 devices.add(device);
                                 AGO_DEBUG() << "Basic window covering: add new drapes [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
                             // Manager::Get()->EnablePoll(id);
-                            //	}
+                            //}
                             break;
                         case COMMAND_CLASS_THERMOSTAT_SETPOINT:
                             if (polling)
@@ -1197,7 +1205,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             }
                             else
                             {
-                                device = new ZWaveNode(nodeinstance, "thermostat");	
+                                device = new ZWaveNode(nodeinstance, "thermostat");
                                 device->addValue(label, id);
                                 devices.add(device);
                                 AGO_DEBUG() << "Thermostat: add new thermostat [" << device->getId() << ", " << device->getDevicetype() << "]";
@@ -1214,7 +1222,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 }
                                 else
                                 {
-                                    device = new ZWaveNode(tempstring, "binarysensor");	
+                                    device = new ZWaveNode(tempstring, "binarysensor");
                                     device->addValue(label, id);
                                     devices.add(device);
                                     AGO_DEBUG() << "Alarm: add new binarysensor [" << device->getId() << ", " << device->getDevicetype() << "]";
