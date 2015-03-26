@@ -26,6 +26,18 @@ using namespace boost::system;
 using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
+enum valid_type
+{
+    INVALID = 0,
+    VALID_SAVE,
+    VALID_DONT_SAVE,
+    VALID_VAR1,
+    VALID_VAR2,
+    VALID_VAR3,
+    VALID_VAR4,
+    VALID_VAR5
+};
+
 enum flush_type
 {
     flush_receive = TCIFLUSH,
@@ -1230,7 +1242,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
  */
 void processMessageV14(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos)
 {
-    int valid = 0;
+    int valid = INVALID;
     stringstream timestamp;
     stringstream id;
     int freeid;
@@ -1388,13 +1400,79 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
                 }
                 setDeviceInfos(internalid, &infos);
-                //send value
-                sendcommandV14(internalid, SET_V14, 0, subType, infos["value"]);
+
+                //agocontrol save device value in device map regardless the sensor type.
+                //here we handle specific custom vars, to make possible having multiple values for the same device
+                switch (subType)
+                {
+                    case V_VAR1_V14:
+                        //send var1 value (already reserved for pin code)
+                        if( !infos["pin"].isVoid() )
+                        {
+                            sendcommandV14(internalid, SET_V14, 0, subType, infos["pin"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'pin' value. Returned value [0] is not valid." << endl;
+                            sendcommandV14(internalid, SET_V14, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR2_V14:
+                        //send var2 value
+                        if( !infos["custom_var2"].isVoid() )
+                        {
+                            sendcommandV14(internalid, SET_V14, 0, subType, infos["custom_var2"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var2' value. Returned value [0] is not valid." << endl;
+                            sendcommandV14(internalid, SET_V14, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR3_V14:
+                        //send var3 value
+                        if( !infos["custom_var3"].isVoid() )
+                        {
+                            sendcommandV14(internalid, SET_V14, 0, subType, infos["custom_var3"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var3' value. Returned value [0] is not valid." << endl;
+                            sendcommandV14(internalid, SET_V14, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR4_V14:
+                        //send var4 value
+                        if( !infos["custom_var4"].isVoid() )
+                        {
+                            sendcommandV14(internalid, SET_V14, 0, subType, infos["custom_var4"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var4' value. Returned value [0] is not valid." << endl;
+                            sendcommandV14(internalid, SET_V14, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR5_V14:
+                        //send var5 value
+                        if( !infos["custom_var5"].isVoid() )
+                        {
+                            sendcommandV14(internalid, SET_V14, 0, subType, infos["custom_var5"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var5' value. Returned value [0] is not valid." << endl;
+                            sendcommandV14(internalid, SET_V14, 0, subType, "0");
+                        }
+                        break;
+                    default:
+                        //send default value
+                        sendcommandV14(internalid, SET_V14, 0, subType, infos["value"]);
+                }
             }
             else
             {
                 //device not found
-                //TODO log flood!
                 cerr  << "Device not found: unable to get its value" << endl;
             }
             break;
@@ -1432,7 +1510,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
             switch (subType)
             {
                 case V_TEMP_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     if (units == "M")
                     {
                         agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
@@ -1443,27 +1521,27 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     }
                     break;
                 case V_TRIPPED_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
                     break;
                 case V_HUM_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
                     break;
                 case V_LIGHT_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
                     break;
                 case V_DIMMER_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
                     break;
                 case V_PRESSURE_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
                     break;
                 case V_FORECAST_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
                     break;
                 case V_RAIN_V14:
@@ -1481,7 +1559,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case V_WEIGHT_V14:
                     break;
                 case V_DISTANCE_V14: 
-                    valid = 1;
+                    valid = VALID_SAVE;
                     if (units == "M")
                     {
                         agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
@@ -1508,25 +1586,37 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case V_HEATER_SW_V14:
                     break;
                 case V_LIGHT_LEVEL_V14:
-                    valid = 1;
+                    valid = VALID_SAVE;
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
                     break;
                 case V_VAR1_V14:
-                    valid = 1;
+                    //custom value 1 is reserved for pin code
+                    valid = VALID_DONT_SAVE;
                     {
                         qpid::types::Variant::Map payloadMap;
                         payloadMap["pin"]=payload;
                         agoConnection->emitEvent(internalid.c_str(), "event.security.pinentered", payloadMap);
                     }
-
                     break;
                 case V_VAR2_V14:
+                    //save custom value
+                    valid = VALID_VAR2;
+                    //but no event triggered
                     break;
                 case V_VAR3_V14:
+                    //save custom value
+                    valid = VALID_VAR3;
+                    //but no event triggered
                     break;
                 case V_VAR4_V14:
+                    //save custom value
+                    valid = VALID_VAR4;
+                    //but no event triggered
                     break;
                 case V_VAR5_V14:
+                    //save custom value
+                    valid = VALID_VAR5;
+                    //but no event triggered
                     break;
                 case V_UP_V14:
                     break;
@@ -1548,20 +1638,51 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     break;
             }
 
-            if( valid==1 )
+            if( valid==INVALID )
+            {
+                //unsupported sensor
+                cerr << "WARN: sensor with subType=" << subType << " not supported yet" << endl;
+            }
+            else if( valid==VALID_DONT_SAVE )
+            {
+                //don't save received value
+            }
+            else 
             {
                 //save current device value
                 infos = getDeviceInfos(internalid);
                 if( infos.size()>0 )
                 {
-                    infos["value"] = payload;
+                    switch(valid)
+                    {
+                        case VALID_SAVE:
+                            //default value
+                            infos["value"] = payload;
+                            break;
+                        case VALID_VAR1:
+                            //custom var1 is reserved for pin code
+                            break;
+                        case VALID_VAR2:
+                            //save custom var2
+                            infos["custom_var2"] = payload;
+                            break;
+                        case VALID_VAR3:
+                            //save custom var3
+                            infos["custom_var3"] = payload;
+                            break;
+                        case VALID_VAR4:
+                            //save custom var4
+                            infos["custom_var4"] = payload;
+                            break;
+                        case VALID_VAR5:
+                            //save custom var5
+                            infos["custom_var5"] = payload;
+                            break;
+                        default:
+                            cerr << "Unhandled valid case [" << valid << "]. Please check code!" << endl;
+                    }
                     setDeviceInfos(internalid, &infos);
                 }
-            }
-            else
-            {
-                //unsupported sensor
-                cerr << "WARN: sensor with subType=" << subType << " not supported yet" << endl;
             }
 
             //send ack if necessary
