@@ -35,6 +35,7 @@ class AgoConnection:
         self.uuids = {}
         self.handler = None
         self.eventhandler = None
+        self.agocontroller = None
         self.load_uuid_map()
 
     def __del__(self):
@@ -222,6 +223,38 @@ class AgoConnection:
         content = {}
         content["command"] = "inventory"
         return self.send_message_reply(content)
+
+    def get_agocontroller(self, inventory=None):
+        """Returns the uuid of the agocontroller device"""
+        if self.agocontroller:
+            return self.agocontroller
+
+        retry = 10
+        while retry > 0:
+            if inventory == None:
+                # May be null if not passed in first time
+                inventory = self.get_inventory()
+
+            if inventory != None:
+                # XXX: Why are we not returning .content from get_inventory?
+                devices = inventory.content['devices']
+                for uuid in devices.keys():
+                    d = devices[uuid]
+                    if d == None:
+                        continue
+
+                    if d['devicetype'] == 'agocontroller':
+                        self.log.debug("agoController found: %s", uuid)
+                        self.agocontroller = uuid
+                        return uuid
+
+            self.log.warning("Unable to resolve agocontroller, retrying")
+            inventory = None
+            time.sleep(1)
+            retry -= 1
+
+        self.log.warning("Failed to resolve agocontroller, giving up")
+        return None
 
     def emit_event(self, internal_id, event_type, level, unit):
         """This will send an event. Ensure level is of correct data type for the event!"""
