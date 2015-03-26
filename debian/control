@@ -50,6 +50,11 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description: x10 device
 
+Package: agocontrol-mqtt
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Description: MQTT device
+
 Package: agocontrol-meloware
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
@@ -162,7 +167,7 @@ Description: gc100 interface support
 
 Package: agocontrol-alert
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-xmpp, python-tweepy, python-simplejson, python-requests
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-xmpp, python-tweepy, python-simplejson, python-requests, python-openssl
 Description: agocontrol alerts
 
 Package: agocontrol-squeezebox

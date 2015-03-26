@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-23 22:05+0100\n"
+"POT-Creation-Date: 2015-03-25 19:42+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -184,13 +184,14 @@ msgid "authorization url"
 msgstr "authorisatie url"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:7
-msgid "Twitter configuration"
-msgstr "Twitter configuratie"
+#, fuzzy
+msgid "Configuration saved successfully"
+msgstr "Script ingeladen."
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:8
-msgid ""
-"Agocontrol needs to be authorized to post alerts on your Twitter account."
-msgstr "Agocontrol moet toegestaan worden om op je Twitter te posten"
+#, fuzzy
+msgid "Failed to save configuration"
+msgstr "SMS Configuratie"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:9
 msgid "Twitter is configured"
@@ -202,7 +203,9 @@ msgstr "Twitter is niet geconfigureerd"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:11
 #, fuzzy
-msgid "Follow instructions above to authorize this access"
+msgid ""
+"Follow instructions above to authorize agocontrol to access your Twitter "
+"account"
 msgstr "Volg bovenstaande instructies om je gebruiker te authoriseren:"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:12
@@ -214,23 +217,28 @@ msgid "here"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:14
+#, fuzzy
+msgid "to generate an authorization url"
+msgstr "authorisatie url"
+
+#: ../applications/agoalert/html/agoalert.xml.in.h:15
 msgid "Then click on generated link"
 msgstr "Klik op gegenereerde link"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:15
+#: ../applications/agoalert/html/agoalert.xml.in.h:16
 msgid "Type given access code here"
 msgstr "Geef toegangscode op"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:16
+#: ../applications/agoalert/html/agoalert.xml.in.h:17
 #, fuzzy
 msgid "Twitter code"
 msgstr "Twitter is geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:17
+#: ../applications/agoalert/html/agoalert.xml.in.h:18
 msgid "Finally click on button to save access code"
 msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:18
+#: ../applications/agoalert/html/agoalert.xml.in.h:19
 #: ../applications/security/html/security.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:70
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
@@ -239,239 +247,217 @@ msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 msgid "Save"
 msgstr "Opslaan"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:19
+#: ../applications/agoalert/html/agoalert.xml.in.h:20
 #, fuzzy
 msgid "To send test tweet on your account, click on button"
 msgstr "Klik op de knop om een test bericht te tweeten:"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:20
+#: ../applications/agoalert/html/agoalert.xml.in.h:21
 #: ../applications/zwave/html/zwave.xml.in.h:43
 msgid "Test"
 msgstr "Test"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:21
-msgid "SMS configuration"
-msgstr "SMS Configuratie"
-
 #: ../applications/agoalert/html/agoalert.xml.in.h:22
-#, fuzzy
-msgid "Agocontrol can send alert through SMS"
-msgstr "Agocontrol kan alarmen versturen via email."
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:23
 msgid "SMS is configured"
 msgstr "SMS is geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:24
+#: ../applications/agoalert/html/agoalert.xml.in.h:23
 msgid "SMS is not yet configured"
 msgstr "SMS is niet geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:25
+#: ../applications/agoalert/html/agoalert.xml.in.h:24
 #, fuzzy
 msgid "Choose SMS provider in list"
 msgstr "Kies je push provider uit de lijst:"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:26
+#: ../applications/agoalert/html/agoalert.xml.in.h:25
 #, fuzzy
 msgid "You need to create an account on"
 msgstr "Je hebt een account en credits nodig om SMS berichten te versturen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:27
+#: ../applications/agoalert/html/agoalert.xml.in.h:26
 #, fuzzy
 msgid "and add credits to send SMS"
 msgstr "Je hebt een account en credits nodig om SMS berichten te versturen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:28
+#: ../applications/agoalert/html/agoalert.xml.in.h:27
 msgid "SMS rates"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:29
-#, fuzzy
-msgid "12voip credentials"
-msgstr "12voip accountgegevens:"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:30
+#: ../applications/agoalert/html/agoalert.xml.in.h:28
 msgid "Username"
 msgstr "Gebruikernaam"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:31
+#: ../applications/agoalert/html/agoalert.xml.in.h:29
 #, fuzzy
 msgid "12voip username"
 msgstr "Je gebruikersnaam"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:32
+#: ../applications/agoalert/html/agoalert.xml.in.h:30
 msgid "Password"
 msgstr "Wachtwoord"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:33
+#: ../applications/agoalert/html/agoalert.xml.in.h:31
 #, fuzzy
 msgid "12voip password"
 msgstr "Je wachtwoord"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:34
+#: ../applications/agoalert/html/agoalert.xml.in.h:32
 msgid ""
 "Free Mobile is a french internet/mobile provider. It offers for free to send "
 "SMS to mobile account owner and only for its number."
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:35
+#: ../applications/agoalert/html/agoalert.xml.in.h:33
 msgid ""
 "To use it in ago control, activate option in your free account and save "
 "provided apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:36
+#: ../applications/agoalert/html/agoalert.xml.in.h:34
 #, fuzzy
 msgid "User"
 msgstr "Gebruikernaam"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:37
+#: ../applications/agoalert/html/agoalert.xml.in.h:35
 msgid "Free user"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:38
+#: ../applications/agoalert/html/agoalert.xml.in.h:36
 msgid "Apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:39
+#: ../applications/agoalert/html/agoalert.xml.in.h:37
 msgid "To send you a test SMS, click on button"
 msgstr "Klik op de knop om een test SMS te versturen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:40
-msgid "Email configuration"
-msgstr "Email configuratie"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:41
-msgid "Agocontrol can send alert through email."
-msgstr "Agocontrol kan alarmen versturen via email."
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:42
+#: ../applications/agoalert/html/agoalert.xml.in.h:38
 msgid "Mail is configured"
 msgstr "Mail is geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:43
+#: ../applications/agoalert/html/agoalert.xml.in.h:39
 msgid "Mail is not yet configured"
 msgstr "Mail is niet geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:44
+#: ../applications/agoalert/html/agoalert.xml.in.h:40
 #, fuzzy
 msgid ""
 "Specify your email SMTP server and a sender email address (* is mandatory)"
 msgstr ""
 "Specificeer je email SMTP server en een afzender emailadres (* is verplicht):"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:45
+#: ../applications/agoalert/html/agoalert.xml.in.h:41
 #, fuzzy
 msgid "SMTP server* (smtp:port)"
 msgstr "SMTP server"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:46
+#: ../applications/agoalert/html/agoalert.xml.in.h:42
 msgid "smtp"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:47
+#: ../applications/agoalert/html/agoalert.xml.in.h:43
 #, fuzzy
 msgid "Sender email*"
 msgstr "Afzender adres"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:48
+#: ../applications/agoalert/html/agoalert.xml.in.h:44
 msgid "email"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:49
+#: ../applications/agoalert/html/agoalert.xml.in.h:45
 msgid "Login"
 msgstr "Inloggen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:50
+#: ../applications/agoalert/html/agoalert.xml.in.h:46
 #, fuzzy
 msgid "login"
 msgstr "Inloggen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:51
+#: ../applications/agoalert/html/agoalert.xml.in.h:47
 #, fuzzy
 msgid "password"
 msgstr "Wachtwoord"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:52
+#: ../applications/agoalert/html/agoalert.xml.in.h:48
 msgid "TLS"
 msgstr "TLS"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:53
+#: ../applications/agoalert/html/agoalert.xml.in.h:49
 msgid "To send you a test email, type your email address and click on button"
 msgstr ""
 "Vul je emailadres in en klik op de knop om een test email te verzenden."
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:54
+#: ../applications/agoalert/html/agoalert.xml.in.h:50
 #, fuzzy
 msgid "email address"
 msgstr "Je email adres"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:55
-msgid "Push configuration"
-msgstr "Push configuratie"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:56
-msgid "Agocontrol can send alert through push notifications."
-msgstr "Agocontrol kan alarmen versturen via push notificaties."
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:57
+#: ../applications/agoalert/html/agoalert.xml.in.h:51
 msgid "Push is configured"
 msgstr "Push is geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:58
+#: ../applications/agoalert/html/agoalert.xml.in.h:52
 msgid "Push is not yet configured"
 msgstr "Push is niet geconfigureerd"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:59
+#: ../applications/agoalert/html/agoalert.xml.in.h:53
 #, fuzzy
 msgid "Choose push provider in list"
 msgstr "Kies je push provider uit de lijst:"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:60
+#: ../applications/agoalert/html/agoalert.xml.in.h:54
 msgid "Enter your apikey"
 msgstr "Geef je API key"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:61
+#: ../applications/agoalert/html/agoalert.xml.in.h:55
 msgid "available here"
 msgstr "hier beschikbaar"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:62
+#: ../applications/agoalert/html/agoalert.xml.in.h:56
 msgid "apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:63
+#: ../applications/agoalert/html/agoalert.xml.in.h:57
 msgid "Refresh your devices list clicking on the button"
 msgstr "Ververs je apparaten lijst door op de knop te drukken"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:64
+#: ../applications/agoalert/html/agoalert.xml.in.h:58
 msgid "Refresh list"
 msgstr "Ververs lijst"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:65
+#: ../applications/agoalert/html/agoalert.xml.in.h:59
 msgid "And choose your devices that will be notified"
 msgstr "En kies de apparaten welke genotified worden"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:66
+#: ../applications/agoalert/html/agoalert.xml.in.h:60
 msgid "Finally save your settings"
 msgstr "Sla je instellingen op"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:67
+#: ../applications/agoalert/html/agoalert.xml.in.h:61
 msgid "Enter your userid"
 msgstr "Geef je gebruikers id"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:68
+#: ../applications/agoalert/html/agoalert.xml.in.h:62
 msgid "userid"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:69
+#: ../applications/agoalert/html/agoalert.xml.in.h:63
+msgid "Enter your registered application token"
+msgstr ""
+
+#: ../applications/agoalert/html/agoalert.xml.in.h:64
+msgid "token"
+msgstr ""
+
+#: ../applications/agoalert/html/agoalert.xml.in.h:65
 msgid "And save your settings"
 msgstr "En sla je instellingen op"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:70
+#: ../applications/agoalert/html/agoalert.xml.in.h:66
 msgid "Enter your apikeys"
 msgstr "Geef je API keys"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:71
+#: ../applications/agoalert/html/agoalert.xml.in.h:67
 msgid "To push you test notification, click on button"
 msgstr "Klik op de knop om een test push bericht te versturen"
 
@@ -1469,6 +1455,36 @@ msgstr ""
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr ""
+
+#~ msgid "Twitter configuration"
+#~ msgstr "Twitter configuratie"
+
+#~ msgid ""
+#~ "Agocontrol needs to be authorized to post alerts on your Twitter account."
+#~ msgstr "Agocontrol moet toegestaan worden om op je Twitter te posten"
+
+#~ msgid "SMS configuration"
+#~ msgstr "SMS Configuratie"
+
+#, fuzzy
+#~ msgid "Agocontrol can send alert through SMS"
+#~ msgstr "Agocontrol kan alarmen versturen via email."
+
+#, fuzzy
+#~ msgid "12voip credentials"
+#~ msgstr "12voip accountgegevens:"
+
+#~ msgid "Email configuration"
+#~ msgstr "Email configuratie"
+
+#~ msgid "Agocontrol can send alert through email."
+#~ msgstr "Agocontrol kan alarmen versturen via email."
+
+#~ msgid "Push configuration"
+#~ msgstr "Push configuratie"
+
+#~ msgid "Agocontrol can send alert through push notifications."
+#~ msgstr "Agocontrol kan alarmen versturen via push notificaties."
 
 #~ msgid "ago control Configuration"
 #~ msgstr "ago control Configuratie"
