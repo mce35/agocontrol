@@ -248,22 +248,15 @@ class AgoTellstick(agoclient.AgoApp):
 
         self.connection.add_handler(self.message_handler)
 
-        # Get inventory, required to set names on new devices
-        inventory = self.connection.get_inventory().content
-        agoController = None
-        for uuid in inventory['devices'].keys():
-            d = inventory['devices'][uuid]
-            if d['devicetype'] == 'agocontroller':
-                agoController = uuid
-                break
-
+        # Get agocontroller, required to set names on new devices
+        inventory = self.connection.get_inventory()
+        agoController = self.connection.get_agocontroller(inventory)
         if agoController == None:
-            self.log.warning("No agocontroller found, cannot set device names")
-        else:
-            self.log.debug("agoController found: %s", agoController)
+            self.log.error("No agocontroller found, cannot set device names")
+            raise agoclient.agoapp.StartupError()
 
         def setNameIfNecessary(deviceUUID, name):
-            dev = inventory['devices'].get(deviceUUID)
+            dev = inventory.content['devices'].get(deviceUUID)
             if (dev == None or dev['name'] == '') and name != '':
                 content = {}
                 content["command"] = "setdevicename"
