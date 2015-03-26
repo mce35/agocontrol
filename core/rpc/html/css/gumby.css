@@ -1,5 +1,8 @@
 @charset "UTF-8";
-@import url(//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700);
+/* agocontrol tweak: remove external dependencies */
+/* @import url(//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700); */
+@import url(/css/fonts.css);
+
 /**
 * Gumby Framework
 * ---------------
