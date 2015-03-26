@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-23 22:05+0100\n"
+"POT-Creation-Date: 2015-03-25 19:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -183,12 +183,11 @@ msgid "authorization url"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:7
-msgid "Twitter configuration"
+msgid "Configuration saved successfully"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:8
-msgid ""
-"Agocontrol needs to be authorized to post alerts on your Twitter account."
+msgid "Failed to save configuration"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:9
@@ -200,7 +199,9 @@ msgid "Twitter is not configured"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:11
-msgid "Follow instructions above to authorize this access"
+msgid ""
+"Follow instructions above to authorize agocontrol to access your Twitter "
+"account"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:12
@@ -212,22 +213,26 @@ msgid "here"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:14
-msgid "Then click on generated link"
+msgid "to generate an authorization url"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:15
-msgid "Type given access code here"
+msgid "Then click on generated link"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:16
-msgid "Twitter code"
+msgid "Type given access code here"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:17
-msgid "Finally click on button to save access code"
+msgid "Twitter code"
 msgstr ""
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:18
+msgid "Finally click on button to save access code"
+msgstr ""
+
+#: ../applications/agoalert/html/agoalert.xml.in.h:19
 #: ../applications/security/html/security.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:70
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
@@ -236,221 +241,201 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:19
+#: ../applications/agoalert/html/agoalert.xml.in.h:20
 msgid "To send test tweet on your account, click on button"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:20
+#: ../applications/agoalert/html/agoalert.xml.in.h:21
 #: ../applications/zwave/html/zwave.xml.in.h:43
 msgid "Test"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:21
-msgid "SMS configuration"
-msgstr ""
-
 #: ../applications/agoalert/html/agoalert.xml.in.h:22
-msgid "Agocontrol can send alert through SMS"
-msgstr ""
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:23
 msgid "SMS is configured"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:24
+#: ../applications/agoalert/html/agoalert.xml.in.h:23
 msgid "SMS is not yet configured"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:25
+#: ../applications/agoalert/html/agoalert.xml.in.h:24
 msgid "Choose SMS provider in list"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:26
+#: ../applications/agoalert/html/agoalert.xml.in.h:25
 msgid "You need to create an account on"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:27
+#: ../applications/agoalert/html/agoalert.xml.in.h:26
 msgid "and add credits to send SMS"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:28
+#: ../applications/agoalert/html/agoalert.xml.in.h:27
 msgid "SMS rates"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:29
-msgid "12voip credentials"
-msgstr ""
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:30
+#: ../applications/agoalert/html/agoalert.xml.in.h:28
 msgid "Username"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:31
+#: ../applications/agoalert/html/agoalert.xml.in.h:29
 msgid "12voip username"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:32
+#: ../applications/agoalert/html/agoalert.xml.in.h:30
 msgid "Password"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:33
+#: ../applications/agoalert/html/agoalert.xml.in.h:31
 msgid "12voip password"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:34
+#: ../applications/agoalert/html/agoalert.xml.in.h:32
 msgid ""
 "Free Mobile is a french internet/mobile provider. It offers for free to send "
 "SMS to mobile account owner and only for its number."
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:35
+#: ../applications/agoalert/html/agoalert.xml.in.h:33
 msgid ""
 "To use it in ago control, activate option in your free account and save "
 "provided apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:36
+#: ../applications/agoalert/html/agoalert.xml.in.h:34
 msgid "User"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:37
+#: ../applications/agoalert/html/agoalert.xml.in.h:35
 msgid "Free user"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:38
+#: ../applications/agoalert/html/agoalert.xml.in.h:36
 msgid "Apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:39
+#: ../applications/agoalert/html/agoalert.xml.in.h:37
 msgid "To send you a test SMS, click on button"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:40
-msgid "Email configuration"
-msgstr ""
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:41
-msgid "Agocontrol can send alert through email."
-msgstr ""
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:42
+#: ../applications/agoalert/html/agoalert.xml.in.h:38
 msgid "Mail is configured"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:43
+#: ../applications/agoalert/html/agoalert.xml.in.h:39
 msgid "Mail is not yet configured"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:44
+#: ../applications/agoalert/html/agoalert.xml.in.h:40
 msgid ""
 "Specify your email SMTP server and a sender email address (* is mandatory)"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:45
+#: ../applications/agoalert/html/agoalert.xml.in.h:41
 msgid "SMTP server* (smtp:port)"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:46
+#: ../applications/agoalert/html/agoalert.xml.in.h:42
 msgid "smtp"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:47
+#: ../applications/agoalert/html/agoalert.xml.in.h:43
 msgid "Sender email*"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:48
+#: ../applications/agoalert/html/agoalert.xml.in.h:44
 msgid "email"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:49
+#: ../applications/agoalert/html/agoalert.xml.in.h:45
 msgid "Login"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:50
+#: ../applications/agoalert/html/agoalert.xml.in.h:46
 msgid "login"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:51
+#: ../applications/agoalert/html/agoalert.xml.in.h:47
 msgid "password"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:52
+#: ../applications/agoalert/html/agoalert.xml.in.h:48
 msgid "TLS"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:53
+#: ../applications/agoalert/html/agoalert.xml.in.h:49
 msgid "To send you a test email, type your email address and click on button"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:54
+#: ../applications/agoalert/html/agoalert.xml.in.h:50
 msgid "email address"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:55
-msgid "Push configuration"
-msgstr ""
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:56
-msgid "Agocontrol can send alert through push notifications."
-msgstr ""
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:57
+#: ../applications/agoalert/html/agoalert.xml.in.h:51
 msgid "Push is configured"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:58
+#: ../applications/agoalert/html/agoalert.xml.in.h:52
 msgid "Push is not yet configured"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:59
+#: ../applications/agoalert/html/agoalert.xml.in.h:53
 msgid "Choose push provider in list"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:60
+#: ../applications/agoalert/html/agoalert.xml.in.h:54
 msgid "Enter your apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:61
+#: ../applications/agoalert/html/agoalert.xml.in.h:55
 msgid "available here"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:62
+#: ../applications/agoalert/html/agoalert.xml.in.h:56
 msgid "apikey"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:63
+#: ../applications/agoalert/html/agoalert.xml.in.h:57
 msgid "Refresh your devices list clicking on the button"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:64
+#: ../applications/agoalert/html/agoalert.xml.in.h:58
 msgid "Refresh list"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:65
+#: ../applications/agoalert/html/agoalert.xml.in.h:59
 msgid "And choose your devices that will be notified"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:66
+#: ../applications/agoalert/html/agoalert.xml.in.h:60
 msgid "Finally save your settings"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:67
+#: ../applications/agoalert/html/agoalert.xml.in.h:61
 msgid "Enter your userid"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:68
+#: ../applications/agoalert/html/agoalert.xml.in.h:62
 msgid "userid"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:69
+#: ../applications/agoalert/html/agoalert.xml.in.h:63
+msgid "Enter your registered application token"
+msgstr ""
+
+#: ../applications/agoalert/html/agoalert.xml.in.h:64
+msgid "token"
+msgstr ""
+
+#: ../applications/agoalert/html/agoalert.xml.in.h:65
 msgid "And save your settings"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:70
+#: ../applications/agoalert/html/agoalert.xml.in.h:66
 msgid "Enter your apikeys"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:71
+#: ../applications/agoalert/html/agoalert.xml.in.h:67
 msgid "To push you test notification, click on button"
 msgstr ""
 

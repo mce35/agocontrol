@@ -26,6 +26,7 @@ function agoAlertPlugin(devices, agocontrol)
     self.pushbulletAvailableDevices = ko.observableArray();
     self.pushbulletApikey = ko.observable();
     self.pushoverUserid = ko.observable();
+    self.pushoverToken = ko.observable();
     self.nmaApikey = ko.observable(self.nmaApikey);
     self.nmaAvailableApikeys = ko.observableArray();
     self.nmaSelectedApikeys = ko.observableArray();
@@ -93,6 +94,7 @@ function agoAlertPlugin(devices, agocontrol)
                     else if (res.result.push.provider == 'pushover')
                     {
                         self.pushoverUserid(res.result.push.userid);
+                        self.pushoverToken(res.result.push.token);
                     }
                     else if (res.result.push.provider == 'notifymyandroid')
                     {
@@ -220,6 +222,7 @@ function agoAlertPlugin(devices, agocontrol)
                     notif.error(res.result.msg);
                 }
                 self.getAlertsConfigs();
+                notif.success('#cok');
             }
             else
             {
@@ -279,6 +282,7 @@ function agoAlertPlugin(devices, agocontrol)
                     notif.error(res.result.msg);
                 }
                 self.getAlertsConfigs();
+                notif.success('#cok');
             }
             else
             {
@@ -378,6 +382,7 @@ function agoAlertPlugin(devices, agocontrol)
         else if (this.selectedPushProvider() == 'pushover')
         {
             content.param3 = this.pushoverUserid();
+            content.param4 = this.pushoverToken();
         }
         else if (this.selectedPushProvider() == 'notifymyandroid')
         {
@@ -391,6 +396,7 @@ function agoAlertPlugin(devices, agocontrol)
                     notif.error(res.result.msg);
                 }
                 self.getAlertsConfigs();
+                notif.success('#cok');
             }
             else
             {
@@ -418,6 +424,9 @@ function agoAlertPlugin(devices, agocontrol)
             }
         });
     };
+
+    //get config
+    self.getAlertsConfigs();
 }
 
 /**
@@ -425,17 +434,6 @@ function agoAlertPlugin(devices, agocontrol)
  */
 function init_template(path, params, agocontrol)
 {
-    ko.bindingHandlers.jqTabs = {
-        init: function(element, valueAccessor) {
-            //init
-            var options = valueAccessor() || {};
-            setTimeout( function() { $(element).tabs(options); }, 0);
-            //load config
-            model.getAlertsConfigs();
-        }
-    };
-
     var model = new agoAlertPlugin(agocontrol.devices(), agocontrol);
-
     return model;
 }
