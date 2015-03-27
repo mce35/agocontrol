@@ -74,7 +74,8 @@
 #define JSONRPC_INTERNAL_ERROR -32603
 
 // -32000 to -32099 impl-defined server errors
-#define AGO_JSONRPC_NO_EVENT -32000
+#define AGO_JSONRPC_NO_EVENT            -32000
+#define AGO_JSONRPC_MESSAGE_ERROR       -32001
 
 namespace fs = ::boost::filesystem;
 using namespace std;
@@ -367,8 +368,32 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
             return mg_rpc_reply_result(conn, request, std::string("no-reply"));
         }
 
+        // allow on the fly behavior during migration
+        if (getConfigOption("responses", "old") == "old") {
         //AGO_TRACE() << "Response: " << responseMap;
-        return mg_rpc_reply_map(conn, request, responseMap);
+            return mg_rpc_reply_map(conn, request, responseMap);
+        } else {
+            // new style responses
+            AGO_TRACE() << "Response: " << responseMap;
+            if (responseMap["error"].isVoid()) {
+                // no error
+                if (responseMap["response"].isVoid() ||  responseMap["response"].getType() != VAR_MAP) {
+                    AGO_ERROR() << "No proper new style response found";
+                    return mg_rpc_reply_map(conn, request, responseMap);
+                } else {
+                    return mg_rpc_reply_map(conn, request, responseMap["response"].asMap());
+                }
+            } else {
+                // error
+                if (responseMap["error"].getType() != VAR_MAP) {
+                    AGO_ERROR() << "Error response is not a map";
+                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, "message returned error and error map is malformed");
+                } else {
+                    Variant::Map errorMap = responseMap["error"].asMap();
+                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["message"]);
+                }
+            }
+        }
 
     }
     else if (method == "subscribe")
