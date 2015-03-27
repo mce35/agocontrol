@@ -377,11 +377,11 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
             AGO_TRACE() << "Response: " << responseMap;
             if (responseMap["error"].isVoid()) {
                 // no error
-                if (responseMap["response"].isVoid() ||  responseMap["response"].getType() != VAR_MAP) {
-                    AGO_ERROR() << "No proper new style response found";
+                if (responseMap["result"].isVoid() ||  responseMap["result"].getType() != VAR_MAP) {
+                    AGO_ERROR() << "New style response does not contain result nor error";
                     return mg_rpc_reply_map(conn, request, responseMap);
                 } else {
-                    return mg_rpc_reply_map(conn, request, responseMap["response"].asMap());
+                    return mg_rpc_reply_map(conn, request, responseMap["result"].asMap());
                 }
             } else {
                 // error
