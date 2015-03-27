@@ -222,7 +222,7 @@ static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &r
 }
 
 /**
- * Write a RCP response with an "error" element having the specified code/message.
+ * Write a RPC response with an "error" element having the specified code/message.
  *
  * Always returns false, to indicate that no more output is to be written.
  */
@@ -231,6 +231,23 @@ static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &re
     Json::Value error(Json::objectValue);
     error["code"] = code;
     error["message"] = message;
+
+    return mg_rpc_reply_result(conn, request_or_id, error, "error");
+}
+
+/**
+ * Write a RPC response with an "error" element having the specified code/message/data.
+ *
+ * Always returns false, to indicate that no more output is to be written.
+ */
+static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message, const qpid::types::Variant::Map& dataMap)
+{
+    Json::Value error(Json::objectValue);
+    Json::Value data(Json::objectValue);
+    Json::Reader reader = Json::Reader();
+    error["code"] = code;
+    error["message"] = message;
+    if (reader.parse(variantMapToJSONString(dataMap), data, false)) error["data"] = data;
 
     return mg_rpc_reply_result(conn, request_or_id, error, "error");
 }
@@ -397,7 +414,7 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 else
                 {
                     Variant::Map errorMap = responseMap["error"].asMap();
-                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["identifier"]);
+                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["identifier"], errorMap["data"].asMap());
                 }
             }
         }
