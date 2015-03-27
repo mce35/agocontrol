@@ -70,13 +70,15 @@ namespace agocontrol {
     std::string float2str(float f);
 
     // helpers for result and error responses
-    qpid::types::Variant::Map responseError(std::string identifier, std::string description, qpid::types::Variant::Map data);
-    qpid::types::Variant::Map responseError(std::string identifier, std::string description);
-    qpid::types::Variant::Map responseResult(std::string identifier);
-    qpid::types::Variant::Map responseResult(std::string identifier, std::string description);
-    qpid::types::Variant::Map responseResult(std::string identifier, std::string description, qpid::types::Variant::Map data);
-    qpid::types::Variant::Map responseResult(std::string identifier, qpid::types::Variant::Map data);
-    qpid::types::Variant::Map responseResult(qpid::types::Variant::Map data);
+    qpid::types::Variant::Map responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data);
+    qpid::types::Variant::Map responseError(const std::string& identifier, const std::string& description);
+    qpid::types::Variant::Map responseResult(const std::string& identifier);
+    qpid::types::Variant::Map responseResult(const std::string& identifier, const std::string& description);
+    qpid::types::Variant::Map responseResult(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data);
+    qpid::types::Variant::Map responseResult(const std::string& identifier, const qpid::types::Variant::Map& data);
+    qpid::types::Variant::Map responseResult(const qpid::types::Variant::Map& data);
+    qpid::types::Variant::Map responseResult();
+
 
     /// ago control client connection class.
     class AgoConnection {

@@ -310,7 +310,7 @@ unsigned int agocontrol::stringToUint(string v)
     return r;
 }
 
-qpid::types::Variant::Map agocontrol::responseError(std::string identifier, std::string description, qpid::types::Variant::Map _data)
+qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& _data)
 {
     qpid::types::Variant::Map response;
     qpid::types::Variant::Map error; 
@@ -324,43 +324,49 @@ qpid::types::Variant::Map agocontrol::responseError(std::string identifier, std:
     return response;
 }
 
-qpid::types::Variant::Map agocontrol::responseError(std::string identifier, std::string description)
+qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier, const std::string& description)
 {
     qpid::types::Variant::Map data;
     return responseError(identifier, description, data);
 }
 
-qpid::types::Variant::Map agocontrol::responseResult(std::string identifier, std::string description, qpid::types::Variant::Map data)
+qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data)
 {
     qpid::types::Variant::Map response;
     qpid::types::Variant::Map result;
 
     result = data;
-    result["identifier"]=identifier;
-    result["description"]=description;
+    if (identifier != "") result["identifier"]=identifier;
+    if (identifier != "") result["description"]=description;
     response["result"] = result;
     response["type"] = "new"; // TODO: remove thits after everything is using new response style
     return response;
 }
 
-qpid::types::Variant::Map agocontrol::responseResult(std::string identifier)
+qpid::types::Variant::Map agocontrol::responseResult()
+{
+        qpid::types::Variant::Map data;
+        return responseResult(data);
+}
+
+qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier)
 {
     qpid::types::Variant::Map data;
     return responseResult(identifier, "", data);
 }
 
-qpid::types::Variant::Map agocontrol::responseResult(std::string identifier, std::string description)
+qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const std::string& description)
 {
     qpid::types::Variant::Map data;
     return responseResult(identifier, description, data);
 }
 
-qpid::types::Variant::Map agocontrol::responseResult(std::string identifier, qpid::types::Variant::Map data)
+qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const qpid::types::Variant::Map& data)
 {
     return responseResult(identifier, "", data);
 }
 
-qpid::types::Variant::Map agocontrol::responseResult(qpid::types::Variant::Map data)
+qpid::types::Variant::Map agocontrol::responseResult(const qpid::types::Variant::Map& data)
 {
     return responseResult("success", "", data);
 }
