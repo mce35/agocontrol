@@ -69,6 +69,15 @@ namespace agocontrol {
     /// convert float to std::string.
     std::string float2str(float f);
 
+    // helpers for result and error responses
+    qpid::types::Variant::Map responseError(std::string identifier, std::string description, qpid::types::Variant::Map data);
+    qpid::types::Variant::Map responseError(std::string identifier, std::string description);
+    qpid::types::Variant::Map responseResult(std::string identifier);
+    qpid::types::Variant::Map responseResult(std::string identifier, std::string description);
+    qpid::types::Variant::Map responseResult(std::string identifier, std::string description, qpid::types::Variant::Map data);
+    qpid::types::Variant::Map responseResult(std::string identifier, qpid::types::Variant::Map data);
+    qpid::types::Variant::Map responseResult(qpid::types::Variant::Map data);
+
     /// ago control client connection class.
     class AgoConnection {
     protected:
