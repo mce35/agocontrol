@@ -369,30 +369,42 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         }
 
         // allow on the fly behavior during migration
-        if (getConfigOption("responses", "old") == "old") {
-        //AGO_TRACE() << "Response: " << responseMap;
-            return mg_rpc_reply_map(conn, request, responseMap);
-        } else {
+        if (responseMap["type"] == "new")
+        {
             // new style responses
-            AGO_TRACE() << "Response: " << responseMap;
-            if (responseMap["error"].isVoid()) {
+            AGO_TRACE() << "New style response: " << responseMap;
+            if (responseMap["error"].isVoid())
+            {
                 // no error
-                if (responseMap["result"].isVoid() ||  responseMap["result"].getType() != VAR_MAP) {
+                if (responseMap["result"].isVoid() ||  responseMap["result"].getType() != VAR_MAP)
+                {
                     AGO_ERROR() << "New style response does not contain result nor error";
                     return mg_rpc_reply_map(conn, request, responseMap);
-                } else {
+                }
+                else
+                {
                     return mg_rpc_reply_map(conn, request, responseMap["result"].asMap());
                 }
-            } else {
+            }
+            else
+            {
                 // error
-                if (responseMap["error"].getType() != VAR_MAP) {
+                if (responseMap["error"].getType() != VAR_MAP)
+                {
                     AGO_ERROR() << "Error response is not a map";
                     return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, "message returned error and error map is malformed");
-                } else {
+                }
+                else
+                {
                     Variant::Map errorMap = responseMap["error"].asMap();
-                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["message"]);
+                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["identifier"]);
                 }
             }
+        }
+        else
+        {
+            // old style responses
+            return mg_rpc_reply_map(conn, request, responseMap);
         }
 
     }
