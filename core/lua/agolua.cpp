@@ -340,7 +340,7 @@ int AgoLua::luaSetVariable(lua_State *L)
         refreshInventory = false;
     }
 
-    if( inventory.size()>0 && !inventory["devices"].isVoid() )
+    if( inventory.size()>0 && !inventory["devices"].isVoid() && !inventory["variables"].isVoid() )
     {
         //update current inventory to reflect changes without reloading it (too long!!)
         qpid::types::Variant::Map variables = inventory["variables"].asMap();
@@ -486,7 +486,8 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
                     for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
                     {
                         //TODO return device value property (quantity, unit, latitude, longitude...)
-                        qpid::types::Variant::Map value = it->second.asMap();
+                        qpid::types::Variant::Map value;
+                        if (!(it->second.isVoid())) value = it->second.asMap();
                         lua_pushstring(L, value[subAttribute].asString().c_str());
                         found = true;
                         break;
@@ -706,7 +707,7 @@ void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const 
     }
     else
     {
-        context = scriptContexts[script].asMap();
+        if (!scriptContexts[script].isVoid()) context = scriptContexts[script].asMap();
     }
     AGO_TRACE() << "context before:" << context;
 
