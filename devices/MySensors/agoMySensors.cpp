@@ -191,14 +191,21 @@ std::string prettyPrint(std::string message)
                     //device type
                     result << getDeviceTypeNameV14((deviceTypesV14)atoi(items[4].c_str())) << ";";
                     //protocol version (payload)
-                    result << items[5] << endl;;
+                    if( items.size()==6 )
+                        result << items[5] << endl;
+                    else
+                        result << endl;
                     break;
                 case SET_V14:
                 case REQ_V14:
                     //variable type
                     result << getVariableTypeNameV14((varTypesV14)atoi(items[4].c_str())) << ";";
                     //value (payload)
-                    result << items[5] << endl;
+                    if( items.size()==6 )
+                        result << items[5] << endl;
+                    else
+                        result << endl;
+                    break;
                     break;
                 case INTERNAL_V14:
                     //internal message type
