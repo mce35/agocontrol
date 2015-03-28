@@ -209,9 +209,9 @@ function AgocontrolViewModel()
         }
 
         //reset some old stuff
-        delete reset_template;
-        delete init_template;
-        delete afterrender_template;
+        reset_template = null;
+        init_template = null;
+        afterrender_template = null;
 
         // Load template script file
         var scriptPromise = loadScript(template.path+'/template.js');
