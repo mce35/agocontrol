@@ -125,20 +125,40 @@ Agocontrol.prototype = {
     },
 
 
-    //send command
-    sendCommand: function(content, callback, timeout)
+    /**
+     * Send a command to an arbitrary Ago component.
+     *
+     * (if oldstyleCallback is ommited and a numeric is passed as second parameter, 
+     * we will use that as timeout)
+     * 
+     * @param content Should be a dict with any parameters to broadcast to the qpid bus.
+     * @param oldstyleCallback A deprecated callback; do not use for new code!
+     * @param timeout How many seconds we want the RPC gateway to wait for response
+     *
+     * @return A promise which will be either resolved or rejected
+     */
+    sendCommand: function(content, oldstyleCallback, timeout)
     {
+        if(oldstyleCallback !== undefined && timeout === undefined &&
+                $.isNumeric(oldstyleCallback))
+        {
+            // Support sendCommand(content, timeout)
+            timeout = oldstyleCallback;
+            oldstyleCallback = null;
+        }
+
         var self = this;
         var request = {};
+        request.jsonrpc = "2.0";
+        request.id = 1;
         request.method = "message";
         request.params = {};
         request.params.content = content;
+
         if (timeout)
         {
             request.params.replytimeout = timeout;
         }
-        request.id = 1;
-        request.jsonrpc = "2.0";
 
         return new Promise(function(resolve, reject){
             $.ajax({
@@ -150,7 +170,7 @@ Agocontrol.prototype = {
                         // JSON-RPC call gave JSON-RPC response
          
                         // Old-style callback users
-                        if (callback !== undefined)
+                        if (oldstyleCallback)
                         {
                             // New-style backend, but old-style UI code.
                             // Add some magic to fool the not-yet-updated code which is
@@ -180,7 +200,7 @@ Agocontrol.prototype = {
                                 old.result = 'no-reply';
                             }
 
-                            callback(old);
+                            oldstyleCallback(old);
                         }
 
                         // New-style code should use promise pattern instead,
@@ -198,7 +218,7 @@ Agocontrol.prototype = {
                         console.error('with errors:');
                         console.error(arguments);
 
-                        // old: Callback was never called on errors.
+                        // old: oldstyleCallback was never called on errors.
 
                         // Simulate JSON-RPC error
                         reject({
