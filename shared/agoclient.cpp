@@ -355,7 +355,7 @@ qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifi
     if (identifier != "")
         result["identifier"] = identifier;
 
-    if (identifier != "")
+    if (description != "")
         result["description"] = description;
 
     response["result"] = result;
