@@ -441,9 +441,9 @@ Agocontrol.prototype = {
         self.sendCommand(content, 1)
             .then(function(res) {
                 var values = [];
-                for( var procName in res.result )
+                for( var procName in res )
                 {
-                    var proc = res.result[procName];
+                    var proc = res[procName];
                     proc.name = procName;
                     values.push(proc);
                 }
