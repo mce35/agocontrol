@@ -28,6 +28,8 @@
 #include "agolog.h"
 #include "agoconfig.h"
 
+#include "response_codes.h"
+
 #include <uuid/uuid.h>
 namespace agocontrol {
 
@@ -69,15 +71,21 @@ namespace agocontrol {
     /// convert float to std::string.
     std::string float2str(float f);
 
-    // helpers for result and error responses
+    // helpers for building result and error responses
     qpid::types::Variant::Map responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data);
     qpid::types::Variant::Map responseError(const std::string& identifier, const std::string& description);
+    qpid::types::Variant::Map responseError(const std::string& identifier);
     qpid::types::Variant::Map responseResult(const std::string& identifier);
     qpid::types::Variant::Map responseResult(const std::string& identifier, const std::string& description);
     qpid::types::Variant::Map responseResult(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data);
     qpid::types::Variant::Map responseResult(const std::string& identifier, const qpid::types::Variant::Map& data);
-    qpid::types::Variant::Map responseResult(const qpid::types::Variant::Map& data);
-    qpid::types::Variant::Map responseResult();
+
+    // Shortcut to send RESPONSE_ERR_FAILED
+    qpid::types::Variant::Map responseFailed();
+
+    // Shortcut to send RESPONSE_SUCCESS
+    qpid::types::Variant::Map responseSuccess(const qpid::types::Variant::Map& data);
+    qpid::types::Variant::Map responseSuccess();
 
 
     /// ago control client connection class.

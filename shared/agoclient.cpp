@@ -310,16 +310,18 @@ unsigned int agocontrol::stringToUint(string v)
     return r;
 }
 
+/**
+ * Mimics JSON-RPC error response
+ */
 qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& _data)
 {
     qpid::types::Variant::Map response;
     qpid::types::Variant::Map error; 
-    qpid::types::Variant::Map data;
-    data = _data;
-    data["description"]=description;
-    error["data"]=data;
-    error["message"]=identifier;
-    response["error"]=error;
+    qpid::types::Variant::Map data = _data;
+    data["description"] = description;
+    error["data"] = data;
+    error["message"] = identifier;
+    response["error"] = error;
     response["type"] = "new"; // TODO: remove thits after everything is using new response style
     return response;
 }
@@ -330,23 +332,46 @@ qpid::types::Variant::Map agocontrol::responseError(const std::string& identifie
     return responseError(identifier, description, data);
 }
 
+qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier)
+{
+    qpid::types::Variant::Map data;
+    return responseError(identifier, "", data);
+}
+
+qpid::types::Variant::Map agocontrol::responseFailed()
+{
+    qpid::types::Variant::Map data;
+    return responseError(RESPONSE_ERR_FAILED, "", data);
+}
+
+/**
+ * Mimics JSON-RPC successful response
+ */
 qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data)
 {
     qpid::types::Variant::Map response;
-    qpid::types::Variant::Map result;
+    qpid::types::Variant::Map result = data;
 
-    result = data;
-    if (identifier != "") result["identifier"]=identifier;
-    if (identifier != "") result["description"]=description;
+    if (identifier != "")
+        result["identifier"] = identifier;
+
+    if (identifier != "")
+        result["description"] = description;
+
     response["result"] = result;
     response["type"] = "new"; // TODO: remove thits after everything is using new response style
     return response;
 }
 
-qpid::types::Variant::Map agocontrol::responseResult()
+qpid::types::Variant::Map agocontrol::responseSuccess()
 {
-        qpid::types::Variant::Map data;
-        return responseResult(data);
+    qpid::types::Variant::Map blankData;
+    return responseResult(RESPONSE_SUCCESS, "", blankData);
+}
+
+qpid::types::Variant::Map agocontrol::responseSuccess(const qpid::types::Variant::Map& data)
+{
+    return responseResult(RESPONSE_SUCCESS, "", data);
 }
 
 qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier)
@@ -364,11 +389,6 @@ qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifi
 qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const qpid::types::Variant::Map& data)
 {
     return responseResult(identifier, "", data);
-}
-
-qpid::types::Variant::Map agocontrol::responseResult(const qpid::types::Variant::Map& data)
-{
-    return responseResult("success", "", data);
 }
 
 agocontrol::AgoConnection::AgoConnection(const char *interfacename)
