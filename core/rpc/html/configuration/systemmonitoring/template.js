@@ -30,24 +30,26 @@ function systemMonitoringConfig(devices, agocontrol)
             var content = {};
             content.uuid = self.controllerUuid;
             content.command = 'getstatus';
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
                     var procs = [];
                     var monitored = [];
-                    for( var name in res.result.processes )
+                    for( var name in res.processes )
                     {
                         procs.push(name);
-                        if( res.result.processes[name].monitored )
+                        if( res.processes[name].monitored )
                         {
                             monitored.push(name);
                         }
                     }
                     self.processes(procs);
                     self.monitoredProcesses(monitored);
-                    self.memoryThreshold(res.result.memoryThreshold);
-                }
-            });
+                    self.memoryThreshold(res.memoryThreshold);
+                })
+                .catch(function(error) {
+                    notif.fatal('Unable to get monitored process list: ' +
+                            getErrorMessage(error));
+                });
         }
     };
 
@@ -59,23 +61,14 @@ function systemMonitoringConfig(devices, agocontrol)
             content.uuid = self.controllerUuid;
             content.command = 'setmonitoredprocesses';
             content.processes = self.monitoredProcesses();
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
-                    if( res.result.error==0 )
-                    {
-                        notif.success('Monitored process list saved successfully');
-                    }
-                    else
-                    {
-                        notif.error('Unable to save monitored process list.');
-                    }
-                }
-                else
-                {
-                    notif.fatal('Unable to save monitored process list. Internal error');
-                }
-            });
+            self.agocontrol.sendCommand(content)
+                .then(function(res){
+                    notif.success('Monitored process list saved successfully');
+                })
+                .catch(function(error) {
+                    notif.fatal('Unable to save monitored process list: ' +
+                            getErrorMessage(error));
+                });
         }
     };
 
@@ -83,28 +76,28 @@ function systemMonitoringConfig(devices, agocontrol)
     self.setMemoryThreshold = function() {
         if( self.controllerUuid )
         {
+            // normalize
+            var v = parseInt(self.memoryThreshold(), 10);
+            if(isNaN(v))
+                v  = 0;
+
+            self.memoryThreshold(v);
+
             var content = {};
             content.uuid = self.controllerUuid;
             content.command = 'setmemorythreshold';
             content.threshold = self.memoryThreshold();
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
-                    if( res.result.error==0 )
-                    {
-                        notif.success('Memory threshold saved successfully');
-                    }
-                    else
-                    {
-                        notif.error('Unable to save memory threshold.');
-                        self.memoryThreshold(res.result.old);
-                    }
-                }
-                else
-                {
-                    notif.fatal('Unable to save memory threshold. Internal error');
-                }
-            });
+
+            self.agocontrol.sendCommand(content)
+                .then(function(res){
+                    notif.success('Memory threshold saved successfully');
+                })
+                .catch(function(error) {
+                    notif.fatal('Unable to save memory threshold: ' +
+                            getErrorMessage(error));
+                    if(error.data && error.data.old)
+                        self.memoryThreshold(error.data.old);
+                });
         }
     };
 

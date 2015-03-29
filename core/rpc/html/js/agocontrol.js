@@ -438,9 +438,8 @@ Agocontrol.prototype = {
         var content = {};
         content.command = "getprocesslist";
         content.uuid = self.systemController;
-        self.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.sendCommand(content, 1)
+            .then(function(res) {
                 var values = [];
                 for( var procName in res.result )
                 {
@@ -450,13 +449,11 @@ Agocontrol.prototype = {
                 }
 
                 self.processes.pushAll(values);
-            }
-            else
-            {
-                console.error('Unable to get processes list!');
+            })
+            .catch(function err(err){
+                console.error('Unable to get processes list!', err);
                 self._noProcesses(true);
-            }
-        }, 5);
+            });
     },
 
     updateFavorites: function() {

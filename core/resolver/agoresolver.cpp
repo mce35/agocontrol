@@ -410,7 +410,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
 
     // We have no devices registered but our own; if we get here something
     // is broken internally
-    throw new Exception("Should not go here");
+    throw new std::logic_error("Should not go here");
 }
 
 void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map content) {
