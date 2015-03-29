@@ -96,6 +96,7 @@ namespace agocontrol {
         qpid::types::Variant::Map response;
         AgoResponse(){};
         void init(const qpid::messaging::Message& message);
+        void init(const qpid::types::Variant::Map& response);
         void validate();
     public:
 
@@ -107,6 +108,9 @@ namespace agocontrol {
 
         // Get the "identifier" from either type of response
         std::string getIdentifier() /*const*/;
+
+        // Get a simple string error. Tries to use description, fallback on message
+        std::string getErrorMessage();
 
         // Get either "result" or "error.data"
         // Note that this creates a copy; Variant::map does not allow get without copy

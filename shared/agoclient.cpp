@@ -416,6 +416,11 @@ void agocontrol::AgoResponse::init(const qpid::messaging::Message& message) {
     validate();
 }
 
+void agocontrol::AgoResponse::init(const qpid::types::Variant::Map& response_) {
+    response = response_;
+    validate();
+}
+
 void agocontrol::AgoResponse::validate() {
     if(isError() && isOk())
         throw new std::invalid_argument("error and result are mutually exclusive");
@@ -480,6 +485,30 @@ qpid::types::Variant::Map agocontrol::AgoResponse::getData() {
 
         return response["result"].asMap();
     }
+}
+
+std::string agocontrol::AgoResponse::getErrorMessage() {
+    if(!isError())
+        throw std::logic_error("Cannot cal getError on a non-error response");
+
+    qpid::types::Variant::Map error = getData();
+
+    // if we have error.data.description, use that primarily
+    if(error.count("data")) {
+        if(error["data"].getType() != VAR_MAP)
+            AGO_WARNING() << "Invalid error response, error is not a map:  "<< response;
+        else if(error["data"].asMap().count("description"))
+            return error["data"].asMap()["description"].asString();
+    }
+
+    // Fallback on error.message
+    qpid::types::Variant message = error["message"];
+    if(message.getType() != VAR_STRING) {
+        AGO_WARNING() << "Invalid error response, message is not a string:  "<< response;
+        return RESPONSE_ERR_FAILED;
+    }
+
+    return message.asString();
 }
 
 
@@ -876,9 +905,21 @@ agocontrol::AgoResponse agocontrol::AgoConnection::sendRequest(const std::string
         AGO_TRACE() << "Response received: " << r.response;
     } catch (qpid::messaging::NoMessageAvailable) {
         AGO_WARNING() << "No reply for message sent to subject " << subject;
-        printf("WARNING, no reply message to fetch\n");
+
+        qpid::types::Variant::Map failed, err;
+        err["message"] = "no.reply";
+        failed["error"] = err;
+
+        r.init(failed);
     } catch(const std::exception& error) {
         AGO_ERROR() << "Exception in sendRequest: " << error.what();
+
+        qpid::types::Variant::Map failed, err, data;
+        data["description"] = error.what();
+        err["message"] = "unknown";
+        err["data"] = data;
+        failed["error"] = err;
+        r.init(failed);
     }
 
     recvsession.close();
