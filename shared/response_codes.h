@@ -12,5 +12,6 @@
 #define RESPONSE_ERR_FAILED     "failed"
 #define RESPONSE_ERR_UNKNOWN_COMMAND    "unknown.command"
 #define RESPONSE_ERR_BAD_PARAMETERS     "bad.parameters"
+#define RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE "no.commands.for.device"
 
 #endif

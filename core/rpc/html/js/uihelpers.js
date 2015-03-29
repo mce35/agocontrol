@@ -14,6 +14,18 @@ Agocontrol.prototype.unblock = function(el)
     $(el).unblock();    
 };
 
+/* Show an JSON-RPC error using notif
+ * use on sendCommmand promise like this:
+ *  .fail(notifCommandError)
+ */
+function notifCommandError(error) {
+    var identifier = error.message;
+    var descr = error && error.data && error.data.description;
+    var msg = descr ? descr : identifier;
+
+    notif.error("ERROR: " + msg);
+}
+
 //Init specific knockout bindings
 Agocontrol.prototype.initSpecificKnockoutBindings = function()
 {

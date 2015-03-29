@@ -264,7 +264,7 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
 
 qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map responseData;
     std::string internalid = content["internalid"].asString();
     if (internalid == "eventcontroller")
     {
@@ -282,22 +282,23 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
                 agoConnection->addDevice(eventuuid.c_str(), "event", true);
                 if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
                 {
-                    returnval["result"] = 0;
-                    returnval["event"] = eventuuid;
+                    responseData["event"] = eventuuid;
+                    return responseSuccess(responseData);
                 }
                 else
                 {
-                    returnval["result"] = -1;
+                    return responseFailed();
                 }
             }
-            catch (qpid::types::InvalidConversion)
+            catch (const qpid::types::InvalidConversion &ex)
             {
-                returnval["result"] = -1;
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, ex.what());
             }
-            catch (...)
+            catch (const std::exception &ex)
             {
-                returnval["result"] = -1;
-                returnval["error"] = "exception";
+                // XXX: What is this supposed to catch?
+                AGO_ERROR() << "Unhandled exception handling setevent" << ex.what();
+                return responseError(RESPONSE_ERR_FAILED, ex.what());
             }
         }
         else if (content["command"] == "getevent")
@@ -306,37 +307,43 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
             {
                 std::string event = content["event"].asString();
                 AGO_DEBUG() << "getevent request:" << event;
-                returnval["result"] = 0;
-                returnval["eventmap"] = eventmap[event].asMap();
-                returnval["event"] = event;
+                responseData["eventmap"] = eventmap[event].asMap();
+                responseData["event"] = event;
+                return responseSuccess(responseData);
             }
-            catch (qpid::types::InvalidConversion)
+            catch (const qpid::types::InvalidConversion &ex)
             {
-                returnval["result"] = -1;
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, ex.what());
             }
         }
         else if (content["command"] == "delevent")
         {
             std::string event = content["event"].asString();
             AGO_DEBUG() << "delevent request:" << event;
-            returnval["result"] = -1;
-            if (event != "")
+            if (event.empty())
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS);
+
+            qpid::types::Variant::Map::iterator it = eventmap.find(event);
+            if (it != eventmap.end())
             {
-                qpid::types::Variant::Map::iterator it = eventmap.find(event);
-                if (it != eventmap.end())
+                AGO_TRACE() << "removing ago device" << event;
+                agoConnection->removeDevice(it->first.c_str());
+                eventmap.erase(it);
+                if (!variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
                 {
-                    AGO_TRACE() << "removing ago device" << event;
-                    agoConnection->removeDevice(it->first.c_str());
-                    eventmap.erase(it);
-                    if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
-                    {
-                        returnval["result"] = 0;
-                    }
+                    return responseFailed();
                 }
             }
-        } 
+
+            // If it was not found, it was already deleted; delete succeded
+            return responseSuccess();
+        }else{
+            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
+        }
     }
-    return returnval;
+
+    // We do not support sending commands to our 'devices'
+    return responseError(RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE);
 }
 
 void AgoEvent::setupApp()

@@ -25,6 +25,10 @@ function EventsConfig(agocontrol)
         return events;
     });
 
+    function unblockGrid(){
+        self.agocontrol.unblock($('#agoGrid'));
+    }
+
     /**
      * Initalizes the empty event creation builder
      */
@@ -251,39 +255,41 @@ function EventsConfig(agocontrol)
         content.command = "getevent";
         content.event = item.uuid;
         content.uuid = self.agocontrol.eventController;
-        self.agocontrol.sendCommand(content, function(res) {
-            // Swap active selector
-            document.getElementById("eventBuilder").className = "";
-            document.getElementById("eventBuilderEdit").className = "eventBuilder";
+        self.agocontrol.sendCommand(content)
+            .then(function(res){
+                // Swap active selector
+                document.getElementById("eventBuilder").className = "";
+                document.getElementById("eventBuilderEdit").className = "eventBuilder";
 
-            // Disable main one to avoid id conflicts
-            document.getElementById("eventBuilder").innerHTML = "";
-            document.getElementById("actionBuilder").innerHTML = "";
+                // Disable main one to avoid id conflicts
+                document.getElementById("eventBuilder").innerHTML = "";
+                document.getElementById("actionBuilder").innerHTML = "";
 
-            // Create prepopulated builders
-            self.buildListFromJSON(self.mapToJSON(res.result.eventmap), document.getElementById("eventBuilderEdit"));
-            self.createActionBuilder(document.getElementById("actionBuilderEdit"), res.result.eventmap.action);
+                // Create prepopulated builders
+                self.buildListFromJSON(self.mapToJSON(res.eventmap), document.getElementById("eventBuilderEdit"));
+                self.createActionBuilder(document.getElementById("actionBuilderEdit"), res.eventmap.action);
 
-            // Save the id (needed for the save command)
-            self.openEvent = item.uuid;
+                // Save the id (needed for the save command)
+                self.openEvent = item.uuid;
 
-            // Open the dialog
-            if (document.getElementById("editEventDialogTitle")) {
-                $("#editEventDialog").dialog({
-                    title : document.getElementById("editEventDialogTitle").innerHTML,
-                    modal : true,
-                    width : 900,
-                    height : 600,
-                    close : function() {
-                        // Done, restore stuff
-                        document.getElementById("eventBuilderEdit").className = "";
-                        document.getElementById("eventBuilder").className = "eventBuilder";
-                        self.initBuilder();
-                        self.openEvent = null;
-                    }
-                });
-            }
-        });
+                // Open the dialog
+                if (document.getElementById("editEventDialogTitle")) {
+                    $("#editEventDialog").dialog({
+                        title : document.getElementById("editEventDialogTitle").innerHTML,
+                        modal : true,
+                        width : 900,
+                        height : 600,
+                        close : function() {
+                            // Done, restore stuff
+                            document.getElementById("eventBuilderEdit").className = "";
+                            document.getElementById("eventBuilder").className = "eventBuilder";
+                            self.initBuilder();
+                            self.openEvent = null;
+                        }
+                    });
+                }
+            })
+            .catch(notifCommandError);
     };
 
     //Sends the event edit command
@@ -295,12 +301,13 @@ function EventsConfig(agocontrol)
         content.command = "setevent";
         content.eventmap = self.map;
         content.event = self.openEvent;
-        self.agocontrol.sendCommand(content, function(res) {
-            if (res.result && res.result.event)
-            {
-                $("#editEventDialog").dialog("close");
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                if (res.event)
+                {
+                    $("#editEventDialog").dialog("close");
+                }
+            });
     };
 
     //Sends the create event commands
@@ -319,28 +326,24 @@ function EventsConfig(agocontrol)
         content.command = "setevent";
         content.eventmap = self.map;
     
-        self.agocontrol.sendCommand(content, function(res) {
-            if (res.result && res.result.event)
-            {
-                var cnt = {};
-                cnt.uuid = self.agocontrol.agoController;
-                cnt.device = res.result.event;
-                cnt.command = "setdevicename";
-                cnt.name = self.eventName();
-                self.agocontrol.sendCommand(cnt, function(nameRes) {
-                    if (nameRes.result && nameRes.result.returncode == "0")
-                    {
-                        self.agocontrol.refreshDevices(false);
-                        self.initBuilder();
-                    }
-                    self.agocontrol.unblock($('#agoGrid'));
-                });
-            }
-            else
-            {
-                notif.error("ERROR");
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                if (res.event)
+                {
+                    var cnt = {};
+                    cnt.uuid = self.agocontrol.agoController;
+                    cnt.device = res.event;
+                    cnt.command = "setdevicename";
+                    cnt.name = self.eventName();
+                    return self.agocontrol.sendCommand(cnt)
+                        .then(function(nameRes) {
+                            self.agocontrol.refreshDevices(false);
+                            self.initBuilder();
+                        });
+                }
+            })
+            .catch(notifCommandError)
+            .finally(unblockGrid);
     };
 
     self.deleteEvent = function(item, event)
@@ -373,19 +376,14 @@ function EventsConfig(agocontrol)
         content.event = item.uuid;
         content.uuid = self.agocontrol.eventController;
         content.command = 'delevent';
-        self.agocontrol.sendCommand(content, function(res) {
-            if (res.result && res.result.result == 0)
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.agocontrol.devices.remove(function(e) {
                     return e.uuid == item.uuid;
                 });
-            }
-            else
-            {
-                notif.error("Error while deleting event!");
-            }
-            self.agocontrol.unblock($('#agoGrid'))
-        });
+            })
+            .catch(notifCommandError)
+            .finally(unblockGrid);
     };
 
     //Helper for event map creation
