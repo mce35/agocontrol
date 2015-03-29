@@ -76,6 +76,7 @@
 // -32000 to -32099 impl-defined server errors
 #define AGO_JSONRPC_NO_EVENT            -32000
 #define AGO_JSONRPC_MESSAGE_ERROR       -32001
+#define AGO_JSONRPC_REMOTE_ERROR        -32002
 
 namespace fs = ::boost::filesystem;
 using namespace std;
@@ -409,12 +410,28 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 if (responseMap["error"].getType() != VAR_MAP)
                 {
                     AGO_ERROR() << "Error response is not a map";
-                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, "message returned error and error map is malformed");
+                    return mg_rpc_reply_error(conn, request,
+                            AGO_JSONRPC_MESSAGE_ERROR,
+                            "message returned error and error map is malformed");
                 }
                 else
                 {
                     Variant::Map errorMap = responseMap["error"].asMap();
-                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["message"], errorMap["data"].asMap());
+                    if(errorMap.count("data")){
+                        if(responseMap["error"].getType() != VAR_MAP) {
+                            AGO_ERROR() << "new-style response with error.data which is not of type map";
+                            return mg_rpc_reply_error(conn, request,
+                                    AGO_JSONRPC_MESSAGE_ERROR,
+                                    "message returned error and error.data map is malformed");
+                        }
+
+                        return mg_rpc_reply_error(conn, request,
+                                AGO_JSONRPC_REMOTE_ERROR, errorMap["message"],
+                                errorMap["data"].asMap());
+                    }
+
+                    return mg_rpc_reply_error(conn, request,
+                            AGO_JSONRPC_REMOTE_ERROR, errorMap["message"]);
                 }
             }
         }
