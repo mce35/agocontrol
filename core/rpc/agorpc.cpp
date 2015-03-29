@@ -204,10 +204,15 @@ static bool mg_rpc_reply(struct mg_connection *conn, const Json::Value &request_
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result")
+static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &request_or_id, const Json::Value &result, std::string result_key="result", bool _temp_newstyle_response=false)
 {
     Json::Value root(Json::objectValue);
     root[result_key] = result;
+    if(_temp_newstyle_response)
+        // Forward this informatinon to the UI;
+        // striclty not allowed in JSON-RPC but..
+        root["_temp_newstyle_response"] = true;
+
     return mg_rpc_reply(conn, request_or_id, root);
 }
 
@@ -227,7 +232,8 @@ static bool mg_rpc_reply_result(struct mg_connection *conn, const Json::Value &r
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message)
+static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id,
+        int code, const std::string message)
 {
     Json::Value error(Json::objectValue);
     error["code"] = code;
@@ -241,16 +247,19 @@ static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &re
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id, int code, const std::string message, const qpid::types::Variant::Map& dataMap)
+static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &request_or_id,
+        int code, const std::string message,
+        const qpid::types::Variant::Map& dataMap)
 {
     Json::Value error(Json::objectValue);
     Json::Value data(Json::objectValue);
     Json::Reader reader = Json::Reader();
     error["code"] = code;
     error["message"] = message;
+
     if (reader.parse(variantMapToJSONString(dataMap), data, false)) error["data"] = data;
 
-    return mg_rpc_reply_result(conn, request_or_id, error, "error");
+    return mg_rpc_reply_result(conn, request_or_id, error, "error", true);
 }
 
 /**
@@ -258,7 +267,7 @@ static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &re
  *
  * Always returns false, to indicate that no more output is to be written.
  */
-static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap)
+static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &request_or_id, const Variant::Map &responseMap, bool _temp_newstyle_response=false)
 {
     //	Json::Value r(result);
     //	mg_rpc_reply_result(conn, request_or_id, r);
@@ -278,6 +287,12 @@ static bool mg_rpc_reply_map(struct mg_connection *conn, const Json::Value &requ
     // XXX: Write without building full JSON
     mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": ");
     mg_printmap(conn, responseMap);
+
+    if(_temp_newstyle_response)
+        // Forward this informatinon to the UI;
+        // striclty not allowed in JSON-RPC but..
+        mg_printf_data(conn, ", \"_temp_newstyle_response\":true");
+
     mg_printf_data(conn, ", \"id\": %s}", request_idstr.c_str());
     return false;
 }
@@ -387,7 +402,7 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         }
 
         // allow on the fly behavior during migration
-        if (responseMap.count("type") && responseMap["type"] == "new")
+        if (responseMap.count("_newresponse"))
         {
             // new style responses. backend response mimics JSON-RPC
             AGO_TRACE() << "New style response: " << responseMap;
@@ -397,11 +412,13 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 if (responseMap["result"].isVoid() ||  responseMap["result"].getType() != VAR_MAP)
                 {
                     AGO_ERROR() << "New style response does not contain result nor error";
-                    return mg_rpc_reply_map(conn, request, responseMap);
+                    return mg_rpc_reply_error(conn, request,
+                            AGO_JSONRPC_MESSAGE_ERROR,
+                            "message returned neither error or result");
                 }
                 else
                 {
-                    return mg_rpc_reply_map(conn, request, responseMap["result"].asMap());
+                    return mg_rpc_reply_map(conn, request, responseMap["result"].asMap(), true);
                 }
             }
             else

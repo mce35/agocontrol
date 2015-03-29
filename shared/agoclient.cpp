@@ -327,7 +327,7 @@ qpid::types::Variant::Map agocontrol::responseError(const std::string& identifie
     error["message"] = identifier;
 
     response["error"] = error;
-    response["type"] = "new"; // TODO: remove thits after everything is using new response style
+    response["_newresponse"] = true; // TODO: remove thits after everything is using new response style
     return response;
 }
 
@@ -364,7 +364,7 @@ qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifi
         result["description"] = description;
 
     response["result"] = result;
-    response["type"] = "new"; // TODO: remove thits after everything is using new response style
+    response["_newresponse"] = true; // TODO: remove thits after everything is using new response style
     return response;
 }
 
