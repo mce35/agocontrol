@@ -349,6 +349,12 @@ qpid::types::Variant::Map agocontrol::responseFailed()
     return responseError(RESPONSE_ERR_FAILED, "", data);
 }
 
+qpid::types::Variant::Map agocontrol::responseFailed(const std::string& description)
+{
+    qpid::types::Variant::Map data;
+    return responseError(RESPONSE_ERR_FAILED, description, data);
+}
+
 /**
  * Mimics JSON-RPC successful response
  */

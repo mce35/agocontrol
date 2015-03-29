@@ -82,6 +82,7 @@ namespace agocontrol {
 
     // Shortcut to send RESPONSE_ERR_FAILED
     qpid::types::Variant::Map responseFailed();
+    qpid::types::Variant::Map responseFailed(const std::string& description);
 
     // Shortcut to send RESPONSE_SUCCESS
     qpid::types::Variant::Map responseSuccess(const qpid::types::Variant::Map& data);

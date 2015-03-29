@@ -319,13 +319,16 @@ int AgoLua::luaSetVariable(lua_State *L)
     content["value"] = std::string(lua_tostring(L,2));
     content["command"]="setvariable";
     content["uuid"]=agocontroller;
-    AGO_DEBUG() << "Sending message: " << content;
-    qpid::types::Variant::Map replyMap = agoConnection->sendMessageReply(subject.c_str(), content);
+
+    AGO_DEBUG() << "Setting variable: " << content;
+    AgoResponse resp = agoConnection->sendRequest(subject.c_str(), content);
 
     //manage result
-    if( replyMap.size()>0 && !replyMap["returncode"].isVoid() )
+    if( resp.isOk() )
     {
-        lua_pushnumber(L, replyMap["returncode"].asInt32());
+        // XXX: Not sure what we are supposed to set here; returncode was set in older code
+        // but there are no docs on how this can be used.
+        lua_pushnumber(L, 1);
     }
     else
     {
@@ -709,7 +712,7 @@ void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const 
     {
         if (!scriptContexts[script].isVoid()) context = scriptContexts[script].asMap();
     }
-    AGO_TRACE() << "context before:" << context;
+    AGO_TRACE() << "LUA context before:" << context;
 
     //add mapped functions
 #define LUA_REGISTER_WRAPPER(L, lua_name, method_name) \
@@ -751,7 +754,7 @@ void AgoLua::finalizeScript(lua_State* L, qpid::types::Variant::Map& content, co
     lua_getglobal(L, "context");
     pullTableToMap(L, context);
     scriptContexts[script] = context;
-    AGO_TRACE() << "context after:" << context;
+    AGO_TRACE() << "LUA context after:" << context;
 }
 
 /**
@@ -800,7 +803,7 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
             agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
             lua_pop(L, 1); // remove error message
         }
-    
+ 
         //finalize script
         finalizeScript(L, content, "debug", context);
         lua_close(L);
@@ -824,6 +827,7 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
 void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &script)
 {
     //init
+    // XXX: This is global for all scripts!
     refreshInventory = true;
     qpid::types::Variant::Map context;
     lua_State *L;
@@ -938,11 +942,14 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
  */
 qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map returnData;
+    // XXX: Why does lua answer on inventory??
+#if 0
     if (content["command"] == "inventory")
     {
-        return returnval;
+        return returnData;
     }
+#endif
 
     std::string internalid = content["internalid"].asString();
     if (internalid == "luacontroller")
@@ -963,243 +970,221 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                     ++it;
                 }
             }
-            returnval["scriptlist"]=scriptlist;
-            returnval["result"]=0;
+            returnData["scriptlist"]=scriptlist;
+            return responseSuccess(returnData);
         }
         else if (content["command"] == "getscript")
         {
-            if (content["name"].asString() != "")
+            if (content["name"].asString().empty())
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "name required");
+
+            try
             {
-                try
-                {
-                    // if a path is passed, strip it for security reasons
-                    fs::path input(content["name"]);
-                    fs::path script = construct_script_name(input.stem());
-                    string scriptcontent = get_file_contents(script);
-                    AGO_DEBUG() << "Reading script " << script;
-                    returnval["script"]=base64_encode(reinterpret_cast<const unsigned char*>(scriptcontent.c_str()), scriptcontent.length());
-                    returnval["result"]=0;
-                    returnval["name"]=content["name"].asString();
-                }
-                catch(...)
-                {
-                    returnval["error"]="can't read script";
-                    returnval["result"]=-1;
-                }
+                // if a path is passed, strip it for security reasons
+                fs::path input(content["name"]);
+                fs::path script = construct_script_name(input.stem());
+                string scriptcontent = get_file_contents(script);
+                AGO_DEBUG() << "Reading script " << script;
+                returnData["script"]=base64_encode(reinterpret_cast<const unsigned char*>(scriptcontent.c_str()), scriptcontent.length());
+                returnData["name"]=content["name"].asString();
+                return responseSuccess(returnData);
+            }
+            catch(...)
+            {
+                return responseFailed("Cannot read script");
             }
         }
         else if (content["command"] == "setscript" )
         {
-            if (content["name"].asString() != "")
-            {
-                try
-                {
-                    // if a path is passed, strip it for security reasons
-                    fs::path input(content["name"]);
-                    fs::path script = construct_script_name(input.stem());
-                    std::ofstream file;
+            if (content["name"].asString().empty())
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "name required");
 
-                    // XXX: this did not seem to throw even if the directory did not exist...
-                    file.open(script.c_str());
-                    file << content["script"].asString();
-                    file.close();
-                    returnval["error"]="";
-                    returnval["result"]=0;
-                }
-                catch(...)
-                {
-                    returnval["error"]="can't write script";
-                    returnval["result"]=-1;
-                }
+            try
+            {
+                // if a path is passed, strip it for security reasons
+                fs::path input(content["name"]);
+                fs::path script = construct_script_name(input.stem());
+                std::ofstream file;
+
+                // XXX: this did not seem to throw even if the directory did not exist...
+                file.open(script.c_str());
+                file << content["script"].asString();
+                file.close();
+                return responseSuccess();
+            }
+            catch(...)
+            {
+                return responseFailed("Cannot write script");
             }
         }
         else if (content["command"] == "delscript")
         {
-            if (content["name"].asString() != "")
+            if (content["name"].asString().empty())
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "name required");
+
+            try
             {
-                try
+                // if a path is passed, strip it for security reasons
+                fs::path input(content["name"]);
+                fs::path target = construct_script_name(input.stem());
+                if (fs::remove (target))
                 {
-                    // if a path is passed, strip it for security reasons
-                    fs::path input(content["name"]);
-                    fs::path target = construct_script_name(input.stem());
-                    if (fs::remove (target))
-                    {
-                        returnval["result"]=0;
-                    }
-                    else
-                    {
-                        returnval["error"]="no such script";
-                        returnval["result"]=-1;
-                    }
+                    return responseSuccess();
                 }
-                catch(...)
+                else
                 {
-                    returnval["error"]="can't delete script";
-                    returnval["result"]=-1;
+                    return responseFailed("no such script");
                 }
+            }
+            catch(...)
+            {
+                return responseFailed("cannot delete script");
             }
         }
         else if (content["command"] == "renscript")
         {
-            if ( !content["oldname"].isVoid() && content["oldname"].asString()!="" && !content["newname"].isVoid() && content["newname"].asString()!="" )
+            if(content["oldname"].isVoid() ||
+               content["oldname"].asString().empty())
             {
-                try
-                {
-                    // if a path is passed, strip it for security reasons
-                    fs::path input(content["oldname"]);
-                    fs::path source = construct_script_name(input.stem());
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "oldname required");
+            }
 
-                    fs::path output(content["newname"]);
-                    fs::path target = construct_script_name(output.stem());
+            if(content["newname"].isVoid() ||
+               content["newname"].asString().empty())
+            {
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "newname required");
+            }
+        
+            try
+            {
+                // if a path is passed, strip it for security reasons
+                fs::path input(content["oldname"]);
+                fs::path source = construct_script_name(input.stem());
 
-                    //check if destination file already exists
-                    if( !fs::exists(target) )
-                    {
-                        //rename script
-                        fs::rename(source, target);
-                        returnval["result"]=0;
-                    }
-                    else
-                    {
-                        returnval["error"]="Script with new name already exists. Script not renamed";
-                        returnval["result"]=-1;
-                    }
-                }
-                catch( const exception& e )
+                fs::path output(content["newname"]);
+                fs::path target = construct_script_name(output.stem());
+
+                //check if destination file already exists
+                if( !fs::exists(target) )
                 {
-                    AGO_ERROR() << "Exception during file renaming" << e.what();
-                    returnval["error"]="Unable to rename script";
-                    returnval["result"]=-1;
+                    //rename script
+                    fs::rename(source, target);
+                    return responseSuccess();
                 }
+                else
+                {
+                    return responseFailed("Script with new name already exists. Script not renamed");
+                }
+            }
+            catch( const exception& e )
+            {
+                AGO_ERROR() << "Exception during file renaming" << e.what();
+                return responseFailed("Unable to rename script");
             }
         }
         else if( content["command"]=="debugscript" )
         {
             AGO_DEBUG() << "debug received: " << content;
-            if( !content["script"].isVoid() && !content["data"].isVoid() )
-            {
-                std::string script = content["script"].asString();
-                qpid::types::Variant::Map data = content["data"].asMap();
-                AGO_DEBUG() << "Debug script: script=" << script << " content=" << data;
+            if( content["script"].isVoid() || content["data"].isVoid() )
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "debugscript required");
 
-                boost::thread t( boost::bind(&AgoLua::debugScript, this, data, script) );
-                t.detach();
+            std::string script = content["script"].asString();
+            qpid::types::Variant::Map data = content["data"].asMap();
+            AGO_DEBUG() << "Debug script: script=" << script << " content=" << data;
 
-                AGO_INFO() << "Command 'debugscript': debug started";
-                returnval["result"] = 0;
-            }
-            else
-            {
-                AGO_ERROR() << "Command 'debugscript': missing parameter";
-                returnval["error"] = "Unable to debug script: missing parameter";
-                returnval["result"] = -1;
-            }
+            boost::thread t( boost::bind(&AgoLua::debugScript, this, data, script) );
+            t.detach();
+
+            AGO_INFO() << "Command 'debugscript': debug started";
+            return responseSuccess();
         }
         else if (content["command"] == "uploadfile")
         {
             //import script
-            if( !content["filepath"].isVoid() && content["filepath"].asString()!="" &&
-                    !content["filename"].isVoid() && content["filename"].asString()!="" )
+            if( content["filepath"].isVoid() || content["filepath"].asString().empty())
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "filepath required");
+
+            if( content["filename"].isVoid() || content["filename"].asString().empty())
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "filename required");
+
+            //check file
+            fs::path source(content["filepath"]);
+            if( fs::is_regular_file(status(source)) && source.extension().string()==".lua")
             {
-                //check file
-                fs::path source(content["filepath"]);
-                if( fs::is_regular_file(status(source)) && source.extension().string()==".lua")
+                try
                 {
-                    try
+                    std::string filename;
+                    if( content["filename"].asString().find("blockly_")!=0 )
                     {
-                        std::string filename;
-                        if( content["filename"].asString().find("blockly_")!=0 )
-                        {
-                            // prepend "blockly_" string
-                            filename = "blockly_";
-                        }
-                        filename += content["filename"].asString();
-
-                        fs::path target = scriptdir / filename;
-
-                        //check if desination file already exists
-                        if( !fs::exists(target) )
-                        {
-                            //move file
-                            AGO_DEBUG() << "import " << source << " to " << target;
-                            fs::copy_file(source, target);
-                            returnval["error"] = "";
-                            returnval["result"] = 0;
-                        }
-                        else
-                        {
-                            AGO_DEBUG() << "Script already exists, nothing overwritten";
-                            returnval["error"] = "Script already exists. Script not imported";
-                            returnval["result"] = -1;
-                        }
+                        // prepend "blockly_" string
+                        filename = "blockly_";
                     }
-                    catch( const exception& e )
+                    filename += content["filename"].asString();
+
+                    fs::path target = scriptdir / filename;
+
+                    //check if desination file already exists
+                    if( !fs::exists(target) )
                     {
-                        AGO_ERROR() << "Exception during script import" << e.what();
-                        returnval["error"] = "Unable to import script";
-                        returnval["result"] = -1;
+                        //move file
+                        AGO_DEBUG() << "import " << source << " to " << target;
+                        fs::copy_file(source, target);
+                        return responseSuccess();
+                    }
+                    else
+                    {
+                        AGO_DEBUG() << "Script already exists, nothing overwritten";
+                        return responseFailed("Script already exists. Script not imported");
                     }
                 }
-                else
+                catch( const exception& e )
                 {
-                    //invalid file, reject it
-                    AGO_ERROR() << "Unsupported file uploaded";
-                    returnval["error"] = "Unsupported file";
-                    returnval["result"] = -1;
+                    AGO_ERROR() << "Exception during script import" << e.what();
+                    return responseFailed("Unable to import script");
                 }
             }
             else
             {
-                //invalid request
-                AGO_ERROR() << "Invalid file upload request";
-                returnval["error"] = "Invalid request";
-                returnval["result"] = -1;
+                //invalid file, reject it
+                AGO_ERROR() << "Unsupported file uploaded";
+                return responseFailed("Unsupported file");
             }
         }
         else if (content["command"] == "downloadfile")
         {
             AGO_DEBUG() << "download file command received: " << content;
             //export script
-            if( !content["filename"].isVoid() && content["filename"].asString()!="" )
-            {
-                std::string file = "blockly_" + content["filename"].asString();
-                fs::path target = construct_script_name(file);
-                AGO_DEBUG() << "file to download " << target;
+            if( content["filename"].isVoid() || content["filename"].asString().empty() )
+                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "filename required");
 
-                //check if file exists
-                if( fs::exists(target) )
-                {
-                    //file exists, return full path
-                    AGO_DEBUG() << "Send fullpath of file to download " << target;
-                    returnval["error"] = "";
-                    returnval["filepath"] = target.string();
-                    returnval["result"] = 0;
-                }
-                else
-                {
-                    //requested file doesn't exists
-                    AGO_ERROR() << "File to download doesn't exist";
-                    returnval["error"] = "File doesn't exist";
-                    returnval["result"] = -1;
-                }
+            std::string file = "blockly_" + content["filename"].asString();
+            fs::path target = construct_script_name(file);
+            AGO_DEBUG() << "file to download " << target;
+
+            //check if file exists
+            if( fs::exists(target) )
+            {
+                //file exists, return full path
+                AGO_DEBUG() << "Send fullpath of file to download " << target;
+                returnData["filepath"] = target.string();
+                return responseSuccess(returnData);
             }
             else
             {
-                //invalid request
-                AGO_ERROR() << "Invalid file upload request";
-                returnval["error"]="Invalid request";
-                returnval["result"]=-1;
+                //requested file doesn't exists
+                AGO_ERROR() << "File to download doesn't exist";
+                return responseFailed("File doesn't exist");
             }
         }
         else
         {
-            returnval["error"]="invalid command";
-            returnval["result"]=-1;
+            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
         }
     }
     else
     {
         //execute scripts
+        bool found=false;
         if (fs::exists(scriptdir))
         {
             fs::recursive_directory_iterator it(scriptdir);
@@ -1211,6 +1196,7 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 {
                     if( canExecuteScript(content, it->path()) )
                     {
+                        found = true;
                         boost::thread t( boost::bind(&AgoLua::executeScript, this, content, it->path()) );
                         t.detach();
                     }
@@ -1218,9 +1204,12 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 ++it;
             }
         }
-    }
 
-    return returnval;
+        if(!found) {
+            return responseError(RESPONSE_ERR_BAD_PARAMETERS, "script not found");
+        }
+        return responseSuccess();
+    }
 }
 
 /**
