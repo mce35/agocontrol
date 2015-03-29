@@ -646,34 +646,18 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
                 content["filename"] = safe_fn.string();
                 content["filesize"] = data_len;
 
-                Variant::Map responseMap = agoConnection->sendMessageReply("", content);
-                if( responseMap.size()==0 )
+                AgoResponse r = agoConnection->sendRequest(content);
+                if(r.isError())
                 {
                     //command failed, drop file
                     fs::remove(tempfile);
-                    AGO_ERROR() << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed";
-                    uploadError = "Internal error";
+                    AGO_ERROR() << "Uploaded file \"" << tempfile.string()
+                        << "\" dropped because command failed" << r.getErrorMessage();
+                    uploadError = r.getErrorMessage();
                     continue;
                 }
 
-                if( !responseMap["result"].isVoid() && responseMap["result"].asInt16()!=0 )
-                {
-                    //file rejected, drop it
-                    fs::remove(tempfile);
-                    if( !responseMap["error"].isVoid() )
-                    {
-                        uploadError = responseMap["error"].asString();
-                    }
-                    else
-                    {
-                        uploadError = "File rejected";
-                    }
-                    AGO_ERROR() << "Uploaded file \"" << safe_fn.string() << "\" rejected by recipient: " << uploadError;
-                    //uploadError = "File rejected: no handler available";
-                    continue;
-                }
-
-                //add file to output
+                // add file to output
                 Variant::Map file;
                 file["name"] = safe_fn.string();
                 file["size"] = data_len;
@@ -714,7 +698,6 @@ bool AgoRpc::downloadFile(struct mg_connection *conn)
     //init
     char param[1024];
     Variant::Map content;
-    Variant::Map responseMap;
     string downloadError = "";
     fs::path filepath;
 
@@ -728,9 +711,10 @@ bool AgoRpc::downloadFile(struct mg_connection *conn)
     if( !content["filename"].isVoid() && !content["uuid"].isVoid() )
     {
         //send command
-        responseMap = agoConnection->sendMessageReply("", content);
-        if( responseMap.size()>0 )
+        AgoResponse r = agoConnection->sendRequest(content);
+        if( r.isOk() )
         {
+            Variant::Map responseMap = r.getData();
             //command sent successfully
             if( !responseMap["filepath"].isVoid() && responseMap["filepath"].asString().length()>0 )
             {
@@ -748,8 +732,8 @@ bool AgoRpc::downloadFile(struct mg_connection *conn)
         else
         {
             //command failed
-            AGO_ERROR() << "Download file, sendCommand failed, unable to send file";
-            downloadError = "Internal error";
+            AGO_ERROR() << "Download file, sendCommand failed, unable to send file: " << r.getErrorMessage();
+            downloadError = r.getErrorMessage();
         }
     }
     else
