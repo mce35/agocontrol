@@ -386,9 +386,9 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         }
 
         // allow on the fly behavior during migration
-        if (responseMap["type"] == "new")
+        if (responseMap.count("type") && responseMap["type"] == "new")
         {
-            // new style responses
+            // new style responses. backend response mimics JSON-RPC
             AGO_TRACE() << "New style response: " << responseMap;
             if (responseMap["error"].isVoid())
             {
