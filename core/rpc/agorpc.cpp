@@ -414,7 +414,7 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 else
                 {
                     Variant::Map errorMap = responseMap["error"].asMap();
-                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["identifier"], errorMap["data"].asMap());
+                    return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, errorMap["message"], errorMap["data"].asMap());
                 }
             }
         }
