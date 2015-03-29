@@ -140,27 +140,70 @@ Agocontrol.prototype = {
         request.id = 1;
         request.jsonrpc = "2.0";
 
-        return $.ajax({
-            type : 'POST',
-            url : self.url,
-            data : JSON.stringify(request),
-            success : function(r)
-            {
+        // jQuery promises are somewhat lacking; we cannot chain the $.ajax promises
+        var dfd = new $.Deferred();
+        $.ajax({
+                type : 'POST',
+                url : self.url,
+                data : JSON.stringify(request),
+                dataType : "json"
+            })
+            .then(function(r) {
+                // JSON-RPC call gave JSON-RPC response
+ 
+                // Old-style callback users
                 if (callback !== undefined)
                 {
+                    if(r._temp_newstyle_response) {
+                        // New-style backend, but old-style UI code.
+                        // Add some magic to fool the not-yet-updated code which is
+                        // checking for returncode
+                        if(r.result && !r.result.returncode)
+                        {
+                            r.result.returncode = "0";
+                        }
+                        else if(r.error)
+                        {
+                            if(!r.result)
+                                r.result = {};
+
+                            r.result.returncode = "-1";
+                        }
+
+                        delete r._temp_newstyle_response;
+                    }
+
                     callback(r);
                 }
-            },
-            error : function()
+
+                // New-style code should use promise pattern instead,
+                // which is either resolved or rejected with result OR error
+                if(r.result)
+                    dfd.resolve(r.result);
+                else
+                    dfd.reject(r.error);
+            })
+            .fail(function(jqXHR, textStatus, errorThrown)
             {
-                //error occured during request
+                // Failed to talk properly with agorpc
                 console.error('sendCommand failed for:');
                 console.error(content);
                 console.error('with errors:');
                 console.error(arguments);
-            },
-            dataType : "json"
-        });
+
+                // old: Callback was never called on errors.
+
+                // Simulate JSON-RPC error
+                dfd.reject({
+                        code:-32603,
+                        message: 'transport.error',
+                        data:{
+                            description:'Failed to talk with agorpc'
+                        }
+                    });
+            });
+
+        return dfd.promise();
     },
 
     //find room
