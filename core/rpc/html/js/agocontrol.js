@@ -140,70 +140,77 @@ Agocontrol.prototype = {
         request.id = 1;
         request.jsonrpc = "2.0";
 
-        // jQuery promises are somewhat lacking; we cannot chain the $.ajax promises
-        var dfd = new $.Deferred();
-        $.ajax({
-                type : 'POST',
-                url : self.url,
-                data : JSON.stringify(request),
-                dataType : "json"
-            })
-            .then(function(r) {
-                // JSON-RPC call gave JSON-RPC response
- 
-                // Old-style callback users
-                if (callback !== undefined)
-                {
-                    if(r._temp_newstyle_response) {
-                        // New-style backend, but old-style UI code.
-                        // Add some magic to fool the not-yet-updated code which is
-                        // checking for returncode
-                        if(r.result && !r.result.returncode)
+        return new Promise(function(resolve, reject){
+            $.ajax({
+                    type : 'POST',
+                    url : self.url,
+                    data : JSON.stringify(request),
+                    dataType : "json",
+                    success: function(r, textStatus, jqXHR) {
+                        // JSON-RPC call gave JSON-RPC response
+         
+                        // Old-style callback users
+                        if (callback !== undefined)
                         {
-                            r.result.returncode = "0";
-                        }
-                        else if(r.error)
-                        {
-                            if(!r.result)
-                                r.result = {};
+                            // New-style backend, but old-style UI code.
+                            // Add some magic to fool the not-yet-updated code which is
+                            // checking for returncode
+                            // deep copy; we do not want to modify the response sent to new style
+                            // handlers
+                            var old = {};
+                            $.extend(true, old, r);
 
-                            r.result.returncode = "-1";
+                            if(old._temp_newstyle_response) {
+                                if(old.result && !old.result.returncode)
+                                {
+                                    old.result.returncode = "0";
+                                }
+                                else if(old.error)
+                                {
+                                    if(!old.result)
+                                        old.result = {};
+
+                                    old.result.returncode = "-1";
+                                }
+
+                                delete old._temp_newstyle_response;
+                            }else if(old.error && old.error.message === 'no.reply') {
+                                // Previously agorpc added a result no-reply rather
+                                // than using an error..
+                                old.result = 'no-reply';
+                            }
+
+                            callback(old);
                         }
 
-                        delete r._temp_newstyle_response;
+                        // New-style code should use promise pattern instead,
+                        // which is either resolved or rejected with result OR error
+                        if(r.result)
+                            resolve(r.result);
+                        else
+                            reject(r.error);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown)
+                    {
+                        // Failed to talk properly with agorpc
+                        console.error('sendCommand failed for:');
+                        console.error(content);
+                        console.error('with errors:');
+                        console.error(arguments);
+
+                        // old: Callback was never called on errors.
+
+                        // Simulate JSON-RPC error
+                        reject({
+                                code:-32603,
+                                message: 'transport.error',
+                                data:{
+                                    description:'Failed to talk with agorpc'
+                                }
+                            });
                     }
-
-                    callback(r);
-                }
-
-                // New-style code should use promise pattern instead,
-                // which is either resolved or rejected with result OR error
-                if(r.result)
-                    dfd.resolve(r.result);
-                else
-                    dfd.reject(r.error);
-            })
-            .fail(function(jqXHR, textStatus, errorThrown)
-            {
-                // Failed to talk properly with agorpc
-                console.error('sendCommand failed for:');
-                console.error(content);
-                console.error('with errors:');
-                console.error(arguments);
-
-                // old: Callback was never called on errors.
-
-                // Simulate JSON-RPC error
-                dfd.reject({
-                        code:-32603,
-                        message: 'transport.error',
-                        data:{
-                            description:'Failed to talk with agorpc'
-                        }
-                    });
-            });
-
-        return dfd.promise();
+                });// $.ajax()
+            }); // Promose()
     },
 
     //find room
