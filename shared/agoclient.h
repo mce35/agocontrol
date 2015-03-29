@@ -87,6 +87,32 @@ namespace agocontrol {
     qpid::types::Variant::Map responseSuccess(const qpid::types::Variant::Map& data);
     qpid::types::Variant::Map responseSuccess();
 
+    // When sending a request via AgoClient, the reply comes in as an AgoResponse
+    class AgoConnection;
+    class AgoResponse {
+        friend class AgoConnection;
+    protected:
+        qpid::types::Variant::Map response;
+        AgoResponse(){};
+        void init(const qpid::messaging::Message& message);
+        void validate();
+    public:
+
+        // Return true if we have an "error" element
+        bool isError() const;
+
+        // Return true if we have a "result" element
+        bool isOk() const;
+
+        // Get the "identifier" from either type of response
+        std::string getIdentifier() /*const*/;
+
+        // Get either "result" or "error.data"
+        // Note that this creates a copy; Variant::map does not allow get without copy
+        // before C++-11
+        /*const*/ qpid::types::Variant::Map/*&*/ getData() /*const*/;
+    };
+
 
     /// ago control client connection class.
     class AgoConnection {
@@ -133,7 +159,15 @@ namespace agocontrol {
         bool setFilter(bool filter);
         bool sendMessage(const char *subject, qpid::types::Variant::Map content);
         bool sendMessage(qpid::types::Variant::Map content);
-        qpid::types::Variant::Map sendMessageReply(const char *subject, qpid::types::Variant::Map content);
+
+        // New-style API.
+        // TEMP NOTE: Only use towards apps using new style command handlers!
+        AgoResponse sendRequest(const qpid::types::Variant::Map& content);
+        AgoResponse sendRequest(const std::string& subject, const qpid::types::Variant::Map& content);
+
+        // Deprecated
+        qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content);
+
         bool emitEvent(const char *internalId, const char *eventType, const char *level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, float level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, int level, const char *units);

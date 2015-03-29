@@ -10,6 +10,49 @@ from qpid.log import enable, DEBUG, WARN
 
 __all__ = ["AgoConnection"]
 
+class AgoResponse:
+    """This class represents a response as obtained from AgoConnection.send_request"""
+    def __init__(self, response):
+        self.response = response
+
+    def is_error(self):
+        return "error" in self.response
+
+    def is_ok(self):
+        return "result" in self.response
+
+    def data(self):
+        if self.is_error():
+            e = self.response["error"]
+            if "data" in e:
+                return e["data"]
+        else:
+            return self.response["result"]
+
+class ResponseError(Exception):
+    def __init__(self, response):
+        if not response.is_error():
+            raise Exception("Not an error response")
+
+        self.error = response.response["error"]
+        super(ResponseError, self).__init__(self.message())
+    
+    def message(self):
+        if "data" in self.error:
+            if "description" in self.error["data"]:
+                return self.error["data"]["description"]
+
+        if "message" in self.error:
+            return self.error["message"]
+
+        return str(self.error)
+
+    def data(self):
+        if "data" in self.error:
+            return self.error["data"]
+
+        return None
+
 class AgoConnection:
     """This is class will handle the connection to ago control."""
     def __init__(self, instance):
@@ -190,8 +233,50 @@ class AgoConnection:
             self.log.error("Failed to send message: %s", exception)
             return False
 
+    def send_request(self, content):
+        """Send message and fetch reply.
+        
+        Response will be an AgoResponse object
+        """
+        _content = content
+        _content["instance"] = self.instance
+        try:
+            replyuuid = str(uuid4())
+            replyreceiver = self.session.receiver(
+                "reply-%s; {create: always, delete: always}" % replyuuid)
+            message = Message(content=_content)
+            message.reply_to = 'reply-%s' % replyuuid
+
+            if self.log.isEnabledFor(logging.TRACE):
+                self.log.trace("Sending message [reply-to=%s]: %s", message.reply_to, content)
+
+            self.sender.send(message)
+            replymessage = replyreceiver.fetch(timeout=3)
+            self.session.acknowledge()
+
+            response = AgoResponse(replymessage.content)
+
+            if self.log.isEnabledFor(logging.TRACE):
+                self.log.trace("Received response: %s", response.response)
+
+            return response
+
+        except Empty:
+            self.log.warn("Timeout waiting for reply to %s", content)
+            return AgoResponse({"error": {"message":"no.reply"}})
+        except ReceiverError:
+            self.log.warn("ReceiverError waiting for reply to %s", content)
+            return AgoResponse({"error": {"message":"receiver.error"}})
+        except SendError:
+            self.log.warn("SendError when sending %s", content)
+            return AgoResponse({"error": {"message":"send.error"}})
+        finally:
+            replyreceiver.close()
+
     def send_message_reply(self, content):
-        """Send message and fetch reply."""
+        """Send message and fetch reply.
+        This is deprecated! Use send_request instead.
+        """
         _content = content
         _content["instance"] = self.instance
         try:
@@ -219,10 +304,16 @@ class AgoConnection:
         return replymessage
 
     def get_inventory(self):
-        """Returns the inventory from the resolver."""
+        """Returns the inventory from the resolver. Return value is a dict"""
         content = {}
         content["command"] = "inventory"
-        return self.send_message_reply(content)
+        response = self.send_request(content)
+        if response.is_ok():
+            return response.data()
+        else:
+            # TODO: Report errors properly?
+            return {}
+            #raise ResponseError(response)
 
     def get_agocontroller(self, inventory=None):
         """Returns the uuid of the agocontroller device"""
@@ -231,24 +322,28 @@ class AgoConnection:
 
         retry = 10
         while retry > 0:
-            if inventory == None:
-                # May be null if not passed in first time
-                inventory = self.get_inventory()
+            try:
+                if inventory == None:
+                    # May be null if not passed in first time
+                    inventory = self.get_inventory()
 
-            if inventory != None:
-                # XXX: Why are we not returning .content from get_inventory?
-                devices = inventory.content['devices']
-                for uuid in devices.keys():
-                    d = devices[uuid]
-                    if d == None:
-                        continue
+                if inventory != None and "devices" in inventory:
+                    devices = inventory['devices']
+                    for uuid in devices.keys():
+                        d = devices[uuid]
+                        if d == None:
+                            continue
 
-                    if d['devicetype'] == 'agocontroller':
-                        self.log.debug("agoController found: %s", uuid)
-                        self.agocontroller = uuid
-                        return uuid
+                        if d['devicetype'] == 'agocontroller':
+                            self.log.debug("agoController found: %s", uuid)
+                            self.agocontroller = uuid
+                            return uuid
+            except ResponseError as e:
+                self.log.warning("Unable to resolve agocontroller (%s), retrying", e)
+            else:
+#                self.log.warning("Unable to resolve agocontroller, not in inventory response? retrying")
+                self.log.warning("Unable to resolve agocontroller, retrying")
 
-            self.log.warning("Unable to resolve agocontroller, retrying")
             inventory = None
             time.sleep(1)
             retry -= 1
