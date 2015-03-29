@@ -318,9 +318,14 @@ qpid::types::Variant::Map agocontrol::responseError(const std::string& identifie
     qpid::types::Variant::Map response;
     qpid::types::Variant::Map error; 
     qpid::types::Variant::Map data = _data;
-    data["description"] = description;
-    error["data"] = data;
+    if(!description.empty())
+        data["description"] = description;
+
+    if(!data.empty())
+        error["data"] = data;
+
     error["message"] = identifier;
+
     response["error"] = error;
     response["type"] = "new"; // TODO: remove thits after everything is using new response style
     return response;
@@ -352,10 +357,10 @@ qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifi
     qpid::types::Variant::Map response;
     qpid::types::Variant::Map result = data;
 
-    if (identifier != "")
+    if (!identifier.empty())
         result["identifier"] = identifier;
 
-    if (description != "")
+    if(!description.empty())
         result["description"] = description;
 
     response["result"] = result;
