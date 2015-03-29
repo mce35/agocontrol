@@ -13,7 +13,7 @@ Agocontrol.prototype = {
     refreshMultigraphThumbsInterval: null,
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
-    _getApplications: $.Deferred(),
+    _getApplications: Promise.pending(),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -102,7 +102,7 @@ Agocontrol.prototype = {
             }
 
             this.applications(applications);
-            this._getApplications.resolve();
+            this._getApplications.fulfill();
         }, this);
     },
 
@@ -121,7 +121,7 @@ Agocontrol.prototype = {
         // Required but non-dependent
         this.updateFavorites();
 
-        return $.when(p1, p2);
+        return Promise.all([p1, p2]);
     },
 
 

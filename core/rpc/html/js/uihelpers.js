@@ -39,7 +39,8 @@ function getErrorMessage(error) {
 
 /* Show an JSON-RPC error using notif
  * use on sendCommmand promise like this:
- *  .fail(notifCommandError)
+ *
+ *  promise.catch(notifCommandError)
  */
 function notifCommandError(error) {
     notif.error("ERROR: " + getErrorMessage(msg));

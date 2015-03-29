@@ -88,8 +88,6 @@ function datetimeToString(dt)
  * This is inspired by jQuery's 'script' transport.
  */
 function loadScript(url) {
-    var dfd = $.Deferred();
-
     var head = document.head || jQuery("head")[0] || document.documentElement;
     var script = document.createElement("script");
     script.async = true;
@@ -108,29 +106,31 @@ function loadScript(url) {
         script = null;
     }
 
-    // Attach handlers for all browsers
-    script.onload = script.onreadystatechange = function( _, isAbort ) {
-        if ( isAbort || !script.readyState || /loaded|complete/.test( script.readyState ) ) {
-            cleanup();
+    var promise = new Promise(function(resolve, reject) {
+        // Attach handlers for all browsers
+        script.onload = script.onreadystatechange = function( _, isAbort ) {
+            if ( isAbort || !script.readyState || /loaded|complete/.test( script.readyState ) ) {
+                cleanup();
 
-            // Callback if not abort
-            if ( !isAbort ) {
-                dfd.resolve();
+                // Callback if not abort
+                if ( !isAbort ) {
+                    resolve();
+                }
             }
-        }
-    };
+        };
 
-    script.onerror = function() {
-        // Unfortunately no meaningfull errors here
-        cleanup();
-        dfd.reject();
-    };
+        script.onerror = function() {
+            // Unfortunately no meaningfull errors here
+            cleanup();
+            reject();
+        };
+    });
 
     // Circumvent IE6 bugs with base elements (#2709 and #4378) by prepending
     // Use native DOM manipulation to avoid our domManip AJAX trickery
     head.insertBefore( script, head.firstChild );
 
-    return dfd.promise();
+    return promise;
 }
 
 //View object
@@ -237,17 +237,17 @@ function AgocontrolViewModel()
             }
             if (resources.length > 0)
             {
-                var dfd = $.Deferred();
-                resourcePromise = dfd.promise();
-                head.load(resources, function() {
-                    // head.load does not have any failure mechanism
-                    dfd.resolve();
+                resourcePromise = new Promise(function(resolve, reject){
+                    head.load(resources, function() {
+                        // head.load does not have any failure mechanism
+                        resolve();
+                    });
                 });
             }
         }
 
         // Compound promise which fires when both above are ready
-        $.when(scriptPromise, resourcePromise)
+        Promise.all([scriptPromise, resourcePromise])
             .then(function(){
                 // Template script and Resources ready
                 if (typeof init_template == 'function')
@@ -270,12 +270,12 @@ function AgocontrolViewModel()
                     notif.fatal('Problem during page loading.');
                 }
             })
-            .fail(function(d1, d2) {
+            .catch(function(err) {
                 // Note that jquery fails our compound promise as soon as ANY fails.
-                console.error("Failed to load template or template resources");
-                notif.fatal('Problem during page loading.');
+                console.error("Failed to load template or template resources", err);
+                notif.fatal('Problem during page loading: '+ err);
             })
-            .always(function(){
+            .finally(function(){
                 $.unblockUI();
             });
     };
