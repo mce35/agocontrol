@@ -450,8 +450,9 @@ Agocontrol.prototype = {
 
                 self.processes.pushAll(values);
             })
-            .catch(function err(err){
-                console.error('Unable to get processes list!', err);
+            .catch(function(err){
+                notif.warning('Unable to get processes list, Applications will not be available: '
+                        + getErrorMessage(err));
                 self._noProcesses(true);
             });
     },
