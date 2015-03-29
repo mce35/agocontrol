@@ -398,7 +398,7 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 AGO_ERROR() << "No reply message to fetch. Failed message: " << "subject=" <<subject<<": " << command;
             }
 
-            return mg_rpc_reply_result(conn, request, std::string("no-reply"));
+            return mg_rpc_reply_error(conn, request, AGO_JSONRPC_REMOTE_ERROR, "no.reply");
         }
 
         // allow on the fly behavior during migration
