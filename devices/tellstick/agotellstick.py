@@ -256,7 +256,7 @@ class AgoTellstick(agoclient.AgoApp):
             raise agoclient.agoapp.StartupError()
 
         def setNameIfNecessary(deviceUUID, name):
-            dev = inventory.content['devices'].get(deviceUUID)
+            dev = inventory['devices'].get(deviceUUID)
             if (dev == None or dev['name'] == '') and name != '':
                 content = {}
                 content["command"] = "setdevicename"

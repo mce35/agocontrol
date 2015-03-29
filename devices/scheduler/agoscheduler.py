@@ -258,8 +258,8 @@ def getScenarioControllerUuid():
     """get scenariocontroller uuid"""
     global client, scenarioControllerUuid
     inventory = client.get_inventory()
-    for uuid in inventory.content['devices']:
-        if inventory.content['devices'][uuid]['devicetype']=='scenariocontroller':
+    for uuid in inventory['devices']:
+        if inventory['devices'][uuid]['devicetype']=='scenariocontroller':
             scenarioControllerUuid = uuid
             break
     if not scenarioControllerUuid:

@@ -53,8 +53,8 @@ def getScenarioControllerUuid():
     """get scenariocontroller uuid"""
     global client, scenarioControllerUuid
     inventory = client.get_inventory()
-    for uuid in inventory.content['devices']:
-        if inventory.content['devices'][uuid]['devicetype']=='scenariocontroller':
+    for uuid in inventory['devices']:
+        if inventory['devices'][uuid]['devicetype']=='scenariocontroller':
             scenarioControllerUuid = uuid
             break
     if not scenarioControllerUuid:
@@ -228,8 +228,8 @@ try:
 
     #get units
     inventory = client.get_inventory()
-    for unit in inventory.content['schema']['units']:
-        units[unit] = inventory.content['schema']['units'][unit]['label']
+    for unit in inventory['schema']['units']:
+        units[unit] = inventory['schema']['units'][unit]['label']
 
     #get existing rrd files
     rrdfiles = os.listdir(RRD_PATH)
