@@ -1188,8 +1188,6 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     }
                 }
 
-                //updateInventory();
-
                 if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
                 {
                     returnData["graph"] = base64_encode(img, size);
@@ -1462,7 +1460,7 @@ void AgoDataLogger::setupApp()
     agoConnection->addDevice("dataloggercontroller", "dataloggercontroller");
 
     //update inventory
-    updateInventory();
+    //updateInventory();
 
     //read config
     std::string optString = getConfigOption("dataLogging", "1");
