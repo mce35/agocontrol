@@ -39,16 +39,40 @@ using namespace agocontrol;
 
 class AgoDataLogger: public AgoApp {
 private:
-
+    //inventory
     void updateInventory();
+    bool checkInventory();
 
-    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
-    void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+    //utils
+    std::string string_format(const std::string fmt, ...);
+    int string_real_length(const std::string str);
+    std::string string_prepend_spaces(std::string source, size_t newSize);
 
+    //database
+    bool createTableIfNotExist(string tablename, list<string> createqueries);
     qpid::types::Variant::Map getDatabaseInfos();
     bool purgeTable(std::string table);
     bool isTablePurgeAllowed(std::string table);
+    void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
 
+    //rrd
+    bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data);
+    void dumpGraphParams(const char** params, const int num_params);
+    bool addGraphParam(const std::string& param, char** params, int* index);
+    void addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index);
+    void addDefaultThumbParameters(int duration, int width, int height, char** params, int* index);
+    void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index);
+    void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index);
+    void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index);
+    bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size);
+
+        
+    //system
+    void saveDeviceMapFile();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void eventHandler(std::string subject, qpid::types::Variant::Map content);
+    void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content);
+    void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content);
     void setupApp();
 public:
     AGOAPP_CONSTRUCTOR(AgoDataLogger);
@@ -97,7 +121,20 @@ void AgoDataLogger::updateInventory()
     }
 }
 
-bool createTableIfNotExist(string tablename, list<string> createqueries) {
+/**
+ * Check inventory
+ */
+bool AgoDataLogger::checkInventory()
+{
+    if( inventory["devices"].isVoid() )
+    {
+        //inventory is empty
+        return false;
+    }
+    return true;
+}
+
+bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createqueries) {
     //init
     sqlite3_stmt *stmt = NULL;
     int rc;
@@ -136,7 +173,7 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
 /**
  * Save device map file
  */
-void saveDeviceMapFile()
+void AgoDataLogger::saveDeviceMapFile()
 {
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
     variantMapToJSONFile(devicemap, dmf);
@@ -145,7 +182,7 @@ void saveDeviceMapFile()
 /**
  * Format string to specified format
  */
-std::string string_format(const std::string fmt, ...) {
+std::string AgoDataLogger::string_format(const std::string fmt, ...) {
     int size = ((int)fmt.size()) * 2 + 50;   // use a rubric appropriate for your code
     std::string str;
     va_list ap;
@@ -169,7 +206,7 @@ std::string string_format(const std::string fmt, ...) {
 /**
  * Return real string length
  */
-int string_real_length(const std::string str)
+int AgoDataLogger::string_real_length(const std::string str)
 {
     int len = 0;
     const char* s = str.c_str();
@@ -183,7 +220,7 @@ int string_real_length(const std::string str)
 /**
  * Prepend to source string until source size reached
  */
-std::string string_prepend_spaces(std::string source, size_t newSize)
+std::string AgoDataLogger::string_prepend_spaces(std::string source, size_t newSize)
 {
     std::string output = source;
     int max = (int)newSize - string_real_length(output);
@@ -200,7 +237,7 @@ std::string string_prepend_spaces(std::string source, size_t newSize)
  * @param multiId: if multigraph specify its index (-1 if not multigraph)
  * @param data: output map
  */
-bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data)
+bool AgoDataLogger::prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data)
 {
     //check params
     if( multiId>=15 )
@@ -215,7 +252,7 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
     filename << uuid << ".rrd";
 
     //get device infos from inventory
-    if( inventory["devices"].isVoid() )
+    if( !checkInventory() )
     {
         //unable to continue
         AGO_ERROR() << "agodatalogger-RRDtool: no inventory available";
@@ -349,7 +386,7 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
 /**
  * Display params (debug purpose)
  */
-void dumpGraphParams(const char** params, const int num_params)
+void AgoDataLogger::dumpGraphParams(const char** params, const int num_params)
 {
     AGO_TRACE() << "Dump graph parameters (" << num_params << " params) :";
     for( int i=0; i<num_params; i++ )
@@ -361,7 +398,7 @@ void dumpGraphParams(const char** params, const int num_params)
 /**
  * Add graph param
  */
-bool addGraphParam(const std::string& param, char** params, int* index)
+bool AgoDataLogger::addGraphParam(const std::string& param, char** params, int* index)
 {
     params[(*index)] = (char*)malloc(sizeof(char)*param.length()+1);
     if( params[(*index)]!=NULL )
@@ -376,7 +413,7 @@ bool addGraphParam(const std::string& param, char** params, int* index)
 /**
  * Add default and mandatory graph params
  */
-void addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index)
+void AgoDataLogger::addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index)
 {
     //first params
     addGraphParam("dummy", params, index);
@@ -409,7 +446,7 @@ void addDefaultParameters(int start, int end, string vertical_unit, int width, i
 /**
  * Add default thumb graph parameters
  */
-void addDefaultThumbParameters(int duration, int width, int height, char** params, int* index)
+void AgoDataLogger::addDefaultThumbParameters(int duration, int width, int height, char** params, int* index)
 {
     //first params
     addGraphParam("dummy", params, index);
@@ -440,7 +477,7 @@ void addDefaultThumbParameters(int duration, int width, int height, char** param
 /**
  * Add single graph parameters
  */
-void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+void AgoDataLogger::addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
 {
     string param = "";
 
@@ -491,7 +528,7 @@ void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, in
 /**
  * Add multi graph parameters
  */
-void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+void AgoDataLogger::addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
 {
     //keep index value
     int id = (*index);
@@ -534,7 +571,7 @@ void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int
 /**
  * Add thumb graph parameters
  */
-void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+void AgoDataLogger::addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
 {
     //keep index value
     int id = (*index);
@@ -550,7 +587,7 @@ void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int
 /**
  * Generate RRDtool graph
  */
-bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size)
+bool AgoDataLogger::generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size)
 {
     qpid::types::Variant::Map data;
     char** params;
@@ -731,7 +768,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
 /**
  * Store event data into RRDtool database
  */
-void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content)
+void AgoDataLogger::eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content)
 {
     if( (subject=="event.device.batterylevelchanged" || boost::algorithm::starts_with(subject, "event.environment.")) && !content["level"].isVoid() && !content["uuid"].isVoid() )
     {
@@ -774,7 +811,7 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
 /**
  * Store event data into SQLite database
  */
-void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content)
+void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content)
 {
     sqlite3_stmt *stmt = NULL;
     int rc;
@@ -873,7 +910,7 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     }
 }
 
-void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result) {
+void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result) {
     sqlite3_stmt *stmt;
     int rc;
     qpid::types::Variant::List values;
@@ -1294,6 +1331,13 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
         {
             if( !content["multigraph"].isVoid() )
             {
+                //check if inventory available
+                if( !checkInventory() )
+                {
+                    //force inventory update during getthumb command because thumb requests are performed during first ui loading
+                    updateInventory();
+                }
+
                 string internalid = content["multigraph"].asString();
                 if( !devicemap["multigraphs"].isVoid() && !devicemap["multigraphs"].asMap()[internalid].isVoid() && !devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].isVoid() )
                 {
