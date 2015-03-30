@@ -1130,13 +1130,14 @@ bool AgoDataLogger::isTablePurgeAllowed(std::string table)
  */
 qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map returnData;
     std::string internalid = content["internalid"].asString();
     if (internalid == "dataloggercontroller")
     {
         if (content["command"] == "getdata")
         {
-            GetGraphData(content, returnval);
+            GetGraphData(content, returnData);
+            return responseSuccess(returnData);
         }
         else if (content["command"] == "getdeviceenvironments")
         {
@@ -1146,7 +1147,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             if(rc != SQLITE_OK)
             {
                 AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
-                return returnval;
+                return responseFailed();
             }
 
             do
@@ -1158,13 +1159,15 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                         AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
                         break;
                     case SQLITE_ROW:
-                        returnval[string((const char*)sqlite3_column_text(stmt, 0))] = string((const char*)sqlite3_column_text(stmt, 1));
+                        returnData[string((const char*)sqlite3_column_text(stmt, 0))] = string((const char*)sqlite3_column_text(stmt, 1));
                         break;
                 }
             }
             while (rc == SQLITE_ROW);
 
             sqlite3_finalize(stmt);
+
+            return responseSuccess(returnData);
         }
         else if( content["command"] == "getgraph" )
         {
@@ -1189,22 +1192,19 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
 
                 if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
                 {
-                    returnval["error"] = 0;
-                    returnval["msg"] = "";
-                    returnval["graph"] = base64_encode(img, size);
+                    returnData["graph"] = base64_encode(img, size);
+                    return responseSuccess(returnData);
                 }
                 else
                 {
                     //error generating graph
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
+                    return responseFailed("Internal error");
                 }
             }
             else
             {
                 AGO_ERROR() << "Unable to get multigraph: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                return responseFailed("Internal error");
             }
         }
         else if( content["command"]=="getstatus" )
@@ -1233,13 +1233,14 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             db["size"] = (rc==0 ? (int)stat_buf.st_size : 0);
             db["infos"] = getDatabaseInfos();
 
-            returnval["error"] = 0;
-            returnval["msg"] = "";
-            returnval["multigraphs"] = multis;
-            returnval["dataLogging"] = dataLogging ? 1 : 0;
-            returnval["gpsLogging"] = gpsLogging ? 1 : 0;
-            returnval["rrdLogging"] = rrdLogging ? 1 : 0;
-            returnval["database"] = db;
+            returnData["error"] = 0;
+            returnData["msg"] = "";
+            returnData["multigraphs"] = multis;
+            returnData["dataLogging"] = dataLogging ? 1 : 0;
+            returnData["gpsLogging"] = gpsLogging ? 1 : 0;
+            returnData["rrdLogging"] = rrdLogging ? 1 : 0;
+            returnData["database"] = db;
+            return responseSuccess(returnData);
         }
         else if( content["command"]=="addmultigraph" )
         {
@@ -1254,22 +1255,18 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     device["period"] = content["period"].asInt32();
                     devicemap["multigraphs"].asMap()[internalid] = device;
                     saveDeviceMapFile();
-
-                    returnval["error"] = 0;
-                    returnval["msg"] = "Multigraph " + internalid + " created successfully";
+                    return responseSuccess("Multigraph " + internalid + " created successfully");
                 }
                 else
                 {
                     AGO_ERROR() << "Unable to add new multigraph";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
+                    return responseFailed("Internal error");
                 }
             }
             else
             {
                 AGO_ERROR() << "Unable to add multigraph: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                return responseFailed("Internal error");
             }
         }
         else if( content["command"]=="deletemultigraph" )
@@ -1281,22 +1278,18 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 {
                     devicemap["multigraphs"].asMap().erase(internalid);
                     saveDeviceMapFile();
-
-                    returnval["error"] = 0;
-                    returnval["msg"] = "Multigraph " + internalid + " deleted successfully";
+                    return responseSuccess("Multigraph " + internalid + " deleted successfully");
                 }
                 else
                 {
                     AGO_ERROR() << "Unable to delete multigraph " << internalid;
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
+                    return responseFailed("Internal error");
                 }
             }
             else
             {
                 AGO_ERROR() << "Unable to delete multigraph: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                return responseFailed("Internal error");
             }
         }
         else if( content["command"]=="getthumb" )
@@ -1318,35 +1311,32 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
 
                     if( generateGraph(devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList(), 0, 0, period, &img, &size) )
                     {
-                        returnval["error"] = 0;
-                        returnval["msg"] = "";
-                        returnval["graph"] = base64_encode(img, size);
+                        returnData["graph"] = base64_encode(img, size);
+                        return responseSuccess(returnData);
                     }
                     else
                     {
                         //error generating graph
-                        returnval["error"] = 1;
-                        returnval["msg"] = "Internal error";
+                        return responseFailed("Internal error");
                     }
                 }
                 else
                 {
                     AGO_ERROR() << "Unable to get thumb: it seems multigraph '" << internalid << "' doesn't exist";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
+                    return responseFailed("Internal error");
                 }
             }
             else
             {
                 AGO_ERROR() << "Unable to get thumb: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                return responseFailed("Internal error");
             }
         }
         else if( content["command"]=="setenabledmodules" )
         {
             if( !content["dataLogging"].isVoid() && !content["rrdLogging"].isVoid()  && !content["gpsLogging"].isVoid() )
             {
+                bool error = false;
                 if( content["dataLogging"].asBool() )
                 {
                     dataLogging = true;
@@ -1360,6 +1350,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 if( !setConfigOption("dataLogging", dataLogging) )
                 {
                     AGO_ERROR() << "Unable to save dataLogging status to config file";
+                    error = true;
                 }
 
                 if( content["gpsLogging"].asBool() )
@@ -1375,6 +1366,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 if( !setConfigOption("gpsLogging", gpsLogging) )
                 {
                     AGO_ERROR() << "Unable to save gpsLogging status to config file";
+                    error = true;
                 }
 
                 if( content["rrdLogging"].asBool() )
@@ -1390,16 +1382,22 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 if( !setConfigOption("rrdLogging", rrdLogging) )
                 {
                     AGO_ERROR() << "Unable to save rrdLogging status to config file";
+                    error = true;
                 }
 
-                returnval["error"] = 0;
-                returnval["msg"] = "";
+                if( error )
+                {
+                    return responseFailed("Some options were not saved");
+                }
+                else
+                {
+                    return responseSuccess();
+                }
             }
             else
             {
                 AGO_ERROR() << "Unable to get thumb: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                return responseFailed("Internal error");
             }
         }
         else if( content["command"]=="purgetable" )
@@ -1412,32 +1410,30 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 {
                     if( purgeTable(table) )
                     {
-                        returnval["error"] = 0;
-                        returnval["msg"] = "";
+                        return responseSuccess();
                     }
                     else
                     {
                         AGO_ERROR() << "Unable to purge table '" << table << "'";
-                        returnval["error"] = 1;
-                        returnval["msg"] = "Internal error";
+                        return responseFailed("Internal error");
                     }
                 }
                 else
                 {
                     AGO_ERROR() << "Purge table '" << table << "' not allowed";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Table purge not allowed";
+                    return responseFailed("Table purge not allowed");
                 }
             }
         }
         else
         {
             AGO_WARNING() << "command not found";
-            returnval["error"] = 1;
-            returnval["msg"] = "Internal error";
+            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
         }
     }
-    return returnval;
+
+    //We do not support sending commands to our 'devices'
+    return responseError(RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE);
 }
 
 void AgoDataLogger::setupApp()
