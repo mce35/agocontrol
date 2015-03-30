@@ -180,7 +180,8 @@ Agocontrol.prototype = {
                             var old = {};
                             $.extend(true, old, r);
 
-                            if(old._temp_newstyle_response) {
+                            if(old._temp_newstyle_response)
+                            {
                                 if(old.result && !old.result.returncode)
                                 {
                                     old.result.returncode = "0";
@@ -194,7 +195,9 @@ Agocontrol.prototype = {
                                 }
 
                                 delete old._temp_newstyle_response;
-                            }else if(old.error && old.error.message === 'no.reply') {
+                            }
+                            else if(old.error && old.error.message === 'no.reply')
+                            {
                                 // Previously agorpc added a result no-reply rather
                                 // than using an error..
                                 old.result = 'no-reply';
@@ -206,9 +209,25 @@ Agocontrol.prototype = {
                         // New-style code should use promise pattern instead,
                         // which is either resolved or rejected with result OR error
                         if(r.result)
+                        {
                             resolve(r.result);
+                        }
                         else
+                        {
+                            //handle error: create same behaviour in all web ui
+                            if( r.error.message && r.error.message==='no.reply' )
+                            {
+                                //controller is not responding
+                                notif.fatal('Controller is not responding');
+                            }
+                            else if( r.error.data && r.error.data.description )
+                            {
+                                //display provided error
+                                notif.error(r.error.data.description);
+                            }
+
                             reject(r.error);
+                        }
                     },
                     error: function(jqXHR, textStatus, errorThrown)
                     {
@@ -230,7 +249,7 @@ Agocontrol.prototype = {
                             });
                     }
                 });// $.ajax()
-            }); // Promose()
+            }); // Promise()
     },
 
     //find room
