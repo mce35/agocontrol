@@ -380,6 +380,12 @@ qpid::types::Variant::Map agocontrol::responseSuccess()
     return responseResult(RESPONSE_SUCCESS, "", blankData);
 }
 
+qpid::types::Variant::Map agocontrol::responseSuccess(const std::string& description)
+{
+    qpid::types::Variant::Map blankData;
+    return responseResult(RESPONSE_SUCCESS, description, blankData);
+}
+
 qpid::types::Variant::Map agocontrol::responseSuccess(const qpid::types::Variant::Map& data)
 {
     return responseResult(RESPONSE_SUCCESS, "", data);

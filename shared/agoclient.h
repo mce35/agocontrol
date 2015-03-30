@@ -86,6 +86,7 @@ namespace agocontrol {
 
     // Shortcut to send RESPONSE_SUCCESS
     qpid::types::Variant::Map responseSuccess(const qpid::types::Variant::Map& data);
+    qpid::types::Variant::Map responseSuccess(const std::string& description);
     qpid::types::Variant::Map responseSuccess();
 
     // When sending a request via AgoClient, the reply comes in as an AgoResponse
