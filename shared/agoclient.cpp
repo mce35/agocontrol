@@ -316,7 +316,7 @@ unsigned int agocontrol::stringToUint(string v)
 qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& _data)
 {
     qpid::types::Variant::Map response;
-    qpid::types::Variant::Map error; 
+    qpid::types::Variant::Map error;
     qpid::types::Variant::Map data = _data;
     if(!description.empty())
         data["description"] = description;
@@ -899,10 +899,22 @@ agocontrol::AgoResponse agocontrol::AgoConnection::sendRequest(const std::string
 
         Message response = responseReceiver.fetch(Duration::SECOND * 3);
 
-        r.init(response);
+        try {
+            r.init(response);
+            AGO_TRACE() << "Response received: " << r.response;
+        }catch(const std::invalid_argument& ex) {
+            AGO_ERROR() << "Failed to initate response, wrong response format? Error: "
+                << ex.what()
+                << ". Message: " << r.response;
+
+            qpid::types::Variant::Map failed, err;
+            err["message"] = "broken.reply";
+            failed["error"] = err;
+
+            r.init(failed);
+        }
         recvsession.acknowledge();
 
-        AGO_TRACE() << "Response received: " << r.response;
     } catch (qpid::messaging::NoMessageAvailable) {
         AGO_WARNING() << "No reply for message sent to subject " << subject;
 
