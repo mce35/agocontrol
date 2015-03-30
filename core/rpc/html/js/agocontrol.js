@@ -579,7 +579,7 @@ Agocontrol.prototype = {
 
     getApplication: function(appName) {
         var self = this;
-        return this._getApplications
+        return this._getApplications.promise
             .then(function(){
                 var apps = self.applications();
                 for(var i=0; i < apps.length; i++) {

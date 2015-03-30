@@ -355,12 +355,11 @@ function AgocontrolViewModel()
                 .then(function(application){
                         var basePath = "applications/" + application.dir;
                         self.loadTemplate(new Template(basePath, application.resources, application.template, null));
-                    },
-                    function(err){
-                        // XXX: notif is not available here
-                        notif.fatal('Specified application not found!');
-                    }
-                );
+                    })
+                .catch(function(err){
+                    // XXX: notif is not available here
+                    notif.fatal('Specified application not found!');
+                });
         });
 
         //configuration loading
