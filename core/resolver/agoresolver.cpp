@@ -410,7 +410,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
 
     // We have no devices registered but our own; if we get here something
     // is broken internally
-    throw new std::logic_error("Should not go here");
+    throw std::logic_error("Should not go here");
 }
 
 void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map content) {
@@ -527,7 +527,7 @@ void AgoResolver::scanSchemaDir(const fs::path &schemaPrefix) {
         }
     }
     if (schemaArray.size() < 1) {
-        throw new ConfigurationError("Can't find any schemas in " + schemaPrefix.string());
+        throw ConfigurationError("Can't find any schemas in " + schemaPrefix.string());
     }
 
     // load schema files in proper order

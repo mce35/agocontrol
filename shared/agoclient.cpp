@@ -423,10 +423,10 @@ void agocontrol::AgoResponse::init(const qpid::types::Variant::Map& response_) {
 
 void agocontrol::AgoResponse::validate() {
     if(isError() && isOk())
-        throw new std::invalid_argument("error and result are mutually exclusive");
+        throw std::invalid_argument("error and result are mutually exclusive");
 
     if(!isError() && !isOk())
-        throw new std::invalid_argument("error or result must be set");
+        throw std::invalid_argument("error or result must be set");
 }
 
 

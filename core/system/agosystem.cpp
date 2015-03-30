@@ -350,7 +350,7 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
     }
     
     // We have no devices registered but our own
-    throw new std::logic_error("Should not go here");
+    throw std::logic_error("Should not go here");
 }
 
 /**
