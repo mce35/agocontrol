@@ -149,18 +149,17 @@ function ScenarioConfig(agocontrol)
                     cnt.device = res.scenario;
                     cnt.command = "setdevicename";
                     cnt.name = self.scenarioName();
-                    self.agocontrol.sendCommand(cnt)
+                    return self.agocontrol.sendCommand(cnt)
                         .then(function(nameRes) {
                             self.agocontrol.refreshDevices(false);
                             self.scenarioName('');
                             document.getElementById("scenarioBuilder").innerHTML = "";
-                        })
-                        .finally(function() {
-                            self.agocontrol.unblock($('#agoGrid'));
                         });
             })
             .catch(function(err) {
                 notif.warning("Please add commands before creating the scenario!");
+            })
+            .finally(function() {
                 self.agocontrol.unblock($('#agoGrid'));
             });
     };
