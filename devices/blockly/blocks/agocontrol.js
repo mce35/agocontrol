@@ -49,8 +49,8 @@ window.BlocklyAgocontrol = {
         }
     },
 
-    //get devices
-    getDevices: function(deviceType) {
+    //get device uuids
+    getDeviceUuids: function(deviceType) {
         var devices = [];
         var device;
         for( var i=0; i<this.devices.length; i++ )
@@ -59,6 +59,24 @@ window.BlocklyAgocontrol = {
             if( device.name.length>0 && device.devicetype==deviceType )
             {
                 devices.push([device.name, device.uuid]);
+            }
+        }
+        //prevent from js crash
+        if( devices.length===0 )
+            devices.push(['', '']);
+        return devices;
+    },
+
+    //get device internalids
+    getDeviceInternalids: function(deviceType) {
+        var devices = [];
+        var device;
+        for( var i=0; i<this.devices.length; i++ )
+        {
+            device = this.devices[i];
+            if( device.name.length>0 && device.devicetype==deviceType )
+            {
+                devices.push([device.name, device.internalid]);
             }
         }
         //prevent from js crash
@@ -530,7 +548,7 @@ Blockly.Blocks['agocontrol_deviceName'] = {
     }
 };
 
-//device block
+//device uuid block
 Blockly.Blocks['agocontrol_deviceUuid'] = {
     init: function() {
         //members
@@ -561,7 +579,57 @@ Blockly.Blocks['agocontrol_deviceUuid'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
+            if( devices.length===0 )
+                devices.push(['','']);
+            this.container.removeField("DEVICE");
+            this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
+            if( currentDevice )
+            {
+                var field = this.getField_("DEVICE");
+                if( field )
+                {
+                    field.setValue(currentDevice);
+                }
+            }
+        }
+        
+        this.firstRun = false;
+    }
+};
+
+//device internalid block
+Blockly.Blocks['agocontrol_deviceInternalid'] = {
+    init: function() {
+        //members
+        this.firstRun = true;
+        this.lastType = undefined;
+
+        //block definition
+        //this.setHelpUrl('TODO');
+        this.setColour(20);
+        this.container = this.appendDummyInput()
+            .appendField("internalid")
+            .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
+            .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE");
+        this.setInputsInline(true);
+        this.setOutput(true, "String");
+        this.setTooltip('Return device internalid');
+    },
+
+    onchange: function() {
+        if( !this.workspace )
+            return;
+        var currentType = this.getFieldValue("TYPE");
+        var currentDevice = null;
+        if( this.firstRun )
+        {
+            currentDevice = this.getFieldValue("DEVICE");
+        }
+        if( this.lastType!=currentType )
+        {
+            this.lastType = currentType;
+            var devices = window.BlocklyAgocontrol.getDeviceInternalids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
@@ -632,7 +700,7 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
@@ -770,7 +838,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
@@ -1027,7 +1095,7 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
