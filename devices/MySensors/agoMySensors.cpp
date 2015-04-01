@@ -719,8 +719,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                 std::string customvar = command["variable"].asString();
                 std::string value = command["value"].asString();
 
+                if( DEBUG ) cout << "internalid=" << internalid << " customvar=" << customvar << " value=" << value << endl;
+
                 //check device
                 qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+                if( DEBUG ) cout << "device infos=" << infos << endl;
                 if( infos.size()==0 )
                 {
                     //specified device is surely not handled by mysensors
