@@ -68,6 +68,7 @@ std::string gateway_protocol_version = "1.4";
 serialib serialPort;
 string device = "";
 int staleThreshold = 86400;
+int resendEnabled = 0;
 
 /**
  * Convert timestamp to Human Readable date time string (19 chars)
@@ -358,7 +359,7 @@ bool openSerialPort(string device)
             serialPort.FlushReceiver();
             sleep(1);
             serialPort.EnableDTR(true);
-
+            sleep(1);
         }
     }
     catch(std::exception const&  ex)
@@ -445,7 +446,7 @@ void sendcommandV14(std::string internalid, int messageType, int ack, int subTyp
     command << nodeId << ";" << childId << ";" << messageType << ";" << ack << ";" << subType << ";" << payload << "\n";
 
     //save command if device is an actuator and message type is SET
-    if( infos.size()>0 && infos["type"]=="switch" && messageType==SET_V14 )
+    if( resendEnabled && infos.size()>0 && infos["type"]=="switch" && messageType==SET_V14 )
     {
         //check if internalid has no command pending
         pthread_mutex_lock(&resendMutex);
@@ -479,7 +480,7 @@ void sendcommandV13(std::string internalid, int messageType, int subType, std::s
     command << nodeId << ";" << childId << ";" << messageType << ";" << subType << ";" << payload << "\n";
 
     //save command if device is an actuator and message type is SET_VARIABLE
-    if( infos.size()>0 && infos["type"]=="switch" && messageType==SET_VARIABLE_V13 )
+    if( resendEnabled && infos.size()>0 && infos["type"]=="switch" && messageType==SET_VARIABLE_V13 )
     {
         //check if internalid has no command pending
         pthread_mutex_lock(&resendMutex);
@@ -748,7 +749,7 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         }
                     }
                 }
-                //TODO add more device type here
+
                 returnval["error"] = 0;
                 returnval["msg"] = "";
             }
@@ -1081,13 +1082,16 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
             break;
 
         case SET_VARIABLE_V13:
-            //remove command from map to avoid sending command again
-            pthread_mutex_lock(&resendMutex);
-            if( commandsmap.count(internalid)!=0 )
+            if( resendEnabled )
             {
-                commandsmap.erase(internalid);
+                //remove command from map to avoid sending command again
+                pthread_mutex_lock(&resendMutex);
+                if( commandsmap.count(internalid)!=0 )
+                {
+                    commandsmap.erase(internalid);
+                }
+                pthread_mutex_unlock(&resendMutex);
             }
-            pthread_mutex_unlock(&resendMutex);
 
             //increase counter
             if( infos.size()>0 )
@@ -1485,18 +1489,21 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
             break;
 
         case SET_V14:
-            //remove command from map to avoid sending command again
-            pthread_mutex_lock(&resendMutex);
-            cmd = commandsmap.find(internalid);
-            if( cmd!=commandsmap.end() && ack==1 )
+            if( resendEnabled )
             {
-                //command exists in command list for this device and its an ack
-                //remove command from list
-                cout << "Ack received for command " << cmd->second.command;
-                commandsmap.erase(cmd);
-                ack = 0;
+                //remove command from map to avoid sending command again
+                pthread_mutex_lock(&resendMutex);
+                cmd = commandsmap.find(internalid);
+                if( cmd!=commandsmap.end() && ack==1 )
+                {
+                    //command exists in command list for this device and its an ack
+                    //remove command from list
+                    cout << "Ack received for command " << cmd->second.command;
+                    commandsmap.erase(cmd);
+                    ack = 0;
+                }
+                pthread_mutex_unlock(&resendMutex);
             }
-            pthread_mutex_unlock(&resendMutex);
 
             //increase counter
             if( infos.size()>0 )
@@ -1853,6 +1860,7 @@ int main(int argc, char **argv)
     //get config
     device = getConfigSectionOption("mysensors", "device", "/dev/ttyACM0");
     staleThreshold = atoi(getConfigSectionOption("mysensors", "staleThreshold", "86400").c_str());
+    resendEnabled = atoi(getConfigSectionOption("mysensors", "resend", "0").c_str());
 
     //get command line parameters
     bool continu = true;
@@ -1965,12 +1973,20 @@ int main(int argc, char **argv)
 
     //init threads
     pthread_mutex_init(&serialMutex, NULL);
-    pthread_mutex_init(&resendMutex, NULL);
     pthread_mutex_init(&devicemapMutex, NULL);
-    if( pthread_create(&resendThread, NULL, resendFunction, NULL) < 0 )
+    if( resendEnabled )
     {
-        cerr << "Unable to create resend thread (errno=" << errno << ")" << endl;
-        exit(1);
+        cout << "Resend feature enabled" << endl;
+        pthread_mutex_init(&resendMutex, NULL);
+        if( pthread_create(&resendThread, NULL, resendFunction, NULL) < 0 )
+        {
+            cerr << "Unable to create resend thread (errno=" << errno << ")" << endl;
+            exit(1);
+        }
+    }
+    else
+    {
+        cout << "Resend feature disabled" << endl;
     }
     if( pthread_create(&readThread, NULL, receiveFunction, NULL) < 0 )
     {
