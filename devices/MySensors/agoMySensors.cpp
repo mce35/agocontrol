@@ -716,6 +716,9 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
             //check if device found
             if( infos.size()>0 )
             {
+                returnval["error"] = 0;
+                returnval["msg"] = "";
+
                 deviceType = infos["type"].asString();
                 //switch according to specific device type
                 if( deviceType=="switch" )
@@ -725,9 +728,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         if( infos["value"].asString()=="1" )
                         {
                             if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                            {
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "0");
+                            }
                             else
+                            {
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "0");
+                            }
                         }
                         else
                         {
@@ -739,9 +746,13 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         if( infos["value"].asString()=="0" )
                         {
                             if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                            {
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "1");
+                            }
                             else
+                            {
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "1");
+                            }
                         }
                         else 
                         {
@@ -749,15 +760,64 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         }
                     }
                 }
+                else if( cmd=="setvariable" )
+                {
+                    if( !command["variable"].isVoid() && !command["value"].isVoid() )
+                    {
+                        std::string customvar = command["variable"].asString();
+                        std::string value = command["value"].asString();
 
-                returnval["error"] = 0;
-                returnval["msg"] = "";
+                        if( customvar=="VAR1" )
+                        {
+                            //reserved customvar
+                            cout << "Reserved customvar '" << customvar << "'. Nothing processed" << endl;
+                            returnval["error"] = 1;
+                            returnval["msg"] = "Reserved customvar";
+                        }
+                        else if( customvar=="VAR2" )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR2_V14, value);
+                        }
+                        else if( customvar=="VAR3" )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR3_V14, value);
+                        }
+                        else if( customvar=="VAR4" )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR4_V14, value);
+                        }
+                        else if( customvar=="VAR5" )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR5_V14, value);
+                        }
+                        else
+                        {
+                            //unknown customvar
+                            cout << "Unsupported customvar '" << customvar << "'. Nothing processed" << endl;
+                            returnval["error"] = 1;
+                            returnval["msg"] = "Unsupported specified customvar";
+                        }
+                    }
+                    else
+                    {
+                        //missing parameter
+                        returnval["error"] = 1;
+                        returnval["msg"] = "Missing parameter";
+                    }
+                }
+                else
+                {
+                    //unhandled case
+                    cout << "Unhandled case for device " << internalid << "[" << deviceType << "]" << endl;
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Unhandled case";
+                }
             }
             else
             {
                 //internalid doesn't belong to this controller
                 returnval["error"] = 5;
-                returnval["msg"] = "Unmanaged internalid";
+                returnval["msg"] = "Unhandled internalid";
             }
         }
     }
