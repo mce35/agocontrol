@@ -86,7 +86,8 @@ std::string timestampToStr(const time_t* timestamp)
 /**
  * Make readable device infos
  */
-std::string printDeviceInfos(std::string internalid, qpid::types::Variant::Map infos) {
+std::string printDeviceInfos(std::string internalid, qpid::types::Variant::Map infos)
+{
     std::stringstream result;
     result << "Infos of device internalid '" << internalid << "'" << endl;
     if( !infos["protocol"].isVoid() )
@@ -127,7 +128,8 @@ void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos)
 /**
  * Get infos of specified device
  */
-qpid::types::Variant::Map getDeviceInfos(std::string internalid) {
+qpid::types::Variant::Map getDeviceInfos(std::string internalid)
+{
     qpid::types::Variant::Map out;
     bool save = false;
 
@@ -709,6 +711,63 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                 returnval["msg"] = "Device is missing";
             }
         }
+        else if( cmd=="setcustomvariable" )
+        {
+            if( !command["internalid"].isVoid() && !command["variable"].isVoid() && !command["value"].isVoid() )
+            {
+                std::string internalid = command["internalid"].asString();
+                std::string customvar = command["variable"].asString();
+                std::string value = command["value"].asString();
+
+                //check device
+                qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+                if( infos.size()==0 )
+                {
+                    //specified device is surely not handled by mysensors
+                    returnval["error"] = 1;
+                    returnval["msg"] = "Device not handled by this controller";
+                }
+                else
+                {
+                    if( customvar=="VAR1" )
+                    {
+                        //reserved customvar
+                        cout << "Reserved customvar '" << customvar << "'. Nothing processed" << endl;
+                        returnval["error"] = 1;
+                        returnval["msg"] = "Reserved customvar";
+                    }
+                    else if( customvar=="VAR2" )
+                    {
+                        sendcommandV14(internalid, SET_V14, 1, V_VAR2_V14, value);
+                    }
+                    else if( customvar=="VAR3" )
+                    {
+                        sendcommandV14(internalid, SET_V14, 1, V_VAR3_V14, value);
+                    }
+                    else if( customvar=="VAR4" )
+                    {
+                        sendcommandV14(internalid, SET_V14, 1, V_VAR4_V14, value);
+                    }
+                    else if( customvar=="VAR5" )
+                    {
+                        sendcommandV14(internalid, SET_V14, 1, V_VAR5_V14, value);
+                    }
+                    else
+                    {
+                        //unknown customvar
+                        cout << "Unsupported customvar '" << customvar << "'. Nothing processed" << endl;
+                        returnval["error"] = 1;
+                        returnval["msg"] = "Unsupported specified customvar";
+                    }
+                }
+            }
+            else
+            {
+                //missing parameter
+                returnval["error"] = 1;
+                returnval["msg"] = "Missing parameter";
+            }
+        }
         else
         {
             //get device infos
@@ -758,51 +817,6 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         {
                             if( DEBUG ) cout << " -> Command ON dropped (value is the same [" << infos["value"].asString() << "])" << endl;
                         }
-                    }
-                }
-                else if( cmd=="setvariable" )
-                {
-                    if( !command["variable"].isVoid() && !command["value"].isVoid() )
-                    {
-                        std::string customvar = command["variable"].asString();
-                        std::string value = command["value"].asString();
-
-                        if( customvar=="VAR1" )
-                        {
-                            //reserved customvar
-                            cout << "Reserved customvar '" << customvar << "'. Nothing processed" << endl;
-                            returnval["error"] = 1;
-                            returnval["msg"] = "Reserved customvar";
-                        }
-                        else if( customvar=="VAR2" )
-                        {
-                            sendcommandV14(internalid, SET_V14, 1, V_VAR2_V14, value);
-                        }
-                        else if( customvar=="VAR3" )
-                        {
-                            sendcommandV14(internalid, SET_V14, 1, V_VAR3_V14, value);
-                        }
-                        else if( customvar=="VAR4" )
-                        {
-                            sendcommandV14(internalid, SET_V14, 1, V_VAR4_V14, value);
-                        }
-                        else if( customvar=="VAR5" )
-                        {
-                            sendcommandV14(internalid, SET_V14, 1, V_VAR5_V14, value);
-                        }
-                        else
-                        {
-                            //unknown customvar
-                            cout << "Unsupported customvar '" << customvar << "'. Nothing processed" << endl;
-                            returnval["error"] = 1;
-                            returnval["msg"] = "Unsupported specified customvar";
-                        }
-                    }
-                    else
-                    {
-                        //missing parameter
-                        returnval["error"] = 1;
-                        returnval["msg"] = "Missing parameter";
                     }
                 }
                 else
