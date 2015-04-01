@@ -6,6 +6,13 @@
 
 'use strict';
 
+//@see http://stackoverflow.com/a/2548133/3333386
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function(suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 //====================================
 //AGOCONTROL OBJECT
 //====================================
@@ -45,8 +52,14 @@ window.BlocklyAgocontrol = {
             out = out.replace("proximity", "prox");
             out = out.replace("telecom", "tel");
             out = out.replace("security", "sec");
+            out = out.replace("monitoring", "moni");
             return out;
         }
+    },
+
+    //string is ending with specified string ?
+    endsWith: function(str) {
+        return this.indexOf(str, this.length - str.length)!==-1;
     },
 
     //get device uuids
@@ -56,9 +69,16 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && device.devicetype==deviceType )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
             {
-                devices.push([device.name, device.uuid]);
+                if( device.name.length>0 )
+                {
+                    devices.push([device.name, device.uuid]);
+                }
+                else
+                {
+                    devices.push([device.internalid, device.uuid]);
+                }
             }
         }
         //prevent from js crash
@@ -74,9 +94,16 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && device.devicetype==deviceType )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
             {
-                devices.push([device.name, device.internalid]);
+                if( device.name.length>0 )
+                {
+                    devices.push([device.name, device.internalid]);
+                }
+                else
+                {
+                    devices.push([device.internalid, device.internalid]);
+                }
             }
         }
         //prevent from js crash
@@ -93,7 +120,7 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && duplicates.indexOf(device.devicetype)===-1 )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && duplicates.indexOf(device.devicetype)===-1 )
             {
                 types.push([device.devicetype, device.devicetype]);
                 duplicates.push(device.devicetype);
@@ -115,10 +142,18 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && device.devicetype===deviceType && duplicates.indexOf(device.name)===-1 )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype===deviceType && duplicates.indexOf(device.name)===-1 )
             {
-                names.push([device.name, device.name]);
-                duplicates.push(device.name);
+                if( device.name.length>0 )
+                {
+                    names.push([device.name, device.name]);
+                    duplicates.push(device.name);
+                }
+                else
+                {
+                    names.push([device.internalid, device.name]);
+                    duplicates.push(device.internalid);
+                }
             }
         }
         //prevent from js crash
