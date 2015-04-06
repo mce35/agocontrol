@@ -2,7 +2,7 @@ commands:
   setcustomvariable:
     name: set custom variable
     parameters:
-      internalid:
+      device:
         name: device internalid
         type: string
       variable:
