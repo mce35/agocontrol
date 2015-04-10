@@ -160,7 +160,7 @@ Agocontrol.prototype = {
             request.params.replytimeout = timeout;
         }
 
-        return new Promise(function(resolve, reject){
+        var promise = new Promise(function(resolve, reject){
             $.ajax({
                     type : 'POST',
                     url : self.url,
@@ -214,18 +214,6 @@ Agocontrol.prototype = {
                         }
                         else
                         {
-                            //handle error: create same behaviour in all web ui
-                            if( r.error.message && r.error.message==='no.reply' )
-                            {
-                                //controller is not responding
-                                notif.fatal('Controller is not responding');
-                            }
-                            else if( r.error.data && r.error.data.description )
-                            {
-                                //display provided error
-                                notif.error(r.error.data.description);
-                            }
-
                             reject(r.error);
                         }
                     },
@@ -250,6 +238,29 @@ Agocontrol.prototype = {
                     }
                 });// $.ajax()
             }); // Promise()
+
+        /* Attach a general .catch which logs all messages to notif
+         * Note that the application code can still add any .catch handlers
+         * on the returned promise, if required.
+         */
+        promise.catch(function(error){
+            if( error.message && error.message==='no.reply' )
+            {
+                //controller is not responding
+                notif.fatal('Controller is not responding');
+            }
+            else if( error.data && error.data.description )
+            {
+                notif.error(error.data.description);
+            }
+            else if( error.message && error.message )
+            {
+                notif.error(error.message);
+            }else
+                notif.error("Failed: TODO improve: " + JSON.stringify(error));
+        });
+
+        return promise;
     },
 
     //find room
