@@ -47,13 +47,13 @@ namespace agocontrol {
             , message(message_)
         {
         }
-        ~AgoCommandException() _NOEXCEPT {};
+        ~AgoCommandException() throw() {};
 
         qpid::types::Variant::Map toResponse() const {
             return responseError(identifier, message);
         }
 
-        const char* what() const _NOEXCEPT {
+        const char* what() const throw() {
             return identifier.c_str();
         }
 
