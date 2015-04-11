@@ -33,6 +33,7 @@
 
 using namespace std;
 using namespace agocontrol;
+using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
@@ -1184,7 +1185,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             if(rc != SQLITE_OK)
             {
                 AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
-                return responseFailed();
+                return responseFailed("SQL Error");
             }
 
             do
@@ -1208,38 +1209,34 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
         }
         else if( content["command"] == "getgraph" )
         {
-            if( !content["start"].isVoid() && !content["end"].isVoid() && !content["devices"].isVoid() )
+            checkMsgParameter(content, "start", VAR_INT32);
+            checkMsgParameter(content, "end", VAR_INT32);
+            checkMsgParameter(content, "devices", VAR_LIST);
+
+            unsigned char* img = NULL;
+            unsigned long size = 0;
+            qpid::types::Variant::List uuids;
+
+            uuids = content["devices"].asList();
+            //is a multigraph?
+            if( uuids.size()==1 )
             {
-                unsigned char* img = NULL;
-                unsigned long size = 0;
-                qpid::types::Variant::List uuids;
+                string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
+                if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
+                {
+                    uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
+                }
+            }
 
-                uuids = content["devices"].asList();
-                //is a multigraph?
-                if( uuids.size()==1 )
-                {
-                    string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
-                    if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
-                    {
-                        uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
-                    }
-                }
-
-                if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
-                {
-                    returnData["graph"] = base64_encode(img, size);
-                    return responseSuccess(returnData);
-                }
-                else
-                {
-                    //error generating graph
-                    return responseFailed("Internal error");
-                }
+            if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
+            {
+                returnData["graph"] = base64_encode(img, size);
+                return responseSuccess(returnData);
             }
             else
             {
-                AGO_ERROR() << "Unable to get multigraph: missing request parameter";
-                return responseFailed("Internal error");
+                //error generating graph
+                return responseFailed("Failed to generate graph");
             }
         }
         else if( content["command"]=="getstatus" )
@@ -1279,203 +1276,179 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
         }
         else if( content["command"]=="addmultigraph" )
         {
-            if( !content["uuids"].isVoid() && !content["period"].isVoid() )
+            checkMsgParameter(content, "uuids", VAR_LIST);
+            checkMsgParameter(content, "period", VAR_INT32);
+
+            string internalid = "multigraph" + string(devicemap["nextid"]);
+            if( agoConnection->addDevice(internalid.c_str(), "multigraph") )
             {
-                string internalid = "multigraph" + string(devicemap["nextid"]);
-                if( agoConnection->addDevice(internalid.c_str(), "multigraph") )
-                {
-                    devicemap["nextid"] = devicemap["nextid"].asInt32() + 1;
-                    qpid::types::Variant::Map device;
-                    device["uuids"] = content["uuids"].asList();
-                    device["period"] = content["period"].asInt32();
-                    devicemap["multigraphs"].asMap()[internalid] = device;
-                    saveDeviceMapFile();
-                    return responseSuccess("Multigraph " + internalid + " created successfully");
-                }
-                else
-                {
-                    AGO_ERROR() << "Unable to add new multigraph";
-                    return responseFailed("Internal error");
-                }
+                devicemap["nextid"] = devicemap["nextid"].asInt32() + 1;
+                qpid::types::Variant::Map device;
+                device["uuids"] = content["uuids"].asList();
+                device["period"] = content["period"].asInt32();
+                devicemap["multigraphs"].asMap()[internalid] = device;
+                saveDeviceMapFile();
+                return responseSuccess("Multigraph " + internalid + " created successfully");
             }
             else
             {
-                AGO_ERROR() << "Unable to add multigraph: missing request parameter";
-                return responseFailed("Internal error");
+                AGO_ERROR() << "Unable to add new multigraph";
+                return responseFailed("Failed to add device");
             }
         }
         else if( content["command"]=="deletemultigraph" )
         {
-            if( !content["multigraph"].isVoid() )
+            checkMsgParameter(content, "multigraph", VAR_STRING);
+
+            string internalid = content["multigraph"].asString();
+            if( agoConnection->removeDevice(internalid.c_str()) )
             {
-                string internalid = content["multigraph"].asString();
-                if( agoConnection->removeDevice(internalid.c_str()) )
-                {
-                    devicemap["multigraphs"].asMap().erase(internalid);
-                    saveDeviceMapFile();
-                    return responseSuccess("Multigraph " + internalid + " deleted successfully");
-                }
-                else
-                {
-                    AGO_ERROR() << "Unable to delete multigraph " << internalid;
-                    return responseFailed("Internal error");
-                }
+                devicemap["multigraphs"].asMap().erase(internalid);
+                saveDeviceMapFile();
+                return responseSuccess("Multigraph " + internalid + " deleted successfully");
             }
             else
             {
-                AGO_ERROR() << "Unable to delete multigraph: missing request parameter";
-                return responseFailed("Internal error");
+                AGO_ERROR() << "Unable to delete multigraph " << internalid;
+                return responseFailed("Failed to delete graph");
             }
         }
         else if( content["command"]=="getthumb" )
         {
-            if( !content["multigraph"].isVoid() )
+            checkMsgParameter(content, "multigraph", VAR_STRING);
+            //check if inventory available
+            if( !checkInventory() )
             {
-                //check if inventory available
-                if( !checkInventory() )
+                //force inventory update during getthumb command because thumb requests are performed during first ui loading
+                updateInventory();
+            }
+
+            string internalid = content["multigraph"].asString();
+            if( !devicemap["multigraphs"].isVoid() && !devicemap["multigraphs"].asMap()[internalid].isVoid() && !devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].isVoid() )
+            {
+                unsigned char* img = NULL;
+                unsigned long size = 0;
+                int period = 12;
+
+                //get thumb period
+                if( !devicemap["multigraphs"].asMap()[internalid].asMap()["period"].isVoid() )
                 {
-                    //force inventory update during getthumb command because thumb requests are performed during first ui loading
-                    updateInventory();
+                    period = devicemap["multigraphs"].asMap()[internalid].asMap()["period"].asInt32();
                 }
 
-                string internalid = content["multigraph"].asString();
-                if( !devicemap["multigraphs"].isVoid() && !devicemap["multigraphs"].asMap()[internalid].isVoid() && !devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].isVoid() )
+                if( generateGraph(devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList(), 0, 0, period, &img, &size) )
                 {
-                    unsigned char* img = NULL;
-                    unsigned long size = 0;
-                    int period = 12;
-
-                    //get thumb period
-                    if( !devicemap["multigraphs"].asMap()[internalid].asMap()["period"].isVoid() )
-                    {
-                        period = devicemap["multigraphs"].asMap()[internalid].asMap()["period"].asInt32();
-                    }
-
-                    if( generateGraph(devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList(), 0, 0, period, &img, &size) )
-                    {
-                        returnData["graph"] = base64_encode(img, size);
-                        return responseSuccess(returnData);
-                    }
-                    else
-                    {
-                        //error generating graph
-                        return responseFailed("Internal error");
-                    }
+                    returnData["graph"] = base64_encode(img, size);
+                    return responseSuccess(returnData);
                 }
                 else
                 {
-                    AGO_ERROR() << "Unable to get thumb: it seems multigraph '" << internalid << "' doesn't exist";
+                    //error generating graph
                     return responseFailed("Internal error");
                 }
             }
             else
             {
-                AGO_ERROR() << "Unable to get thumb: missing request parameter";
-                return responseFailed("Internal error");
+                AGO_ERROR() << "Unable to get thumb: it seems multigraph '" << internalid << "' doesn't exist";
+                return responseFailed("Unknown multigraph");
             }
         }
         else if( content["command"]=="setenabledmodules" )
         {
-            if( !content["dataLogging"].isVoid() && !content["rrdLogging"].isVoid()  && !content["gpsLogging"].isVoid() )
+            checkMsgParameter(content, "dataLogging", VAR_BOOL);
+            checkMsgParameter(content, "rrdLogging", VAR_BOOL);
+            checkMsgParameter(content, "gpsLogging", VAR_BOOL);
+
+            bool error = false;
+            if( content["dataLogging"].asBool() )
             {
-                bool error = false;
-                if( content["dataLogging"].asBool() )
-                {
-                    dataLogging = true;
-                    AGO_INFO() << "Data logging enabled";
-                }
-                else
-                {
-                    dataLogging = false;
-                    AGO_INFO() << "Data logging disabled";
-                }
-                if( !setConfigOption("dataLogging", dataLogging) )
-                {
-                    AGO_ERROR() << "Unable to save dataLogging status to config file";
-                    error = true;
-                }
+                dataLogging = true;
+                AGO_INFO() << "Data logging enabled";
+            }
+            else
+            {
+                dataLogging = false;
+                AGO_INFO() << "Data logging disabled";
+            }
 
-                if( content["gpsLogging"].asBool() )
-                {
-                    gpsLogging = true;
-                    AGO_INFO() << "GPS logging enabled";
-                }
-                else
-                {
-                    gpsLogging = false;
-                    AGO_INFO() << "GPS logging disabled";
-                }
-                if( !setConfigOption("gpsLogging", gpsLogging) )
-                {
-                    AGO_ERROR() << "Unable to save gpsLogging status to config file";
-                    error = true;
-                }
 
-                if( content["rrdLogging"].asBool() )
-                {
-                    rrdLogging = true;
-                    AGO_INFO() << "RRD logging enabled";
-                }
-                else
-                {
-                    rrdLogging = false;
-                    AGO_INFO() << "RRD logging disabled";
-                }
-                if( !setConfigOption("rrdLogging", rrdLogging) )
-                {
-                    AGO_ERROR() << "Unable to save rrdLogging status to config file";
-                    error = true;
-                }
+            if( !setConfigOption("dataLogging", dataLogging) )
+            {
+                AGO_ERROR() << "Unable to save dataLogging status to config file";
+                error = true;
+            }
 
-                if( error )
-                {
-                    return responseFailed("Some options were not saved");
-                }
-                else
+            if( content["gpsLogging"].asBool() )
+            {
+                gpsLogging = true;
+                AGO_INFO() << "GPS logging enabled";
+            }
+            else
+            {
+                gpsLogging = false;
+                AGO_INFO() << "GPS logging disabled";
+            }
+            if( !setConfigOption("gpsLogging", gpsLogging) )
+            {
+                AGO_ERROR() << "Unable to save gpsLogging status to config file";
+                error = true;
+            }
+
+            if( content["rrdLogging"].asBool() )
+            {
+                rrdLogging = true;
+                AGO_INFO() << "RRD logging enabled";
+            }
+            else
+            {
+                rrdLogging = false;
+                AGO_INFO() << "RRD logging disabled";
+            }
+
+            if( !setConfigOption("rrdLogging", rrdLogging) )
+            {
+                AGO_ERROR() << "Unable to save rrdLogging status to config file";
+                error = true;
+            }
+
+            if( error )
+            {
+                return responseFailed("Failed to save one or more options");
+            }
+            return responseSuccess();
+        }
+        else if( content["command"]=="purgetable" )
+        {
+            checkMsgParameter(content, "table", VAR_STRING);
+
+            //security check
+            std::string table = content["table"].asString();
+            if( isTablePurgeAllowed(table) )
+            {
+                if( purgeTable(table) )
                 {
                     return responseSuccess();
+                }
+                else
+                {
+                    AGO_ERROR() << "Unable to purge table '" << table << "'";
+                    return responseFailed("Internal error");
                 }
             }
             else
             {
-                AGO_ERROR() << "Unable to get thumb: missing request parameter";
-                return responseFailed("Internal error");
-            }
-        }
-        else if( content["command"]=="purgetable" )
-        {
-            if( !content["table"].isVoid() )
-            {
-                //security check
-                std::string table = content["table"].asString();
-                if( isTablePurgeAllowed(table) )
-                {
-                    if( purgeTable(table) )
-                    {
-                        return responseSuccess();
-                    }
-                    else
-                    {
-                        AGO_ERROR() << "Unable to purge table '" << table << "'";
-                        return responseFailed("Internal error");
-                    }
-                }
-                else
-                {
-                    AGO_ERROR() << "Purge table '" << table << "' not allowed";
-                    return responseFailed("Table purge not allowed");
-                }
+                AGO_ERROR() << "Purge table '" << table << "' not allowed";
+                return responseFailed("Table purge not allowed");
             }
         }
         else
         {
-            AGO_WARNING() << "command not found";
-            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
+            return responseUnknownCommand();
         }
     }
 
     //We do not support sending commands to our 'devices'
-    return responseError(RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE);
+    return responseNoDeviceCommands();
 }
 
 void AgoDataLogger::setupApp()

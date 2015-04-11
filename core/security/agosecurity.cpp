@@ -585,33 +585,26 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
     {
         if (content["command"] == "sethousemode")
         {
-            if (content["housemode"].asString() != "")
+            checkMsgParameter(content, "housemode", VAR_STRING);
+            checkMsgParameter(content, "pin", VAR_STRING);
+
+            if (checkPin(content["pin"].asString()))
             {
-                if (checkPin(content["pin"].asString()))
+                if( changeHousemode(content["housemode"].asString()) )
                 {
-                    if( changeHousemode(content["housemode"].asString()) )
-                    {
-                        return responseSuccess("Housemode changed");
-                    }
-                    else
-                    {
-                        AGO_ERROR() << "Command 'sethousemode': Cannot write securitymap";
-                        returnData["housemode"] = securitymap["housemode"].asString();
-                        return responseError("error.security.housemodechange", "Cannot write config file", returnData);
-                    }
+                    return responseSuccess("Housemode changed");
                 }
                 else
                 {
-                    AGO_ERROR() << "Command 'sethousemode': invalid pin";
-                    returnData["housemode"] = securitymap["housemode"].asString();
-                    return responseError("error.security.invalidpin", "Invalid pin specified", returnData);
+                    AGO_ERROR() << "Command 'sethousemode': Cannot write securitymap";
+                    return responseFailed("Cannot write config file");
                 }
             }
             else
             {
-                AGO_WARNING() << "Command 'sethousemode': parameter is missing";
+                AGO_ERROR() << "Command 'sethousemode': invalid pin";
                 returnData["housemode"] = securitymap["housemode"].asString();
-                return responseError("error.parameter.missing", "Parameter is missing", returnData);
+                return responseError("error.security.invalidpin", "Invalid pin specified", returnData);
             }
         }
         else if (content["command"] == "gethousemode")
@@ -629,43 +622,44 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         }
         else if (content["command"] == "triggerzone")
         {
-            if( !content["zone"].isVoid() )
+            checkMsgParameter(content, "zone", VAR_STRING);
+
+            std::string zone = content["zone"].asString();
+            std::string housemode = securitymap["housemode"];
+            TriggerStatus status = triggerZone(zone, housemode);
+
+            switch(status)
             {
-                std::string zone = content["zone"].asString();
-                std::string housemode = securitymap["housemode"];
-                TriggerStatus status = triggerZone(zone, housemode);
+                case Ok:
+                case OkInactiveZone:
+                    return responseSuccess();
+                    break;
 
-                switch(status)
-                {
-                    case Ok:
-                    case OkInactiveZone:
-                        return responseSuccess();
-                        break;
+                case KoAlarmFailed:
+                    AGO_ERROR() << "Command 'triggerzone': fail to start alarm thread";
+                    return responseError("error.security.alarmthreadfailed", "Failed to start alarm thread");
+                    break;
 
-                    case KoAlarmFailed:
-                        AGO_ERROR() << "Command 'triggerzone': fail to start alarm thread";
-                        return responseError("error.security.alarmthreadfailed", "Failed to start alarm thread");
-                        break;
+                case KoAlarmAlreadyRunning:
+                    return responseSuccess("Alarm thread is already running");
+                    break;
 
-                    case KoAlarmAlreadyRunning:
-                        return responseSuccess("Alarm thread is already running");
-                        break;
+                case KoConfigInfoMissing:
+                case KoInvalidConfig:
+                    AGO_ERROR() << "Command 'triggerzone': invalid configuration file content";
+                    return responseError("error.security.invalidconfig", "Invalid config");
+                    break;
 
-                    case KoConfigInfoMissing:
-                    case KoInvalidConfig:
-                        AGO_ERROR() << "Command 'triggerzone': invalid configuration file content";
-                        return responseError("error.security.invalidconfig", "Invalid config");
-                        break;
-
-                    default:
-                        AGO_ERROR() << "Command 'triggerzone': unknown error";
-                        return responseError("error.security.unknown", "Unknown state");
-                        break;
-                };
+                default:
+                    AGO_ERROR() << "Command 'triggerzone': unknown error";
+                    return responseError("error.security.unknown", "Unknown state");
+                    break;
             }
         }
         else if (content["command"] == "cancelalarm")
         {
+            checkMsgParameter(content, "pin", VAR_STRING);
+
             if (checkPin(content["pin"].asString()))
             {
                 if( isAlarmActivated )
@@ -742,87 +736,70 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         }
         else if( content["command"]=="setconfig" )
         {
-            if( !content["config"].isVoid() && !content["armedMessage"].isVoid() && !content["disarmedMessage"].isVoid() && !content["defaultHousemode"].isVoid() && !content["pin"].isVoid() )
+            checkMsgParameter(content, "config", VAR_MAP);
+            checkMsgParameter(content, "armedMessage", VAR_STRING);
+            checkMsgParameter(content, "defaultHousemode", VAR_STRING);
+            checkMsgParameter(content, "pin", VAR_STRING);
+
+            if( checkPin(content["pin"].asString()) )
             {
-                if( checkPin(content["pin"].asString()) )
-                {
-                    qpid::types::Variant::Map newconfig = content["config"].asMap();
-                    securitymap["config"] = newconfig;
-                    securitymap["armedMessage"] = content["armedMessage"].asString();
-                    securitymap["disarmedMessage"] = content["disarmedMessage"].asString();
-                    securitymap["defaultHousemode"] = content["defaultHousemode"].asString();
-                    if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE)))
-                    {
-                        return responseSuccess();
-                    }
-                    else
-                    {
-                        AGO_ERROR() << "Command 'setconfig': cannot save securitymap";
-                        return responseError("error.security.setzones", "Cannot save securitymap");
-                    }
-                }
-                else
-                {
-                    //invalid pin
-                    AGO_ERROR() << "Command 'setconfig': invalid pin";
-                    return responseError("error.security.invalidpin", "Invalid pin specified");
-                }
-            }
-            else
-            {
-                //parameter is missing
-                AGO_ERROR() << "Command 'setconfig': missing parameter";
-                return responseError("error.parameter.missing", "Missing parameter");
-            }
-        }
-        else if( content["command"]=="checkpin" )
-        {
-            if( !content["pin"].isVoid() )
-            {
-                if( checkPin(content["pin"].asString() ) )
+                qpid::types::Variant::Map newconfig = content["config"].asMap();
+                securitymap["config"] = newconfig;
+                securitymap["armedMessage"] = content["armedMessage"].asString();
+                securitymap["disarmedMessage"] = content["disarmedMessage"].asString();
+                securitymap["defaultHousemode"] = content["defaultHousemode"].asString();
+                if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE)))
                 {
                     return responseSuccess();
                 }
                 else
                 {
-                    AGO_WARNING() << "Command 'checkpin': invalid pin";
-                    return responseError("error.security.invalidpin", "Invalid pin specified");
+                    AGO_ERROR() << "Command 'setconfig': cannot save securitymap";
+                    return responseError("error.security.setzones", "Cannot save securitymap");
                 }
             }
             else
             {
-                AGO_ERROR() << "Command 'checkpin': parameter is missing";
-                return responseError("error.parameter.missing", "Missing parameter");
+                //invalid pin
+                AGO_ERROR() << "Command 'setconfig': invalid pin";
+                return responseError("error.security.invalidpin", "Invalid pin specified");
+            }
+        }
+        else if( content["command"]=="checkpin" )
+        {
+            checkMsgParameter(content, "pin", VAR_STRING);
+            if( checkPin(content["pin"].asString() ) )
+            {
+                return responseSuccess();
+            }
+            else
+            {
+                AGO_WARNING() << "Command 'checkpin': invalid pin";
+                return responseError("error.security.invalidpin", "Invalid pin specified");
             }
         }
         else if( content["command"]=="setpin" )
         {
-            if( !content["pin"].isVoid() && !content["newpin"].isVoid() )
+            checkMsgParameter(content, "pin", VAR_STRING);
+            checkMsgParameter(content, "newpin", VAR_STRING);
+            //check pin
+            if (checkPin(content["pin"].asString()))
             {
-                //check pin
-                if (checkPin(content["pin"].asString()))
+                if( setPin(content["newpin"].asString()) )
                 {
-                    if( setPin(content["newpin"].asString()) )
-                    {
-                        return responseSuccess();
-                    }   
-                    else
-                    {
-                        AGO_ERROR() << "Command 'setpin': unable to save pin";
-                        return responseError("error.security.setpin", "Unable to save new pin code");
-                    }
-                }
+                    return responseSuccess();
+                }   
                 else
                 {
-                    //wrong pin specified
-                    AGO_WARNING() << "Command 'setpin': invalid pin";
-                    return responseError("error.security.invalidpin", "Invalid pin specified");
+                    AGO_ERROR() << "Command 'setpin': unable to save pin";
+                    return responseError("error.security.setpin", "Unable to save new pin code");
                 }
             }
             else
             {
-                AGO_ERROR() << "Command 'setpin': missing parameter";
-                return responseError("error.parameter.missing", "Missing parameter");
+                //wrong pin specified
+                AGO_WARNING() << "Command 'setpin': invalid pin";
+                return responseError("error.security.invalidpin", "Invalid pin specified");
             }
         }
         else if( content["command"]=="getalarmstate" )
@@ -831,12 +808,11 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
             return responseSuccess(returnData);
         }
 
-        //We do not support sending commands to our 'devices'
-        AGO_ERROR() << "Unknown command received '" << content["command"] << "'";
-        return responseError(RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE);
+        return responseUnknownCommand();
     }
 
-    return responseError("error.device.invalid");
+    // We have no devices registered but our own
+    throw std::logic_error("Should not go here");
 }
 
 void AgoSecurity::setupApp()

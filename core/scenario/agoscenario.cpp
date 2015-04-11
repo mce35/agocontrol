@@ -15,6 +15,7 @@
 
 using namespace std;
 using namespace agocontrol;
+using namespace qpid::types;
 
 class AgoScenario: public AgoApp
 {
@@ -80,90 +81,79 @@ qpid::types::Variant::Map AgoScenario::commandHandler(qpid::types::Variant::Map 
     {
         if (content["command"] == "setscenario")
         {
-            try
+            checkMsgParameter(content, "scenariomap", VAR_MAP);
+            AGO_TRACE() << "setscenario request";
+            qpid::types::Variant::Map newscenario = content["scenariomap"].asMap();
+
+            std::string scenariouuid;
+            if(content.count("scenario"))
+                scenariouuid = content["scenario"].asString();
+            else
+                scenariouuid = generateUuid();
+
+            AGO_TRACE() << "Scenario content:" << newscenario;
+            AGO_TRACE() << "scenario uuid:" << scenariouuid;
+            scenariomap[scenariouuid] = newscenario;
+
+            agoConnection->addDevice(scenariouuid.c_str(), "scenario", true);
+            if (variantMapToJSONFile(scenariomap, getConfigPath(SCENARIOMAPFILE)))
             {
-                AGO_TRACE() << "setscenario request";
-                qpid::types::Variant::Map newscenario = content["scenariomap"].asMap();
-                AGO_TRACE() << "scnario content:" << newscenario;
-                std::string scenariouuid = content["scenario"].asString();
-                if (scenariouuid == "")
-                {
-                    scenariouuid = generateUuid();
-                }
-                AGO_TRACE() << "scenario uuid:" << scenariouuid;
-                scenariomap[scenariouuid] = newscenario;
-                agoConnection->addDevice(scenariouuid.c_str(), "scenario", true);
-                if (variantMapToJSONFile(scenariomap, getConfigPath(SCENARIOMAPFILE)))
-                {
-                    returnData["scenario"] = scenariouuid;
-                    return responseSuccess(returnData);
-                }
-                else
-                {
-                    return responseFailed();
-                }
+                returnData["scenario"] = scenariouuid;
+                return responseSuccess(returnData);
             }
-            catch (qpid::types::InvalidConversion)
-            {
-                return responseFailed();
-            }
-            catch (...)
-            {
-                return responseFailed("Exception");
-            }
+
+            return responseFailed("Failed to write map file");
         }
         else if (content["command"] == "getscenario")
         {
-            try
-            {
-                std::string scenario = content["scenario"].asString();
-                AGO_TRACE() << "getscenario request:" << scenario;
-                returnData["scenariomap"] = scenariomap[scenario].asMap();
-                returnData["scenario"] = scenario;
-                return responseSuccess(returnData);
-            }
-            catch (qpid::types::InvalidConversion)
-            {
-                return responseFailed();
-            }
+            checkMsgParameter(content, "scenario", VAR_STRING);
+            std::string scenario = content["scenario"].asString();
+
+            AGO_TRACE() << "getscenario request:" << scenario;
+            if(!scenariomap.count(scenario))
+                return responseError(RESPONSE_ERR_NOT_FOUND, "Scenario not found");
+
+            returnData["scenariomap"] = scenariomap[scenario].asMap();
+            returnData["scenario"] = scenario;
+
+            return responseSuccess(returnData);
         }
         else if (content["command"] == "delscenario")
         {
+            checkMsgParameter(content, "scenario", VAR_STRING);
+
             std::string scenario = content["scenario"].asString();
             AGO_TRACE() << "delscenario request:" << scenario;
-            if (scenario != "")
+            qpid::types::Variant::Map::iterator it = scenariomap.find(scenario);
+            if (it != scenariomap.end())
             {
-                qpid::types::Variant::Map::iterator it = scenariomap.find(scenario);
-                if (it != scenariomap.end())
+                AGO_DEBUG() << "removing ago device" << scenario;
+                agoConnection->removeDevice(it->first.c_str());
+                scenariomap.erase(it);
+                if (!variantMapToJSONFile(scenariomap, getConfigPath(SCENARIOMAPFILE)))
                 {
-                    AGO_DEBUG() << "removing ago device" << scenario;
-                    agoConnection->removeDevice(it->first.c_str());
-                    scenariomap.erase(it);
-                    if (variantMapToJSONFile(scenariomap, getConfigPath(SCENARIOMAPFILE)))
-                    {
-                        return responseSuccess();
-                    }
+                    return responseFailed("Failed to write file");
                 }
             }
-            else
-            {
-                return responseFailed();
-            }
-        } 
+            return responseSuccess();
+        }
+        
+        return responseUnknownCommand();
     }
     else
     {
+        checkMsgParameter(content, "command", VAR_STRING);
+
         if ((content["command"] == "on") || (content["command"] == "run"))
         {
             AGO_DEBUG() << "spawning thread for scenario: " << internalid;
             boost::thread t(boost::bind(&AgoScenario::runscenario, this, scenariomap[internalid].asMap()));
             t.detach();
             return responseSuccess();
-        } 
-    }
+        }
 
-    //We do not support sending commands to our 'devices'
-    return responseError(RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE);
+        return responseError(RESPONSE_ERR_PARAMETER_INVALID, "Only commands 'on' and 'run' are spported");
+    }
 }
 
 void AgoScenario::setupApp()

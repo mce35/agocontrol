@@ -270,58 +270,48 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
     {
         if (content["command"] == "setevent")
         {
-            try
+            checkMsgParameter(content, "eventmap", VAR_MAP);
+            checkMsgParameter(content, "event", VAR_STRING);
+
+            AGO_DEBUG() << "setevent request";
+            qpid::types::Variant::Map newevent = content["eventmap"].asMap();
+            std::string eventuuid = content["event"].asString();
+            if (eventuuid == "")
+                eventuuid = generateUuid();
+
+            AGO_TRACE() << "event content:" << newevent;
+            AGO_TRACE() << "event uuid:" << eventuuid;
+            eventmap[eventuuid] = newevent;
+
+            agoConnection->addDevice(eventuuid.c_str(), "event", true);
+            if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
             {
-                AGO_DEBUG() << "setevent request";
-                qpid::types::Variant::Map newevent = content["eventmap"].asMap();
-                AGO_TRACE() << "event content:" << newevent;
-                std::string eventuuid = content["event"].asString();
-                if (eventuuid == "") eventuuid = generateUuid();
-                AGO_TRACE() << "event uuid:" << eventuuid;
-                eventmap[eventuuid] = newevent;
-                agoConnection->addDevice(eventuuid.c_str(), "event", true);
-                if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
-                {
-                    responseData["event"] = eventuuid;
-                    return responseSuccess(responseData);
-                }
-                else
-                {
-                    return responseFailed();
-                }
+                responseData["event"] = eventuuid;
+                return responseSuccess(responseData);
             }
-            catch (const qpid::types::InvalidConversion &ex)
+            else
             {
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, ex.what());
-            }
-            catch (const std::exception &ex)
-            {
-                // XXX: What is this supposed to catch?
-                AGO_ERROR() << "Unhandled exception handling setevent" << ex.what();
-                return responseError(RESPONSE_ERR_FAILED, ex.what());
+                return responseFailed("Failed to write map file");
             }
         }
         else if (content["command"] == "getevent")
         {
-            try
-            {
-                std::string event = content["event"].asString();
-                AGO_DEBUG() << "getevent request:" << event;
-                responseData["eventmap"] = eventmap[event].asMap();
-                responseData["event"] = event;
-                return responseSuccess(responseData);
-            }
-            catch (const qpid::types::InvalidConversion &ex)
-            {
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, ex.what());
-            }
+            checkMsgParameter(content, "event", VAR_STRING);
+
+            std::string event = content["event"].asString();
+
+            AGO_DEBUG() << "getevent request:" << event;
+            responseData["eventmap"] = eventmap[event].asMap();
+            responseData["event"] = event;
+
+            return responseSuccess(responseData);
         }
         else if (content["command"] == "delevent")
         {
+            checkMsgParameter(content, "event", VAR_STRING);
+
             std::string event = content["event"].asString();
             AGO_DEBUG() << "delevent request:" << event;
-            if (event.empty())
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS);
 
             qpid::types::Variant::Map::iterator it = eventmap.find(event);
             if (it != eventmap.end())
@@ -331,19 +321,19 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
                 eventmap.erase(it);
                 if (!variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
                 {
-                    return responseFailed();
+                    return responseFailed("Failed to write map file");
                 }
             }
 
             // If it was not found, it was already deleted; delete succeded
             return responseSuccess();
         }else{
-            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
+            return responseUnknownCommand();
         }
     }
 
     // We do not support sending commands to our 'devices'
-    return responseError(RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE);
+    return responseNoDeviceCommands();
 }
 
 void AgoEvent::setupApp()

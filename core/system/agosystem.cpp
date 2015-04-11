@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include "agosystem.h"
 using namespace std;
+using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
 const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "agologger.py"};
@@ -310,42 +311,35 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
         }
         else if( content["command"]=="setmonitoredprocesses" )
         {
-            if( !content["processes"].isVoid() &&
-                content["processes"].getType() == qpid::types::VAR_LIST)
-            {
-                qpid::types::Variant::List monitored = content["processes"].asList();
-                //and save list to config file
-                config["monitored"] = monitored;
-                variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
-                return responseSuccess();
-            }
-            return responseError(RESPONSE_ERR_BAD_PARAMETERS);
+            checkMsgParameter(content, "processes", VAR_LIST);
+
+            qpid::types::Variant::List monitored = content["processes"].asList();
+            //and save list to config file
+            config["monitored"] = monitored;
+            if(!variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE)))
+                return responseFailed("Failed to write map file");
+
+            return responseSuccess();
         }
         else if( content["command"]=="setmemorythreshold" )
         {
-            int64_t threshold;
-            try {
-                threshold = content["threshold"].asInt64();
-            }catch(const qpid::types::InvalidConversion& e) {
-                responseData["old"] = config["memoryThreshold"].asInt64();
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS,
-                        e.what(),
-                        responseData);
-            }
+            checkMsgParameter(content, "threshold", VAR_INT64);
 
+            int64_t threshold = content["threshold"].asInt64();
             if( threshold < 0 )
             {
                 threshold = 0;
             }
 
             config["memoryThreshold"] = threshold;
-            variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
+            if(!variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE)))
+                return responseFailed("Failed to write map file");
 
             return responseSuccess();
         }
         else
         {
-            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
+            return responseUnknownCommand();
         }
     }
     

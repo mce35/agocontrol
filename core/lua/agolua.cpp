@@ -27,6 +27,7 @@ namespace fs = ::boost::filesystem;
 
 using namespace std;
 using namespace agocontrol;
+using namespace qpid::types;
 
 #ifdef __FreeBSD__
 #include "lua52/lua.hpp"
@@ -975,8 +976,7 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         }
         else if (content["command"] == "getscript")
         {
-            if (content["name"].asString().empty())
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "name required");
+            checkMsgParameter(content, "name", VAR_STRING);
 
             try
             {
@@ -989,15 +989,15 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 returnData["name"]=content["name"].asString();
                 return responseSuccess(returnData);
             }
-            catch(...)
+            catch( const fs::filesystem_error& e )
             {
-                return responseFailed("Cannot read script");
+                AGO_ERROR() << "Exception during file reading " << e.what();
+                return responseFailed("Unable to read script");
             }
         }
         else if (content["command"] == "setscript" )
         {
-            if (content["name"].asString().empty())
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "name required");
+            checkMsgParameter(content, "name", VAR_STRING);
 
             try
             {
@@ -1012,15 +1012,15 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 file.close();
                 return responseSuccess();
             }
-            catch(...)
+            catch( const fs::filesystem_error& e )
             {
-                return responseFailed("Cannot write script");
+                AGO_ERROR() << "Exception during file writing " << e.what();
+                return responseFailed("Unable to write script");
             }
         }
         else if (content["command"] == "delscript")
         {
-            if (content["name"].asString().empty())
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "name required");
+            checkMsgParameter(content, "name", VAR_STRING);
 
             try
             {
@@ -1036,24 +1036,16 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                     return responseFailed("no such script");
                 }
             }
-            catch(...)
+            catch( const fs::filesystem_error& e )
             {
-                return responseFailed("cannot delete script");
+                AGO_ERROR() << "Exception during file deleting " << e.what();
+                return responseFailed("Unable to delete script");
             }
         }
         else if (content["command"] == "renscript")
         {
-            if(content["oldname"].isVoid() ||
-               content["oldname"].asString().empty())
-            {
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "oldname required");
-            }
-
-            if(content["newname"].isVoid() ||
-               content["newname"].asString().empty())
-            {
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "newname required");
-            }
+            checkMsgParameter(content, "oldname", VAR_STRING);
+            checkMsgParameter(content, "newname", VAR_STRING);
         
             try
             {
@@ -1076,7 +1068,7 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                     return responseFailed("Script with new name already exists. Script not renamed");
                 }
             }
-            catch( const exception& e )
+            catch( const fs::filesystem_error& e )
             {
                 AGO_ERROR() << "Exception during file renaming" << e.what();
                 return responseFailed("Unable to rename script");
@@ -1085,8 +1077,8 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         else if( content["command"]=="debugscript" )
         {
             AGO_DEBUG() << "debug received: " << content;
-            if( content["script"].isVoid() || content["data"].isVoid() )
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "debugscript required");
+            checkMsgParameter(content, "script", VAR_STRING);
+            checkMsgParameter(content, "data", VAR_MAP);
 
             std::string script = content["script"].asString();
             qpid::types::Variant::Map data = content["data"].asMap();
@@ -1101,11 +1093,8 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         else if (content["command"] == "uploadfile")
         {
             //import script
-            if( content["filepath"].isVoid() || content["filepath"].asString().empty())
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "filepath required");
-
-            if( content["filename"].isVoid() || content["filename"].asString().empty())
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "filename required");
+            checkMsgParameter(content, "filepath", VAR_STRING);
+            checkMsgParameter(content, "filename", VAR_STRING);
 
             //check file
             fs::path source(content["filepath"]);
@@ -1152,10 +1141,9 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         }
         else if (content["command"] == "downloadfile")
         {
-            AGO_DEBUG() << "download file command received: " << content;
             //export script
-            if( content["filename"].isVoid() || content["filename"].asString().empty() )
-                return responseError(RESPONSE_ERR_BAD_PARAMETERS, "filename required");
+            AGO_DEBUG() << "download file command received: " << content;
+            checkMsgParameter(content, "filename", VAR_STRING);
 
             std::string file = "blockly_" + content["filename"].asString();
             fs::path target = construct_script_name(file);
@@ -1178,7 +1166,7 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         }
         else
         {
-            return responseError(RESPONSE_ERR_UNKNOWN_COMMAND);
+            return responseUnknownCommand();
         }
     }
     else
@@ -1206,8 +1194,9 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         }
 
         if(!found) {
-            return responseError(RESPONSE_ERR_BAD_PARAMETERS, "script not found");
+            return responseError(RESPONSE_ERR_NOT_FOUND, "script not found");
         }
+
         return responseSuccess();
     }
 }
