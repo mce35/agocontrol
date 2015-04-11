@@ -76,7 +76,7 @@
 // -32000 to -32099 impl-defined server errors
 #define AGO_JSONRPC_NO_EVENT            -32000
 #define AGO_JSONRPC_MESSAGE_ERROR       -32001
-#define AGO_JSONRPC_REMOTE_ERROR        -32002
+#define AGO_JSONRPC_COMMAND_ERROR       -31999
 
 namespace fs = ::boost::filesystem;
 using namespace std;
@@ -257,7 +257,8 @@ static bool mg_rpc_reply_error(struct mg_connection *conn, const Json::Value &re
     error["code"] = code;
     error["message"] = message;
 
-    if (reader.parse(variantMapToJSONString(dataMap), data, false)) error["data"] = data;
+    if (reader.parse(variantMapToJSONString(dataMap), data, false))
+        error["data"] = data;
 
     return mg_rpc_reply_result(conn, request_or_id, error, "error", true);
 }
@@ -382,13 +383,15 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
             return mg_rpc_reply_error(conn, request, JSONRPC_INVALID_PARAMS, "Invalid params");
         }
 
-        //prepare message
+        // prepare message
         Json::Value content = params["content"];
         Json::Value subject = params["subject"];
         Variant::Map command = jsonToVariantMap(content);
 
         //send message and handle response
         //AGO_TRACE() << "Request: " << command;
+        
+        // TODO: change this to sendRequest when all backends have been updated
         Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
         if(responseMap.size() == 0 || id.isNull() ) // only send reply when id is not null
         {
@@ -398,18 +401,17 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 AGO_ERROR() << "No reply message to fetch. Failed message: " << "subject=" <<subject<<": " << command;
             }
 
-            return mg_rpc_reply_error(conn, request, AGO_JSONRPC_REMOTE_ERROR, "no.reply");
+            return mg_rpc_reply_error(conn, request, AGO_JSONRPC_MESSAGE_ERROR, "error.no.reply");
         }
 
         // allow on the fly behavior during migration
         if (responseMap.count("_newresponse"))
         {
-            // new style responses. backend response mimics JSON-RPC
             AGO_TRACE() << "New style response: " << responseMap;
             if (responseMap["error"].isVoid())
             {
                 // no error
-                if (responseMap["result"].isVoid() ||  responseMap["result"].getType() != VAR_MAP)
+                if (responseMap["result"].isVoid() || responseMap["result"].getType() != VAR_MAP)
                 {
                     AGO_ERROR() << "New style response does not contain result nor error";
                     return mg_rpc_reply_error(conn, request,
@@ -434,21 +436,11 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
                 else
                 {
                     Variant::Map errorMap = responseMap["error"].asMap();
-                    if(errorMap.count("data")){
-                        if(responseMap["error"].getType() != VAR_MAP) {
-                            AGO_ERROR() << "new-style response with error.data which is not of type map";
-                            return mg_rpc_reply_error(conn, request,
-                                    AGO_JSONRPC_MESSAGE_ERROR,
-                                    "message returned error and error.data map is malformed");
-                        }
-
-                        return mg_rpc_reply_error(conn, request,
-                                AGO_JSONRPC_REMOTE_ERROR, errorMap["message"],
-                                errorMap["data"].asMap());
-                    }
 
                     return mg_rpc_reply_error(conn, request,
-                            AGO_JSONRPC_REMOTE_ERROR, errorMap["message"]);
+                            AGO_JSONRPC_COMMAND_ERROR,
+                            "Command returned error",
+                            errorMap);
                 }
             }
         }
@@ -652,8 +644,8 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
                     //command failed, drop file
                     fs::remove(tempfile);
                     AGO_ERROR() << "Uploaded file \"" << tempfile.string()
-                        << "\" dropped because command failed" << r.getErrorMessage();
-                    uploadError = r.getErrorMessage();
+                        << "\" dropped because command failed" << r.getMessage();
+                    uploadError = r.getMessage();
                     continue;
                 }
 
@@ -732,8 +724,8 @@ bool AgoRpc::downloadFile(struct mg_connection *conn)
         else
         {
             //command failed
-            AGO_ERROR() << "Download file, sendCommand failed, unable to send file: " << r.getErrorMessage();
-            downloadError = r.getErrorMessage();
+            AGO_ERROR() << "Download file, sendCommand failed, unable to send file: " << r.getMessage();
+            downloadError = r.getMessage();
         }
     }
     else
