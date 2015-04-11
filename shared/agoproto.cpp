@@ -1,4 +1,4 @@
-#include <exception>
+#include <stdexcept>
 #include <sstream>
 #include "agoproto.h"
 
