@@ -14,6 +14,12 @@ class AgoResponse:
     """This class represents a response as obtained from AgoConnection.send_request"""
     def __init__(self, response):
         self.response = response
+        if self.is_ok():
+            self.root = self.response["result"]
+        elif self.is_error():
+            self.root = self.response["error"]
+        else:
+            raise Exception("Invalid response, neither result or error present")
 
     def is_error(self):
         return "error" in self.response
@@ -21,37 +27,38 @@ class AgoResponse:
     def is_ok(self):
         return "result" in self.response
 
+    def identifier(self):
+        return self.root["identifier"];
+
+    def message(self):
+        if "message" in self.root:
+            return self.root["message"];
+
+        return None
+
     def data(self):
-        if self.is_error():
-            e = self.response["error"]
-            if "data" in e:
-                return e["data"]
-        else:
-            return self.response["result"]
+        if "data" in self.root:
+            return self.root["data"];
+
+        return None
 
 class ResponseError(Exception):
     def __init__(self, response):
         if not response.is_error():
             raise Exception("Not an error response")
 
-        self.error = response.response["error"]
+        self.response = response
+
         super(ResponseError, self).__init__(self.message())
     
+    def identifier(self):
+        return self.response.identifier()
+
     def message(self):
-        if "data" in self.error:
-            if "description" in self.error["data"]:
-                return self.error["data"]["description"]
-
-        if "message" in self.error:
-            return self.error["message"]
-
-        return str(self.error)
+        return self.response.message()
 
     def data(self):
-        if "data" in self.error:
-            return self.error["data"]
-
-        return None
+        return self.response.data()
 
 class AgoConnection:
     """This is class will handle the connection to ago control."""

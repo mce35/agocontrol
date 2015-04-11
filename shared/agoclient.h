@@ -28,7 +28,7 @@
 #include "agolog.h"
 #include "agoconfig.h"
 
-#include "response_codes.h"
+#include "agoproto.h"
 
 #include <uuid/uuid.h>
 namespace agocontrol {
@@ -70,55 +70,6 @@ namespace agocontrol {
 
     /// convert float to std::string.
     std::string float2str(float f);
-
-    // helpers for building result and error responses
-    qpid::types::Variant::Map responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data);
-    qpid::types::Variant::Map responseError(const std::string& identifier, const std::string& description);
-    qpid::types::Variant::Map responseError(const std::string& identifier);
-    qpid::types::Variant::Map responseResult(const std::string& identifier);
-    qpid::types::Variant::Map responseResult(const std::string& identifier, const std::string& description);
-    qpid::types::Variant::Map responseResult(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data);
-    qpid::types::Variant::Map responseResult(const std::string& identifier, const qpid::types::Variant::Map& data);
-
-    // Shortcut to send RESPONSE_ERR_FAILED
-    qpid::types::Variant::Map responseFailed();
-    qpid::types::Variant::Map responseFailed(const std::string& description);
-
-    // Shortcut to send RESPONSE_SUCCESS
-    qpid::types::Variant::Map responseSuccess(const qpid::types::Variant::Map& data);
-    qpid::types::Variant::Map responseSuccess(const std::string& description);
-    qpid::types::Variant::Map responseSuccess();
-
-    // When sending a request via AgoClient, the reply comes in as an AgoResponse
-    class AgoConnection;
-    class AgoResponse {
-        friend class AgoConnection;
-    protected:
-        qpid::types::Variant::Map response;
-        AgoResponse(){};
-        void init(const qpid::messaging::Message& message);
-        void init(const qpid::types::Variant::Map& response);
-        void validate();
-    public:
-
-        // Return true if we have an "error" element
-        bool isError() const;
-
-        // Return true if we have a "result" element
-        bool isOk() const;
-
-        // Get the "identifier" from either type of response
-        std::string getIdentifier() /*const*/;
-
-        // Get a simple string error. Tries to use description, fallback on message
-        std::string getErrorMessage();
-
-        // Get either "result" or "error.data"
-        // Note that this creates a copy; Variant::map does not allow get without copy
-        // before C++-11
-        /*const*/ qpid::types::Variant::Map/*&*/ getData() /*const*/;
-    };
-
 
     /// ago control client connection class.
     class AgoConnection {

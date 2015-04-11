@@ -309,215 +309,6 @@ unsigned int agocontrol::stringToUint(string v)
     istringstream (v) >> r;
     return r;
 }
-
-/**
- * Mimics JSON-RPC error response
- */
-qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& _data)
-{
-    qpid::types::Variant::Map response;
-    qpid::types::Variant::Map error;
-    qpid::types::Variant::Map data = _data;
-    if(!description.empty())
-        data["description"] = description;
-
-    if(!data.empty())
-        error["data"] = data;
-
-    error["message"] = identifier;
-
-    response["error"] = error;
-    response["_newresponse"] = true; // TODO: remove thits after everything is using new response style
-    return response;
-}
-
-qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier, const std::string& description)
-{
-    qpid::types::Variant::Map data;
-    return responseError(identifier, description, data);
-}
-
-qpid::types::Variant::Map agocontrol::responseError(const std::string& identifier)
-{
-    qpid::types::Variant::Map data;
-    return responseError(identifier, "", data);
-}
-
-qpid::types::Variant::Map agocontrol::responseFailed()
-{
-    qpid::types::Variant::Map data;
-    return responseError(RESPONSE_ERR_FAILED, "", data);
-}
-
-qpid::types::Variant::Map agocontrol::responseFailed(const std::string& description)
-{
-    qpid::types::Variant::Map data;
-    return responseError(RESPONSE_ERR_FAILED, description, data);
-}
-
-/**
- * Mimics JSON-RPC successful response
- */
-qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const std::string& description, const qpid::types::Variant::Map& data)
-{
-    qpid::types::Variant::Map response;
-    qpid::types::Variant::Map result = data;
-
-    if (!identifier.empty())
-        result["identifier"] = identifier;
-
-    if(!description.empty())
-        result["description"] = description;
-
-    response["result"] = result;
-    response["_newresponse"] = true; // TODO: remove thits after everything is using new response style
-    return response;
-}
-
-qpid::types::Variant::Map agocontrol::responseSuccess()
-{
-    qpid::types::Variant::Map blankData;
-    return responseResult(RESPONSE_SUCCESS, "", blankData);
-}
-
-qpid::types::Variant::Map agocontrol::responseSuccess(const std::string& description)
-{
-    qpid::types::Variant::Map blankData;
-    return responseResult(RESPONSE_SUCCESS, description, blankData);
-}
-
-qpid::types::Variant::Map agocontrol::responseSuccess(const qpid::types::Variant::Map& data)
-{
-    return responseResult(RESPONSE_SUCCESS, "", data);
-}
-
-qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier)
-{
-    qpid::types::Variant::Map data;
-    return responseResult(identifier, "", data);
-}
-
-qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const std::string& description)
-{
-    qpid::types::Variant::Map data;
-    return responseResult(identifier, description, data);
-}
-
-qpid::types::Variant::Map agocontrol::responseResult(const std::string& identifier, const qpid::types::Variant::Map& data)
-{
-    return responseResult(identifier, "", data);
-}
-
-
-
-void agocontrol::AgoResponse::init(const qpid::messaging::Message& message) {
-    if (message.getContentSize() > 3) {
-        decode(message, response);
-    }else{
-        qpid::types::Variant::Map err;
-        err["message"] = "invalid.response";
-        response["error"] = err;
-    }
-
-    validate();
-}
-
-void agocontrol::AgoResponse::init(const qpid::types::Variant::Map& response_) {
-    response = response_;
-    validate();
-}
-
-void agocontrol::AgoResponse::validate() {
-    if(isError() && isOk())
-        throw std::invalid_argument("error and result are mutually exclusive");
-
-    if(!isError() && !isOk())
-        throw std::invalid_argument("error or result must be set");
-}
-
-
-bool agocontrol::AgoResponse::isError() const {
-    return response.count("error") == 1;
-}
-
-bool agocontrol::AgoResponse::isOk() const {
-    return response.count("result") == 1;
-}
-
-std::string agocontrol::AgoResponse::getIdentifier() {
-    qpid::types::Variant::Map data(getData());
-
-    if(isError()) {
-        if(!data.count("message"))
-            return RESPONSE_ERR_FAILED;
-
-        qpid::types::Variant message = data["message"];
-
-        if(message.getType() != VAR_STRING) {
-            AGO_WARNING() << "Invalid error response, message is not a string:  "<< response;
-            return RESPONSE_ERR_FAILED;
-        }
-
-        return message.getString();
-    }else{
-        if(!data.count("identifier"))
-            // This is actually invalid..
-            return RESPONSE_SUCCESS;
-
-        qpid::types::Variant identifier = data["identifier"];
-
-        if(identifier.getType() != VAR_STRING) {
-            AGO_WARNING() << "Invalid success response, result.identifier is not a string:  "<< response;
-            return RESPONSE_ERR_FAILED;
-        }
-
-        return identifier.getString();
-    }
-}
-
-qpid::types::Variant::Map agocontrol::AgoResponse::getData() {
-    if(isError()) {
-        if(response["error"].getType() != VAR_MAP) {
-            AGO_WARNING() << "Invalid error response, error is not a map:  "<< response;
-            return qpid::types::Variant::Map();
-        }
-
-        return response["error"].asMap();
-    }else{
-        if(response["result"].getType() != VAR_MAP) {
-            AGO_WARNING() << "Invalid response, result is not a map:  "<< response;
-            return qpid::types::Variant::Map();
-        }
-
-        return response["result"].asMap();
-    }
-}
-
-std::string agocontrol::AgoResponse::getErrorMessage() {
-    if(!isError())
-        throw std::logic_error("Cannot cal getError on a non-error response");
-
-    qpid::types::Variant::Map error = getData();
-
-    // if we have error.data.description, use that primarily
-    if(error.count("data")) {
-        if(error["data"].getType() != VAR_MAP)
-            AGO_WARNING() << "Invalid error response, error is not a map:  "<< response;
-        else if(error["data"].asMap().count("description"))
-            return error["data"].asMap()["description"].asString();
-    }
-
-    // Fallback on error.message
-    qpid::types::Variant message = error["message"];
-    if(message.getType() != VAR_STRING) {
-        AGO_WARNING() << "Invalid error response, message is not a string:  "<< response;
-        return RESPONSE_ERR_FAILED;
-    }
-
-    return message.asString();
-}
-
-
 agocontrol::AgoConnection::AgoConnection(const char *interfacename)
     : shutdownSignaled(false)
 {
@@ -610,9 +401,20 @@ void agocontrol::AgoConnection::run() {
                     if ( ( isOurDevice || (!(filterCommands))) && !commandHandler.empty()) {
 
                         // printf("command for id %s found, calling handler\n", internalid.c_str());
-                        if (internalid.size() > 0) content["internalid"] = internalid;
-                        qpid::types::Variant::Map responsemap = commandHandler(content);
+                        if (internalid.size() > 0)
+                            content["internalid"] = internalid;
+
                         // found a match, reply to sender and pass the command to the assigned handler method
+                        qpid::types::Variant::Map responsemap;
+                        try {
+                            responsemap = commandHandler(content);
+                        }catch(const AgoCommandException& ex) {
+                            responsemap = ex.toResponse();
+                        }catch(const std::exception &ex) {
+                            AGO_ERROR() << "Unhandled exception in command handler:" << ex.what();
+                            responsemap = responseError(RESPONSE_ERR_INTERNAL, "Unhandled exception in command handler");
+                        }
+
                         const Address& replyaddress = message.getReplyTo();
                         // only send a reply if this was for one of our childs
                         // or if it was the special command inventory when the filterCommands was false, that's used by the resolver
@@ -643,6 +445,7 @@ void agocontrol::AgoConnection::run() {
                 break;
 
             AGO_ERROR() << "Exception in message loop: " << error.what();
+
             if (session.hasError()) {
                 AGO_ERROR() << "Session has error, recreating";
                 session.close();
@@ -913,31 +716,18 @@ agocontrol::AgoResponse agocontrol::AgoConnection::sendRequest(const std::string
                 << ex.what()
                 << ". Message: " << r.response;
 
-            qpid::types::Variant::Map failed, err;
-            err["message"] = "broken.reply";
-            failed["error"] = err;
-
-            r.init(failed);
+            r.init(responseError(RESPONSE_ERR_INTERNAL, ex.what()));
         }
         recvsession.acknowledge();
 
     } catch (qpid::messaging::NoMessageAvailable) {
         AGO_WARNING() << "No reply for message sent to subject " << subject;
 
-        qpid::types::Variant::Map failed, err;
-        err["message"] = "no.reply";
-        failed["error"] = err;
+        r.init(responseError(RESPONSE_ERR_NO_REPLY, "Timeout"));
+    } catch(const std::exception& ex) {
+        AGO_ERROR() << "Exception in sendRequest: " << ex.what();
 
-        r.init(failed);
-    } catch(const std::exception& error) {
-        AGO_ERROR() << "Exception in sendRequest: " << error.what();
-
-        qpid::types::Variant::Map failed, err, data;
-        data["description"] = error.what();
-        err["message"] = "unknown";
-        err["data"] = data;
-        failed["error"] = err;
-        r.init(failed);
+        r.init(responseError(RESPONSE_ERR_INTERNAL, ex.what()));
     }
 
     recvsession.close();
@@ -1087,11 +877,14 @@ std::string agocontrol::AgoConnection::getAgocontroller() {
                     }
                 }
             }
-        } else {
+        }
+
+        if (agocontroller == "" && retry) {
             AGO_WARNING() << "Unable to resolve agocontroller, retrying";
             sleep(1);
         }
     }
+
     if (agocontroller == "")
         AGO_WARNING() << "Failed to resolve agocontroller, giving up";
 
