@@ -411,9 +411,9 @@ function ScenarioConfig(agocontrol)
         self.agocontrol.sendCommand(content)
             .then(function(res) {
                 // Build command list
-                for ( var idx in res.scenariomap)
+                for ( var idx in res.data.scenariomap)
                 {
-                    self.addCommand("scenarioBuilderEdit", res.scenariomap[idx]);
+                    self.addCommand("scenarioBuilderEdit", res.data.scenariomap[idx]);
                 }
 
                 // Save the id (needed for the save command)

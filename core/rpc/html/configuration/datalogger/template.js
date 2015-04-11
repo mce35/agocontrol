@@ -112,31 +112,32 @@ function dataloggerConfig(devices, agocontrol)
             content.command = 'getstatus';
             self.agocontrol.sendCommand(content)
                 .then(function(res) {
+                    var data = res.data;
                     //update multigraphs
                     self.multigraphs.removeAll();
-                    for( var i=0; i<res.multigraphs.length; i++ )
+                    for( var i=0; i<data.multigraphs.length; i++ )
                     {
                         var uuids = [];
-                        for( var j=0; j<res.multigraphs[i].uuids.length; j++ )
+                        for( var j=0; j<data.multigraphs[i].uuids.length; j++ )
                         {
-                            uuids.push({'uuid':res.multigraphs[i].uuids[j], 'name':self.getDeviceName(res.multigraphs[i].uuids[j])});
+                            uuids.push({'uuid':data.multigraphs[i].uuids[j], 'name':self.getDeviceName(data.multigraphs[i].uuids[j])});
                         }
-                        self.multigraphs.push({'name':res.multigraphs[i].name, 'uuids':uuids});
+                        self.multigraphs.push({'name':data.multigraphs[i].name, 'uuids':uuids});
                     }
     
                     //update sql,rrd state
-                    self.dataLogging(res.dataLogging);
-                    self.gpsLogging(res.gpsLogging);
-                    self.rrdLogging(res.rrdLogging);
+                    self.dataLogging(data.dataLogging);
+                    self.gpsLogging(data.gpsLogging);
+                    self.rrdLogging(data.rrdLogging);
 
                     //update database infos
-                    self.databaseSize(self.sizeToHRSize(res.database.size));
-                    self.dataCount(res.database.infos.data_count);
-                    self.dataStart(self.timestampToHRTime(res.database.infos.data_start));
-                    self.dataEnd(self.timestampToHRTime(res.database.infos.data_end));
-                    self.positionCount(res.database.infos.position_count);
-                    self.positionStart(self.timestampToHRTime(res.database.infos.position_start));
-                    self.positionEnd(self.timestampToHRTime(res.database.infos.position_end));
+                    self.databaseSize(self.sizeToHRSize(data.database.size));
+                    self.dataCount(data.database.infos.data_count);
+                    self.dataStart(self.timestampToHRTime(data.database.infos.data_start));
+                    self.dataEnd(self.timestampToHRTime(data.database.infos.data_end));
+                    self.positionCount(data.database.infos.position_count);
+                    self.positionStart(self.timestampToHRTime(data.database.infos.position_start));
+                    self.positionEnd(self.timestampToHRTime(data.database.infos.position_end));
                 });
         }
     };
@@ -158,7 +159,7 @@ function dataloggerConfig(devices, agocontrol)
             content.period = self.multigraphPeriod();
             self.agocontrol.sendCommand(content)
                 .then(function(res) {
-                    notif.success(res.msg);
+                    notif.success(res.message);
                     self.getStatus();
                 });
         }
@@ -177,7 +178,7 @@ function dataloggerConfig(devices, agocontrol)
                 content.multigraph = self.selectedMultigraphToDel().name;
                 self.agocontrol.sendCommand(content)
                     .then(function(res) {
-                        notif.success(res.msg);
+                        notif.success(res.message);
                         self.getStatus();
                     });
             }

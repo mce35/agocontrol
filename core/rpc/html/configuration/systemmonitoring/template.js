@@ -34,17 +34,17 @@ function systemMonitoringConfig(devices, agocontrol)
                 .then(function(res) {
                     var procs = [];
                     var monitored = [];
-                    for( var name in res.processes )
+                    for( var name in res.data.processes )
                     {
                         procs.push(name);
-                        if( res.processes[name].monitored )
+                        if( res.data.processes[name].monitored )
                         {
                             monitored.push(name);
                         }
                     }
                     self.processes(procs);
                     self.monitoredProcesses(monitored);
-                    self.memoryThreshold(res.memoryThreshold);
+                    self.memoryThreshold(res.data.memoryThreshold);
                 })
                 .catch(function(error) {
                     notif.fatal('Unable to get monitored process list: ' +

@@ -666,13 +666,13 @@ function SecurityConfig(agocontrol)
         content.uuid = self.securityController;
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                if( res.config )
+                if( res && res.data.config )
                 {
-                    self.zoneMap(res.config);
-                    self.currentHousemode(res.housemode);
-                    self.armedMessage(res.armedMessage);
-                    self.disarmedMessage(res.disarmedMessage);
-                    self.defaultHousemode(res.defaultHousemode);
+                    self.zoneMap(res.data.config);
+                    self.currentHousemode(res.data.housemode);
+                    self.armedMessage(res.data.armedMessage);
+                    self.disarmedMessage(res.data.disarmedMessage);
+                    self.defaultHousemode(res.data.defaultHousemode);
                     self.initialized = true;
                 }
             });
@@ -686,10 +686,10 @@ function SecurityConfig(agocontrol)
         content.uuid = self.alertController;
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                self.alertEmailConfigured(res.mail.configured);
-                self.alertSmsConfigured(res.sms.configured);
-                self.alertTwitterConfigured(res.twitter.configured);
-                self.alertPushConfigured(res.push.configured);
+                self.alertEmailConfigured(res.data.mail.configured);
+                self.alertSmsConfigured(res.data.sms.configured);
+                self.alertTwitterConfigured(res.data.twitter.configured);
+                self.alertPushConfigured(res.data.push.configured);
             });
     };
 

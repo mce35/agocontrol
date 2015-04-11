@@ -266,8 +266,8 @@ function EventsConfig(agocontrol)
                 document.getElementById("actionBuilder").innerHTML = "";
 
                 // Create prepopulated builders
-                self.buildListFromJSON(self.mapToJSON(res.eventmap), document.getElementById("eventBuilderEdit"));
-                self.createActionBuilder(document.getElementById("actionBuilderEdit"), res.eventmap.action);
+                self.buildListFromJSON(self.mapToJSON(res.data.eventmap), document.getElementById("eventBuilderEdit"));
+                self.createActionBuilder(document.getElementById("actionBuilderEdit"), res.data.eventmap.action);
 
                 // Save the id (needed for the save command)
                 self.openEvent = item.uuid;
@@ -303,7 +303,7 @@ function EventsConfig(agocontrol)
         content.event = self.openEvent;
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                if (res.event)
+                if (res.data.event)
                 {
                     $("#editEventDialog").dialog("close");
                 }
@@ -328,11 +328,11 @@ function EventsConfig(agocontrol)
     
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                if (res.event)
+                if (res.data.event)
                 {
                     var cnt = {};
                     cnt.uuid = self.agocontrol.agoController;
-                    cnt.device = res.event;
+                    cnt.device = res.data.event;
                     cnt.command = "setdevicename";
                     cnt.name = self.eventName();
                     return self.agocontrol.sendCommand(cnt)

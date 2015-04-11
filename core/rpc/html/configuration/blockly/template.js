@@ -228,12 +228,12 @@ function agoBlocklyPlugin(devices, agocontrol)
             .then(function(res){
                 //update ui variables
                 self.availableScripts([]);
-                for( var i=0; i<res.scriptlist.length; i++ )
+                for( var i=0; i<res.data.scriptlist.length; i++ )
                 {
                     //only keep agoblockly scripts
-                    if( res.scriptlist[i].indexOf('blockly_')===0 )
+                    if( res.data.scriptlist[i].indexOf('blockly_')===0 )
                     {
-                        self.availableScripts.push({'name':res.scriptlist[i].replace('blockly_','')});
+                        self.availableScripts.push({'name':res.data.scriptlist[i].replace('blockly_','')});
                     }
                 }
 
@@ -621,11 +621,7 @@ function agoBlocklyPlugin(devices, agocontrol)
         };
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                self.loadScript(res.name, res.script);
-            })
-            .catch(function(err) {
-                //error occured
-                notif.error(getErrorMessage(err));
+                self.loadScript(res.data.name, res.data.script);
             });
 
         //$("#loadDialog").dialog("close");
