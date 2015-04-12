@@ -998,9 +998,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
 
     sqlite3_finalize(stmt);
 
-    qpid::types::Variant::Map data;
-    data["values"] = values;
-    result["result"] = data;
+    result["values"] = values;
 }
 
 /**
