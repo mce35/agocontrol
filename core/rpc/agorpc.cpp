@@ -388,11 +388,16 @@ bool AgoRpc::jsonrpcRequestHandler(struct mg_connection *conn, Json::Value reque
         Json::Value subject = params["subject"];
         Variant::Map command = jsonToVariantMap(content);
 
+        Json::Value replytimeout = params["replytimeout"];
+        qpid::messaging::Duration timeout = Duration::SECOND * 3;
+        if (replytimeout.isInt()) {
+            timeout = Duration::SECOND * replytimeout.asInt();
+        }
         //send message and handle response
         //AGO_TRACE() << "Request: " << command;
         
         // TODO: change this to sendRequest when all backends have been updated
-        Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command);
+        Variant::Map responseMap = agoConnection->sendMessageReply(subject.asString().c_str(), command, timeout);
         if(responseMap.size() == 0 || id.isNull() ) // only send reply when id is not null
         {
             // no response
