@@ -736,6 +736,10 @@ agocontrol::AgoResponse agocontrol::AgoConnection::sendRequest(const std::string
 
 // DEPRECATED, USE sendRequest
 qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, const qpid::types::Variant::Map& content) {
+    return sendMessageReply(subject, content, Duration::SECOND * 3);
+}
+
+qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, const qpid::types::Variant::Map& content, qpid::messaging::Duration timeout) {
     Message message;
     qpid::types::Variant::Map responseMap;
     Receiver responseReceiver;
@@ -750,7 +754,7 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
 
         AGO_TRACE() << "Sending message [sub=" << subject << ", reply=" << responseQueue <<"]" << content;
         sender.send(message);
-        Message response = responseReceiver.fetch(Duration::SECOND * 3);
+        Message response = responseReceiver.fetch(timeout);
         recvsession.acknowledge();
         if (response.getContentSize() > 3) {
             decode(response,responseMap);

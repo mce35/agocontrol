@@ -123,6 +123,7 @@ namespace agocontrol {
         AgoResponse sendRequest(const std::string& subject, const qpid::types::Variant::Map& content);
 
         // Deprecated
+        qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content, qpid::messaging::Duration timeout);
         qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content);
 
         bool emitEvent(const char *internalId, const char *eventType, const char *level, const char *units);
