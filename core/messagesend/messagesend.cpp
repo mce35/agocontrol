@@ -36,7 +36,9 @@ int main(int argc, char **argv) {
             if (name == "subject") {
                 subject = value;
             } else {
-                content[name]=qpid::types::Variant::parse(value);
+                qpid::types::Variant _value;
+                _value.parse(value);
+                content[name]=_value;
             }
         }
     }
