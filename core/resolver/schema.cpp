@@ -105,3 +105,59 @@ Variant::Map parseSchema(const fs::path &file) {
     }
     return schema;
 }
+
+/* New 0.5 yaml cpp api
+ *
+
+qpid::types::Variant::List YAMLSequenceToVariantList(const YAML::Node node);
+
+qpid::types::Variant::Map YAMLMapToVariantMap(const YAML::Node node) {
+    Variant::Map output;
+    for(YAML::const_iterator it=node.begin();it!=node.end();++it) {
+        std::string key = it->first.as<std::string>();
+        std::cout << "Key: " << key << " Type: " << it->second.Type() <<  std::endl;
+        switch(it->second.Type()) {
+            case YAML::NodeType::Map:
+                output[key] = YAMLMapToVariantMap(it->second);
+                break;
+            case YAML::NodeType::Sequence:
+                output[key] = YAMLSequenceToVariantList(it->second);
+                break;
+            case YAML::NodeType::Scalar:
+                try {
+                    output[key] = it->second.as<std::string>();
+                } catch(YAML::TypedBadConversion<std::string> e) {
+                    cout << "error" << endl;
+                }
+                break;
+        }
+    }
+    return output;
+}
+
+qpid::types::Variant::List YAMLSequenceToVariantList(const YAML::Node node) {
+    Variant::List output;
+    for (YAML::const_iterator it=node.begin();it!=node.end();++it) {
+        switch (it->Type()) {
+            case YAML::NodeType::Map:
+                output.push_back(YAMLMapToVariantMap(it->second));
+                break;
+            case YAML::NodeType::Sequence:
+                output.push_back(YAMLSequenceToVariantList(it->second));
+                break;
+            case YAML::NodeType::Scalar:
+                output.push_back(Variant(it->as<std::string>()));
+                break;
+        }
+    }
+    return output;
+}
+
+int main() {
+    YAML::Node lineup = YAML::LoadFile("/etc/opt/agocontrol/schema.d/00-core.yaml");
+
+    cout << YAMLMapToVariantMap(lineup) << std::endl;
+}
+
+*/
+
