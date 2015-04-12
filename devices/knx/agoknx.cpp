@@ -254,7 +254,6 @@ void *AgoKnx::listener() {
 }
 
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
     qpid::types::Variant::Map::const_iterator it = deviceMap.find(internalid);
@@ -262,11 +261,10 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
     if (it != deviceMap.end()) {
         device=it->second.asMap();
     } else {
-        returnval["result"]=-1;
+       return responseError(RESPONSE_ERR_INTERNAL, "Device not found in internal deviceMap");
     }
     Telegram *tg = new Telegram();
     eibaddr_t dest;
-    bool handled=true;
     if (content["command"] == "on") {
         string destGA = device["onoff"];
         dest = Telegram::stringtogaddr(destGA);
@@ -292,17 +290,22 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         dest = Telegram::stringtogaddr(destGA);
         tg->setShortUserData(0);
     } else if (content["command"] == "setlevel") {
+        checkMsgParameter(content, "level", VAR_INT32);
         int level=0;
         string destGA = device["setlevel"];
         dest = Telegram::stringtogaddr(destGA);
         level = atoi(content["level"].asString().c_str());
         tg->setDataFromChar(level);
     } else if (content["command"] == "settemperature") {
+        checkMsgParameter(content, "temperature");
         float temp = content["temperature"];
         string destGA = device["settemperature"];
         dest = Telegram::stringtogaddr(destGA);
         tg->setDataFromFloat(temp);
     } else if (content["command"] == "setcolor") {
+        checkMsgParameter(content, "red");
+        checkMsgParameter(content, "green");
+        checkMsgParameter(content, "blue");
         int level=0;
         Telegram *tg2 = new Telegram();
         Telegram *tg3 = new Telegram();
@@ -318,23 +321,21 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         AGO_TRACE() << "sending telegram";
         tg3->sendTo(eibcon);
         pthread_mutex_unlock (&mutexCon);
+    } else {
+        return responseUnknownCommand();
+    }
 
-    } else {
-        handled=false;
+    tg->setGroupAddress(dest);
+    AGO_TRACE() << "sending telegram";
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    if (result)
+    {
+        return responseSuccess();
     }
-    if (handled) {	
-        tg->setGroupAddress(dest);
-        AGO_TRACE() << "sending telegram";
-        pthread_mutex_lock (&mutexCon);
-        bool result = tg->sendTo(eibcon);
-        pthread_mutex_unlock (&mutexCon);
-        AGO_DEBUG() << "Result: " << result;
-        returnval["result"]=result ? 0 : -1;
-    } else {
-        AGO_ERROR() << "received undhandled command";
-        returnval["result"]=-1;
-    }
-    return returnval;
+    return responseError(RESPONSE_ERR_INTERNAL, "Cannot send KNX Telegram");
 }
 
 void AgoKnx::setupApp() {
