@@ -42,25 +42,24 @@ public:
 };
 
 qpid::types::Variant::Map AgoRain8net::commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
     int valve = 0;
     valve = atoi(content["internalid"].asString().c_str());
     if (content["command"] == "on" ) {
         if (rain8.zoneOn(1,valve) != 0) {
-            AGO_ERROR() << "can't switch on";
-            returnval["result"] = -1;
+            AGO_ERROR() << "can't switch on valve " << valve;
+            return responseError(RESPONSE_ERR_INTERNAL, "Cannot switch on rain8net output");
         } else {
-            returnval["result"] = 0;
+            return responseSuccess();
         }
     } else if (content["command"] == "off") {
         if (rain8.zoneOff(1,valve) != 0) {
-            AGO_ERROR() << "can't switch off";
-            returnval["result"] = -1;
+            AGO_ERROR() << "can't switch off valve " << valve;
+            return responseError(RESPONSE_ERR_INTERNAL, "Cannot switch on rain8net output");
         } else {
-            returnval["result"] = 0;
+            return responseSuccess();
         }
     }
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoRain8net::setupApp() {

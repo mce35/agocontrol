@@ -22,14 +22,18 @@ public:
 qpid::types::Variant::Map AgoFirmata::commandHandler(qpid::types::Variant::Map content) {
     qpid::types::Variant::Map returnval;
     int pin = atoi(content["internalid"].asString().c_str());
+    int result;
     if (content["command"] == "on" ) {
-        f->writeDigitalPin(pin,ARDUINO_HIGH);
+        result = f->writeDigitalPin(pin,ARDUINO_HIGH);
         // TODO: send proper status events
     } else if (content["command"] == "off") {
-        f->writeDigitalPin(pin,ARDUINO_LOW);
+        result = f->writeDigitalPin(pin,ARDUINO_LOW);
     }
-    returnval["result"] = 0; // TODO: determine proper result code
-    return returnval;
+    if (result >= 0)
+    {
+        return responseSuccess();
+    }
+    return responseError(RESPONSE_ERR_INTERNAL, "Cannot set firmata digital pin");
 }
 
 

@@ -72,22 +72,20 @@ CURLcode AgoWebcam::curl_read(const std::string& url, std::ostream& os, long tim
 }
 
 qpid::types::Variant::Map AgoWebcam::commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (content["command"] == "getvideoframe") {
         ostringstream tmpostr;
         if(CURLE_OK == curl_read(internalid, tmpostr, 2)) {
             std::string s;
-            s = tmpostr.str();	
+            s = tmpostr.str();  
+            qpid::types::Variant::Map returnval;
             returnval["image"]  = base64_encode(reinterpret_cast<const unsigned char*>(s.c_str()), s.length());
-            returnval["result"] = 0;
+            return responseSuccess(returnval);
         } else {
-            returnval["result"] = -1;
+            return responseError(RESPONSE_ERR_INTERNAL, "Cannot fetch webcam image");
         }
     }
-    else
-        returnval["result"] = -1;
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoWebcam::setupApp() {

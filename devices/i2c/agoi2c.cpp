@@ -161,8 +161,6 @@ bool AgoI2c::get_pcf8574_state(const char *device, int i2caddr, uint8_t &state) 
 }
 
 qpid::types::Variant::Map AgoI2c::commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
-    returnval["result"]=0;
     string internalid = content["internalid"].asString();
     if (internalid.find("pcf8574:") != std::string::npos) {
         unsigned found = internalid.find(":");
@@ -180,10 +178,11 @@ qpid::types::Variant::Map AgoI2c::commandHandler(qpid::types::Variant::Map conte
                 } else {
                     agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", "0", "");
                 }
-            } else returnval["result"] = -1;
+                return responseSuccess();
+            } else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set PCF8574 output");
         }
     }
-    return returnval;
+    return responseUnknownCommand();
 }
 
 

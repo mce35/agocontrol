@@ -87,9 +87,8 @@ int AgoPlcbus::serial_read (int dev,uint8_t pnt[],int len,long timeout) {
 }
 
 // commandhandler
-qpid::types::Variant::Map AgoPlcbus::commandHandler(qpid::types::Variant::Map command) {
-    qpid::types::Variant::Map returnval;
-    string addr = command["internalid"].asString();
+qpid::types::Variant::Map AgoPlcbus::commandHandler(qpid::types::Variant::Map content) {
+    string addr = content["internalid"].asString();
     int house = addr.substr(0,1).c_str()[0]-65;
     int unit = atoi(addr.substr(1,2).c_str())-1;
 
@@ -100,22 +99,21 @@ qpid::types::Variant::Map AgoPlcbus::commandHandler(qpid::types::Variant::Map co
     myjob->data1=0;
     myjob->data2=0;
 
-    returnval["result"] = 0;
-
-    if (command["command"] == "on") {
+    if (content["command"] == "on") {
         myjob->command=192;
-    } else if (command["command"] == "off") {
+    } else if (content["command"] == "off") {
         myjob->command=193;
-    } else if (command["command"] == "setlevel") {
+    } else if (content["command"] == "setlevel") {
+        checkMsgParameter(content, "level");
         myjob->command=184;
-        myjob->data1 = atoi(command["level"].asString().c_str());
+        myjob->data1 = atoi(content["level"].asString().c_str());
     }
 
     pthread_mutex_lock (&mutexSendQueue);
     PLCBUSSendQueue.push_back(myjob);
     pthread_mutex_unlock (&mutexSendQueue);
 
-    return returnval;
+    return responseSuccess();
 }
 
 void AgoPlcbus::receiveFunction() {
@@ -147,11 +145,11 @@ void AgoPlcbus::receiveFunction() {
             // SOF found
             i++;
             if (bufr[i] == 6) { // found plcbus frame
-                int tmpusercode = bufr[i+1];	
-                int tmphomeunit = bufr[i+2];	
-                int tmpcommand = bufr[i+3];	
-                int tmpdata1 = bufr[i+4];	
-                int tmpdata2 = bufr[i+5];	
+                int tmpusercode = bufr[i+1];    
+                int tmphomeunit = bufr[i+2];    
+                int tmpcommand = bufr[i+3]; 
+                int tmpdata1 = bufr[i+4];   
+                int tmpdata2 = bufr[i+5];   
                 int rxtxswitch = bufr[i+6];
                 if (rxtxswitch & 32) { // received ack
                     pthread_mutex_lock (&mutexSendQueue);
@@ -234,9 +232,9 @@ void AgoPlcbus::receiveFunction() {
                 PLCBUSSendQueue.pop_front();
             }
             // for(int i=0;i<commandlength;i++) {
-            //		printf("0x%x ",(unsigned char) buf[i]);
-            //	}
-            //	printf("\n");
+            //      printf("0x%x ",(unsigned char) buf[i]);
+            //  }
+            //  printf("\n");
         }
         pthread_mutex_unlock (&mutexSendQueue);
 

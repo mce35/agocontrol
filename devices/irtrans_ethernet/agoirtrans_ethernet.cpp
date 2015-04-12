@@ -30,6 +30,7 @@
 
 using namespace std;
 using namespace agocontrol;
+using namespace qpid::types;
 
 class AgoIrtrans_Ethernet: public AgoApp {
 private:
@@ -44,10 +45,10 @@ public:
 };
 
 qpid::types::Variant::Map AgoIrtrans_Ethernet::commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
     int internalid = atoi(content["internalid"].asString().c_str());
     AGO_TRACE() << "Command: " << content["command"] << " internal id: " << internalid;
     if (content["command"] == "sendir" ) {
+        checkMsgParameter(content, "ircode", VAR_STRING);
         AGO_DEBUG() << "sending IR code";
         string udpcommand;
         udpcommand.assign("sndccf ");
@@ -55,8 +56,7 @@ qpid::types::Variant::Map AgoIrtrans_Ethernet::commandHandler(qpid::types::Varia
         sendto(irtrans_socket, udpcommand.c_str(), udpcommand.length(), 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr));
     }
     // TODO: Determine sane result code
-    returnval["result"] = 0;
-    return returnval;
+    return responseSuccess();
 }
 
 void AgoIrtrans_Ethernet::setupApp() {

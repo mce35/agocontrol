@@ -73,9 +73,9 @@ qpid::types::Variant::Map AgoChromoflex::commandHandler(qpid::types::Variant::Ma
         checkMsgParameter(content, "red");
         checkMsgParameter(content, "green");
         checkMsgParameter(content, "blue");
-        red = content["red"];		
-        green = content["green"];		
-        blue = content["blue"];		
+        red = content["red"];       
+        green = content["green"];       
+        blue = content["blue"];     
     }
 
     // assemble frame

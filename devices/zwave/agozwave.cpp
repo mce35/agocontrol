@@ -45,6 +45,7 @@
 #define CONFIG_MANUFACTURER_SPECIFIC CONFIG_BASE_PATH "manufacturer_specific.xml"
 
 using namespace std;
+using namespace qpid::types;
 using namespace agocontrol;
 using namespace OpenZWave;
 
@@ -1566,8 +1567,6 @@ void AgoZwave::_OnNotification (Notification const* _notification)
 
 qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
-    bool result = false;
     std::string internalid = content["internalid"].asString();
 
     if (internalid == "zwavecontroller")
@@ -1576,7 +1575,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
         if (content["command"] == "addnode")
         {
             Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_AddDevice, controller_update, this, true);
-            result = true;
+            return responseSuccess();
         }
         else if (content["command"] == "removenode")
         {
@@ -1589,38 +1588,26 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             {
                 Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_RemoveDevice, controller_update, this, true);
             }
-            result = true;
+            return responseSuccess();
         }
         else if (content["command"] == "healnode")
         {
-            if (!(content["node"].isVoid()))
-            {
-                int mynode = content["node"];
-                Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
-                result = true;
-            }
-            else
-            {
-                result = false;
-            }
+            checkMsgParameter(content, "node", VAR_INT32);
+            int mynode = content["node"];
+            Manager::Get()->HealNetworkNode(g_homeId, mynode, true);
+            return responseSuccess();
         }
         else if (content["command"] == "healnetwork")
         {
             Manager::Get()->HealNetwork(g_homeId, true);
-            result = true;
+            return responseSuccess();
         }
         else if (content["command"] == "refreshnode")
         {
-            if (!(content["node"].isVoid()))
-            {
-                int mynode = content["node"];
-                Manager::Get()->RefreshNodeInfo(g_homeId, mynode);
-                result = true;
-            }
-            else
-            {
-                result = false;
-            }
+            checkMsgParameter(content, "node", VAR_INT32);
+            int mynode = content["node"];
+            Manager::Get()->RefreshNodeInfo(g_homeId, mynode);
+            return responseSuccess();
         }
         else if (content["command"] == "getstatistics")
         {
@@ -1639,22 +1626,21 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             statistics["OOF"] = data.m_OOFCnt;
             statistics["Dropped"] = data.m_dropped;
             statistics["Retries"] = data.m_retries;
+            qpid::types::Variant::Map returnval;
             returnval["statistics"]=statistics;
-            result = true;
+            return responseSuccess(returnval);
         }
         else if (content["command"] == "testnode")
         {
-            if (!(content["node"].isVoid()))
+            checkMsgParameter(content, "node", VAR_INT32);
+            int mynode = content["node"];
+            int count = 10;
+            if (!(content["count"].isVoid()))
             {
-                int mynode = content["node"];
-                int count = 10;
-                if (!(content["count"].isVoid()))
-                {
-                    count=content["count"];
-                }
-                Manager::Get()->TestNetworkNode(g_homeId, mynode, count);
-                result = true;
+                count=content["count"];
             }
+            Manager::Get()->TestNetworkNode(g_homeId, mynode, count);
+            return responseSuccess();
         }
         else if (content["command"] == "testnetwork")
         {
@@ -1664,7 +1650,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 count=content["count"];
             }
             Manager::Get()->TestNetwork(g_homeId, count);
-            result = true;
+            return responseSuccess();
         }
         else if (content["command"] == "getnodes")
         {
@@ -1753,20 +1739,26 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 index = static_cast<ostringstream*>( &(ostringstream() << nodeid) )->str();
                 nodelist[index.c_str()] = node;
             }
+            qpid::types::Variant::Map returnval;
             returnval["nodelist"]=nodelist;
-            result = true;
+            return responseSuccess(returnval);
         }
         else if (content["command"] == "addassociation")
         {
+            checkMsgParameter(content, "node", VAR_INT32);
+            checkMsgParameter(content, "group", VAR_INT32);
+            checkMsgParameter(content, "target", VAR_INT32);
             int mynode = content["node"];
             int mygroup = content["group"];
             int mytarget = content["target"];
             AGO_DEBUG() << "adding association: Node=" << mynode << " Group=" << mygroup << " Target=" << mytarget;
             Manager::Get()->AddAssociation(g_homeId, mynode, mygroup, mytarget);
-            result = true;
+            return responseSuccess();
         }
         else if (content["command"] == "getassociations")
         {
+            checkMsgParameter(content, "node", VAR_INT32);
+            checkMsgParameter(content, "group", VAR_INT32);
             qpid::types::Variant::Map associationsmap;
             int mygroup = content["group"];
             int mynode = content["node"];
@@ -1777,68 +1769,79 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 associationsmap[int2str(assoc)] = associations[assoc];
             }
             if (numassoc >0) delete associations;
+            qpid::types::Variant::Map returnval;
             returnval["associations"] = associationsmap;
             returnval["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, mygroup);
-            result = true;
+            return responseSuccess(returnval);
         }
         else if (content["command"] == "removeassociation")
         {
+            checkMsgParameter(content, "node", VAR_INT32);
+            checkMsgParameter(content, "group", VAR_INT32);
+            checkMsgParameter(content, "target", VAR_INT32);
             int mynode = content["node"];
             int mygroup = content["group"];
             int mytarget = content["target"];
             AGO_DEBUG() << "removing association: Node=" << mynode << " Group=" << mygroup << " Target=" << mytarget;
             Manager::Get()->RemoveAssociation(g_homeId, mynode, mygroup, mytarget);
-            result = true;
+            return responseSuccess();
         }
         else if (content["command"] == "setconfigparam")
         {
+            checkMsgParameter(content, "node", VAR_INT32);
+            checkMsgParameter(content, "index", VAR_INT32);
+            checkMsgParameter(content, "value", VAR_STRING);
             int nodeId = content["node"];
             int commandClassId = content["commandclassid"];
             int index = content["index"];
             string value = string(content["value"]);
             AGO_DEBUG() << "setting config param: nodeId=" << nodeId << " commandClassId=" << commandClassId << " index=" << index << " value=" << value;
-            result = setCommandClassParameter(g_homeId, nodeId, commandClassId, index, value);
+            if (setCommandClassParameter(g_homeId, nodeId, commandClassId, index, value)) return responseSuccess();
+            else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set command class parameter");
         }
         else if( content["command"]=="requestallconfigparams" )
         {
-            result = true;
+            checkMsgParameter(content, "node", VAR_INT32);
             int node = content["node"];
             AGO_DEBUG() << "RequestAllConfigParams: node=" << node;
             Manager::Get()->RequestAllConfigParams(g_homeId, node);
+            return responseSuccess();
         }
         else if (content["command"] == "downloadconfig")
         {
-            result = true;
-            result = Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_ReceiveConfiguration, controller_update, NULL, true);
+            if (Manager::Get()->BeginControllerCommand(g_homeId, Driver::ControllerCommand_ReceiveConfiguration, controller_update, NULL, true))
+            {
+                return responseSuccess();
+            } else return responseError(RESPONSE_ERR_INTERNAL, "Cannot download z-wave config to controller");
         }
         else if (content["command"] == "cancel")
         {
-            result = true;
             Manager::Get()->CancelControllerCommand(g_homeId);
+            return responseSuccess();
         }
         else if (content["command"] == "saveconfig")
         {
-            result = true;
             Manager::Get()->WriteConfig( g_homeId );
+            return responseSuccess();
         }
         else if (content["command"] == "allon")
         {
-            result = true;
             Manager::Get()->SwitchAllOn(g_homeId );
+            return responseSuccess();
         }
         else if (content["command"] == "alloff")
         {
-            result = true;
             Manager::Get()->SwitchAllOff(g_homeId );
+            return responseSuccess();
         }
         else if (content["command"] == "reset")
         {
-            result = true;
             Manager::Get()->ResetController(g_homeId);
+            return responseSuccess();
         }
         else
         {
-            result = false;
+            return responseUnknownCommand();
         }
     }
     else
@@ -1853,44 +1856,39 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             if (devicetype == "switch")
             {
                 tmpValueID = device->getValueID("Switch");
-                if (tmpValueID == NULL)
-                {
-                    returnval["result"] = -1;
-                    return returnval;
-                }
+                if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Switch' label");
                 if (content["command"] == "on" )
                 {
-                    result = Manager::Get()->SetValue(*tmpValueID , true);
+                    if (Manager::Get()->SetValue(*tmpValueID , true)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else
                 {
-                    result = Manager::Get()->SetValue(*tmpValueID , false);
+                    if (Manager::Get()->SetValue(*tmpValueID , false)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
             }
             else if(devicetype == "dimmer")
             {
                 tmpValueID = device->getValueID("Level");
-                if (tmpValueID == NULL)
-                {
-                    returnval["result"] = -1;
-                    return returnval;
-                }
+                if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Level' label");
                 if (content["command"] == "on" )
                 {
-                    result = Manager::Get()->SetValue(*tmpValueID , (uint8) 255);
+                    if (Manager::Get()->SetValue(*tmpValueID , (uint8) 255)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else if (content["command"] == "setlevel")
                 {
-                    uint8 level = atoi(content["level"].asString().c_str());
-                    if (level > 99)
-                    {
-                        level=99;
-                    }
-                    result = Manager::Get()->SetValue(*tmpValueID, level);
+                    checkMsgParameter(content, "level", VAR_INT32);
+                    uint8 level = content["level"].asInt8();
+                    if (level > 99) level=99;
+                    if (Manager::Get()->SetValue(*tmpValueID, level)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else
                 {
-                    result = Manager::Get()->SetValue(*tmpValueID , (uint8) 0);
+                    if (Manager::Get()->SetValue(*tmpValueID , (uint8) 0)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
             }
             else if (devicetype == "drapes")
@@ -1898,53 +1896,38 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 if (content["command"] == "on")
                 {
                     tmpValueID = device->getValueID("Level");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1; 
-                        return returnval;
-                    }
-                    result = Manager::Get()->SetValue(*tmpValueID , (uint8) 255);
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Level' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , (uint8) 255)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else if (content["command"] == "open" )
                 {
                     tmpValueID = device->getValueID("Open");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1; 
-                        return returnval;
-                    }
-                    result = Manager::Get()->SetValue(*tmpValueID , true);
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Open' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , true)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else if (content["command"] == "close" )
                 {
                     tmpValueID = device->getValueID("Close");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1;
-                        return returnval;
-                    }
-                    result = Manager::Get()->SetValue(*tmpValueID , true);
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Close' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , true)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else if (content["command"] == "stop" )
                 {
                     tmpValueID = device->getValueID("Stop");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1;
-                        return returnval;
-                    }
-                    result = Manager::Get()->SetValue(*tmpValueID , true);
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Stop' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , true)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
 
                 }
                 else
                 {
                     tmpValueID = device->getValueID("Level");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1;
-                        return returnval;
-                    }
-                    result = Manager::Get()->SetValue(*tmpValueID , (uint8) 0);
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Level' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , (uint8) 0)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
             }
             else if (devicetype == "thermostat")
@@ -1952,23 +1935,11 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 if (content["command"] == "settemperature")
                 {
                     string mode = content["mode"].asString();
-                    if  (mode == "")
-                    {
-                        mode = "auto";
-                    }
-                    if (mode == "cool")
-                    {
-                        tmpValueID = device->getValueID("Cooling 1");
-                    }
-                    else if ((mode == "auto") || (mode == "heat"))
-                    {
-                        tmpValueID = device->getValueID("Heating 1");
-                    }
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1;
-                        return returnval;
-                    }
+                    if  (mode == "") mode = "auto";
+                    if (mode == "cool") tmpValueID = device->getValueID("Cooling 1");
+                    else if ((mode == "auto") || (mode == "heat")) tmpValueID = device->getValueID("Heating 1");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave label for thermostat mode");
+
                     float temp = 0.0;
                     if (content["temperature"] == "-1")
                     {
@@ -1981,8 +1952,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         catch (...)
                         {
                             AGO_WARNING() << "can't determine current value for relative temperature change";
-                            returnval["result"] = -1;
-                            return returnval;
+                            return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine current  value for relative temperature change");
                         }
                     }
                     else if (content["temperature"] == "+1")
@@ -1996,7 +1966,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         catch (...)
                         {
                             AGO_WARNING() << "can't determine current value for relative temperature change";
-                            returnval["result"] = -1; return returnval;
+                            return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine current  value for relative temperature change");
                         }
                     }
                     else
@@ -2004,73 +1974,75 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         temp = content["temperature"];
                     }
                     AGO_TRACE() << "setting temperature: " << temp;
-                    result = Manager::Get()->SetValue(*tmpValueID , temp);
+                    if (Manager::Get()->SetValue(*tmpValueID , temp)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
                 else if (content["command"] == "setthermostatmode")
                 {
                     string mode = content["mode"].asString();
                     tmpValueID = device->getValueID("Mode");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1;
-                        return returnval;
-                    }
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Mode' label");
                     if (mode=="heat")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Heat");
+                        if (Manager::Get()->SetValue(*tmpValueID , "Heat")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else if (mode=="cool")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Cool");
+                        if (Manager::Get()->SetValue(*tmpValueID , "Cool")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else if (mode == "off")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Off");
+                        if (Manager::Get()->SetValue(*tmpValueID , "Off")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else if (mode == "auxheat")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Aux Heat");
+                        if (Manager::Get()->SetValue(*tmpValueID , "Aux Heat")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Auto");
+                        if (Manager::Get()->SetValueListSelection(*tmpValueID , "Auto")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                 }
                 else if (content["command"] == "setthermostatfanmode")
                 {
                     string mode = content["mode"].asString();
                     tmpValueID = device->getValueID("Fan Mode");
-                    if (tmpValueID == NULL)
-                    {
-                        returnval["result"] = -1;
-                        return returnval;
-                    }
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Mode' label");
                     if (mode=="circulate")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Circulate");
+                        if (Manager::Get()->SetValueListSelection(*tmpValueID , "Circulate")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else if (mode=="on" || mode=="onlow")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "On Low");
+                        if (Manager::Get()->SetValueListSelection(*tmpValueID , "On Low")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else if (mode=="onhigh")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "On High");
+                        if (Manager::Get()->SetValueListSelection(*tmpValueID , "On High")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else if (mode=="autohigh")
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Auto High");
+                        if (Manager::Get()->SetValueListSelection(*tmpValueID , "Auto High")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                     else
                     {
-                        result = Manager::Get()->SetValueListSelection(*tmpValueID , "Auto Low");
+                        if (Manager::Get()->SetValueListSelection(*tmpValueID , "Auto Low")) return responseSuccess();
+                        else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                 }
             }
         }
     }
-    returnval["result"] = result ? 0 : -1;
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoZwave::setupApp()

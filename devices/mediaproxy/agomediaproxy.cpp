@@ -33,14 +33,13 @@ static RTSPServer* createRTSPServer(Port port) {
 }
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
     string internalid = content["internalid"].asString();
     if (internalid == "controller" && content["command"].asString() == "restart") {
         AGO_INFO() << "restarting proxy";
         stopLoop = 1;
+        return responseSuccess();
     }
-    returnval["result"]=0;
-    return returnval;
+    return responseUnknownCommand();
 }
 typedef struct { std::string username; std::string password; std::map<std::string, std::string> streams;} proxyparams;
 
@@ -110,7 +109,7 @@ void *startProxy(void *params) {
                 *env << "\tPlay this stream using the URL: " << proxyStreamURL << "\n";
                 delete[] proxyStreamURL;
             }
-        }	
+        }   
         env->taskScheduler().doEventLoop(&stopLoop); // does not return
         AGO_DEBUG() << "Exited event loop";
         stopLoop=0;
@@ -126,7 +125,7 @@ int main(int argc, char** argv) {
     http_port = atoi(getConfigSectionOption("mediaproxy", "http_port", "8888").c_str());
     rtsp_port = atoi(getConfigSectionOption("mediaproxy", "rtsp_port", "554").c_str());
 
-    agoConnection = new AgoConnection("mediaproxy");		
+    agoConnection = new AgoConnection("mediaproxy");        
 
     agoConnection->addDevice("controller", "mediaproxycontroller");
 
