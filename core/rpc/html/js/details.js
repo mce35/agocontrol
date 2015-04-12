@@ -443,7 +443,7 @@ Agocontrol.prototype.renderGraph = function(device, environment)
         content.env = environment.toLowerCase();
 
         self.sendCommand(content, function(res) {
-            if (!res.result || !res.result.result || !res.result.result.values)
+            if (!res.result || !res.result.data || !res.result.data.values)
             {
                 notif.fatal("Error while loading Graph!");
                 self.unblock($('#graph'));
@@ -463,7 +463,7 @@ Agocontrol.prototype.renderGraph = function(device, environment)
 
             //Prepare the data
             var data = [];
-            var values = res.result.result.values;
+            var values = res.result.data.values;
 
             if (renderType == "list")
             {

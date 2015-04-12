@@ -93,7 +93,7 @@ function device(agocontrol, obj, uuid) {
             {
                 if( !res.result.error )
                 {
-                    deferred.observable('data:image/png;base64,' + res.result.graph);
+                    deferred.observable('data:image/png;base64,' + res.result.data.graph);
                 }
                 else
                 {
@@ -208,7 +208,7 @@ function device(agocontrol, obj, uuid) {
                 {
                     if( !res.result.error && document.getElementById("graphRRD") )
                     {
-                        document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.graph;
+                        document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.data.graph;
                         $("#graphRRD").show();
                     }
                     else
