@@ -86,8 +86,8 @@ bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, const fs::p
         mapfile << variantMapToJSONString(map);
         mapfile.close();
         return true;
-    } catch (...) {
-        printf("ERROR: Can't write %s\n",filename.c_str());
+    } catch (const std::exception& ex) {
+        AGO_ERROR() << "Failed to write " << filename << ": " << ex.what();
         return false;
     }
 }
@@ -760,7 +760,6 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
         AGO_TRACE() << "Reply received: " << responseMap;
     } catch (qpid::messaging::NoMessageAvailable) {
         AGO_WARNING() << "No reply for message sent to subject " << subject;
-        printf("WARNING, no reply message to fetch\n");
     } catch(const std::exception& error) {
         AGO_ERROR() << "Exception in sendMessageReply: " << error.what();
     }
