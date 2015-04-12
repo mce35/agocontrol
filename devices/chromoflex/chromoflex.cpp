@@ -66,9 +66,13 @@ qpid::types::Variant::Map AgoChromoflex::commandHandler(qpid::types::Variant::Ma
     } else if (content["command"] == "off") {
         red = 0; green = 0; blue=0;
     } else if (content["command"] == "setlevel") {
+        checkMsgParameter(content, "level");
         level = content["level"];
         red = green = blue = (int) ( 255.0 * level / 100 );
     } else if (content["command"] == "setcolor") {
+        checkMsgParameter(content, "red");
+        checkMsgParameter(content, "green");
+        checkMsgParameter(content, "blue");
         red = content["red"];		
         green = content["green"];		
         blue = content["blue"];		
@@ -98,14 +102,13 @@ qpid::types::Variant::Map AgoChromoflex::commandHandler(qpid::types::Variant::Ma
     buf[15] = (usp_crc >> 8);
     buf[16] = (usp_crc & 0xff);
 
+    // TODO: also emit event
     AGO_TRACE() << "sending command";
     if (write (fd, buf, 17) != 17) {
         AGO_ERROR() <<  "Write error: " << strerror(errno);
-        returnval["result"] = -1;
-    } else {
-        returnval["result"] = 0;
+        return responseError(RESPONSE_ERR_INTERNAL, "Cannot write to serial port");
     }
-    return returnval;
+    return responseSuccess();
 }
 
 
