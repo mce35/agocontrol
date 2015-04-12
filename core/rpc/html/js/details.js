@@ -437,6 +437,7 @@ Agocontrol.prototype.renderGraph = function(device, environment)
         var content = {};
         content.uuid = self.dataLoggerController;
         content.command = "getdata";
+        content.replytimeout = 15;
         content.deviceid = device.uuid;
         content.start = startDate.toISOString();
         content.end = endDate.toISOString();
