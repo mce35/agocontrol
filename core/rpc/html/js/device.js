@@ -398,14 +398,15 @@ function device(agocontrol, obj, uuid) {
             var content = {};
             content.command = "getvideoframe";
             content.uuid = self.uuid;
-            self.agocontrol.sendCommand(content, function(r)
+            // TODO: this had a 90s reply timeout before implementing the promise style - check if this is still needed
+            self.agocontrol.sendCommand(content,90).then(function(res)
             {
-                if (r.result.data.image && document.getElementById("camIMG"))
+                if (res.data && res.data.image && document.getElementById("camIMG"))
                 {
-                    document.getElementById("camIMG").src = "data:image/jpeg;base64," + r.result.data.image;
+                    document.getElementById("camIMG").src = "data:image/jpeg;base64," + res.data.image;
                     $("#camIMG").show();
                 }
-            }, 90);
+            })
         };
     }
 
