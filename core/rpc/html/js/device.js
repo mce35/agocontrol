@@ -400,9 +400,9 @@ function device(agocontrol, obj, uuid) {
             content.uuid = self.uuid;
             self.agocontrol.sendCommand(content, function(r)
             {
-                if (r.result.image && document.getElementById("camIMG"))
+                if (r.result.data.image && document.getElementById("camIMG"))
                 {
-                    document.getElementById("camIMG").src = "data:image/jpeg;base64," + r.result.image;
+                    document.getElementById("camIMG").src = "data:image/jpeg;base64," + r.result.data.image;
                     $("#camIMG").show();
                 }
             }, 90);
