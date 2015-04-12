@@ -550,49 +550,6 @@ function Zwave(devices, agocontrol)
         self.controllerUuid = uuid;
     };
 
-    //Get usb port from config
-    self.getPort = function(callback) {
-        var content = {
-            uuid: self.controllerUuid,
-            command: 'getport'
-        };
-
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                callback(res.result.port);
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
-    };
-
-    //Save usb port to config
-    self.setPort = function(port) {
-        var content = {
-            uuid: self.controllerUuid,
-            command: 'setport',
-            port: port
-        };
-
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                notif.success('#setportok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
-    };
-
     /********************
      * CONTROLER COMMANDS
      ********************/
@@ -609,7 +566,7 @@ function Zwave(devices, agocontrol)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                callback(res.result.nodelist);
+                callback(res.result.data.nodelist);
             }
             else
             {
@@ -630,7 +587,7 @@ function Zwave(devices, agocontrol)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                callback(res.result.statistics);
+                callback(res.result.data.statistics);
             }
             else
             {
@@ -1017,7 +974,7 @@ function Zwave(devices, agocontrol)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                callback(res.result.associations, res.result.label, node, group);
+                callback(res.result.data.associations, res.result.data.label, node, group);
             }
             else
             {
@@ -1169,11 +1126,6 @@ function zwaveConfig(zwave) {
     var zwaveControllerUuid = zwave.getControllerUuid();
     zwave.setControllerUuid(zwaveControllerUuid);
 
-    //get zwave controller port
-    zwave.getPort(function(port) {
-        self.port(port);
-    });
-    
     //open graph help
     self.graphHelp = function() {
         $('#help-graph').dialog({
@@ -1350,13 +1302,6 @@ function zwaveConfig(zwave) {
         {
             zwave.reset();
         }
-    };
-
-    //save port
-    self.setPort = function() {
-        //first of all unfocus element to allow observable to save its value
-        $('#setport').blur();
-        zwave.setPort(self.port);
     };
 
     //heal node
