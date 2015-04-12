@@ -195,7 +195,7 @@ void agocontrol::AgoResponse::validate() {
 
     if(isOk()) {
         if(response["result"].getType() != VAR_MAP)
-            throw std::invalid_argument("resultmust be map");
+            throw std::invalid_argument("result must be map");
 
         root = response["result"].asMap();
     }
