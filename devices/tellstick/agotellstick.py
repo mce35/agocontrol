@@ -182,18 +182,14 @@ class AgoTellstick(agoclient.AgoApp):
                     self.emitHumidityChanged(devId, float(value["humidity"]))
 
     def agoSensorEvent(self, protocol, model, id, dataType, value, timestamp, callbackId):
-        self.log.trace("SensorEvent called for %s", str(id))
-        #print '%d: SensorEvent' %(time.time())
-        #print '  protocol: %s' %(protocol)
-        #print '  model: %s' %(model)
-        #print '  id: %s' %(id)
-        #print '  dataType: %d' %(dataType)
-        #print '  value: %s' %(value)
-        #print '  timestamp: %d' %(timestamp)
+        self.log.trace("SensorEvent protocol: %s model: %s id: %s dataType: %d value: %s timestamp: %d",
+                protocol, model, id, dataType, value, timestamp)
 
-        self.listNewSensors()
         devId = str(id)
-        if "temp" in model and dataType & self.tellstick.TELLSTICK_TEMPERATURE == self.tellstick.TELLSTICK_TEMPERATURE:
+        if devId not in self.sensors:
+            self.listNewSensors()
+
+        if dataType & self.tellstick.TELLSTICK_TEMPERATURE == self.tellstick.TELLSTICK_TEMPERATURE:
             self.emitTempChanged(devId, float(value))
             # tempC = value
             # if TempUnits == 'F':
@@ -201,7 +197,7 @@ class AgoTellstick(agoclient.AgoApp):
             #     self.connection.emit_event(str(devId), "event.environment.temperaturechanged", tempF, "degF")
             # else:
             #     self.connection.emit_event(str(devId), "event.environment.temperaturechanged", tempC, "degC")
-        if "humidity" in model and dataType & self.tellstick.TELLSTICK_HUMIDITY == self.tellstick.TELLSTICK_HUMIDITY:
+        if dataType & self.tellstick.TELLSTICK_HUMIDITY == self.tellstick.TELLSTICK_HUMIDITY:
             self.emitHumidityChanged(devId, float(value))
             #self.connection.emit_event(str(devId), "event.environment.humiditychanged", float(value), "%")
 
