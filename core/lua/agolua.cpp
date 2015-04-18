@@ -490,11 +490,18 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
                     for( qpid::types::Variant::Map::iterator it=values.begin(); it!=values.end(); it++ )
                     {
                         //TODO return device value property (quantity, unit, latitude, longitude...)
-                        qpid::types::Variant::Map value;
-                        if (!(it->second.isVoid())) value = it->second.asMap();
-                        lua_pushstring(L, value[subAttribute].asString().c_str());
-                        found = true;
-                        break;
+                        if( it->first==attribute )
+                        {
+                            //attribute found, get its subattribute value
+                            qpid::types::Variant::Map value;
+                            if( !it->second.isVoid() )
+                            {
+                                value = it->second.asMap();
+                                lua_pushstring(L, value[subAttribute].asString().c_str());
+                                found = true;
+                                break;
+                            }
+                        }
                     }
                 }
 
