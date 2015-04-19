@@ -62,6 +62,15 @@ class ResponseError(Exception):
 
 class AgoConnection:
     """This is class will handle the connection to ago control."""
+
+    """Response codes"""
+    RESPONSE_SUCCESS = 'success'
+    RESPONSE_ERR_FAILED = 'failed'
+    RESPONSE_ERR_UNKNOWN_COMMAND = 'unknown.command'
+    RESPONSE_ERR_BAD_PARAMETERS = 'bad.parameters'
+    RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE = 'no.commands.for.device'
+    RESPONSE_ERR_MISSING_PARAMETERS = 'missing.parameters'
+
     def __init__(self, instance):
         """The constructor."""
         self.instance = instance
@@ -220,6 +229,91 @@ class AgoConnection:
                 return True
         else:
             return False
+
+    def response_error(self, **kwargs):
+        """
+        parameters are voluntary shortened!
+        @param code: response error code <mandatory>
+        @param iden: response identifier <mandatory>
+        @param mess: response message <optional>
+        @param data: response data <optional>
+        """
+        response = {}
+        error = {}
+
+        if kwargs.has_key('code') and kwargs['code']!=None:
+            error['code'] = kwargs['code']
+        else:
+            #code is mandatory
+            error['code'] = -32500
+    
+        if kwargs.has_key('iden') and kwargs['iden']!=None:
+            error['identifier'] = kwargs['iden']
+        else:
+            #iden is mandatory
+            raise Exception('"iden" parameter is mandatory in response_error()')
+
+        if kwargs.has_key('mess') and kwargs['mess']!=None:
+            error['message'] = kwargs['mess']
+
+        if kwargs.has_key('data') and kwargs['data']!=None:
+            error['data'] = kwargs['data']
+
+        response['error'] = error
+        response['_newresponse'] = True
+        return response
+
+    def response_failed(self, **kwargs):
+        """
+        parameters are voluntary shortened!
+        @param mess: response message <optional>
+        @param data: response data <optional>
+        """
+        code = -32500 #default application error code
+        message = None
+        data = None
+
+        if kwargs.has_key('mess'):
+            message = kwargs['mess']
+
+        if kwargs.has_key('data'):
+            data = kwargs['data']
+
+        return self.response_error(code=code, iden=self.RESPONSE_ERR_FAILED, mess=message, data=data)
+
+    def response_result(self, **kwargs):
+        """
+        parameters are voluntary shortened!
+        @param iden: response identifier <optional, default='success'>
+        @param mess: response message <optional but adviced>
+        @param data: response data <optional>
+        """
+        response = {}
+        result = {}
+
+        if kwargs.has_key('iden') and kwargs['iden']!=None:
+            result['identifier'] = kwargs['iden']
+        else:
+            result['identifier'] = self.RESPONSE_SUCCESS
+
+        if kwargs.has_key('mess') and kwargs['mess']!=None:
+            result['message'] = kwargs['mess']
+
+        if kwargs.has_key('data') and kwargs['data']!=None:
+            result['data'] = kwargs['data']
+
+        response['result'] = result
+        response['_newresponse'] = True
+        return response
+
+    def response_success(self, **kwargs):
+        """
+        This function is just a shortcut to copy cpp functions
+        parameters are voluntary shortened!
+        @param mess: response message <optional>
+        @param data: response data <optional>
+        """
+        return self.response_result(**kwargs)
 
     def send_message(self, content):
         """Send message without subject."""
