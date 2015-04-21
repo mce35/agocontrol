@@ -33,11 +33,6 @@ endmacro()
 add_subdirectory(wsdl)
 add_subdirectory(pyonvif)
 
-message("========================")
-message(STATUS "${ONVIF_LIB}")
-message(STATUS "${ONVIF_WSDL}")
-message("========================")
-
 install (PROGRAMS agoonvif.py DESTINATION ${BINDIR})
 #onvif lib
 install (DIRECTORY DESTINATION ${PYTHON2DIST}/onvif)
