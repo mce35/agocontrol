@@ -1,0 +1,412 @@
+<div id="contentarea" class="container">
+    <div style="display:none;">
+    </div>
+
+    <h3>OnVIF</h3>
+
+    <!-- camera detail popup -->
+    <div id="cameraDetails" class="modal" data-bind="gumbyModal:$root">
+        <div class="content" style="top:10%; max-height:80%; min-height:50%;">
+            <a class="close switch"><i class="icon-cancel"></i></a>
+            <section data-bind="gumbyTabs:$root" class="tabs">
+                <ul class="tab-nav">
+                    <li class="active"><a data-translateable="true" href="#">General</a></li>
+                    <li><a data-translateable="true" href="#">Profiles</a></li>
+                    <li><a data-translateable="true" href="#">Config</a></li>
+                    <li><a data-translateable="true" href="#">Motion</a></li>
+                    <li><a data-translateable="true" href="#">Advanced</a></li>
+                </ul>
+                <!-- general tab -->
+                <div class="tab-content active">
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Camera ip address</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" placeholder="Ip" data-bind="textInput:cameraIp" disabled="disabled" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Camera port</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" placeholder="Port" data-bind="textInput:cameraPort" disabled="disabled" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Camera login</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" placeholder="Login" data-bind="textInput:cameraLogin" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Camera password</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" placeholder="Password" data-bind="textInput:cameraPassword" />
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:updateCameraCredentials}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Save changes</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Camera URI</span>
+                        </div>
+                        <div class="six columns text-left field">
+                            <input class="xwide input" type="text" placeholder="URI" data-bind="textInput:cameraUri" disabled="disabled"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <hr style="width:100%" />
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {})}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Get device infos</a>
+                            </div>
+                        </div>
+                    </div>
+                    <ko opts="foreach: generalData">
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span data-bind="text:key"></span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:value" disabled="disabled" />
+                        </div>
+                    </div>
+                    </ko>
+                </div>
+
+                <!-- profiles tab -->
+                <div class="tab-content">
+                    <div class="row">
+                        <div class="four columns text-right">
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:getCameraProfiles}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Get camera profiles</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Camera profiles</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="picker">
+                                <select style="width:100%;" data-bind="options:cameraProfiles, optionsText:'desc', value:selectedProfile" />
+                            </div>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:setCameraProfile}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Save changes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- config tab -->
+                <div class="tab-content">
+                    <div class="row">
+                        <div class="twelve columns text-center" style="font-size:smaller;">
+                            <span>Update existing configuration. If you feel limited and need to add more infos, please use "Advanced" tab</span>.
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="twelve columns field">
+                            <div data-bind="event{mousedown:getConfigOperation.bind($data, configData, 'devicemgmt', 'GetHostname', {}, 'SetHostname')}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Hostname</a>
+                            </div>
+                            <div data-bind="event{mousedown:getConfigOperation.bind($data, configData, 'devicemgmt', 'GetSystemDateAndTime', {}, 'SetSystemDateAndTime')}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Date and time</a>
+                            </div>
+                            <div data-bind="event{mousedown:getConfigOperation.bind($data, configData, 'devicemgmt', 'GetNTP', {}, 'SetNTP')}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">NTP</a>
+                            </div>
+                            <div data-bind="event{mousedown:getConfigOperation.bind($data, configData, 'devicemgmt', 'GetNetworkInterfaces', {}, 'SetNetworkInterfaces')}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Network interfaces</a>
+                            </div>
+                            <div class="medium primary btn">
+                                <a href="http://www.onvif.org/onvif/ver20/util/operationIndex.html" target="_blank">OnVIF operations</a>
+                            </div>
+                        </div>
+                    </div>
+                    <ko opts="foreach: configData">
+                        <ko opts="if: type=='basic'">
+                        <div class="row">
+                            <div class="four columns text-right">
+                                <span data-bind="text:key"></span>
+                            </div>
+                            <div class="four columns text-left field">
+                                <input class="xwide input" type="text" data-bind="textInput:value" />
+                            </div>
+                        </div>
+                        </ko>
+                        <ko opts="if: type=='array'">
+                            <ko opts="foreach: value">
+                                <ko opts="if: type=='basic'">
+                                <div class="row">
+                                    <div class="four columns text-right">
+                                        <span data-bind="text:$parents[0].key+key"></span>
+                                    </div>
+                                    <div class="four columns text-left field">
+                                        <input class="xwide input" type="text" data-bind="textInput:value" />
+                                    </div>
+                                </div>
+                                </ko>
+                                <ko opts="if: type=='array'">
+                                    <ko opts="foreach: value">
+                                        <div class="row">
+                                            <div class="four columns text-right">
+                                                <span data-bind="text:$parents[1].key+$parents[0].key+key"></span>
+                                            </div>
+                                            <div class="four columns text-left field">
+                                                <input class="xwide input" type="text" data-bind="textInput:value" />
+                                            </div>
+                                        </div>
+                                    </ko>
+                                </ko>
+                            </ko>
+                        </ko>
+                    </ko>
+                    <ko opts="if: configData().length>0">
+                        <div class="row">
+                            <div class="four columns text-right">
+                            </div>
+                            <div class="four columns text-left field">
+                                <div data-bind="event{mousedown:setConfigOperation}" class="medium primary btn">
+                                    <a data-bind="click:$root.noclick" href="#">Save changes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </ko>
+                </div>
+
+                <!-- motion tab -->
+                <div class="tab-content">
+                    <div class="row">
+                        <div class="twelve columns text-center" style="font-size:smaller;">
+                            <span>Enabling motion will create a new binary device that allows you to use it in security application</span>.
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Enable motion</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="picker">
+                                <select data-bind="options:motionEnableOptions, optionsText:'caption', optionsValue:'value', value:motionEnable" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Detection threshold</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:motionThreshold" />
+                        </div>
+                        <div class="two columns text-left">
+                            <span>%</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>On duration</span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:motionOnDuration" />
+                        </div>
+                        <div class="two columns text-left">
+                            <span>seconds</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <span>Recording duration</span>
+                            <br/>
+                            (<span style="font-size:small">0 to disable recording</span>)
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:motionRecordingDuration" />
+                        </div>
+                        <div class="two columns text-left">
+                            <span>seconds</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:setMotion}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Save changes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- advanced tab -->
+                <div class="tab-content">
+                    <div class="row">
+                        <div class="twelve columns text-left" style="font-size:smaller;">
+                            <span>This tab allow you to configure your device as you need</span>.
+                            <br/>
+                            <span>Click on "Get" button to execute get like operation. It will fill parameters field with response and help you preparing your request</span>.
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns text-right">
+                            <span>Service name</span>
+                        </div>
+                        <div class="six columns text-left field">
+                            <div class="picker">
+                                <select data-bind="options:onvifServices, value:onvifService" />
+                            </div>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="medium primary btn">
+                                <a href="http://www.onvif.org/onvif/ver20/util/operationIndex.html" target="_blank">OnVIF operations</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns text-right">
+                            <span>Operation name</span>
+                        </div>
+                        <div class="six columns text-left field">
+                            <input class="xwide input" type="text" placeholder="Operation" data-bind="textInput:onvifOperation" />
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:getAdvancedOperation}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Get</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns text-right">
+                            <span>Parameters</span>
+                        </div>
+                        <div class="ten columns text-left field">
+                            <textarea style="height:200px; font-size:14px; line-height:20px;" class="input textarea" placeholder="Parameters" data-bind="textInput:onvifParameters"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="two columns text-right">
+                        </div>
+                        <div class="six columns text-left">
+                            <div data-bind="event{mousedown:checkJson}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Check parameters</a>
+                            </div>
+                            <div data-bind="event{mousedown:doOperation.bind($data, null, onvifService(), onvifOperation(), JSON.parse(onvifParameters()))}" class="medium primary btn">
+                                <a data-bind="click:$root.noclick" href="#">Execute</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <section data-bind="gumbyTabs:$root" class="tabs">
+        <ul class="tab-nav">
+            <li class="active"><a href="#">My cameras</a></li>
+            <li><a href="#">Configuration</a></li>
+        </ul>
+
+        <!-- My cameras -->
+        <div class="tab-content active">
+            <script type="text/html" id="camerasRowTemplate">
+                <td data-bind="text:ip"></td>
+                <ko opts="if: uri_desc">
+                <td data-bind="text:uri_desc"></td>
+                </ko>
+                <ko opts="ifnot: uri_desc">
+                <td style="color:red;">Not configured!</td>
+                </ko>
+                <td>
+                    <div class="medium default btn">
+                        <i class="icon-pencil" data-translateable="true" alt="Edit" title="Edit" data-bind="click: $parent.editCamera"></i>
+                    </div>
+                    <div class="medium default btn">
+                        <i class="icon-cancel" data-translateable="true" alt="Delete" title="Delete" data-bind="click: $parent.deleteCamera"></i>
+                    </div>
+                </td>
+            </script>
+            <div data-bind="agoGrid:camerasGrid"></div>
+        </div>
+
+        <!-- configuration -->
+        <div class="tab-content" id="configTab">
+            <div class="row">
+                <div class="four columns text-right">
+                    <span>Camera ip address</span>
+                </div>
+                <div class="four columns text-left field">
+                    <input class="wide input" type="text" placeholder="Ip address" data-bind="textInput:cameraIp" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <span>Camera port</span>
+                </div>
+                <div class="four columns text-left field">
+                    <input class="wide input" type="text" placeholder="Port" data-bind="textInput:cameraPort" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <span>Camera login</span>
+                </div>
+                <div class="four columns text-left field">
+                    <input class="wide input" type="text" placeholder="Login" data-bind="textInput:cameraLogin" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <span>Camera password</span>
+                </div>
+                <div class="four columns text-left field">
+                    <input class="wide input" type="text" placeholder="Password" data-bind="textInput:cameraPassword" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns">
+                </div>
+                <div class="four columns text-left">
+                    <div data-bind="event{mousedown:getCameraProfilesFromScratch}" class="medium primary btn">
+                        <a data-bind="click:$root.noclick" href="#">Get camera profiles</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <span>Select camera profile</span>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="picker">
+                        <select style="width:100%;" data-bind="options:cameraProfiles, optionsText:'desc', value:selectedProfile" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div data-bind="event{mousedown:addCamera}" class="medium primary btn">
+                        <a data-bind="click:$root.noclick" href="#">Save camera</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
