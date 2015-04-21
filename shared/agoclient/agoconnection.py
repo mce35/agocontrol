@@ -233,7 +233,6 @@ class AgoConnection:
     def response_error(self, **kwargs):
         """
         parameters are voluntary shortened!
-        @param code: response error code <mandatory>
         @param iden: response identifier <mandatory>
         @param mess: response message <optional>
         @param data: response data <optional>
@@ -241,35 +240,34 @@ class AgoConnection:
         response = {}
         error = {}
 
-        if kwargs.has_key('code') and kwargs['code']!=None:
-            error['code'] = kwargs['code']
-        else:
-            #code is mandatory
-            error['code'] = -32500
-    
+        #identifier
         if kwargs.has_key('iden') and kwargs['iden']!=None:
             error['identifier'] = kwargs['iden']
         else:
             #iden is mandatory
-            raise Exception('"iden" parameter is mandatory in response_error()')
+            raise Exception('Response without identifier (param "iden") not permitted')
 
+        #message
         if kwargs.has_key('mess') and kwargs['mess']!=None:
             error['message'] = kwargs['mess']
+        else:
+            #mess is mandatory
+            raise Exception('Error response without message (param "mess") not permitted')
 
+        #data
         if kwargs.has_key('data') and kwargs['data']!=None:
             error['data'] = kwargs['data']
 
         response['error'] = error
-        response['_newresponse'] = True
+        response['_newresponse'] = True #TODO: remove thits after everything is using new response style
         return response
 
-    def response_failed(self, **kwargs):
+    def response_failed(self, message, data=None):
         """
         parameters are voluntary shortened!
-        @param mess: response message <optional>
+        @param mess: response message
         @param data: response data <optional>
         """
-        code = -32500 #default application error code
         message = None
         data = None
 
@@ -279,13 +277,13 @@ class AgoConnection:
         if kwargs.has_key('data'):
             data = kwargs['data']
 
-        return self.response_error(code=code, iden=self.RESPONSE_ERR_FAILED, mess=message, data=data)
+        return self.response_error(iden=self.RESPONSE_ERR_FAILED, mess=message, data=data)
 
     def response_result(self, **kwargs):
         """
         parameters are voluntary shortened!
-        @param iden: response identifier <optional, default='success'>
-        @param mess: response message <optional but adviced>
+        @param iden: response identifier 
+        @param mess: response message <optional>
         @param data: response data <optional>
         """
         response = {}
@@ -294,7 +292,7 @@ class AgoConnection:
         if kwargs.has_key('iden') and kwargs['iden']!=None:
             result['identifier'] = kwargs['iden']
         else:
-            result['identifier'] = self.RESPONSE_SUCCESS
+            raise Exception('Response without identifier (param "iden") not permitted')
 
         if kwargs.has_key('mess') and kwargs['mess']!=None:
             result['message'] = kwargs['mess']
@@ -303,17 +301,11 @@ class AgoConnection:
             result['data'] = kwargs['data']
 
         response['result'] = result
-        response['_newresponse'] = True
+        response['_newresponse'] = True #TODO: remove thits after everything is using new response style
         return response
 
-    def response_success(self, **kwargs):
-        """
-        This function is just a shortcut to copy cpp functions
-        parameters are voluntary shortened!
-        @param mess: response message <optional>
-        @param data: response data <optional>
-        """
-        return self.response_result(**kwargs)
+    def response_success(self, message, data=None):
+        return self.response_result(iden=self.RESPONSE_SUCCESS, mess=message, data=data)
 
     def send_message(self, content):
         """Send message without subject."""
