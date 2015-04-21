@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-25 19:42+0100\n"
+"POT-Creation-Date: 2015-04-21 11:27+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -237,7 +237,7 @@ msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:19
 #: ../applications/security/html/security.xml.in.h:8
-#: ../applications/zwave/html/zwave.xml.in.h:70
+#: ../applications/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
@@ -286,6 +286,7 @@ msgid "12voip username"
 msgstr "Identifiant 12voip"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:30
+#: ../applications/onvif/html/onvif.xml.in.h:13
 msgid "Password"
 msgstr "Mot de passe"
 
@@ -358,6 +359,7 @@ msgid "email"
 msgstr "email"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:45
+#: ../applications/onvif/html/onvif.xml.in.h:11
 msgid "Login"
 msgstr "Identifiant"
 
@@ -558,6 +560,7 @@ msgstr "Statistiques"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:6
 #: ../applications/zwave/html/zwave.xml.in.h:29
+#: ../applications/onvif/html/onvif.xml.in.h:43
 msgid "Configuration"
 msgstr "Configuration"
 
@@ -576,7 +579,7 @@ msgid "Reset device counters"
 msgstr "Effacer les compteurs du périphérique"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:10
-#: ../applications/zwave/html/zwave.xml.in.h:66
+#: ../applications/zwave/html/zwave.xml.in.h:65
 msgid "Reset"
 msgstr "Effacer"
 
@@ -636,7 +639,7 @@ msgid "Alarms"
 msgstr "Dispositif d'alarme"
 
 #: ../applications/security/html/security.xml.in.h:12
-#: ../applications/zwave/html/zwave.xml.in.h:64
+#: ../applications/zwave/html/zwave.xml.in.h:63
 #: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr "Annuler"
@@ -654,6 +657,7 @@ msgid "Delete housemode"
 msgstr "Supprimer le mode"
 
 #: ../applications/security/html/security.xml.in.h:16
+#: ../applications/onvif/html/onvif.xml.in.h:44
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -875,7 +879,7 @@ msgstr "Demander les paramètres de configuration au noeud"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
 msgid "Request parameters"
-msgstr "Demander les paramètre"
+msgstr "Demander les paramètres"
 
 #: ../applications/zwave/html/zwave.xml.in.h:48
 msgid "Devices"
@@ -890,72 +894,262 @@ msgid "General commands"
 msgstr "Commandes générales"
 
 #: ../applications/zwave/html/zwave.xml.in.h:52
-msgid "USB port"
-msgstr "Port USB"
-
-#: ../applications/zwave/html/zwave.xml.in.h:53
 msgid "True"
 msgstr "Vrai"
 
-#: ../applications/zwave/html/zwave.xml.in.h:54
+#: ../applications/zwave/html/zwave.xml.in.h:53
 msgid "False"
 msgstr "Faux"
 
-#: ../applications/zwave/html/zwave.xml.in.h:55
+#: ../applications/zwave/html/zwave.xml.in.h:54
 msgid "Pair/unpair node to your network"
 msgstr "Associer/dissocier le périphérique du réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:56
+#: ../applications/zwave/html/zwave.xml.in.h:55
 msgid "Pair"
 msgstr "Associer"
 
-#: ../applications/zwave/html/zwave.xml.in.h:57
+#: ../applications/zwave/html/zwave.xml.in.h:56
 msgid "Unpair"
 msgstr "Dissocier"
 
-#: ../applications/zwave/html/zwave.xml.in.h:58
+#: ../applications/zwave/html/zwave.xml.in.h:57
 msgid "Turn on/off all devices"
 msgstr "Allumer/éteindre tous les périphériques"
 
-#: ../applications/zwave/html/zwave.xml.in.h:59
+#: ../applications/zwave/html/zwave.xml.in.h:58
 msgid "On"
 msgstr "On"
 
-#: ../applications/zwave/html/zwave.xml.in.h:60
+#: ../applications/zwave/html/zwave.xml.in.h:59
 msgid "Off"
 msgstr "Off"
 
-#: ../applications/zwave/html/zwave.xml.in.h:61
+#: ../applications/zwave/html/zwave.xml.in.h:60
 msgid "Test network"
 msgstr "Tester le réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:62
+#: ../applications/zwave/html/zwave.xml.in.h:61
 msgid "Heal network"
 msgstr "Réparer le réseau"
 
-#: ../applications/zwave/html/zwave.xml.in.h:63
+#: ../applications/zwave/html/zwave.xml.in.h:62
 msgid "Cancel running controller command"
 msgstr "Annuler la commande en cours"
 
-#: ../applications/zwave/html/zwave.xml.in.h:65
+#: ../applications/zwave/html/zwave.xml.in.h:64
 msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
 
-#: ../applications/zwave/html/zwave.xml.in.h:67
+#: ../applications/zwave/html/zwave.xml.in.h:66
 msgid "Download configuration"
 msgstr "Télécharger la configuration"
 
-#: ../applications/zwave/html/zwave.xml.in.h:68
+#: ../applications/zwave/html/zwave.xml.in.h:67
 msgid "Download"
 msgstr "Télécharger"
 
-#: ../applications/zwave/html/zwave.xml.in.h:69
+#: ../applications/zwave/html/zwave.xml.in.h:68
 msgid "Save configuration"
 msgstr "Sauvegarder la configuration"
 
-#: ../applications/zwave/html/zwave.xml.in.h:71
-msgid "Configure controller USB port"
-msgstr "Configurer le port USB du contrôleur"
+#: ../applications/onvif/html/onvif.xml.in.h:1
+msgid "General"
+msgstr "Général"
+
+#: ../applications/onvif/html/onvif.xml.in.h:2
+msgid "Profiles"
+msgstr "Profiles"
+
+#: ../applications/onvif/html/onvif.xml.in.h:3
+msgid "Config"
+msgstr "Configuration"
+
+#: ../applications/onvif/html/onvif.xml.in.h:4
+msgid "Motion"
+msgstr "Mouvement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:5
+msgid "Advanced"
+msgstr "Avancé"
+
+#: ../applications/onvif/html/onvif.xml.in.h:6
+msgid "Camera ip address"
+msgstr "Ip de la caméra"
+
+#: ../applications/onvif/html/onvif.xml.in.h:7
+msgid "Ip"
+msgstr "Ip"
+
+#: ../applications/onvif/html/onvif.xml.in.h:8
+msgid "Camera port"
+msgstr "Port"
+
+#: ../applications/onvif/html/onvif.xml.in.h:9
+msgid "Port"
+msgstr "Port"
+
+#: ../applications/onvif/html/onvif.xml.in.h:10
+msgid "Camera login"
+msgstr "Identifiant"
+
+#: ../applications/onvif/html/onvif.xml.in.h:12
+msgid "Camera password"
+msgstr "Mot de passe"
+
+#: ../applications/onvif/html/onvif.xml.in.h:14
+msgid "Save changes"
+msgstr "Sauvegarder"
+
+#: ../applications/onvif/html/onvif.xml.in.h:15
+msgid "Camera URI"
+msgstr "URI de la caméra"
+
+#: ../applications/onvif/html/onvif.xml.in.h:16
+msgid "URI"
+msgstr "URI"
+
+#: ../applications/onvif/html/onvif.xml.in.h:17
+msgid "Get device infos"
+msgstr "Plus d'infos"
+
+#: ../applications/onvif/html/onvif.xml.in.h:18
+msgid "Get camera profiles"
+msgstr "Récupérer les profils"
+
+#: ../applications/onvif/html/onvif.xml.in.h:19
+msgid "Camera profiles"
+msgstr "Profils"
+
+#: ../applications/onvif/html/onvif.xml.in.h:20
+msgid ""
+"Update existing configuration. If you feel limited and need to add more "
+"infos, please use \"Advanced\" tab"
+msgstr ""
+"Mise à jour de la configuration. Si vous souhaitez en faire plus "
+"rendez vous dans l'onglet \"Avancé\""
+
+#: ../applications/onvif/html/onvif.xml.in.h:21
+msgid "Hostname"
+msgstr "Hostname"
+
+#: ../applications/onvif/html/onvif.xml.in.h:22
+msgid "Date and time"
+msgstr "Date et heure"
+
+#: ../applications/onvif/html/onvif.xml.in.h:23
+msgid "NTP"
+msgstr "NTP"
+
+#: ../applications/onvif/html/onvif.xml.in.h:24
+msgid "Network interfaces"
+msgstr "Réseau"
+
+#: ../applications/onvif/html/onvif.xml.in.h:25
+msgid "OnVIF operations"
+msgstr "Opérations OnVif"
+
+#: ../applications/onvif/html/onvif.xml.in.h:26
+msgid ""
+"Enabling motion will create a new binary device that allows you to use it in "
+"security application"
+msgstr ""
+"En activant la détection de mouvement, agocontrol créera un nouveau périphérique "
+"binaire que vous pourrez utiliser dans l'app de sécurité par exemple"
+
+#: ../applications/onvif/html/onvif.xml.in.h:27
+msgid "Enable motion"
+msgstr "Activer"
+
+#: ../applications/onvif/html/onvif.xml.in.h:28
+msgid "Detection threshold"
+msgstr "Seuil de détection"
+
+#: ../applications/onvif/html/onvif.xml.in.h:29
+msgid "On duration"
+msgstr "Durée \"on\""
+
+#: ../applications/onvif/html/onvif.xml.in.h:30
+msgid "seconds"
+msgstr "secondes"
+
+#: ../applications/onvif/html/onvif.xml.in.h:31
+msgid "Recording duration"
+msgstr "Durée de l'enregistrement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:32
+msgid "0 to disable recording"
+msgstr "0 pour désactiver"
+
+#: ../applications/onvif/html/onvif.xml.in.h:33
+msgid "This tab allow you to configure your device as you need"
+msgstr ""
+"Cet onglet vous permet de modifier tous les paramètres de votre "
+"caméra"
+
+#: ../applications/onvif/html/onvif.xml.in.h:34
+msgid ""
+"Click on \"Get\" button to execute get like operation. It will fill "
+"parameters field with response and help you preparing your request"
+msgstr ""
+"Cliquer sur \"Obtenir\" pour exécuter une requète de type \"get\". "
+"Cela vous permettra d'avoir un exemple de requète afin de préparer "
+"correctement la votre"
+
+#: ../applications/onvif/html/onvif.xml.in.h:35
+msgid "Service name"
+msgstr "Nom du service" 
+
+#: ../applications/onvif/html/onvif.xml.in.h:36
+msgid "Operation name"
+msgstr "Nom de l'opération"
+
+#: ../applications/onvif/html/onvif.xml.in.h:37
+msgid "Operation"
+msgstr "Opération"
+
+#: ../applications/onvif/html/onvif.xml.in.h:38
+msgid "Get"
+msgstr "Obtenir"
+
+#: ../applications/onvif/html/onvif.xml.in.h:39
+msgid "Parameters"
+msgstr "Paramètres"
+
+#: ../applications/onvif/html/onvif.xml.in.h:40
+msgid "Check parameters"
+msgstr "Vérifier les paramètres"
+
+#: ../applications/onvif/html/onvif.xml.in.h:41
+msgid "Execute"
+msgstr "Exécuter"
+
+#: ../applications/onvif/html/onvif.xml.in.h:42
+msgid "My cameras"
+msgstr "Mes caméras"
+
+#: ../applications/onvif/html/onvif.xml.in.h:45
+#: ../configuration/blockly/html/agoblockly.xml.in.h:29
+#: ../configuration/dashboards/html/dashboards.xml.in.h:5
+#: ../configuration/devices/html/devices.xml.in.h:3
+#: ../configuration/events/html/events.xml.in.h:5
+#: ../configuration/rooms/html/rooms.xml.in.h:5
+#: ../configuration/scenarios/html/scenarios.xml.in.h:7
+#: ../configuration/variables/html/variables.xml.in.h:4
+msgid "Delete"
+msgstr "Supprimer"
+
+#: ../applications/onvif/html/onvif.xml.in.h:46
+msgid "Ip address"
+msgstr "Adresse ip"
+
+#: ../applications/onvif/html/onvif.xml.in.h:47
+msgid "Select camera profile"
+msgstr "Sélectionner le profil de la caméra"
+
+#: ../applications/onvif/html/onvif.xml.in.h:48
+msgid "Save camera"
+msgstr "Enregistrer la caméra"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
 msgid "luacontroller is not responding. Unable to execute action."
@@ -1065,16 +1259,6 @@ msgstr "Mes scripts"
 #: ../configuration/blockly/html/agoblockly.xml.in.h:28
 msgid "Script import"
 msgstr "Importer un script"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:29
-#: ../configuration/dashboards/html/dashboards.xml.in.h:5
-#: ../configuration/devices/html/devices.xml.in.h:3
-#: ../configuration/events/html/events.xml.in.h:5
-#: ../configuration/rooms/html/rooms.xml.in.h:5
-#: ../configuration/scenarios/html/scenarios.xml.in.h:7
-#: ../configuration/variables/html/variables.xml.in.h:4
-msgid "Delete"
-msgstr "Supprimer"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:30
 msgid "Export"
@@ -1397,3 +1581,9 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
+
+#~ msgid "USB port"
+#~ msgstr "Port USB"
+
+#~ msgid "Configure controller USB port"
+#~ msgstr "Configurer le port USB du contrôleur"
