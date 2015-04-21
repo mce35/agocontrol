@@ -1,19 +1,47 @@
 cmake_minimum_required (VERSION 2.6)
 
-set(ONVIF_LIB_PATH "onvif-0.1.2")
+macro (add_pyonvif)
+    file (RELATIVE_PATH _relPath "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+    foreach (_src ${ARGN})
+        if (_relPath)
+            list (APPEND SRCS "${_relPath}/${_src}")
+        else()
+            list (APPEND SRCS "${_src}")
+        endif()
+    endforeach()
+    if (_relPath)
+        # propagate SRCS to parent directory
+        set (ONVIF_LIB ${ONVIF_LIB} PARENT_SCOPE)
+    endif()
+endmacro()
 
-find_program(PYTHON "python")
-if (PYTHON)
-    set(SETUP_PY    "${ONVIF_LIB_PATH}/setup.py")
-    set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
+macro (add_wsdl)
+    file (RELATIVE_PATH _relPath "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+    foreach (_src ${ARGN})
+        if (_relPath)
+            list (APPEND SRCS "${_relPath}/${_src}")
+        else()
+            list (APPEND SRCS "${_src}")
+        endif()
+    endforeach()
+    if (_relPath)
+        # propagate SRCS to parent directory
+        set (ONVIF_WSDL ${ONVIF_WSDL} PARENT_SCOPE)
+    endif()
+endmacro()
 
-    add_custom_command(OUTPUT ${OUTPUT}
-                       COMMAND ${PYTHON} ${SETUP_PY} build
-                       COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+add_subdirectory(wsdl)
+add_subdirectory(pyonvif)
 
-    add_custom_target(target ALL DEPENDS ${OUTPUT})
-
-    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
-endif()
+message("========================")
+message(STATUS "${ONVIF_LIB}")
+message(STATUS "${ONVIF_WSDL}")
+message("========================")
 
 install (PROGRAMS agoonvif.py DESTINATION ${BINDIR})
+#onvif lib
+install (DIRECTORY DESTINATION ${PYTHON2DIST}/onvif)
+install (PROGRAMS ${ONVIF_LIB} DESTINATION ${PYTHON2DIST}/onvif)
+#wsdl
+install (DIRECTORY DESTINATION /etc/onvif/wsdl)
+install (PROGRAMS ${ONVIF_WSDL} DESTINATION /etc/wsdl/onvif)
