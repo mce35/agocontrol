@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
 set (AGODEVICES
-#  onvif
+  onvif
   example
   enocean3
   blinkm
