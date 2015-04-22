@@ -211,13 +211,18 @@
                     </div>
                     <div class="row">
                         <div class="four columns text-right">
-                            <_span data-translateable="true">Detection threshold</_span>
+                            <_span data-translateable="true">Detection sensitivity</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" data-bind="textInput:motionThreshold" />
+                            <input class="xwide input" type="text" data-bind="textInput:motionSensitivity" />
                         </div>
-                        <div class="two columns text-left">
-                            <span>%</span>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Detection deviation (the higher the value, the more motion is allowed)</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:motionDeviation" />
                         </div>
                     </div>
                     <div class="row">

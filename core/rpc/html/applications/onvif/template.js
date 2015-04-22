@@ -27,7 +27,8 @@ function OnVIFPlugin(devices, agocontrol)
     self.configSetService = ko.observable(null);
     self.motionEnableOptions = ko.observableArray([{caption:'No', value:0}, {caption:'Yes', value:1}]);
     self.motionEnable = ko.observable(null);
-    self.motionThreshold = ko.observable(8);
+    self.motionSensitivity = ko.observable(10);
+    self.motionDeviation = ko.observable(20);
     self.motionRecordingDuration = ko.observable(0);
     self.motionOnDuration = ko.observable(300);
 
@@ -268,7 +269,8 @@ function OnVIFPlugin(devices, agocontrol)
         {
             self.motionEnable(false);
         }
-        self.motionThreshold(item.motion_threshold);
+        self.motionSensitivity(item.motion_sensitivity);
+        self.motionDeviation(item.motion_deviation);
         self.motionRecordingDuration(item.motion_record);
         self.motionOnDuration(item.motion_on_duration);
         self.selectedProfile(null);
@@ -562,7 +564,7 @@ function OnVIFPlugin(devices, agocontrol)
     //set motion
     self.setMotion = function()
     {
-        if( self.motionThreshold()!==null && self.motionOnDuration()!=null && self.motionRecordingDuration()!=null )
+        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!=null && self.motionRecordingDuration()!=null )
         {
             self.agocontrol.block('#cameraDetails');
 
@@ -571,7 +573,8 @@ function OnVIFPlugin(devices, agocontrol)
             content.command = 'setmotion';
             content.internalid = self.selectedCamera().internalid;
             content.enable = self.motionEnable();
-            content.threshold = self.motionThreshold();
+            content.sensitivity = self.motionSensitivity();
+            content.deviation = self.motionDeviation();
             content.onduration = self.motionOnDuration();
             content.recordingduration = self.motionRecordingDuration();
             self.agocontrol.sendCommand(content)
