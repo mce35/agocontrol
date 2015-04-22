@@ -23,16 +23,19 @@ DEVICEMAPFILE = os.path.join(agoclient.CONFDIR, 'maps/onvif.json')
 
 class Motion(threading.Thread):
     """
-    Code inspired from Robin David (converted to cv2)
+    Code inspired from Robin David (converted to cv2):
     https://github.com/RobinDavid/Motion-detection-OpenCV
+    And from Cédric Verstraeten:
+    https://blog.cedric.ws/opencv-simple-motion-detection
     """
 
-    def __init__(self, connection, log, camera_internalid, uri, threshold=8, on_duration=300, record_duration=0):
+    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record_duration=0):
         """
         Constructor
         @param camera_internalid: camera internalid to generate record filename
         @param uri: video stream uri
-        @param threshold: threshold detection in percentage
+        @param sensitivity: number of changes on picture detected
+        @param deviation: the higher the value, the more motion is allowed
         @param on_duration: time during binary sensor stays on when motion detected
         @param record_duration: 0 to disable recording, otherwise time in seconds
         """
@@ -50,7 +53,8 @@ class Motion(threading.Thread):
         if self.record_duration>0:
             self.do_record = True
         self.frame = None
-        self.threshold = threshold
+        self.sensitivity = sensitivity
+        self.deviation = deviation
         self.is_recording = False
         self.trigger_time = 0
         self.trigger_off_timer = None
@@ -68,7 +72,6 @@ class Motion(threading.Thread):
         self.processed_frame = None
 
         #init capture and read a frame
-        self.log.info('motion on %s' % uri)
         self.capture = cv2.VideoCapture(uri)
         res, self.frame = self.capture.read()
         if not res:
@@ -150,7 +153,6 @@ class Motion(threading.Thread):
         self.next_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         if self.prev_frame==None or self.current_frame==None or self.next_frame==None:
             #not ready
-            self.log.info('not ready')
             return False
   
         #apply some filter to remove fake
@@ -189,90 +191,20 @@ class Motion(threading.Thread):
         else:
             return True, cur_x, cur_y, cur_w, cur_h
 
-    def process_frame_old(self, frame):
-        """
-        Process current frame
-        """
-        #save frames
-        self.prev_frame = self.current_frame
-        self.current_frame = self.next_frame
-        self.next_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-
-        if self.prev_frame==None or self.current_frame==None or self.next_frame==None:
-            self.log.info('not ready')
-            return None
-        #deprecated self.frame2gray = self.next_frame
-
-        #Absdiff to get the difference between to the frames
-        #deprecated self.res = cv2.absdiff(self.frame1gray, self.frame2gray)
-
-        #Remove the noise and do the threshold
-        #deprecated self.res = cv2.blur(self.res, (10,10))
-        #deprecated self.res = cv2.morphologyEx(self.res, cv2.MORPH_OPEN, (5,5))
-        #deprecated self.res = cv2.morphologyEx(self.res, cv2.MORPH_CLOSE, (5,5))
-        #deprecated self.res = cv2.threshold(self.res, 10, 255, cv2.THRESH_BINARY_INV)[1]
-
-        d1 = cv2.absdiff(self.prev_frame, self.next_frame)
-        d2 = cv2.absdiff(self.next_frame, self.current_frame)
-        res = cv2.bitwise_and(d1, d2)
-        res = cv2.threshold(res, 35, 255, cv2.THRESH_BINARY)[1]
-        k_ero = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-        res = cv2.erode(res, k_ero)
-        self.processed_frame = res
-
-    def something_has_moved(self, sensibility=10, max_deviation=20, color=(0,0,255)):
-        motion = numpy.copy(self.processed_frame)
-        (out_mean, out_stddev) = cv2.meanStdDev(motion)
-        if out_stddev[0][0] < max_deviation:
-            number_of_changes = cv2.countNonZero(motion)
-            if number_of_changes>sensibility:
-                return True
-            else:
-                return False
-        return False
-
-    def something_has_moved_old(self, motion=None, result=None, result_cropped=None, max_deviation=20, color=(0,0,255)):
+    def something_has_moved(self):
         """
         Check if something has moved
         @see https://blog.cedric.ws/opencv-simple-motion-detection
         """
-        max_deviation = 20
-        motion = self.processed_frame
+        motion = numpy.copy(self.processed_frame)
         (out_mean, out_stddev) = cv2.meanStdDev(motion)
-        if out_stddev[0] < max_deviation:
-            number_of_changes = cv2.countNonZero(out_stddev)
-            #min_x = motion.shape[0]
-            #max_x = 0
-            #min_y = motion.shape[1]
-            #max_y = 0
-            #for i in range(motion.shape[0]):
-            #    for j in range(motion.shape[1]):
-            contours = cv2.findContours(motion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
-            self.log.info('countours=%s' % str(contours))
-            
-            avg = (number_of_changes*100.0)/self.nb_pixels
-            self.log.info('avg=%f' % avg)
-            if avg > self.threshold:
+        if out_stddev[0][0] < self.deviation:
+            number_of_changes = cv2.countNonZero(motion)
+            if number_of_changes>self.sensitivity:
                 return True
             else:
                 return False
-
         return False
-                    
-
-    def something_has_moved2(self):
-        """
-        Check if something has moved
-        """
-        #get frame pixel count
-        nb = self.height*self.width - cv2.countNonZero(self.res)
-        #calculate average of black pixels in frame
-        avg = (nb*100.0)/self.nb_pixels
- 
-        if avg > self.threshold:
-            return True
-        else:
-            return False
 
     def run(self):
         """
@@ -367,9 +299,11 @@ class Camera():
     def __init__(self, connection, log, ip, port, login, password, internalid, wsdl_dir='/etc/onvif/wsdl/'):
         """
         Constructor
-        @param motion: motion enabled/disabled
-        @param motion_threshold: motion detection threshold (in %)
-        @param record_duration: record duration when motion detected (in s). To disable recording set it to 0
+        @param ip: camera ip
+        @param port: camera port
+        @param login: camera login
+        @param password: camera password
+        @param internalid: internalid
         """
         self.log = log
         self.connection = connection
@@ -381,7 +315,8 @@ class Camera():
         self.uri_token = None
         self.internalid = internalid
         self.motion = False
-        self.motion_threshold = 8
+        self.motion_sensitivity = 10
+        self.motion_deviation = 20
         self.motion_on_duration = 300
         self.motion_record = 0
         self.motion_thread = None
@@ -436,15 +371,16 @@ class Camera():
         self.log.debug('uri=%s motion=%s' % (str(self.uri), str(self.motion)))
         if self.uri and self.motion:
             self.log.debug('Start motion thread')
-            self.motion_thread = Motion(self.connection, self.log, self.internalid, self.uri, self.motion_threshold, self.motion_on_duration, self.motion_record)
+            self.motion_thread = Motion(self.connection, self.log, self.internalid, self.uri, self.motion_sensitivity, self.motion_deviation, self.motion_on_duration, self.motion_record)
             self.motion_thread.start()
 
-    def set_motion(self, enable, threshold, on_duration, record_duration):
+    def set_motion(self, enable, sensitivity, deviation, on_duration, record_duration):
         """
         Set motion feature
         """
         self.motion = enable
-        self.motion_threshold = threshold
+        self.motion_sensitivity = sensitivity
+        self.motion_deviation = deviation
         self.motion_on_duration = on_duration
         self.motion_record = record_duration
         self.__configure_motion()
@@ -728,7 +664,7 @@ class AgoOnvif(agoclient.AgoApp):
                 self.log.info(' - Camera "%s"' % internalid)
                 camera = self.cameras[internalid]
                 camera.set_uri(self.config[internalid]['uri_token'], self.config[internalid]['uri'])
-                camera.set_motion(self.config[internalid]['motion'], self.config[internalid]['motion_threshold'], self.config[internalid]['motion_on_duration'], self.config[internalid]['motion_record'])
+                camera.set_motion(self.config[internalid]['motion'], self.config[internalid]['motion_sensitivity'], self.config[internalid]['motion_deviation'], self.config[internalid]['motion_on_duration'], self.config[internalid]['motion_record'])
                 self.connection.add_device(internalid, 'camera')
         self.__configLock.release()
 
@@ -807,7 +743,7 @@ class AgoOnvif(agoclient.AgoApp):
         else:
             #save new instance locally
             self.cameras[internalid] = camera
-            config = {'ip':ip, 'port':port, 'login':login, 'password':password, 'uri_token':None, 'uri':None, 'motion':False, 'motion_threshold':8, 'motion_record':0, 'motion_on_duration':300}
+            config = {'ip':ip, 'port':port, 'login':login, 'password':password, 'uri_token':None, 'uri':None, 'motion':False, 'motion_sensitivity':10, 'motion_deviation':20, 'motion_record':0, 'motion_on_duration':300}
 
             #save device map
             if saveConfig:
@@ -1119,7 +1055,7 @@ class AgoOnvif(agoclient.AgoApp):
                 return self.connection.response_success()
 
             elif command=='setmotion':
-                if not self.__check_command_params(content, ['internalid', 'enable', 'threshold', 'onduration', 'recordingduration']):
+                if not self.__check_command_params(content, ['internalid', 'enable', 'sensitivity', 'deviation', 'onduration', 'recordingduration']):
                     self.log.error('Parameters are missing')
                     return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
                 internalid = content['internalid']
@@ -1136,9 +1072,16 @@ class AgoOnvif(agoclient.AgoApp):
                     content['enable'] = False
 
                 try:
-                    content['threshold'] = int(content['threshold'])
+                    content['sensitivity'] = int(content['sensitivity'])
                 except ValueError:
-                    msg = 'Invalid "threshold" parameter. Must be integer'
+                    msg = 'Invalid "sensitivity" parameter. Must be integer'
+                    self.log.error(msg)
+                    self.connection.response_error(msg=msg)
+
+                try:
+                    content['deviation'] = int(content['deviation'])
+                except ValueError:
+                    msg = 'Invalid "deviation" parameter. Must be integer'
                     self.log.error(msg)
                     self.connection.response_error(msg=msg)
                     
@@ -1157,11 +1100,12 @@ class AgoOnvif(agoclient.AgoApp):
                     self.connection.response_error(msg=msg)
 
                 #configure motion
-                camera.set_motion(content['enable'], content['threshold'], content['onduration'], content['recordingduration'])
+                camera.set_motion(content['enable'], content['sensitivity'], content['deviation'], content['onduration'], content['recordingduration'])
 
                 #save new config
                 self.config[internalid]['motion'] = content['enable']
-                self.config[internalid]['motion_threshold'] = content['threshold']
+                self.config[internalid]['motion_sensitivity'] = content['sensitivity']
+                self.config[internalid]['motion_deviation'] = content['deviation']
                 self.config[internalid]['motion_on_duration'] = content['onduration']
                 self.config[internalid]['motion_record'] = content['recordingduration']
                 self.save_config()
