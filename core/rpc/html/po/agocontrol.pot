@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-22 11:29+0200\n"
+"POT-Creation-Date: 2015-04-23 13:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -546,7 +546,6 @@ msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:6
 #: ../applications/zwave/html/zwave.xml.in.h:29
-#: ../applications/onvif/html/onvif.xml.in.h:44
 msgid "Configuration"
 msgstr ""
 
@@ -643,7 +642,7 @@ msgid "Delete housemode"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:16
-#: ../applications/onvif/html/onvif.xml.in.h:45
+#: ../applications/onvif/html/onvif.xml.in.h:46
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -1044,68 +1043,76 @@ msgid "Detection sensitivity"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:29
-msgid "Detection deviation (the higher the value, the more motion is allowed)"
+msgid "Detection deviation"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:30
-msgid "On duration"
+msgid "(the higher the value, the more motion is allowed)"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:31
-msgid "seconds"
+msgid "On duration"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:32
-msgid "Recording duration"
+msgid "seconds"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:33
-msgid "0 to disable recording"
+msgid "Recording duration"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:34
-msgid "This tab allow you to configure your device as you need"
+msgid "0 to disable recording"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
+msgid "This tab allow you to configure your device as you need"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:36
 msgid ""
 "Click on \"Get\" button to execute get like operation. It will fill "
 "parameters field with response and help you preparing your request"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:36
+#: ../applications/onvif/html/onvif.xml.in.h:37
 msgid "Service name"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:37
+#: ../applications/onvif/html/onvif.xml.in.h:38
 msgid "Operation name"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../applications/onvif/html/onvif.xml.in.h:39
 msgid "Operation"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../applications/onvif/html/onvif.xml.in.h:40
 msgid "Get"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:40
+#: ../applications/onvif/html/onvif.xml.in.h:41
 msgid "Parameters"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:41
+#: ../applications/onvif/html/onvif.xml.in.h:42
 msgid "Check parameters"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:42
+#: ../applications/onvif/html/onvif.xml.in.h:43
 msgid "Execute"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:43
+#: ../applications/onvif/html/onvif.xml.in.h:44
 msgid "My cameras"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:46
+#: ../applications/onvif/html/onvif.xml.in.h:45
+msgid "Camera"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:47
 #: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -1116,16 +1123,24 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:48
 msgid "Ip address"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../applications/onvif/html/onvif.xml.in.h:49
 msgid "Select camera profile"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../applications/onvif/html/onvif.xml.in.h:50
 msgid "Save camera"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:51
+msgid "Records directory"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:52
+msgid "Directory"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
