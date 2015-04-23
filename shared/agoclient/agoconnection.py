@@ -262,21 +262,16 @@ class AgoConnection:
         response['_newresponse'] = True #TODO: remove thits after everything is using new response style
         return response
 
+    def response_unknown_command(self, message=None, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_UNKNOWN_COMMAND, mess=message, data=data)
+
+    def response_missing_parameters(self, message=None, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_MISSING_PARAMETERS, mess=message, data=data)
+
+    def response_bad_parameters(self, message=None, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_BAD_PARAMETERS, mess=message, data=data)
+
     def response_failed(self, message, data=None):
-        """
-        parameters are voluntary shortened!
-        @param mess: response message
-        @param data: response data <optional>
-        """
-        message = None
-        data = None
-
-        if kwargs.has_key('mess'):
-            message = kwargs['mess']
-
-        if kwargs.has_key('data'):
-            data = kwargs['data']
-
         return self.response_error(iden=self.RESPONSE_ERR_FAILED, mess=message, data=data)
 
     def response_result(self, **kwargs):
@@ -304,7 +299,10 @@ class AgoConnection:
         response['_newresponse'] = True #TODO: remove thits after everything is using new response style
         return response
 
-    def response_success(self, message, data=None):
+    def response_success(self, data=None, message=None):
+        """
+        First parameter is data because data is more often returned than message when response is successful
+        """
         return self.response_result(iden=self.RESPONSE_SUCCESS, mess=message, data=data)
 
     def send_message(self, content):
