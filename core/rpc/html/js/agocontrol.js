@@ -233,7 +233,7 @@ Agocontrol.prototype = {
                                 code:-32603,
                                 message: 'transport.error',
                                 data:{
-                                    description:'Failed to talk with agorpc'
+                                    message:'Failed to talk with agorpc'
                                 }
                             });
                     }
@@ -250,9 +250,9 @@ Agocontrol.prototype = {
                 //controller is not responding
                 notif.fatal('Controller is not responding');
             }
-            else if( error.data && error.data.description )
+            else if( error.data && error.data.message )
             {
-                notif.error(error.data.description);
+                notif.error(error.data.message);
             }
             else if( error.message && error.message )
             {
