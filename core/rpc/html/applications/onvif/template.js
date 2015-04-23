@@ -31,6 +31,7 @@ function OnVIFPlugin(devices, agocontrol)
     self.motionDeviation = ko.observable(20);
     self.motionRecordingDuration = ko.observable(0);
     self.motionOnDuration = ko.observable(300);
+    self.motionRecordDir = ko.observable('/opt/agocontrol/recordings');
 
     self.camerasGrid = new ko.agoGrid.viewModel({
         data: self.cameras,
@@ -53,6 +54,38 @@ function OnVIFPlugin(devices, agocontrol)
             }
         }
     }
+
+    //get config
+    self.getConfig = function()
+    {
+        content = {};
+        content.uuid = self.controllerUuid;
+        content.command = 'getconfig';
+        self.agocontrol.sendCommand(content)
+        .then(function(resp) {
+            if( resp.data.cameras && resp.data.general )
+            {
+                //set cameras
+                cameras = [];
+                for( var internalid in resp.data.cameras )
+                {
+                    var camera = resp.data[internalid];
+                    camera.internalid = internalid;
+                    cameras.push(camera);
+                }
+                self.cameras(cameras);
+
+                //set config
+                self.motionRecordDir(resp.data.general.record_dir);
+            }
+            else
+            {
+                notif.error('Invalid configuration');
+            }
+        })
+        .catch(function(err) {
+        });
+    };
 
     //get all cameras
     self.getCameras = function()
@@ -564,11 +597,11 @@ function OnVIFPlugin(devices, agocontrol)
     //set motion
     self.setMotion = function()
     {
-        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!=null && self.motionRecordingDuration()!=null )
+        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!==null && self.motionRecordingDuration()!==null )
         {
             self.agocontrol.block('#cameraDetails');
 
-            content = {};
+            var content = {};
             content.uuid = self.controllerUuid;
             content.command = 'setmotion';
             content.internalid = self.selectedCamera().internalid;
@@ -593,8 +626,35 @@ function OnVIFPlugin(devices, agocontrol)
         }
     };
 
-    //by default get list of cameras
-    self.getCameras();
+    //save motion (main motion tab)
+    self.saveMotion = function()
+    {
+        if( $.trim(self.motionSensitivity()).length>0 )
+        {
+            self.agocontrol.block('#configTab');
+
+            var content = {};
+            content.uuid = self.controllerUuid;
+            content.command = 'setmotiondir';
+            content.dir = self.motionRecordDir();
+            self.agocontrol.sendCommand(content)
+            .then(function(resp) {
+                console.log(resp);
+            })
+            .catch(function(err) {
+            })
+            .finally(function() {
+                self.agocontrol.unblock('#configTab');
+            });
+        }
+        else
+        {
+            notif.error('Parameter is missing');
+        }
+    };
+
+    //by default get config
+    self.getConfig();
 }
 
 /**

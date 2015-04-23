@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 #-*-coding=utf-8
 
 import time
@@ -29,7 +29,7 @@ class Motion(threading.Thread):
     https://blog.cedric.ws/opencv-simple-motion-detection
     """
 
-    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record_duration=0):
+    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record_duration=0, record_dir=None):
         """
         Constructor
         @param camera_internalid: camera internalid to generate record filename
@@ -61,6 +61,7 @@ class Motion(threading.Thread):
         self.trigger_enabled = False
         self.internalid = camera_internalid + '_bin'
         self.current_record_filename = None
+        self.record_dir = record_dir
         self.running = True
 
         self.kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
@@ -76,12 +77,6 @@ class Motion(threading.Thread):
         res, self.frame = self.capture.read()
         if not res:
             self.log.error('Motion: Unable to capture frame')
-        #gray frame at t=t-1
-        self.frame1gray = cv2.cvtColor(self.frame, cv2.COLOR_RGB2GRAY)
-        #keep frame result
-        self.frameresult = numpy.empty(self.frame.shape, dtype='uint8')
-        #gray frame at t=0
-        self.frame2gray = numpy.empty(self.frame.shape, dtype='uint8')
 
         #frame properties
         self.width = self.frame.shape[0]
@@ -106,10 +101,10 @@ class Motion(threading.Thread):
         #start recording
         if self.do_record:
             #init recorder
-            self.init_recorder()
-            self.log.info('Start recording "%s" during %d seconds' % (self.current_record_filename, self.record_duration))
-            #and turn on recording flag
-            self.is_recording = True
+            if self.init_recorder():
+                self.log.info('Start recording "%s" during %d seconds' % (self.current_record_filename, self.record_duration))
+                #and turn on recording flag
+                self.is_recording = True
 
         #emit event
         self.connection.emit_event(self.internalid, "event.device.statechanged", 255, "")
@@ -130,7 +125,11 @@ class Motion(threading.Thread):
         """
         Init video recorder or reset new one if already opened
         """
-        self.current_record_filename = '%s_%s.%s' % (self.internalid, datetime.now().strftime("%y_%m_%d_%H_%M_%S"), 'avi')
+        if not os.path.exists(self.record_dir):
+            #no recording until dir exists
+            return False
+
+        self.current_record_filename = os.path.join(self.record_dir, '%s_%s.%s' % (self.internalid, datetime.now().strftime("%y_%m_%d_%H_%M_%S"), 'avi'))
         #@see codec available here: http://www.fourcc.org/codecs.php
         codec = cv2.cv.CV_FOURCC(*'FMP4')
         #codec = cv2.VideoWriter_fourcc(*'XVID')
@@ -141,6 +140,8 @@ class Motion(threading.Thread):
             self.log.info('release recorder')
             self.recorder.release()
         self.recorder = cv2.VideoWriter(self.current_record_filename, codec, fps, size)
+
+        return True
 
     def process_frame(self, frame):
         """
@@ -319,6 +320,7 @@ class Camera():
         self.motion_deviation = 20
         self.motion_on_duration = 300
         self.motion_record = 0
+        self.motion_record_dir = None
         self.motion_thread = None
         self._camera = None
 
@@ -371,10 +373,10 @@ class Camera():
         self.log.debug('uri=%s motion=%s' % (str(self.uri), str(self.motion)))
         if self.uri and self.motion:
             self.log.debug('Start motion thread')
-            self.motion_thread = Motion(self.connection, self.log, self.internalid, self.uri, self.motion_sensitivity, self.motion_deviation, self.motion_on_duration, self.motion_record)
+            self.motion_thread = Motion(self.connection, self.log, self.internalid, self.uri, self.motion_sensitivity, self.motion_deviation, self.motion_on_duration, self.motion_record, self.motion_record_dir)
             self.motion_thread.start()
 
-    def set_motion(self, enable, sensitivity, deviation, on_duration, record_duration):
+    def set_motion(self, enable, sensitivity, deviation, on_duration, record_duration, record_dir):
         """
         Set motion feature
         """
@@ -383,6 +385,7 @@ class Camera():
         self.motion_deviation = deviation
         self.motion_on_duration = on_duration
         self.motion_record = record_duration
+        self.motion_record_dir = record_dir
         self.__configure_motion()
 
     def set_uri(self, token, uri):
@@ -393,6 +396,15 @@ class Camera():
         self.uri_token = token
 
         #configure motion if necessary
+        self.__configure_motion()
+
+    def set_record_dir(self, record_dir):
+        """
+        Set directory to save recordings
+        """
+        self.motion_record_dir = record_dir
+
+        #update motion
         self.__configure_motion()
 
     def is_configured(self):
@@ -632,6 +644,8 @@ class Camera():
 
 
 class AgoOnvif(agoclient.AgoApp):
+    DEFAULT_RECORD_DIR = '/opt/agocontrol/recordings'
+
     """
     Agocontrol ONVIF
     """
@@ -650,21 +664,32 @@ class AgoOnvif(agoclient.AgoApp):
         #add handlers
         self.connection.add_handler(self.message_handler)
         #add controller
-        self.connection.add_device('pyonvifcontroller', 'pyonvifcontroller')
+        self.connection.add_device('onvifcontroller', 'onvifcontroller')
+
+        #check config
+        if not self.config.has_key('cameras') or not self.config.has_key('general'):
+            self.log.fatal('Configuration file is corrupted!')
+            return False
+
+        #check default recordings dir
+        if self.config['general']['record_dir']==self.DEFAULT_RECORD_DIR and not os.path.exists(self.DEFAULT_RECORD_DIR):
+            #create default record dir
+            self.log.info('Create default recordings directory [%s]' % self.DEFAULT_RECORD_DIR)
+            os.mkdir(self.DEFAULT_RECORD_DIR)
 
         #restore existing devices
         self.log.info('Restoring cameras:')
         self.__configLock.acquire()
-        for internalid in self.config:
-            res, msg = self.create_camera(self.config[internalid]['ip'], self.config[internalid]['port'], self.config[internalid]['login'], self.config[internalid]['password'], False)
+        for internalid in self.config['cameras']:
+            res, msg = self.create_camera(self.config['cameras'][internalid]['ip'], self.config['cameras'][internalid]['port'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'], False)
             if not res:
                 self.log.warning(' - Camera "%s" [FAILED]' % internalid)
             else:
                 #get camera
                 self.log.info(' - Camera "%s"' % internalid)
                 camera = self.cameras[internalid]
-                camera.set_uri(self.config[internalid]['uri_token'], self.config[internalid]['uri'])
-                camera.set_motion(self.config[internalid]['motion'], self.config[internalid]['motion_sensitivity'], self.config[internalid]['motion_deviation'], self.config[internalid]['motion_on_duration'], self.config[internalid]['motion_record'])
+                camera.set_uri(self.config['cameras'][internalid]['uri_token'], self.config['cameras'][internalid]['uri'])
+                camera.set_motion(self.config['cameras'][internalid]['motion'], self.config['cameras'][internalid]['motion_sensitivity'], self.config['cameras'][internalid]['motion_deviation'], self.config['cameras'][internalid]['motion_on_duration'], self.config['cameras'][internalid]['motion_record'], self.config['general']['record_dir'])
                 self.connection.add_device(internalid, 'camera')
         self.__configLock.release()
 
@@ -708,11 +733,12 @@ class AgoOnvif(agoclient.AgoApp):
                 f.close()
                 self.config = json.loads(j)
             else:
+                default = {'general':{'record_dir':self.DEFAULT_RECORD_DIR}, 'cameras':{}}
                 self.log.debug('Create default empty config file "%s"' % DEVICEMAPFILE)
                 f = open(DEVICEMAPFILE, "w")
-                f.write(json.dumps({}))
+                f.write(json.dumps(default))
                 f.close()
-                self.config = {}
+                self.config = default
         except:
             self.log.exception('Unable to load devices infos')
             error = True
@@ -747,7 +773,7 @@ class AgoOnvif(agoclient.AgoApp):
 
             #save device map
             if saveConfig:
-                self.config[internalid] = config
+                self.config['cameras'][internalid] = config
                 self.save_config()
 
             return True, ''
@@ -780,7 +806,7 @@ class AgoOnvif(agoclient.AgoApp):
 
         #delete camera from internal structures
         self.cameras.pop(internalid)
-        self.config.pop(internalid)
+        self.config['cameras'].pop(internalid)
         self.save_config()
 
         return True, ''
@@ -823,9 +849,9 @@ class AgoOnvif(agoclient.AgoApp):
             command = content['command']
         if not command:
             self.log.error('No command specified')
-            return self.connection.response_failed(mess='No command specified')
+            return self.connection.response_failed('No command specified')
 
-        if internalid=='pyonvifcontroller':
+        if internalid=='onvifcontroller':
             #handle controller commands
 
             if command=='addcamera':
@@ -833,7 +859,7 @@ class AgoOnvif(agoclient.AgoApp):
                     #check params
                     res,msg = self.__check_ip_port(content['ip'], content['port'])
                     if not res:
-                        return self.connection.response_failed(mess=msg)
+                        return self.connection.response_failed(msg)
 
                     #create new camera
                     content['port'] = int(content['port'])
@@ -849,26 +875,26 @@ class AgoOnvif(agoclient.AgoApp):
                         if uri:
                             #set and save uri
                             camera.set_uri(content['uri_token'], uri)
-                            self.config[internalid]['uri'] = uri
-                            self.config[internalid]['uri_token'] = content['uri_token']
-                            self.config[internalid]['uri_desc'] = content['uri_desc']
+                            self.config['cameras'][internalid]['uri'] = uri
+                            self.config['cameras'][internalid]['uri_token'] = content['uri_token']
+                            self.config['cameras'][internalid]['uri_desc'] = content['uri_desc']
                             self.save_config()
                         else:
                             msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
                             self.log.error(msg)
-                            return self.connection.response_failed(mess='Camera not added: %s' % msg)
+                            return self.connection.response_failed('Camera not added: %s' % msg)
 
                         #create new camera device
                         self.connection.add_device(internalid, 'camera')
                         self.log.info('New camera "%s" added' % internalid)
 
-                        return self.connection.response_success()
+                        return self.connection.response_success(None, 'Camera added')
                     else:
                         self.log.error('Camera not added: %s' % msg)
-                        return self.connection.response_failed(mess='camera not added: %s' % msg)
+                        return self.connection.response_failed('camera not added: %s' % msg)
                 else:
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
 
             elif command=='deletecamera':
                 if self.__check_command_params(content, ['internalid']):
@@ -879,13 +905,13 @@ class AgoOnvif(agoclient.AgoApp):
                         #delete device from ago
                         self.connection.remove_device(content['internalid'])
 
-                        return self.connection.response_success()
+                        return self.connection.response_success(None, 'Camera deleted')
                     else:
                         self.log.error('Camera with internalid "%s" was not found' % internalid)
-                        return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                        return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                 else:
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
 
             elif command=='getprofiles':
                 #different behaviour according to specified parameters
@@ -896,27 +922,27 @@ class AgoOnvif(agoclient.AgoApp):
                     fromExisting = True
                 else:
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
 
                 if not fromExisting:
                     #create temp camera
                     #check params
                     res,msg = self.__check_ip_port(content['ip'], content['port'])
                     if not res:
-                        return self.connection.response_failed(mess=msg)
+                        return self.connection.response_failed(msg)
 
                     content['port'] = int(content['port'])
                     camera = self.create_temp_camera(content['ip'], content['port'], content['login'], content['password'])
                     if not camera:
                         msg = 'Unable to connect to camera. Check parameters'
                         self.log.warning(msg)
-                        return self.connection.response_failed(mess=msg)
+                        return self.connection.response_failed(msg)
                 else:
                     #get camera instance from instance container
                     internalid = content['internalid']
                     if not self.cameras.has_key(internalid):
                         self.log.error('Camera with internalid "%s" was not found' % internalid)
-                        return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                        return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                     camera = self.cameras[internalid]
 
                 ps = camera.get_profiles()
@@ -942,43 +968,46 @@ class AgoOnvif(agoclient.AgoApp):
                             bounds['height'] = p['VideoSourceConfiguration']['Bounds']['height']
                             profile['boundaries'] = bounds
                         profiles.append(profile)
-                    return self.connection.response_success(data=profiles)
+                    return self.connection.response_success(profiles)
                 else:
                     #no profiles (parsing error?)
                     self.log.error('No profile found')
-                    return self.connection.response_failed(mess='No profile found')
+                    return self.connection.response_failed('No profile found')
 
             elif command=='dooperation':
                 if not self.__check_command_params(content, ['internalid', 'service', 'operation', 'params']):
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
                 internalid = content['internalid']
 
                 if not self.cameras.has_key(internalid):
                     self.log.error('Camera with internalid "%s" was not found' % internalid)
-                    return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                    return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                 camera = self.cameras[internalid]
                 
                 #execute command
                 resp = camera.do_operation(content['service'], content['operation'], content['params'])
                 if resp==None:
                     self.log.error('Operation failed')
-                    return self.connection.response_failed(mess='Operation failed')
+                    return self.connection.response_failed('Operation failed')
                 else:
-                    return self.connection.response_success(data=resp)
+                    return self.connection.response_success(resp)
 
             elif command=='getcameras':
-                return self.connection.response_success(data=self.config)
+                return self.connection.response_success(self.config['cameras'])
+
+            elif command=='getconfig':
+                return self.connection.response_success(self.config)
 
             elif command=='updatecredentials':
                 if not self.__check_command_params(content, ['internalid', 'login', 'password']):
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
                 internalid = content['internalid']
 
                 if not self.cameras.has_key(internalid):
                     self.log.error('Camera with internalid "%s" was not found' % internalid)
-                    return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                    return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                 camera = self.cameras[internalid]
 
                 #update credentials on camera first
@@ -986,26 +1015,26 @@ class AgoOnvif(agoclient.AgoApp):
                 if not resp:
                     msg = 'Unable to set credentials on camera'
                     self.log.error(msg)
-                    return self.connection.response_failed(mess=msg)
+                    return self.connection.response_failed(msg)
 
                 #TODO update uri
 
                 #then update on controller
-                self.config[internalid].login = content['login']
-                self.config[internalid].password = content['password']
+                self.config['cameras'][internalid].login = content['login']
+                self.config['cameras'][internalid].password = content['password']
                 self.save_config()
 
-                return self.connection.response_success()
+                return self.connection.response_success(None, 'Credentials saved')
 
             elif command=='getdeviceinfos':
                 if not self.__check_command_params(content, ['internalid']):
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
                 internalid = content['internalid']
 
                 if not self.cameras.has_key(internalid):
                     self.log.error('Camera with internalid "%s" was not found' % internalid)
-                    return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                    return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                 camera = self.cameras[internalid]
 
                 #get device infos
@@ -1013,7 +1042,7 @@ class AgoOnvif(agoclient.AgoApp):
                 if not resp:
                     msg = 'Unable to get device infos'
                     self.log.error(msg)
-                    return self.connection.response_failed(mess=msg)
+                    return self.connection.response_failed(msg)
 
                 #prepare output
                 self.log.debug(resp)
@@ -1024,17 +1053,17 @@ class AgoOnvif(agoclient.AgoApp):
                 out['serialnumber'] = resp['SerialNumber']
                 out['hardwareid'] = resp['HardwareId']
                 
-                return self.connection.response_success(data=out)
+                return self.connection.response_success(out)
 
             elif command=='setcameraprofile':
                 if not self.__check_command_params(content, ['internalid']):
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
                 internalid = content['internalid']
 
                 if not self.cameras.has_key(internalid):
                     self.log.error('Camera with internalid "%s" was not found' % internalid)
-                    return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                    return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                 camera = self.cameras[internalid]
 
                 #get uri from token
@@ -1043,26 +1072,26 @@ class AgoOnvif(agoclient.AgoApp):
                 if uri:
                     #set and save uri
                     camera.set_uri(content['uri_token'], uri)
-                    self.config[internalid]['uri'] = uri
-                    self.config[internalid]['uri_token'] = content['uri_token']
-                    self.config[internalid]['uri_desc'] = content['uri_desc']
+                    self.config['cameras'][internalid]['uri'] = uri
+                    self.config['cameras'][internalid]['uri_token'] = content['uri_token']
+                    self.config['cameras'][internalid]['uri_desc'] = content['uri_desc']
                     self.save_config()
                 else:
                     msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
                     self.log.error(msg)
-                    return self.connection.response_failed(mess='Camera not added: %s' % msg)
+                    return self.connection.response_failed('Camera not added: %s' % msg)
 
-                return self.connection.response_success()
+                return self.connection.response_success(None, 'Configuration saved')
 
             elif command=='setmotion':
                 if not self.__check_command_params(content, ['internalid', 'enable', 'sensitivity', 'deviation', 'onduration', 'recordingduration']):
                     self.log.error('Parameters are missing')
-                    return self.connection.response_error(iden=self.connection.RESPONSE_ERR_MISSING_PARAMETERS)
+                    return self.connection.response_missing_parameters()
                 internalid = content['internalid']
 
                 if not self.cameras.has_key(internalid):
                     self.log.error('Camera with internalid "%s" was not found' % internalid)
-                    return self.connection.response_failed(mess='Camera with internalid "%s" was not found' % internalid)
+                    return self.connection.response_failed('Camera with internalid "%s" was not found' % internalid)
                 camera = self.cameras[internalid]
 
                 #check parameters
@@ -1076,44 +1105,65 @@ class AgoOnvif(agoclient.AgoApp):
                 except ValueError:
                     msg = 'Invalid "sensitivity" parameter. Must be integer'
                     self.log.error(msg)
-                    self.connection.response_error(msg=msg)
+                    self.connection.response_bad_parameters(msg)
 
                 try:
                     content['deviation'] = int(content['deviation'])
                 except ValueError:
                     msg = 'Invalid "deviation" parameter. Must be integer'
                     self.log.error(msg)
-                    self.connection.response_error(msg=msg)
+                    self.connection.response_bad_parameters(msg)
                     
                 try:
                     content['onduration'] = int(content['onduration'])
                 except ValueError:
                     msg = 'Invalid "on duration" parameter. Must be integer'
                     self.log.error(msg)
-                    self.connection.response_error(msg=msg)
+                    self.connection.response_bad_parameters(msg)
 
                 try:
                     content['recordingduration'] = int(content['recordingduration'])
                 except ValueError:
                     msg = 'Invalid "recording duration" parameter. Must be integer'
                     self.log.error(msg)
-                    self.connection.response_error(msg=msg)
+                    self.connection.response_bad_parameters(msg)
 
                 #configure motion
-                camera.set_motion(content['enable'], content['sensitivity'], content['deviation'], content['onduration'], content['recordingduration'])
+                camera.set_motion(content['enable'], content['sensitivity'], content['deviation'], content['onduration'], content['recordingduration'], self.config['general']['record_dir'])
 
                 #save new config
-                self.config[internalid]['motion'] = content['enable']
-                self.config[internalid]['motion_sensitivity'] = content['sensitivity']
-                self.config[internalid]['motion_deviation'] = content['deviation']
-                self.config[internalid]['motion_on_duration'] = content['onduration']
-                self.config[internalid]['motion_record'] = content['recordingduration']
+                self.config['cameras'][internalid]['motion'] = content['enable']
+                self.config['cameras'][internalid]['motion_sensitivity'] = content['sensitivity']
+                self.config['cameras'][internalid]['motion_deviation'] = content['deviation']
+                self.config['cameras'][internalid]['motion_on_duration'] = content['onduration']
+                self.config['cameras'][internalid]['motion_record'] = content['recordingduration']
                 self.save_config()
+
+                return self.connection.response_success(None, 'Configuration saved')
+
+            elif command=='setmotiondir':
+                if not self.__check_command_params(content, ['dir']):
+                    self.log.error('Parameters are missing')
+                    return self.connection.response_missing_parameters()
+
+                #check if dir exists
+                if not os.path.exists(content['dir']):
+                    return self.connection.response_failed('Specified directory doesn\'t exist. Please create it manually first.')
+
+                #update all cameras
+                for internalid in self.cameras:
+                    self.cameras[internalid].set_record_dir(content['dir'])
+
+                #save to config dir
+                self.config['general']['record_dir'] = content['dir']
+                self.save_config()
+
+                return self.connection.response_success(None, 'Configuration saved')
 
             else:
                 #request not handled
                 self.log.error('Unhandled request')
-                return self.connection.response_error(iden=self.connection.RESPONSE_ERR_UNKNOWN_COMMAND)
+                return self.connection.response_unknown_command()
 
         elif self.cameras.has_key(internalid):
             #handle device command
@@ -1128,23 +1178,23 @@ class AgoOnvif(agoclient.AgoApp):
                     if ret:
                         data = {}
                         data['image'] = base64.b64encode(buf)
-                        return self.connection.response_success(data=data)
+                        return self.connection.response_success(data)
                     else:
                         self.log.error('No buffer retrieved [%s]' % data)
-                        return self.connection.response_failed(mess=data)
+                        return self.connection.response_failed(data)
                 else:
                     self.log.error('No buffer retrieved [%s]' % data)
-                    return self.connection.response_failed(mess=data)
+                    return self.connection.response_failed(data)
 
             else:
                 #request not handled
                 self.log.error('Unhandled request')
-                return self.connection.response_error(iden=self.connection.RESPONSE_ERR_UNKNOWN_COMMAND)
+                return self.connection.response_unknown_command()
 
         else:
             #request not handled
             self.log.error('Unhandled request')
-            return self.connection.response_error(iden=self.connection.RESPONSE_ERR_UNKNOWN_COMMAND)
+            return self.connection.response_unknown_command()
 
 
 

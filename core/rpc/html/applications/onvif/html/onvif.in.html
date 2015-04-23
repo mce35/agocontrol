@@ -23,7 +23,7 @@
                             <_span data-translateable="true">Camera ip address</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" _placeholder="Ip" data-bind="textInput:cameraIp" disabled="disabled" />
+                            <input data-translateable="true" class="xwide input" type="text" _placeholder="Ip" data-bind="textInput:cameraIp" disabled="disabled" />
                         </div>
                     </div>
                     <div class="row">
@@ -31,7 +31,7 @@
                             <_span data-translateable="true">Camera port</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" _placeholder="Port" data-bind="textInput:cameraPort" disabled="disabled" />
+                            <input data-translateable="true" class="xwide input" type="text" _placeholder="Port" data-bind="textInput:cameraPort" disabled="disabled" />
                         </div>
                     </div>
                     <div class="row">
@@ -39,7 +39,7 @@
                             <_span data-translateable="true">Camera login</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" _placeholder="Login" data-bind="textInput:cameraLogin" />
+                            <input data-translateable="true" class="xwide input" type="text" _placeholder="Login" data-bind="textInput:cameraLogin" />
                         </div>
                     </div>
                     <div class="row">
@@ -47,7 +47,7 @@
                             <_span data-translateable="true">Camera password</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" _placeholder="Password" data-bind="textInput:cameraPassword" />
+                            <input data-translateable="true" class="xwide input" type="text" _placeholder="Password" data-bind="textInput:cameraPassword" />
                         </div>
                         <div class="four columns text-left field">
                             <div data-bind="event{mousedown:updateCameraCredentials}" class="medium primary btn">
@@ -60,7 +60,7 @@
                             <_span data-translateable="true">Camera URI</_span>
                         </div>
                         <div class="six columns text-left field">
-                            <input class="xwide input" type="text" _placeholder="URI" data-bind="textInput:cameraUri" disabled="disabled"/>
+                            <input data-translateable="true" class="xwide input" type="text" _placeholder="URI" data-bind="textInput:cameraUri" disabled="disabled"/>
                         </div>
                     </div>
                     <div class="row">
@@ -219,10 +219,13 @@
                     </div>
                     <div class="row">
                         <div class="four columns text-right">
-                            <_span data-translateable="true">Detection deviation (the higher the value, the more motion is allowed)</_span>
+                            <_span data-translateable="true">Detection deviation</_span>
                         </div>
                         <div class="four columns text-left field">
                             <input class="xwide input" type="text" data-bind="textInput:motionDeviation" />
+                        </div>
+                        <div class="two columns text-left">
+                            <_span data-translateable="true" style="font-size:small;">(the higher the value, the more motion is allowed)</_span>
                         </div>
                     </div>
                     <div class="row">
@@ -289,7 +292,7 @@
                             <_span data-translateable="true">Operation name</_span>
                         </div>
                         <div class="six columns text-left field">
-                            <input class="xwide input" type="text" _placeholder="Operation" data-bind="textInput:onvifOperation" />
+                            <input data-translateable="true" class="xwide input" type="text" _placeholder="Operation" data-bind="textInput:onvifOperation" />
                         </div>
                         <div class="four columns text-left field">
                             <div data-bind="event{mousedown:getAdvancedOperation}" class="medium primary btn">
@@ -302,7 +305,7 @@
                             <_span data-translateable="true">Parameters</_span>
                         </div>
                         <div class="ten columns text-left field">
-                            <textarea style="height:200px; font-size:14px; line-height:20px;" class="input textarea" _placeholder="Parameters" data-bind="textInput:onvifParameters"></textarea>
+                            <textarea data-translateable="true" style="height:200px; font-size:14px; line-height:20px;" class="input textarea" _placeholder="Parameters" data-bind="textInput:onvifParameters"></textarea>
                         </div>
                     </div>
                     <div class="row">
@@ -325,7 +328,8 @@
     <section data-bind="gumbyTabs:$root" class="tabs">
         <ul class="tab-nav">
             <li class="active"><_a data-translateable="true" href="#">My cameras</_a></li>
-            <li><_a data-translateable="true" href="#">Configuration</_a></li>
+            <li><_a data-translateable="true" href="#">Camera</_a></li>
+            <li><_a data-translateable="true" href="#">Motion</_a></li>
         </ul>
 
         <!-- My cameras -->
@@ -350,14 +354,14 @@
             <div data-bind="agoGrid:camerasGrid"></div>
         </div>
 
-        <!-- configuration -->
+        <!-- camera -->
         <div class="tab-content" id="configTab">
             <div class="row">
                 <div class="four columns text-right">
                     <_span data-translateable="true">Camera ip address</_span>
                 </div>
                 <div class="four columns text-left field">
-                    <input class="wide input" type="text" _placeholder="Ip address" data-bind="textInput:cameraIp" />
+                    <input data-translateable="true" class="wide input" type="text" _placeholder="Ip address" data-bind="textInput:cameraIp" />
                 </div>
             </div>
             <div class="row">
@@ -365,7 +369,7 @@
                     <_span data-translateable="true">Camera port</_span>
                 </div>
                 <div class="four columns text-left field">
-                    <input class="wide input" type="text" _placeholder="Port" data-bind="textInput:cameraPort" />
+                    <input data-translateable="true" class="wide input" type="text" _placeholder="Port" data-bind="textInput:cameraPort" />
                 </div>
             </div>
             <div class="row">
@@ -373,7 +377,7 @@
                     <_span data-translateable="true">Camera login</_span>
                 </div>
                 <div class="four columns text-left field">
-                    <input class="wide input" type="text" _placeholder="Login" data-bind="textInput:cameraLogin" />
+                    <input data-translateable="true" class="wide input" type="text" _placeholder="Login" data-bind="textInput:cameraLogin" />
                 </div>
             </div>
             <div class="row">
@@ -381,7 +385,7 @@
                     <_span data-translateable="true">Camera password</_span>
                 </div>
                 <div class="four columns text-left field">
-                    <input class="wide input" type="text" _placeholder="Password" data-bind="textInput:cameraPassword" />
+                    <input data-translateable="true" class="wide input" type="text" _placeholder="Password" data-bind="textInput:cameraPassword" />
                 </div>
             </div>
             <div class="row">
@@ -409,6 +413,27 @@
                 <div class="four columns text-left field">
                     <div data-bind="event{mousedown:addCamera}" class="medium primary btn">
                         <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save camera</_a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- motion -->
+        <div class="tab-content" id="motionTab">
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Records directory</_span>
+                </div>
+                <div class="four columns text-left field">
+                    <input data-translateable="true" class="wide input" type="text" _placeholder="Directory" data-bind="textInput:motionRecordDir" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div data-bind="event{mousedown:saveMotion}" class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
                     </div>
                 </div>
             </div>
