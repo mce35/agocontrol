@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 13:02+0200\n"
+"POT-Creation-Date: 2015-04-23 13:08+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -674,7 +674,7 @@ msgid "Delete housemode"
 msgstr "Hausmodus hinzufügen"
 
 #: ../applications/security/html/security.xml.in.h:16
-#: ../applications/onvif/html/onvif.xml.in.h:46
+#: ../applications/onvif/html/onvif.xml.in.h:47
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -1175,7 +1175,12 @@ msgstr ""
 msgid "Camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:46
+#, fuzzy
+msgid "Recordings"
+msgstr "Konfiguration speichern"
+
+#: ../applications/onvif/html/onvif.xml.in.h:48
 #: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -1186,25 +1191,25 @@ msgstr ""
 msgid "Delete"
 msgstr "Löschen"
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../applications/onvif/html/onvif.xml.in.h:49
 #, fuzzy
 msgid "Ip address"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../applications/onvif/html/onvif.xml.in.h:50
 msgid "Select camera profile"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:50
+#: ../applications/onvif/html/onvif.xml.in.h:51
 msgid "Save camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:51
+#: ../applications/onvif/html/onvif.xml.in.h:52
 #, fuzzy
-msgid "Records directory"
+msgid "Recordings directory"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:52
+#: ../applications/onvif/html/onvif.xml.in.h:53
 msgid "Directory"
 msgstr ""
 

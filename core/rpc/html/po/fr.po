@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 13:02+0200\n"
+"POT-Creation-Date: 2015-04-23 13:08+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -656,7 +656,7 @@ msgid "Delete housemode"
 msgstr "Supprimer le mode"
 
 #: ../applications/security/html/security.xml.in.h:16
-#: ../applications/onvif/html/onvif.xml.in.h:46
+#: ../applications/onvif/html/onvif.xml.in.h:47
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -1071,8 +1071,7 @@ msgstr "Deviation"
 
 #: ../applications/onvif/html/onvif.xml.in.h:30
 msgid "(the higher the value, the more motion is allowed)"
-msgstr ""
-"(plus la valeur est grande, plus le nb de mouvement est autorisé)"
+msgstr "(plus la valeur est grande, plus le nb de mouvement est autorisé)"
 
 #: ../applications/onvif/html/onvif.xml.in.h:31
 msgid "On duration"
@@ -1136,11 +1135,14 @@ msgid "My cameras"
 msgstr "Mes caméras"
 
 #: ../applications/onvif/html/onvif.xml.in.h:45
-#, fuzzy
 msgid "Camera"
-msgstr "URI de la caméra"
+msgstr "Caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:46
+msgid "Recordings"
+msgstr "Enregistrement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:48
 #: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -1151,24 +1153,23 @@ msgstr "URI de la caméra"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../applications/onvif/html/onvif.xml.in.h:49
 msgid "Ip address"
 msgstr "Adresse ip"
 
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../applications/onvif/html/onvif.xml.in.h:50
 msgid "Select camera profile"
 msgstr "Sélectionner le profil de la caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:50
+#: ../applications/onvif/html/onvif.xml.in.h:51
 msgid "Save camera"
 msgstr "Enregistrer la caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:51
-#, fuzzy
-msgid "Records directory"
-msgstr "Durée de l'enregistrement"
-
 #: ../applications/onvif/html/onvif.xml.in.h:52
+msgid "Recordings directory"
+msgstr "Répertoire des enregistrements"
+
+#: ../applications/onvif/html/onvif.xml.in.h:53
 msgid "Directory"
 msgstr ""
 
