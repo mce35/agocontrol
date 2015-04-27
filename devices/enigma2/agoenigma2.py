@@ -34,7 +34,7 @@ class AgoEnigma2(agoclient.AgoApp):
         time.sleep(3)
 
     def mycallback(self, name, host, port):
-        if "dm500hd" in name or "dm600pvr" in name:
+        if "dm500hd" in name or "dm600pvr" in name or "vuduo2" in name:
             # print "callback %s %s %s\n" % (name, host, port)
             try:
                 f = urllib2.urlopen('http://%s/web/about' % str(host))

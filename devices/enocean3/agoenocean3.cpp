@@ -23,6 +23,7 @@
 
 
 using namespace std;
+using namespace qpid::types;
 using namespace agocontrol;
 
 class AgoEnocean3: public AgoApp {
@@ -36,10 +37,11 @@ public:
 };
 
 qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map returnval;
     std::string internalid = content["internalid"].asString();
     if (internalid == "enoceancontroller") {
         if (content["command"] == "teachframe") {
+            checkMsgParameter(content, "channel", VAR_INT32);
+            // this is optional - checkMsgParameter(content, "profile", VAR_STRING);
             int channel = content["channel"];
             std::string profile = content["profile"];
             if (profile == "central command dimming") {
@@ -47,11 +49,11 @@ qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map 
             } else {
                 myESP3->fourbsCentralCommandSwitchTeachin(channel);
             }
-            returnval["result"] = 0;
+            return responseSuccess();
         } else if (content["command"] == "setlearnmode") {
-            returnval["result"] = -1;
+            return responseError(RESPONSE_ERR_INTERNAL, "learnmode not yet implemented");
         } else if (content["command"] == "setidbase") {
-            returnval["result"] = -1;
+            return responseError(RESPONSE_ERR_INTERNAL, "set id base not yet implemented");
         }
     } else {
         int rid = 0; rid = atol(internalid.c_str());
@@ -61,20 +63,23 @@ qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map 
             } else {
                 myESP3->fourbsCentralCommandSwitchOn(rid);
             }
+            return responseSuccess();
         } else if (content["command"] == "off") {
             if (agoConnection->getDeviceType(internalid.c_str())=="dimmer") {
                 myESP3->fourbsCentralCommandDimOff(rid);
             } else {
                 myESP3->fourbsCentralCommandSwitchOff(rid);
             }
+            return responseSuccess();
         } else if (content["command"] == "setlevel") {
+            checkMsgParameter(content, "level", VAR_INT32);
             uint8_t level = 0;
             level = content["level"];
             myESP3->fourbsCentralCommandDimLevel(rid,level,1);
+            return responseSuccess();
         }
-        returnval["result"] = 0;
     }
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoEnocean3::setupApp() {

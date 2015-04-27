@@ -6,6 +6,13 @@
 
 'use strict';
 
+//@see http://stackoverflow.com/a/2548133/3333386
+if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function(suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+}
+
 //====================================
 //AGOCONTROL OBJECT
 //====================================
@@ -45,20 +52,58 @@ window.BlocklyAgocontrol = {
             out = out.replace("proximity", "prox");
             out = out.replace("telecom", "tel");
             out = out.replace("security", "sec");
+            out = out.replace("monitoring", "moni");
             return out;
         }
     },
 
-    //get devices
-    getDevices: function(deviceType) {
+    //string is ending with specified string ?
+    endsWith: function(str) {
+        return this.indexOf(str, this.length - str.length)!==-1;
+    },
+
+    //get device uuids
+    getDeviceUuids: function(deviceType) {
         var devices = [];
         var device;
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && device.devicetype==deviceType )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
             {
-                devices.push([device.name, device.uuid]);
+                if( device.name.length>0 )
+                {
+                    devices.push([device.name, device.uuid]);
+                }
+                else
+                {
+                    devices.push([device.internalid, device.uuid]);
+                }
+            }
+        }
+        //prevent from js crash
+        if( devices.length===0 )
+            devices.push(['', '']);
+        return devices;
+    },
+
+    //get device internalids
+    getDeviceInternalids: function(deviceType) {
+        var devices = [];
+        var device;
+        for( var i=0; i<this.devices.length; i++ )
+        {
+            device = this.devices[i];
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
+            {
+                if( device.name.length>0 )
+                {
+                    devices.push([device.name, device.internalid]);
+                }
+                else
+                {
+                    devices.push([device.internalid, device.internalid]);
+                }
             }
         }
         //prevent from js crash
@@ -75,7 +120,7 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && duplicates.indexOf(device.devicetype)===-1 )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && duplicates.indexOf(device.devicetype)===-1 )
             {
                 types.push([device.devicetype, device.devicetype]);
                 duplicates.push(device.devicetype);
@@ -97,10 +142,18 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( device.name.length>0 && device.devicetype===deviceType && duplicates.indexOf(device.name)===-1 )
+            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype===deviceType && duplicates.indexOf(device.name)===-1 )
             {
-                names.push([device.name, device.name]);
-                duplicates.push(device.name);
+                if( device.name.length>0 )
+                {
+                    names.push([device.name, device.name]);
+                    duplicates.push(device.name);
+                }
+                else
+                {
+                    names.push([device.internalid, device.name]);
+                    duplicates.push(device.internalid);
+                }
             }
         }
         //prevent from js crash
@@ -530,7 +583,7 @@ Blockly.Blocks['agocontrol_deviceName'] = {
     }
 };
 
-//device block
+//device uuid block
 Blockly.Blocks['agocontrol_deviceUuid'] = {
     init: function() {
         //members
@@ -561,7 +614,57 @@ Blockly.Blocks['agocontrol_deviceUuid'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
+            if( devices.length===0 )
+                devices.push(['','']);
+            this.container.removeField("DEVICE");
+            this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
+            if( currentDevice )
+            {
+                var field = this.getField_("DEVICE");
+                if( field )
+                {
+                    field.setValue(currentDevice);
+                }
+            }
+        }
+        
+        this.firstRun = false;
+    }
+};
+
+//device internalid block
+Blockly.Blocks['agocontrol_deviceInternalid'] = {
+    init: function() {
+        //members
+        this.firstRun = true;
+        this.lastType = undefined;
+
+        //block definition
+        //this.setHelpUrl('TODO');
+        this.setColour(20);
+        this.container = this.appendDummyInput()
+            .appendField("internalid")
+            .appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getDeviceTypes()), "TYPE")
+            .appendField(new Blockly.FieldDropdown([['','']]), "DEVICE");
+        this.setInputsInline(true);
+        this.setOutput(true, "String");
+        this.setTooltip('Return device internalid');
+    },
+
+    onchange: function() {
+        if( !this.workspace )
+            return;
+        var currentType = this.getFieldValue("TYPE");
+        var currentDevice = null;
+        if( this.firstRun )
+        {
+            currentDevice = this.getFieldValue("DEVICE");
+        }
+        if( this.lastType!=currentType )
+        {
+            this.lastType = currentType;
+            var devices = window.BlocklyAgocontrol.getDeviceInternalids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
@@ -632,7 +735,7 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
@@ -770,7 +873,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");
@@ -1027,7 +1130,7 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
         if( this.lastType!=currentType )
         {
             this.lastType = currentType;
-            var devices = window.BlocklyAgocontrol.getDevices(currentType);
+            var devices = window.BlocklyAgocontrol.getDeviceUuids(currentType);
             if( devices.length===0 )
                 devices.push(['','']);
             this.container.removeField("DEVICE");

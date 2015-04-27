@@ -151,19 +151,15 @@ function agoBlocklyPlugin(devices, agocontrol)
             name: scriptName,
             script: self.mergeXmlAndLua(self.getXml(), self.getLua())
         };
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res){
                 notif.success('#ss');
                 self.scriptName(scriptName.replace('blockly_', ''));
                 self.scriptSaved(true);
-            }
-            else
-            {
+            })
+            .catch(function(error){
                 notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //return xml code of blocks
@@ -228,30 +224,29 @@ function agoBlocklyPlugin(devices, agocontrol)
             uuid: self.luaControllerUuid,
             command: 'getscriptlist'
         };
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res){
                 //update ui variables
                 self.availableScripts([]);
-                for( var i=0; i<res.result.scriptlist.length; i++ )
+                for( var i=0; i<res.data.scriptlist.length; i++ )
                 {
                     //only keep agoblockly scripts
-                    if( res.result.scriptlist[i].indexOf('blockly_')===0 )
+                    if( res.data.scriptlist[i].indexOf('blockly_')===0 )
                     {
-                        self.availableScripts.push({'name':res.result.scriptlist[i].replace('blockly_','')});
+                        self.availableScripts.push({'name':res.data.scriptlist[i].replace('blockly_','')});
                     }
                 }
 
                 //callback
                 if( callback!==undefined )
                     callback();
-                self.agocontrol.unblock($('#agoGrid'));
-            }
-            else
-            {
+            })
+            .catch(function(err){
                 notif.fatal('#nr');
-            }
-        });
+            })
+            .finally(function(){
+                self.agocontrol.unblock($('#agoGrid'));
+            });
     };
 
     //load a script
@@ -292,25 +287,15 @@ function agoBlocklyPlugin(devices, agocontrol)
             command: 'delscript',
             name: script
         };
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result===0 )
-                {   
-                    notif.success('#sd');
-                    if( callback!==undefined )
-                        callback();
-                }
-                else
-                {
-                    notif.error('#nd');
-                }
-            }
-            else
-            {
-                notif.fatal('#nr');
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res){
+                notif.success('#sd');
+                if( callback!==undefined )
+                    callback();
+            })
+            .catch(function(err){
+                notif.error('#nd');
+            });
     };
 
     //rename a script
@@ -321,28 +306,16 @@ function agoBlocklyPlugin(devices, agocontrol)
             oldname: 'blockly_'+oldScript,
             newname: 'blockly_'+newScript
         };
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result===0 )
-                {   
-                    item.attr('data-oldname', newScript);
-                    notif.success('#rss');
-                    self.loadScripts();
-                    return true;
-                }
-                else
-                {
-                    notif.error('#rsf');
-                    return false;
-                }
-            }
-            else
-            {
-                notif.fatal('#nr');
-                return false;
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                item.attr('data-oldname', newScript);
+                notif.success('#rss');
+                self.loadScripts();
+                return true;
+            })
+            .catch(function(err){
+                notif.error('#rsf');
+            });
     };
 
     //Add default blocks
@@ -450,24 +423,15 @@ function agoBlocklyPlugin(devices, agocontrol)
             command: 'delscript',
             name: 'TODO'
         };
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result===0 )
-                {
-                    notif.error('#sd');
-                }
-                else
-                {
-                    //unable to delete
-                    notif.error('#nd');
-                }
-            }
-            else
-            {
-                notif.fatal('#nr');
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                // ??? error???
+                notif.error('#sd');
+            })
+            .catch(function(err){
+                //unable to delete
+                notif.error('#nd');
+            });
     };
 
     //load code
@@ -599,30 +563,13 @@ function agoBlocklyPlugin(devices, agocontrol)
             script: self.getLua(),
             data: data
         };
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result===0 )
-                {
-                    //notif.success('Debug started');
-                }
-                else
-                {
-                    if( res.result.error.length>0 )
-                    {
-                        notif.error(res.result.error);
-                    }
-                    else
-                    {
-                        notif.error('Unable to start debugging');
-                    }
-                }
-            }
-            else
-            {
-                notif.fatal('#nr');
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                //notif.success('Debug started');
+            })
+            .catch(function(error){
+                notif.error(getErrorMessage(error));
+            });
     };
 
     //stop debug
@@ -672,27 +619,13 @@ function agoBlocklyPlugin(devices, agocontrol)
             command: 'getscript',
             name: 'blockly_'+script
         };
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result===0 )
-                {
-                    self.loadScript(res.result.name ,res.result.script);
-                }
-                else
-                {
-                  //error occured
-                  notif.error(res.result.error);
-                }
-            }
-            else
-            {
-               notif.fatal('#nr');
-            }
-            //$("#loadDialog").dialog("close");
-            $("#loadDialog").removeClass('active');
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                self.loadScript(res.data.name, res.data.script);
+            });
+
+        //$("#loadDialog").dialog("close");
+        $("#loadDialog").removeClass('active');
     };
 
     //rename script

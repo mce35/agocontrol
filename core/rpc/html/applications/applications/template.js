@@ -12,11 +12,12 @@ function Applications(agocontrol)
     //need to do that because datatable odd is broken when filtering items using knockout
     self.applications = ko.computed(function() {
         var applications = [];
-        for( var i=0; i<self.agocontrol.applications().length; i++ )
+        var raw = self.agocontrol.applications();
+        for( var i=0; i<raw.length; i++ )
         {
-            if( self.agocontrol.applications()[i].listable )
+            if( raw[i].listable )
             {
-                applications.push(self.agocontrol.applications()[i]);
+                applications.push(raw[i]);
             }
         }
         return applications;
@@ -24,9 +25,10 @@ function Applications(agocontrol)
 
     self.initFavorites = ko.computed(function() {
         var favCount = 0;
-        for( var i=0; i<self.agocontrol.applications().length; i++ )
+        var raw = self.agocontrol.applications();
+        for( var i=0; i<raw.length; i++ )
         {
-            if( self.agocontrol.applications()[i].listable && self.agocontrol.applications()[i].favorite===true )
+            if( raw[i].listable && raw[i].favorite===true )
             {
                 favCount++;
             }

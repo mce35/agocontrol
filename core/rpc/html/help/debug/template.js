@@ -82,14 +82,14 @@ function Debug(agocontrol)
         self.agocontrol.sendCommand(content, function(res) {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
             {
-                if( res.result.config )
+                if( res.result.data.config )
                 {
                     var configs = [];
-                    for( var app in res.result.config )
+                    for( var app in res.result.data.config )
                     {
-                        for( var section in res.result.config[app] )
+                        for( var section in res.result.data.config[app] )
                         {
-                            for( var option in res.result.config[app][section] )
+                            for( var option in res.result.data.config[app][section] )
                             {
                                 //filter comments
                                 if( option.indexOf('#')!=0 )
@@ -99,8 +99,8 @@ function Debug(agocontrol)
                                         app: app,
                                         section: section,
                                         option: option,
-                                        oldValue: res.result.config[app][section][option],
-                                        value: ko.observable(res.result.config[app][section][option])
+                                        oldValue: res.result.data.config[app][section][option],
+                                        value: ko.observable(res.result.data.config[app][section][option])
                                     });
                                 }
                             }

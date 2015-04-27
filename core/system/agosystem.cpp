@@ -1,6 +1,8 @@
+#include <exception>
 #include <boost/algorithm/string/predicate.hpp>
 #include "agosystem.h"
 using namespace std;
+using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
 const char* PROCESS_BLACKLIST[] = {"agoclient.py", "agosystem", "agodrain", "agologger.py"};
@@ -291,80 +293,58 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
  */
 qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
-    returnval["error"] = 0;
-    returnval["msg"] = "";
+    qpid::types::Variant::Map responseData;
     std::string internalid = content["internalid"].asString();
     AGO_DEBUG() << "Command received:" << content;
     if (internalid == "systemcontroller")
     {
+        boost::lock_guard<boost::mutex> lock(processesMutex);
         if( content["command"]=="getprocesslist" )
         {
-            processesMutex.lock();
-            returnval = processes;
-            processesMutex.unlock();
+            return responseSuccess(processes);
         }
         else if( content["command"]=="getstatus" )
         {
-            processesMutex.lock();
-            returnval["processes"] = processes;
-            returnval["memoryThreshold"] = config["memoryThreshold"].asInt64();
-            processesMutex.unlock();
+            responseData["processes"] = processes;
+            responseData["memoryThreshold"] = config["memoryThreshold"].asInt64();
+            return responseSuccess(responseData);
         }
         else if( content["command"]=="setmonitoredprocesses" )
         {
-            processesMutex.lock();
-            if( !content["processes"].isVoid() )
-            {
-                qpid::types::Variant::List monitored = content["processes"].asList();
-                //and save list to config file
-                config["monitored"] = monitored;
-                variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
-            }
-            processesMutex.unlock();
+            checkMsgParameter(content, "processes", VAR_LIST);
+
+            qpid::types::Variant::List monitored = content["processes"].asList();
+            //and save list to config file
+            config["monitored"] = monitored;
+            if(!variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE)))
+                return responseFailed("Failed to write map file");
+
+            return responseSuccess();
         }
         else if( content["command"]=="setmemorythreshold" )
         {
-            processesMutex.lock();
-            if( !content["threshold"].isVoid() )
+            checkMsgParameter(content, "threshold", VAR_INT64);
+
+            int64_t threshold = content["threshold"].asInt64();
+            if( threshold < 0 )
             {
-                char* p;
-                int64_t threshold = (int64_t)strtoll(content["threshold"].asString().c_str(), &p, 10);
-                if( *p==0 )
-                {
-                    if( threshold<0 )
-                    {
-                        threshold = 0;
-                    }
-                    config["memoryThreshold"] = threshold;
-                    variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE));
-                }
-                else
-                {
-                    //unsupported threshold type
-                    AGO_ERROR() << "Invalid threshold type. Unable to convert";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Invalid value";
-                    returnval["old"] = config["memoryThreshold"].asInt64();
-                }
+                threshold = 0;
             }
-            else
-            {
-                //missing parameter
-                returnval["error"] = 1;
-                returnval["msg"] = "Missing parameter";
-                returnval["old"] = config["memoryThreshold"].asInt64();
-            }
-            processesMutex.unlock();
+
+            config["memoryThreshold"] = threshold;
+            if(!variantMapToJSONFile(config, getConfigPath(SYSTEMMAPFILE)))
+                return responseFailed("Failed to write map file");
+
+            return responseSuccess();
         }
         else
         {
-            AGO_WARNING() << "Command not found";
-            returnval["error"] = 1;
-            returnval["msg"] = "Internal error";
+            return responseUnknownCommand();
         }
     }
-    return returnval;
+    
+    // We have no devices registered but our own
+    throw std::logic_error("Should not go here");
 }
 
 /**

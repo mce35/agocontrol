@@ -456,7 +456,7 @@ int serialib::Read (void *Buffer,unsigned int MaxNbBytes,unsigned int TimeOut_ms
 */
 int serialib::EnableDTR(bool enable)
 {
-    int controlbits = TIOCM_DTR;
+    int controlbits = (TIOCM_DTR | TIOCM_RTS);
     if( enable )
     {
         return(ioctl(this->fd, TIOCMBIC, &controlbits));

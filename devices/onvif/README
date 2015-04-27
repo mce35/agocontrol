@@ -1,0 +1,10 @@
+Agoonvif is based on python onvif lib you can find here: https://github.com/quatanium/python-onvif
+To update agoonvif:
+ 1- download latest version on link above and extract archive if necessary
+ 2- go to onvif project dir and run "python setup.py build" as user
+ 3- if all ran fine, copy brand new build/lib.linuxXXXX/onvif to <agocontrol root>/devices/onvif/pyonvif
+ 4- make sure all files are listed in <agocontrol root>/devices/onvif/pyonvif/CMakeList.txt
+ 5- and update wsdl too "cp -a wsdl ../"
+ 6- make sure all files are listed in wsdl/CMakeLists.txt
+Then commit your changes to agocontrol repository
+

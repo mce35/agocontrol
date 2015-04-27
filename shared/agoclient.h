@@ -28,6 +28,8 @@
 #include "agolog.h"
 #include "agoconfig.h"
 
+#include "agoproto.h"
+
 #include <uuid/uuid.h>
 namespace agocontrol {
 
@@ -114,7 +116,16 @@ namespace agocontrol {
         bool setFilter(bool filter);
         bool sendMessage(const char *subject, qpid::types::Variant::Map content);
         bool sendMessage(qpid::types::Variant::Map content);
-        qpid::types::Variant::Map sendMessageReply(const char *subject, qpid::types::Variant::Map content);
+
+        // New-style API.
+        // TEMP NOTE: Only use towards apps using new style command handlers!
+        AgoResponse sendRequest(const qpid::types::Variant::Map& content);
+        AgoResponse sendRequest(const std::string& subject, const qpid::types::Variant::Map& content);
+
+        // Deprecated
+        qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content, qpid::messaging::Duration timeout);
+        qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content);
+
         bool emitEvent(const char *internalId, const char *eventType, const char *level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, float level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, int level, const char *units);

@@ -230,36 +230,44 @@ void AgoResolver::handleEvent(Variant::Map *device, string subject, Variant::Map
 
 qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map content) {
     std::string internalid = content["internalid"].asString();
-    qpid::types::Variant::Map reply;
+    qpid::types::Variant::Map responseData;
+
     if (internalid == "agocontroller") {
         if (content["command"] == "setroomname") {
-            string uuid = content["room"];
+            string roomUuid = content["room"];
             // if no uuid is provided, we need to generate one for a new room
-            if (uuid == "") uuid = generateUuid();
-            if (inv->setroomname(uuid, content["name"]) == 0) {
-                reply["uuid"] = uuid;
-                reply["returncode"] = 0;
-                emitNameEvent(uuid.c_str(), "event.system.roomnamechanged", content["name"].asString().c_str());
+            if (roomUuid == "") roomUuid = generateUuid();
+            if (inv->setroomname(roomUuid, content["name"]) == 0) {
+                // return room UUID
+                responseData["uuid"] = roomUuid;
+                emitNameEvent(roomUuid.c_str(), "event.system.roomnamechanged", content["name"].asString().c_str());
+                return responseSuccess(responseData);
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "setdeviceroom") {
-            if ((content["device"].asString() != "") && (inv->setdeviceroom(content["device"], content["room"]) == 0)) {
-                reply["returncode"] = 0;
+            checkMsgParameter(content, "device", VAR_STRING);
+            checkMsgParameter(content, "room", VAR_STRING);
+
+            if (inv->setdeviceroom(content["device"], content["room"]) == 0) {
                 // update room in local device map
                 Variant::Map *device;
                 string room = inv->getdeviceroom(content["device"]);
                 string uuid = content["device"];
+
                 if (!inventory[uuid].isVoid()) {
                     device = &inventory[uuid].asMap();
                     (*device)["room"]= room;
                 }
+
+                return responseSuccess();
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "setdevicename") {
-            if ((content["device"].asString() != "") && (inv->setdevicename(content["device"], content["name"]) == 0)) {
-                reply["returncode"] = 0;
+            checkMsgParameter(content, "device", VAR_STRING);
+
+            if (inv->setdevicename(content["device"], content["name"]) == 0) {
                 // update name in local device map
                 Variant::Map *device;
                 string name = inv->getdevicename(content["device"]);
@@ -270,94 +278,122 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                 }
                 saveDevicemap();
                 emitNameEvent(content["device"].asString().c_str(), "event.system.devicenamechanged", content["name"].asString().c_str());
+
+                return responseSuccess();
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "deleteroom") {
+            checkMsgParameter(content, "room", VAR_STRING);
             if (inv->deleteroom(content["room"]) == 0) {
                 string uuid = content["room"].asString();
                 emitNameEvent(uuid.c_str(), "event.system.roomdeleted", "");
-                reply["returncode"] = 0;
+                return responseSuccess();
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to delete room");
             }
         } else if (content["command"] == "setfloorplanname") {
             string uuid = content["floorplan"];
             // if no uuid is provided, we need to generate one for a new floorplan
-            if (uuid == "") uuid = generateUuid();
+            if (uuid == "")
+                uuid = generateUuid();
+
             if (inv->setfloorplanname(uuid, content["name"]) == 0) {
-                reply["uuid"] = uuid;
-                reply["returncode"] = 0;
                 emitNameEvent(content["floorplan"].asString().c_str(), "event.system.floorplannamechanged", content["name"].asString().c_str());
+                responseData["uuid"] = uuid;
+                return responseSuccess(responseData);
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "setdevicefloorplan") {
-            if ((content["device"].asString() != "") && (inv->setdevicefloorplan(content["device"], content["floorplan"], content["x"], content["y"]) == 0)) {
-                reply["returncode"] = 0;
-                emitFloorplanEvent(content["device"].asString().c_str(), "event.system.floorplandevicechanged", content["floorplan"].asString().c_str(), content["x"], content["y"]);
+            checkMsgParameter(content, "device", VAR_STRING);
+            checkMsgParameter(content, "floorplan", VAR_STRING);
+            checkMsgParameter(content, "x", VAR_INT32);
+            checkMsgParameter(content, "y", VAR_INT32);
+
+            if (inv->setdevicefloorplan(content["device"],
+                        content["floorplan"],
+                        content["x"],
+                        content["y"]) == 0) {
+                emitFloorplanEvent(content["device"].asString().c_str(),
+                        "event.system.floorplandevicechanged",
+                        content["floorplan"].asString().c_str(),
+                        content["x"],
+                        content["y"]);
+                return responseSuccess();
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
 
         } else if (content["command"] == "deletefloorplan") {
+            checkMsgParameter(content, "floorplan", VAR_STRING);
+
             if (inv->deletefloorplan(content["floorplan"]) == 0) {
-                reply["returncode"] = 0;
                 emitNameEvent(content["floorplan"].asString().c_str(), "event.system.floorplandeleted", "");
+                return responseSuccess();
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "setvariable") {
-            if (content["variable"].asString() != "" && content["value"].asString() != "") {
-                variables[content["variable"].asString()] = content["value"].asString();
-                if (variantMapToJSONFile(variables, getConfigPath(VARIABLESMAPFILE))) {
-                    reply["returncode"] = 0;
-                } else {
-                    reply["returncode"] = -1;
-                }
+            checkMsgParameter(content, "variable", VAR_STRING);
+            checkMsgParameter(content, "value");
+
+            variables[content["variable"].asString()] = content["value"].asString();
+            if (variantMapToJSONFile(variables, getConfigPath(VARIABLESMAPFILE))) {
+                return responseSuccess();
             } else {
-                reply["returncode"] = -1;
+                return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "delvariable") {
-            if (content["variable"].asString() != "") {
-                Variant::Map::iterator it = variables.find(content["variable"].asString());
-                if (it != variables.end()) {
-                    variables.erase(it);
-                    if (variantMapToJSONFile(variables, getConfigPath(VARIABLESMAPFILE))) {
-                        reply["returncode"] = 0;
-                    } else {
-                        reply["returncode"] = -1;
-                    }
-                } else {
-                    reply["returncode"] = -1;
+            checkMsgParameter(content, "variable", VAR_STRING);
+
+            Variant::Map::iterator it = variables.find(content["variable"].asString());
+            if (it != variables.end()) {
+                variables.erase(it);
+                if (!variantMapToJSONFile(variables, getConfigPath(VARIABLESMAPFILE))) {
+                    return responseFailed("Failed to store change");
                 }
             }
+
+            return responseSuccess();
         } else if (content["command"] == "getdevice") {
-            if (content["device"].asString() != "") {
-                if (!(inventory[content["device"].asString()].isVoid())) {
-                    reply["device"] = inventory[content["device"].asString()].asMap();
-                    reply["returncode"] = 0;
-                } else {
-                    reply["returncode"] = -1;
-                }
+            checkMsgParameter(content, "device", VAR_STRING);
+
+            if (!(inventory[content["device"].asString()].isVoid())) {
+                responseData["device"] = inventory[content["device"].asString()].asMap();
+                return responseSuccess(responseData);
             } else {
-                reply["returncode"] = -1;
+                return responseError(RESPONSE_ERR_NOT_FOUND, "Device does not exist in inventory");
             }
         } else if (content["command"] == "getconfigtree") {
-            reply["config"] = getConfigTree();
-            reply["returncode"] = 0;
+            responseData["config"] = getConfigTree();
+            return responseSuccess(responseData);
         } else if (content["command"] == "setconfig") {
-            if ((content["section"].asString() != "") && (content["option"].asString() != "") && (content["value"].asString() != "")&& (content["app"].asString() != "")) {
-                if (setConfigSectionOption(content["section"].asString().c_str(), content["option"].asString().c_str(), content["value"].asString().c_str(),content["app"].asString().c_str())) {
-                    reply["returncode"]=0;
-                } else {
-                    reply["returncode"]=-1;
-                }
+            // XXX: No access checks at all... may overwrite whatever
+            checkMsgParameter(content, "section", VAR_STRING);
+            checkMsgParameter(content, "option", VAR_STRING);
+            checkMsgParameter(content, "value");
+            checkMsgParameter(content, "app", VAR_STRING);
+
+            if (setConfigSectionOption(content["section"].asString().c_str(),
+                        content["option"].asString().c_str(),
+                        content["value"].asString().c_str(),
+                        content["app"].asString().c_str()))
+            {
+                AGO_INFO() << "Changed config option by request:" 
+                    << " section = " << content["section"].asString()
+                    << " option = " << content["option"].asString()
+                    << " value = " << content["value"].asString()
+                    << " app = " << content["app"].asString();
+                return responseSuccess();
             } else {
-                reply["returncode"]=-1;
+                return responseFailed("Failed to write config");
             }
         }
+
+        return responseUnknownCommand();
     } else {
+        // Global handler for "inventory" command
         if (content["command"] == "inventory") {
             // AGO_TRACE() << "responding to inventory request";
             for (qpid::types::Variant::Map::iterator it = inventory.begin(); it != inventory.end(); it++) {
@@ -370,18 +406,26 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                     }
                 }
             }
-            reply["devices"] = inventory;
-            reply["schema"] = schema;
-            reply["rooms"] = inv->getrooms();
-            reply["floorplans"] = inv->getfloorplans();
+            responseData["devices"] = inventory;
+            responseData["schema"] = schema;
+            responseData["rooms"] = inv->getrooms();
+            responseData["floorplans"] = inv->getfloorplans();
             get_sysinfo();
-            reply["system"] = systeminfo;
-            reply["variables"] = variables;
-            reply["environment"] = environment;
-            reply["returncode"] = 0;
+            responseData["system"] = systeminfo;
+            responseData["variables"] = variables;
+            responseData["environment"] = environment;
+
+            return responseSuccess(responseData);
+        }else{
+            // XXX: Fix filtering instead so we are not called at all...
+            // This is dropped in aogclient loop unless command is "inventory"..
+            return responseUnknownCommand();
         }
     }
-    return reply;
+
+    // We have no devices registered but our own; if we get here something
+    // is broken internally
+    throw std::logic_error("Should not go here");
 }
 
 void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map content) {
@@ -498,7 +542,7 @@ void AgoResolver::scanSchemaDir(const fs::path &schemaPrefix) {
         }
     }
     if (schemaArray.size() < 1) {
-        throw new ConfigurationError("Can't find any schemas in " + schemaPrefix.string());
+        throw ConfigurationError("Can't find any schemas in " + schemaPrefix.string());
     }
 
     // load schema files in proper order

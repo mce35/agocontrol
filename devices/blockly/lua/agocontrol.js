@@ -19,6 +19,11 @@ Blockly.Lua['agocontrol_deviceUuid'] = function(block) {
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
+Blockly.Lua['agocontrol_deviceInternalid'] = function(block) {
+    var code = "'" + block.getFieldValue('DEVICE') + "'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
 Blockly.Lua['agocontrol_eventNo'] = function(block) {
     return ["''", Blockly.Lua.ORDER_ATOMIC];
 };

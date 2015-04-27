@@ -33,22 +33,47 @@
 
 using namespace std;
 using namespace agocontrol;
+using namespace qpid::types;
 namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
 
 class AgoDataLogger: public AgoApp {
 private:
-
+    //inventory
     void updateInventory();
+    bool checkInventory();
 
-    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
-    void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+    //utils
+    std::string string_format(const std::string fmt, ...);
+    int string_real_length(const std::string str);
+    std::string string_prepend_spaces(std::string source, size_t newSize);
 
+    //database
+    bool createTableIfNotExist(string tablename, list<string> createqueries);
     qpid::types::Variant::Map getDatabaseInfos();
     bool purgeTable(std::string table);
     bool isTablePurgeAllowed(std::string table);
+    void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
 
+    //rrd
+    bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data);
+    void dumpGraphParams(const char** params, const int num_params);
+    bool addGraphParam(const std::string& param, char** params, int* index);
+    void addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index);
+    void addDefaultThumbParameters(int duration, int width, int height, char** params, int* index);
+    void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index);
+    void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index);
+    void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index);
+    bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size);
+
+        
+    //system
+    void saveDeviceMapFile();
+    qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void eventHandler(std::string subject, qpid::types::Variant::Map content);
+    void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content);
+    void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content);
     void setupApp();
 public:
     AGOAPP_CONSTRUCTOR(AgoDataLogger);
@@ -97,7 +122,20 @@ void AgoDataLogger::updateInventory()
     }
 }
 
-bool createTableIfNotExist(string tablename, list<string> createqueries) {
+/**
+ * Check inventory
+ */
+bool AgoDataLogger::checkInventory()
+{
+    if( inventory["devices"].isVoid() )
+    {
+        //inventory is empty
+        return false;
+    }
+    return true;
+}
+
+bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createqueries) {
     //init
     sqlite3_stmt *stmt = NULL;
     int rc;
@@ -136,7 +174,7 @@ bool createTableIfNotExist(string tablename, list<string> createqueries) {
 /**
  * Save device map file
  */
-void saveDeviceMapFile()
+void AgoDataLogger::saveDeviceMapFile()
 {
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
     variantMapToJSONFile(devicemap, dmf);
@@ -145,7 +183,7 @@ void saveDeviceMapFile()
 /**
  * Format string to specified format
  */
-std::string string_format(const std::string fmt, ...) {
+std::string AgoDataLogger::string_format(const std::string fmt, ...) {
     int size = ((int)fmt.size()) * 2 + 50;   // use a rubric appropriate for your code
     std::string str;
     va_list ap;
@@ -169,7 +207,7 @@ std::string string_format(const std::string fmt, ...) {
 /**
  * Return real string length
  */
-int string_real_length(const std::string str)
+int AgoDataLogger::string_real_length(const std::string str)
 {
     int len = 0;
     const char* s = str.c_str();
@@ -183,7 +221,7 @@ int string_real_length(const std::string str)
 /**
  * Prepend to source string until source size reached
  */
-std::string string_prepend_spaces(std::string source, size_t newSize)
+std::string AgoDataLogger::string_prepend_spaces(std::string source, size_t newSize)
 {
     std::string output = source;
     int max = (int)newSize - string_real_length(output);
@@ -200,7 +238,7 @@ std::string string_prepend_spaces(std::string source, size_t newSize)
  * @param multiId: if multigraph specify its index (-1 if not multigraph)
  * @param data: output map
  */
-bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data)
+bool AgoDataLogger::prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data)
 {
     //check params
     if( multiId>=15 )
@@ -215,7 +253,7 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
     filename << uuid << ".rrd";
 
     //get device infos from inventory
-    if( inventory["devices"].isVoid() )
+    if( !checkInventory() )
     {
         //unable to continue
         AGO_ERROR() << "agodatalogger-RRDtool: no inventory available";
@@ -349,7 +387,7 @@ bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data
 /**
  * Display params (debug purpose)
  */
-void dumpGraphParams(const char** params, const int num_params)
+void AgoDataLogger::dumpGraphParams(const char** params, const int num_params)
 {
     AGO_TRACE() << "Dump graph parameters (" << num_params << " params) :";
     for( int i=0; i<num_params; i++ )
@@ -361,7 +399,7 @@ void dumpGraphParams(const char** params, const int num_params)
 /**
  * Add graph param
  */
-bool addGraphParam(const std::string& param, char** params, int* index)
+bool AgoDataLogger::addGraphParam(const std::string& param, char** params, int* index)
 {
     params[(*index)] = (char*)malloc(sizeof(char)*param.length()+1);
     if( params[(*index)]!=NULL )
@@ -376,7 +414,7 @@ bool addGraphParam(const std::string& param, char** params, int* index)
 /**
  * Add default and mandatory graph params
  */
-void addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index)
+void AgoDataLogger::addDefaultParameters(int start, int end, string vertical_unit, int width, int height, char** params, int* index)
 {
     //first params
     addGraphParam("dummy", params, index);
@@ -409,7 +447,7 @@ void addDefaultParameters(int start, int end, string vertical_unit, int width, i
 /**
  * Add default thumb graph parameters
  */
-void addDefaultThumbParameters(int duration, int width, int height, char** params, int* index)
+void AgoDataLogger::addDefaultThumbParameters(int duration, int width, int height, char** params, int* index)
 {
     //first params
     addGraphParam("dummy", params, index);
@@ -440,7 +478,7 @@ void addDefaultThumbParameters(int duration, int width, int height, char** param
 /**
  * Add single graph parameters
  */
-void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+void AgoDataLogger::addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
 {
     string param = "";
 
@@ -491,7 +529,7 @@ void addSingleGraphParameters(qpid::types::Variant::Map& data, char** params, in
 /**
  * Add multi graph parameters
  */
-void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+void AgoDataLogger::addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
 {
     //keep index value
     int id = (*index);
@@ -534,7 +572,7 @@ void addMultiGraphParameters(qpid::types::Variant::Map& data, char** params, int
 /**
  * Add thumb graph parameters
  */
-void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
+void AgoDataLogger::addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int* index)
 {
     //keep index value
     int id = (*index);
@@ -550,7 +588,7 @@ void addThumbGraphParameters(qpid::types::Variant::Map& data, char** params, int
 /**
  * Generate RRDtool graph
  */
-bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size)
+bool AgoDataLogger::generateGraph(qpid::types::Variant::List uuids, int start, int end, int thumbDuration, unsigned char** img, unsigned long* size)
 {
     qpid::types::Variant::Map data;
     char** params;
@@ -731,7 +769,7 @@ bool generateGraph(qpid::types::Variant::List uuids, int start, int end, int thu
 /**
  * Store event data into RRDtool database
  */
-void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content)
+void AgoDataLogger::eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content)
 {
     if( (subject=="event.device.batterylevelchanged" || boost::algorithm::starts_with(subject, "event.environment.")) && !content["level"].isVoid() && !content["uuid"].isVoid() )
     {
@@ -774,7 +812,7 @@ void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Var
 /**
  * Store event data into SQLite database
  */
-void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content)
+void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content)
 {
     sqlite3_stmt *stmt = NULL;
     int rc;
@@ -873,7 +911,7 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     }
 }
 
-void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result) {
+void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result) {
     sqlite3_stmt *stmt;
     int rc;
     qpid::types::Variant::List values;
@@ -960,9 +998,7 @@ void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &
 
     sqlite3_finalize(stmt);
 
-    qpid::types::Variant::Map data;
-    data["values"] = values;
-    result["result"] = data;
+    result["values"] = values;
 }
 
 /**
@@ -1130,13 +1166,14 @@ bool AgoDataLogger::isTablePurgeAllowed(std::string table)
  */
 qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map returnData;
     std::string internalid = content["internalid"].asString();
     if (internalid == "dataloggercontroller")
     {
         if (content["command"] == "getdata")
         {
-            GetGraphData(content, returnval);
+            GetGraphData(content, returnData);
+            return responseSuccess(returnData);
         }
         else if (content["command"] == "getdeviceenvironments")
         {
@@ -1146,7 +1183,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             if(rc != SQLITE_OK)
             {
                 AGO_ERROR() << "sql error #" << rc << ": " << sqlite3_errmsg(db);
-                return returnval;
+                return responseFailed("SQL Error");
             }
 
             do
@@ -1158,53 +1195,46 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                         AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
                         break;
                     case SQLITE_ROW:
-                        returnval[string((const char*)sqlite3_column_text(stmt, 0))] = string((const char*)sqlite3_column_text(stmt, 1));
+                        returnData[string((const char*)sqlite3_column_text(stmt, 0))] = string((const char*)sqlite3_column_text(stmt, 1));
                         break;
                 }
             }
             while (rc == SQLITE_ROW);
 
             sqlite3_finalize(stmt);
+
+            return responseSuccess(returnData);
         }
         else if( content["command"] == "getgraph" )
         {
-            if( !content["start"].isVoid() && !content["end"].isVoid() && !content["devices"].isVoid() )
+            checkMsgParameter(content, "start", VAR_INT32);
+            checkMsgParameter(content, "end", VAR_INT32);
+            checkMsgParameter(content, "devices", VAR_LIST);
+
+            unsigned char* img = NULL;
+            unsigned long size = 0;
+            qpid::types::Variant::List uuids;
+
+            uuids = content["devices"].asList();
+            //is a multigraph?
+            if( uuids.size()==1 )
             {
-                unsigned char* img = NULL;
-                unsigned long size = 0;
-                qpid::types::Variant::List uuids;
-
-                uuids = content["devices"].asList();
-                //is a multigraph?
-                if( uuids.size()==1 )
+                string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
+                if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
                 {
-                    string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
-                    if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
-                    {
-                        uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
-                    }
+                    uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
                 }
+            }
 
-                //updateInventory();
-
-                if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
-                {
-                    returnval["error"] = 0;
-                    returnval["msg"] = "";
-                    returnval["graph"] = base64_encode(img, size);
-                }
-                else
-                {
-                    //error generating graph
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
-                }
+            if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
+            {
+                returnData["graph"] = base64_encode(img, size);
+                return responseSuccess(returnData);
             }
             else
             {
-                AGO_ERROR() << "Unable to get multigraph: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                //error generating graph
+                return responseFailed("Failed to generate graph");
             }
         }
         else if( content["command"]=="getstatus" )
@@ -1233,211 +1263,190 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             db["size"] = (rc==0 ? (int)stat_buf.st_size : 0);
             db["infos"] = getDatabaseInfos();
 
-            returnval["error"] = 0;
-            returnval["msg"] = "";
-            returnval["multigraphs"] = multis;
-            returnval["dataLogging"] = dataLogging ? 1 : 0;
-            returnval["gpsLogging"] = gpsLogging ? 1 : 0;
-            returnval["rrdLogging"] = rrdLogging ? 1 : 0;
-            returnval["database"] = db;
+            returnData["error"] = 0;
+            returnData["msg"] = "";
+            returnData["multigraphs"] = multis;
+            returnData["dataLogging"] = dataLogging ? 1 : 0;
+            returnData["gpsLogging"] = gpsLogging ? 1 : 0;
+            returnData["rrdLogging"] = rrdLogging ? 1 : 0;
+            returnData["database"] = db;
+            return responseSuccess(returnData);
         }
         else if( content["command"]=="addmultigraph" )
         {
-            if( !content["uuids"].isVoid() && !content["period"].isVoid() )
-            {
-                string internalid = "multigraph" + string(devicemap["nextid"]);
-                if( agoConnection->addDevice(internalid.c_str(), "multigraph") )
-                {
-                    devicemap["nextid"] = devicemap["nextid"].asInt32() + 1;
-                    qpid::types::Variant::Map device;
-                    device["uuids"] = content["uuids"].asList();
-                    device["period"] = content["period"].asInt32();
-                    devicemap["multigraphs"].asMap()[internalid] = device;
-                    saveDeviceMapFile();
+            checkMsgParameter(content, "uuids", VAR_LIST);
+            checkMsgParameter(content, "period", VAR_INT32);
 
-                    returnval["error"] = 0;
-                    returnval["msg"] = "Multigraph " + internalid + " created successfully";
-                }
-                else
-                {
-                    AGO_ERROR() << "Unable to add new multigraph";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
-                }
+            string internalid = "multigraph" + string(devicemap["nextid"]);
+            if( agoConnection->addDevice(internalid.c_str(), "multigraph") )
+            {
+                devicemap["nextid"] = devicemap["nextid"].asInt32() + 1;
+                qpid::types::Variant::Map device;
+                device["uuids"] = content["uuids"].asList();
+                device["period"] = content["period"].asInt32();
+                devicemap["multigraphs"].asMap()[internalid] = device;
+                saveDeviceMapFile();
+                return responseSuccess("Multigraph " + internalid + " created successfully");
             }
             else
             {
-                AGO_ERROR() << "Unable to add multigraph: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                AGO_ERROR() << "Unable to add new multigraph";
+                return responseFailed("Failed to add device");
             }
         }
         else if( content["command"]=="deletemultigraph" )
         {
-            if( !content["multigraph"].isVoid() )
-            {
-                string internalid = content["multigraph"].asString();
-                if( agoConnection->removeDevice(internalid.c_str()) )
-                {
-                    devicemap["multigraphs"].asMap().erase(internalid);
-                    saveDeviceMapFile();
+            checkMsgParameter(content, "multigraph", VAR_STRING);
 
-                    returnval["error"] = 0;
-                    returnval["msg"] = "Multigraph " + internalid + " deleted successfully";
-                }
-                else
-                {
-                    AGO_ERROR() << "Unable to delete multigraph " << internalid;
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
-                }
+            string internalid = content["multigraph"].asString();
+            if( agoConnection->removeDevice(internalid.c_str()) )
+            {
+                devicemap["multigraphs"].asMap().erase(internalid);
+                saveDeviceMapFile();
+                return responseSuccess("Multigraph " + internalid + " deleted successfully");
             }
             else
             {
-                AGO_ERROR() << "Unable to delete multigraph: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                AGO_ERROR() << "Unable to delete multigraph " << internalid;
+                return responseFailed("Failed to delete graph");
             }
         }
         else if( content["command"]=="getthumb" )
         {
-            if( !content["multigraph"].isVoid() )
+            checkMsgParameter(content, "multigraph", VAR_STRING);
+            //check if inventory available
+            if( !checkInventory() )
             {
-                string internalid = content["multigraph"].asString();
-                if( !devicemap["multigraphs"].isVoid() && !devicemap["multigraphs"].asMap()[internalid].isVoid() && !devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].isVoid() )
+                //force inventory update during getthumb command because thumb requests are performed during first ui loading
+                updateInventory();
+            }
+
+            string internalid = content["multigraph"].asString();
+            if( !devicemap["multigraphs"].isVoid() && !devicemap["multigraphs"].asMap()[internalid].isVoid() && !devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].isVoid() )
+            {
+                unsigned char* img = NULL;
+                unsigned long size = 0;
+                int period = 12;
+
+                //get thumb period
+                if( !devicemap["multigraphs"].asMap()[internalid].asMap()["period"].isVoid() )
                 {
-                    unsigned char* img = NULL;
-                    unsigned long size = 0;
-                    int period = 12;
+                    period = devicemap["multigraphs"].asMap()[internalid].asMap()["period"].asInt32();
+                }
 
-                    //get thumb period
-                    if( !devicemap["multigraphs"].asMap()[internalid].asMap()["period"].isVoid() )
-                    {
-                        period = devicemap["multigraphs"].asMap()[internalid].asMap()["period"].asInt32();
-                    }
-
-                    if( generateGraph(devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList(), 0, 0, period, &img, &size) )
-                    {
-                        returnval["error"] = 0;
-                        returnval["msg"] = "";
-                        returnval["graph"] = base64_encode(img, size);
-                    }
-                    else
-                    {
-                        //error generating graph
-                        returnval["error"] = 1;
-                        returnval["msg"] = "Internal error";
-                    }
+                if( generateGraph(devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList(), 0, 0, period, &img, &size) )
+                {
+                    returnData["graph"] = base64_encode(img, size);
+                    return responseSuccess(returnData);
                 }
                 else
                 {
-                    AGO_ERROR() << "Unable to get thumb: it seems multigraph '" << internalid << "' doesn't exist";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Internal error";
+                    //error generating graph
+                    return responseFailed("Internal error");
                 }
             }
             else
             {
-                AGO_ERROR() << "Unable to get thumb: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                AGO_ERROR() << "Unable to get thumb: it seems multigraph '" << internalid << "' doesn't exist";
+                return responseFailed("Unknown multigraph");
             }
         }
         else if( content["command"]=="setenabledmodules" )
         {
-            if( !content["dataLogging"].isVoid() && !content["rrdLogging"].isVoid()  && !content["gpsLogging"].isVoid() )
+            checkMsgParameter(content, "dataLogging", VAR_BOOL);
+            checkMsgParameter(content, "rrdLogging", VAR_BOOL);
+            checkMsgParameter(content, "gpsLogging", VAR_BOOL);
+
+            bool error = false;
+            if( content["dataLogging"].asBool() )
             {
-                if( content["dataLogging"].asBool() )
-                {
-                    dataLogging = true;
-                    AGO_INFO() << "Data logging enabled";
-                }
-                else
-                {
-                    dataLogging = false;
-                    AGO_INFO() << "Data logging disabled";
-                }
-                if( !setConfigOption("dataLogging", dataLogging) )
-                {
-                    AGO_ERROR() << "Unable to save dataLogging status to config file";
-                }
-
-                if( content["gpsLogging"].asBool() )
-                {
-                    gpsLogging = true;
-                    AGO_INFO() << "GPS logging enabled";
-                }
-                else
-                {
-                    gpsLogging = false;
-                    AGO_INFO() << "GPS logging disabled";
-                }
-                if( !setConfigOption("gpsLogging", gpsLogging) )
-                {
-                    AGO_ERROR() << "Unable to save gpsLogging status to config file";
-                }
-
-                if( content["rrdLogging"].asBool() )
-                {
-                    rrdLogging = true;
-                    AGO_INFO() << "RRD logging enabled";
-                }
-                else
-                {
-                    rrdLogging = false;
-                    AGO_INFO() << "RRD logging disabled";
-                }
-                if( !setConfigOption("rrdLogging", rrdLogging) )
-                {
-                    AGO_ERROR() << "Unable to save rrdLogging status to config file";
-                }
-
-                returnval["error"] = 0;
-                returnval["msg"] = "";
+                dataLogging = true;
+                AGO_INFO() << "Data logging enabled";
             }
             else
             {
-                AGO_ERROR() << "Unable to get thumb: missing request parameter";
-                returnval["error"] = 1;
-                returnval["msg"] = "Internal error";
+                dataLogging = false;
+                AGO_INFO() << "Data logging disabled";
             }
+
+
+            if( !setConfigOption("dataLogging", dataLogging) )
+            {
+                AGO_ERROR() << "Unable to save dataLogging status to config file";
+                error = true;
+            }
+
+            if( content["gpsLogging"].asBool() )
+            {
+                gpsLogging = true;
+                AGO_INFO() << "GPS logging enabled";
+            }
+            else
+            {
+                gpsLogging = false;
+                AGO_INFO() << "GPS logging disabled";
+            }
+            if( !setConfigOption("gpsLogging", gpsLogging) )
+            {
+                AGO_ERROR() << "Unable to save gpsLogging status to config file";
+                error = true;
+            }
+
+            if( content["rrdLogging"].asBool() )
+            {
+                rrdLogging = true;
+                AGO_INFO() << "RRD logging enabled";
+            }
+            else
+            {
+                rrdLogging = false;
+                AGO_INFO() << "RRD logging disabled";
+            }
+
+            if( !setConfigOption("rrdLogging", rrdLogging) )
+            {
+                AGO_ERROR() << "Unable to save rrdLogging status to config file";
+                error = true;
+            }
+
+            if( error )
+            {
+                return responseFailed("Failed to save one or more options");
+            }
+            return responseSuccess();
         }
         else if( content["command"]=="purgetable" )
         {
-            if( !content["table"].isVoid() )
+            checkMsgParameter(content, "table", VAR_STRING);
+
+            //security check
+            std::string table = content["table"].asString();
+            if( isTablePurgeAllowed(table) )
             {
-                //security check
-                std::string table = content["table"].asString();
-                if( isTablePurgeAllowed(table) )
+                if( purgeTable(table) )
                 {
-                    if( purgeTable(table) )
-                    {
-                        returnval["error"] = 0;
-                        returnval["msg"] = "";
-                    }
-                    else
-                    {
-                        AGO_ERROR() << "Unable to purge table '" << table << "'";
-                        returnval["error"] = 1;
-                        returnval["msg"] = "Internal error";
-                    }
+                    return responseSuccess();
                 }
                 else
                 {
-                    AGO_ERROR() << "Purge table '" << table << "' not allowed";
-                    returnval["error"] = 1;
-                    returnval["msg"] = "Table purge not allowed";
+                    AGO_ERROR() << "Unable to purge table '" << table << "'";
+                    return responseFailed("Internal error");
                 }
+            }
+            else
+            {
+                AGO_ERROR() << "Purge table '" << table << "' not allowed";
+                return responseFailed("Table purge not allowed");
             }
         }
         else
         {
-            AGO_WARNING() << "command not found";
-            returnval["error"] = 1;
-            returnval["msg"] = "Internal error";
+            return responseUnknownCommand();
         }
     }
-    return returnval;
+
+    //We do not support sending commands to our 'devices'
+    return responseNoDeviceCommands();
 }
 
 void AgoDataLogger::setupApp()
@@ -1466,7 +1475,7 @@ void AgoDataLogger::setupApp()
     agoConnection->addDevice("dataloggercontroller", "dataloggercontroller");
 
     //update inventory
-    updateInventory();
+    //updateInventory();
 
     //read config
     std::string optString = getConfigOption("dataLogging", "1");

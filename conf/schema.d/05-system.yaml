@@ -6,7 +6,7 @@ commands:
     name: get system status
     description: get system status
   setmonitoredprocesses:
-    name: set processes to montor
+    name: set processes to monitor
     description: define which processes are monitored by the systemcontroller
     parameters:
       processes:

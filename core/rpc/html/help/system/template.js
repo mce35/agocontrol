@@ -36,15 +36,15 @@ function SystemConfig(agocontrol)
         content.command = 'getprocesslist';
         self.agocontrol.sendCommand(content, function(res) {
             var procs = [];
-            for( var name in res.result )
+            for( var name in res.result.data )
             {
                 var proc = {};
                 proc.name = name;
-                proc.running = res.result[name].running;
-                proc.cpu = (Math.round((res.result[name].currentStats.ucpu + res.result[name].currentStats.scpu)*10)/10)+'%';
-                proc.memVirt = res.result[name].currentStats.vsize;
-                proc.memRes = res.result[name].currentStats.rss;
-                proc.monitored = res.result[name].monitored;
+                proc.running = res.result.data[name].running;
+                proc.cpu = (Math.round((res.result.data[name].currentStats.ucpu + res.result.data[name].currentStats.scpu)*10)/10)+'%';
+                proc.memVirt = res.result.data[name].currentStats.vsize;
+                proc.memRes = res.result.data[name].currentStats.rss;
+                proc.monitored = res.result.data[name].monitored;
                 procs.push(proc);
             }
             self.processes(procs);

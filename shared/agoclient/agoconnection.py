@@ -10,8 +10,67 @@ from qpid.log import enable, DEBUG, WARN
 
 __all__ = ["AgoConnection"]
 
+class AgoResponse:
+    """This class represents a response as obtained from AgoConnection.send_request"""
+    def __init__(self, response):
+        self.response = response
+        if self.is_ok():
+            self.root = self.response["result"]
+        elif self.is_error():
+            self.root = self.response["error"]
+        else:
+            raise Exception("Invalid response, neither result or error present")
+
+    def is_error(self):
+        return "error" in self.response
+
+    def is_ok(self):
+        return "result" in self.response
+
+    def identifier(self):
+        return self.root["identifier"];
+
+    def message(self):
+        if "message" in self.root:
+            return self.root["message"];
+
+        return None
+
+    def data(self):
+        if "data" in self.root:
+            return self.root["data"];
+
+        return None
+
+class ResponseError(Exception):
+    def __init__(self, response):
+        if not response.is_error():
+            raise Exception("Not an error response")
+
+        self.response = response
+
+        super(ResponseError, self).__init__(self.message())
+    
+    def identifier(self):
+        return self.response.identifier()
+
+    def message(self):
+        return self.response.message()
+
+    def data(self):
+        return self.response.data()
+
 class AgoConnection:
     """This is class will handle the connection to ago control."""
+
+    """Response codes"""
+    RESPONSE_SUCCESS = 'success'
+    RESPONSE_ERR_FAILED = 'failed'
+    RESPONSE_ERR_UNKNOWN_COMMAND = 'unknown.command'
+    RESPONSE_ERR_BAD_PARAMETERS = 'bad.parameters'
+    RESPONSE_ERR_NO_COMMANDS_FOR_DEVICE = 'no.commands.for.device'
+    RESPONSE_ERR_MISSING_PARAMETERS = 'missing.parameters'
+
     def __init__(self, instance):
         """The constructor."""
         self.instance = instance
@@ -35,6 +94,7 @@ class AgoConnection:
         self.uuids = {}
         self.handler = None
         self.eventhandler = None
+        self.agocontroller = None
         self.load_uuid_map()
 
     def __del__(self):
@@ -170,6 +230,81 @@ class AgoConnection:
         else:
             return False
 
+    def response_error(self, **kwargs):
+        """
+        parameters are voluntary shortened!
+        @param iden: response identifier <mandatory>
+        @param mess: response message <optional>
+        @param data: response data <optional>
+        """
+        response = {}
+        error = {}
+
+        #identifier
+        if kwargs.has_key('iden') and kwargs['iden']!=None:
+            error['identifier'] = kwargs['iden']
+        else:
+            #iden is mandatory
+            raise Exception('Response without identifier (param "iden") not permitted')
+
+        #message
+        if kwargs.has_key('mess') and kwargs['mess']!=None:
+            error['message'] = kwargs['mess']
+        else:
+            #mess is mandatory
+            raise Exception('Error response without message (param "mess") not permitted')
+
+        #data
+        if kwargs.has_key('data') and kwargs['data']!=None:
+            error['data'] = kwargs['data']
+
+        response['error'] = error
+        response['_newresponse'] = True #TODO: remove thits after everything is using new response style
+        return response
+
+    def response_unknown_command(self, message=None, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_UNKNOWN_COMMAND, mess=message, data=data)
+
+    def response_missing_parameters(self, message=None, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_MISSING_PARAMETERS, mess=message, data=data)
+
+    def response_bad_parameters(self, message=None, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_BAD_PARAMETERS, mess=message, data=data)
+
+    def response_failed(self, message, data=None):
+        return self.response_error(iden=self.RESPONSE_ERR_FAILED, mess=message, data=data)
+
+    def response_result(self, **kwargs):
+        """
+        parameters are voluntary shortened!
+        @param iden: response identifier 
+        @param mess: response message <optional>
+        @param data: response data <optional>
+        """
+        response = {}
+        result = {}
+
+        if kwargs.has_key('iden') and kwargs['iden']!=None:
+            result['identifier'] = kwargs['iden']
+        else:
+            raise Exception('Response without identifier (param "iden") not permitted')
+
+        if kwargs.has_key('mess') and kwargs['mess']!=None:
+            result['message'] = kwargs['mess']
+
+        if kwargs.has_key('data') and kwargs['data']!=None:
+            result['data'] = kwargs['data']
+
+        response['result'] = result
+        response['_newresponse'] = True #TODO: remove thits after everything is using new response style
+        return response
+
+    def response_success(self, data=None, message=None):
+        """
+        First parameter is data because data is more often returned than message when response is successful
+        """
+        return self.response_result(iden=self.RESPONSE_SUCCESS, mess=message, data=data)
+
     def send_message(self, content):
         """Send message without subject."""
         return self.send_message(None, content)
@@ -189,8 +324,50 @@ class AgoConnection:
             self.log.error("Failed to send message: %s", exception)
             return False
 
+    def send_request(self, content):
+        """Send message and fetch reply.
+        
+        Response will be an AgoResponse object
+        """
+        _content = content
+        _content["instance"] = self.instance
+        try:
+            replyuuid = str(uuid4())
+            replyreceiver = self.session.receiver(
+                "reply-%s; {create: always, delete: always}" % replyuuid)
+            message = Message(content=_content)
+            message.reply_to = 'reply-%s' % replyuuid
+
+            if self.log.isEnabledFor(logging.TRACE):
+                self.log.trace("Sending message [reply-to=%s]: %s", message.reply_to, content)
+
+            self.sender.send(message)
+            replymessage = replyreceiver.fetch(timeout=3)
+            self.session.acknowledge()
+
+            response = AgoResponse(replymessage.content)
+
+            if self.log.isEnabledFor(logging.TRACE):
+                self.log.trace("Received response: %s", response.response)
+
+            return response
+
+        except Empty:
+            self.log.warn("Timeout waiting for reply to %s", content)
+            return AgoResponse({"error": {"message":"no.reply"}})
+        except ReceiverError:
+            self.log.warn("ReceiverError waiting for reply to %s", content)
+            return AgoResponse({"error": {"message":"receiver.error"}})
+        except SendError:
+            self.log.warn("SendError when sending %s", content)
+            return AgoResponse({"error": {"message":"send.error"}})
+        finally:
+            replyreceiver.close()
+
     def send_message_reply(self, content):
-        """Send message and fetch reply."""
+        """Send message and fetch reply.
+        This is deprecated! Use send_request instead.
+        """
         _content = content
         _content["instance"] = self.instance
         try:
@@ -218,10 +395,52 @@ class AgoConnection:
         return replymessage
 
     def get_inventory(self):
-        """Returns the inventory from the resolver."""
+        """Returns the inventory from the resolver. Return value is a dict"""
         content = {}
         content["command"] = "inventory"
-        return self.send_message_reply(content)
+        response = self.send_request(content)
+        if response.is_ok():
+            return response.data()
+        else:
+            # TODO: Report errors properly?
+            return {}
+            #raise ResponseError(response)
+
+    def get_agocontroller(self, inventory=None):
+        """Returns the uuid of the agocontroller device"""
+        if self.agocontroller:
+            return self.agocontroller
+
+        retry = 10
+        while retry > 0:
+            try:
+                if inventory == None:
+                    # May be null if not passed in first time
+                    inventory = self.get_inventory()
+
+                if inventory != None and "devices" in inventory:
+                    devices = inventory['devices']
+                    for uuid in devices.keys():
+                        d = devices[uuid]
+                        if d == None:
+                            continue
+
+                        if d['devicetype'] == 'agocontroller':
+                            self.log.debug("agoController found: %s", uuid)
+                            self.agocontroller = uuid
+                            return uuid
+            except ResponseError as e:
+                self.log.warning("Unable to resolve agocontroller (%s), retrying", e)
+            else:
+#                self.log.warning("Unable to resolve agocontroller, not in inventory response? retrying")
+                self.log.warning("Unable to resolve agocontroller, retrying")
+
+            inventory = None
+            time.sleep(1)
+            retry -= 1
+
+        self.log.warning("Failed to resolve agocontroller, giving up")
+        return None
 
     def emit_event(self, internal_id, event_type, level, unit):
         """This will send an event. Ensure level is of correct data type for the event!"""

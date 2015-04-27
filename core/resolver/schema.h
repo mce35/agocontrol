@@ -20,8 +20,15 @@ namespace fs = ::boost::filesystem;
 
 qpid::types::Variant::List mergeList(qpid::types::Variant::List a, qpid::types::Variant::List b);
 qpid::types::Variant::Map mergeMap(qpid::types::Variant::Map a, qpid::types::Variant::Map b);
+Variant::Map parseSchema(const fs::path &filename);
+
+// the YAML-CPP API did change between 0.3 and 0.5
+#ifdef __YAMLCPP05__
+qpid::types::Variant::List YAMLSequenceToVariantList(const YAML::Node &node);
+qpid::types::Variant::Map YAMLMapToVariantMap(const YAML::Node &node);
+#else
 Variant::List sequenceToVariantList(const YAML::Node &node);
 Variant::Map mapToVariantMap(const YAML::Node &node);
-Variant::Map parseSchema(const fs::path &filename);
+#endif
 
 #endif

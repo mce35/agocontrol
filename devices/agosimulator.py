@@ -45,6 +45,12 @@ class AgoSimulator(agoclient.AgoApp):
         self.background.setDaemon(True)
         self.background.start()
 
+        inventory = self.connection.get_inventory()
+        self.log.info("Inventory has %d entries", len(inventory))
+
+        ctrl = self.connection.get_agocontroller()
+        self.log.info("Agocontroller is at %s", ctrl)
+
     def cleanup_app(self):
         # Unfortunately, there is no good way to wakeup the python sleep().
         # In this particular case, we can just let it die. Since it's a daemon thread,

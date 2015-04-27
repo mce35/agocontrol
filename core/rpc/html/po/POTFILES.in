@@ -45,6 +45,7 @@ applications/ipx800/html/ipx800.xml.in
 applications/mysensors/html/mysensors.xml.in
 applications/security/html/security.xml.in
 applications/zwave/html/zwave.xml.in
+applications/onvif/html/onvif.xml.in
 configuration/blockly/html/agoblockly.xml.in
 configuration/cloud/html/cloud.xml.in
 configuration/dashboards/html/dashboards.xml.in

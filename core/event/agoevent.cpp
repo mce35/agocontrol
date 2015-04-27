@@ -264,79 +264,76 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
 
 qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map content)
 {
-    qpid::types::Variant::Map returnval;
+    qpid::types::Variant::Map responseData;
     std::string internalid = content["internalid"].asString();
     if (internalid == "eventcontroller")
     {
         if (content["command"] == "setevent")
         {
-            try
+            checkMsgParameter(content, "eventmap", VAR_MAP);
+            checkMsgParameter(content, "event", VAR_STRING);
+
+            AGO_DEBUG() << "setevent request";
+            qpid::types::Variant::Map newevent = content["eventmap"].asMap();
+            std::string eventuuid = content["event"].asString();
+            if (eventuuid == "")
+                eventuuid = generateUuid();
+
+            AGO_TRACE() << "event content:" << newevent;
+            AGO_TRACE() << "event uuid:" << eventuuid;
+            eventmap[eventuuid] = newevent;
+
+            agoConnection->addDevice(eventuuid.c_str(), "event", true);
+            if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
             {
-                AGO_DEBUG() << "setevent request";
-                qpid::types::Variant::Map newevent = content["eventmap"].asMap();
-                AGO_TRACE() << "event content:" << newevent;
-                std::string eventuuid = content["event"].asString();
-                if (eventuuid == "") eventuuid = generateUuid();
-                AGO_TRACE() << "event uuid:" << eventuuid;
-                eventmap[eventuuid] = newevent;
-                agoConnection->addDevice(eventuuid.c_str(), "event", true);
-                if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
-                {
-                    returnval["result"] = 0;
-                    returnval["event"] = eventuuid;
-                }
-                else
-                {
-                    returnval["result"] = -1;
-                }
+                responseData["event"] = eventuuid;
+                return responseSuccess(responseData);
             }
-            catch (qpid::types::InvalidConversion)
+            else
             {
-                returnval["result"] = -1;
-            }
-            catch (...)
-            {
-                returnval["result"] = -1;
-                returnval["error"] = "exception";
+                return responseFailed("Failed to write map file");
             }
         }
         else if (content["command"] == "getevent")
         {
-            try
-            {
-                std::string event = content["event"].asString();
-                AGO_DEBUG() << "getevent request:" << event;
-                returnval["result"] = 0;
-                returnval["eventmap"] = eventmap[event].asMap();
-                returnval["event"] = event;
-            }
-            catch (qpid::types::InvalidConversion)
-            {
-                returnval["result"] = -1;
-            }
+            checkMsgParameter(content, "event", VAR_STRING);
+
+            std::string event = content["event"].asString();
+
+            AGO_DEBUG() << "getevent request:" << event;
+            responseData["eventmap"] = eventmap[event].asMap();
+            responseData["event"] = event;
+
+            return responseSuccess(responseData);
         }
         else if (content["command"] == "delevent")
         {
+            checkMsgParameter(content, "event", VAR_STRING);
+
             std::string event = content["event"].asString();
             AGO_DEBUG() << "delevent request:" << event;
-            returnval["result"] = -1;
-            if (event != "")
+
+            qpid::types::Variant::Map::iterator it = eventmap.find(event);
+            if (it != eventmap.end())
             {
-                qpid::types::Variant::Map::iterator it = eventmap.find(event);
-                if (it != eventmap.end())
+                AGO_TRACE() << "removing ago device" << event;
+                agoConnection->removeDevice(it->first.c_str());
+                eventmap.erase(it);
+                if (!variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
                 {
-                    AGO_TRACE() << "removing ago device" << event;
-                    agoConnection->removeDevice(it->first.c_str());
-                    eventmap.erase(it);
-                    if (variantMapToJSONFile(eventmap, getConfigPath(EVENTMAPFILE)))
-                    {
-                        returnval["result"] = 0;
-                    }
+                    return responseFailed("Failed to write map file");
                 }
             }
-        } 
+
+            // If it was not found, it was already deleted; delete succeded
+            return responseSuccess();
+        }else{
+            return responseUnknownCommand();
+        }
     }
-    return returnval;
+
+    // We do not support sending commands to our 'devices'
+    return responseNoDeviceCommands();
 }
 
 void AgoEvent::setupApp()

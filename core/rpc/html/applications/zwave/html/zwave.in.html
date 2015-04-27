@@ -222,7 +222,6 @@
             <li><_a href="#" data-translateable="true">Dependencies</_a></li>
             <li><_a href="#" data-translateable="true">Statistics</_a></li>
             <li><_a href="#" data-translateable="true">General commands</_a></li>
-            <li><_a href="#" data-translateable="true">USB port</_a></li>
         </ul>
         <!-- device list -->
         <div class="tab-content active">
@@ -362,22 +361,6 @@
                 <div class="three columns text-left field">
                     <div data-bind="event:{mousedown:saveConfig}" class="medium primary btn">
                         <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Save</_a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- usb port -->
-        <div class="tab-content">
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Configure controller USB port</_span>
-                </div>
-                <div class="three columns text-left field">
-                    <input type="text" placeholder="/dev/ttyACM0" id="setport" data-bind="value: port" class="xwide text input"/>
-                </div>
-                <div class="three columns text-left">
-                    <div data-bind="event:{mousedown:setPort}" class="medium primary btn">
-                        <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Set</_a>
                     </div>
                 </div>
             </div>

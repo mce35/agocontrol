@@ -13,7 +13,7 @@ Agocontrol.prototype = {
     refreshMultigraphThumbsInterval: null,
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
-    _getApplications: $.Deferred(),
+    _getApplications: Promise.pending(),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -102,7 +102,7 @@ Agocontrol.prototype = {
             }
 
             this.applications(applications);
-            this._getApplications.resolve();
+            this._getApplications.fulfill();
         }, this);
     },
 
@@ -115,52 +115,153 @@ Agocontrol.prototype = {
      * Application availability is NOT guaranteed to be loaded immediately.
      */
     initialize : function() {
-        var p1 = this.getInventory();
+        var p1 = this.getInventory()
+            .then(this.handleInventory.bind(this));
         var p2 = this.updateListing();
 
         // Required but non-dependent
         this.updateFavorites();
 
-        return $.when(p1, p2);
+        return Promise.all([p1, p2]);
     },
 
 
-    //send command
-    sendCommand: function(content, callback, timeout)
+    /**
+     * Send a command to an arbitrary Ago component.
+     *
+     * (if oldstyleCallback is ommited and a numeric is passed as second parameter, 
+     * we will use that as timeout)
+     * 
+     * @param content Should be a dict with any parameters to broadcast to the qpid bus.
+     * @param oldstyleCallback A deprecated callback; do not use for new code!
+     * @param timeout How many seconds we want the RPC gateway to wait for response
+     *
+     * @return A promise which will be either resolved or rejected
+     */
+    sendCommand: function(content, oldstyleCallback, timeout)
     {
+        if(oldstyleCallback !== undefined && timeout === undefined &&
+                $.isNumeric(oldstyleCallback))
+        {
+            // Support sendCommand(content, timeout)
+            timeout = oldstyleCallback;
+            oldstyleCallback = null;
+        }
+
         var self = this;
         var request = {};
+        request.jsonrpc = "2.0";
+        request.id = 1;
         request.method = "message";
         request.params = {};
         request.params.content = content;
+
         if (timeout)
         {
             request.params.replytimeout = timeout;
         }
-        request.id = 1;
-        request.jsonrpc = "2.0";
 
-        return $.ajax({
-            type : 'POST',
-            url : self.url,
-            data : JSON.stringify(request),
-            success : function(r)
+        var promise = new Promise(function(resolve, reject){
+            $.ajax({
+                    type : 'POST',
+                    url : self.url,
+                    data : JSON.stringify(request),
+                    dataType : "json",
+                    success: function(r, textStatus, jqXHR) {
+                        // JSON-RPC call gave JSON-RPC response
+         
+                        // Old-style callback users
+                        if (oldstyleCallback)
+                        {
+                            // deep copy; we do not want to modify the response sent to new style
+                            // handlers
+                            var old = {};
+                            $.extend(true, old, r);
+                            if(old._temp_newstyle_response)
+                            {
+                                // New-style backend, but old-style UI code.
+                                // Add some magic to fool the not-yet-updated code which is
+                                // checking for returncode
+
+                                if(old.result && !old.result.returncode)
+                                {
+                                    old.result.returncode = "0";
+                                }
+                                else if(old.error)
+                                {
+                                    if(!old.result)
+                                        old.result = {};
+
+                                    old.result.returncode = "-1";
+                                }
+
+                                delete old._temp_newstyle_response;
+                            }
+                            else if(old.error && old.error.identifier === 'error.no.reply')
+                            {
+                                // Previously agorpc added a result no-reply rather
+                                // than using an error..
+                                old.result = 'no-reply';
+                            }
+
+                            oldstyleCallback(old);
+                        }
+
+                        // New-style code should use promise pattern instead,
+                        // which is either resolved or rejected with result OR error
+                        if(r.result)
+                        {
+                            resolve(r.result);
+                        }
+                        else
+                        {
+                            reject(r.error);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown)
+                    {
+                        // Failed to talk properly with agorpc
+                        console.error('sendCommand failed for:');
+                        console.error(content);
+                        console.error('with errors:');
+                        console.error(arguments);
+
+                        // old: oldstyleCallback was never called on errors.
+
+                        // Simulate JSON-RPC error
+                        reject({
+                                code:-32603,
+                                message: 'transport.error',
+                                data:{
+                                    message:'Failed to talk with agorpc'
+                                }
+                            });
+                    }
+                });// $.ajax()
+            }); // Promise()
+
+        /* Attach a general .catch which logs all messages to notif
+         * Note that the application code can still add any .catch handlers
+         * on the returned promise, if required.
+         */
+        promise.catch(function(error){
+            if( error.message && error.message==='no.reply' )
             {
-                if (callback !== undefined)
-                {
-                    callback(r);
-                }
-            },
-            error : function()
+                //controller is not responding
+                notif.fatal('Controller is not responding');
+            }
+            else if( error.data && error.data.message )
             {
-                //error occured during request
-                console.error('sendCommand failed for:');
-                console.error(content);
-                console.error('with errors:');
-                console.error(arguments);
-            },
-            dataType : "json"
+                notif.error(error.data.message);
+            }
+            else if( error.message && error.message )
+            {
+                notif.error(error.message);
+            }else
+                notif.error("Failed: TODO improve: " + JSON.stringify(error));
         });
+
+        return promise;
     },
 
     //find room
@@ -202,45 +303,46 @@ Agocontrol.prototype = {
         var self = this;
 
         //TODO for now refresh all inventory
-        self.getInventory(function(response) {
-            var devs = self.cleanInventory(response.result.devices);
-            for( var uuid in devs )
-            {
-                if (devs[uuid].room !== undefined && devs[uuid].room)
+        self.getInventory()
+            .then(function(result) {
+                var devs = self.cleanInventory(result.data.devices);
+                for( var uuid in devs )
                 {
-                    devs[uuid].roomUID = devs[uuid].room;
-                    if (self.rooms()[devs[uuid].room] !== undefined)
+                    if (devs[uuid].room !== undefined && devs[uuid].room)
                     {
-                        devs[uuid].room = self.rooms()[devs[uuid].room].name;
+                        devs[uuid].roomUID = devs[uuid].room;
+                        if (self.rooms()[devs[uuid].room] !== undefined)
+                        {
+                            devs[uuid].room = self.rooms()[devs[uuid].room].name;
+                        }
+                        else
+                        {
+                            devs[uuid].room = "";
+                        }
                     }
                     else
                     {
                         devs[uuid].room = "";
                     }
-                }
-                else
-                {
-                    devs[uuid].room = "";
-                }
-            
-                var found = false;
-                for ( var i=0; i<self.devices().length; i++)
-                {
-                    if( self.devices()[i].uuid===uuid )
+                
+                    var found = false;
+                    for ( var i=0; i<self.devices().length; i++)
                     {
-                        // device already exists in devices array. Update its content
-                        self.devices()[i].update(devs[uuid], uuid);
-                        found = true;
-                        break;
+                        if( self.devices()[i].uuid===uuid )
+                        {
+                            // device already exists in devices array. Update its content
+                            self.devices()[i].update(devs[uuid], uuid);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if( !found )
+                    {
+                        //add new device
+                        self.devices.push(new device(self, devs[uuid], uuid));
                     }
                 }
-                if( !found )
-                {
-                    //add new device
-                    self.devices.push(new device(self, devs[uuid], uuid));
-                }
-            }
-        });
+            });
     },
 
     //refresh dashboards list
@@ -249,68 +351,57 @@ Agocontrol.prototype = {
         var self = this;
 
         //TODO for now refresh all inventory
-        self.getInventory(function(response) {
-            self.handleDashboards(response.result.floorplans);
-        });
+        self.getInventory()
+            .then(function(result){
+                self.handleDashboards(result.data.floorplans);
+            });
     },
 
     //get inventory
-    getInventory: function(callback)
+    getInventory: function()
     {
         var self = this;
-
-        if( !callback )
-        {
-            callback = self.handleInventory.bind(self);
-        }
         var content = {};
         content.command = "inventory";
-        return self.sendCommand(content, callback, 10);
+        return self.sendCommand(content);
     },
 
     //handle inventory
-    handleInventory: function(response)
+    handleInventory: function(result)
     {
         var self = this;
 
-        //check errors
-        if (response != null && response.result.match !== undefined && response.result.match(/^exception/))
-        {
-            notif.error("RPC ERROR: " + response.result);
-            return;
-        }
-
         //INVENTORY
-        self.inventory = response.result;
+        var inv = self.inventory = result.data;
 
         //rooms
-        for( uuid in response.result.rooms )
+        for( uuid in inv.rooms )
         {
-            var room = response.result.rooms[uuid];
+            var room = inv.rooms[uuid];
             room.uuid = uuid;
             room.action = ''; //dummy for datatables
             self.rooms.push(room);
         }
 
         //variables
-        for( name in response.result.variables )
+        for( name in inv.variables )
         {
             var variable = {
                 variable: name,
-                value: response.result.variables[name],
+                value: inv.variables[name],
                 action: '' //dummy for datatables
             };
             self.variables.push(variable);
         }
 
         //system
-        self.system(response.result.system);
+        self.system(inv.system);
 
         //schema
-        self.schema(response.result.schema);
+        self.schema(inv.schema);
 
         //devices
-        var devs = self.cleanInventory(response.result.devices);
+        var devs = self.cleanInventory(inv.devices);
         for( var uuid in devs )
         {
             //update device room infos
@@ -340,7 +431,7 @@ Agocontrol.prototype = {
         }
 
         // Handle dashboards/floorplans
-        self.handleDashboards(response.result.floorplans);
+        self.handleDashboards(inv.floorplans);
 
         // Devices loaded, we now have systemController property set..via device
         self.updateProcessList();
@@ -368,25 +459,23 @@ Agocontrol.prototype = {
         var content = {};
         content.command = "getprocesslist";
         content.uuid = self.systemController;
-        self.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.sendCommand(content, 1)
+            .then(function(res) {
                 var values = [];
-                for( var procName in res.result )
+                for( var procName in res.data )
                 {
-                    var proc = res.result[procName];
+                    var proc = res.data[procName];
                     proc.name = procName;
                     values.push(proc);
                 }
 
                 self.processes.pushAll(values);
-            }
-            else
-            {
-                console.error('Unable to get processes list!');
+            })
+            .catch(function(err){
+                notif.warning('Unable to get processes list, Applications will not be available: '
+                        + getErrorMessage(err));
                 self._noProcesses(true);
-            }
-        }, 5);
+            });
     },
 
     updateFavorites: function() {
@@ -492,7 +581,7 @@ Agocontrol.prototype = {
 
     getApplication: function(appName) {
         var self = this;
-        return this._getApplications
+        return this._getApplications.promise
             .then(function(){
                 var apps = self.applications();
                 for(var i=0; i < apps.length; i++) {
@@ -622,17 +711,18 @@ Agocontrol.prototype = {
                         //We have no values so reload from inventory
                         if (values[response.result.quantity] === undefined)
                         {
-                            self.getInventory(function(inv)
-                            {
-                                var tmpInv = self.cleanInventory(inv.result.devices);
-                                if (tmpInv[response.result.uuid] !== undefined)
-                                {
-                                    if (tmpInv[response.result.uuid].values)
+                            self.getInventory()
+                                .then(function(result) {
+                                    var tmpInv = self.cleanInventory(result.data.devices);
+                                    var uuid = result.data.uuid;
+                                    if (tmpInv[uuid] !== undefined)
                                     {
-                                        self.devices()[i].values(tmpInv[response.result.uuid].values);
+                                        if (tmpInv[uuid].values)
+                                        {
+                                            self.devices()[i].values(tmpInv[uuid].values);
+                                        }
                                     }
-                                }
-                            });
+                                });
                             break;
                         }
 

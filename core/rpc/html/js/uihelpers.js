@@ -14,6 +14,38 @@ Agocontrol.prototype.unblock = function(el)
     $(el).unblock();    
 };
 
+/* Tries to convert a JSON-RPC error object into a error string.
+ *
+ * If .data.description is set, this is used.
+ * Else, if .message is set, this is used.
+ * Else, we use .code (which is JSONRPC numeric).
+ *
+ * TODO: Do we want to use translated .message identifier 
+ * primarily?
+ */
+function getErrorMessage(error) {
+    if(!error)
+        throw new Error("Cannot get error from nothing!");
+
+    if(error.data && error.data.description)
+        return error.data.description;
+
+    if(error.message)
+        // Should be a non-human readable error, such as "no.reply"
+        return error.message;
+
+    return "JSON-RPC error " + error.code;
+}
+
+/* Show an JSON-RPC error using notif
+ * use on sendCommmand promise like this:
+ *
+ *  promise.catch(notifCommandError)
+ */
+function notifCommandError(error) {
+    notif.error("ERROR: " + getErrorMessage(msg));
+}
+
 //Init specific knockout bindings
 Agocontrol.prototype.initSpecificKnockoutBindings = function()
 {

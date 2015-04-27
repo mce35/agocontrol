@@ -477,9 +477,8 @@ bool setNTP(std::string deviceXaddr, std::string username, std::string password,
 }
 
 qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) {
-    qpid::types::Variant::Map result;
     string internalid = content["internalid"].asString();
-    return result;
+    return responseSuccess();
 }
 
 int main (int argc, char ** argv)  

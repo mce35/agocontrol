@@ -35,7 +35,8 @@ function dataloggerConfig(devices, agocontrol)
     self.databaseSize = ko.observable(0);
 
     //return human readable time
-    self.timestampToHRTime = function(ts) {
+    self.timestampToHRTime = function(ts)
+    {
         if( ts==0 )
             return 'X';
         var date = new Date(ts * 1000);
@@ -44,12 +45,14 @@ function dataloggerConfig(devices, agocontrol)
 
     //return human readable size
     //http://stackoverflow.com/a/20463021/3333386
-    self.sizeToHRSize = function (a,b,c,d,e) {
+    self.sizeToHRSize = function (a,b,c,d,e)
+    {
         return (b=Math,c=b.log,d=1e3,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2) +' '+(e?'kMGTPEZY'[--e]+'B':'Bytes')
     }
 
     //get device name. Always returns something
-    self.getDeviceName = function(uuid) {
+    self.getDeviceName = function(uuid)
+    {
         var name = '';
         var type = '';
         var found = false;
@@ -107,40 +110,35 @@ function dataloggerConfig(devices, agocontrol)
             var content = {};
             content.uuid = self.controllerUuid;
             content.command = 'getstatus';
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    var data = res.data;
                     //update multigraphs
                     self.multigraphs.removeAll();
-                    for( var i=0; i<res.result.multigraphs.length; i++ )
+                    for( var i=0; i<data.multigraphs.length; i++ )
                     {
                         var uuids = [];
-                        for( var j=0; j<res.result.multigraphs[i].uuids.length; j++ )
+                        for( var j=0; j<data.multigraphs[i].uuids.length; j++ )
                         {
-                            uuids.push({'uuid':res.result.multigraphs[i].uuids[j], 'name':self.getDeviceName(res.result.multigraphs[i].uuids[j])});
+                            uuids.push({'uuid':data.multigraphs[i].uuids[j], 'name':self.getDeviceName(data.multigraphs[i].uuids[j])});
                         }
-                        self.multigraphs.push({'name':res.result.multigraphs[i].name, 'uuids':uuids});
+                        self.multigraphs.push({'name':data.multigraphs[i].name, 'uuids':uuids});
                     }
-
+    
                     //update sql,rrd state
-                    self.dataLogging(res.result.dataLogging);
-                    self.gpsLogging(res.result.gpsLogging);
-                    self.rrdLogging(res.result.rrdLogging);
+                    self.dataLogging(data.dataLogging);
+                    self.gpsLogging(data.gpsLogging);
+                    self.rrdLogging(data.rrdLogging);
 
                     //update database infos
-                    self.databaseSize(self.sizeToHRSize(res.result.database.size));
-                    self.dataCount(res.result.database.infos.data_count);
-                    self.dataStart(self.timestampToHRTime(res.result.database.infos.data_start));
-                    self.dataEnd(self.timestampToHRTime(res.result.database.infos.data_end));
-                    self.positionCount(res.result.database.infos.position_count);
-                    self.positionStart(self.timestampToHRTime(res.result.database.infos.position_start));
-                    self.positionEnd(self.timestampToHRTime(res.result.database.infos.position_end));
-                }
-                else
-                {
-                    //TODO not responding
-                }
-            });
+                    self.databaseSize(self.sizeToHRSize(data.database.size));
+                    self.dataCount(data.database.infos.data_count);
+                    self.dataStart(self.timestampToHRTime(data.database.infos.data_start));
+                    self.dataEnd(self.timestampToHRTime(data.database.infos.data_end));
+                    self.positionCount(data.database.infos.position_count);
+                    self.positionStart(self.timestampToHRTime(data.database.infos.position_start));
+                    self.positionEnd(self.timestampToHRTime(data.database.infos.position_end));
+                });
         }
     };
 
@@ -159,24 +157,11 @@ function dataloggerConfig(devices, agocontrol)
             content.command = 'addmultigraph';
             content.uuids = uuids;
             content.period = self.multigraphPeriod();
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
-                    if( res.result.error==0 )
-                    {
-                        notif.success(res.result.msg);
-                        self.getStatus();
-                    }
-                    else
-                    {
-                        notif.error(res.result.msg);
-                    }
-                }
-                else
-                {
-                    //TODO not responding
-                }
-            });
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    notif.success(res.message);
+                    self.getStatus();
+                });
         }
     };
 
@@ -191,24 +176,11 @@ function dataloggerConfig(devices, agocontrol)
                 content.uuid = self.controllerUuid;
                 content.command = 'deletemultigraph';
                 content.multigraph = self.selectedMultigraphToDel().name;
-                self.agocontrol.sendCommand(content, function(res) {
-                    if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                    {
-                        if( res.result.error==0 )
-                        {
-                            notif.success(res.result.msg);
-                            self.getStatus();
-                        }
-                        else
-                        {
-                            notif.error(res.result.msg);
-                        }
-                    }
-                    else
-                    {
-                        //TODO not responding
-                    }
-                });
+                self.agocontrol.sendCommand(content)
+                    .then(function(res) {
+                        notif.success(res.message);
+                        self.getStatus();
+                    });
             }
         }
     };
@@ -224,24 +196,11 @@ function dataloggerConfig(devices, agocontrol)
             content.dataLogging = self.dataLogging();
             content.gpsLogging = self.gpsLogging();
             content.rrdLogging = self.rrdLogging();
-            self.agocontrol.sendCommand(content, function(res) {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
-                    if( res.result.error==0 )
-                    {
-                        notif.success("Logging flags saved");
-                        //no need to get status here
-                    }
-                    else
-                    {
-                        notif.error(res.result.msg);
-                    }
-                }
-                else
-                {
-                    //TODO not responding
-                }
-            });
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    notif.success("Logging flags saved");
+                    //no need to get status here
+                });
         }
     };
 
@@ -257,31 +216,21 @@ function dataloggerConfig(devices, agocontrol)
                 content.uuid = self.controllerUuid;
                 content.command = 'purgetable';
                 content.table = tablename;
-                self.agocontrol.sendCommand(content, function(res) {
-                    if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                    {
-                        if( res.result.error==0 )
-                        {
-                            notif.success("Table purged successfully");
-                            self.getStatus();
-                        }
-                        else
-                        {
-                            notif.error(res.result.msg);
-                        }
-                    }
-                    else
-                    {
-                        //TODO not responding
-                    }
-                }, 30); //increase timeout because table purge can be long
+                //TODO doesn't work until sendcommand oldstyleCallback parameter is not removed !
+                self.agocontrol.sendCommand(content, 30)
+                    .then(function(res) {
+                        notif.success("Table purged successfully");
+                        self.getStatus();
+                    });
             }
         }
     };
-    self.purgeDataTable = function() {
+    self.purgeDataTable = function()
+    {
         self.purgeDatabaseTable('data');
     };
-    self.purgePositionTable = function() {
+    self.purgePositionTable = function()
+    {
         self.purgeDatabaseTable('position');
     };
 

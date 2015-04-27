@@ -45,7 +45,6 @@ public:
 
 qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map content) 
 {
-    qpid::types::Variant::Map returnval;
     int monitorId = content["internalid"].asInt32();
     if (content["command"] == "getvideoframe") 
     {
@@ -54,13 +53,14 @@ qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map con
         {
             std::string s;
             s = tmpostr.str();	
+            qpid::types::Variant::Map returnval;
             returnval["image"]  = base64_encode(reinterpret_cast<const unsigned char*>(s.c_str()), s.length());
-            returnval["result"] = 0;
+            return responseSuccess(returnval);
         } 
         else
         {
-            returnval["result"] = -1;
-            cout << "commandHandler [getvideoframe] - Could not get video frame for monitor " << monitorId << endl;
+            AGO_ERROR() << "commandHandler [getvideoframe] - Could not get video frame for monitor " << monitorId << endl;
+            return responseError(RESPONSE_ERR_INTERNAL, "Cannot fetch video frame from monitor");
         }
     }
     else if (content["command"] == "triggeralarm")
@@ -71,26 +71,24 @@ qpid::types::Variant::Map AgoZmcam::commandHandler(qpid::types::Variant::Map con
                     content["cause"].asString(),
                     content["description"].asString(),
                     content["detail"].asString()))
-            returnval["result"] = 0;
+            return responseSuccess();
         else
         {
-            returnval["result"] = -1;
-            cout << "commandHandler [triggeralarm] - Could not trigger camera alarm for monitor " << monitorId << endl;
+            AGO_ERROR() << "commandHandler [triggeralarm] - Could not trigger camera alarm for monitor " << monitorId << endl;
+            return responseError(RESPONSE_ERR_INTERNAL, "Cannot camera alarm for monitor");
         }
     }
     else if (content["command"] == "clearalarm")
     {
         if (zoneminderClient.clearMonitorAlert(monitorId))
-            returnval["result"] = 0;
+            return responseSuccess();
         else
         {
-            returnval["result"] = -1;
-            cout << "commandHandler [clearalarm] - Could not cclear alarm for monitor " << monitorId << endl;
+            AGO_ERROR() << "commandHandler [clearalarm] - Could not clear alarm for monitor " << monitorId << endl;
+            return responseError(RESPONSE_ERR_INTERNAL, "Cannot clear alarm for monitor");
         }
     }
-    else
-        returnval["result"] = -1;
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoZmcam::setupApp() {

@@ -48,7 +48,7 @@ YNCAMessage::YNCAMessage(asio::streambuf &buf, size_t num_bytes) {
     std::string msg (begin, end);
     if(num_bytes < 5 || *begin != '@' || *(end-2) != '\r' || *(end-1) != '\n') {
         AGO_WARNING() << "Trying to construct YNCAMessage from '" << msg << "'";
-        throw new std::runtime_error("Invalid data");
+        throw std::runtime_error("Invalid data");
     }
 
     //AGO_DEBUG() << "Parsing YNCAMessage msg " << msg;

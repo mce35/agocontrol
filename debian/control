@@ -127,7 +127,7 @@ Description: i2c interface driver
 
 Package: agocontrol-onvif
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0, libssl1.0.0, libuuid1
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-suds, python-opencv, python-numpy
 Description: ONVIF interface driver
 
 Package: agocontrol-enocean

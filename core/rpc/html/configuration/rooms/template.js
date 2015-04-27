@@ -53,21 +53,20 @@ function RoomConfig(agocontrol)
             content.name = self.roomName();
             content.command = 'setroomname';
             content.uuid = self.agocontrol.agoController;
-            self.agocontrol.sendCommand(content, function(res) {
+            self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.roomName('');
-                if (res.result && res.result.returncode == 0)
-                {
-                    self.agocontrol.rooms.push({
-                        uuid : res.result.uuid,
-                        name : content.name,
-                        location : "",
-                        action : ""
-                    });
-                }
-                else
-                {
-                    notif.error("Error while creating room!");
-                }
+                self.agocontrol.rooms.push({
+                    uuid : res.data.uuid,
+                    name : content.name,
+                    location : "",
+                    action : ""
+                });
+            })
+            .catch(function(err) {
+                console.error(err);
+            })
+            .finally(function() {
                 self.agocontrol.unblock($('#agoGrid'));
             });
         }
@@ -102,17 +101,16 @@ function RoomConfig(agocontrol)
         content.room = item.uuid;
         content.uuid = self.agocontrol.agoController;
         content.command = 'deleteroom';
-        self.agocontrol.sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0)
-            {
-                self.agocontrol.rooms.remove(function(e) {
-                    return e.uuid == item.uuid;
-                });
-            }
-            else
-            {
-                notif.error("Error while deleting room!");
-            }
+        self.agocontrol.sendCommand(content)
+        .then(function(res) {
+            self.agocontrol.rooms.remove(function(e) {
+                return e.uuid == item.uuid;
+            });
+        })
+        .catch(function(err) {
+            notif.error("Error while deleting room!");
+        })
+        .finally(function() {
             self.agocontrol.unblock($('#agoGrid'));
         });
     };

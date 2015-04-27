@@ -1,2 +1,3 @@
 lib/systemd/system/agomysensors.service
 opt/agocontrol/bin/agoMySensors
+etc/opt/agocontrol/schema.d/20-mysensors.yaml

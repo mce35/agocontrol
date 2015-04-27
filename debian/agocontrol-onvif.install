@@ -1,0 +1,4 @@
+lib/systemd/system/agoonvif.service
+opt/agocontrol/bin/agoonvif.py
+usr/lib/python2.7/dist-packages/onvif
+etc/onvif/wsdl

@@ -86,8 +86,8 @@ bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, const fs::p
         mapfile << variantMapToJSONString(map);
         mapfile.close();
         return true;
-    } catch (...) {
-        printf("ERROR: Can't write %s\n",filename.c_str());
+    } catch (const std::exception& ex) {
+        AGO_ERROR() << "Failed to write " << filename << ": " << ex.what();
         return false;
     }
 }
@@ -131,13 +131,13 @@ std::string agocontrol::variantMapToJSONString(qpid::types::Variant::Map map) {
                 break;
             case VAR_STRING:
                 tmpstring = it->second.asString();
-                replaceString(tmpstring, "\\", "\\\\");	
-                replaceString(tmpstring, "\"", "\\\"");	
+                replaceString(tmpstring, "\\", "\\\\");
+                replaceString(tmpstring, "\"", "\\\"");
                 result += "\"" +  tmpstring + "\"";
                 break;
             default:
                 if (it->second.asString().size() != 0) {
-                    result += it->second.asString();	
+                    result += it->second.asString();
                 } else {
                     result += "null";
                 }
@@ -169,8 +169,8 @@ std::string agocontrol::variantListToJSONString(qpid::types::Variant::List list)
                 break;
             case VAR_STRING:
                 tmpstring = it->asString();
-                replaceString(tmpstring, "\\", "\\\\");	
-                replaceString(tmpstring, "\"", "\\\"");	
+                replaceString(tmpstring, "\\", "\\\\");
+                replaceString(tmpstring, "\"", "\\\"");
                 result += "\"" +  tmpstring + "\"";
                 break;
             default:
@@ -258,7 +258,7 @@ qpid::types::Variant::Map agocontrol::jsonToVariantMap(Json::Value value) {
                 default:
                     AGO_WARNING() << "Unhandled Json::ValueType in jsonToVariantMap()";
             }
-        }	
+        }
     } catch (const std::exception& error) {
         AGO_ERROR() << "Exception during JSON->Variant::Map conversion: " << error.what();
     }
@@ -309,7 +309,6 @@ unsigned int agocontrol::stringToUint(string v)
     istringstream (v) >> r;
     return r;
 }
-
 agocontrol::AgoConnection::AgoConnection(const char *interfacename)
     : shutdownSignaled(false)
 {
@@ -387,7 +386,7 @@ void agocontrol::AgoConnection::run() {
             }
 
             decode(message, content);
-            AGO_TRACE() << "Processing message [src=" << message.getReplyTo() <<
+            AGO_TRACE() << "Incoming message [src=" << message.getReplyTo() <<
                 ", sub="<< message.getSubject()<<"]: " << content;
 
             if (content["command"] == "discover") {
@@ -402,9 +401,20 @@ void agocontrol::AgoConnection::run() {
                     if ( ( isOurDevice || (!(filterCommands))) && !commandHandler.empty()) {
 
                         // printf("command for id %s found, calling handler\n", internalid.c_str());
-                        if (internalid.size() > 0) content["internalid"] = internalid;
-                        qpid::types::Variant::Map responsemap = commandHandler(content);
+                        if (internalid.size() > 0)
+                            content["internalid"] = internalid;
+
                         // found a match, reply to sender and pass the command to the assigned handler method
+                        qpid::types::Variant::Map responsemap;
+                        try {
+                            responsemap = commandHandler(content);
+                        }catch(const AgoCommandException& ex) {
+                            responsemap = ex.toResponse();
+                        }catch(const std::exception &ex) {
+                            AGO_ERROR() << "Unhandled exception in command handler:" << ex.what();
+                            responsemap = responseError(RESPONSE_ERR_INTERNAL, "Unhandled exception in command handler");
+                        }
+
                         const Address& replyaddress = message.getReplyTo();
                         // only send a reply if this was for one of our childs
                         // or if it was the special command inventory when the filterCommands was false, that's used by the resolver
@@ -435,6 +445,7 @@ void agocontrol::AgoConnection::run() {
                 break;
 
             AGO_ERROR() << "Exception in message loop: " << error.what();
+
             if (session.hasError()) {
                 AGO_ERROR() << "Session has error, recreating";
                 session.close();
@@ -673,7 +684,62 @@ bool agocontrol::AgoConnection::sendMessage(const char *subject, qpid::types::Va
     return true;
 }
 
-qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, qpid::types::Variant::Map content) {
+agocontrol::AgoResponse agocontrol::AgoConnection::sendRequest(const qpid::types::Variant::Map& content) {
+    return sendRequest("", content);
+}
+
+agocontrol::AgoResponse agocontrol::AgoConnection::sendRequest(const std::string& subject, const qpid::types::Variant::Map& content) {
+    AgoResponse r;
+    Message message;
+    Receiver responseReceiver;
+    Session recvsession = connection.createSession();
+
+    try {
+        encode(content, message);
+        if(!subject.empty())
+            message.setSubject(subject);
+
+        Address responseQueue("#response-queue; {create:always, delete:always}");
+        responseReceiver = recvsession.createReceiver(responseQueue);
+        message.setReplyTo(responseQueue);
+
+        AGO_TRACE() << "Sending request [sub=" << subject << ", replyTo=" << responseQueue <<"]" << content;
+        sender.send(message);
+
+        Message response = responseReceiver.fetch(Duration::SECOND * 3);
+
+        try {
+            r.init(response);
+            AGO_TRACE() << "Response received: " << r.response;
+        }catch(const std::invalid_argument& ex) {
+            AGO_ERROR() << "Failed to initate response, wrong response format? Error: "
+                << ex.what()
+                << ". Message: " << r.response;
+
+            r.init(responseError(RESPONSE_ERR_INTERNAL, ex.what()));
+        }
+        recvsession.acknowledge();
+
+    } catch (qpid::messaging::NoMessageAvailable) {
+        AGO_WARNING() << "No reply for message sent to subject " << subject;
+
+        r.init(responseError(RESPONSE_ERR_NO_REPLY, "Timeout"));
+    } catch(const std::exception& ex) {
+        AGO_ERROR() << "Exception in sendRequest: " << ex.what();
+
+        r.init(responseError(RESPONSE_ERR_INTERNAL, ex.what()));
+    }
+
+    recvsession.close();
+    return r;
+}
+
+// DEPRECATED, USE sendRequest
+qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, const qpid::types::Variant::Map& content) {
+    return sendMessageReply(subject, content, Duration::SECOND * 3);
+}
+
+qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char *subject, const qpid::types::Variant::Map& content, qpid::messaging::Duration timeout) {
     Message message;
     qpid::types::Variant::Map responseMap;
     Receiver responseReceiver;
@@ -688,7 +754,7 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
 
         AGO_TRACE() << "Sending message [sub=" << subject << ", reply=" << responseQueue <<"]" << content;
         sender.send(message);
-        Message response = responseReceiver.fetch(Duration::SECOND * 3);
+        Message response = responseReceiver.fetch(timeout);
         recvsession.acknowledge();
         if (response.getContentSize() > 3) {
             decode(response,responseMap);
@@ -698,7 +764,6 @@ qpid::types::Variant::Map agocontrol::AgoConnection::sendMessageReply(const char
         AGO_TRACE() << "Reply received: " << responseMap;
     } catch (qpid::messaging::NoMessageAvailable) {
         AGO_WARNING() << "No reply for message sent to subject " << subject;
-        printf("WARNING, no reply message to fetch\n");
     } catch(const std::exception& error) {
         AGO_ERROR() << "Exception in sendMessageReply: " << error.what();
     }
@@ -784,26 +849,18 @@ bool agocontrol::AgoConnection::setFilter(bool filter) {
 
 qpid::types::Variant::Map agocontrol::AgoConnection::getInventory() {
     Variant::Map content;
-    Variant::Map responseMap;
     content["command"] = "inventory";
-    Session recvsession = connection.createSession();
-    Address responseQueue("#response-queue; {create:always, delete:always}");
-    Receiver responseReceiver = recvsession.createReceiver(responseQueue);
-    Message message;
-    encode(content, message);
-    message.setReplyTo(responseQueue);
-    sender.send(message);
-    try {
-        Message response = responseReceiver.fetch(Duration::SECOND * 3);
-        recvsession.acknowledge();
-        if (response.getContentSize() > 3) {	
-            decode(response,responseMap);
-        }
-    } catch (qpid::messaging::NoMessageAvailable) {
-        AGO_WARNING() << "No getInventory response";
+    AgoResponse r = sendRequest(content);
+
+    if(r.isOk()) {
+        AGO_TRACE() << "Inventory obtained";
+        return r.getData();
+    }else{
+        AGO_WARNING() << "Failed to obtain inventory: " << r.response;
     }
-    recvsession.close();
-    return responseMap;
+
+    // TODO: Some way to report error?
+    return qpid::types::Variant::Map();
 }
 
 std::string agocontrol::AgoConnection::getAgocontroller() {
@@ -823,11 +880,14 @@ std::string agocontrol::AgoConnection::getAgocontroller() {
                     }
                 }
             }
-        } else {
+        }
+
+        if (agocontroller == "" && retry) {
             AGO_WARNING() << "Unable to resolve agocontroller, retrying";
             sleep(1);
         }
     }
+
     if (agocontroller == "")
         AGO_WARNING() << "Failed to resolve agocontroller, giving up";
 

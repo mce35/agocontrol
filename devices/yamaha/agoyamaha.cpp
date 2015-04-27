@@ -19,7 +19,6 @@ public:
 };
 
 qpid::types::Variant::Map AgoYamaha::commandHandler(qpid::types::Variant::Map command) {
-    qpid::types::Variant::Map returnval;
     std::string internalid = command["internalid"].asString();
 
     // Find device
@@ -33,9 +32,7 @@ qpid::types::Variant::Map AgoYamaha::commandHandler(qpid::types::Variant::Map co
     }
     if(!dev) {
         AGO_WARNING() << "Got command for unknown device " << internalid;
-            returnval["result"] = 1;
-            returnval["error"] = "Parameter level of type float/double is required";
-        return returnval;
+        return responseError(RESPONSE_ERR_INTERNAL, "Received command for unknown device");
     }
 
     if (command["command"] == "on") {
@@ -65,9 +62,7 @@ qpid::types::Variant::Map AgoYamaha::commandHandler(qpid::types::Variant::Map co
                 (command["level"].getType() != qpid::types::VAR_FLOAT &&
                  command["level"].getType() != qpid::types::VAR_DOUBLE)) {
 
-            returnval["result"] = 1;
-            returnval["error"] = "Parameter level of type float/double is required";
-            return returnval;
+            return responseError(RESPONSE_ERR_INTERNAL, "Parameter level of type float/double is required");
         }
 
         float level = command["level"].asFloat();
@@ -80,8 +75,7 @@ qpid::types::Variant::Map AgoYamaha::commandHandler(qpid::types::Variant::Map co
         dev->volSet(level);
     }
 
-    returnval["result"] = 0;
-    return returnval;
+    return responseSuccess();
 }
 
 void AgoYamaha::setupApp() {

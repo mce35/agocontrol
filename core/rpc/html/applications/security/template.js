@@ -664,17 +664,18 @@ function SecurityConfig(agocontrol)
         var content = {};
         content.command = "getconfig";
         content.uuid = self.securityController;
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.result.data.config )
-            {
-                self.zoneMap(res.result.result.data.config);
-                self.currentHousemode(res.result.result.data.housemode);
-                self.armedMessage(res.result.result.data.armedMessage);
-                self.disarmedMessage(res.result.result.data.disarmedMessage);
-                self.defaultHousemode(res.result.result.data.defaultHousemode);
-                self.initialized = true;
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                if( res && res.data.config )
+                {
+                    self.zoneMap(res.data.config);
+                    self.currentHousemode(res.data.housemode);
+                    self.armedMessage(res.data.armedMessage);
+                    self.disarmedMessage(res.data.disarmedMessage);
+                    self.defaultHousemode(res.data.defaultHousemode);
+                    self.initialized = true;
+                }
+            });
     };
 
     //get alert config
@@ -683,15 +684,13 @@ function SecurityConfig(agocontrol)
         var content = {};
         content.command = "status";
         content.uuid = self.alertController;
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-            {
-                self.alertEmailConfigured(res.result.mail.configured);
-                self.alertSmsConfigured(res.result.sms.configured);
-                self.alertTwitterConfigured(res.result.twitter.configured);
-                self.alertPushConfigured(res.result.push.configured);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                self.alertEmailConfigured(res.data.mail.configured);
+                self.alertSmsConfigured(res.data.sms.configured);
+                self.alertTwitterConfigured(res.data.twitter.configured);
+                self.alertPushConfigured(res.data.push.configured);
+            });
     };
 
     //restore config from agosecurity
@@ -751,41 +750,17 @@ function SecurityConfig(agocontrol)
         content.armedMessage = self.armedMessage();
         content.disarmedMessage = self.disarmedMessage();
         content.defaultHousemode = self.defaultHousemode();
-        self.agocontrol.sendCommand(content, function(res) {
-            var error = true;
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-            {
-                if( res.result.result && res.result.result.code=="success" )
-                {
-                    notif.success('Security config saved successfully');
-                    error = false;
-                }
-                else
-                {
-                    if( res.result.error && res.result.error.message )
-                    {
-                        notif.error(res.result.error.message);
-                    }
-                    else
-                    {
-                        notif.error('Unable to save security config');
-                    }
-                }
-            }
-            else
-            {
-                notif.error('Unable to save security config');
-            }
-
-            //cancel if error occured
-            if( error )
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('Security config saved successfully');
+            })
+            .catch(function(err) {
+                //error occured, restore config
                 self.restoreConfig();
-            }
-
-            //unblock ui
-            self.agocontrol.unblock($('#securityTable'));
-        });
+            })
+            .finally(function() {
+                self.agocontrol.unblock($('#securityTable'));
+            });
     };
     
     //set current housemode
@@ -797,36 +772,17 @@ function SecurityConfig(agocontrol)
         content.command = 'sethousemode';
         content.pin = self.currentPin();
         content.housemode = self.currentHousemode();
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-            {
-                if( res.result.result && res.result.result.code=="success" )
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('Housemode changed successfully');
+            })
+            .catch(function(err) {
+                //restore old housemode
+                if( err.data && err.data.housemode )
                 {
-                    notif.success('Housemode changed successfully');
+                    self.currentHousemode(err.data.housemode);
                 }
-                else
-                {
-                    if( res.result.error && res.result.error.message )
-                    {
-                        notif.error(res.result.error.message);
-                    }
-                    else
-                    {
-                        notif.error('Unable to change housemode');
-                    }
-
-                    //restore old housemode
-                    if( res.result.error && res.result.error.data && res.result.error.data.housemode )
-                    {
-                        self.currentHousemode(res.result.error.data.housemode);
-                    }
-                }
-            }
-            else
-            {
-                notif.error('Unable to change housemode');
-            }
-        });
+            });
     };
 
     //==================
@@ -921,33 +877,14 @@ function SecurityConfig(agocontrol)
         content.command = 'setpin';
         content.pin = self.currentPin();
         content.newpin = self.newPin;
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-            {
-                if( res.result.result && res.result.result.code=="success" )
-                {
-                    notif.success('Pin code changed successfully');
-                }
-                else
-                {
-                    if( res.result.error && res.result.error.message )
-                    {
-                        notif.error(res.result.error.message);
-                    }
-                    else
-                    {
-                        notif.error('Unable to change pin code');
-                    }
-                }
-            }
-            else
-            {
-                notif.error('Unable to change pin code');
-            }
-
-            //reset pin code
-            self.resetPin();
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('Pin code changed successfully');
+            })
+            .finally(function() {
+                //reset pin code
+                self.resetPin();
+            });
     }
 
     //==================

@@ -188,49 +188,46 @@ void AgoDmx::reportDevices(Variant::Map channelmap) {
     }
 }
 
-qpid::types::Variant::Map AgoDmx::commandHandler(qpid::types::Variant::Map command) {
+qpid::types::Variant::Map AgoDmx::commandHandler(qpid::types::Variant::Map content) {
     bool handled = true;
 
-    const char *internalid = command["internalid"].asString().c_str();
-
-    qpid::types::Variant::Map returnval;
-    returnval["result"] = 0;
-
+    const char *internalid = content["internalid"].asString().c_str();
     Variant::Map device = channelMap[internalid].asMap();
 
-    if (command["command"] == "on") {
+    if (content["command"] == "on") {
         if (setDevice_level(device, device["onlevel"])) {
             agoConnection->emitEvent(internalid, "event.device.statechanged", device["onlevel"].asString().c_str(), "");
-        }
-    } else if (command["command"] == "off") {
+            return responseSuccess();
+        } else return responseFailed("cannot set device level via OLA");
+    } else if (content["command"] == "off") {
         if (setDevice_level(device, 0)) {
             agoConnection->emitEvent(internalid, "event.device.statechanged", "0", "");
-        }
-    } else if (command["command"] == "setlevel") {
-        if (setDevice_level(device, command["level"])) {
+            return responseSuccess();
+        } else return responseFailed("cannot set device level via OLA");
+    } else if (content["command"] == "setlevel") {
+        checkMsgParameter(content, "level", VAR_INT32);
+        if (setDevice_level(device, content["level"])) {
 
             Variant::Map content = device;
-            content["onlevel"] = command["level"].asString().c_str();
+            content["onlevel"] = content["level"].asString().c_str();
             channelMap[internalid] = content;
 
-            agoConnection->emitEvent(internalid, "event.device.statechanged", command["level"].asString().c_str(), "");
-        }
-    } else if (command["command"] == "setcolor") {
-        if (!setDevice_color(channelMap[internalid].asMap(), command["red"], command["green"], command["blue"])) {
-            handled = false;
-        }
-    } else if (command["command"] == "setstrobe") {
-        if (!setDevice_strobe(channelMap[internalid].asMap(), command["strobe"])) {
-            handled = false;
-        }
-    } else {
-        handled = false;
+            agoConnection->emitEvent(internalid, "event.device.statechanged", content["level"].asString().c_str(), "");
+            return responseSuccess();
+        } else return responseFailed("cannot set device level via OLA");
+    } else if (content["command"] == "setcolor") {
+        checkMsgParameter(content, "red", VAR_INT32);
+        checkMsgParameter(content, "green", VAR_INT32);
+        checkMsgParameter(content, "blue", VAR_INT32);
+        if (setDevice_color(channelMap[internalid].asMap(), content["red"], content["green"], content["blue"])) {
+            return responseSuccess();
+        } else return responseFailed("cannot set device color via OLA");
+    } else if (content["command"] == "setstrobe") {
+        if (setDevice_strobe(channelMap[internalid].asMap(), content["strobe"])) {
+            return responseSuccess();
+        } else return responseFailed("cannot set device strobe via OLA");
     }
-    if (!handled) {
-        returnval["result"] = 1;
-        AGO_ERROR() << "received undhandled command " << command["command"].asString() << " for node " << internalid; 
-    }
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoDmx::setupApp() {

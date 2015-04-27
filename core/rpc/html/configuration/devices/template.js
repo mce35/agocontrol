@@ -384,6 +384,8 @@ function DeviceConfig(agocontrol)
         request.id = 1;
         request.jsonrpc = "2.0";
 
+        // XXX(1): sending an event does NOT yield a response
+        // XXX(2): dont build requests manually like this
         $.ajax({
             type : 'POST',
             url : self.agocontrol.url,

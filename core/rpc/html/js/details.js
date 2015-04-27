@@ -437,13 +437,14 @@ Agocontrol.prototype.renderGraph = function(device, environment)
         var content = {};
         content.uuid = self.dataLoggerController;
         content.command = "getdata";
+        content.replytimeout = 15;
         content.deviceid = device.uuid;
         content.start = startDate.toISOString();
         content.end = endDate.toISOString();
         content.env = environment.toLowerCase();
 
         self.sendCommand(content, function(res) {
-            if (!res.result || !res.result.result || !res.result.result.values)
+            if (!res.result || !res.result.data || !res.result.data.values)
             {
                 notif.fatal("Error while loading Graph!");
                 self.unblock($('#graph'));
@@ -463,7 +464,7 @@ Agocontrol.prototype.renderGraph = function(device, environment)
 
             //Prepare the data
             var data = [];
-            var values = res.result.result.values;
+            var values = res.result.data.values;
 
             if (renderType == "list")
             {

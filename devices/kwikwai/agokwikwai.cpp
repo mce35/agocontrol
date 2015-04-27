@@ -41,18 +41,18 @@ qpid::types::Variant::Map AgoKwikwai::commandHandler(qpid::types::Variant::Map c
     if (internalid == "hdmicec") {
         if (content["command"] == "alloff" ) {
             myKwikwai->cecSend("FF:36");
-            returnval["result"] = 0;
+            return responseSuccess();
         }
     } else if (internalid == "tv") {
         if (content["command"] == "on" ) {
             myKwikwai->cecSend("F0:04");
-            returnval["result"] = 0;
+            return responseSuccess();
         } else if (content["command"] == "off" ) {
             myKwikwai->cecSend("F0:36");
-            returnval["result"] = 0;
+            return responseSuccess();
         }
     }
-    return returnval;
+    return responseUnknownCommand();
 }
 
 void AgoKwikwai::setupApp() {
