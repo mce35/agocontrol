@@ -69,7 +69,7 @@ function OnVIFPlugin(devices, agocontrol)
                 var cameras = [];
                 for( var internalid in resp.data.cameras )
                 {
-                    var camera = resp.data['cameras'][internalid];
+                    var camera = resp.data.cameras[internalid];
                     camera.internalid = internalid;
                     cameras.push(camera);
                 }
