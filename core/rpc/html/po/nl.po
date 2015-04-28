@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 13:08+0200\n"
+"POT-Creation-Date: 2015-04-28 15:46+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -910,6 +910,7 @@ msgid "Request node configuration parameters"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:39
 msgid "Request parameters"
 msgstr ""
 
@@ -1128,32 +1129,26 @@ msgid "0 to disable recording"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
-msgid "This tab allow you to configure your device as you need"
+msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:36
-msgid ""
-"Click on \"Get\" button to execute get like operation. It will fill "
-"parameters field with response and help you preparing your request"
-msgstr ""
-
-#: ../applications/onvif/html/onvif.xml.in.h:37
 #, fuzzy
 msgid "Service name"
 msgstr "Apparaat Naam"
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../applications/onvif/html/onvif.xml.in.h:37
 #, fuzzy
 msgid "Operation name"
 msgstr "Geef gebeurtenis naam"
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../applications/onvif/html/onvif.xml.in.h:38
 #, fuzzy
 msgid "Operation"
 msgstr "Omschrijving"
 
 #: ../applications/onvif/html/onvif.xml.in.h:40
-msgid "Get"
+msgid "Response"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:41
@@ -1161,11 +1156,11 @@ msgid "Parameters"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:42
-msgid "Check parameters"
+msgid "Execute"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:43
-msgid "Execute"
+msgid "Check parameters"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:44
@@ -1173,7 +1168,7 @@ msgid "My cameras"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:45
-msgid "Camera"
+msgid "Add camera"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:46

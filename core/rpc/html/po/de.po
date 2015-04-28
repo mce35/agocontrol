@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 13:08+0200\n"
+"POT-Creation-Date: 2015-04-28 15:46+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -902,6 +902,7 @@ msgid "Request node configuration parameters"
 msgstr "Node Informationen aktualisieren"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:39
 #, fuzzy
 msgid "Request parameters"
 msgstr "Setze Parameter"
@@ -1124,34 +1125,27 @@ msgid "0 to disable recording"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
-msgid "This tab allow you to configure your device as you need"
+msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:36
-msgid ""
-"Click on \"Get\" button to execute get like operation. It will fill "
-"parameters field with response and help you preparing your request"
-msgstr ""
-
-#: ../applications/onvif/html/onvif.xml.in.h:37
 #, fuzzy
 msgid "Service name"
 msgstr "Gerätename"
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../applications/onvif/html/onvif.xml.in.h:37
 #, fuzzy
 msgid "Operation name"
 msgstr "Namen der Zone eingeben"
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../applications/onvif/html/onvif.xml.in.h:38
 #, fuzzy
 msgid "Operation"
 msgstr "Beschreibung"
 
 #: ../applications/onvif/html/onvif.xml.in.h:40
-#, fuzzy
-msgid "Get"
-msgstr "Setzen"
+msgid "Response"
+msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:41
 #, fuzzy
@@ -1159,20 +1153,20 @@ msgid "Parameters"
 msgstr "Setze Parameter"
 
 #: ../applications/onvif/html/onvif.xml.in.h:42
+msgid "Execute"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:43
 #, fuzzy
 msgid "Check parameters"
 msgstr "Setze Parameter"
-
-#: ../applications/onvif/html/onvif.xml.in.h:43
-msgid "Execute"
-msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:44
 msgid "My cameras"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:45
-msgid "Camera"
+msgid "Add camera"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:46
@@ -1666,6 +1660,10 @@ msgstr ""
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Get"
+#~ msgstr "Setzen"
 
 #~ msgid "Configure controller USB port"
 #~ msgstr "USB Port vom Controller"

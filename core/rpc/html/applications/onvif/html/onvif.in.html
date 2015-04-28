@@ -70,7 +70,7 @@
                         <div class="four columns text-right">
                         </div>
                         <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {})}" class="medium primary btn">
+                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {}, false)}" class="medium primary btn">
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Get device infos</_a>
                             </div>
                         </div>
@@ -268,9 +268,7 @@
                 <div class="tab-content">
                     <div class="row">
                         <div class="twelve columns text-left" style="font-size:smaller;">
-                            <_span data-translateable="true">This tab allow you to configure your device as you need</_span>.
-                            <br/>
-                            <_span data-translateable="true">Click on "Get" button to execute get like operation. It will fill parameters field with response and help you preparing your request</_span>.
+                            <_span data-translateable="true">This tab allows you to execute onvif requests</_span>.
                         </div>
                     </div>
                     <div class="row">
@@ -296,29 +294,33 @@
                         <div class="six columns text-left field">
                             <input data-translateable="true" class="xwide input" type="text" _placeholder="Operation" data-bind="textInput:onvifOperation" />
                         </div>
-                        <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:getAdvancedOperation}" class="medium primary btn">
-                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Get</_a>
-                            </div>
-                        </div>
                     </div>
                     <div class="row">
-                        <div class="two columns text-right">
-                            <_span data-translateable="true">Parameters</_span>
+                        <div class="six columns text-left">
+                            <_span data-translateable="true">Request parameters</_span>
+                        </div>
+                        <div class="six columns text-left">
+                            <_span data-translateable="true">Response</_span>
                         </div>
                         <div class="ten columns text-left field">
                             <textarea data-translateable="true" style="height:200px; font-size:14px; line-height:20px;" class="input textarea" _placeholder="Parameters" data-bind="textInput:onvifParameters"></textarea>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="two columns text-right">
+                    <div>
+                        <div class="six columns text-center field">
+                            <textarea data-translateable="true" style="height:250px; font-size:13px; line-height:16px;" data-bind="textInput:onvifParameters" class="input textarea" placeholder="Request parameters"></textarea>
                         </div>
+                        <div class="six columns text-center field">
+                            <textarea data-translateable="true" style="height:250px; font-size:13px; line-height:16px;" data-bind="textInput:onvifResponse" class="input textarea" placeholder="Response"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="six columns text-left">
+                            <div data-bind="event{mousedown:doOperation.bind($data, onvifResponse, onvifService(), onvifOperation(), JSON.parse(onvifParameters()), true)}" class="medium primary btn">
+                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Execute</_a>
+                            </div>
                             <div data-bind="event{mousedown:checkJson}" class="medium primary btn">
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Check parameters</_a>
-                            </div>
-                            <div data-bind="event{mousedown:doOperation.bind($data, null, onvifService(), onvifOperation(), JSON.parse(onvifParameters()))}" class="medium primary btn">
-                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Execute</_a>
                             </div>
                         </div>
                     </div>
@@ -330,7 +332,7 @@
     <section data-bind="gumbyTabs:$root" class="tabs">
         <ul class="tab-nav">
             <li class="active"><_a data-translateable="true" href="#">My cameras</_a></li>
-            <li><_a data-translateable="true" href="#">Camera</_a></li>
+            <li><_a data-translateable="true" href="#">Add camera</_a></li>
             <li><_a data-translateable="true" href="#">Recordings</_a></li>
         </ul>
 

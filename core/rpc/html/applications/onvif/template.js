@@ -21,7 +21,8 @@ function OnVIFPlugin(devices, agocontrol)
     self.configData = ko.observableArray(null);
     self.onvifService = ko.observable(null);
     self.onvifOperation = ko.observable(null);
-    self.onvifParameters = ko.observable(null);
+    self.onvifParameters = ko.observable(JSON.stringify({'key': 'value'}, null, 4));
+    self.onvifResponse = ko.observable('');
     self.onvifServices = ko.observableArray(['devicemgmt', 'deviceio', 'event', 'analytics', 'analyticsdevice', 'display', 'imaging', 'media', 'ptz', 'receiver', 'remotediscovery', 'recording', 'replay', 'search']);
     self.configSetOperation = ko.observable(null);
     self.configSetService = ko.observable(null);
@@ -32,6 +33,7 @@ function OnVIFPlugin(devices, agocontrol)
     self.motionRecordingDuration = ko.observable(0);
     self.motionOnDuration = ko.observable(300);
     self.motionRecordDir = ko.observable('/opt/agocontrol/recordings');
+    self.recordingsAreaTypes = ko.observableArray([{value:0, desc:'Disabled'}, {value:1, desc:'Draw single box (all areas merged)'}, {value:2, desc:'Draw all detected areas'}]);
 
     self.camerasGrid = new ko.agoGrid.viewModel({
         data: self.cameras,
@@ -495,7 +497,7 @@ function OnVIFPlugin(devices, agocontrol)
     };
 
     //execute onvif operation
-    self.doOperation = function(variable, service, operation, params)
+    self.doOperation = function(variable, service, operation, params, stringify)
     {
         if( service && operation && params )
         {
@@ -513,7 +515,14 @@ function OnVIFPlugin(devices, agocontrol)
                 var params = self.onvifResponseToFlatArray('', resp.data);
                 if( variable )
                 {
-                    variable(params);
+                    if( stringify )
+                    {
+                        variable( JSON.stringify(params, null, 4));
+                    }
+                    else
+                    {
+                        variable(params);
+                    }
                 }
             })
             .catch(function(err) {
