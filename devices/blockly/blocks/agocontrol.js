@@ -27,6 +27,7 @@ window.BlocklyAgocontrol = {
         this.schema = schema;
         this.devices = devices;
         //only variable names are useful
+        this.variables = [];
         for( var i=0; i<variables.length; i++ )
         {
             if( variables[i].variable )

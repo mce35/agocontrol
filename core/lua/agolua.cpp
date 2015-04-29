@@ -35,6 +35,8 @@ using namespace qpid::types;
 #include "lua5.2/lua.hpp"
 #endif
 
+#define INVENTORY_MAX_AGE 60 //in seconds
+
 const char reAll[] = "--.*--\\[\\[(.*)\\]\\](.*)";
 const char reEvent[] = "(event\\.\\w+\\.\\w+)";
 
@@ -48,7 +50,6 @@ enum DebugMsgType {
 class AgoLua: public AgoApp {
 private:
     qpid::types::Variant::Map inventory;
-    bool refreshInventory; //optimize script execution (0.2s to get all inventory)
     qpid::types::Variant::Map scriptsInfos;
     boost::regex exprAll;
     boost::regex exprEvent;
@@ -56,11 +57,14 @@ private:
     int filterByEvents;
     fs::path scriptdir;
     qpid::types::Variant::Map scriptContexts;
+    pthread_mutex_t inventoryMutex;
+    int64_t lastInventoryUpdate;
 
     fs::path construct_script_name(fs::path input) ;
     void pushTableFromMap(lua_State *L, qpid::types::Variant::Map content) ;
     void pullTableToMap(lua_State *L, qpid::types::Variant::Map& table);
 
+    void updateInventory();
     void searchEvents(const fs::path& scriptPath, qpid::types::Variant::List* foundEvents) ;
     void purgeScripts() ;
     void initScript(lua_State* L, qpid::types::Variant::Map& content, const std::string& script, qpid::types::Variant::Map& context, bool debug);
@@ -75,7 +79,6 @@ private:
 
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoLua)
-        , refreshInventory(true)
         , exprAll(reAll)
         , exprEvent(reEvent)
         , filterByEvents(1)
@@ -321,7 +324,7 @@ int AgoLua::luaSetVariable(lua_State *L)
     content["command"]="setvariable";
     content["uuid"]=agocontroller;
 
-    AGO_DEBUG() << "Setting variable: " << content;
+    AGO_DEBUG() << "Set variable: " << content;
     AgoResponse resp = agoConnection->sendRequest(subject.c_str(), content);
 
     //manage result
@@ -337,13 +340,10 @@ int AgoLua::luaSetVariable(lua_State *L)
         lua_pushnumber(L, 0);
     }
 
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
+    //update inventory
+    updateInventory();
 
+    pthread_mutex_lock(&inventoryMutex);
     if( inventory.size()>0 && !inventory["devices"].isVoid() && !inventory["variables"].isVoid() )
     {
         //update current inventory to reflect changes without reloading it (too long!!)
@@ -363,9 +363,9 @@ int AgoLua::luaSetVariable(lua_State *L)
     else
     {
         //no inventory available
-        refreshInventory = false;
         lua_pushnumber(L, 0);
     }
+    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -378,13 +378,10 @@ int AgoLua::luaGetVariable(lua_State *L)
     //init
     std::string variableName = "";
 
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
+    //update inventory
+    updateInventory();
 
+    pthread_mutex_lock(&inventoryMutex);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -414,9 +411,9 @@ int AgoLua::luaGetVariable(lua_State *L)
     else
     {
         //no inventory available
-        refreshInventory = true;
         lua_pushnil(L);
     }
+    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -432,13 +429,10 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
     std::string attribute = "";
     std::string subAttribute = "";
 
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
+    //update inventory
+    updateInventory();
 
+    pthread_mutex_lock(&inventoryMutex);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -466,10 +460,13 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
             }
         }
 
-        AGO_DEBUG() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
         if( subAttribute.length()>0 )
         {
-            AGO_DEBUG() << "[" << subAttribute << "]";
+            AGO_DEBUG() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "][" << subAttribute << "]";
+        }
+        else
+        {
+            AGO_DEBUG() << "Get device inventory: inventory['devices'][" << uuid << "][" << attribute << "]";
         }
 
         if( !deviceInventory[uuid].isVoid() )
@@ -521,9 +518,9 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
     else
     {
         //no inventory available
-        refreshInventory = true;
         lua_pushnil(L);
     }
+    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -533,9 +530,14 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
  */
 int AgoLua::luaGetInventory(lua_State *L)
 {
-    inventory = agoConnection->getInventory();
-    refreshInventory = false;
+    //update inventory first
+    updateInventory();
+
+    //then return it
+    pthread_mutex_lock(&inventoryMutex);
     pushTableFromMap(L, inventory);
+    pthread_mutex_unlock(&inventoryMutex);
+
     return 1;
 }
 
@@ -592,13 +594,10 @@ int AgoLua::luaGetDeviceName(lua_State* L)
     //init
     std::string uuid;
 
-    //refresh inventory only once (performance optimization)
-    if( refreshInventory )
-    {
-        inventory = agoConnection->getInventory();
-        refreshInventory = false;
-    }
+    //update inventory
+    updateInventory();
 
+    pthread_mutex_lock(&inventoryMutex);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -636,11 +635,58 @@ int AgoLua::luaGetDeviceName(lua_State* L)
     else
     {
         //no inventory available
-        refreshInventory = true;
         lua_pushnil(L);
     }
+    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
+}
+
+/**
+ * Update inventory if necessary
+ */
+void AgoLua::updateInventory()
+{
+    pthread_mutex_lock(&inventoryMutex);
+
+    time_t now = time(NULL);
+    if( difftime(now, lastInventoryUpdate)>=INVENTORY_MAX_AGE || inventory.size()==0 )
+    {
+        AGO_DEBUG() << "Update inventory...";
+        //update inventory and make sure it returns something valid (sometimes timeout occured)
+        int attemps = 1;
+        while( attemps<=10 )
+        {
+            inventory = agoConnection->getInventory();
+            if( inventory.size()==0 )
+            {
+                //unable to get inventory, retry
+                usleep(250000);
+            }
+            else
+            {
+                //inventory is filled, stop statement
+                break;
+            }
+            attemps++;
+        }
+
+        AGO_DEBUG() << "Inventory retrieved after " << attemps << " attemps.";
+
+        //final inventory check
+        if( inventory.size()==0 )
+        {
+            //no inventory available, add log
+            AGO_ERROR() << "No inventory available!";
+        }
+        else
+        {
+            //update last update time
+            lastInventoryUpdate = now;
+        }
+    }
+
+    pthread_mutex_unlock(&inventoryMutex);
 }
 
 /**
@@ -772,7 +818,6 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
 {
     //init
     qpid::types::Variant::Map debugResult;
-    refreshInventory = true;
     qpid::types::Variant::Map context;
     lua_State *L;
 
@@ -835,8 +880,6 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
 void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &script)
 {
     //init
-    // XXX: This is global for all scripts!
-    refreshInventory = true;
     qpid::types::Variant::Map context;
     lua_State *L;
     L = luaL_newstate();
@@ -951,13 +994,6 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
 qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map content)
 {
     qpid::types::Variant::Map returnData;
-    // XXX: Why does lua answer on inventory??
-#if 0
-    if (content["command"] == "inventory")
-    {
-        return returnData;
-    }
-#endif
 
     std::string internalid = content["internalid"].asString();
     if (internalid == "luacontroller")
@@ -1227,6 +1263,9 @@ void AgoLua::eventHandler(std::string subject, qpid::types::Variant::Map content
 
 void AgoLua::setupApp()
 {
+    //init mutex
+    pthread_mutex_init(&inventoryMutex, NULL);
+
     agocontroller = agoConnection->getAgocontroller();
 
     //get config

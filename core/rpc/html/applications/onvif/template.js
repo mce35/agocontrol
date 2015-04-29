@@ -13,7 +13,7 @@ function OnVIFPlugin(devices, agocontrol)
     self.cameraIp = ko.observable(null);
     self.cameraPort = ko.observable(null);
     self.cameraLogin = ko.observable(null);
-    self.cameraPassword = ko.observable(null);
+    self.cameraPassword = ko.observable('');
     self.cameraInternalid = ko.observable(null);
     self.cameraUri = ko.observable(null);
     self.selectedCamera = ko.observable(null);
@@ -21,7 +21,8 @@ function OnVIFPlugin(devices, agocontrol)
     self.configData = ko.observableArray(null);
     self.onvifService = ko.observable(null);
     self.onvifOperation = ko.observable(null);
-    self.onvifParameters = ko.observable(null);
+    self.onvifParameters = ko.observable(JSON.stringify({'key': 'value'}, null, 4));
+    self.onvifResponse = ko.observable('');
     self.onvifServices = ko.observableArray(['devicemgmt', 'deviceio', 'event', 'analytics', 'analyticsdevice', 'display', 'imaging', 'media', 'ptz', 'receiver', 'remotediscovery', 'recording', 'replay', 'search']);
     self.configSetOperation = ko.observable(null);
     self.configSetService = ko.observable(null);
@@ -32,6 +33,7 @@ function OnVIFPlugin(devices, agocontrol)
     self.motionRecordingDuration = ko.observable(0);
     self.motionOnDuration = ko.observable(300);
     self.motionRecordDir = ko.observable('/opt/agocontrol/recordings');
+    self.recordingsAreaTypes = ko.observableArray([{value:0, desc:'Disabled'}, {value:1, desc:'Draw single box (all areas merged)'}, {value:2, desc:'Draw all detected areas'}]);
 
     self.camerasGrid = new ko.agoGrid.viewModel({
         data: self.cameras,
@@ -66,10 +68,10 @@ function OnVIFPlugin(devices, agocontrol)
             if( resp.data.cameras && resp.data.general )
             {
                 //set cameras
-                cameras = [];
+                var cameras = [];
                 for( var internalid in resp.data.cameras )
                 {
-                    var camera = resp.data[internalid];
+                    var camera = resp.data.cameras[internalid];
                     camera.internalid = internalid;
                     cameras.push(camera);
                 }
@@ -111,10 +113,17 @@ function OnVIFPlugin(devices, agocontrol)
     //add camera
     self.addCamera = function()
     {
-        if( self.cameraIp() && self.cameraPort() && self.cameraLogin() && self.cameraPassword() && self.selectedProfile() )
+        //don't check password, can be empty by default
+        if( self.cameraIp() && self.cameraPort() && self.cameraLogin() && self.selectedProfile() )
         {
             self.agocontrol.block('#agoGrid');
             self.agocontrol.block('#configTab');
+
+            //fix password if null
+            if( self.cameraPassword()===null )
+            {
+                self.cameraPassword('');
+            }
 
             content = {};
             content.uuid = self.controllerUuid;
@@ -131,7 +140,7 @@ function OnVIFPlugin(devices, agocontrol)
                 self.cameraIp(null);
                 self.cameraPort(null);
                 self.cameraLogin(null);
-                self.cameraPassword(null);
+                self.cameraPassword('');
                 self.selectedProfile(null);
                 self.cameraProfiles([]);
 
@@ -198,9 +207,15 @@ function OnVIFPlugin(devices, agocontrol)
     //get camera profiles from scratch (with ip/port/login/pwd)
     self.getCameraProfilesFromScratch = function()
     {
-        if( self.cameraIp() && self.cameraPort() && self.cameraLogin() && self.cameraPassword() )
+        if( self.cameraIp() && self.cameraPort() && self.cameraLogin() )
         {
             self.agocontrol.block('#configTab');
+
+            //fix password if empty
+            if( self.cameraPassword()===null )
+            {
+                self.cameraPassword('');
+            }
 
             content = {};
             content.uuid = self.controllerUuid;
@@ -315,9 +330,16 @@ function OnVIFPlugin(devices, agocontrol)
     //update camera credentials
     self.updateCameraCredentials = function()
     {
-        if( self.cameraLogin() && self.cameraPassword() && confirm('This action will update credentials on camera too. Continue?') )
+        //don't check password, can be empty by default
+        if( self.cameraLogin()!==null && confirm('This action will update credentials on camera too. Continue?') )
         {
             self.agocontrol.block('#cameraDetails');
+
+            //set empty password if null
+            if( self.cameraPassword()===null )
+            {
+                self.cameraPassword('');
+            }
 
             content = {};
             content.uuid = self.controllerUuid;
@@ -475,7 +497,7 @@ function OnVIFPlugin(devices, agocontrol)
     };
 
     //execute onvif operation
-    self.doOperation = function(variable, service, operation, params)
+    self.doOperation = function(variable, service, operation, params, stringify)
     {
         if( service && operation && params )
         {
@@ -493,7 +515,14 @@ function OnVIFPlugin(devices, agocontrol)
                 var params = self.onvifResponseToFlatArray('', resp.data);
                 if( variable )
                 {
-                    variable(params);
+                    if( stringify )
+                    {
+                        variable( JSON.stringify(params, null, 4));
+                    }
+                    else
+                    {
+                        variable(params);
+                    }
                 }
             })
             .catch(function(err) {

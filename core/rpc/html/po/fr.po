@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-23 13:08+0200\n"
+"POT-Creation-Date: 2015-04-28 15:46+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -877,6 +877,7 @@ msgid "Request node configuration parameters"
 msgstr "Demander les paramètres de configuration au noeud"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:39
 msgid "Request parameters"
 msgstr "Demander les paramètres"
 
@@ -1090,53 +1091,44 @@ msgid "0 to disable recording"
 msgstr "0 pour désactiver"
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
-msgid "This tab allow you to configure your device as you need"
-msgstr "Cet onglet vous permet de modifier tous les paramètres de votre caméra"
+msgid "This tab allows you to execute onvif requests"
+msgstr "Cet onglet vous permet d'exécuter des requêtes onvif"
 
 #: ../applications/onvif/html/onvif.xml.in.h:36
-msgid ""
-"Click on \"Get\" button to execute get like operation. It will fill "
-"parameters field with response and help you preparing your request"
-msgstr ""
-"Cliquer sur \"Obtenir\" pour exécuter une requète de type \"get\". Cela vous "
-"permettra d'avoir un exemple de requète afin de préparer correctement la "
-"votre"
-
-#: ../applications/onvif/html/onvif.xml.in.h:37
 msgid "Service name"
 msgstr "Nom du service"
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../applications/onvif/html/onvif.xml.in.h:37
 msgid "Operation name"
 msgstr "Nom de l'opération"
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../applications/onvif/html/onvif.xml.in.h:38
 msgid "Operation"
 msgstr "Opération"
 
 #: ../applications/onvif/html/onvif.xml.in.h:40
-msgid "Get"
-msgstr "Obtenir"
+msgid "Response"
+msgstr "Réponse"
 
 #: ../applications/onvif/html/onvif.xml.in.h:41
 msgid "Parameters"
 msgstr "Paramètres"
 
 #: ../applications/onvif/html/onvif.xml.in.h:42
-msgid "Check parameters"
-msgstr "Vérifier les paramètres"
-
-#: ../applications/onvif/html/onvif.xml.in.h:43
 msgid "Execute"
 msgstr "Exécuter"
+
+#: ../applications/onvif/html/onvif.xml.in.h:43
+msgid "Check parameters"
+msgstr "Vérifier les paramètres"
 
 #: ../applications/onvif/html/onvif.xml.in.h:44
 msgid "My cameras"
 msgstr "Mes caméras"
 
 #: ../applications/onvif/html/onvif.xml.in.h:45
-msgid "Camera"
-msgstr "Caméra"
+msgid "Add camera"
+msgstr "Ajouter une caméra"
 
 #: ../applications/onvif/html/onvif.xml.in.h:46
 msgid "Recordings"
@@ -1171,7 +1163,7 @@ msgstr "Répertoire des enregistrements"
 
 #: ../applications/onvif/html/onvif.xml.in.h:53
 msgid "Directory"
-msgstr ""
+msgstr "Répertoire"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
 msgid "luacontroller is not responding. Unable to execute action."
@@ -1604,8 +1596,3 @@ msgstr "Démarrer"
 msgid "Stop"
 msgstr "Arrêter"
 
-#~ msgid "USB port"
-#~ msgstr "Port USB"
-
-#~ msgid "Configure controller USB port"
-#~ msgstr "Configurer le port USB du contrôleur"
