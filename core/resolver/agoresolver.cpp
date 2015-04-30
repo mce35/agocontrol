@@ -247,7 +247,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             }
         } else if (content["command"] == "setdeviceroom") {
             checkMsgParameter(content, "device", VAR_STRING);
-            checkMsgParameter(content, "room", VAR_STRING);
+            checkMsgParameter(content, "room", VAR_STRING, true);
 
             if (inv->setdeviceroom(content["device"], content["room"]) == 0) {
                 // update room in local device map
@@ -265,7 +265,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                 return responseFailed("Failed to store change");
             }
         } else if (content["command"] == "setdevicename") {
-            checkMsgParameter(content, "device", VAR_STRING);
+            checkMsgParameter(content, "device", VAR_STRING, true);
 
             if (inv->setdevicename(content["device"], content["name"]) == 0) {
                 // update name in local device map
