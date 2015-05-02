@@ -180,6 +180,7 @@ function OnVIFPlugin(devices, agocontrol)
                     var profile = {};
                     profile.desc =  resp.data[i].encoding + ' ';
                     profile.desc += resp.data[i].resolution.width + 'x' + resp.data[i].resolution.height;
+                    profile.desc += ' @' + resp.data[i].fps + 'fps';
                     profile.token = resp.data[i].uri_token;
                     profiles.push(profile);
                 }
@@ -635,7 +636,7 @@ function OnVIFPlugin(devices, agocontrol)
     //set motion
     self.setMotion = function()
     {
-        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!==null && self.motionRecordingDuration()!==null )
+        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!==null )
         {
             self.agocontrol.block('#cameraDetails');
 

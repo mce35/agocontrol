@@ -33,11 +33,12 @@ class Motion(threading.Thread):
     CONTOUR_SINGLE = 1
     CONTOUR_MULTIPLE = 2
 
-    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record=False, record_dir=None, record_duration=15, record_contour=None):
+    def __init__(self, connection, log, camera_internalid, uri, fps, sensitivity=10 , deviation=20, on_duration=300, record=False, record_dir=None, record_duration=15, record_contour=None):
         """
         Constructor
         @param camera_internalid: camera internalid to generate record filename
         @param uri: video stream uri
+        @param fps: camera fps rate
         @param sensitivity: number of changes on picture detected
         @param deviation: the higher the value, the more motion is allowed
         @param on_duration: time during binary sensor stays on when motion detected
@@ -54,6 +55,7 @@ class Motion(threading.Thread):
         self.frame = None
         self.sensitivity = sensitivity
         self.deviation = deviation
+        self.fps = fps
         self.is_recording = False
         self.trigger_time = 0
         self.trigger_off_timer = None
@@ -138,13 +140,11 @@ class Motion(threading.Thread):
         #@see codec available here: http://www.fourcc.org/codecs.php
         codec = cv2.cv.CV_FOURCC(*'FMP4')
         #codec = cv2.VideoWriter_fourcc(*'XVID')
-        fps = 10.0
-        size = (self.height, self.width)
         #make sure existing recorder doesn't already exist
         if self.recorder and self.recorder.isOpened():
             self.log.info('release recorder')
             self.recorder.release()
-        self.recorder = cv2.VideoWriter(self.current_record_filename, codec, fps, size)
+        self.recorder = cv2.VideoWriter(self.current_record_filename, codec, self.fps, (self.height, self.width))
 
         return True
 
@@ -331,6 +331,7 @@ class Camera():
         self.password = password
         self.uri = None
         self.uri_token = None
+        self.uri_fps = 0
         self.internalid = internalid
         self.motion = False
         self.motion_sensitivity = 10
@@ -397,6 +398,7 @@ class Camera():
                 self.log,
                 self.internalid,
                 self.uri,
+                self.uri_fps,
                 self.motion_sensitivity,
                 self.motion_deviation,
                 self.motion_on_duration,
@@ -433,6 +435,19 @@ class Camera():
         """
         self.uri = uri
         self.uri_token = token
+
+        #get fps
+        self.uri_fps = 0
+        profile = self.get_profile(token)
+        self.log.info(profile)
+        if profile:
+            if profile.has_key('VideoEncoderConfiguration') and profile['VideoEncoderConfiguration'].has_key('RateControl') and profile['VideoEncoderConfiguration']['RateControl'] and profile['VideoEncoderConfiguration']['RateControl'].has_key('FrameRateLimit'):
+                try:
+                    self.uri_fps = int(profile['VideoEncoderConfiguration']['RateControl']['FrameRateLimit'])
+                except ValueError:
+                    self.log.exception('Unable to get uri fps')
+            else:
+                self.log.error('No uri fps found!')
 
         #configure motion if necessary
         self.__configure_motion()
@@ -596,6 +611,17 @@ class Camera():
 
         return self.do_operation(service, 'GetServiceCapabilities')
 
+    def get_profile(self, token):
+        """
+        Return camera profile by its token
+        """
+        ps = self.get_profiles()
+        if ps:
+            for p in ps:
+                if p.has_key('token') and p['token']==token:
+                    return p
+        return None
+
     def get_profiles(self):
         """
         Return camera profiles
@@ -684,7 +710,7 @@ class Camera():
 
 
 class AgoOnvif(agoclient.AgoApp):
-    DEFAULT_RECORD_DIR = '/var/opt/agocontrol/recordings'
+    DEFAULT_RECORD_DIR = '/opt/agocontrol/recordings'
 
     """
     Agocontrol ONVIF
@@ -1029,6 +1055,7 @@ class AgoOnvif(agoclient.AgoApp):
                             resol['height'] = p['VideoEncoderConfiguration']['Resolution']['Height']
                             profile['resolution'] = resol
                             profile['quality'] = p['VideoEncoderConfiguration']['Quality']
+                            profile['fps'] = p['VideoEncoderConfiguration']['RateControl']['FrameRateLimit']
                         if p.has_key('VideoSourceConfiguration'):
                             bounds = {}
                             bounds['x'] = p['VideoSourceConfiguration']['Bounds']['x']
