@@ -71,7 +71,7 @@
                         <div class="four columns text-right">
                         </div>
                         <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {}, false)}" class="medium primary btn">
+                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {}, false, false)}" class="medium primary btn">
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Get device infos</_a>
                             </div>
                         </div>
@@ -225,7 +225,7 @@
                         <div class="four columns text-left field">
                             <input class="xwide input" type="text" data-bind="textInput:motionDeviation" />
                         </div>
-                        <div class="two columns text-left">
+                        <div class="four columns text-left">
                             <_span data-translateable="true" style="font-size:small;">(the higher the value, the more motion is allowed)</_span>
                         </div>
                     </div>
