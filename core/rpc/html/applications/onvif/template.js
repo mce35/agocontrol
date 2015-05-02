@@ -321,9 +321,11 @@ function OnVIFPlugin(devices, agocontrol)
         }
         self.motionSensitivity(item.motion_sensitivity);
         self.motionDeviation(item.motion_deviation);
-        self.motionRecordingDuration(item.motion_record);
         self.motionOnDuration(item.motion_on_duration);
         self.selectedProfile(null);
+        self.recordingEnable(item.record);
+        self.recordingDuration(item.record_duration);
+        self.recordingContourType(item.record_contour);
 
         //open modal
         $('#cameraDetails').addClass('active');
