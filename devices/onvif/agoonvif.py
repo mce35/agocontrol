@@ -684,7 +684,7 @@ class Camera():
 
 
 class AgoOnvif(agoclient.AgoApp):
-    DEFAULT_RECORD_DIR = '/opt/agocontrol/recordings'
+    DEFAULT_RECORD_DIR = '/var/opt/agocontrol/recordings'
 
     """
     Agocontrol ONVIF
