@@ -197,7 +197,7 @@
                 <div class="tab-content">
                     <div class="row">
                         <div class="twelve columns text-center" style="font-size:smaller;">
-                            <_span data-translateable="true">Enabling motion will create a new binary device that allows you to use it in security application</_span>.
+                            <_span data-translateable="true">Enabling motion will create a new binary device that allows you to create events with it</_span>.
                         </div>
                     </div>
                     <div class="row">
@@ -206,7 +206,7 @@
                         </div>
                         <div class="four columns text-left field">
                             <div class="picker">
-                                <select data-bind="options:motionEnableOptions, optionsText:'caption', optionsValue:'value', value:motionEnable" />
+                                <select data-bind="options:yesNoOptions, optionsText:'caption', optionsValue:'value', value:motionEnable" />
                             </div>
                         </div>
                     </div>
@@ -242,12 +242,38 @@
                     </div>
                     <div class="row">
                         <div class="four columns text-right">
-                            <_span data-translateable="true">Recording duration</_span>
-                            <br/>
-                            (<_span data-translateable="true" style="font-size:small">0 to disable recording</_span>)
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" data-bind="textInput:motionRecordingDuration" />
+                            <div data-bind="event{mousedown:setMotion}" class="medium primary btn">
+                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- recording tab -->
+                <div class="tab-content">
+                    <div class="row">
+                        <div class="twelve columns text-center" style="font-size:smaller;">
+                            <_span data-translateable="true">Please note that recording will only work if motion is enabled</_span>.
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Enable recording</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="picker">
+                                <select data-bind="options:yesNoOptions, optionsText:'caption', optionsValue:'value', value:recordingEnable" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Recording duration</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:recordingDuration" />
                         </div>
                         <div class="two columns text-left">
                             <_span data-translateable="true">seconds</_span>
@@ -255,9 +281,19 @@
                     </div>
                     <div class="row">
                         <div class="four columns text-right">
+                            <_span data-translateable="true">Draw detected area</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:setMotion}" class="medium primary btn">
+                            <div class="picker">
+                                <select data-bind="options:recordingContourTypes, optionsText:'caption', optionsValue:'value', value:recordingContourType" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:setRecording}" class="medium primary btn">
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
                             </div>
                         </div>
