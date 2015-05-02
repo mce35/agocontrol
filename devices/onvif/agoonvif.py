@@ -138,8 +138,9 @@ class Motion(threading.Thread):
 
         self.current_record_filename = os.path.join(self.record_dir, '%s_%s.%s' % (self.internalid, datetime.now().strftime("%y_%m_%d_%H_%M_%S"), 'avi'))
         #@see codec available here: http://www.fourcc.org/codecs.php
-        codec = cv2.cv.CV_FOURCC(*'FMP4')
+        #codec = cv2.cv.CV_FOURCC(*'FMP4')
         #codec = cv2.VideoWriter_fourcc(*'XVID')
+        codec = cv2.cv.CV_FOURCC(*'X264')
         #make sure existing recorder doesn't already exist
         if self.recorder and self.recorder.isOpened():
             self.log.info('release recorder')
