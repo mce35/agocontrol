@@ -57,7 +57,7 @@ class FrameReader(threading.Thread):
 
             #save resolution
             if self.resolution[0]==0:
-                self.log.info('Capture resolution : %dx%d' % (frame.shape[1], frame.shape[0]))
+                self.log.debug('Capture resolution : %dx%d' % (frame.shape[1], frame.shape[0]))
                 self.resolution = (frame.shape[1], frame.shape[0])
 
             #drop first frames to adjust camera parameters
@@ -89,6 +89,105 @@ class FrameReader(threading.Thread):
         Return frame resolution
         """
         return self.resolution
+
+
+class FrameRecorder(threading.Thread):
+    """
+    Frame recorder. Store frames to specified file
+    """
+
+    def __init__(self, log, codec=None):
+        """
+        Constructor
+        @param codec: encoding codec (see http://www.fourcc.org/codecs.php). Default is MP4
+        """
+        threading.Thread.__init__(self)
+        self.running = True
+        self.log = log
+        self.q = Queue.Queue()
+        if not codec:
+            self.codec = cv2.cv.CV_FOURCC(*'FMP4')
+        else:
+            self.codec = codec
+        self.recorder = None
+        self.close_recorder = False
+
+    def stop(self):
+        """
+        Stop thread
+        """
+        self.running = False
+        self.stop_recording(True)
+
+    def run(self):
+        """
+        Store frames to output file
+        """
+        while self.running:
+            if self.recorder:
+                if self.close_recorder and self.close_recorder_force:
+                    #do not check queue, stop recorder right now!
+                    self.__close()
+                elif not self.q.empty():
+                    #store frame to recorder
+                    self.recorder.write( self.q.get_nowait() )
+                elif self.close_recorder:
+                    #close recorder only when queue is empty
+                    self.__close()
+                    
+                #small pause. Recorder hasn't priority
+                time.sleep(0.1)
+            else:
+                #long pause
+                time.sleep(1)
+
+    def __close(self):
+        """
+        Close recorder
+        """
+        if self.recorder:
+            self.recorder.release()
+            self.recorder = None
+
+    def start_recording(self, filename, fps, resolution):
+        """
+        Start recording (open recorder)
+        @param filename: name of output file
+        @param fps: video frame rate
+        @param resolution: video resolution
+        """
+        #update members
+        self.close_recorder = False
+        self.close_recorder_force = False
+
+        #make sure existing recorder doesn't already exist
+        if self.recorder and self.recorder.isOpened():
+            self.stop_recording(True)
+
+        #wait until frame recorder is available
+        while self.recorder:
+            time.sleep(0.1)
+
+        #create new one
+        self.recorder = cv2.VideoWriter(filename, self.codec, fps, resolution)
+
+    def stop_recording(self, force=False):
+        """
+        Stop recording (saying no more frame will be added)
+        """
+        self.close_recorder = True
+        self.close_recorder_force = force
+
+    def record(self, frame):
+        """
+        Push specified frame to recorder
+        @return False if frame is dropped
+        """
+        if self.recorder:
+            self.q.put_nowait(frame)
+            return True
+        else:
+            return False
 
 
 class Motion(threading.Thread):
@@ -139,9 +238,9 @@ class Motion(threading.Thread):
         self.trigger_time = 0
         self.trigger_off_timer = None
         self.trigger_enabled = False
-        self.current_record_filename = None
+        self.record_filename = None
         self.running = True
-        self.recorder = None
+        self.recorders = {'record':None}
         #self.frame = None
         self.is_recording = False
         self.frame_readers = {'motion':None, 'record':None}
@@ -158,13 +257,15 @@ class Motion(threading.Thread):
 
         #check members
         if not self.record_uri and self.record:
-            self.log.warning('"record uri" is not specified while recording is enabled. Recording is now disabled.')
+            #no record uri
+            self.log.warning('No record uri specified while recording is enabled. Recording is disabled.')
             self.record = False
 
-        if record_duration>on_duration:
-            #fix recording duration
-            self.log.warning('"record duration" must be lower than "on duration". "record duration" is set to "on duration" value')
-            self.record_duration = self.on_duration
+        if not os.path.exists(self.record_dir):
+            #record dir doesn't exist
+            self.log.warning('Recording dir "%s" doens\'t exist. Recording is disabled' % self.record_dir)
+            self.record = False
+            
 
         #create binary device
         self.connection.add_device(self.internalid, "binarysensor")
@@ -196,10 +297,12 @@ class Motion(threading.Thread):
                 self.record_resolution_ratio = (1,1)
 
             #init recorder
-            if self.init_recorder():
-                self.log.info('Start recording "%s" [%dx%d@%dfps] during %d seconds' % (self.current_record_filename, self.record_resolution[0], self.record_resolution[1], self.record_fps, self.record_duration))
-                #and turn on recording flag
-                self.is_recording = True
+            self.record_filename = os.path.join(self.record_dir, '%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
+            self.recorders['record'].start_recording(self.record_filename, self.record_fps, self.record_resolution)
+            self.log.info('Start recording "%s" [%dx%d@%dfps] during %d seconds' % (self.record_filename, self.record_resolution[0], self.record_resolution[1], self.record_fps, self.record_duration))
+
+            #finally turns on recording flag
+            self.is_recording = True
 
         #emit event
         self.connection.emit_event(self.internalid, "event.device.statechanged", 255, "")
@@ -216,41 +319,30 @@ class Motion(threading.Thread):
         self.connection.emit_event(self.internalid, "event.device.statechanged", 0, "")
         self.log.info('trigger_off done')
 
-    def init_recorder(self):
-        """
-        Init video recorder or reset new one if already opened
-        """
-        if not os.path.exists(self.record_dir):
-            #no recording until dir exists
-            return False
-
-        self.current_record_filename = os.path.join(self.record_dir, '%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
-        #@see codec available here: http://www.fourcc.org/codecs.php
-        #codec = cv2.cv.CV_FOURCC(*'XVID')
-        codec = cv2.cv.CV_FOURCC(*'FMP4')
-        #make sure existing recorder doesn't already exist
-        if self.recorder and self.recorder.isOpened():
-            self.log.info('Release recorder')
-            self.recorder.release()
-        self.recorder = cv2.VideoWriter(self.current_record_filename, codec, self.record_fps, self.record_resolution)
-
-        return True
-
     def init_frame_readers(self):
         """
         Init frame readers
         """
         #create motion frame reader
-        self.log.info('Init motion frame reader')
+        self.log.debug('Init motion frame reader')
         self.frame_readers['motion'] = FrameReader(self.log, self.uri)
         self.frame_readers['motion'].start()
 
         #create recording frame reader if necessary
         if self.record and self.uri!=self.record_uri:
             #need to create 2 frame readers
-            self.log.info('Init record frame reader')
+            self.log.debug('Init record frame reader')
             self.frame_readers['record'] = FrameReader(self.log, self.record_uri, 2)
             self.frame_readers['record'].start()
+
+    def init_frame_recorders(self):
+        """
+        Init frame recorders
+        """
+        #create record recorder if necessary
+        if self.record:
+            self.recorders['record'] = FrameRecorder(self.log)
+            self.recorders['record'].start()
 
     def process_frame(self, frame):
         """
@@ -342,6 +434,9 @@ class Motion(threading.Thread):
         #init frame readers
         self.init_frame_readers()
 
+        #init recorders
+        self.init_frame_recorders()
+
         started = time.time()
         while self.running:
             #get current time
@@ -376,19 +471,18 @@ class Motion(threading.Thread):
                     #stop recording
                     self.log.info('Motion: Stop recording')
                     self.is_recording = False
-                    self.recorder.release()
-                    self.recorder = None
+                    self.recorders['record'].stop_recording()
 
                     #emit event
-                    self.connection.emit_event(self.internalid, "event.device.videoavailable", self.current_record_filename, "")
+                    self.connection.emit_event(self.internalid, "event.device.videoavailable", self.record_filename, "")
 
-                elif self.recorder and self.recorder.isOpened():
+                else:
                     #get frame to store
                     if self.frame_readers['record']:
                         #and get frame to record
                         res, frame = self.frame_readers['record'].get_frame()
                         if not res:
-                            self.log.info('No record frame to store')
+                            #no frame to record
                             continue
 
                     #add detected area
@@ -408,7 +502,7 @@ class Motion(threading.Thread):
                     cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
 
                     #write frame to recorder
-                    self.recorder.write(frame)
+                    self.recorders['record'].record(frame)
 
         #end of motion thread
         self.log.info('Motion thread for device "%s" is stopped' % self.internalid)
@@ -435,10 +529,9 @@ class Motion(threading.Thread):
         except:
             pass
 
-        #release recorder
-        if self.recorder and self.recorder.isOpened():
-            self.recorder.release()
-            self.recorder = None
+        #release recorders
+        if self.recorders['record']:
+            self.recorders['record'].stop()
 
         #stop main process
         self.running = False
