@@ -1021,7 +1021,7 @@ class AgoOnvif(agoclient.AgoApp):
         #declare members
         self.config = {}
         self.cameras = {}
-        self.last_yday = time.strftime('%j')
+        self.last_yday = int(time.strftime('%j'))
         self.__configLock = threading.Lock()
 
         #load config
@@ -1247,7 +1247,7 @@ class AgoOnvif(agoclient.AgoApp):
             #check new day
             if content['yday']!=self.last_yday:
                 #set current yday
-                self.last_yday = content['yday']
+                self.last_yday = int(content['yday'])
 
                 #new day detected, reset all timelapses
                 for internalid in self.cameras:
