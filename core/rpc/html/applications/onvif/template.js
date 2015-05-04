@@ -9,7 +9,6 @@ function OnVIFPlugin(devices, agocontrol)
     self.controllerUuid = null;
     self.cameras = ko.observableArray([]);
     self.cameraProfiles = ko.observableArray([]);
-    self.selectedProfile = ko.observable(null);
     self.cameraIp = ko.observable(null);
     self.cameraPort = ko.observable(null);
     self.cameraLogin = ko.observable(null);
@@ -26,14 +25,19 @@ function OnVIFPlugin(devices, agocontrol)
     self.onvifServices = ko.observableArray(['devicemgmt', 'deviceio', 'event', 'analytics', 'analyticsdevice', 'display', 'imaging', 'media', 'ptz', 'receiver', 'remotediscovery', 'recording', 'replay', 'search']);
     self.configSetOperation = ko.observable(null);
     self.configSetService = ko.observable(null);
-    self.motionEnableOptions = ko.observableArray([{caption:'No', value:0}, {caption:'Yes', value:1}]);
+    self.yesNoOptions = ko.observableArray([{caption:'No', value:0}, {caption:'Yes', value:1}]);
     self.motionEnable = ko.observable(null);
+    self.motionProfile = ko.observable(null);
     self.motionSensitivity = ko.observable(10);
     self.motionDeviation = ko.observable(20);
-    self.motionRecordingDuration = ko.observable(0);
     self.motionOnDuration = ko.observable(300);
-    self.motionRecordDir = ko.observable('/opt/agocontrol/recordings');
-    self.recordingsAreaTypes = ko.observableArray([{value:0, desc:'Disabled'}, {value:1, desc:'Draw single box (all areas merged)'}, {value:2, desc:'Draw all detected areas'}]);
+    self.motionRecordDir = ko.observable('/var/opt/agocontrol/recordings');
+    self.recordingTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Enable motion recording'}, {value:2, caption:'Enable timelapse'}, {value:3, caption:'Enable all'}]);
+    self.recordingType = ko.observable(0);
+    self.recordingProfile = ko.observable(null);
+    self.recordingDuration = ko.observable(0);
+    self.recordingContourTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Single box (all areas merged)'}, {value:2, caption:'All detected areas'}]);
+    self.recordingContourType = ko.observable(null);
 
     self.camerasGrid = new ko.agoGrid.viewModel({
         data: self.cameras,
@@ -114,7 +118,7 @@ function OnVIFPlugin(devices, agocontrol)
     self.addCamera = function()
     {
         //don't check password, can be empty by default
-        if( self.cameraIp() && self.cameraPort() && self.cameraLogin() && self.selectedProfile() )
+        if( self.cameraIp() && self.cameraPort() && self.cameraLogin() && self.motionProfile() )
         {
             self.agocontrol.block('#agoGrid');
             self.agocontrol.block('#configTab');
@@ -132,8 +136,8 @@ function OnVIFPlugin(devices, agocontrol)
             content.port = self.cameraPort();
             content.login = self.cameraLogin();
             content.password = self.cameraPassword();
-            content.uri_token = self.selectedProfile().token;
-            content.uri_desc = self.selectedProfile().desc;
+            content.uri_token = self.motionProfile().token;
+            content.uri_desc = self.motionProfile().desc;
             self.agocontrol.sendCommand(content)
             .then(function(resp) {
                 //reset form
@@ -141,7 +145,7 @@ function OnVIFPlugin(devices, agocontrol)
                 self.cameraPort(null);
                 self.cameraLogin(null);
                 self.cameraPassword('');
-                self.selectedProfile(null);
+                self.motionProfile(null);
                 self.cameraProfiles([]);
 
                 //refresh cameras list
@@ -178,17 +182,28 @@ function OnVIFPlugin(devices, agocontrol)
                     var profile = {};
                     profile.desc =  resp.data[i].encoding + ' ';
                     profile.desc += resp.data[i].resolution.width + 'x' + resp.data[i].resolution.height;
+                    profile.desc += ' @' + resp.data[i].fps + 'fps';
                     profile.token = resp.data[i].uri_token;
                     profiles.push(profile);
                 }
                 self.cameraProfiles(profiles);
 
-                //select current profile
+                //select current motion profile
                 for( var i=0; i<self.cameraProfiles().length; i++ )
                 {
-                    if( self.cameraProfiles()[i].token==self.selectedCamera().uri_token )
+                    if( self.cameraProfiles()[i].token==self.selectedCamera().motion_uri_token )
                     {
-                        self.selectedProfile(self.cameraProfiles()[i]);
+                        self.motionProfile(self.cameraProfiles()[i]);
+                        break;
+                    }
+                }
+
+                //select current recording profile
+                for( var i=0; i<self.cameraProfiles().length; i++ )
+                {
+                    if( self.cameraProfiles()[i].token==self.selectedCamera().record_uri_token )
+                    {
+                        self.recordingProfile(self.cameraProfiles()[i]);
                         break;
                     }
                 }
@@ -233,6 +248,7 @@ function OnVIFPlugin(devices, agocontrol)
                     var profile = {};
                     profile.desc =  resp.data[i].encoding + ' ';
                     profile.desc += resp.data[i].resolution.width + 'x' + resp.data[i].resolution.height;
+                    profile.desc += ' @'+ resp.data[i].fps + 'fps';
                     profile.token = resp.data[i].uri_token;
                     profiles.push(profile);
                 }
@@ -248,29 +264,6 @@ function OnVIFPlugin(devices, agocontrol)
         {
             notif.info('Please fill all parameters');
         }
-    };
-
-    //set camera profile
-    self.setCameraProfile = function()
-    {
-        self.agocontrol.block('#cameraDetails');
-
-        content = {};
-        content.uuid = self.controllerUuid;
-        content.command = 'setcameraprofile';
-        content.internalid = self.selectedCamera().internalid;
-        content.uri_token = self.selectedProfile().token;
-        content.uri_desc = self.selectedProfile().desc;
-        self.agocontrol.sendCommand(content)
-        .then(function(resp) {
-            //refresh cameras
-            self.getCameras();
-        })
-        .catch(function(err) {
-        })
-        .finally(function() {
-            self.agocontrol.unblock('#cameraDetails');
-        });
     };
 
     //delete camera
@@ -307,7 +300,7 @@ function OnVIFPlugin(devices, agocontrol)
         self.cameraPort(item.port);
         self.cameraLogin(item.login);
         self.cameraPassword(item.password);
-        self.cameraUri(item.uri);
+        self.cameraUri(item.motion_uri);
         self.cameraProfiles([]);
         if( item.motion )
         {
@@ -319,9 +312,26 @@ function OnVIFPlugin(devices, agocontrol)
         }
         self.motionSensitivity(item.motion_sensitivity);
         self.motionDeviation(item.motion_deviation);
-        self.motionRecordingDuration(item.motion_record);
         self.motionOnDuration(item.motion_on_duration);
-        self.selectedProfile(null);
+        var profiles = [];
+        var motionP = null;
+        if( item.motion_uri_token )
+        {
+            motionP = {'token':item.motion_uri_token, 'desc':item.motion_uri_desc};
+            profiles.push(motionP);
+        }
+        var recordP = null;
+        if( item.record_uri_token )
+        {
+            recordP = {'token':item.record_uri_token, 'desc':item.record_uri_desc};
+            profiles.push(recordP);
+        }
+        self.cameraProfiles(profiles);
+        self.motionProfile(motionP);
+        self.recordingProfile(recordP);
+        self.recordingType(item.record_type);
+        self.recordingDuration(item.record_duration);
+        self.recordingContourType(item.record_contour);
 
         //open modal
         $('#cameraDetails').addClass('active');
@@ -497,7 +507,7 @@ function OnVIFPlugin(devices, agocontrol)
     };
 
     //execute onvif operation
-    self.doOperation = function(variable, service, operation, params, stringify)
+    self.doOperation = function(variable, service, operation, params, returnRaw, stringify)
     {
         if( service && operation && params )
         {
@@ -512,7 +522,12 @@ function OnVIFPlugin(devices, agocontrol)
             content.params = params;
             self.agocontrol.sendCommand(content)
             .then(function(resp) {
-                var params = self.onvifResponseToFlatArray('', resp.data);
+                var params = resp.data;
+                if( !returnRaw )
+                {  
+                    params = self.onvifResponseToFlatArray('', resp.data);
+                }
+
                 if( variable )
                 {
                     if( stringify )
@@ -626,7 +641,7 @@ function OnVIFPlugin(devices, agocontrol)
     //set motion
     self.setMotion = function()
     {
-        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!==null && self.motionRecordingDuration()!==null )
+        if( self.motionSensitivity()!==null && self.motionDeviation()!==null && self.motionOnDuration()!==null )
         {
             self.agocontrol.block('#cameraDetails');
 
@@ -635,10 +650,43 @@ function OnVIFPlugin(devices, agocontrol)
             content.command = 'setmotion';
             content.internalid = self.selectedCamera().internalid;
             content.enable = self.motionEnable();
+            content.uri_token = self.motionProfile().token;
+            content.uri_desc = self.motionProfile().desc;
             content.sensitivity = self.motionSensitivity();
             content.deviation = self.motionDeviation();
             content.onduration = self.motionOnDuration();
-            content.recordingduration = self.motionRecordingDuration();
+            self.agocontrol.sendCommand(content)
+            .then(function(resp) {
+                console.log(resp);
+            })
+            .catch(function(err) {
+            })
+            .finally(function() {
+                self.agocontrol.unblock('#cameraDetails');
+            });
+        }
+        else
+        {
+            notif.error('Parameter is missing');
+        }
+    };
+
+    //set recording
+    self.setRecording = function()
+    {
+        if( true /*nothing to check for now*/ )
+        {
+            self.agocontrol.block('#cameraDetails');
+
+            var content = {};
+            content.uuid = self.controllerUuid;
+            content.command = 'setrecording';
+            content.internalid = self.selectedCamera().internalid;
+            content.type = self.recordingType();
+            content.uri_token = self.recordingProfile().token;
+            content.uri_desc = self.recordingProfile().desc;
+            content.duration = self.recordingDuration();
+            content.contour = self.recordingContourType();
             self.agocontrol.sendCommand(content)
             .then(function(resp) {
                 console.log(resp);

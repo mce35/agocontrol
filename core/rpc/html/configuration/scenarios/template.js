@@ -132,7 +132,7 @@ function ScenarioConfig(agocontrol)
     {
         if( $.trim(self.scenarioName())=='' )
         {
-            notif.warning("Please supply an event name!");
+            notif.warning("Please type a scenario name!");
             return;
         }
 
@@ -143,25 +143,25 @@ function ScenarioConfig(agocontrol)
         content.uuid = self.agocontrol.scenarioController;
         content.scenariomap = self.buildScenarioMap("scenarioBuilder");
         self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                    var cnt = {};
-                    cnt.uuid = self.agocontrol.agoController;
-                    cnt.device = res.scenario;
-                    cnt.command = "setdevicename";
-                    cnt.name = self.scenarioName();
-                    return self.agocontrol.sendCommand(cnt)
-                        .then(function(nameRes) {
-                            self.agocontrol.refreshDevices(false);
-                            self.scenarioName('');
-                            document.getElementById("scenarioBuilder").innerHTML = "";
-                        });
-            })
-            .catch(function(err) {
-                notif.warning("Please add commands before creating the scenario!");
-            })
-            .finally(function() {
-                self.agocontrol.unblock($('#agoGrid'));
+        .then(function(res) {
+            var cnt = {};
+            cnt.uuid = self.agocontrol.agoController;
+            cnt.device = res.data.scenario;
+            cnt.command = "setdevicename";
+            cnt.name = self.scenarioName();
+            return self.agocontrol.sendCommand(cnt)
+            .then(function(nameRes) {
+                self.agocontrol.refreshDevices(false);
+                self.scenarioName('');
+                $('#scenarioBuilder').html("");
             });
+        })
+        .catch(function(err) {
+            notif.warning("Please add commands before creating the scenario!");
+        })
+        .finally(function() {
+            self.agocontrol.unblock($('#agoGrid'));
+        });
     };
 
     //Adds a command selection entry
@@ -389,17 +389,17 @@ function ScenarioConfig(agocontrol)
         content.uuid = self.agocontrol.scenarioController;
         content.command = 'delscenario';
         self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                self.agocontrol.devices.remove(function(e) {
-                    return e.uuid == item.uuid;
-                });
-            })
-            .catch(function(err) {
-                notif.error("Error while deleting scenarios!");
-            })
-            .finally(function() {
-                self.agocontrol.unblock($('#agoGrid'));
+        .then(function(res) {
+            self.agocontrol.devices.remove(function(e) {
+                return e.uuid == item.uuid;
             });
+        })
+        .catch(function(err) {
+            notif.error("Error while deleting scenarios!");
+        })
+        .finally(function() {
+            self.agocontrol.unblock($('#agoGrid'));
+        });
     };
 
     self.editScenario = function(item)
@@ -409,33 +409,33 @@ function ScenarioConfig(agocontrol)
         content.uuid = self.agocontrol.scenarioController;
         content.command = 'getscenario';
         self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                // Build command list
-                for ( var idx in res.data.scenariomap)
-                {
-                    self.addCommand("scenarioBuilderEdit", res.data.scenariomap[idx]);
-                }
+        .then(function(res) {
+            // Build command list
+            for ( var idx in res.data.scenariomap)
+            {
+                self.addCommand("scenarioBuilderEdit", res.data.scenariomap[idx]);
+            }
 
-                // Save the id (needed for the save command)
-                self.openScenario = item.uuid;
+            // Save the id (needed for the save command)
+            self.openScenario = item.uuid;
 
-                // Open the dialog
-                if (document.getElementById("editScenarioDialogTitle"))
-                {
-                    $("#editScenarioDialog").dialog({
-                        title : document.getElementById("editScenarioDialogTitle").innerHTML,
-                        modal : true,
-                        width : 940,
-                        height : 600,
-                        close : function()
-                        {
-                            // Done, restore stuff
-                            document.getElementById("scenarioBuilderEdit").innerHTML = "";
-                            self.openScenario = null;
-                        }
-                    });
-                }
-            });
+            // Open the dialog
+            if( $("#editScenarioDialogTitle") )
+            {
+                $("#editScenarioDialog").dialog({
+                    title : document.getElementById("editScenarioDialogTitle").innerHTML,
+                    modal : true,
+                    width : 940,
+                    height : 600,
+                    close : function()
+                    {
+                        // Done, restore stuff
+                        $('#scenarioBuilderEdit').html('');
+                        self.openScenario = null;
+                    }
+                });
+            }
+        });
     };
 
     self.doEditScenario = function()
@@ -446,9 +446,9 @@ function ScenarioConfig(agocontrol)
         content.scenario = self.openScenario;
         content.scenariomap = self.buildScenarioMap("scenarioBuilderEdit");
         self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                $("#editScenarioDialog").dialog("close");
-            });
+        .then(function(res) {
+            $("#editScenarioDialog").dialog("close");
+        });
     };
 
     self.runScenario = function(item)

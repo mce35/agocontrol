@@ -11,9 +11,9 @@
             <section data-bind="gumbyTabs:$root" class="tabs">
                 <ul class="tab-nav">
                     <li class="active"><_a data-translateable="true" href="#">General</_a></li>
-                    <li><_a data-translateable="true" href="#">Profiles</_a></li>
                     <li><_a data-translateable="true" href="#">Config</_a></li>
                     <li><_a data-translateable="true" href="#">Motion</_a></li>
+                    <li><_a data-translateable="true" href="#">Recording</_a></li>
                     <li><_a data-translateable="true" href="#">Advanced</_a></li>
                 </ul>
                 <!-- general tab -->
@@ -70,7 +70,7 @@
                         <div class="four columns text-right">
                         </div>
                         <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {}, false)}" class="medium primary btn">
+                            <div data-bind="event{mousedown:doOperation.bind($data, generalData, 'devicemgmt', 'GetDeviceInformation', {}, false, false)}" class="medium primary btn">
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Get device infos</_a>
                             </div>
                         </div>
@@ -85,34 +85,6 @@
                         </div>
                     </div>
                     </ko>
-                </div>
-
-                <!-- profiles tab -->
-                <div class="tab-content">
-                    <div class="row">
-                        <div class="four columns text-right">
-                        </div>
-                        <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:getCameraProfiles}" class="medium primary btn">
-                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Get camera profiles</_a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="four columns text-right">
-                            <_span data-translateable="true">Camera profiles</_span>
-                        </div>
-                        <div class="four columns text-left field">
-                            <div class="picker">
-                                <select style="width:100%;" data-bind="options:cameraProfiles, optionsText:'desc', value:selectedProfile" />
-                            </div>
-                        </div>
-                        <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:setCameraProfile}" class="medium primary btn">
-                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- config tab -->
@@ -137,8 +109,7 @@
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Network interfaces</_a>
                             </div>
                             <div class="medium primary btn">
-                                <_a data-translateable="true" href="http://www.onvif.org/onvif/ver20/util/operationIndex.html" target="_blank">OnVIF operations</_a>
-                                <i class="icon-link"></i>
+                                <_a data-translateable="true" href="http://www.onvif.org/onvif/ver20/util/operationIndex.html" target="_blank">OnVIF operations<i class="icon-link"></i></_a>
                             </div>
                         </div>
                     </div>
@@ -197,7 +168,7 @@
                 <div class="tab-content">
                     <div class="row">
                         <div class="twelve columns text-center" style="font-size:smaller;">
-                            <_span data-translateable="true">Enabling motion will create a new binary device that allows you to use it in security application</_span>.
+                            <_span data-translateable="true">Enabling motion will create a new binary device that allows you to create events with it</_span>.
                         </div>
                     </div>
                     <div class="row">
@@ -206,7 +177,22 @@
                         </div>
                         <div class="four columns text-left field">
                             <div class="picker">
-                                <select data-bind="options:motionEnableOptions, optionsText:'caption', optionsValue:'value', value:motionEnable" />
+                                <select data-bind="options:yesNoOptions, optionsText:'caption', optionsValue:'value', value:motionEnable" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Camera profile</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="picker">
+                                <select style="width:100%;" data-bind="options:cameraProfiles, optionsText:'desc', value:motionProfile"/>
+                            </div>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:getCameraProfiles}" class="medium primary btn">   
+                                <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Get all profiles</_a>
                             </div>
                         </div>
                     </div>
@@ -225,7 +211,7 @@
                         <div class="four columns text-left field">
                             <input class="xwide input" type="text" data-bind="textInput:motionDeviation" />
                         </div>
-                        <div class="two columns text-left">
+                        <div class="four columns text-left">
                             <_span data-translateable="true" style="font-size:small;">(the higher the value, the more motion is allowed)</_span>
                         </div>
                     </div>
@@ -242,12 +228,53 @@
                     </div>
                     <div class="row">
                         <div class="four columns text-right">
-                            <_span data-translateable="true">Recording duration</_span>
-                            <br/>
-                            (<_span data-translateable="true" style="font-size:small">0 to disable recording</_span>)
                         </div>
                         <div class="four columns text-left field">
-                            <input class="xwide input" type="text" data-bind="textInput:motionRecordingDuration" />
+                            <div data-bind="event{mousedown:setMotion}" class="medium primary btn">
+                                <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- recording tab -->
+                <div class="tab-content">
+                    <div class="row">
+                        <div class="twelve columns text-center" style="font-size:smaller;">
+                            <_span data-translateable="true">Please note that recording will only work if motion is enabled</_span>.
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Enable recording</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="picker">
+                                <select data-bind="options:recordingTypes, optionsText:'caption', optionsValue:'value', value:recordingType" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Recording profile</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div class="picker">
+                                <select style="width:100%;" data-bind="options:cameraProfiles, optionsText:'desc', optionsCaption:'Select a profile', value:recordingProfile"/>
+                            </div>
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:getCameraProfiles}" class="medium primary btn">
+                                <_a href="#" data-translateable="true" data-bind="click:$root.noclick">Get all profiles</_a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                            <_span data-translateable="true">Recording duration after last motion detected</_span>
+                        </div>
+                        <div class="four columns text-left field">
+                            <input class="xwide input" type="text" data-bind="textInput:recordingDuration" />
                         </div>
                         <div class="two columns text-left">
                             <_span data-translateable="true">seconds</_span>
@@ -255,9 +282,19 @@
                     </div>
                     <div class="row">
                         <div class="four columns text-right">
+                            <_span data-translateable="true">Draw detected area</_span>
                         </div>
                         <div class="four columns text-left field">
-                            <div data-bind="event{mousedown:setMotion}" class="medium primary btn">
+                            <div class="picker">
+                                <select data-bind="options:recordingContourTypes, optionsText:'caption', optionsValue:'value', value:recordingContourType" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="four columns text-right">
+                        </div>
+                        <div class="four columns text-left field">
+                            <div data-bind="event{mousedown:setRecording}" class="medium primary btn">
                                 <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
                             </div>
                         </div>
@@ -282,8 +319,7 @@
                         </div>
                         <div class="four columns text-left field">
                             <div class="medium primary btn">
-                                <_a data-translateable="true" href="http://www.onvif.org/onvif/ver20/util/operationIndex.html" target="_blank">OnVIF operations</_a>
-                                <i class="icon-link"></i>
+                                <_a data-translateable="true" href="http://www.onvif.org/onvif/ver20/util/operationIndex.html" target="_blank">OnVIF operations<i class="icon-link"></i></_a>
                             </div>
                         </div>
                     </div>
@@ -302,16 +338,13 @@
                         <div class="six columns text-left">
                             <_span data-translateable="true">Response</_span>
                         </div>
-                        <div class="ten columns text-left field">
-                            <textarea data-translateable="true" style="height:200px; font-size:14px; line-height:20px;" class="input textarea" _placeholder="Parameters" data-bind="textInput:onvifParameters"></textarea>
-                        </div>
                     </div>
                     <div>
                         <div class="six columns text-center field">
-                            <textarea data-translateable="true" style="height:250px; font-size:13px; line-height:16px;" data-bind="textInput:onvifParameters" class="input textarea" placeholder="Request parameters"></textarea>
+                            <textarea data-translateable="true" style="height:250px; font-size:13px; line-height:16px;" data-bind="textInput:onvifParameters" class="input textarea" _placeholder="Request parameters"></textarea>
                         </div>
                         <div class="six columns text-center field">
-                            <textarea data-translateable="true" style="height:250px; font-size:13px; line-height:16px;" data-bind="textInput:onvifResponse" class="input textarea" placeholder="Response"></textarea>
+                            <textarea data-translateable="true" style="height:250px; font-size:13px; line-height:16px;" data-bind="textInput:onvifResponse" class="input textarea" _placeholder="Response"></textarea>
                         </div>
                     </div>
                     <div class="row">
@@ -340,10 +373,10 @@
         <div class="tab-content active">
             <script type="text/html" id="camerasRowTemplate">
                 <td data-bind="text:ip"></td>
-                <ko opts="if: uri_desc">
-                <td data-bind="text:uri_desc"></td>
+                <ko opts="if: motion_uri_desc">
+                <td data-bind="text:motion_uri_desc"></td>
                 </ko>
-                <ko opts="ifnot: uri_desc">
+                <ko opts="ifnot: motion_uri_desc">
                 <td style="color:red;">Not configured!</td>
                 </ko>
                 <td>

@@ -211,6 +211,11 @@ Agocontrol.prototype = {
                         // which is either resolved or rejected with result OR error
                         if(r.result)
                         {
+                            if( r.result.message && $.trim(r.result.message).length>0 )
+                            {
+                                //message specified, display it
+                                notif.success(r.result.message);
+                            }
                             resolve(r.result);
                         }
                         else
@@ -257,8 +262,11 @@ Agocontrol.prototype = {
             else if( error.message && error.message )
             {
                 notif.error(error.message);
-            }else
+            }
+            else
+            {
                 notif.error("Failed: TODO improve: " + JSON.stringify(error));
+            }
         });
 
         return promise;

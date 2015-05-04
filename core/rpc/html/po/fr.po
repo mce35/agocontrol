@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-28 15:46+0200\n"
+"POT-Creation-Date: 2015-05-04 14:26+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -656,7 +656,7 @@ msgid "Delete housemode"
 msgstr "Supprimer le mode"
 
 #: ../applications/security/html/security.xml.in.h:16
-#: ../applications/onvif/html/onvif.xml.in.h:47
+#: ../applications/onvif/html/onvif.xml.in.h:49
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -877,7 +877,7 @@ msgid "Request node configuration parameters"
 msgstr "Demander les paramètres de configuration au noeud"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../applications/onvif/html/onvif.xml.in.h:42
 msgid "Request parameters"
 msgstr "Demander les paramètres"
 
@@ -958,16 +958,16 @@ msgid "General"
 msgstr "Général"
 
 #: ../applications/onvif/html/onvif.xml.in.h:2
-msgid "Profiles"
-msgstr "Profiles"
-
-#: ../applications/onvif/html/onvif.xml.in.h:3
 msgid "Config"
 msgstr "Configuration"
 
-#: ../applications/onvif/html/onvif.xml.in.h:4
+#: ../applications/onvif/html/onvif.xml.in.h:3
 msgid "Motion"
 msgstr "Mouvement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:4
+msgid "Recording"
+msgstr "Enregistrement"
 
 #: ../applications/onvif/html/onvif.xml.in.h:5
 msgid "Advanced"
@@ -1014,14 +1014,6 @@ msgid "Get device infos"
 msgstr "Plus d'infos"
 
 #: ../applications/onvif/html/onvif.xml.in.h:18
-msgid "Get camera profiles"
-msgstr "Récupérer les profils"
-
-#: ../applications/onvif/html/onvif.xml.in.h:19
-msgid "Camera profiles"
-msgstr "Profils"
-
-#: ../applications/onvif/html/onvif.xml.in.h:20
 msgid ""
 "Update existing configuration. If you feel limited and need to add more "
 "infos, please use \"Advanced\" tab"
@@ -1029,38 +1021,46 @@ msgstr ""
 "Mise à jour de la configuration. Si vous souhaitez en faire plus rendez vous "
 "dans l'onglet \"Avancé\""
 
-#: ../applications/onvif/html/onvif.xml.in.h:21
+#: ../applications/onvif/html/onvif.xml.in.h:19
 msgid "Hostname"
 msgstr "Hostname"
 
-#: ../applications/onvif/html/onvif.xml.in.h:22
+#: ../applications/onvif/html/onvif.xml.in.h:20
 msgid "Date and time"
 msgstr "Date et heure"
 
-#: ../applications/onvif/html/onvif.xml.in.h:23
+#: ../applications/onvif/html/onvif.xml.in.h:21
 msgid "NTP"
 msgstr "NTP"
 
-#: ../applications/onvif/html/onvif.xml.in.h:24
+#: ../applications/onvif/html/onvif.xml.in.h:22
 msgid "Network interfaces"
 msgstr "Réseau"
 
-#: ../applications/onvif/html/onvif.xml.in.h:25
-msgid "OnVIF operations"
-msgstr "Opérations OnVif"
+#: ../applications/onvif/html/onvif.xml.in.h:23
+msgid "OnVIF operations<i class=\"icon-link\"/>"
+msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:26
+#: ../applications/onvif/html/onvif.xml.in.h:24
 msgid ""
-"Enabling motion will create a new binary device that allows you to use it in "
-"security application"
+"Enabling motion will create a new binary device that allows you to create "
+"events with it"
 msgstr ""
 "En activant la détection de mouvement, agocontrol créera un nouveau "
-"périphérique binaire que vous pourrez utiliser dans l'app de sécurité par "
-"exemple"
+"périphérique binaire que vous pourrez utiliser lors de la création "
+"d'évènements"
 
-#: ../applications/onvif/html/onvif.xml.in.h:27
+#: ../applications/onvif/html/onvif.xml.in.h:25
 msgid "Enable motion"
 msgstr "Activer"
+
+#: ../applications/onvif/html/onvif.xml.in.h:26
+msgid "Camera profile"
+msgstr "Profil"
+
+#: ../applications/onvif/html/onvif.xml.in.h:27
+msgid "Get all profiles"
+msgstr "Récupérer les profils"
 
 #: ../applications/onvif/html/onvif.xml.in.h:28
 msgid "Detection sensitivity"
@@ -1083,58 +1083,68 @@ msgid "seconds"
 msgstr "secondes"
 
 #: ../applications/onvif/html/onvif.xml.in.h:33
-msgid "Recording duration"
-msgstr "Durée de l'enregistrement"
+msgid "Please note that recording will only work if motion is enabled"
+msgstr ""
+"Notez que cette fonction sera active uniquement si la détection de mouvement "
+"est activée aussi"
 
 #: ../applications/onvif/html/onvif.xml.in.h:34
-msgid "0 to disable recording"
-msgstr "0 pour désactiver"
+msgid "Enable recording"
+msgstr "Activer l'enregistrement"
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
+msgid "Recording profile"
+msgstr "Profil d'enregistrement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:36
+msgid "Recording duration after last motion detected"
+msgstr "Durée d'enreg. après dernier mouvement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:37
+msgid "Draw detected area"
+msgstr "Dessine la zone détectée"
+
+#: ../applications/onvif/html/onvif.xml.in.h:38
 msgid "This tab allows you to execute onvif requests"
 msgstr "Cet onglet vous permet d'exécuter des requêtes onvif"
 
-#: ../applications/onvif/html/onvif.xml.in.h:36
+#: ../applications/onvif/html/onvif.xml.in.h:39
 msgid "Service name"
 msgstr "Nom du service"
 
-#: ../applications/onvif/html/onvif.xml.in.h:37
+#: ../applications/onvif/html/onvif.xml.in.h:40
 msgid "Operation name"
 msgstr "Nom de l'opération"
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../applications/onvif/html/onvif.xml.in.h:41
 msgid "Operation"
 msgstr "Opération"
 
-#: ../applications/onvif/html/onvif.xml.in.h:40
+#: ../applications/onvif/html/onvif.xml.in.h:43
 msgid "Response"
 msgstr "Réponse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:41
-msgid "Parameters"
-msgstr "Paramètres"
-
-#: ../applications/onvif/html/onvif.xml.in.h:42
+#: ../applications/onvif/html/onvif.xml.in.h:44
 msgid "Execute"
 msgstr "Exécuter"
 
-#: ../applications/onvif/html/onvif.xml.in.h:43
+#: ../applications/onvif/html/onvif.xml.in.h:45
 msgid "Check parameters"
 msgstr "Vérifier les paramètres"
 
-#: ../applications/onvif/html/onvif.xml.in.h:44
+#: ../applications/onvif/html/onvif.xml.in.h:46
 msgid "My cameras"
 msgstr "Mes caméras"
 
-#: ../applications/onvif/html/onvif.xml.in.h:45
+#: ../applications/onvif/html/onvif.xml.in.h:47
 msgid "Add camera"
 msgstr "Ajouter une caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:46
+#: ../applications/onvif/html/onvif.xml.in.h:48
 msgid "Recordings"
 msgstr "Enregistrement"
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../applications/onvif/html/onvif.xml.in.h:50
 #: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -1145,23 +1155,27 @@ msgstr "Enregistrement"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../applications/onvif/html/onvif.xml.in.h:51
 msgid "Ip address"
 msgstr "Adresse ip"
 
-#: ../applications/onvif/html/onvif.xml.in.h:50
+#: ../applications/onvif/html/onvif.xml.in.h:52
+msgid "Get camera profiles"
+msgstr "Récupérer les profils"
+
+#: ../applications/onvif/html/onvif.xml.in.h:53
 msgid "Select camera profile"
 msgstr "Sélectionner le profil de la caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:51
+#: ../applications/onvif/html/onvif.xml.in.h:54
 msgid "Save camera"
 msgstr "Enregistrer la caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:52
+#: ../applications/onvif/html/onvif.xml.in.h:55
 msgid "Recordings directory"
 msgstr "Répertoire des enregistrements"
 
-#: ../applications/onvif/html/onvif.xml.in.h:53
+#: ../applications/onvif/html/onvif.xml.in.h:56
 msgid "Directory"
 msgstr "Répertoire"
 

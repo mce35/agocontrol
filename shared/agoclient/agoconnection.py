@@ -262,13 +262,13 @@ class AgoConnection:
         response['_newresponse'] = True #TODO: remove thits after everything is using new response style
         return response
 
-    def response_unknown_command(self, message=None, data=None):
+    def response_unknown_command(self, message="Unhandled command", data=None):
         return self.response_error(iden=self.RESPONSE_ERR_UNKNOWN_COMMAND, mess=message, data=data)
 
-    def response_missing_parameters(self, message=None, data=None):
+    def response_missing_parameters(self, message="Missing parameter", data=None):
         return self.response_error(iden=self.RESPONSE_ERR_MISSING_PARAMETERS, mess=message, data=data)
 
-    def response_bad_parameters(self, message=None, data=None):
+    def response_bad_parameters(self, message="Bad parameter", data=None):
         return self.response_error(iden=self.RESPONSE_ERR_BAD_PARAMETERS, mess=message, data=data)
 
     def response_failed(self, message, data=None):

@@ -1,0 +1,20 @@
+add_suds(
+    builder.py
+    cache.py
+    client.py
+    __init__.py
+    metrics.py
+    options.py
+    plugin.py
+    properties.py
+    reader.py
+    resolver.py
+    servicedefinition.py
+    serviceproxy.py
+    soaparray.py
+    store.py
+    sudsobject.py
+    wsdl.py
+    wsse.py
+)
+
