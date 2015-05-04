@@ -31,8 +31,9 @@ function OnVIFPlugin(devices, agocontrol)
     self.motionSensitivity = ko.observable(10);
     self.motionDeviation = ko.observable(20);
     self.motionOnDuration = ko.observable(300);
-    self.motionRecordDir = ko.observable('/opt/agocontrol/recordings');
-    self.recordingEnable = ko.observable(null);
+    self.motionRecordDir = ko.observable('/var/opt/agocontrol/recordings');
+    self.recordingTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Enable motion recording'}, {value:2, caption:'Enable timelapse'}, {value:3, caption:'Enable all'}]);
+    self.recordingType = ko.observable(0);
     self.recordingProfile = ko.observable(null);
     self.recordingDuration = ko.observable(0);
     self.recordingContourTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Single box (all areas merged)'}, {value:2, caption:'All detected areas'}]);
@@ -328,7 +329,7 @@ function OnVIFPlugin(devices, agocontrol)
         self.cameraProfiles(profiles);
         self.motionProfile(motionP);
         self.recordingProfile(recordP);
-        self.recordingEnable(item.record);
+        self.recordingType(item.record_type);
         self.recordingDuration(item.record_duration);
         self.recordingContourType(item.record_contour);
 
@@ -681,7 +682,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.uuid = self.controllerUuid;
             content.command = 'setrecording';
             content.internalid = self.selectedCamera().internalid;
-            content.enable = self.recordingEnable();
+            content.type = self.recordingType();
             content.uri_token = self.recordingProfile().token;
             content.uri_desc = self.recordingProfile().desc;
             content.duration = self.recordingDuration();

@@ -111,6 +111,7 @@ class FrameRecorder(threading.Thread):
             self.codec = codec
         self.recorder = None
         self.close_recorder = False
+        self.recording = False
 
     def stop(self):
         """
@@ -146,6 +147,7 @@ class FrameRecorder(threading.Thread):
         Close recorder
         """
         if self.recorder:
+            self.recording = False
             self.recorder.release()
             self.recorder = None
 
@@ -170,6 +172,7 @@ class FrameRecorder(threading.Thread):
 
         #create new one
         self.recorder = cv2.VideoWriter(filename, self.codec, fps, resolution)
+        self.recording = True
 
     def stop_recording(self, force=False):
         """
@@ -189,6 +192,12 @@ class FrameRecorder(threading.Thread):
         else:
             return False
 
+    def is_recording(self):
+        """
+        Return True if recorder is recording
+        """
+        return self.recording
+
 
 class Motion(threading.Thread):
     """
@@ -202,7 +211,12 @@ class Motion(threading.Thread):
     CONTOUR_SINGLE = 1
     CONTOUR_MULTIPLE = 2
 
-    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record=False, record_uri=None, record_fps=10, record_dir=None, record_duration=15, record_contour=None):
+    RECORD_NONE = 0
+    RECORD_MOTION = 1
+    RECORD_DAY = 2
+    RECORD_ALL = 3
+
+    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record_type=0, record_uri=None, record_fps=10, record_dir=None, record_duration=15, record_contour=0):
         """
         Constructor
         @param camera_internalid: camera internalid to generate record filename
@@ -210,7 +224,7 @@ class Motion(threading.Thread):
         @param sensitivity: number of changes on picture detected
         @param deviation: the higher the value, the more motion is allowed
         @param on_duration: time during binary sensor stays on when motion detected
-        @param record: enable/disable recording feature
+        @param record_type: recording type [Disabled, Only motion, Only all day, All]
         @param record_uri: recording uri
         @param record_fps: camera fps rate
         @param record_dir: directory to save recordings
@@ -227,7 +241,7 @@ class Motion(threading.Thread):
         self.sensitivity = sensitivity
         self.deviation = deviation
         self.on_duration = on_duration
-        self.record = record
+        self.record_type = record_type
         self.record_uri = record_uri
         self.record_fps = record_fps
         self.record_dir = record_dir
@@ -240,7 +254,7 @@ class Motion(threading.Thread):
         self.trigger_enabled = False
         self.record_filename = None
         self.running = True
-        self.recorders = {'record':None}
+        self.recorders = {'record':None, 'timelapse':None}
         #self.frame = None
         self.is_recording = False
         self.frame_readers = {'motion':None, 'record':None}
@@ -256,15 +270,15 @@ class Motion(threading.Thread):
         self.processed_frame = None
 
         #check members
-        if not self.record_uri and self.record:
+        if not self.record_uri and self.record_type!=self.RECORD_NONE:
             #no record uri
             self.log.warning('No record uri specified while recording is enabled. Recording is disabled.')
-            self.record = False
+            self.record_type = self.RECORD_NONE
 
         if not os.path.exists(self.record_dir):
             #record dir doesn't exist
             self.log.warning('Recording dir "%s" doens\'t exist. Recording is disabled' % self.record_dir)
-            self.record = False
+            self.record_type = self.RECORD_NONE
             
 
         #create binary device
@@ -283,7 +297,7 @@ class Motion(threading.Thread):
         self.trigger_off_timer.start()
 
         #start recording
-        if self.record:
+        if self.record_type in (self.RECORD_MOTION, self.RECORD_ALL):
             #get frame resolution
             if self.frame_readers['record']:
                 self.record_resolution = self.frame_readers['record'].get_resolution()
@@ -297,7 +311,7 @@ class Motion(threading.Thread):
                 self.record_resolution_ratio = (1,1)
 
             #init recorder
-            self.record_filename = os.path.join(self.record_dir, '%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
+            self.record_filename = os.path.join(self.record_dir, 'motion_%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
             self.recorders['record'].start_recording(self.record_filename, self.record_fps, self.record_resolution)
             self.log.info('Start recording "%s" [%dx%d@%dfps] during %d seconds' % (self.record_filename, self.record_resolution[0], self.record_resolution[1], self.record_fps, self.record_duration))
 
@@ -329,8 +343,8 @@ class Motion(threading.Thread):
         self.frame_readers['motion'].start()
 
         #create recording frame reader if necessary
-        if self.record and self.uri!=self.record_uri:
-            #need to create 2 frame readers
+        if self.record_type!=self.RECORD_NONE and self.uri!=self.record_uri:
+            #need to create another frame reader
             self.log.debug('Init record frame reader')
             self.frame_readers['record'] = FrameReader(self.log, self.record_uri, 2)
             self.frame_readers['record'].start()
@@ -340,9 +354,14 @@ class Motion(threading.Thread):
         Init frame recorders
         """
         #create record recorder if necessary
-        if self.record:
+        if self.record_type in (self.RECORD_MOTION, self.RECORD_ALL):
             self.recorders['record'] = FrameRecorder(self.log)
             self.recorders['record'].start()
+
+        #create day recorder if necessary
+        if self.record_type in (self.RECORD_DAY, self.RECORD_ALL):
+            self.recorders['timelapse'] = FrameRecorder(self.log)
+            self.recorders['timelapse'].start()
 
     def process_frame(self, frame):
         """
@@ -437,10 +456,12 @@ class Motion(threading.Thread):
         #init recorders
         self.init_frame_recorders()
 
+        #main loop
         started = time.time()
+        last_day_frame = started
         while self.running:
             #get current time
-            now = time.time()
+            now = int(time.time())
 
             #get motion frame
             res, frame = self.frame_readers['motion'].get_frame()
@@ -455,7 +476,7 @@ class Motion(threading.Thread):
 
             if not self.is_recording and not self.trigger_enabled:
                 #not recording, is something moved?
-                if self.something_has_moved() or now>=started+15:
+                if self.something_has_moved(): #debug or now>=started+15:
                     #something detected
                     self.trigger_on(now)
 
@@ -478,31 +499,59 @@ class Motion(threading.Thread):
 
                 else:
                     #get frame to store
+                    ok = True
                     if self.frame_readers['record']:
                         #and get frame to record
-                        res, frame = self.frame_readers['record'].get_frame()
-                        if not res:
-                            #no frame to record
-                            continue
+                        ok, frame = self.frame_readers['record'].get_frame()
 
                     #add detected area
-                    res = False
-                    if self.record_contour!=self.CONTOUR_NONE:
-                        res, rects = self.get_contours()
-                    if res:
-                        for i in range(len(rects)):
-                            cv2.rectangle(frame,
-                                    (rects[i]['x']*self.record_resolution_ratio[0], rects[i]['y']*self.record_resolution_ratio[1]),
-                                    (rects[i]['w']*self.record_resolution_ratio[0], rects[i]['h']*self.record_resolution_ratio[1]),
-                                    (0,0,255), #red color
-                                    2) #line thickness
+                    if ok:
+                        res = False
+                        if self.record_contour!=self.CONTOUR_NONE:
+                            res, rects = self.get_contours()
+                        if res:
+                            for i in range(len(rects)):
+                                cv2.rectangle(frame,
+                                        (rects[i]['x']*self.record_resolution_ratio[0], rects[i]['y']*self.record_resolution_ratio[1]),
+                                        (rects[i]['w']*self.record_resolution_ratio[0], rects[i]['h']*self.record_resolution_ratio[1]),
+                                        (0,0,255), #red color
+                                        2) #line thickness
+
+                        #add current date
+                        cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 4, cv2.CV_AA)
+                        cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
+
+                        #write frame to recorder
+                        self.recorders['record'].record(frame)
+
+            #handle day recorder
+            if self.record_type in (self.RECORD_DAY, self.RECORD_ALL):
+                #record timelapse
+                if not self.recorders['timelapse'].is_recording():
+                    #get video resolution
+                    resolution = self.frame_readers['record'].get_resolution()
+                    if resolution[0]!=0:
+                        #resolution available, start recording timelapse
+                        self.log.info('Start recording timelapse')
+                        filename = os.path.join(self.record_dir, 'timelapse_%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d"), 'avi'))
+                        self.recorders['timelapse'].start_recording(filename, 24, resolution)
+
+                elif last_day_frame!=now:
+                    #configured, record frame
+
+                    #get frame to store
+                    ok = True
+                    if self.frame_readers['record']:
+                        #and get frame to record
+                        ok, frame = self.frame_readers['record'].get_frame()
 
                     #add current date
                     cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 4, cv2.CV_AA)
                     cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
 
                     #write frame to recorder
-                    self.recorders['record'].record(frame)
+                    self.recorders['timelapse'].record(frame)
+                    last_day_frame = now
 
         #end of motion thread
         self.log.info('Motion thread for device "%s" is stopped' % self.internalid)
@@ -532,9 +581,18 @@ class Motion(threading.Thread):
         #release recorders
         if self.recorders['record']:
             self.recorders['record'].stop()
+        if self.recorders['timelapse']:
+            self.recorders['timelapse'].stop()
 
         #stop main process
         self.running = False
+
+    def reset_timelapse(self):
+        """
+        Reset timelapse (when new day)
+        """
+        if self.record_type in (self.RECORD_DAY, self.RECORD_ALL):
+            self.recorders['timelapse'].stop_recording()
 
 
 
@@ -568,7 +626,7 @@ class Camera():
         self.motion_sensitivity = 10
         self.motion_deviation = 20
         self.motion_on_duration = 300
-        self.record = False
+        self.record_type = Motion.RECORD_NONE
         self.record_uri = None
         self.record_uri_token = None
         self.record_fps = 0
@@ -634,7 +692,7 @@ class Camera():
                 self.motion_sensitivity,
                 self.motion_deviation,
                 self.motion_on_duration,
-                self.record,
+                self.record_type,
                 self.record_uri,
                 self.record_fps,
                 self.record_dir,
@@ -656,11 +714,11 @@ class Camera():
         if force_restart:
             self.__configure_motion()
 
-    def set_recording(self, enable, uri, uri_token, directory, duration, contour, force_restart=True):
+    def set_recording(self, type_, uri, uri_token, directory, duration, contour, force_restart=True):
         """
         Set recording
         """
-        self.record = enable
+        self.record_type = type_
         self.record_uri = uri
         self.record_uri_token = uri_token
         self.record_fps = self.__get_fps(uri_token)
@@ -685,29 +743,6 @@ class Camera():
             else:
                 self.log.error('No uri fps found!')
         return fps
-
-    #def set_uri(self, token, uri):
-    #    """
-    #    Set default uri
-    #    """
-    #    self.uri = uri
-    #    self.uri_token = token
-    #
-    #    #get fps
-    #    self.uri_fps = 0
-    #    profile = self.get_profile(token)
-    #    self.log.info(profile)
-    #    if profile:
-    #        if profile.has_key('VideoEncoderConfiguration') and profile['VideoEncoderConfiguration'].has_key('RateControl') and profile['VideoEncoderConfiguration']['RateControl'] and profile['VideoEncoderConfiguration']['RateControl'].has_key('FrameRateLimit'):
-    #            try:
-    #                self.uri_fps = int(profile['VideoEncoderConfiguration']['RateControl']['FrameRateLimit'])
-    #            except ValueError:
-    #                self.log.exception('Unable to get uri fps')
-    #        else:
-    #            self.log.error('No uri fps found!')
-    #
-    #    #configure motion if necessary
-    #    self.__configure_motion()
 
     def set_record_dir(self, record_dir):
         """
@@ -965,6 +1000,13 @@ class Camera():
             self.log.exception('Exception in getBuffer:')
             return False, None 
 
+    def reset_timelapse(self):
+        """
+        Reset all camera timelapses
+        """
+        if self.motion_thread:
+            self.motion_thread.reset_timelapse()
+
 
 class AgoOnvif(agoclient.AgoApp):
     DEFAULT_RECORD_DIR = '/opt/agocontrol/recordings'
@@ -979,6 +1021,7 @@ class AgoOnvif(agoclient.AgoApp):
         #declare members
         self.config = {}
         self.cameras = {}
+        self.last_yday = time.strftime('%j')
         self.__configLock = threading.Lock()
 
         #load config
@@ -986,6 +1029,7 @@ class AgoOnvif(agoclient.AgoApp):
 
         #add handlers
         self.connection.add_handler(self.message_handler)
+        self.connection.add_event_handler(self.event_handler)
         #add controller
         self.connection.add_device('onvifcontroller', 'onvifcontroller')
 
@@ -1021,7 +1065,7 @@ class AgoOnvif(agoclient.AgoApp):
                     False
                 )
                 camera.set_recording(
-                    self.config['cameras'][internalid]['record'],
+                    self.config['cameras'][internalid]['record_type'],
                     self.config['cameras'][internalid]['record_uri'],
                     self.config['cameras'][internalid]['record_uri_token'],
                     self.config['general']['record_dir'],
@@ -1119,7 +1163,7 @@ class AgoOnvif(agoclient.AgoApp):
                 'motion_sensitivity':10,
                 'motion_deviation':20,
                 'motion_on_duration':300,
-                'record':False,
+                'record_type':Motion.RECORD_NONE,
                 'record_uri':None,
                 'record_uri_token':None,
                 'record_uri_desc':'',
@@ -1193,11 +1237,27 @@ class AgoOnvif(agoclient.AgoApp):
 
         return True, ''
 
+    def event_handler(self, subject, content):
+        """
+        Event handler
+        """
+        self.log.debug('Event handler: subject=%s : %s' % (subject, content))
+        
+        if subject=='event.environment.timechanged':
+            #check new day
+            if content['yday']!=self.last_yday:
+                #set current yday
+                self.last_yday = content['yday']
+
+                #new day detected, reset all timelapses
+                for internalid in self.cameras:
+                    self.cameras[internalid].reset_timelapse()
+
     def message_handler(self, internalid, content):
         """
         Message handler
         """
-        self.log.debug('internalid=%s : %s' % (internalid, content))
+        self.log.debug('Message handler: internalid=%s : %s' % (internalid, content))
 
         #get command
         command = None
@@ -1507,7 +1567,7 @@ class AgoOnvif(agoclient.AgoApp):
                 return self.connection.response_success(None, 'Configuration saved')
 
             elif command=='setrecording':
-                if not self.__check_command_params(content, ['internalid', 'enable', 'uri_desc', 'uri_token', 'duration', 'contour']):
+                if not self.__check_command_params(content, ['internalid', 'type', 'uri_desc', 'uri_token', 'duration', 'contour']):
                     self.log.error('Parameters are missing')
                     return self.connection.response_missing_parameters()
                 internalid = content['internalid']
@@ -1518,11 +1578,6 @@ class AgoOnvif(agoclient.AgoApp):
                 camera = self.cameras[internalid]
 
                 #check parameters
-                if content['enable']:
-                    content['enable'] = True
-                else:
-                    content['enable'] = False
-
                 try:
                     content['duration'] = int(content['duration'])
                 except ValueError:
@@ -1539,6 +1594,15 @@ class AgoOnvif(agoclient.AgoApp):
                     self.log.error(e.msg)
                     self.connection.response_bad_parameters(msg)
 
+                try:
+                    content['type'] = int(content['type'])
+                    if content['type'] not in (Motion.RECORD_NONE, Motion.RECORD_MOTION, Motion.RECORD_DAY, Motion.RECORD_ALL):
+                        raise Exception('Invalid type value')
+                except Exception as e:
+                    msg = 'Invalid "type" parameter.'
+                    self.log.error(e.msg)
+                    self.connection.response_bad_parameters(msg)
+
                 #get uri from token
                 uri = camera.get_uri(content['uri_token'])
                 if not uri:
@@ -1548,7 +1612,7 @@ class AgoOnvif(agoclient.AgoApp):
 
                 #configure motion
                 camera.set_recording(
-                    content['enable'],
+                    content['type'],
                     uri,
                     content['uri_token'],
                     self.config['general']['record_dir'],
@@ -1557,7 +1621,7 @@ class AgoOnvif(agoclient.AgoApp):
                 )
 
                 #save new config
-                self.config['cameras'][internalid]['record'] = content['enable']
+                self.config['cameras'][internalid]['record_type'] = content['type']
                 self.config['cameras'][internalid]['record_uri'] = uri
                 self.config['cameras'][internalid]['record_uri_token'] = content['uri_token']
                 self.config['cameras'][internalid]['record_uri_desc'] = content['uri_desc']
