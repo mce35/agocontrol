@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-29 17:35+0200\n"
+"POT-Creation-Date: 2015-05-04 14:16+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -877,7 +877,7 @@ msgid "Request node configuration parameters"
 msgstr "Demander les paramètres de configuration au noeud"
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
-#: ../applications/onvif/html/onvif.xml.in.h:41
+#: ../applications/onvif/html/onvif.xml.in.h:42
 msgid "Request parameters"
 msgstr "Demander les paramètres"
 
@@ -958,16 +958,16 @@ msgid "General"
 msgstr "Général"
 
 #: ../applications/onvif/html/onvif.xml.in.h:2
-msgid "Profiles"
-msgstr "Profiles"
-
-#: ../applications/onvif/html/onvif.xml.in.h:3
 msgid "Config"
 msgstr "Configuration"
 
-#: ../applications/onvif/html/onvif.xml.in.h:4
+#: ../applications/onvif/html/onvif.xml.in.h:3
 msgid "Motion"
 msgstr "Mouvement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:4
+msgid "Recording"
+msgstr "Enregistrement"
 
 #: ../applications/onvif/html/onvif.xml.in.h:5
 msgid "Advanced"
@@ -1014,14 +1014,6 @@ msgid "Get device infos"
 msgstr "Plus d'infos"
 
 #: ../applications/onvif/html/onvif.xml.in.h:18
-msgid "Get camera profiles"
-msgstr "Récupérer les profils"
-
-#: ../applications/onvif/html/onvif.xml.in.h:19
-msgid "Camera profiles"
-msgstr "Profils"
-
-#: ../applications/onvif/html/onvif.xml.in.h:20
 msgid ""
 "Update existing configuration. If you feel limited and need to add more "
 "infos, please use \"Advanced\" tab"
@@ -1029,27 +1021,27 @@ msgstr ""
 "Mise à jour de la configuration. Si vous souhaitez en faire plus rendez vous "
 "dans l'onglet \"Avancé\""
 
-#: ../applications/onvif/html/onvif.xml.in.h:21
+#: ../applications/onvif/html/onvif.xml.in.h:19
 msgid "Hostname"
 msgstr "Hostname"
 
-#: ../applications/onvif/html/onvif.xml.in.h:22
+#: ../applications/onvif/html/onvif.xml.in.h:20
 msgid "Date and time"
 msgstr "Date et heure"
 
-#: ../applications/onvif/html/onvif.xml.in.h:23
+#: ../applications/onvif/html/onvif.xml.in.h:21
 msgid "NTP"
 msgstr "NTP"
 
-#: ../applications/onvif/html/onvif.xml.in.h:24
+#: ../applications/onvif/html/onvif.xml.in.h:22
 msgid "Network interfaces"
 msgstr "Réseau"
 
-#: ../applications/onvif/html/onvif.xml.in.h:25
-msgid "OnVIF operations"
-msgstr "Opérations OnVif"
+#: ../applications/onvif/html/onvif.xml.in.h:23
+msgid "OnVIF operations<i class=\"icon-link\"/>"
+msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:26
+#: ../applications/onvif/html/onvif.xml.in.h:24
 msgid ""
 "Enabling motion will create a new binary device that allows you to create "
 "events with it"
@@ -1058,9 +1050,17 @@ msgstr ""
 "périphérique binaire que vous pourrez utiliser lors de la création "
 "d'évènements"
 
-#: ../applications/onvif/html/onvif.xml.in.h:27
+#: ../applications/onvif/html/onvif.xml.in.h:25
 msgid "Enable motion"
 msgstr "Activer"
+
+#: ../applications/onvif/html/onvif.xml.in.h:26
+msgid "Camera profile"
+msgstr "Profil"
+
+#: ../applications/onvif/html/onvif.xml.in.h:27
+msgid "Get all profiles"
+msgstr "Récupérer les profils"
 
 #: ../applications/onvif/html/onvif.xml.in.h:28
 msgid "Detection sensitivity"
@@ -1085,44 +1085,44 @@ msgstr "secondes"
 #: ../applications/onvif/html/onvif.xml.in.h:33
 msgid "Please note that recording will only work if motion is enabled"
 msgstr ""
-"Notez que cette fonction sera active uniquement si la détection "
-"de mouvement est activée aussi"
+"Notez que cette fonction sera active uniquement si la détection de mouvement "
+"est activée aussi"
 
 #: ../applications/onvif/html/onvif.xml.in.h:34
 msgid "Enable recording"
 msgstr "Activer l'enregistrement"
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
+msgid "Recording profile"
+msgstr "Profil d'enregistrement"
+
+#: ../applications/onvif/html/onvif.xml.in.h:36
 msgid "Recording duration"
 msgstr "Durée de l'enregistrement"
 
-#: ../applications/onvif/html/onvif.xml.in.h:36
+#: ../applications/onvif/html/onvif.xml.in.h:37
 msgid "Draw detected area"
 msgstr "Dessine la zone détectée"
 
-#: ../applications/onvif/html/onvif.xml.in.h:37
+#: ../applications/onvif/html/onvif.xml.in.h:38
 msgid "This tab allows you to execute onvif requests"
 msgstr "Cet onglet vous permet d'exécuter des requêtes onvif"
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../applications/onvif/html/onvif.xml.in.h:39
 msgid "Service name"
 msgstr "Nom du service"
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../applications/onvif/html/onvif.xml.in.h:40
 msgid "Operation name"
 msgstr "Nom de l'opération"
 
-#: ../applications/onvif/html/onvif.xml.in.h:40
+#: ../applications/onvif/html/onvif.xml.in.h:41
 msgid "Operation"
 msgstr "Opération"
 
-#: ../applications/onvif/html/onvif.xml.in.h:42
+#: ../applications/onvif/html/onvif.xml.in.h:43
 msgid "Response"
 msgstr "Réponse"
-
-#: ../applications/onvif/html/onvif.xml.in.h:43
-msgid "Parameters"
-msgstr "Paramètres"
 
 #: ../applications/onvif/html/onvif.xml.in.h:44
 msgid "Execute"
@@ -1160,18 +1160,22 @@ msgid "Ip address"
 msgstr "Adresse ip"
 
 #: ../applications/onvif/html/onvif.xml.in.h:52
+msgid "Get camera profiles"
+msgstr "Récupérer les profils"
+
+#: ../applications/onvif/html/onvif.xml.in.h:53
 msgid "Select camera profile"
 msgstr "Sélectionner le profil de la caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:53
+#: ../applications/onvif/html/onvif.xml.in.h:54
 msgid "Save camera"
 msgstr "Enregistrer la caméra"
 
-#: ../applications/onvif/html/onvif.xml.in.h:54
+#: ../applications/onvif/html/onvif.xml.in.h:55
 msgid "Recordings directory"
 msgstr "Répertoire des enregistrements"
 
-#: ../applications/onvif/html/onvif.xml.in.h:55
+#: ../applications/onvif/html/onvif.xml.in.h:56
 msgid "Directory"
 msgstr "Répertoire"
 
@@ -1605,3 +1609,12 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
+
+#~ msgid "Profiles"
+#~ msgstr "Profiles"
+
+#~ msgid "OnVIF operations"
+#~ msgstr "Opérations OnVif"
+
+#~ msgid "Parameters"
+#~ msgstr "Paramètres"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-29 17:35+0200\n"
+"POT-Creation-Date: 2015-05-04 14:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -859,7 +859,7 @@ msgid "Request node configuration parameters"
 msgstr ""
 
 #: ../applications/zwave/html/zwave.xml.in.h:47
-#: ../applications/onvif/html/onvif.xml.in.h:41
+#: ../applications/onvif/html/onvif.xml.in.h:42
 msgid "Request parameters"
 msgstr ""
 
@@ -940,15 +940,15 @@ msgid "General"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:2
-msgid "Profiles"
-msgstr ""
-
-#: ../applications/onvif/html/onvif.xml.in.h:3
 msgid "Config"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:4
+#: ../applications/onvif/html/onvif.xml.in.h:3
 msgid "Motion"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:4
+msgid "Recording"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:5
@@ -996,47 +996,47 @@ msgid "Get device infos"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:18
-msgid "Get camera profiles"
-msgstr ""
-
-#: ../applications/onvif/html/onvif.xml.in.h:19
-msgid "Camera profiles"
-msgstr ""
-
-#: ../applications/onvif/html/onvif.xml.in.h:20
 msgid ""
 "Update existing configuration. If you feel limited and need to add more "
 "infos, please use \"Advanced\" tab"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:21
+#: ../applications/onvif/html/onvif.xml.in.h:19
 msgid "Hostname"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:22
+#: ../applications/onvif/html/onvif.xml.in.h:20
 msgid "Date and time"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:23
+#: ../applications/onvif/html/onvif.xml.in.h:21
 msgid "NTP"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:24
+#: ../applications/onvif/html/onvif.xml.in.h:22
 msgid "Network interfaces"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:25
-msgid "OnVIF operations"
+#: ../applications/onvif/html/onvif.xml.in.h:23
+msgid "OnVIF operations<i class=\"icon-link\"/>"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:26
+#: ../applications/onvif/html/onvif.xml.in.h:24
 msgid ""
 "Enabling motion will create a new binary device that allows you to create "
 "events with it"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:27
+#: ../applications/onvif/html/onvif.xml.in.h:25
 msgid "Enable motion"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:26
+msgid "Camera profile"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:27
+msgid "Get all profiles"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:28
@@ -1068,35 +1068,35 @@ msgid "Enable recording"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:35
-msgid "Recording duration"
+msgid "Recording profile"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:36
-msgid "Draw detected area"
+msgid "Recording duration"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:37
-msgid "This tab allows you to execute onvif requests"
+msgid "Draw detected area"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:38
-msgid "Service name"
+msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:39
-msgid "Operation name"
+msgid "Service name"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:40
+msgid "Operation name"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:41
 msgid "Operation"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:42
-msgid "Response"
-msgstr ""
-
 #: ../applications/onvif/html/onvif.xml.in.h:43
-msgid "Parameters"
+msgid "Response"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:44
@@ -1135,18 +1135,22 @@ msgid "Ip address"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:52
-msgid "Select camera profile"
+msgid "Get camera profiles"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:53
-msgid "Save camera"
+msgid "Select camera profile"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:54
-msgid "Recordings directory"
+msgid "Save camera"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:55
+msgid "Recordings directory"
+msgstr ""
+
+#: ../applications/onvif/html/onvif.xml.in.h:56
 msgid "Directory"
 msgstr ""
 
