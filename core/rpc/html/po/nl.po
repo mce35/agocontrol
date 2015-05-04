@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-04 14:16+0200\n"
+"POT-Creation-Date: 2015-05-04 14:26+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1136,9 +1136,8 @@ msgid "Recording profile"
 msgstr "SMS Configuratie"
 
 #: ../applications/onvif/html/onvif.xml.in.h:36
-#, fuzzy
-msgid "Recording duration"
-msgstr "SMS Configuratie"
+msgid "Recording duration after last motion detected"
+msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:37
 msgid "Draw detected area"
@@ -1678,6 +1677,10 @@ msgstr ""
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Recording duration"
+#~ msgstr "SMS Configuratie"
 
 #~ msgid "Twitter configuration"
 #~ msgstr "Twitter configuratie"

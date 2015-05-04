@@ -365,7 +365,13 @@ class Motion(threading.Thread):
                     self.trigger_on(now)
 
             elif self.is_recording:
-                #recording in progress, check its state
+                #recording in progress
+                #check if something moved
+                if self.something_has_moved():
+                    #extend recording time
+                    self.trigger_time = now
+            
+                #check its state
                 if now >= self.trigger_time+self.record_duration:
                     #stop recording
                     self.log.info('Motion: Stop recording')

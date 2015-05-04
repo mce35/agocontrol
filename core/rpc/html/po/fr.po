@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-04 14:16+0200\n"
+"POT-Creation-Date: 2015-05-04 14:26+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -1097,8 +1097,8 @@ msgid "Recording profile"
 msgstr "Profil d'enregistrement"
 
 #: ../applications/onvif/html/onvif.xml.in.h:36
-msgid "Recording duration"
-msgstr "Durée de l'enregistrement"
+msgid "Recording duration after last motion detected"
+msgstr "Durée d'enreg. après dernier mouvement"
 
 #: ../applications/onvif/html/onvif.xml.in.h:37
 msgid "Draw detected area"
@@ -1610,11 +1610,3 @@ msgstr "Démarrer"
 msgid "Stop"
 msgstr "Arrêter"
 
-#~ msgid "Profiles"
-#~ msgstr "Profiles"
-
-#~ msgid "OnVIF operations"
-#~ msgstr "Opérations OnVif"
-
-#~ msgid "Parameters"
-#~ msgstr "Paramètres"
