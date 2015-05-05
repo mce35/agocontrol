@@ -1283,14 +1283,30 @@ class AgoOnvif(agoclient.AgoApp):
         self.log.debug('Event handler: subject=%s : %s' % (subject, content))
         
         if subject=='event.environment.timechanged':
-            #check new day
             if content['yday']!=self.last_yday:
+                #new day detected
+
                 #set current yday
                 self.last_yday = int(content['yday'])
 
                 #new day detected, reset all timelapses
                 for internalid in self.cameras:
                     self.cameras[internalid].reset_timelapse()
+
+                #purge oldest recordings
+                recordings = self.get_recordings()
+                if recordings:
+                    now = int(time.time())
+                    delay = self.config['general']['record_delay'] * 60 #minutes to seconds
+                    for recording in recordings:
+                        if now>=recording['timestamp']+delay:
+                            #delete recording
+                            try:
+                                fullpath = os.path.join(self.config['general']['record_dir'], recording['filename'])
+                                self.log.info('Delete recording "%s"' % fullpath)
+                                os.remove(fullpath)
+                            except:
+                                self.log.exception('Unable to remove recording "%s"' % fullpath)
 
     def message_handler(self, internalid, content):
         """
@@ -1676,14 +1692,21 @@ class AgoOnvif(agoclient.AgoApp):
 
                 return self.connection.response_success(None, 'Configuration saved')
 
-            elif command=='setmotiondir':
-                if not self.__check_command_params(content, ['dir']):
+            elif command=='setrecordingconfig':
+                if not self.__check_command_params(content, ['dir', 'delay']):
                     self.log.error('Parameters are missing')
                     return self.connection.response_missing_parameters()
 
                 #check if dir exists
                 if not os.path.exists(content['dir']):
-                    return self.connection.response_failed('Specified directory doesn\'t exist. Please create it manually first.')
+                    return self.connection.response_failed('Specified directory "%s" doesn\'t exist. Please create it manually first.' % content['dir'])
+
+                try:
+                    content['delay'] = int(content['delay'])
+                except Exception as e:
+                    msg = 'Invalid "delay" parameter.'
+                    self.log.error(e.msg)
+                    self.connection.response_bad_parameters(msg)
 
                 #update all cameras
                 for internalid in self.cameras:
@@ -1691,6 +1714,7 @@ class AgoOnvif(agoclient.AgoApp):
 
                 #save to config dir
                 self.config['general']['record_dir'] = content['dir']
+                self.config['general']['record_delay'] = content['delay']
                 self.save_config()
 
                 return self.connection.response_success(None, 'Configuration saved')

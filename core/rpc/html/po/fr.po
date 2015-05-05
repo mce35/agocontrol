@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-05 16:58+0200\n"
+"POT-Creation-Date: 2015-05-05 20:09+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -1183,6 +1183,10 @@ msgstr "Répertoire des enregistrements"
 #: ../applications/onvif/html/onvif.xml.in.h:58
 msgid "Directory"
 msgstr "Répertoire"
+
+#: ../applications/onvif/html/onvif.xml.in.h:59
+msgid "Recordings purge delay"
+msgstr "Délai avant suppression"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
 msgid "luacontroller is not responding. Unable to execute action."

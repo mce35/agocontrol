@@ -31,7 +31,9 @@ function OnVIFPlugin(devices, agocontrol)
     self.motionSensitivity = ko.observable(10);
     self.motionDeviation = ko.observable(20);
     self.motionOnDuration = ko.observable(300);
-    self.motionRecordDir = ko.observable('/var/opt/agocontrol/recordings');
+    self.recordingsDir = ko.observable('/var/opt/agocontrol/recordings');
+    self.recordingsDelays = ko.observableArray([{caption:'1 day', value:1440}, {caption:'1 week', value:10080}, {caption:'2 weeks', value:20160}, {caption:'1 month', value:44640}, {caption:'2 months', value:89280}]);
+    self.recordingsDelay = ko.observable(10080); //1 week
     self.recordingTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Record motion'}, {value:2, caption:'Record timelapse'}, {value:3, caption:'Record all'}]);
     self.recordingType = ko.observable(0);
     self.recordingProfile = ko.observable(null);
@@ -97,8 +99,9 @@ function OnVIFPlugin(devices, agocontrol)
                 //set recordings
                 self.recordings(resp.data.recordings);
 
-                //set config
-                self.motionRecordDir(resp.data.general.record_dir);
+                //set recordings config
+                self.recordingsDir(resp.data.general.record_dir);
+                self.recordingsDelay(resp.data.general.record_delay);
             }
             else
             {
@@ -729,17 +732,18 @@ function OnVIFPlugin(devices, agocontrol)
         }
     };
 
-    //save motion (main motion tab)
-    self.saveMotion = function()
+    //save recordings main configuration
+    self.saveRecordingsConfig = function()
     {
-        if( $.trim(self.motionSensitivity()).length>0 )
+        if( $.trim(self.recordingsDir()).length>0 )
         {
             self.agocontrol.block('#configTab');
 
             var content = {};
             content.uuid = self.controllerUuid;
-            content.command = 'setmotiondir';
-            content.dir = self.motionRecordDir();
+            content.command = 'setrecordingconfig';
+            content.dir = self.recordingsDir();
+            content.delay = self.recordingsDelay();
             self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
                 console.log(resp);

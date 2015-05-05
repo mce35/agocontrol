@@ -483,8 +483,22 @@
                 <div class="four columns text-left field">
                     <input data-translateable="true" class="wide input" type="text" _placeholder="Directory" data-bind="textInput:motionRecordDir" />
                 </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Recordings purge delay</_span>
+                </div>
                 <div class="four columns text-left field">
-                    <div data-bind="event{mousedown:saveMotion}" class="medium primary btn">
+                    <div class="picker">
+                        <select style="width:100%;" data-bind="options:recordingsDelays, optionsValue:'value', optionsText:'caption', value:recordingsDelay"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div data-bind="event{mousedown:saveRecordingsConfig}" class="medium primary btn">
                         <_a data-translateable="true" data-bind="click:$root.noclick" href="#">Save changes</_a>
                     </div>
                 </div>
