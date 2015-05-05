@@ -54,7 +54,9 @@ function OnVIFPlugin(devices, agocontrol)
         data: self.recordings,
         columns: [
             {headerText:'Filename', rowText:'filename'},
-            {headerText:'Filesize', rowText:'size'},
+            {headerText:'Type', rowText:'type'},
+            {headerText:'Datetime', rowText:'timestamp'},
+            {headerText:'Size', rowText:'size'},
             {headerText:'Actions', rowText:''}
         ],
         rowTemplate: 'recordingsRowTemplate'
@@ -162,7 +164,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.password = self.cameraPassword();
             content.uri_token = self.motionProfile().token;
             content.uri_desc = self.motionProfile().desc;
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
                 //reset form
                 self.cameraIp(null);
@@ -197,8 +199,8 @@ function OnVIFPlugin(devices, agocontrol)
             content.uuid = self.controllerUuid;
             content.command = 'getprofiles';
             content.internalid = self.selectedCamera().internalid;
-            //TODO increase timeout, can be longer to connect and get profiles from camera
-            self.agocontrol.sendCommand(content)
+            //timeout increased because camera could take time to reply
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
                 var profiles = [];
                 for( i=0; i<resp.data.length; i++ )
@@ -263,8 +265,8 @@ function OnVIFPlugin(devices, agocontrol)
             content.port = self.cameraPort();
             content.login = self.cameraLogin();
             content.password = self.cameraPassword();
-            //TODO increase timeout, can be longer to connect and get profiles from camera
-            self.agocontrol.sendCommand(content)
+            //timeout increased because camera could take time to reply
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
                 var profiles = [];
                 for( i=0; i<resp.data.length; i++ )
@@ -381,7 +383,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.internalid = self.selectedCamera().internalid;
             content.login = self.cameraLogin();
             content.password = self.cameraPassword();
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
                 //refresh cameras list
                 self.getCameras();
@@ -544,7 +546,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.service = service;
             content.operation = operation;
             content.params = params;
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
                 var params = resp.data;
                 if( !returnRaw )
@@ -591,7 +593,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.service = self.configSetService();
             content.operation = self.configSetOperation();
             content.params = params;
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
             })
             .catch(function(err) {
@@ -624,7 +626,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.service = self.onvifService();
             content.operation = self.onvifOperation();
             content.params = {};
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
                 try
                 {
@@ -679,7 +681,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.sensitivity = self.motionSensitivity();
             content.deviation = self.motionDeviation();
             content.onduration = self.motionOnDuration();
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
                 console.log(resp);
             })
@@ -711,7 +713,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.uri_desc = self.recordingProfile().desc;
             content.duration = self.recordingDuration();
             content.contour = self.recordingContourType();
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
                 console.log(resp);
             })
@@ -738,7 +740,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.uuid = self.controllerUuid;
             content.command = 'setmotiondir';
             content.dir = self.motionRecordDir();
-            self.agocontrol.sendCommand(content)
+            self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
                 console.log(resp);
             })

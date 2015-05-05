@@ -236,7 +236,8 @@ class Motion(threading.Thread):
         #parameters
         self.connection = connection
         self.log = log
-        self.internalid = camera_internalid + '_bin'
+        self.internalid_camera = camera_internalid
+        self.internalid_binary = camera_internalid + '.motion'
         self.uri = uri
         self.sensitivity = sensitivity
         self.deviation = deviation
@@ -282,7 +283,7 @@ class Motion(threading.Thread):
             
 
         #create binary device
-        self.connection.add_device(self.internalid, "binarysensor")
+        self.connection.add_device(self.internalid_binary, "binarysensor")
 
     def trigger_on(self, current_time):
         """
@@ -290,7 +291,7 @@ class Motion(threading.Thread):
         """
         self.trigger_time = current_time
         self.trigger_enabled = True
-        self.log.info('Motion: something detected by "%s" (binary sensor on for %d seconds)' % (self.internalid, self.on_duration))
+        self.log.info('Motion: something detected by "%s" (binary sensor on for %d seconds)' % (self.internalid_binary, self.on_duration))
 
         #launch timer to disable trigger
         self.trigger_off_timer = threading.Timer(float(self.on_duration), self.trigger_off)
@@ -311,7 +312,7 @@ class Motion(threading.Thread):
                 self.record_resolution_ratio = (1,1)
 
             #init recorder
-            self.record_filename = os.path.join(self.record_dir, 'motion_%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
+            self.record_filename = os.path.join(self.record_dir, 'motion_%s_%s.%s' % (self.internalid_camera, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
             self.recorders['record'].start_recording(self.record_filename, self.record_fps, self.record_resolution)
             self.log.info('Start recording "%s" [%dx%d@%dfps] during %d seconds' % (self.record_filename, self.record_resolution[0], self.record_resolution[1], self.record_fps, self.record_duration))
 
@@ -319,18 +320,18 @@ class Motion(threading.Thread):
             self.is_recording = True
 
         #emit event
-        self.connection.emit_event(self.internalid, "event.device.statechanged", 255, "")
+        self.connection.emit_event(self.internalid_binary, "event.device.statechanged", 255, "")
         #TODO send pictureavailable event
 
     def trigger_off(self):
         """
         Disable trigger. After that motion can triggers another time
         """
-        self.log.info('"%s" is off' % self.internalid)
+        self.log.debug('"%s" is off' % self.internalid_binary)
         self.trigger_enabled = False
 
         #emit event
-        self.connection.emit_event(self.internalid, "event.device.statechanged", 0, "")
+        self.connection.emit_event(self.internalid_binary, "event.device.statechanged", 0, "")
         self.log.info('trigger_off done')
 
     def init_frame_readers(self):
@@ -448,7 +449,7 @@ class Motion(threading.Thread):
         """
         Motion process
         """
-        self.log.info('Motion thread for device "%s" is running' % self.internalid)
+        self.log.info('Motion thread for device "%s" is running' % self.internalid_camera)
 
         #init frame readers
         self.init_frame_readers()
@@ -495,7 +496,7 @@ class Motion(threading.Thread):
                     self.recorders['record'].stop_recording()
 
                     #emit event
-                    self.connection.emit_event(self.internalid, "event.device.videoavailable", self.record_filename, "")
+                    self.connection.emit_event(self.internalid_camera, "event.device.videoavailable", self.record_filename, "")
 
                 else:
                     #get frame to store
@@ -529,15 +530,11 @@ class Motion(threading.Thread):
                 #record timelapse
                 if not self.recorders['timelapse'].is_recording():
                     #get video resolution
-                    resolution = [0,0]
-                    if self.frame_readers['record']!=None:
-                        resolution = self.frame_readers['record'].get_resolution()
-                    else:
-                        resolution = self.frame_readers['motion'].get_resolution()
+                    resolution = self.frame_readers['record'].get_resolution()
                     if resolution[0]!=0:
                         #resolution available, start recording timelapse
                         self.log.info('Start recording timelapse')
-                        filename = os.path.join(self.record_dir, 'timelapse_%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d"), 'avi'))
+                        filename = os.path.join(self.record_dir, 'timelapse_%s_%s.%s' % (self.internalid_camera, datetime.now().strftime("%Y_%m_%d"), 'avi'))
                         self.recorders['timelapse'].start_recording(filename, 24, resolution)
 
                 elif last_day_frame!=now:
@@ -558,7 +555,7 @@ class Motion(threading.Thread):
                     last_day_frame = now
 
         #end of motion thread
-        self.log.info('Motion thread for device "%s" is stopped' % self.internalid)
+        self.log.info('Motion thread for device "%s" is stopped' % self.internalid_camera)
 
     def stop(self):
         """
@@ -578,7 +575,7 @@ class Motion(threading.Thread):
         #remove binary device
         try:
             #connection maybe not avaible when crashing
-            self.connection.remove_device(self.internalid)
+            self.connection.remove_device(self.internalid_binary)
         except:
             pass
 
@@ -1248,11 +1245,29 @@ class AgoOnvif(agoclient.AgoApp):
         try:
             recordings = []
             for filename in os.listdir(self.config['general']['record_dir']):
-                size = os.path.getsize( os.path.join(self.config['general']['record_dir'], filename) )
-                recordings.append({
-                    'filename': filename,
-                    'size': size
-                })
+                try:
+                    extension = os.path.splitext(filename)[1]
+                    self.log.info('get_recordings %s' % extension)
+                    if extension=='.avi':
+                        fullname = os.path.join(self.config['general']['record_dir'], filename)
+                        size = os.path.getsize(fullname)
+                        if filename.startswith('timelapse'):
+                            (_, _, year, month, day) = os.path.splitext(filename)[0].split('_')
+                            ts = time.strptime("%s %s %s" % (year, month, day), "%Y %m %d")
+                            type_ = 'timelapse'
+                        else:
+                            (_, _, year, month, day, hour, minute, second) = os.path.splitext(filename)[0].split('_')
+                            ts = time.strptime("%s %s %s %s %s %s" % (year, month, day, hour, minute, second), "%Y %m %d %H %M %S")
+                            type_ = 'motion'
+                        timestamp = int(time.mktime(ts))
+                        recordings.append({
+                            'filename': filename,
+                            'size': size,
+                            'timestamp': timestamp,
+                            'type': type_
+                        })
+                except:
+                    self.log.exception('get_recordings:')
             return recordings
         except:
             self.log.exception('Exception while getting recordings list:')
