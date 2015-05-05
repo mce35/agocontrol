@@ -1010,7 +1010,8 @@ class Camera():
 
 
 class AgoOnvif(agoclient.AgoApp):
-    DEFAULT_RECORD_DIR = '/opt/agocontrol/recordings'
+
+    DEFAULT_RECORD_DIR = '/var/opt/agocontrol/recordings'
 
     """
     Agocontrol ONVIF
@@ -1042,8 +1043,11 @@ class AgoOnvif(agoclient.AgoApp):
         #check default recordings dir
         if self.config['general']['record_dir']==self.DEFAULT_RECORD_DIR and not os.path.exists(self.DEFAULT_RECORD_DIR):
             #create default record dir
-            self.log.info('Create default recordings directory [%s]' % self.DEFAULT_RECORD_DIR)
-            os.mkdir(self.DEFAULT_RECORD_DIR)
+            try:
+                self.log.info('Create default recordings directory [%s]' % self.DEFAULT_RECORD_DIR)
+                os.mkdir(self.DEFAULT_RECORD_DIR)
+            except:
+                self.log.exception('Unable to create default recordings directory [%s]:' % self.DEFAULT_RECORD_DIR)
 
         #restore existing devices
         self.log.info('Restoring cameras:')
@@ -1247,7 +1251,6 @@ class AgoOnvif(agoclient.AgoApp):
             for filename in os.listdir(self.config['general']['record_dir']):
                 try:
                     extension = os.path.splitext(filename)[1]
-                    self.log.info('get_recordings %s' % extension)
                     if extension=='.avi':
                         fullname = os.path.join(self.config['general']['record_dir'], filename)
                         size = os.path.getsize(fullname)
@@ -1267,7 +1270,7 @@ class AgoOnvif(agoclient.AgoApp):
                             'type': type_
                         })
                 except:
-                    self.log.exception('get_recordings:')
+                    pass
             return recordings
         except:
             self.log.exception('Exception while getting recordings list:')
