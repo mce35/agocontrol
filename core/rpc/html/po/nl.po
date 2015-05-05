@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-05 12:07+0200\n"
+"POT-Creation-Date: 2015-05-05 16:58+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -676,7 +676,7 @@ msgid "Delete housemode"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:16
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../applications/onvif/html/onvif.xml.in.h:50
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -980,7 +980,7 @@ msgid "Download configuration"
 msgstr "Kamer Configuratie"
 
 #: ../applications/zwave/html/zwave.xml.in.h:67
-#: ../applications/onvif/html/onvif.xml.in.h:57
+#: ../applications/onvif/html/onvif.xml.in.h:52
 msgid "Download"
 msgstr ""
 
@@ -1180,15 +1180,20 @@ msgid "My cameras"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:47
+#, fuzzy
+msgid "My recordings"
+msgstr "SMS Configuratie"
+
+#: ../applications/onvif/html/onvif.xml.in.h:48
 msgid "Add camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../applications/onvif/html/onvif.xml.in.h:49
 #, fuzzy
-msgid "Recordings"
+msgid "Recordings config"
 msgstr "SMS Configuratie"
 
-#: ../applications/onvif/html/onvif.xml.in.h:50
+#: ../applications/onvif/html/onvif.xml.in.h:51
 #: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -1199,29 +1204,29 @@ msgstr "SMS Configuratie"
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: ../applications/onvif/html/onvif.xml.in.h:51
+#: ../applications/onvif/html/onvif.xml.in.h:53
 #, fuzzy
 msgid "Ip address"
 msgstr "Je email adres"
 
-#: ../applications/onvif/html/onvif.xml.in.h:52
+#: ../applications/onvif/html/onvif.xml.in.h:54
 msgid "Get camera profiles"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:53
+#: ../applications/onvif/html/onvif.xml.in.h:55
 msgid "Select camera profile"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:54
+#: ../applications/onvif/html/onvif.xml.in.h:56
 msgid "Save camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:55
+#: ../applications/onvif/html/onvif.xml.in.h:57
 #, fuzzy
 msgid "Recordings directory"
 msgstr "SMS Configuratie"
 
-#: ../applications/onvif/html/onvif.xml.in.h:56
+#: ../applications/onvif/html/onvif.xml.in.h:58
 msgid "Directory"
 msgstr ""
 
