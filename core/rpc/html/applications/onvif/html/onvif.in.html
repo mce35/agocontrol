@@ -470,6 +470,18 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <script type="text/html" id="recordingsRowTemplate">
+                    <td data-bind="text:filename"></td>
+                    <td data-bind="text:size"></td>
+                    <td>
+                        <div class="medium default btn">
+                            <i data-translateable="true" data-bind="click: $parent.downloadRecording" class="icon-download" _title="Download" _alt="Download"></i>
+                        </div>
+                    </td>
+                </script>
+                <div data-bind="agoGrid:recordingsGrid"></div>
+            </div>
         </div>
     </section>
 </div>

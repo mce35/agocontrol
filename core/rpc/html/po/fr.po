@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-04 14:26+0200\n"
+"POT-Creation-Date: 2015-05-05 12:07+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -946,6 +946,7 @@ msgid "Download configuration"
 msgstr "Télécharger la configuration"
 
 #: ../applications/zwave/html/zwave.xml.in.h:67
+#: ../applications/onvif/html/onvif.xml.in.h:57
 msgid "Download"
 msgstr "Télécharger"
 
@@ -1609,4 +1610,3 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
-

@@ -1241,6 +1241,23 @@ class AgoOnvif(agoclient.AgoApp):
 
         return True, ''
 
+    def get_recordings(self):
+        """
+        Return all recordings
+        """
+        try:
+            recordings = []
+            for filename in os.listdir(self.config['general']['record_dir']):
+                size = os.path.getsize( os.path.join(self.config['general']['record_dir'], filename) )
+                recordings.append({
+                    'filename': filename,
+                    'size': size
+                })
+            return recordings
+        except:
+            self.log.exception('Exception while getting recordings list:')
+            return None
+
     def event_handler(self, subject, content):
         """
         Event handler
@@ -1418,6 +1435,12 @@ class AgoOnvif(agoclient.AgoApp):
                 return self.connection.response_success(self.config['cameras'])
 
             elif command=='getconfig':
+                #append recordings to config
+                config = self.config
+                config['recordings'] = []
+                recordings = self.get_recordings()
+                if recordings:
+                    config['recordings'] = recordings
                 return self.connection.response_success(self.config)
 
             elif command=='updatecredentials':
@@ -1654,9 +1677,35 @@ class AgoOnvif(agoclient.AgoApp):
 
                 return self.connection.response_success(None, 'Configuration saved')
 
+            elif command=='getrecordings':
+                recordings = self.get_recordings()
+                if recordings!=None:
+                    return self.connection.response_success(recordings)
+                else:
+                    return self.connection.response_failed('Unable to get recording list')
+
+            elif command=='downloadfile':
+                if not self.__check_command_params(content, ['filename']):
+                    self.log.error('Parameters are missing')
+                    return self.connection.response_missing_parameters()
+
+                #get recording filename
+                filename = os.path.join(self.config['general']['record_dir'], content['filename'])
+                
+                #check if file exists
+                if os.path.exists(filename):
+                    #file exists, return full path
+                    self.log.info('Send fullpath of file to download "%s"' % filename)
+                    resp = {'filepath': filename}
+                    return self.connection.response_success(resp)
+                else:
+                    #not exists
+                    self.log.error('Trying to download unknown file "%s"' % filename)
+                    return self.connection.response_failed('File doesn\'t exist')
+
             else:
                 #request not handled
-                self.log.error('Unhandled request')
+                self.log.error('Unhandled request "%s"' % command)
                 return self.connection.response_unknown_command()
 
         elif self.cameras.has_key(internalid):
@@ -1682,12 +1731,12 @@ class AgoOnvif(agoclient.AgoApp):
 
             else:
                 #request not handled
-                self.log.error('Unhandled request')
+                self.log.error('Unhandled request "%s"' % command)
                 return self.connection.response_unknown_command()
 
         else:
             #request not handled
-            self.log.error('Unhandled request')
+            self.log.error('Unhandled request "%s"' % command)
             return self.connection.response_unknown_command()
 
 

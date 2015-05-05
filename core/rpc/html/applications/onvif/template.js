@@ -32,12 +32,13 @@ function OnVIFPlugin(devices, agocontrol)
     self.motionDeviation = ko.observable(20);
     self.motionOnDuration = ko.observable(300);
     self.motionRecordDir = ko.observable('/var/opt/agocontrol/recordings');
-    self.recordingTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Enable motion recording'}, {value:2, caption:'Enable timelapse'}, {value:3, caption:'Enable all'}]);
+    self.recordingTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Record motion'}, {value:2, caption:'Record timelapse'}, {value:3, caption:'Record all'}]);
     self.recordingType = ko.observable(0);
     self.recordingProfile = ko.observable(null);
     self.recordingDuration = ko.observable(0);
     self.recordingContourTypes = ko.observableArray([{value:0, caption:'Disabled'}, {value:1, caption:'Single box (all areas merged)'}, {value:2, caption:'All detected areas'}]);
     self.recordingContourType = ko.observable(null);
+    self.recordings = ko.observableArray([]);
 
     self.camerasGrid = new ko.agoGrid.viewModel({
         data: self.cameras,
@@ -47,6 +48,16 @@ function OnVIFPlugin(devices, agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowTemplate: 'camerasRowTemplate'
+    });
+
+    self.recordingsGrid = new ko.agoGrid.viewModel({
+        data: self.recordings,
+        columns: [
+            {headerText:'Filename', rowText:'filename'},
+            {headerText:'Filesize', rowText:'size'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowTemplate: 'recordingsRowTemplate'
     });
     
     //get agoalert uuid
@@ -81,6 +92,9 @@ function OnVIFPlugin(devices, agocontrol)
                 }
                 self.cameras(cameras);
 
+                //set recordings
+                self.recordings(resp.data.recordings);
+
                 //set config
                 self.motionRecordDir(resp.data.general.record_dir);
             }
@@ -110,8 +124,18 @@ function OnVIFPlugin(devices, agocontrol)
             }
             self.cameras(cameras);
         })
-        .catch(function(err) {
-        });
+    };
+
+    //get all recordings
+    self.getRecordings = function()
+    {
+        content = {};
+        content.uuid = self.controllerUuid;
+        content.command = 'getrecordings';
+        self.agocontrol.sendCommand(content)
+        .then(function(resp) {
+            self.recordings(resp.data);
+        })
     };
 
     //add camera
@@ -728,6 +752,13 @@ function OnVIFPlugin(devices, agocontrol)
         {
             notif.error('Parameter is missing');
         }
+    };
+
+    //download selected recording
+    self.downloadRecording = function(item, event)
+    {
+        downloadurl = location.protocol + "//" + location.hostname + (location.port && ":" + location.port) + "/download?filename="+item.filename+"&uuid="+self.controllerUuid;
+        window.open(downloadurl, '_blank');
     };
 
     //by default get config
