@@ -114,3 +114,12 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
 
 };
 
+/**
+ * Return human readable size
+ * http://stackoverflow.com/a/20463021/3333386
+ */
+function sizeToHRSize(a,b,c,d,e)
+{
+    return (b=Math,c=b.log,d=1e3,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2) +' '+(e?'kMGTPEZY'[--e]+'B':'Bytes')
+}
+
