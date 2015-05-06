@@ -216,11 +216,12 @@ class Motion(threading.Thread):
     RECORD_DAY = 2
     RECORD_ALL = 3
 
-    def __init__(self, connection, log, camera_internalid, uri, sensitivity=10 , deviation=20, on_duration=300, record_type=0, record_uri=None, record_fps=10, record_dir=None, record_duration=15, record_contour=0):
+    def __init__(self, connection, log, camera_internalid, uri, name, sensitivity=10 , deviation=20, on_duration=300, record_type=0, record_uri=None, record_fps=10, record_dir=None, record_duration=15, record_contour=0):
         """
         Constructor
         @param camera_internalid: camera internalid to generate record filename
         @param uri: video stream uri
+        @param name: device name (inventory)
         @param sensitivity: number of changes on picture detected
         @param deviation: the higher the value, the more motion is allowed
         @param on_duration: time during binary sensor stays on when motion detected
@@ -248,6 +249,7 @@ class Motion(threading.Thread):
         self.record_dir = record_dir
         self.record_duration = record_duration
         self.record_contour = record_contour
+        self.name = name
 
         #members
         self.trigger_time = 0
@@ -256,7 +258,6 @@ class Motion(threading.Thread):
         self.record_filename = None
         self.running = True
         self.recorders = {'record':None, 'timelapse':None}
-        #self.frame = None
         self.is_recording = False
         self.frame_readers = {'motion':None, 'record':None}
         self.record_resolution = [0,0]
@@ -517,9 +518,12 @@ class Motion(threading.Thread):
                                         (0,0,255), #red color
                                         2) #line thickness
 
-                        #add current date
-                        cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 4, cv2.CV_AA)
-                        cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
+                        #add some text
+                        text = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                        if self.name and len(self.name)>0:
+                            text += ' - %s' % self.name
+                        cv2.putText(frame, text, (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 4, cv2.CV_AA)
+                        cv2.putText(frame, text, (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
 
                         #write frame to recorder
                         self.recorders['record'].record(frame)
@@ -549,9 +553,12 @@ class Motion(threading.Thread):
                         #and get frame to record
                         ok, frame = self.frame_readers['record'].get_frame()
 
-                    #add current date
-                    cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 4, cv2.CV_AA)
-                    cv2.putText(frame, datetime.now().strftime("%Y/%m/%d %H:%M:%S"), (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
+                    #add some text
+                    text = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                    if self.name and len(self.name)>0:
+                        text += ' - %s' % self.name
+                    cv2.putText(frame, text, (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 4, cv2.CV_AA)
+                    cv2.putText(frame, text, (20,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.CV_AA)
 
                     #write frame to recorder
                     self.recorders['timelapse'].record(frame)
@@ -598,6 +605,11 @@ class Motion(threading.Thread):
         if self.record_type in (self.RECORD_DAY, self.RECORD_ALL):
             self.recorders['timelapse'].stop_recording()
 
+    def set_name(self, name):
+        """
+        Set name. The name will be displayed on recorded frames
+        """
+        self.name = name
 
 
 class Camera():
@@ -606,7 +618,7 @@ class Camera():
     https://github.com/quatanium/python-onvif/blob/master/onvif/cli.py
     """
 
-    def __init__(self, connection, log, ip, port, login, password, internalid, wsdl_dir='/etc/onvif/wsdl/'):
+    def __init__(self, connection, log, ip, port, login, password, internalid, name, wsdl_dir='/etc/onvif/wsdl/'):
         """
         Constructor
         @param ip: camera ip
@@ -637,6 +649,7 @@ class Camera():
         self.record_contour = Motion.CONTOUR_SINGLE
         self.motion_thread = None
         self._camera = None
+        self.name = name
 
     def cleanup(self):
         """
@@ -691,6 +704,7 @@ class Camera():
                 self.log,
                 self.internalid,
                 self.motion_uri,
+                self.name,
                 self.motion_sensitivity,
                 self.motion_deviation,
                 self.motion_on_duration,
@@ -1020,6 +1034,15 @@ class Camera():
         if self.motion_thread:
             self.motion_thread.reset_timelapse()
 
+    def set_name(self, name):
+        """
+        Set device name specified by user (inventory)
+        """
+        self.name = name
+        #update motion thread
+        if self.motion_thread:
+            self.motion_thread.set_name(name)
+
 
 class AgoOnvif(agoclient.AgoApp):
 
@@ -1036,7 +1059,9 @@ class AgoOnvif(agoclient.AgoApp):
         self.config = {}
         self.cameras = {}
         self.last_yday = int(time.strftime('%j'))
-        self.__configLock = threading.Lock()
+        self.__config_lock = threading.Lock()
+        self.inventory = {}
+        self.__inventory_lock = threading.Lock()
 
         #load config
         self.load_config()
@@ -1061,9 +1086,12 @@ class AgoOnvif(agoclient.AgoApp):
             except:
                 self.log.exception('Unable to create default recordings directory [%s]:' % self.DEFAULT_RECORD_DIR)
 
+        #fill inventory
+        self.update_camera_names()
+
         #restore existing devices
         self.log.info('Restoring cameras:')
-        self.__configLock.acquire()
+        self.__config_lock.acquire()
         for internalid in self.config['cameras']:
             res, msg = self.create_camera(self.config['cameras'][internalid]['ip'], self.config['cameras'][internalid]['port'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'], False)
             if not res:
@@ -1090,7 +1118,7 @@ class AgoOnvif(agoclient.AgoApp):
                     self.config['cameras'][internalid]['record_contour']
                 )
                 self.connection.add_device(internalid, 'camera')
-        self.__configLock.release()
+        self.__config_lock.release()
 
     def cleanup_app(self):
         """
@@ -1106,7 +1134,7 @@ class AgoOnvif(agoclient.AgoApp):
         Save config to map file
         """
         global DEVICEMAPFILE
-        self.__configLock.acquire()
+        self.__config_lock.acquire()
         error = False
         try:
             f = open(DEVICEMAPFILE, "w")
@@ -1115,7 +1143,7 @@ class AgoOnvif(agoclient.AgoApp):
         except:
             self.log.exception('Unable to save config infos')
             error = True
-        self.__configLock.release()
+        self.__config_lock.release()
         return not error
 
     def load_config(self):
@@ -1123,7 +1151,7 @@ class AgoOnvif(agoclient.AgoApp):
         Load config from map file
         """
         global DEVICEMAPFILE
-        self.__configLock.acquire()
+        self.__config_lock.acquire()
         error = False
         try:
             if os.path.exists(DEVICEMAPFILE):
@@ -1141,7 +1169,7 @@ class AgoOnvif(agoclient.AgoApp):
         except:
             self.log.exception('Unable to load devices infos')
             error = True
-        self.__configLock.release()
+        self.__config_lock.release()
         return not error
 
     def create_camera(self, ip, port, login, password, saveConfig=False):
@@ -1157,9 +1185,12 @@ class AgoOnvif(agoclient.AgoApp):
             msg = 'Camera "%s" already added. Nothing done' % internalid
             self.log.error(msg)
             return False, msg
+
+        #get device name
+        name = self.get_device_name_from_inventory(internalid)
     
         #create new instance
-        camera = Camera(self.connection, self.log, ip, port, login, password, internalid)
+        camera = Camera(self.connection, self.log, ip, port, login, password, internalid, name)
         if not camera.configure():
             #problem during camera configuration!
             msg = 'Unable to create camera "%s". Check parameters'
@@ -1203,7 +1234,7 @@ class AgoOnvif(agoclient.AgoApp):
         internalid = ip
 
         #create new instance
-        camera = Camera(self.connection, self.log, ip, port, login, password, ip)
+        camera = Camera(self.connection, self.log, ip, port, login, password, ip, "")
         if not camera.configure():
             #problem during camera configuration!
             return None
@@ -1288,6 +1319,55 @@ class AgoOnvif(agoclient.AgoApp):
             self.log.exception('Exception while getting recordings list:')
             return None
 
+    def update_camera_names(self):
+        """
+        Update all camera names according to device name specified by user in inventory
+        """
+        #get inventory
+        self.log.info('update_camera_names')
+        inventory = self.connection.get_inventory()
+        stop = False
+        if len(inventory)>0:
+            #inventory seems valid
+            self.__inventory_lock.acquire()
+            self.inventory = inventory
+
+            #check inventory
+            if not self.inventory.has_key('devices'):
+                stop = True
+
+            #check cameras
+            if not stop:
+                internalids = self.cameras.keys()
+                self.log.info('keys=%s' % internalids)
+                if len(internalids)==0:
+                    stop = True
+
+            #and update all camera names
+            if not stop:
+                for uuid in self.inventory['devices'].keys():
+                    if self.inventory['devices'][uuid] and self.inventory['devices'][uuid].has_key('internalid') and self.inventory['devices'][uuid]['internalid'] in internalids:
+                        if self.inventory['devices'][uuid].has_key('name'):
+                            name = self.inventory['devices'][uuid]['name']
+                            if len(name.strip())>0:
+                                self.log.info('set name of device "%s" with "%s"' % (self.inventory['devices'][uuid]['internalid'], name))
+                                self.cameras[self.inventory['devices'][uuid]['internalid']].set_name(name)
+            self.__inventory_lock.release()
+
+    def get_device_name_from_inventory(self, internalid):
+        """
+        Return device name from inventory.
+        No process done here, it return empty string if no name was specified by user
+        """
+        name = ''
+        self.__inventory_lock.acquire()
+        for uuid in self.inventory['devices']:
+            if self.inventory['devices'][uuid]['internalid']==internalid:
+                name = self.inventory['devices'][uuid]['name']
+                break
+        self.__inventory_lock.release()
+        return name
+
     def event_handler(self, subject, content):
         """
         Event handler
@@ -1295,6 +1375,10 @@ class AgoOnvif(agoclient.AgoApp):
         self.log.debug('Event handler: subject=%s : %s' % (subject, content))
         
         if subject=='event.environment.timechanged':
+            if int(content['minute'])%5==0:
+                #refresh camera names periodically
+                self.update_camera_names()
+
             if content['yday']!=self.last_yday:
                 #new day detected
 
