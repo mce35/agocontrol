@@ -346,8 +346,15 @@ function OnVIFPlugin(devices, agocontrol)
         var recordP = null;
         if( item.record_uri_token )
         {
-            recordP = {'token':item.record_uri_token, 'desc':item.record_uri_desc};
-            profiles.push(recordP);
+            if( item.record_uri_token==item.motion_uri_token )
+            {
+                recordP = motionP;
+            }
+            else
+            {
+                recordP = {'token':item.record_uri_token, 'desc':item.record_uri_desc};
+                profiles.push(recordP);
+            }
         }
         self.cameraProfiles(profiles);
         self.motionProfile(motionP);
