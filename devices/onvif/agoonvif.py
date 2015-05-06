@@ -276,11 +276,10 @@ class Motion(threading.Thread):
             self.log.warning('No record uri specified while recording is enabled. Recording is disabled.')
             self.record_type = self.RECORD_NONE
 
-        if not os.path.exists(self.record_dir):
+        if not self.record_dir or not os.path.exists(self.record_dir):
             #record dir doesn't exist
             self.log.warning('Recording dir "%s" doens\'t exist. Recording is disabled' % self.record_dir)
             self.record_type = self.RECORD_NONE
-            
 
         #create binary device
         self.connection.add_device(self.internalid_binary, "binarysensor")
@@ -530,7 +529,11 @@ class Motion(threading.Thread):
                 #record timelapse
                 if not self.recorders['timelapse'].is_recording():
                     #get video resolution
-                    resolution = self.frame_readers['record'].get_resolution()
+                    resolution = [0,0]
+                    if self.frame_readers['record']:
+                        resolution = self.frame_readers['record'].get_resolution()
+                    else:
+                        resolution = self.frame_readers['motion'].get_resolution()
                     if resolution[0]!=0:
                         #resolution available, start recording timelapse
                         self.log.info('Start recording timelapse')
@@ -618,8 +621,6 @@ class Camera():
         self.port = port
         self.login = login
         self.password = password
-        self.uri = None
-        self.uri_token = None
         self.internalid = internalid
         self.motion = False
         self.motion_uri = None
@@ -932,17 +933,17 @@ class Camera():
             tokens.append(profile['token'])
         return tokens
 
-    def get_uri(self, token):
+    def get_uri(self, token, login, password):
         """
         Return stream uri
         """
-        uris = self.get_uris([token])
+        uris = self.get_uris([token], login, password)
         if uris.has_key(token):
             return uris[token]
         else:
             return None
 
-    def get_uris(self, tokens):
+    def get_uris(self, tokens, login, password):
         """
         Return stream uris
         """
@@ -950,8 +951,19 @@ class Camera():
         for token in tokens:
             params = {'ProfileToken': token, 'StreamSetup': {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'UDP'}}}
             uri = self.do_operation('media', 'GetStreamUri', params)
+
             if uri and uri['Uri']:
-                uris[token] = uri['Uri']
+                uri_ = uri['Uri']
+
+                #add credential infos to uri if necessary
+                if login and len(login)>0:
+                    try:
+                        (protocol, url) = uri_.split('://')
+                        uri_ = '%s://%s:%s@%s' % (protocol, login, password, url)
+                    except:
+                        self.log.exception('Unable to append credential infos to uri:')
+
+                uris[token] = uri_
             else:
                 self.log.warning('Invalid structure GetStreamUri.Uri')
         return uris
@@ -961,8 +973,8 @@ class Camera():
         Get single camera frame
         @return: success(True/False), frame/error message:
         """
-        if self.uri:
-            cap = cv2.VideoCapture(self.uri)
+        if self.motion_uri:
+            cap = cv2.VideoCapture(self.motion_uri)
             ret,frame = cap.read()
             cap.release()
             return ret,frame
@@ -1347,15 +1359,8 @@ class AgoOnvif(agoclient.AgoApp):
                         camera = self.cameras[internalid]
 
                         #get uri from token
-                        uri = camera.get_uri(content['uri_token'])
+                        uri = camera.get_uri(content['uri_token'], content['login'], content['password'])
                         if uri:
-                            #add credential infos to uri if necessary
-                            if len(content['login'])>0:
-                                try:
-                                    (protocol, url) = uri.split('://')
-                                    uri = '%s://%s:%s@%s' % (protocol, content['login'], content['password'], url)
-                                except:
-                                    self.log.exception('Unable to append credential infos to uri:')
 
                             #set and save uri
                             camera.set_motion(False, uri, content['uri_token'])
@@ -1559,7 +1564,7 @@ class AgoOnvif(agoclient.AgoApp):
                 camera = self.cameras[internalid]
 
                 #get uri from token
-                uri = camera.get_uri(content['uri_token'])
+                uri = camera.get_uri(content['uri_token'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'])
                 if uri:
                     #set and save uri
                     camera.set_motion(self.config['cameras'][internalid]['motion'], uri, content['uri_token'])
@@ -1613,7 +1618,7 @@ class AgoOnvif(agoclient.AgoApp):
                     self.connection.response_bad_parameters(msg)
 
                 #get uri from token
-                uri = camera.get_uri(content['uri_token'])
+                uri = camera.get_uri(content['uri_token'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'])
                 if not uri:
                     msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
                     self.log.error(msg)
@@ -1679,7 +1684,7 @@ class AgoOnvif(agoclient.AgoApp):
                     self.connection.response_bad_parameters(msg)
 
                 #get uri from token
-                uri = camera.get_uri(content['uri_token'])
+                uri = camera.get_uri(content['uri_token'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'])
                 if not uri:
                     msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
                     self.log.error(msg)
