@@ -1339,7 +1339,6 @@ class AgoOnvif(agoclient.AgoApp):
             #check cameras
             if not stop:
                 internalids = self.cameras.keys()
-                self.log.info('keys=%s' % internalids)
                 if len(internalids)==0:
                     stop = True
 
@@ -1350,7 +1349,7 @@ class AgoOnvif(agoclient.AgoApp):
                         if self.inventory['devices'][uuid].has_key('name'):
                             name = self.inventory['devices'][uuid]['name']
                             if len(name.strip())>0:
-                                self.log.info('set name of device "%s" with "%s"' % (self.inventory['devices'][uuid]['internalid'], name))
+                                self.log.debug('Set name of device "%s" with "%s"' % (self.inventory['devices'][uuid]['internalid'], name))
                                 self.cameras[self.inventory['devices'][uuid]['internalid']].set_name(name)
             self.__inventory_lock.release()
 
