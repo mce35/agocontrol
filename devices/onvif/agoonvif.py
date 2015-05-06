@@ -1794,7 +1794,7 @@ class AgoOnvif(agoclient.AgoApp):
 
                 return self.connection.response_success(None, 'Configuration saved')
 
-            elif command=='setrecordingconfig':
+            elif command=='setrecordingsconfig':
                 if not self.__check_command_params(content, ['dir', 'delay']):
                     self.log.error('Parameters are missing')
                     return self.connection.response_missing_parameters()

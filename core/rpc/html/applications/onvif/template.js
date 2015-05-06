@@ -733,7 +733,7 @@ function OnVIFPlugin(devices, agocontrol)
 
             var content = {};
             content.uuid = self.controllerUuid;
-            content.command = 'setrecordingconfig';
+            content.command = 'setrecordingsconfig';
             content.dir = self.recordingsDir();
             content.delay = self.recordingsDelay();
             self.agocontrol.sendCommand(content, null, 10)
