@@ -20,8 +20,14 @@ class ONVIFError(Exception):
     def __init__(self, err):
         if isinstance(err, (WebFault)):
             self.fault = err.fault
-            self.reason = err.fault.faultstring
-            self.code = err.fault.faultcode
+            if hasattr(self.fault, 'faultstring'):
+                self.reason = err.fault.faultstring
+            else:
+                self.reason = 'Unknown reason'
+            if hasattr(self.fault, 'faultcode'):
+                self.code = err.fault.faultcode
+            else:
+                self.code = 'Unknow error code'
         elif isinstance(err, (SoapHeadersNotPermitted)):
             self.fault = err.fault
             self.reason = err.fault.Reason.Text

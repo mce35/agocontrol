@@ -114,3 +114,43 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
 
 };
 
+/**
+ * Return human readable size
+ * http://stackoverflow.com/a/20463021/3333386
+ */
+function sizeToHRSize(a,b,c,d,e)
+{
+    return (b=Math,c=b.log,d=1e3,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2) +' '+(e?'kMGTPEZY'[--e]+'B':'Bytes')
+}
+
+/**
+ * convert timestamp to human readable datetime
+ */
+function timestampToHRstring(ts)
+{
+    var d = new Date();
+    d.setTime(ts*1000);
+
+    month = d.getMonth()+1;
+    if( month<10 )
+        month = '0'+month;
+
+    day = d.getDate();
+    if( day<10 )
+        day = '0'+day;
+
+    hours = d.getHours();
+    if( hours<10 )
+        hours = '0'+hours;
+
+    minutes = d.getMinutes();
+    if( minutes<10 )
+        minutes = '0'+minutes;
+
+    seconds = d.getSeconds();
+    if( seconds<10 )
+        seconds = '0'+seconds;
+
+    return ''+d.getFullYear()+'/'+month+'/'+day+' '+hours+':'+minutes+':'+seconds;
+}
+

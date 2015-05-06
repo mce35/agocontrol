@@ -236,7 +236,8 @@ class Motion(threading.Thread):
         #parameters
         self.connection = connection
         self.log = log
-        self.internalid = camera_internalid + '_bin'
+        self.internalid_camera = camera_internalid
+        self.internalid_binary = camera_internalid + '.motion'
         self.uri = uri
         self.sensitivity = sensitivity
         self.deviation = deviation
@@ -282,7 +283,7 @@ class Motion(threading.Thread):
             
 
         #create binary device
-        self.connection.add_device(self.internalid, "binarysensor")
+        self.connection.add_device(self.internalid_binary, "binarysensor")
 
     def trigger_on(self, current_time):
         """
@@ -290,7 +291,7 @@ class Motion(threading.Thread):
         """
         self.trigger_time = current_time
         self.trigger_enabled = True
-        self.log.info('Motion: something detected by "%s" (binary sensor on for %d seconds)' % (self.internalid, self.on_duration))
+        self.log.info('Motion: something detected by "%s" (binary sensor on for %d seconds)' % (self.internalid_binary, self.on_duration))
 
         #launch timer to disable trigger
         self.trigger_off_timer = threading.Timer(float(self.on_duration), self.trigger_off)
@@ -311,7 +312,7 @@ class Motion(threading.Thread):
                 self.record_resolution_ratio = (1,1)
 
             #init recorder
-            self.record_filename = os.path.join(self.record_dir, 'motion_%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
+            self.record_filename = os.path.join(self.record_dir, 'motion_%s_%s.%s' % (self.internalid_camera, datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'avi'))
             self.recorders['record'].start_recording(self.record_filename, self.record_fps, self.record_resolution)
             self.log.info('Start recording "%s" [%dx%d@%dfps] during %d seconds' % (self.record_filename, self.record_resolution[0], self.record_resolution[1], self.record_fps, self.record_duration))
 
@@ -319,18 +320,18 @@ class Motion(threading.Thread):
             self.is_recording = True
 
         #emit event
-        self.connection.emit_event(self.internalid, "event.device.statechanged", 255, "")
+        self.connection.emit_event(self.internalid_binary, "event.device.statechanged", 255, "")
         #TODO send pictureavailable event
 
     def trigger_off(self):
         """
         Disable trigger. After that motion can triggers another time
         """
-        self.log.info('"%s" is off' % self.internalid)
+        self.log.debug('"%s" is off' % self.internalid_binary)
         self.trigger_enabled = False
 
         #emit event
-        self.connection.emit_event(self.internalid, "event.device.statechanged", 0, "")
+        self.connection.emit_event(self.internalid_binary, "event.device.statechanged", 0, "")
         self.log.info('trigger_off done')
 
     def init_frame_readers(self):
@@ -448,7 +449,7 @@ class Motion(threading.Thread):
         """
         Motion process
         """
-        self.log.info('Motion thread for device "%s" is running' % self.internalid)
+        self.log.info('Motion thread for device "%s" is running' % self.internalid_camera)
 
         #init frame readers
         self.init_frame_readers()
@@ -495,7 +496,7 @@ class Motion(threading.Thread):
                     self.recorders['record'].stop_recording()
 
                     #emit event
-                    self.connection.emit_event(self.internalid, "event.device.videoavailable", self.record_filename, "")
+                    self.connection.emit_event(self.internalid_camera, "event.device.videoavailable", self.record_filename, "")
 
                 else:
                     #get frame to store
@@ -529,15 +530,11 @@ class Motion(threading.Thread):
                 #record timelapse
                 if not self.recorders['timelapse'].is_recording():
                     #get video resolution
-                    resolution = [0,0]
-                    if self.frame_readers['record']!=None:
-                        resolution = self.frame_readers['record'].get_resolution()
-                    else:
-                        resolution = self.frame_readers['motion'].get_resolution()
+                    resolution = self.frame_readers['record'].get_resolution()
                     if resolution[0]!=0:
                         #resolution available, start recording timelapse
                         self.log.info('Start recording timelapse')
-                        filename = os.path.join(self.record_dir, 'timelapse_%s_%s.%s' % (self.internalid, datetime.now().strftime("%Y_%m_%d"), 'avi'))
+                        filename = os.path.join(self.record_dir, 'timelapse_%s_%s.%s' % (self.internalid_camera, datetime.now().strftime("%Y_%m_%d"), 'avi'))
                         self.recorders['timelapse'].start_recording(filename, 24, resolution)
 
                 elif last_day_frame!=now:
@@ -558,7 +555,7 @@ class Motion(threading.Thread):
                     last_day_frame = now
 
         #end of motion thread
-        self.log.info('Motion thread for device "%s" is stopped' % self.internalid)
+        self.log.info('Motion thread for device "%s" is stopped' % self.internalid_camera)
 
     def stop(self):
         """
@@ -578,7 +575,7 @@ class Motion(threading.Thread):
         #remove binary device
         try:
             #connection maybe not avaible when crashing
-            self.connection.remove_device(self.internalid)
+            self.connection.remove_device(self.internalid_binary)
         except:
             pass
 
@@ -1013,7 +1010,8 @@ class Camera():
 
 
 class AgoOnvif(agoclient.AgoApp):
-    DEFAULT_RECORD_DIR = '/opt/agocontrol/recordings'
+
+    DEFAULT_RECORD_DIR = '/var/opt/agocontrol/recordings'
 
     """
     Agocontrol ONVIF
@@ -1045,8 +1043,11 @@ class AgoOnvif(agoclient.AgoApp):
         #check default recordings dir
         if self.config['general']['record_dir']==self.DEFAULT_RECORD_DIR and not os.path.exists(self.DEFAULT_RECORD_DIR):
             #create default record dir
-            self.log.info('Create default recordings directory [%s]' % self.DEFAULT_RECORD_DIR)
-            os.mkdir(self.DEFAULT_RECORD_DIR)
+            try:
+                self.log.info('Create default recordings directory [%s]' % self.DEFAULT_RECORD_DIR)
+                os.mkdir(self.DEFAULT_RECORD_DIR)
+            except:
+                self.log.exception('Unable to create default recordings directory [%s]:' % self.DEFAULT_RECORD_DIR)
 
         #restore existing devices
         self.log.info('Restoring cameras:')
@@ -1241,6 +1242,40 @@ class AgoOnvif(agoclient.AgoApp):
 
         return True, ''
 
+    def get_recordings(self):
+        """
+        Return all recordings
+        """
+        try:
+            recordings = []
+            for filename in os.listdir(self.config['general']['record_dir']):
+                try:
+                    extension = os.path.splitext(filename)[1]
+                    if extension=='.avi':
+                        fullname = os.path.join(self.config['general']['record_dir'], filename)
+                        size = os.path.getsize(fullname)
+                        if filename.startswith('timelapse'):
+                            (_, _, year, month, day) = os.path.splitext(filename)[0].split('_')
+                            ts = time.strptime("%s %s %s" % (year, month, day), "%Y %m %d")
+                            type_ = 'timelapse'
+                        else:
+                            (_, _, year, month, day, hour, minute, second) = os.path.splitext(filename)[0].split('_')
+                            ts = time.strptime("%s %s %s %s %s %s" % (year, month, day, hour, minute, second), "%Y %m %d %H %M %S")
+                            type_ = 'motion'
+                        timestamp = int(time.mktime(ts))
+                        recordings.append({
+                            'filename': filename,
+                            'size': size,
+                            'timestamp': timestamp,
+                            'type': type_
+                        })
+                except:
+                    pass
+            return recordings
+        except:
+            self.log.exception('Exception while getting recordings list:')
+            return None
+
     def event_handler(self, subject, content):
         """
         Event handler
@@ -1248,14 +1283,30 @@ class AgoOnvif(agoclient.AgoApp):
         self.log.debug('Event handler: subject=%s : %s' % (subject, content))
         
         if subject=='event.environment.timechanged':
-            #check new day
             if content['yday']!=self.last_yday:
+                #new day detected
+
                 #set current yday
                 self.last_yday = int(content['yday'])
 
                 #new day detected, reset all timelapses
                 for internalid in self.cameras:
                     self.cameras[internalid].reset_timelapse()
+
+                #purge oldest recordings
+                recordings = self.get_recordings()
+                if recordings:
+                    now = int(time.time())
+                    delay = self.config['general']['record_delay'] * 60 #minutes to seconds
+                    for recording in recordings:
+                        if now>=recording['timestamp']+delay:
+                            #delete recording
+                            try:
+                                fullpath = os.path.join(self.config['general']['record_dir'], recording['filename'])
+                                self.log.info('Delete recording "%s"' % fullpath)
+                                os.remove(fullpath)
+                            except:
+                                self.log.exception('Unable to remove recording "%s"' % fullpath)
 
     def message_handler(self, internalid, content):
         """
@@ -1281,8 +1332,14 @@ class AgoOnvif(agoclient.AgoApp):
                     if not res:
                         return self.connection.response_failed(msg)
 
+                    try:
+                        content['port'] = int(content['port'])
+                    except ValueError:
+                        msg = 'Invalid "port" parameter. Must be integer'
+                        self.log.error(msg)
+                        self.connection.response_bad_parameters(msg)
+
                     #create new camera
-                    content['port'] = int(content['port'])
                     internalid = content['ip']
                     res, msg = self.create_camera(content['ip'], content['port'], content['login'], content['password'], True)
                     if res:
@@ -1292,6 +1349,14 @@ class AgoOnvif(agoclient.AgoApp):
                         #get uri from token
                         uri = camera.get_uri(content['uri_token'])
                         if uri:
+                            #add credential infos to uri if necessary
+                            if len(content['login'])>0:
+                                try:
+                                    (protocol, url) = uri.split('://')
+                                    uri = '%s://%s:%s@%s' % (protocol, content['login'], content['password'], url)
+                                except:
+                                    self.log.exception('Unable to append credential infos to uri:')
+
                             #set and save uri
                             camera.set_motion(False, uri, content['uri_token'])
                             self.config['cameras'][internalid]['motion_uri'] = uri
@@ -1418,6 +1483,12 @@ class AgoOnvif(agoclient.AgoApp):
                 return self.connection.response_success(self.config['cameras'])
 
             elif command=='getconfig':
+                #append recordings to config
+                config = self.config
+                config['recordings'] = []
+                recordings = self.get_recordings()
+                if recordings:
+                    config['recordings'] = recordings
                 return self.connection.response_success(self.config)
 
             elif command=='updatecredentials':
@@ -1635,14 +1706,21 @@ class AgoOnvif(agoclient.AgoApp):
 
                 return self.connection.response_success(None, 'Configuration saved')
 
-            elif command=='setmotiondir':
-                if not self.__check_command_params(content, ['dir']):
+            elif command=='setrecordingconfig':
+                if not self.__check_command_params(content, ['dir', 'delay']):
                     self.log.error('Parameters are missing')
                     return self.connection.response_missing_parameters()
 
                 #check if dir exists
                 if not os.path.exists(content['dir']):
-                    return self.connection.response_failed('Specified directory doesn\'t exist. Please create it manually first.')
+                    return self.connection.response_failed('Specified directory "%s" doesn\'t exist. Please create it manually first.' % content['dir'])
+
+                try:
+                    content['delay'] = int(content['delay'])
+                except Exception as e:
+                    msg = 'Invalid "delay" parameter.'
+                    self.log.error(e.msg)
+                    self.connection.response_bad_parameters(msg)
 
                 #update all cameras
                 for internalid in self.cameras:
@@ -1650,13 +1728,40 @@ class AgoOnvif(agoclient.AgoApp):
 
                 #save to config dir
                 self.config['general']['record_dir'] = content['dir']
+                self.config['general']['record_delay'] = content['delay']
                 self.save_config()
 
                 return self.connection.response_success(None, 'Configuration saved')
 
+            elif command=='getrecordings':
+                recordings = self.get_recordings()
+                if recordings!=None:
+                    return self.connection.response_success(recordings)
+                else:
+                    return self.connection.response_failed('Unable to get recording list')
+
+            elif command=='downloadfile':
+                if not self.__check_command_params(content, ['filename']):
+                    self.log.error('Parameters are missing')
+                    return self.connection.response_missing_parameters()
+
+                #get recording filename
+                filename = os.path.join(self.config['general']['record_dir'], content['filename'])
+                
+                #check if file exists
+                if os.path.exists(filename):
+                    #file exists, return full path
+                    self.log.info('Send fullpath of file to download "%s"' % filename)
+                    resp = {'filepath': filename}
+                    return self.connection.response_success(resp)
+                else:
+                    #not exists
+                    self.log.error('Trying to download unknown file "%s"' % filename)
+                    return self.connection.response_failed('File doesn\'t exist')
+
             else:
                 #request not handled
-                self.log.error('Unhandled request')
+                self.log.error('Unhandled request "%s"' % command)
                 return self.connection.response_unknown_command()
 
         elif self.cameras.has_key(internalid):
@@ -1682,12 +1787,12 @@ class AgoOnvif(agoclient.AgoApp):
 
             else:
                 #request not handled
-                self.log.error('Unhandled request')
+                self.log.error('Unhandled request "%s"' % command)
                 return self.connection.response_unknown_command()
 
         else:
             #request not handled
-            self.log.error('Unhandled request')
+            self.log.error('Unhandled request "%s"' % command)
             return self.connection.response_unknown_command()
 
 
