@@ -22,6 +22,8 @@ class ONVIFError(Exception):
             self.fault = err.fault
             if hasattr(self.fault, 'faultstring'):
                 self.reason = err.fault.faultstring
+            elif hasattr(self.fault, 'Reason') and hasattr(self.fault.Reason, 'Text'):
+                self.reason = self.fault.Reason.Text
             else:
                 self.reason = 'Unknown reason'
             if hasattr(self.fault, 'faultcode'):
