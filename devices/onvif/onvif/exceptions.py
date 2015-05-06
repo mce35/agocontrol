@@ -24,7 +24,10 @@ class ONVIFError(Exception):
                 self.reason = err.fault.faultstring
             else:
                 self.reason = 'Unknown reason'
-            self.code = err.fault.faultcode
+            if hasattr(err, fault.faultcode):
+                self.code = err.fault.faultcode
+            else:
+                self.code = 'Unknow error code'
         elif isinstance(err, (SoapHeadersNotPermitted)):
             self.fault = err.fault
             self.reason = err.fault.Reason.Text
