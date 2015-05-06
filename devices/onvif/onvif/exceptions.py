@@ -20,11 +20,11 @@ class ONVIFError(Exception):
     def __init__(self, err):
         if isinstance(err, (WebFault)):
             self.fault = err.fault
-            if hasattr(err, 'faultstring'):
+            if hasattr(self.fault, 'faultstring'):
                 self.reason = err.fault.faultstring
             else:
                 self.reason = 'Unknown reason'
-            if hasattr(err, fault.faultcode):
+            if hasattr(self.fault, 'faultcode'):
                 self.code = err.fault.faultcode
             else:
                 self.code = 'Unknow error code'
