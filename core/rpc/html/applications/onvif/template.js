@@ -107,8 +107,6 @@ function OnVIFPlugin(devices, agocontrol)
             {
                 notif.error('Invalid configuration');
             }
-        })
-        .catch(function(err) {
         });
     };
 
@@ -283,8 +281,6 @@ function OnVIFPlugin(devices, agocontrol)
                 }
                 self.cameraProfiles(profiles);
             })
-            .catch(function(err) {
-            })
             .finally(function() {
                 self.agocontrol.unblock('#configTab');
             });
@@ -310,8 +306,6 @@ function OnVIFPlugin(devices, agocontrol)
             .then(function(resp) {
                 //refresh cameras list
                 self.getCameras();
-            })
-            .catch(function(err) {
             })
             .finally(function() {
                 self.agocontrol.unblock('#agoGrid');
@@ -569,8 +563,6 @@ function OnVIFPlugin(devices, agocontrol)
                     }
                 }
             })
-            .catch(function(err) {
-            })
             .finally(function() {
                 self.agocontrol.unblock('#cameraDetails');
             });
@@ -598,8 +590,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.params = params;
             self.agocontrol.sendCommand(content, null, 20)
             .then(function(resp) {
-            })
-            .catch(function(err) {
+                //nothing to do
             })
             .finally(function() {
                 self.agocontrol.unblock('#cameraDetails');
@@ -639,8 +630,6 @@ function OnVIFPlugin(devices, agocontrol)
                 {
                     notif.error('Response is invalid ['+err+']');
                 }
-            })
-            .catch(function(err) {
             })
             .finally(function() {
                 self.agocontrol.unblock('#cameraDetails');
@@ -686,9 +675,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.onduration = self.motionOnDuration();
             self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
-                console.log(resp);
-            })
-            .catch(function(err) {
+                //nothing to do
             })
             .finally(function() {
                 self.agocontrol.unblock('#cameraDetails');
@@ -718,9 +705,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.contour = self.recordingContourType();
             self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
-                console.log(resp);
-            })
-            .catch(function(err) {
+                //nothing to do
             })
             .finally(function() {
                 self.agocontrol.unblock('#cameraDetails');
@@ -746,9 +731,7 @@ function OnVIFPlugin(devices, agocontrol)
             content.delay = self.recordingsDelay();
             self.agocontrol.sendCommand(content, null, 10)
             .then(function(resp) {
-                console.log(resp);
-            })
-            .catch(function(err) {
+                //nothing to do
             })
             .finally(function() {
                 self.agocontrol.unblock('#configTab');
