@@ -464,7 +464,6 @@ class Mail(AgoAlert):
 
         #append attachment
         #@see https://docs.python.org/2/library/email-examples.html
-        message['attachment'] = '/home/tang/japan.jpg'
         if message.has_key('attachment') and message['attachment'] and len(message['attachment'])>0:
             #there is something to attach
             #file exists?
