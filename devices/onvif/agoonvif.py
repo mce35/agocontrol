@@ -617,8 +617,6 @@ class Camera():
         self.port = port
         self.login = login
         self.password = password
-        self.uri = None
-        self.uri_token = None
         self.internalid = internalid
         self.motion = False
         self.motion_uri = None
@@ -971,8 +969,8 @@ class Camera():
         Get single camera frame
         @return: success(True/False), frame/error message:
         """
-        if self.uri:
-            cap = cv2.VideoCapture(self.uri)
+        if self.motion_uri:
+            cap = cv2.VideoCapture(self.motion_uri)
             ret,frame = cap.read()
             cap.release()
             return ret,frame
