@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <time.h>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include <tinyxml2.h>
@@ -41,11 +43,15 @@ private:
     Variant::Map deviceMap;
 
     std::string eibdurl;
+    std::string time_ga;
+    std::string date_ga;
+
     EIBConnection *eibcon;
     pthread_mutex_t mutexCon;
     boost::thread *listenerThread;
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void eventHandler(std::string subject, qpid::types::Variant::Map content);
     void setupApp();
     void cleanupApp();
 
@@ -253,6 +259,33 @@ void *AgoKnx::listener() {
     return NULL;
 }
 
+void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content) {
+    if (subject == "event.environment.timechanged") {
+        uint8_t timebytes[3];   
+        uint8_t datebytes[3];   
+        time_t now = time(NULL);
+        struct tm *lt = localtime(&now);
+        timebytes[0]=((lt->tm_wday?lt->tm_wday:7)<<5) + lt->tm_hour;
+        timebytes[1]= lt->tm_min;
+        timebytes[2] = lt->tm_sec;
+        datebytes[0] = lt->tm_mday;
+        datebytes[1] = lt->tm_mon + 1;
+        datebytes[2] = lt->tm_year - 100;
+        Telegram *tg_time = new Telegram();
+        Telegram *tg_date = new Telegram();
+        tg_time->setUserData(timebytes,3);
+        tg_time->setGroupAddress(Telegram::stringtogaddr(time_ga));
+        tg_date->setUserData(datebytes,3);
+        tg_date->setGroupAddress(Telegram::stringtogaddr(date_ga));
+        pthread_mutex_lock (&mutexCon);
+        AGO_TRACE() << "sending telegram";
+        tg_time->sendTo(eibcon);
+        AGO_TRACE() << "sending telegram";
+        tg_date->sendTo(eibcon);
+        pthread_mutex_unlock (&mutexCon);
+    }
+}
+
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
     std::string internalid = content["internalid"].asString();
     AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
@@ -362,6 +395,11 @@ void AgoKnx::setupApp() {
     }
 
     addCommandHandler();
+    if (getConfigOption("sendtime", "0")!="0") {
+        time_ga = getConfigOption("timega", "3/3/3");
+        date_ga = getConfigOption("datega", "3/3/4");
+        addEventHandler();
+    }
 
     // load xml file into map
     if (!loadDevices(devicesFile, deviceMap)) {
