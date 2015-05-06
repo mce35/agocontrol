@@ -57,7 +57,7 @@ devicetypes:
   onvifcontroller:
     name: onvif controller
     description: Onvif controller
-    commands: ["addcamera", "deletecamera", "getprofiles", "dooperation", "getcameras", "getconfig", "updatecredentials", "getdeviceinfos", "setcameraprofile", "setmotion", "setrecording", "setrecordingsconfig", "getrecordings"],
+    commands: ["addcamera", "deletecamera", "getprofiles", "dooperation", "getcameras", "getconfig", "updatecredentials", "getdeviceinfos", "setcameraprofile", "setmotion", "setrecording", "setrecordingsconfig", "getrecordings"]
 values:
   channel:
     name: channel
