@@ -10,10 +10,17 @@ import threading
 import time
 import logging
 from Queue import Queue
+import os
 #twitter libs
 import tweepy
 #mail libs
 import smtplib
+import mimetypes
+from email import encoders
+from email.message import Message
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 #sms libs
@@ -454,6 +461,41 @@ class Mail(AgoAlert):
         part2 = MIMEText(html, 'html')
         mail.attach(part1)
         mail.attach(part2)
+
+        #append attachment
+        #@see https://docs.python.org/2/library/email-examples.html
+        message['attachment'] = '/home/tang/japan.jpg'
+        if message.has_key('attachment') and message['attachment'] and len(message['attachment'])>0:
+            #there is something to attach
+            #file exists?
+            if os.path.isfile(message['attachment']):
+                ctype, encoding = mimetypes.guess_type(message['attachment'])
+                if ctype is None or encoding is not None:
+                    ctype = 'application/octet-stream'
+                maintype, subtype = ctype.split('/', 1)
+                if maintype == 'text':
+                    fp = open(message['attachment'])
+                    msg = MIMEText(fp.read(), _subtype=subtype)
+                    fp.close()
+                elif maintype == 'image':
+                    fp = open(message['attachment'], 'rb')
+                    msg = MIMEImage(fp.read(), _subtype=subtype)
+                    fp.close()
+                elif maintype == 'audio':
+                    fp = open(message['attachment'], 'rb')
+                    msg = MIMEAudio(fp.read(), _subtype=subtype)
+                    fp.close()
+                else:
+                    fp = open(message['attachment'], 'rb')
+                    msg = MIMEBase(maintype, subtype)
+                    msg.set_payload(fp.read())
+                    fp.close()
+                    #encode the payload using Base64
+                    encoders.encode_base64(msg)
+                #set the filename parameter
+                msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(message['attachment']))
+                mail.attach(msg)
+
         mails.sendmail(self.sender, message['tos'], mail.as_string())
         mails.quit()
         #if error occured, exception is throw, so return true is always true if mail succeed
