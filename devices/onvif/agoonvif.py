@@ -529,7 +529,11 @@ class Motion(threading.Thread):
                 #record timelapse
                 if not self.recorders['timelapse'].is_recording():
                     #get video resolution
-                    resolution = self.frame_readers['record'].get_resolution()
+                    resolution = [0,0]
+                    if self.frame_readers['record']:
+                        resolution = self.frame_readers['record'].get_resolution()
+                    else:
+                        resolution = self.frame_readers['motion'].get_resolution()
                     if resolution[0]!=0:
                         #resolution available, start recording timelapse
                         self.log.info('Start recording timelapse')
