@@ -1332,8 +1332,14 @@ class AgoOnvif(agoclient.AgoApp):
                     if not res:
                         return self.connection.response_failed(msg)
 
+                    try:
+                        content['port'] = int(content['port'])
+                    except ValueError:
+                        msg = 'Invalid "port" parameter. Must be integer'
+                        self.log.error(msg)
+                        self.connection.response_bad_parameters(msg)
+
                     #create new camera
-                    content['port'] = int(content['port'])
                     internalid = content['ip']
                     res, msg = self.create_camera(content['ip'], content['port'], content['login'], content['password'], True)
                     if res:
@@ -1343,6 +1349,14 @@ class AgoOnvif(agoclient.AgoApp):
                         #get uri from token
                         uri = camera.get_uri(content['uri_token'])
                         if uri:
+                            #add credential infos to uri if necessary
+                            if len(content['login'])>0:
+                                try:
+                                    (protocol, url) = uri.split('://')
+                                    uri = '%s://%s:%s@%s' % (protocol, content['login'], content['password'], url)
+                                except:
+                                    self.log.exception('Unable to append credential infos to uri:')
+
                             #set and save uri
                             camera.set_motion(False, uri, content['uri_token'])
                             self.config['cameras'][internalid]['motion_uri'] = uri
