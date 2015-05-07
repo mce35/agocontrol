@@ -425,10 +425,13 @@ class Mail(AgoAlert):
         return True
 
     def prepareMessage(self, content):
-        """prepare mail message
-           @param subject: mail subject
-           @param tos: send mail to list of tos
-           @param content: mail content"""
+        """
+        Prepare mail message
+        @param subject: mail subject
+        @param tos: send mail to list of tos
+        @param content: mail content
+        @param attachment: mail attachment
+        """
         if self.__configured:
             #check params
             if not content.has_key('tos') or not content.has_key('body') or (content.has_key('tos') and len(content['tos'])==0) or (content.has_key('body') and len(content['body'])==0):
@@ -439,7 +442,7 @@ class Mail(AgoAlert):
                 #no subject specified, add default one
                 content['subject'] = 'Agocontrol alert'
             #queue mail
-            return {'subject':content['subject'], 'tos':content['tos'], 'content':content['body']}, ''
+            return {'subject':content['subject'], 'tos':content['tos'], 'content':content['body'], 'attachment':content['attachment']}, ''
         else:
             msg = 'Unable to add mail because not configured'
             logging.error('Mail: %s' % msg)
@@ -989,7 +992,9 @@ def commandHandler(internalid, content):
         #send mail
         if content.has_key('to') and content.has_key('subject') and content.has_key('body'):
             tos = content['to'].split(';')
-            (msg, error) = mail.prepareMessage({'tos':tos, 'subject':content['subject'], 'body':content['body']})
+            if not content.has_key('attachment'):
+                content['attachment'] = ''
+            (msg, error) = mail.prepareMessage({'tos':tos, 'subject':content['subject'], 'body':content['body'], 'attachment':content['attachment']})
             if msg:
                 mail.addMessage(msg)
             else:
