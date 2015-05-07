@@ -482,7 +482,7 @@ class Motion(threading.Thread):
 
             if not self.is_recording and not self.trigger_enabled:
                 #not recording, is something moved?
-                if self.something_has_moved(): #debug or now>=started+15:
+                if self.something_has_moved(): #DEBUG or now>=started+15:
                     #something detected
                     self.trigger_on(now)
 
@@ -1139,6 +1139,7 @@ class AgoOnvif(agoclient.AgoApp):
         """
         #declare members
         self.config = {}
+        self.config_map = {}
         self.cameras = {}
         self.last_yday = int(time.strftime('%j'))
         self.__config_lock = threading.Lock()
@@ -1155,12 +1156,12 @@ class AgoOnvif(agoclient.AgoApp):
         self.connection.add_device('onvifcontroller', 'onvifcontroller')
 
         #check config
-        if not self.config.has_key('cameras') or not self.config.has_key('general'):
+        if not self.config_map.has_key('cameras'):
             self.log.fatal('Configuration file is corrupted!')
             return False
 
         #check default recordings dir
-        if self.config['general']['record_dir']==self.DEFAULT_RECORD_DIR and not os.path.exists(self.DEFAULT_RECORD_DIR):
+        if self.config['record_dir']==self.DEFAULT_RECORD_DIR and not os.path.exists(self.DEFAULT_RECORD_DIR):
             #create default record dir
             try:
                 self.log.info('Create default recordings directory [%s]' % self.DEFAULT_RECORD_DIR)
@@ -1174,8 +1175,13 @@ class AgoOnvif(agoclient.AgoApp):
         #restore existing devices
         self.log.info('Restoring cameras:')
         self.__config_lock.acquire()
-        for internalid in self.config['cameras']:
-            res, msg = self.create_camera(self.config['cameras'][internalid]['ip'], self.config['cameras'][internalid]['port'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'], False)
+        for internalid in self.config_map['cameras']:
+            res, msg = self.create_camera(
+                    self.config_map['cameras'][internalid]['ip'],
+                    self.config_map['cameras'][internalid]['port'],
+                    self.config_map['cameras'][internalid]['login'],
+                    self.config_map['cameras'][internalid]['password'],
+                    False)
             if not res:
                 self.log.warning(' - Camera "%s" [FAILED]' % internalid)
             else:
@@ -1183,21 +1189,21 @@ class AgoOnvif(agoclient.AgoApp):
                 self.log.info(' - Camera "%s"' % internalid)
                 camera = self.cameras[internalid]
                 camera.set_motion(
-                    self.config['cameras'][internalid]['motion'],
-                    self.config['cameras'][internalid]['motion_uri'],
-                    self.config['cameras'][internalid]['motion_uri_token'],
-                    self.config['cameras'][internalid]['motion_sensitivity'],
-                    self.config['cameras'][internalid]['motion_deviation'],
-                    self.config['cameras'][internalid]['motion_on_duration'],
+                    self.config_map['cameras'][internalid]['motion'],
+                    self.config_map['cameras'][internalid]['motion_uri'],
+                    self.config_map['cameras'][internalid]['motion_uri_token'],
+                    self.config_map['cameras'][internalid]['motion_sensitivity'],
+                    self.config_map['cameras'][internalid]['motion_deviation'],
+                    self.config_map['cameras'][internalid]['motion_on_duration'],
                     False
                 )
                 camera.set_recording(
-                    self.config['cameras'][internalid]['record_type'],
-                    self.config['cameras'][internalid]['record_uri'],
-                    self.config['cameras'][internalid]['record_uri_token'],
-                    self.config['general']['record_dir'],
-                    self.config['cameras'][internalid]['record_duration'],
-                    self.config['cameras'][internalid]['record_contour']
+                    self.config_map['cameras'][internalid]['record_type'],
+                    self.config_map['cameras'][internalid]['record_uri'],
+                    self.config_map['cameras'][internalid]['record_uri_token'],
+                    self.config_map['general']['record_dir'],
+                    self.config_map['cameras'][internalid]['record_duration'],
+                    self.config_map['cameras'][internalid]['record_contour']
                 )
                 self.connection.add_device(internalid, 'camera')
         self.__config_lock.release()
@@ -1219,8 +1225,13 @@ class AgoOnvif(agoclient.AgoApp):
         self.__config_lock.acquire()
         error = False
         try:
+            #save main config
+            self.set_config_option('record_dir', self.config['record_dir'])
+            self.set_config_option('record_delay', str(self.config['record_delay']))
+
+            #save cameras
             f = open(DEVICEMAPFILE, "w")
-            f.write(json.dumps(self.config))
+            f.write(json.dumps(self.config_map))
             f.close()
         except:
             self.log.exception('Unable to save config infos')
@@ -1236,18 +1247,25 @@ class AgoOnvif(agoclient.AgoApp):
         self.__config_lock.acquire()
         error = False
         try:
+            #load main config
+            self.config = {}
+            self.config['record_dir'] = self.get_config_option('record_dir', '/var/opt/agocontrol/recordings')
+            self.config['record_delay'] = int(self.get_config_option('record_delay', 10080))
+
+            #load cameras
             if os.path.exists(DEVICEMAPFILE):
                 f = open(DEVICEMAPFILE, "r")
                 j = f.readline()
                 f.close()
-                self.config = json.loads(j)
+                self.config_map = json.loads(j)
             else:
-                default = {'general':{'record_dir':self.DEFAULT_RECORD_DIR, 'record_delay':10080}, 'cameras':{}}
+                #TODO default = {'general':{'record_dir':self.DEFAULT_RECORD_DIR, 'record_delay':10080}, 'cameras':{}}
+                default = {'cameras':{}}
                 self.log.debug('Create default empty config file "%s"' % DEVICEMAPFILE)
                 f = open(DEVICEMAPFILE, "w")
                 f.write(json.dumps(default))
                 f.close()
-                self.config = default
+                self.config_map = default
         except:
             self.log.exception('Unable to load devices infos')
             error = True
@@ -1303,7 +1321,7 @@ class AgoOnvif(agoclient.AgoApp):
 
             #save device map
             if saveConfig:
-                self.config['cameras'][internalid] = config
+                self.config_map['cameras'][internalid] = config
                 self.save_config()
 
             return True, ''
@@ -1336,7 +1354,7 @@ class AgoOnvif(agoclient.AgoApp):
 
         #delete camera from internal structures
         self.cameras.pop(internalid)
-        self.config['cameras'].pop(internalid)
+        self.config_map['cameras'].pop(internalid)
         self.save_config()
 
         return True, ''
@@ -1373,11 +1391,11 @@ class AgoOnvif(agoclient.AgoApp):
         """
         try:
             recordings = []
-            for filename in os.listdir(self.config['general']['record_dir']):
+            for filename in os.listdir(self.config['record_dir']):
                 try:
                     extension = os.path.splitext(filename)[1]
                     if extension=='.avi':
-                        fullname = os.path.join(self.config['general']['record_dir'], filename)
+                        fullname = os.path.join(self.config['record_dir'], filename)
                         size = os.path.getsize(fullname)
                         if filename.startswith('timelapse'):
                             (_, _, year, month, day) = os.path.splitext(filename)[0].split('_')
@@ -1473,12 +1491,12 @@ class AgoOnvif(agoclient.AgoApp):
                 recordings = self.get_recordings()
                 if recordings:
                     now = int(time.time())
-                    delay = self.config['general']['record_delay'] * 60 #minutes to seconds
+                    delay = self.config['record_delay'] * 60 #minutes to seconds
                     for recording in recordings:
                         if now>=recording['timestamp']+delay:
                             #delete recording
                             try:
-                                fullpath = os.path.join(self.config['general']['record_dir'], recording['filename'])
+                                fullpath = os.path.join(self.config['record_dir'], recording['filename'])
                                 self.log.info('Delete recording "%s"' % fullpath)
                                 os.remove(fullpath)
                             except:
@@ -1528,9 +1546,9 @@ class AgoOnvif(agoclient.AgoApp):
 
                             #set and save uri
                             camera.set_motion(False, uri, content['uri_token'])
-                            self.config['cameras'][internalid]['motion_uri'] = uri
-                            self.config['cameras'][internalid]['motion_uri_token'] = content['uri_token']
-                            self.config['cameras'][internalid]['motion_uri_desc'] = content['uri_desc']
+                            self.config_map['cameras'][internalid]['motion_uri'] = uri
+                            self.config_map['cameras'][internalid]['motion_uri_token'] = content['uri_token']
+                            self.config_map['cameras'][internalid]['motion_uri_desc'] = content['uri_desc']
                             self.save_config()
                         else:
                             msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
@@ -1649,16 +1667,22 @@ class AgoOnvif(agoclient.AgoApp):
                     return self.connection.response_success(resp)
 
             elif command=='getcameras':
-                return self.connection.response_success(self.config['cameras'])
+                return self.connection.response_success(self.config_map['cameras'])
 
             elif command=='getconfig':
-                #append recordings to config
-                config = self.config
+                #append cameras
+                config = self.config_map
+
+                #append general config
+                config['general'] = self.config
+
+                #append recordings
                 config['recordings'] = []
                 recordings = self.get_recordings()
                 if recordings:
                     config['recordings'] = recordings
-                return self.connection.response_success(self.config)
+
+                return self.connection.response_success(config)
 
             elif command=='updatecredentials':
                 if not self.__check_command_params(content, ['internalid', 'login', 'password']):
@@ -1681,8 +1705,8 @@ class AgoOnvif(agoclient.AgoApp):
                 #TODO update uri
 
                 #then update on controller
-                self.config['cameras'][internalid]['login'] = content['login']
-                self.config['cameras'][internalid]['password'] = content['password']
+                self.config_map['cameras'][internalid]['login'] = content['login']
+                self.config_map['cameras'][internalid]['password'] = content['password']
                 self.save_config()
 
                 return self.connection.response_success(None, 'Credentials saved')
@@ -1728,13 +1752,13 @@ class AgoOnvif(agoclient.AgoApp):
                 camera = self.cameras[internalid]
 
                 #get uri from token
-                uri = camera.get_uri(content['uri_token'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'])
+                uri = camera.get_uri(content['uri_token'], self.config_map['cameras'][internalid]['login'], self.config_map['cameras'][internalid]['password'])
                 if uri:
                     #set and save uri
-                    camera.set_motion(self.config['cameras'][internalid]['motion'], uri, content['uri_token'])
-                    self.config['cameras'][internalid]['motion_uri'] = uri
-                    self.config['cameras'][internalid]['motion_uri_token'] = content['uri_token']
-                    self.config['cameras'][internalid]['motion_uri_desc'] = content['uri_desc']
+                    camera.set_motion(self.config_map['cameras'][internalid]['motion'], uri, content['uri_token'])
+                    self.config_map['cameras'][internalid]['motion_uri'] = uri
+                    self.config_map['cameras'][internalid]['motion_uri_token'] = content['uri_token']
+                    self.config_map['cameras'][internalid]['motion_uri_desc'] = content['uri_desc']
                     self.save_config()
                 else:
                     msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
@@ -1782,7 +1806,7 @@ class AgoOnvif(agoclient.AgoApp):
                     self.connection.response_bad_parameters(msg)
 
                 #get uri from token
-                uri = camera.get_uri(content['uri_token'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'])
+                uri = camera.get_uri(content['uri_token'], self.config_map['cameras'][internalid]['login'], self.config_map['cameras'][internalid]['password'])
                 if not uri:
                     msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
                     self.log.error(msg)
@@ -1799,13 +1823,13 @@ class AgoOnvif(agoclient.AgoApp):
                 )
 
                 #save new config
-                self.config['cameras'][internalid]['motion'] = content['enable']
-                self.config['cameras'][internalid]['motion_uri'] = uri
-                self.config['cameras'][internalid]['motion_uri_token'] = content['uri_token']
-                self.config['cameras'][internalid]['motion_uri_desc'] = content['uri_desc']
-                self.config['cameras'][internalid]['motion_sensitivity'] = content['sensitivity']
-                self.config['cameras'][internalid]['motion_deviation'] = content['deviation']
-                self.config['cameras'][internalid]['motion_on_duration'] = content['onduration']
+                self.config_map['cameras'][internalid]['motion'] = content['enable']
+                self.config_map['cameras'][internalid]['motion_uri'] = uri
+                self.config_map['cameras'][internalid]['motion_uri_token'] = content['uri_token']
+                self.config_map['cameras'][internalid]['motion_uri_desc'] = content['uri_desc']
+                self.config_map['cameras'][internalid]['motion_sensitivity'] = content['sensitivity']
+                self.config_map['cameras'][internalid]['motion_deviation'] = content['deviation']
+                self.config_map['cameras'][internalid]['motion_on_duration'] = content['onduration']
                 self.save_config()
 
                 return self.connection.response_success(None, 'Configuration saved')
@@ -1848,7 +1872,7 @@ class AgoOnvif(agoclient.AgoApp):
                     self.connection.response_bad_parameters(msg)
 
                 #get uri from token
-                uri = camera.get_uri(content['uri_token'], self.config['cameras'][internalid]['login'], self.config['cameras'][internalid]['password'])
+                uri = camera.get_uri(content['uri_token'], self.config_map['cameras'][internalid]['login'], self.config_map['cameras'][internalid]['password'])
                 if not uri:
                     msg = 'Problem getting camera URI with token "%s"' % content['uri_token']
                     self.log.error(msg)
@@ -1859,18 +1883,18 @@ class AgoOnvif(agoclient.AgoApp):
                     content['type'],
                     uri,
                     content['uri_token'],
-                    self.config['general']['record_dir'],
+                    self.config['record_dir'],
                     content['duration'],
                     content['contour']
                 )
 
                 #save new config
-                self.config['cameras'][internalid]['record_type'] = content['type']
-                self.config['cameras'][internalid]['record_uri'] = uri
-                self.config['cameras'][internalid]['record_uri_token'] = content['uri_token']
-                self.config['cameras'][internalid]['record_uri_desc'] = content['uri_desc']
-                self.config['cameras'][internalid]['record_duration'] = content['duration']
-                self.config['cameras'][internalid]['record_contour'] = content['contour']
+                self.config_map['cameras'][internalid]['record_type'] = content['type']
+                self.config_map['cameras'][internalid]['record_uri'] = uri
+                self.config_map['cameras'][internalid]['record_uri_token'] = content['uri_token']
+                self.config_map['cameras'][internalid]['record_uri_desc'] = content['uri_desc']
+                self.config_map['cameras'][internalid]['record_duration'] = content['duration']
+                self.config_map['cameras'][internalid]['record_contour'] = content['contour']
                 self.save_config()
 
                 return self.connection.response_success(None, 'Configuration saved')
@@ -1896,8 +1920,8 @@ class AgoOnvif(agoclient.AgoApp):
                     self.cameras[internalid].set_record_dir(content['dir'])
 
                 #save to config dir
-                self.config['general']['record_dir'] = content['dir']
-                self.config['general']['record_delay'] = content['delay']
+                self.config['record_dir'] = content['dir']
+                self.config['record_delay'] = content['delay']
                 self.save_config()
 
                 return self.connection.response_success(None, 'Configuration saved')
@@ -1915,7 +1939,7 @@ class AgoOnvif(agoclient.AgoApp):
                     return self.connection.response_missing_parameters()
 
                 #get recording filename
-                filename = os.path.join(self.config['general']['record_dir'], content['filename'])
+                filename = os.path.join(self.config['record_dir'], content['filename'])
                 
                 #check if file exists
                 if os.path.exists(filename):
