@@ -77,3 +77,6 @@ events:
   event.device.videoavailable:
     description: a video is available
     parameters: [filename]
+  event.device.pictureavailable:
+    description: a picture is available
+    parameters: [filename]

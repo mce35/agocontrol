@@ -8,6 +8,7 @@ import json
 import base64
 from datetime import datetime
 import Queue
+import uuid
 #ago
 import agoclient
 #onvif
@@ -216,12 +217,13 @@ class Motion(threading.Thread):
     RECORD_DAY = 2
     RECORD_ALL = 3
 
-    def __init__(self, connection, log, camera_internalid, uri, name, sensitivity=10 , deviation=20, on_duration=300, record_type=0, record_uri=None, record_fps=10, record_dir=None, record_duration=15, record_contour=0):
+    def __init__(self, connection, log, camera_internalid, uri, name, trigger_callback, sensitivity=10 , deviation=20, on_duration=300, record_type=0, record_uri=None, record_fps=10, record_dir=None, record_duration=15, record_contour=0):
         """
         Constructor
         @param camera_internalid: camera internalid to generate record filename
         @param uri: video stream uri
         @param name: device name (inventory)
+        @param trigger_callback: called when motion has detected something (used to send a picture)
         @param sensitivity: number of changes on picture detected
         @param deviation: the higher the value, the more motion is allowed
         @param on_duration: time during binary sensor stays on when motion detected
@@ -240,6 +242,8 @@ class Motion(threading.Thread):
         self.internalid_camera = camera_internalid
         self.internalid_binary = camera_internalid + '.motion'
         self.uri = uri
+        self.name = name
+        self.trigger_callback = trigger_callback
         self.sensitivity = sensitivity
         self.deviation = deviation
         self.on_duration = on_duration
@@ -249,7 +253,6 @@ class Motion(threading.Thread):
         self.record_dir = record_dir
         self.record_duration = record_duration
         self.record_contour = record_contour
-        self.name = name
 
         #members
         self.trigger_time = 0
@@ -321,7 +324,9 @@ class Motion(threading.Thread):
 
         #emit event
         self.connection.emit_event(self.internalid_binary, "event.device.statechanged", 255, "")
-        #TODO send pictureavailable event
+        if self.trigger_callback:
+            self.trigger_callback()
+
 
     def trigger_off(self):
         """
@@ -496,7 +501,7 @@ class Motion(threading.Thread):
                     self.recorders['record'].stop_recording()
 
                     #emit event
-                    self.connection.emit_event(self.internalid_camera, "event.device.videoavailable", self.record_filename, "")
+                    self.connection.emit_event_raw(self.internalid_camera, "event.device.videoavailable", {'filename':self.record_filename})
 
                 else:
                     #get frame to store
@@ -650,12 +655,23 @@ class Camera():
         self.motion_thread = None
         self._camera = None
         self.name = name
+        self.__purge_timers_lock = threading.Lock()
+        self.purge_timers = []
 
     def cleanup(self):
         """
+        Cleanup instance
         """
+        #stop motion thread if necessary
         if self.motion_thread:
             self.motion_thread.stop()
+
+        #stop all timers
+        self.__purge_timers_lock.acquire()
+        while len(self.purge_timers)!=0:
+            timer = self.purge_timers.pop()
+            timer.cancel()
+        self.__purge_timers_lock.release()
 
     def configure(self):
         """
@@ -705,6 +721,7 @@ class Camera():
                 self.internalid,
                 self.motion_uri,
                 self.name,
+                self.motion_triggered,
                 self.motion_sensitivity,
                 self.motion_deviation,
                 self.motion_on_duration,
@@ -982,16 +999,22 @@ class Camera():
                 self.log.warning('Invalid structure GetStreamUri.Uri')
         return uris
 
-    def capture_frame(self):
+    def capture_frame(self, record_uri=False):
         """
         Get single camera frame
+        @param record_uri: if set to True, use record_uri instead of motion_uri. If set to True and record_uri is not set, motion_uri is used
         @return: success(True/False), frame/error message:
         """
-        if self.motion_uri:
-            cap = cv2.VideoCapture(self.motion_uri)
+        uri = self.motion_uri
+        if record_uri and self.record_uri:
+            uri = self.record_uri
+
+        if uri:
+            cap = cv2.VideoCapture(uri)
             ret,frame = cap.read()
             cap.release()
             return ret,frame
+
         else:
             self.log.warning('No URI configured')
             return False,'No URI configured'
@@ -1003,7 +1026,7 @@ class Camera():
         """
         return cv2.imwrite(filename, frame)
 
-    def get_string_buffer(self, frame, format='.jpg', quality=100):
+    def get_string_buffer(self, frame, format='.jpg', quality=90):
         """
         Return frame into jpeg string buffer
         @info if quality is too high, qpid reject picture and crash module
@@ -1023,6 +1046,7 @@ class Camera():
             else:
                 #error during conversion
                 return False, None
+
         except Exception as e:
             self.log.exception('Exception in getBuffer:')
             return False, None 
@@ -1042,6 +1066,64 @@ class Camera():
         #update motion thread
         if self.motion_thread:
             self.motion_thread.set_name(name)
+
+    def __delete_temp_picture(self, path):
+        """
+        Delete specified file
+        """
+        if os.path.exists(path):
+            try:
+                os.remove(path)
+            except:
+                self.log.exception('Unable to delete specified file "%s"' % path)
+        else:
+            self.log.warning('Specified file "%s" doesn\'t exist' % path)
+
+        #remove timer from list
+        self.__purge_timers_lock.acquire()
+        for timer in self.purge_timers:
+            if timer.name==path:
+                self.purge_timers.remove(timer)
+        self.__purge_timers_lock.release()
+
+    def motion_triggered(self):
+        """
+        Motion instance callbacks this function when something detected
+        """
+        #get current picture
+        res,frame = self.capture_frame(True)
+        if not res:
+            self.log.warning('Motion triggered: unable to capture frame')
+            return
+
+        #convert into string buffer
+        ret,buf = self.get_string_buffer(frame)
+        if not res:
+            self.log.warning('Motion triggered: unable to convert frame')
+            return
+
+        #write frame into temp file
+        path = os.path.join('/tmp', '%s.jpg' % uuid.uuid4())
+        try:
+            #write picture data
+            f = open(path, 'wb')
+            f.write(buf)
+            f.close()
+
+            #delete file after some seconds
+            t = threading.Timer(60.0, self.__delete_temp_picture, [path])
+            t.setName(path)
+            t.start()
+            self.__purge_timers_lock.acquire()
+            self.purge_timers.append(t)
+            self.__purge_timers_lock.release()
+
+            #send event
+            self.connection.emit_event_raw(self.internalid, "event.device.pictureavailable", {'filename':path})
+
+        except:
+            self.log.exception('Unable to write picture to disk:')
+
 
 
 class AgoOnvif(agoclient.AgoApp):
@@ -1160,7 +1242,7 @@ class AgoOnvif(agoclient.AgoApp):
                 f.close()
                 self.config = json.loads(j)
             else:
-                default = {'general':{'record_dir':self.DEFAULT_RECORD_DIR}, 'cameras':{}}
+                default = {'general':{'record_dir':self.DEFAULT_RECORD_DIR, 'record_delay':10080}, 'cameras':{}}
                 self.log.debug('Create default empty config file "%s"' % DEVICEMAPFILE)
                 f = open(DEVICEMAPFILE, "w")
                 f.write(json.dumps(default))
@@ -1324,7 +1406,6 @@ class AgoOnvif(agoclient.AgoApp):
         Update all camera names according to device name specified by user in inventory
         """
         #get inventory
-        self.log.info('update_camera_names')
         inventory = self.connection.get_inventory()
         stop = False
         if len(inventory)>0:
