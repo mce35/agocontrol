@@ -33,7 +33,7 @@
                         <ko opts="if: state()==0">
                         <_span data-translateable="true">CLOSED</_span>
                         </ko>
-                        <ko opts="if: (state()!=0 and state()!=50 and state()!=100)">
+                        <ko opts="if: (state()!=0 and state()!=50 and state()!=100 and state()!=150)">
                         <_span data-translateable="true">OPENED</_span>
                         </ko>
                         <ko opts="if: state()==50">
@@ -43,7 +43,7 @@
                         <_span data-translateable="true">CLOSING</_span>
                         </ko>
                         <ko opts="if: state()==150">
-                        <_span data-translateable="true">STOPPED</_span>
+                        <_span data-translateable="true">PARTIAL</_span>
                         </ko>
                     </div>
                 </div>

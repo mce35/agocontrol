@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-05 20:09+0200\n"
+"POT-Creation-Date: 2015-05-07 17:02+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -126,8 +126,8 @@ msgid "CLOSING"
 msgstr "FERMETURE"
 
 #: ../templates/devices/drapes.xml.in.h:5
-msgid "STOPPED"
-msgstr "STOPPÉ"
+msgid "PARTIAL"
+msgstr "PARTIEL"
 
 #: ../templates/devices/drapes.xml.in.h:6
 msgid "OPEN"
@@ -1618,3 +1618,4 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
+
