@@ -23,7 +23,7 @@ STATE_OPENED = 1
 STATE_CLOSED = 0
 STATE_OPENING = 50
 STATE_CLOSING = 100
-STATE_STOPPED = 150
+STATE_PARTIAL = 150
 DEVICE_BOARD = ''
 DEVICE_OUTPUT_SWITCH = 'oswitch'
 DEVICE_OUTPUT_DRAPES = 'odrapes'
@@ -46,7 +46,7 @@ devicesLock = threading.Lock()
 getBoardsStatusTask = None
 
 #logging.basicConfig(filename='agoipx800.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s : %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
 logger = logging.getLogger('agoipx800')
 
 
@@ -339,41 +339,68 @@ def ipxCallback(ipxIp, content):
                     elif device['type']==DEVICE_OUTPUT_DRAPES:
                         if not durations.has_key(internalid):
                             durations[internalid] = {'start':0, 'stop':0}
+
                         if outputid==device['open']:
                             #open action
                             if content[item]==0:
                                 if device['state']==STATE_OPENING:
                                     #drapes opened
-                                    logger.info('Drapes "%s@%s" opened' % (ipxIp, internalid))
-                                    emitDeviceValueChanged(ipxIp, internalid, STATE_OPENED)
                                     durations[internalid]['stop'] = int(time.time())
                                     logger.debug('duration[%s]: start=%d stop=%d' % (internalid, durations[internalid]['start'], durations[internalid]['stop']))
-                                    updateDeviceDuration(ipxIp, internalid, durations[internalid])
+                                    #check if fully opened
+                                    if devices[ipxIp][internalid]['duration']:
+                                        dur = durations[internalid]['stop'] - durations[internalid]['start']
+                                        if dur==devices[ipxIp][internalid]['duration']:
+                                            #fully opened
+                                            logger.info('Drapes "%s@%s" opened' % (ipxIp, internalid))
+                                            emitDeviceValueChanged(ipxIp, internalid, STATE_OPENED)
+                                        else:
+                                            logger.info('Drapes "%s@%s" partially opened' % (ipxIp, internalid))
+                                            emitDeviceValueChanged(ipxIp, internalid, STATE_PARTIAL)
+                                    else:
+                                        #update duration
+                                        updateDeviceDuration(ipxIp, internalid, durations[internalid])
+
                             elif content[item]==1:
                                 if device['state']==STATE_CLOSED:
                                     #drapes is opening
                                     logger.info('Drapes "%s@%s" is opening' % (ipxIp, internalid))
                                     emitDeviceValueChanged(ipxIp, internalid, STATE_OPENING)
                                     durations[internalid]['start'] = int(time.time())
+
                             else:
                                 #unknown value
                                 logger.warning('Unknown value received for drapes open action [%s]' % str(content[item]))
+
                         elif outputid==device['close']:
                             #close action
                             if content[item]==0:
                                 if device['state']==STATE_CLOSING:
                                     #drapes closed
-                                    logger.info('Drapes "%s@%s" closed' % (ipxIp, internalid))
-                                    emitDeviceValueChanged(ipxIp, internalid, STATE_CLOSED)
                                     durations[internalid]['stop'] = int(time.time())
                                     logger.debug('duration[%s]: start=%d stop=%d' % (internalid, durations[internalid]['start'], durations[internalid]['stop']))
-                                    updateDeviceDuration(ipxIp, internalid, durations[internalid])
+                                    #check if fully closed
+                                    if devices[ipxIp][internalid]['duration']:
+                                        dur = durations[internalid]['stop'] - durations[internalid]['start']
+                                        if dur==devices[ipxIp][internalid]['duration']:
+                                            #fully closed
+                                            logger.info('Drapes "%s@%s" closed' % (ipxIp, internalid))
+                                            emitDeviceValueChanged(ipxIp, internalid, STATE_CLOSED)
+                                        else:
+                                            #partially closed
+                                            logger.info('Drapes "%s@%s" partially closed' % (ipxIp, internalid))
+                                            emitDeviceValueChanged(ipxIp, internalid, STATE_PARTIAL)
+                                    else:
+                                        #update duration
+                                        updateDeviceDuration(ipxIp, internalid, durations[internalid])
+
                             elif content[item]==1:
                                 if device['state']==STATE_OPENED:
                                     #Drapes is closing
                                     logger.info('Drapes "%s@%s" is closing' % (ipxIp, internalid))
                                     emitDeviceValueChanged(ipxIp, internalid, STATE_CLOSING)
                                     durations[internalid]['start'] = int(time.time())
+
                             else:
                                 #unknown value
                                 logger.warning('Unknown value received for drapes close action [%s]' % str(content[item]))
@@ -874,10 +901,10 @@ def stopDrapes(ipxIp, internalid):
     if dev:
         if dev['state']==STATE_OPENING:
             ipx800v3.setOutput(ipxIp, dev['open'], 0)
-            client.update_device_state(internalid, STATE_STOPPED)
+            client.update_device_state(internalid, STATE_PARTIAL)
         elif dev['state']==STATE_CLOSING:
             ipx800v3.setOutput(ipxIp, dev['close'], 0)
-            client.update_device_state(internalid, STATE_STOPPED)
+            client.update_device_state(internalid, STATE_PARTIAL)
     else:
         logger.error('stopDrapes: no device found for "%s@%s"' % (str(ipxIp), str(internalid)))
         return False
