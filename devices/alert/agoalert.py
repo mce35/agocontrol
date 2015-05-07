@@ -204,7 +204,7 @@ class SMSFreeMobile(AgoAlert):
         req.close()
         logging.debug('url=%s status=%s' % (url, str(status)))
         if status==200:
-            return True, ''
+            return True, 'SMS sent successfully'
         else:
             return False, status
 
@@ -277,7 +277,7 @@ class SMS12voip(AgoAlert):
         req.close()
         logging.debug('url=%s status=%s' % (url, str(status)))
         if status==200:
-            return True, ''
+            return True, 'SMS sent successfully'
         else:
             return False, status
 
@@ -372,7 +372,7 @@ class Twitter(AgoAlert):
         logging.debug(res);
         #check result
         if res.text.find(message['tweet'])!=-1:
-            return True, ''
+            return True, 'Tweet successful'
         else:
             return False, 'Message not tweeted'
 
@@ -501,7 +501,7 @@ class Mail(AgoAlert):
         mails.sendmail(self.sender, message['tos'], mail.as_string())
         mails.quit()
         #if error occured, exception is throw, so return true is always true if mail succeed
-        return True, ''
+        return True, 'Mail sent successfully'
 
 class Pushover(AgoAlert):
     """Class for push message sending for ios and android"""
@@ -582,7 +582,7 @@ class Pushover(AgoAlert):
                     return False, str(resp['errors'])
                 else:
                     logging.info('Pushover: message received by user')
-                    return True, ''
+                    return True, 'Message pushed successfully'
             except:
                 logging.exception('Pushover: Exception push message')
                 return False, str(e.message)
@@ -719,7 +719,7 @@ class Pushbullet(AgoAlert):
         if count==0:
             return False, 'Nothing pushed'
         else:
-            return True, ''
+            return True, 'Message pushed successfully'
 
 class Notifymyandroid(AgoAlert):
     """Class push notifications using notifymyandroid"""
@@ -758,9 +758,12 @@ class Notifymyandroid(AgoAlert):
         self.__configured = True
         return True
 
-    def prepareMessage(self, message, priority='0'):
-        """Add push
-           @param message: push notification"""
+    def prepareMessage(self, content, priority='0'):
+        """
+        Add push
+        @param message: push notification
+        @param priority: push priority
+        """
         if self.__configured:
             #check params
             if not content.has_key('message') or (content.has_key('message') and len(content['message'])==0) or not content.has_key('priority') or (content.has_key('priority') and len(content['priority'])==0):
@@ -796,7 +799,7 @@ class Notifymyandroid(AgoAlert):
                     code = dom.firstChild.childNodes[0].getAttribute('code')
                     if result=='success':
                         logging.info('Notifymyandoid: message pushed successfully')
-                        return True, ''
+                        return True, 'Message pushed successfully'
                     elif result=='error':
                         logging.error('Notifymyandroid: received error code "%s"' % code)
                         return False, 'error code %s' % code
@@ -933,7 +936,7 @@ def commandHandler(internalid, content):
                 if msg:
                     (error, msg) = push.test(msg)
                     if not error:
-                        return {'error':0, 'msg':'Push notification sent'}
+                        return {'error':0, 'msg':'Message pushed successfully'}
                     else:
                         logging.error('CommandHandler: failed to send push message with pushbullet [test]')
                         return {'error':1, 'msg':'Failed to send push notification (%s)' % msg}
@@ -944,7 +947,7 @@ def commandHandler(internalid, content):
                 if msg:
                     (error, msg) = push.test(msg)
                     if not error:
-                        return {'error':0, 'msg':'Push sent successfully'}
+                        return {'error':0, 'msg':'Message pushed successfully'}
                     else:
                         logging.error('CommandHandler: failed to send push message with pushover [test]')
                         return {'error':1, 'msg':'Failed to send push notification (%s)' % msg}
@@ -955,7 +958,7 @@ def commandHandler(internalid, content):
                 if msg:
                     (error, msg) = push.test(msg)
                     if not error:
-                        return {'error':0, 'msg':''}
+                        return {'error':0, 'msg':'Message pushed successfully'}
                     else:
                         logging.error('CommandHandler: failed to send push message with notifymyandroid [test]')
                         return {'error':1, 'msg':'Failed to send push notification (%s)' % msg}
@@ -1159,16 +1162,29 @@ def commandHandler(internalid, content):
                             else:
                                 logging.error('commandHandler: parameters missing for Pushbullet config')
                                 return {'error':1, 'msg':'Internal error'}
-                elif provider=='pushover' or provider=='notifymyandroid':
-                    if content.has_key('param3'):
+
+                elif provider=='pushover':
+                    if content.has_key('param3') and content.has_key('param4'):
                         if push.setConfig(content['param3'], content['param4']):
                             return {'error':0, 'msg':''}
                         else:
+                            logging.error('Unable to save pushover config')
+                            return {'error':1, 'msg':'Unable to save notifymyandroid config'}
+                    else:
+                        logging.error('commandHandler: parameter is missing for %s' % provider)
+                        return {'error':1, 'msg':'Internal error'}
+
+                elif provider=='notifymyandroid':
+                    if content.has_key('param3'):
+                        if push.setConfig(content['param3']):
+                            return {'error':0, 'msg':''}
+                        else:
                             logging.error('Unable to save config')
-                            return {'error':1, 'msg':'Unable to save config'}
+                            return {'error':1, 'msg':'Unable to save notifymyandroid config'}
                     else:
                         logging.error('commandHandler: parameter "param3" missing for %s' % provider)
                         return {'error':1, 'msg':'Internal error'}
+
                 else:
                     #TODO add here new provider
                     pass
