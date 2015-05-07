@@ -11,6 +11,9 @@ commands:
       subject:
         name: message subject
         type: string
+      attachment:
+        name: attachment fullpath
+        type: string
   sendsms:
     name: send SMS
     parameters:
@@ -31,6 +34,9 @@ commands:
     parameters:
       message:
         name: message
+        type: string
+      attachment:
+        name: attachment
         type: string
 devicetypes:
   smtpgateway:

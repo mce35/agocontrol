@@ -263,7 +263,9 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
             }
             ++it;
         }
-    }else {
+    }
+    else
+    {
         // Temp dummy
         qpid::types::Variant::Map stats = getProcessStructure();
         output["agoresolver"] = stats;
@@ -353,7 +355,6 @@ qpid::types::Variant::Map AgoSystem::commandHandler(qpid::types::Variant::Map co
 void AgoSystem::monitorProcesses()
 {
     //get ago processes to monitor
-    //processes = getAgoProcessListDebug("xcalc");
     processes = getAgoProcessList();
     AGO_DEBUG() << processes;
 

@@ -54,6 +54,10 @@ devicetypes:
     name: Set top box
     description: Receives TV Service
     commands: ["on", "off", mute, unmute, mutetoggle, vol+, vol-, setlevel, setchannel, getepg]
+  onvifcontroller:
+    name: onvif controller
+    description: Onvif controller
+    commands: ["addcamera", "deletecamera", "getprofiles", "dooperation", "getcameras", "getconfig", "updatecredentials", "getdeviceinfos", "setcameraprofile", "setmotion", "setrecording", "setrecordingsconfig", "getrecordings"]
 values:
   channel:
     name: channel
@@ -70,3 +74,9 @@ events:
   event.device.mediastatechanged:
     description: device changed media state
     parameters: [state]
+  event.device.videoavailable:
+    description: a video is available
+    parameters: [filename]
+  event.device.pictureavailable:
+    description: a picture is available
+    parameters: [filename]

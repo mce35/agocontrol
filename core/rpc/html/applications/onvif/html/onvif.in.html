@@ -393,21 +393,19 @@
         </div>
 
         <!-- my recordings -->
-        <div class="tab-content active">
-            <div class="row">
-                <script type="text/html" id="recordingsRowTemplate">
-                    <td data-bind="text:filename"></td>
-                    <td data-bind="text:type"></td>
-                    <td data-bind="text:timestampToHRstring(timestamp)"></td>
-                    <td data-bind="text:sizeToHRSize(size)"></td>
-                    <td>
-                        <div class="medium default btn">
-                            <i data-translateable="true" data-bind="click: $parent.downloadRecording" class="icon-download" _title="Download" _alt="Download"></i>
-                        </div>
-                    </td>
-                </script>
-                <div data-bind="agoGrid:recordingsGrid"></div>
-            </div>
+        <div class="tab-content">
+            <script type="text/html" id="recordingsRowTemplate">
+                <td data-bind="text:filename"></td>
+                <td data-bind="text:type"></td>
+                <td data-bind="text:timestampToHRstring(timestamp)"></td>
+                <td data-bind="text:sizeToHRSize(size)"></td>
+                <td>
+                    <div class="medium default btn">
+                        <i data-translateable="true" data-bind="click: $parent.downloadRecording" class="icon-download" _title="Download" _alt="Download"></i>
+                    </div>
+                </td>
+            </script>
+            <div data-bind="agoGrid:recordingsGrid"></div>
         </div>
 
         <!-- camera -->
@@ -481,7 +479,7 @@
                     <_span data-translateable="true">Recordings directory</_span>
                 </div>
                 <div class="four columns text-left field">
-                    <input data-translateable="true" class="wide input" type="text" _placeholder="Directory" data-bind="textInput:motionRecordDir" />
+                    <input data-translateable="true" class="wide input" type="text" _placeholder="Directory" data-bind="textInput:recordingsDir" />
                 </div>
             </div>
             <div class="row">

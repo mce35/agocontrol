@@ -10,10 +10,17 @@ import threading
 import time
 import logging
 from Queue import Queue
+import os
 #twitter libs
 import tweepy
 #mail libs
 import smtplib
+import mimetypes
+from email import encoders
+from email.message import Message
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 #sms libs
@@ -418,10 +425,13 @@ class Mail(AgoAlert):
         return True
 
     def prepareMessage(self, content):
-        """prepare mail message
-           @param subject: mail subject
-           @param tos: send mail to list of tos
-           @param content: mail content"""
+        """
+        Prepare mail message
+        @param subject: mail subject
+        @param tos: send mail to list of tos
+        @param content: mail content
+        @param attachment: mail attachment
+        """
         if self.__configured:
             #check params
             if not content.has_key('tos') or not content.has_key('body') or (content.has_key('tos') and len(content['tos'])==0) or (content.has_key('body') and len(content['body'])==0):
@@ -432,7 +442,7 @@ class Mail(AgoAlert):
                 #no subject specified, add default one
                 content['subject'] = 'Agocontrol alert'
             #queue mail
-            return {'subject':content['subject'], 'tos':content['tos'], 'content':content['body']}, ''
+            return {'subject':content['subject'], 'tos':content['tos'], 'content':content['body'], 'attachment':content['attachment']}, ''
         else:
             msg = 'Unable to add mail because not configured'
             logging.error('Mail: %s' % msg)
@@ -454,6 +464,40 @@ class Mail(AgoAlert):
         part2 = MIMEText(html, 'html')
         mail.attach(part1)
         mail.attach(part2)
+
+        #append attachment
+        #@see https://docs.python.org/2/library/email-examples.html
+        if message.has_key('attachment') and message['attachment'] and len(message['attachment'])>0:
+            #there is something to attach
+            #file exists?
+            if os.path.isfile(message['attachment']):
+                ctype, encoding = mimetypes.guess_type(message['attachment'])
+                if ctype is None or encoding is not None:
+                    ctype = 'application/octet-stream'
+                maintype, subtype = ctype.split('/', 1)
+                if maintype == 'text':
+                    fp = open(message['attachment'])
+                    msg = MIMEText(fp.read(), _subtype=subtype)
+                    fp.close()
+                elif maintype == 'image':
+                    fp = open(message['attachment'], 'rb')
+                    msg = MIMEImage(fp.read(), _subtype=subtype)
+                    fp.close()
+                elif maintype == 'audio':
+                    fp = open(message['attachment'], 'rb')
+                    msg = MIMEAudio(fp.read(), _subtype=subtype)
+                    fp.close()
+                else:
+                    fp = open(message['attachment'], 'rb')
+                    msg = MIMEBase(maintype, subtype)
+                    msg.set_payload(fp.read())
+                    fp.close()
+                    #encode the payload using Base64
+                    encoders.encode_base64(msg)
+                #set the filename parameter
+                msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(message['attachment']))
+                mail.attach(msg)
+
         mails.sendmail(self.sender, message['tos'], mail.as_string())
         mails.quit()
         #if error occured, exception is throw, so return true is always true if mail succeed
@@ -948,7 +992,9 @@ def commandHandler(internalid, content):
         #send mail
         if content.has_key('to') and content.has_key('subject') and content.has_key('body'):
             tos = content['to'].split(';')
-            (msg, error) = mail.prepareMessage({'tos':tos, 'subject':content['subject'], 'body':content['body']})
+            if not content.has_key('attachment'):
+                content['attachment'] = ''
+            (msg, error) = mail.prepareMessage({'tos':tos, 'subject':content['subject'], 'body':content['body'], 'attachment':content['attachment']})
             if msg:
                 mail.addMessage(msg)
             else:
