@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-05 20:09+0200\n"
+"POT-Creation-Date: 2015-05-07 17:02+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -127,7 +127,7 @@ msgid "CLOSING"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:5
-msgid "STOPPED"
+msgid "PARTIAL"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:6

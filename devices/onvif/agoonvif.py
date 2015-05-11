@@ -1938,6 +1938,10 @@ class AgoOnvif(agoclient.AgoApp):
                     self.log.error('Parameters are missing')
                     return self.connection.response_missing_parameters()
 
+                #security check
+                if content['filename'].find('/') or content['filename'].find('..'):
+                    return self.connection.response_failed('File rejected: illegal characters specified!')
+
                 #get recording filename
                 filename = os.path.join(self.config['record_dir'], content['filename'])
                 
