@@ -50,64 +50,57 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'status';
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                self.mailStatus(res.result.mail.configured);
-                if (res.result.mail.configured)
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                self.mailStatus(res.data.mail.configured);
+                if (res.data.mail.configured)
                 {
-                    self.mailSmtp(res.result.mail.smtp);
-                    self.mailLogin(res.result.mail.login);
-                    self.mailPassword(res.result.mail.password);
-                    if (res.result.mail.tls == 1)
+                    self.mailSmtp(res.data.mail.smtp);
+                    self.mailLogin(res.data.mail.login);
+                    self.mailPassword(res.data.mail.password);
+                    if (res.data.mail.tls == 1)
                         self.mailTls(true);
                     else
                         self.mailTls(false);
-                    self.mailSender(res.result.mail.sender);
+                    self.mailSender(res.data.mail.sender);
                 }
-                self.smsStatus(res.result.sms.configured);
-                if (res.result.sms.configured)
+                self.smsStatus(res.data.sms.configured);
+                if (res.data.sms.configured)
                 {
-                    self.selectedSmsProvider(res.result.sms.provider);
-                    if( res.result.sms.provider=='12voip' )
+                    self.selectedSmsProvider(res.data.sms.provider);
+                    if( res.data.sms.provider=='12voip' )
                     {
-                        self.twelvevoipUsername(res.result.sms.username);
-                        self.twelvevoipPassword(res.result.sms.password);
+                        self.twelvevoipUsername(res.data.sms.username);
+                        self.twelvevoipPassword(res.data.sms.password);
                     }
-                    else if( res.result.sms.provider=='freemobile' )
+                    else if( res.data.sms.provider=='freemobile' )
                     {
-                        self.freemobileUser(res.result.sms.user);
-                        self.freemobileApikey(res.result.sms.apikey);
+                        self.freemobileUser(res.data.sms.user);
+                        self.freemobileApikey(res.data.sms.apikey);
                     }
                 }
-                self.twitterStatus(res.result.twitter.configured);
-                self.pushStatus(res.result.push.configured);
-                if (res.result.push.configured)
+                self.twitterStatus(res.data.twitter.configured);
+                self.pushStatus(res.data.push.configured);
+                if (res.data.push.configured)
                 {
-                    self.selectedPushProvider(res.result.push.provider);
-                    if (res.result.push.provider == 'pushbullet')
+                    self.selectedPushProvider(res.data.push.provider);
+                    if (res.data.push.provider == 'pushbullet')
                     {
-                        self.pushbulletApikey(res.result.push.apikey);
-                        self.pushbulletAvailableDevices(res.result.push.devices);
-                        self.pushbulletSelectedDevices(res.result.push.devices);
+                        self.pushbulletApikey(res.data.push.apikey);
+                        self.pushbulletAvailableDevices(res.data.push.devices);
+                        self.pushbulletSelectedDevices(res.data.push.devices);
                     }
-                    else if (res.result.push.provider == 'pushover')
+                    else if (res.data.push.provider == 'pushover')
                     {
-                        self.pushoverUserid(res.result.push.userid);
-                        self.pushoverToken(res.result.push.token);
+                        self.pushoverUserid(res.data.push.userid);
+                        self.pushoverToken(res.data.push.token);
                     }
-                    else if (res.result.push.provider == 'notifymyandroid')
+                    else if (res.data.push.provider == 'notifymyandroid')
                     {
-                        self.nmaAvailableApikeys(res.result.push.apikeys);
+                        self.nmaAvailableApikeys(res.data.push.apikeys);
                     }
                 }
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Unable to get alert modules status');
-            }
-        });
+            });
     };
 
     this.twitterUrl = function()
@@ -126,27 +119,21 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
-        content.param1 = 'twitter';
-        content.param2 = '';
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            { 
-                if (res.result.error == 0)
+        content.type = 'twitter';
+        content.accesscode = '';
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                if (res.data.error == 0)
                 {
                     //display link
-                    el.html('<a href="' + res.result.url + '" target="_blank">'+authorizationUrl.html()+'</a>');
+                    el.html('<a href="' + res.data.url + '" target="_blank">'+authorizationUrl.html()+'</a>');
                 }
                 else
                 {
+                    el.html('error');
                     notif.error('Unable to get Twitter url');
                 }
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to get twitter url');
-            }
-        });
+            });
     };
 
     this.twitterAccessCode = function()
@@ -160,23 +147,12 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
-        content.param1 = 'twitter';
-        content.param2 = el.val();
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if (res.result.error == 1)
-                {
-                    notif.error(res.result.msg);
-                }
+        content.type = 'twitter';
+        content.accesscode = el.val();
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.getAlertsConfigs();
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to get twitter access code');
-            }
-        });
+            });
     };
 
     this.twitterTest = function()
@@ -184,52 +160,30 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'test';
-        content.param1 = 'twitter';
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                notif.info(res.result.msg);
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to send twitter test');
-            }
-        });
+        content.type = 'twitter';
+        self.agocontrol.sendCommand(content);
     };
 
     this.smsConfig = function() {
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
-        content.param1 = 'sms';
-        content.param2 = self.selectedSmsProvider();
+        content.type = 'sms';
+        content.provider = self.selectedSmsProvider();
         if( self.selectedSmsProvider()=='12voip' )
         {
-            content.param3 = self.twelvevoipUsername();
-            content.param4 = self.twelvevoipPassword();
+            content.username = self.twelvevoipUsername();
+            content.password = self.twelvevoipPassword();
         }
         else if( self.selectedSmsProvider()=='freemobile' )
         {
-            content.param3 = self.freemobileUser();
-            content.param4 = self.freemobileApikey();
+            content.user = self.freemobileUser();
+            content.apikey = self.freemobileApikey();
         }
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if (res.result.error == 1)
-                {
-                    notif.error(res.result.msg);
-                }
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.getAlertsConfigs();
-                notif.success('#cok');
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to save sms config');
-            }
-        });
+            });
     };
 
     this.smsTest = function()
@@ -237,18 +191,8 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'test';
-        content.param1 = 'sms';
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                notif.info(res.result.msg);
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to send sms test');
-            }
-        });
+        content.type = 'sms';
+        self.agocontrol.sendCommand(content);
     };
 
     this.mailConfig = function()
@@ -256,40 +200,28 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
-        content.param1 = 'mail';
-        content.param2 = self.mailSmtp();
-        content.param3 = self.mailSender();
-        content.param4 = '';
+        content.type = 'mail';
+        content.smtp = self.mailSmtp();
+        content.sender = self.mailSender();
+        content.loginpassword = '';
         if( self.mailLogin()!==undefined )
         {
-            content.param4 += self.mailLogin();
+            content.loginpassword += self.mailLogin();
         }
-        content.param4 += '%_%';
+        content.loginpassword += '%_%';
         if( self.mailPassword()!==undefined )
         {
-            content.param4 += self.mailPassword();
+            content.loginpassword += self.mailPassword();
         }
-        content.param5 = '0';
+        content.tls = '0';
         if (self.mailTls())
         {
-            content.param5 = '1';
+            content.tls = '1';
         }
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if (res.result.error == 1)
-                {
-                    notif.error(res.result.msg);
-                }
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.getAlertsConfigs();
-                notif.success('#cok');
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to save email config');
-            }
-        });
+            });
     };
 
     this.mailTest = function()
@@ -297,19 +229,9 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'test';
-        content.param1 = 'mail';
-        content.param2 = document.getElementsByClassName("mailEmail")[0].value;
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                notif.info(res.result.msg);
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to send email test');
-            }
-        });
+        content.type = 'mail';
+        content.tos = document.getElementsByClassName("mailEmail")[0].value;
+        self.agocontrol.sendCommand(content);
     };
 
     this.pushbulletRefreshDevices = function()
@@ -317,29 +239,14 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
-        content.param1 = 'push';
-        content.param2 = this.selectedPushProvider();
-        content.param3 = 'getdevices';
-        content.param4 = self.pushbulletApikey();
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if (res.result.error == 0)
-                {
-                    notif.success('#rdpbs');
-                    self.pushbulletAvailableDevices(res.result.devices);
-                }
-                else
-                {
-                    notif.error('#rdpb');
-                }
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to get push devices');
-            }
-        });
+        content.type = 'push';
+        content.provider = this.selectedPushProvider();
+        content.subcmd = 'getdevices';
+        content.apikey = self.pushbulletApikey();
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                self.pushbulletAvailableDevices(res.data.devices);
+            });
     };
 
     this.nmaAddApikey = function()
@@ -371,39 +278,27 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'setconfig';
-        content.param1 = 'push';
-        content.param2 = this.selectedPushProvider();
+        content.type = 'push';
+        content.provider = this.selectedPushProvider();
         if (this.selectedPushProvider() == 'pushbullet')
         {
-            content.param3 = 'save';
-            content.param4 = this.pushbulletApikey();
-            content.param5 = this.pushbulletSelectedDevices();
+            content.subcmd = 'save';
+            content.apikey = this.pushbulletApikey();
+            content.devices = this.pushbulletSelectedDevices();
         }
         else if (this.selectedPushProvider() == 'pushover')
         {
-            content.param3 = this.pushoverUserid();
-            content.param4 = this.pushoverToken();
+            content.userid = this.pushoverUserid();
+            content.token = this.pushoverToken();
         }
         else if (this.selectedPushProvider() == 'notifymyandroid')
         {
-            content.param3 = this.nmaAvailableApikeys();
+            content.apikeys = this.nmaAvailableApikeys();
         }
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if (res.result.error == 1)
-                {
-                    notif.error(res.result.msg);
-                }
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.getAlertsConfigs();
-                notif.success('#cok');
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to save push config');
-            }
-        });
+            });
     };
 
     this.pushTest = function()
@@ -411,18 +306,8 @@ function agoAlertPlugin(devices, agocontrol)
         var content = {};
         content.uuid = self.agoalertUuid;
         content.command = 'test';
-        content.param1 = 'push';
-        self.agocontrol.sendCommand(content, function(res) {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                notif.info(res.result.msg);
-            }
-            else
-            {
-                 notif.fatal('#nr');
-                 console.log('Agoalert is not responding: Unable to send twitter test');
-            }
-        });
+        content.type = 'push';
+        self.agocontrol.sendCommand(content);
     };
 
     //get config
