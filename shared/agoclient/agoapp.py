@@ -419,3 +419,33 @@ class AgoApp:
 
         return config.set_config_option(section, option, value, app)
 
+    def check_command_param(self, content, param, type=None):
+        """
+        Check if content is containing specified parameters
+        @param: parameter name
+        @type: if specified (!=None), check parameter type too or if it can be converted to
+        @return res,param: res=True if success/False if something failed. param=parameter or converted parameter
+        """
+        #check presence
+        if param not in content:
+            self.log.trace('Parameter "%s" not in %s' % (param, content))
+            return False, param
+
+        #check type
+        if type!=None:
+            try:
+                if type=='string':
+                    return True, str(param)
+                elif type=='int':
+                    return True, int(param)
+                elif type=='float':
+                    return True, float(param)
+                elif type=='bool':
+                    return True, bool(param)
+            except:
+                #conversion exception
+                self.log.trace('Conversion exception for "%s" [%s] to %s' % (param, type(param), type))
+                return False, param
+
+        return True, param
+
