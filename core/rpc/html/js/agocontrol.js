@@ -684,15 +684,10 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
                 {
                     delete self.inventory.devices[response.result.uuid];
-                    console.log('device '+response.result.uuid+' deleted from inventory');
                 }
                 else
                 {
                     console.warn('Unable to delete device "'+response.result.uuid+'" because it wasn\'t found in inventory');
-                    console.log(self.inventory);
-                    console.log(self.inventory.devices);
-                    console.log(response.result.uuid);
-                    console.log(self.inventory.devices[response.result.uuid]);
                 }
 
                 //nothing else to do
@@ -711,7 +706,6 @@ Agocontrol.prototype = {
                             if( tmpDevices && tmpDevices[response.result.uuid] )
                             {
                                 self.inventory.devices[response.result.uuid] = tmpDevices[response.result.uuid];
-                                console.log('device '+response.result.uuid+' added');
                             }
                             else
                             {
