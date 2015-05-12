@@ -480,8 +480,7 @@ Agocontrol.prototype = {
                 self.processes.pushAll(values);
             })
             .catch(function(err){
-                notif.warning('Unable to get processes list, Applications will not be available: '
-                        + getErrorMessage(err));
+                notif.warn('Unable to get processes list, Applications will not be available: '+getErrorMessage(err));
                 self._noProcesses(true);
             });
     },
@@ -668,6 +667,7 @@ Agocontrol.prototype = {
     handleEvent: function(requestSucceed, response)
     {
         var self = this;
+        var done = false;
 
         if( requestSucceed )
         {
@@ -676,87 +676,139 @@ Agocontrol.prototype = {
             {
                 self.eventHandlers[i](response.result);
             }
-    
-            for ( var i = 0; i < self.devices().length; i++)
+
+            //remove device from inventory
+            if( response.result.event=="event.device.remove" )
             {
-                if (self.devices()[i].uuid == response.result.uuid )
+                console.log('received event.device.remove for '+ response.result.uuid);
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
                 {
-                    // update device last seen datetime
-                    self.devices()[i].timeStamp(formatDate(new Date()));
-                    //update device level
-                    if( response.result.level !== undefined)
-                    {
-                        // update custom device member
-                        if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1)
-                        {
-                            // event that update device member
-                            var member = response.result.event.replace('event.device.', '').replace('changed', '');
-                            if (self.devices()[i][member] !== undefined)
-                            {
-                                self.devices()[i][member](response.result.level);
-                            }
-                        }
-                        // Binary sensor has its own event
-                        else if (response.result.event == "event.security.sensortriggered")
-                        {
-                            if (self.devices()[i]['state'] !== undefined)
-                            {
-                                self.devices()[i]['state'](response.result.level);
-                            }
-                        }
-                    }
+                    delete self.inventory.devices[response.result.uuid];
+                    console.log('device '+response.result.uuid+' deleted from inventory');
+                }
+                else
+                {
+                    console.warn('Unable to delete device "'+response.result.uuid+'" because it wasn\'t found in inventory');
+                    console.log(self.inventory);
+                    console.log(self.inventory.devices);
+                    console.log(response.result.uuid);
+                    console.log(self.inventory.devices[response.result.uuid]);
+                }
 
-                    //update device stale
-                    if( response.result.event=="event.device.stale" && response.result.stale!==undefined )
-                    {
-                        self.devices()[i]['stale'](response.result.stale);
-                    }
+                //nothing else to do
+                done = true;
+            }
 
-                    //update quantity
-                    if (response.result.quantity)
+            //add new device if necessary
+            if( !done && response.result.event=="event.device.announce" )
+            {
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
+                {
+                    //brand new device, get inventory and fill local one with new infos
+                    self.getInventory()
+                        .then(function(result) {
+                            var tmpDevices = self.cleanInventory(result.data.devices);
+                            if( tmpDevices && tmpDevices[response.result.uuid] )
+                            {
+                                self.inventory.devices[response.result.uuid] = tmpDevices[response.result.uuid];
+                                console.log('device '+response.result.uuid+' added');
+                            }
+                            else
+                            {
+                                console.warn('Unable to add new device because no infos about it in retrieved inventory');
+                            }
+                        });
+                }
+
+                //nothing else to do
+                done = true;
+            }
+    
+            if( !done )
+            {
+                for( var i=0; i<self.devices().length; i++ )
+                {
+                    if( self.devices()[i].uuid==response.result.uuid )
                     {
-                        var values = self.devices()[i].values();
-                        //We have no values so reload from inventory
-                        if (values[response.result.quantity] === undefined)
+                        // update device last seen datetime
+                        self.devices()[i].timeStamp(formatDate(new Date()));
+
+                        //update device level
+                        if( response.result.level !== undefined)
                         {
-                            self.getInventory()
-                                .then(function(result) {
-                                    var tmpInv = self.cleanInventory(result.data.devices);
-                                    var uuid = result.data.uuid;
-                                    if (tmpInv[uuid] !== undefined)
-                                    {
-                                        if (tmpInv[uuid].values)
+                            // update custom device member
+                            if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1)
+                            {
+                                // event that update device member
+                                var member = response.result.event.replace('event.device.', '').replace('changed', '');
+                                if (self.devices()[i][member] !== undefined)
+                                {
+                                    self.devices()[i][member](response.result.level);
+                                }
+                            }
+                            // Binary sensor has its own event
+                            else if (response.result.event == "event.security.sensortriggered")
+                            {
+                                if (self.devices()[i]['state'] !== undefined)
+                                {
+                                    self.devices()[i]['state'](response.result.level);
+                                }
+                            }
+                    }   
+
+                        //update device stale
+                        if( response.result.event=="event.device.stale" && response.result.stale!==undefined )
+                        {
+                            self.devices()[i]['stale'](response.result.stale);
+                        }
+
+                        //update quantity
+                        if (response.result.quantity)
+                        {
+                            var values = self.devices()[i].values();
+                            //We have no values so reload from inventory
+                            if (values[response.result.quantity] === undefined)
+                            {
+                                self.getInventory()
+                                    .then(function(result) {
+                                        var tmpInv = self.cleanInventory(result.data.devices);
+                                        var uuid = result.data.uuid;
+                                        if (tmpInv[uuid] !== undefined)
                                         {
-                                            self.devices()[i].values(tmpInv[uuid].values);
+                                            if (tmpInv[uuid].values)
+                                            {
+                                                self.devices()[i].values(tmpInv[uuid].values);
+                                            }
                                         }
-                                    }
-                                });
-                            break;
-                        }
-
-                        if( response.result.level !== undefined )
-                        {
-                           if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
-                            {
-                                //update forecast value for barometer sensor only if string specified
-                                self.devices()[i].forecast(response.result.level);
+                                    });
+                                break;
                             }
-                            //save new level
-                            values[response.result.quantity].level = response.result.level;
+    
+                            if( response.result.level !== undefined )
+                            {
+                               if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
+                                {
+                                    //update forecast value for barometer sensor only if string specified
+                                    self.devices()[i].forecast(response.result.level);
+                                }
+                                //save new level
+                                values[response.result.quantity].level = response.result.level;
+                            }
+                            else if( response.result.latitude!==undefined && response.result.longitude!==undefined )
+                            {
+                                values[response.result.quantity].latitude = response.result.latitude;
+                                values[response.result.quantity].longitude = response.result.longitude;
+                            }
+    
+                            self.devices()[i].values(values);
                         }
-                        else if( response.result.latitude!==undefined && response.result.longitude!==undefined )
-                        {
-                            values[response.result.quantity].latitude = response.result.latitude;
-                            values[response.result.quantity].longitude = response.result.longitude;
-                        }
-
-                        self.devices()[i].values(values);
+    
+                        break;
                     }
-
-                    break;
                 }
             }
         }
+
         self.getEvent();
     },
 
