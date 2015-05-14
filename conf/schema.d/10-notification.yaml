@@ -47,12 +47,20 @@ devicetypes:
     name: SMS gateway
     description: used to send short messages
     commands: [sendsms]
+  pushgateway:
+    name: Push gateway
+    description: used to push messages
+    commands: [sendpush]
+  twittergateway:
+    name: Twitter gateway
+    description: used to tweet
+    commands: [sendtweet]
   alertcontroller:
     name: alert controller
     description: internal device to send alerts
-    commands: [sendsms, sendpush, sendmail, sendtweet]
+    commands: []
 categories:
   usernotification:
     name: user notification
     description: device types to notify the user
-    devicetypes: [alertcontroller, smsgateway, smtpgateway]
+    devicetypes: [smsgateway, smtpgateway, pushgateway, twittergateway]

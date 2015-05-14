@@ -10,6 +10,7 @@ import threading
 import time
 from Queue import Queue
 import os
+import uuid
 #twitter libs
 import tweepy
 #mail libs
@@ -34,6 +35,8 @@ from pushbullet import PushBullet
 #notifymyandroid
 from xml.dom import minidom
 
+DEVICEMAPFILE = os.path.join(agoclient.CONFDIR, 'maps/alert.json')
+
 #=================================
 #classes
 #=================================
@@ -41,19 +44,60 @@ class Alert(threading.Thread):
     """
     Base class for agoalert message
     """
-    def __init__(self, log, save_config_callback):
+    TYPE_SMS = 'sms'
+    TYPE_SMTP = 'smtp'
+    TYPE_TWITTER = 'twitter'
+    TYPE_PUSH = 'push'
+
+    GATEWAYS = {'sms':False, 'smtp':False, 'twitter':False, 'push':False}
+    UUIDS = {'sms':None, 'smtp':None, 'twitter':None, 'push':None}
+
+    def __init__(self, log, connection, type):
         threading.Thread.__init__(self)
         self.__running = True
         self.__queue = Queue()
         self.name = ''
         self.log = log
-        self.save_config = save_config_callback
+        self.connection = connection
+        self.type = type
 
     def __del__(self):
         self.stop()
 
     def stop(self):
+        #remove device from agocontrol
+        self.remove_device()
+
+        #stop main process
         self.__running = False
+
+    def add_device(self):
+        """
+        Add agocontrol device
+        """
+        if Alert.GATEWAYS.has_key(self.type) and not Alert.GATEWAYS[self.type]:
+            if self.type==Alert.TYPE_SMS:
+                self.connection.add_device(Alert.UUIDS[self.type], 'smsgateway')
+            elif self.type==Alert.TYPE_SMTP:
+                self.connection.add_device(Alert.UUIDS[self.type], 'smtpgateway')
+            elif self.type==Alert.TYPE_TWITTER:
+                self.connection.add_device(Alert.UUIDS[self.type], 'twittergateway')
+            elif self.type==Alert.TYPE_PUSH:
+                self.connection.add_device(Alert.UUIDS[self.type], 'pushgateway')
+            Alert.GATEWAYS[self.type] = True
+        else:
+            self.log.warning('Try to add unknown device type %s' % self.type)
+
+    def remove_device(self):
+        """
+        Remove agocontrol device
+        """
+        if Alert.GATEWAYS.has_key(self.type) and Alert.GATEWAYS[self.type]:
+            try:
+                self.connection.remove_device(Alert.UUIDS[self.type])
+            except:
+                self.log.exception('Unable to remove device:')
+            Alert.GATEWAYS[self.type] = False
 
     def add_message(self, message):
         """
@@ -122,8 +166,8 @@ class Dummy(Alert):
     """
     Do nothing
     """
-    def __init__(self, log, save_config_callback):
-        Alert.__init__(self, log, save_config_callback)
+    def __init__(self, log, connection, type):
+        Alert.__init__(self, log, connection, type)
 
     def get_config(self):
         return {'configured':0}
@@ -138,16 +182,17 @@ class SMSFreeMobile(Alert):
     """
     Class to send text message (SMS) using 12voip.com provider
     """
-    def __init__(self, log, save_config_callback, user, apikey):
+    def __init__(self, log, connection, type, user, apikey):
         """
         Contructor
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
         self.user = user
         self.apikey = apikey
         self.name = 'freemobile'
         if user and len(user)>0 and apikey and len(apikey)>0:
             self.__configured = True
+            self.add_device()
         else:
             self.__configured = False
 
@@ -165,11 +210,14 @@ class SMSFreeMobile(Alert):
         """
         if not user or len(user)==0 or not apikey or len(apikey)==0:
             self.log.error('SMSFreeMobile: invalid parameters')
+            self.__configured = False
+            self.remove_device()
             return False
 
         self.user = user
         self.apikey = apikey
         self.__configured = True
+        self.add_device()
         return True
 
     def prepare_message(self, content):
@@ -215,16 +263,17 @@ class SMS12voip(Alert):
     """
     Class to send text message (SMS) using 12voip.com provider
     """
-    def __init__(self, log, save_config_callback, username, password):
+    def __init__(self, log, connection, type, username, password):
         """
         Contructor
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
         self.username = username
         self.password = password
         self.name = '12voip'
         if username and len(username)>0 and password and len(password)>0:
             self.__configured = True
+            self.add_device()
         else:
             self.__configured = False
 
@@ -242,11 +291,13 @@ class SMS12voip(Alert):
         """
         if not username or len(username)==0 or not password or len(password)==0:
             self.log.error('SMS12voip: invalid parameters')
+            self.remove_device()
             return False
 
         self.username = username
         self.password = password
         self.__configured = True
+        self.add_device()
         return True
 
     def prepare_message(self, content):
@@ -296,11 +347,11 @@ class Twitter(Alert):
     """
     Class for tweet sending
     """
-    def __init__(self, log, save_config_callback, key, secret):
+    def __init__(self, log, connection, type, key, secret):
         """
         Constructor
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
         self.consumerKey = '8SwEenXApf9NNpufRk171g'
         self.consumerSecret = 'VoVGMLU63VThwRBiC1uwN3asR5fqblHBQyn8EZq2Q'
         self.name = 'twitter'
@@ -309,6 +360,7 @@ class Twitter(Alert):
         self.secret = secret
         if key and len(key)>0 and secret and len(secret)>0:
             self.__configured = True
+            self.add_device()
         else:
             self.__configured = False
 
@@ -334,14 +386,18 @@ class Twitter(Alert):
                 #save token internally
                 self.key = token.key
                 self.secret = token.secret
+                #add device
+                self.add_device()
                 #return key and secret token
                 return True, self.key, self.secret, ''
             except Exception as e:
                 self.log.exception('Twitter: get_key_secret exception:')
+                self.remove_device()
                 return False, None, None, 'Internal error'
         else:
             msg = 'Code is mandatory to get key and secret token'
             self.log.error('Twitter: %s' % msg)
+            self.remove_device()
             return False, None, None, msg
 
     def get_authorization_url(self):
@@ -398,11 +454,12 @@ class Mail(Alert):
     """
     Class for mail sending
     """
-    def __init__(self, log, save_config_callback, smtp, sender, login, password, tls):
+    def __init__(self, log, connection, type, smtp, sender, login, password, tls):
         """
         Constructor
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
+        global SMTP_GATEWAY_UUID
         self.smtp = smtp
         self.sender = sender
         self.login = login
@@ -413,6 +470,7 @@ class Mail(Alert):
         self.name = 'mail'
         if smtp and len(smtp)>0 and sender and len(sender)>0:
             self.__configured = True
+            self.add_device()
         else:
             self.__configured = False
 
@@ -431,8 +489,10 @@ class Mail(Alert):
         @param smtp: smtp server address
         @param sender: mail sender
         """ 
+        global SMTP_GATEWAY_UUID
         if not smtp or len(smtp)==0 or not sender or len(sender)==0:
             self.log.error('Mail: all parameters are mandatory')
+            self.remove_device()
             return False
 
         self.smtp = smtp
@@ -443,6 +503,7 @@ class Mail(Alert):
         if tls=='1':
             self.tls = True
         self.__configured = True
+        self.add_device()
         return True
 
     def prepare_message(self, content):
@@ -528,17 +589,18 @@ class Pushover(Alert):
     """
     Class for push message sending for ios and android
     """
-    def __init__(self, log, save_config_callback, userid, token):
+    def __init__(self, log, connection, type, userid, token):
         """
         Constructor
         @see https://pushover.net/
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
         self.name = 'pushover'
         self.token = token
         self.userid = userid
         self.pushTitle = 'Agocontrol'
         if userid and len(userid)>0:
+            self.add_device()
             self.__configured = True
         else:
             self.__configured = False
@@ -557,11 +619,13 @@ class Pushover(Alert):
         """
         if not userid or len(userid)==0 or not token or len(token)==0:
             self.log.error('Pushover: all parameters are mandatory')
+            self.remove_device()
             return False
 
         self.userid = userid
         self.token = token
         self.__configured = True
+        self.add_device()
         return True
 
     def prepare_message(self, content):
@@ -618,11 +682,11 @@ class Pushbullet(Alert):
     Class for push message sending for ios and android
     @info https://www.pushbullet.com
     """
-    def __init__(self, log, save_config_callback, apikey, devices):
+    def __init__(self, log, connection, type, apikey, devices):
         """
         Constructor
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
         self.name = 'pushbullet'
         self.pushbullet = None
         self.apikey = apikey
@@ -634,6 +698,7 @@ class Pushbullet(Alert):
         self.pushTitle = 'Agocontrol'
         if apikey and len(apikey)>0 and devices and len(devices)>0:
             self.__configured = True
+            self.add_device()
             self.pushbullet = PushBullet(self.apikey)
         else:
             self.__configured = False
@@ -675,6 +740,7 @@ class Pushbullet(Alert):
         """
         if not apikey or len(apikey)==0 or not devices or len(devices)==0:
             self.log.error('Pushbullet: all parameters are mandatory')
+            self.remove_device()
             return False
 
         if not devices or len(devices)==0:
@@ -684,7 +750,7 @@ class Pushbullet(Alert):
         self.apikey = apikey
         self.pbdevices = {}
         self.pushbullet = PushBullet(self.apikey)
-
+        self.add_device()
         self.__configured = True
         return True
 
@@ -762,18 +828,19 @@ class Notifymyandroid(Alert):
     """
     Class push notifications using notifymyandroid
     """
-    def __init__(self, log, save_config_callback, apikeys):
+    def __init__(self, log, connection, type, apikeys):
         """
         Constructor
         @see http://www.notifymyandroid.com
         """
-        Alert.__init__(self, log, save_config_callback)
+        Alert.__init__(self, log, connection, type)
         self.name = 'notifymyandroid'
         if not apikeys or len(apikeys)==0:
             self.apikeys = []
             self.__configured = False
         else:
             self.apikeys = json.loads(apikeys)
+            self.add_device()
             self.__configured = True
         self.pushTitle = 'Agocontrol'
 
@@ -788,12 +855,14 @@ class Notifymyandroid(Alert):
         Set config
         @param apikey: notifymyandroid apikey (available on https://www.notifymyandroid.com/account.jsp)
         """
-        self.log.info('DEBUG: %s %s' % (type(apikeys), apikeys))
         if not apikeys or len(apikeys)==0:
+            self.remove_device()
             self.__configured = False
+            return False
         else:
             self.__configured = True
         self.apikeys = apikeys
+        self.add_device()
         return True
 
     def prepare_message(self, content, priority='0'):
@@ -865,7 +934,7 @@ class AgoAlert(agoclient.AgoApp):
                 
         #load config
         self.load_config()
-        
+
         #add handlers
         self.connection.add_handler(self.message_handler)
         #add controller
@@ -891,6 +960,7 @@ class AgoAlert(agoclient.AgoApp):
         """
         Save config to map file
         """
+        global DEVICEMAPFILE
         self.__config_lock.acquire()
         error = False
         try:
@@ -914,6 +984,11 @@ class AgoAlert(agoclient.AgoApp):
             self.set_config_option('token', self.config['pushover']['token'], "pushover", "alert")
             self.set_config_option('apikeys', self.config['notifymyandroid']['apikeys'], "notifymyandroid", "alert")
 
+            #save uuids
+            f = open(DEVICEMAPFILE, "w")
+            f.write(json.dumps(Alert.UUIDS))
+            f.close()
+
         except:
             self.log.exception('Unable to save config infos')
             error = True
@@ -925,6 +1000,7 @@ class AgoAlert(agoclient.AgoApp):
         """
         Load config from map file
         """
+        global DEVICEMAPFILE
         self.__config_lock.acquire()
         error = False
         try:
@@ -957,7 +1033,23 @@ class AgoAlert(agoclient.AgoApp):
             self.config['pushover']['token'] = self.get_config_option("token", "", "pushover", "alert")
             self.config['notifymyandroid'] = {}
             self.config['notifymyandroid']['apikeys'] = self.get_config_option("apikeys", "", "notifymyandroid", "alert")
-            
+
+            if os.path.exists(DEVICEMAPFILE):
+                f = open(DEVICEMAPFILE, "r")
+                j = f.readline()
+                f.close()
+                Alert.UUIDS = json.loads(j)
+            else: 
+                Alert.UUIDS['sms'] = str(uuid.uuid4())
+                Alert.UUIDS['smtp'] = str(uuid.uuid4())
+                Alert.UUIDS['twitter'] = str(uuid.uuid4())
+                Alert.UUIDS['push'] = str(uuid.uuid4())
+                self.log.info("UUIDS=%s"%Alert.UUIDS)
+                self.log.debug('Create default map file "%s"' % DEVICEMAPFILE)
+                f = open(DEVICEMAPFILE, "w")
+                f.write(json.dumps(Alert.UUIDS))
+                f.close()
+
         except:
             self.log.exception('Unable to load devices infos')
             error = True
@@ -1027,7 +1119,7 @@ class AgoAlert(agoclient.AgoApp):
 
             elif type=='mail':
                 #mail test
-                if not self.check_command_param(content, 'tos')[0]:
+                if not self.check_command_param(content, 'tos')[0] or len(content['tos'])==0:
                     msg = 'Missing "tos" parameter'
                     self.log.error(msg)
                     return self.connection.response_missing_parameters(msg)
@@ -1189,11 +1281,11 @@ class AgoAlert(agoclient.AgoApp):
                 if provider!=self.sms.name:
                     #destroy existing push
                     self.sms.stop()
-                    #create new push
+                    #create new sms
                     if provider=='freemobile':
-                        sms = SMSFreeMobile(self.log, self.save_config, '', '')
+                        sms = SMSFreeMobile(self.log, self.connection, Alert.TYPE_SMS, '', '')
                     elif provider=='12voip':
-                        sms = SMS12voip(self.log, self.save_config, '', '')
+                        sms = SMS12voip(self.log, self.connection, Alert.TYPE_SMS, '', '')
                     else:
                         #TODO add here new provider
                         pass
@@ -1291,11 +1383,11 @@ class AgoAlert(agoclient.AgoApp):
                     self.push.stop()
                     #create new push
                     if provider=='pushbullet':
-                        self.push = Pushbullet(self.log, self.save_config, '', '')
+                        self.push = Pushbullet(self.log, self.connection, Alert.TYPE_PUSH, '', '')
                     elif provider=='pushover':
-                        self.push = Pushover(self.log, self.save_config, '', '')
+                        self.push = Pushover(self.log, self.connection, Alert.TYPE_PUSH, '', '')
                     elif provider=='notifymyandroid':
-                        self.push = Notifymyandroid(self.log, self.save_config, '')
+                        self.push = Notifymyandroid(self.log, self.connection, Alert.TYPE_PUSH, '')
                     else:
                         #TODO add here new provider
                         pass
@@ -1378,30 +1470,30 @@ class AgoAlert(agoclient.AgoApp):
         Create alert instances
         """
         #mail
-        self.mail = Mail(self.log, self.save_config, self.config['mail']['smtp'], self.config['mail']['sender'], self.config['mail']['login'], self.config['mail']['password'], self.config['mail']['tls'])
+        self.mail = Mail(self.log, self.connection, Alert.TYPE_SMTP, self.config['mail']['smtp'], self.config['mail']['sender'], self.config['mail']['login'], self.config['mail']['password'], self.config['mail']['tls'])
         
         #twitter
-        self.twitter = Twitter(self.log, self.save_config, self.config['twitter']['key'], self.config['twitter']['secret'])
+        self.twitter = Twitter(self.log, self.connection, Alert.TYPE_TWITTER, self.config['twitter']['key'], self.config['twitter']['secret'])
         
         #sms
         if self.config['sms']['provider']=='':
             self.log.info('Create dummy sms')
-            self.sms = Dummy(self.log, self.save_config)
+            self.sms = Dummy(self.log, self.connection, None)
         elif self.config['sms']['provider']=='12voip':
-            self.sms = SMS12voip(self.log, self.save_config, self.config['12voip']['username'], self.config['12voip']['password'])
+            self.sms = SMS12voip(self.log, self.connection, Alert.TYPE_SMS, self.config['12voip']['username'], self.config['12voip']['password'])
         elif self.config['sms']['provider']=='freemobile':
-            self.sms = SMSFreeMobile(self.log, self.save_config, self.config['freemobile']['user'], self.config['freemobile']['apikey'])
+            self.sms = SMSFreeMobile(self.log, self.connection, Alert.TYPE_SMS, self.config['freemobile']['user'], self.config['freemobile']['apikey'])
             
         #push
         if self.config['push']['provider']=='':
             self.log.info('Create dummy push')
-            self.push = Dummy(self.log, self.save_config)
+            self.push = Dummy(self.log, self.connection, None)
         elif self.config['push']['provider']=='pushbullet':
-            self.push = Pushbullet(self.log, self.save_config, self.config['pushbullet']['apikey'], self.config['pushbullet']['devices'])
+            self.push = Pushbullet(self.log, self.connection, Alert.TYPE_PUSH, self.config['pushbullet']['apikey'], self.config['pushbullet']['devices'])
         elif self.config['push']['provider']=='pushover':
-            self.push = Pushover(self.log, self.save_config, self.config['pushover']['userid'], self.config['pushover']['token'])
+            self.push = Pushover(self.log, self.connection, Alert.TYPE_PUSH, self.config['pushover']['userid'], self.config['pushover']['token'])
         elif self.config['push']['provider']=='notifymyandroid':
-            self.push = Notifymyandroid(self.log, self.save_config, self.config['notifymyandroid']['apikeys'])
+            self.push = Notifymyandroid(self.log, self.connection, Alert.TYPE_PUSH, self.config['notifymyandroid']['apikeys'])
             
         #start services
         self.mail.start()
