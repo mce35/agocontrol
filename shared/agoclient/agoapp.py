@@ -240,7 +240,7 @@ class AgoApp:
 
     def _do_shutdown(self):
         if self.connection:
-            self.connection.shutdown()
+            self.connection.begin_shutdown()
 
     def setup_app(self):
         """This should be overriden by the application to setup app specifics"""
