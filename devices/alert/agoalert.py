@@ -1172,6 +1172,7 @@ class AgoAlert(agoclient.AgoApp):
             (msg, error) = self.twitter.prepare_message({'tweet':content['tweet']})
             if msg:
                 self.twitter.add_message(msg)
+                return self.connection.response_success(None, 'Tweet posted successfully')
             else:
                 self.log.error('CommandHandler: failed to tweet [%s]' % error)
                 return self.connection.response_failed(error)
@@ -1190,6 +1191,7 @@ class AgoAlert(agoclient.AgoApp):
             (msg, error) = self.sms.prepare_message({'to':content['to'], 'text':content['text']})
             if msg:
                 self.sms.add_message(msg)
+                return self.connection.response_success(None, 'SMS sent successfully')
             else:
                 self.log.error('CommandHandler: failed to send SMS [%s]' % error)
                 return self.connection.response_failed(error)
@@ -1212,9 +1214,11 @@ class AgoAlert(agoclient.AgoApp):
             tos = content['to'].split(';')
             if not content.has_key('attachment'):
                 content['attachment'] = ''
+
             (msg, error) = self.mail.prepare_message({'tos':tos, 'subject':content['subject'], 'body':content['body'], 'attachment':content['attachment']})
             if msg:
                 self.mail.add_message(msg)
+                return self.connection.response_success(None, 'Mail sent successfully')
             else:
                 self.log.error('CommandHandler: failed to send email [%s]' % error)
                 return self.connection.response_failed(error)
@@ -1228,12 +1232,8 @@ class AgoAlert(agoclient.AgoApp):
                 
             (msg, error) = self.push.prepare_message({'message':content['message']})
             if msg:
-                (error, msg) = self.push.add_message(msg)
-                if not error:
-                    return self.connection.response_success(None, 'Message pushed successfully')
-                else:
-                    self.log.error('CommandHandler: Failed to push message (%s)' % msg)
-                    return self.connection.response_failed('Failed to push message (%s)' % msg)
+                self.push.add_message(msg)
+                return self.connection.response_success(None, 'Message pushed successfully')
             else:
                 self.log.error('CommandHandler: failed to push message [%s]' % error)
                 return self.connection.response_failed(error)
