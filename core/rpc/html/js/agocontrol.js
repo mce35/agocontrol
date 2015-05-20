@@ -680,7 +680,6 @@ Agocontrol.prototype = {
             //remove device from inventory
             if( response.result.event=="event.device.remove" )
             {
-                console.log('received event.device.remove for '+ response.result.uuid);
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
                 {
                     delete self.inventory.devices[response.result.uuid];
