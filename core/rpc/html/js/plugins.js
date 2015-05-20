@@ -79,6 +79,47 @@ function SecurityPlugin(agocontrol)
 
     };
 
+    //Get alarm state at startup
+    //Needed to open pin panel to disable armed alarm
+    self.getAlarmState = function()
+    {
+        //get security controller uuid if necessary
+        if( !self.securityController )
+        {
+            self.getSecurityControllerUuid();
+        }
+
+        //clear interval if security is not running
+        if( !self.securityIsRunning )
+        {
+            clearInterval(self.alarmStateInterval);
+            return;
+        }
+
+        if( self.securityController )
+        {
+            //check only at startup (after event handler is handling it) so clear interval
+            clearInterval(self.alarmStateInterval);
+
+            var content = {};
+            content.uuid = self.securityController;
+            content.command = 'getalarmstate';
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    if( res.data.alarmactivated==1 )
+                    {
+                        //alarm is running, open pin panel right now
+                        self.openPanel();
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Unable to get alarm status:');
+                    console.error(err);
+                });
+        }
+    };
+    self.alarmStateInterval = setInterval(self.getAlarmState, 1000);
+
     //event handler, need to catch
     self.eventHandler = function(event)
     {
