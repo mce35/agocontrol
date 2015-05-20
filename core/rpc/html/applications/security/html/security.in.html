@@ -249,18 +249,38 @@
                 <div class="four columns text-right field">
                     <_span data-translateable="true">Add new housemode</_span>
                 </div>
-                <div class="four columns text-left append field">
+                <div class="four columns text-left field">
                     <input data-translateable="true" class="normal text input" type="text" _placeholder="New housemode name" data-bind="value:newHousemode "/>
-                    <div class="medium primary btn"><_a data-translateable="true" data-bind="click:addHousemode" href="#">Add housemode</_a></div>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:addHousemode" href="#">Add housemode</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <div class="four columns text-right field">
                     <_span data-translateable="true">Add new zone</_span>
                 </div>
-                <div class="four columns text-left append field">
+                <div class="four columns text-left field">
                     <input data-translateable="true" class="normal text input" type="text" _placeholder="New zone name" data-bind="value:newZone "/>
-                    <div class="medium primary btn"><_a data-translateable="true" data-bind="click:addZone" href="#">Add zone</_a></div>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:addZone" href="#">Add zone</_a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <ko opts="if: housemodeZoneChanged">
+                        <_span data-translateable="true" style="color:red;">Don't forget to save changes</_span>!
+                    </ko>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:saveNewHousemodeZone" href="#">Save</_a>
+                    </div>
                 </div>
             </div>
         </div>

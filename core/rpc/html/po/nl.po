@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-07 17:02+0200\n"
+"POT-Creation-Date: 2015-05-07 17:47+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -717,18 +717,22 @@ msgid "Add zone"
 msgstr "Voeg Commando toe"
 
 #: ../applications/security/html/security.xml.in.h:24
-msgid "Alarm message to send when alarm is armed"
+msgid "Don't forget to save changes"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:25
-msgid "message"
+msgid "Alarm message to send when alarm is armed"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:26
-msgid "Alarm message to send when alarm is disarmed"
+msgid "message"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:27
+msgid "Alarm message to send when alarm is disarmed"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:28
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 

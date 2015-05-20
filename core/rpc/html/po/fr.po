@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-07 17:02+0200\n"
+"POT-Creation-Date: 2015-05-07 17:47+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -692,18 +692,22 @@ msgid "Add zone"
 msgstr "Ajouter la zone"
 
 #: ../applications/security/html/security.xml.in.h:24
+msgid "Don't forget to save changes"
+msgstr "Sauvegarder vos mofications"
+
+#: ../applications/security/html/security.xml.in.h:25
 msgid "Alarm message to send when alarm is armed"
 msgstr "Message d'alarme à envoyer lorsque l'alarme est activée"
 
-#: ../applications/security/html/security.xml.in.h:25
+#: ../applications/security/html/security.xml.in.h:26
 msgid "message"
 msgstr "message"
 
-#: ../applications/security/html/security.xml.in.h:26
+#: ../applications/security/html/security.xml.in.h:27
 msgid "Alarm message to send when alarm is disarmed"
 msgstr "Message d'alarme à envoyer lorsque l'alarme est désactivée"
 
-#: ../applications/security/html/security.xml.in.h:27
+#: ../applications/security/html/security.xml.in.h:28
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr "Mode par défaut (activé après qu'un code pin valide est tapé)"
 
@@ -1618,4 +1622,3 @@ msgstr "Démarrer"
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr "Arrêter"
-
