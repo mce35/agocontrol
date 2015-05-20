@@ -1,0 +1,9 @@
+<div class="device-list-item" data-bind="attr: {'data-uuid': uuid}">
+    <i class="icon-direction"></i>
+    <ko opts="if:name.length>0">
+    <span data-bind="text: name"></span>
+    </ko>
+    <ko opts="if:name.length==0">
+    <span data-bind="text: devicetype"></span>
+    </ko>
+</div>
