@@ -1985,29 +1985,66 @@ int main(int argc, char **argv)
         variantMapToJSONFile(devicemap, dmf);
     }
 
-    //open serial port
-    if( DEBUG )
-        cout << "Opening serial port '" << device << "'..." << endl;
-    if( !openSerialPort(device) )
-    {
-        exit(1);
-    }
-
     //connect to gateway
     bool error = false;
     std::string line = "";
+    int attempts = 0;
     cout << "Waiting for the gateway starts..." << endl << flush;
-    if (line.find("check wires") != string::npos)
+    for( int i=0; i<5; i++ )
     {
-        AGO_ERROR() << "The serial gateway arduino sketch can't talk to the NRF24 module! Check wires and power supply!";
-    }
-    while( !error && line.find("Gateway startup complete")==string::npos )
-    {
-        line = readLine(&error);
+        //open serial port
         if( DEBUG )
-            cout << "Read: " << line << endl << flush;
+            cout << "Opening serial port '" << device << "'..." << endl;
+        if( !openSerialPort(device) )
+        {
+            exit(1);
+        }
+
+        while( !error && line.find("Gateway startup complete")==string::npos )
+        {
+            //read line from serial port
+            line = readLine(&error);
+            if( DEBUG )
+                cout << "Read: " << line << endl << flush;
+
+            //check connectivity
+            if( line.find("check wires")!=string::npos )
+            {
+                cout << "The serial gateway arduino sketch can't talk to the NRF24 module! Check wires and power supply!" << endl;
+                exit(1);
+            }
+
+            //check attemps
+            if( attempts>5 )
+            {
+                //max attemps reached without receiving awaited string
+                if( DEBUG )
+                    cout << "Max attempts reached. Retry once more" << endl;
+                error = true;
+            }
+            else
+            {
+                attempts++;
+            }
+        }
+        
+        if( error )
+        {
+            //no way to get controller init, close port and start again
+            closeSerialPort();
+        }
+        else
+        {
+            //controller started correctly, stop statement
+            break;
+        }
     }
-    cout << "Done." << endl << flush;
+    if( error )
+    {
+        cout << "Unable to connect to MySensors gateway. Stop now." << endl;
+        exit(1);
+    }
+    cout << "Done." << flush;
 
     cout << "Requesting gateway version..." << endl << flush;
     std::string getVersion = "0;0;3;0;2\n";
@@ -2108,3 +2145,4 @@ int main(int argc, char **argv)
     cout << "Running MySensors controller..." << endl;
     agoConnection->run();
 }
+
