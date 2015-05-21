@@ -75,10 +75,16 @@ int resendEnabled = 0;
  */
 std::string timestampToStr(const time_t* timestamp)
 {
-    struct tm* sTm = gmtime(timestamp);
     char hr[512] = "";
-
-    snprintf(hr, 512, "%02d:%02d:%02d %04d/%02d/%02d", sTm->tm_hour, sTm->tm_min, sTm->tm_sec, sTm->tm_year+1900, sTm->tm_mon+1, sTm->tm_mday);
+    if( (*timestamp)>0 )
+    {
+        struct tm* sTm = gmtime(timestamp);
+        snprintf(hr, 512, "%02d:%02d:%02d %04d/%02d/%02d", sTm->tm_hour, sTm->tm_min, sTm->tm_sec, sTm->tm_year+1900, sTm->tm_mon+1, sTm->tm_mday);
+    }
+    else
+    {
+        snprintf(hr, 512, "?");
+    }
 
     return std::string(hr);
 }
@@ -508,7 +514,8 @@ void sendcommandV13(std::string internalid, int messageType, int subType, std::s
 /**
  * Agocontrol command handler
  */
-qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
+qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
+{
     qpid::types::Variant::Map returnval;
     qpid::types::Variant::Map infos;
     std::string deviceType = "";
@@ -548,13 +555,15 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command) {
                         deviceNameType << "unknown";
                     }
                     deviceNameType << ")";
-                    content["device"] = deviceNameType.str().c_str();
+                    content["device"] = deviceNameType.str();
+                    //add device last datetime
                     if( !content["last_timestamp"].isVoid() )
                     {
-                        int32_t timestamp = content["last_timestamp"].asInt32();
+                        int64_t timestamp = content["last_timestamp"].asInt64();
                         content["datetime"] = timestampToStr((time_t*)&timestamp);
                     }
-                    else {
+                    else
+                    {
                         content["datetime"] = "?";
                     }
                     counters[it->first.c_str()] = content;
@@ -2044,7 +2053,7 @@ int main(int argc, char **argv)
         cout << "Unable to connect to MySensors gateway. Stop now." << endl;
         exit(1);
     }
-    cout << "Done." << flush;
+    cout << "Done." << endl << flush;
 
     cout << "Requesting gateway version..." << endl << flush;
     std::string getVersion = "0;0;3;0;2\n";
@@ -2145,4 +2154,3 @@ int main(int argc, char **argv)
     cout << "Running MySensors controller..." << endl;
     agoConnection->run();
 }
-
