@@ -94,11 +94,42 @@ void AgoSystem::checkProcessesStates(qpid::types::Variant::Map& processes)
         //check if process is running
         if( !stats["running"].isVoid() && !stats["monitored"].isVoid() )
         {
-            if( stats["running"].asBool()==false && stats["monitored"].asBool()==true )
+            if( stats["running"].asBool()==false )
             {
-                if( stats["alarmDead"].asBool()==false )
+                //process is not running
+                //reset current stats
+                qpid::types::Variant::Map current = stats["currentStats"].asMap();
+#ifndef FREEBSD
+                current["utime"] = 0;
+                current["cutime"] = 0;
+                current["stime"] = 0;
+                current["cstime"] = 0;
+                current["cpuTotalTime"] = 0;
+#endif
+                current["vsize"] = 0;
+                current["rss"] = 0;
+                current["ucpu"] = 0;
+                current["scpu"] = 0;
+                stats["currentStats"] = current;
+
+                //and reset last stats
+                qpid::types::Variant::Map last = stats["lastStats"].asMap();
+#ifndef FREEBSD
+                last["utime"] = 0;
+                last["cutime"] = 0;
+                last["stime"] = 0;
+                last["cstime"] = 0;
+                last["cpuTotalTime"] = 0;
+#endif
+                last["vsize"] = 0;
+                last["rss"] = 0;
+                last["ucpu"] = 0;
+                last["scpu"] = 0;
+                stats["lastStats"] = last;
+
+                if( stats["monitored"].asBool()==true && stats["alarmDead"].asBool()==false )
                 {
-                    //process is not running and it is monitored, send alarm
+                    //process is monitored, send alarm
                     qpid::types::Variant::Map content;
                     content["process"] = it->first;
                     agoConnection->emitEvent("systemcontroller", "event.monitoring.processdead", content);
