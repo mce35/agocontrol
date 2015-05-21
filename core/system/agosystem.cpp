@@ -253,6 +253,21 @@ qpid::types::Variant::Map AgoSystem::getProcessStructure()
 }
 
 /**
+ * Return true if specified process is black listed
+ */
+bool AgoSystem::isProcessBlackListed(const std::string processName)
+{
+    for( int i=0; i<PROCESS_BLACKLIST_SIZE; i++ )
+    {
+        if( PROCESS_BLACKLIST[i]==processName )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Get ago process list
  */
 qpid::types::Variant::Map AgoSystem::getAgoProcessList()
@@ -269,27 +284,16 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
             if( fs::is_regular_file(*it) && (it->path().extension().string()==".py" || it->path().extension().string()=="") &&
                 boost::algorithm::starts_with(it->path().filename().string(), "ago") )
             {
-                //file seems valid
-                bool blackListed = false;
-                for( int i=0; i<PROCESS_BLACKLIST_SIZE; i++ )
-                {
-                    if( PROCESS_BLACKLIST[i]==it->path().filename().string() )
-                    {
-                        //drop file
-                        blackListed = true;
-                        break;
-                    }
-                }
-
-                if( !blackListed )
+                //check if process black listed
+                if( !isProcessBlackListed(it->path().filename().string()) )
                 {
                     qpid::types::Variant::Map stats = getProcessStructure();
                     output[it->path().filename().string()] = stats;
-                    AGO_INFO() << " - " << it->path().filename().string();
+                    AGO_TRACE() << " - " << it->path().filename().string();
                 }
                 else
                 {
-                    AGO_DEBUG() << " - " << it->path().filename().string() << " [BLACKLISTED]";
+                    AGO_TRACE() << " - " << it->path().filename().string() << " [BLACKLISTED]";
                 }
             }
             ++it;
@@ -316,9 +320,50 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
     //append qpid
     qpid::types::Variant::Map stats = getProcessStructure();
     output["qpidd"] = stats;
-    AGO_INFO() << " - qpidd";
+    AGO_TRACE() << " - qpidd";
 
     return output;
+}
+
+/**
+ * Refresh agocontrol process list
+ */
+void AgoSystem::refreshAgoProcessList(qpid::types::Variant::Map& processes)
+{
+    //first of all get process list
+    qpid::types::Variant::Map newProcesses = getAgoProcessList();
+
+    //lock processes
+    processesMutex.lock();
+
+    //then synchronise maps
+    bool found = false;
+    for( qpid::types::Variant::Map::iterator it=newProcesses.begin(); it!=newProcesses.end(); it++ )
+    {
+        found = false;
+
+        //iterate over current process list
+        for( qpid::types::Variant::Map::iterator it2=processes.begin(); it2!=processes.end(); it2++ )
+        {
+            if( it->first==it2->first )
+            {
+                //process found
+                found = true;
+                break;
+            }
+        }
+
+        if( !found && !isProcessBlackListed(it->first) )
+        {
+            //add new entry
+            qpid::types::Variant::Map stats = getProcessStructure();
+            processes[it->first] = stats;
+            AGO_DEBUG() << "New process detected and added [" << it->first << "]";
+        }
+    }
+
+    //unlock processes
+    processesMutex.unlock();
 }
 
 /**
@@ -387,11 +432,30 @@ void AgoSystem::monitorProcesses()
 {
     //get ago processes to monitor
     processes = getAgoProcessList();
-    AGO_DEBUG() << processes;
+    AGO_TRACE() << processes;
+
+    //refresh interval
+    int count = 0;
+    int interval = 60 / MONITOR_INTERVAL;
+    if( interval==0 )
+    {
+        //monitor interval is greater than 1 minute. Refresh process list at each monitor interval
+        interval = 1;
+    }
+    AGO_TRACE() << "Refresh process list interval: " << interval;
 
     //launch monitoring...
     while( !isExitSignaled() )
     {
+        //periodically refresh process list
+        if( count==interval )
+        {
+            AGO_DEBUG() << "Refresh process list";
+            refreshAgoProcessList(processes);
+            count = 0;
+        }
+        count++;
+
         //update processes stats
         fillProcessesStats(processes);
 
@@ -429,7 +493,6 @@ void AgoSystem::setupApp()
     agoConnection->addDevice("systemcontroller", "systemcontroller");
 
     //add handlers
-    //addEventHandler();
     addCommandHandler();
 }
 
