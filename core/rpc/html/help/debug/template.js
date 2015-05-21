@@ -10,14 +10,17 @@ function Debug(agocontrol)
     //DRAIN
     //===============
     self.draining = false;
+    self.drainAutoscroll = ko.observable(true);
 
     //append received event
     self.eventHandler = function(event, type)
     {
-        if( event )
+        if( event && event.event!='event.device.announce')
         {
             //get current date
             var d = formatDate(new Date());
+
+            //append new message
             if( type===undefined )
             {
                 $('#drainContainer > ul').append('<li style="font-size:small;" class="default alert">'+d+' : '+JSON.stringify(event)+'</i>');
@@ -25,6 +28,12 @@ function Debug(agocontrol)
             else if( type=='start' || type=='stop' )
             {
                 $('#drainContainer > ul').append('<li style="font-size:small;" class="primary alert">'+d+' : '+JSON.stringify(event)+'</i>');
+            }
+
+            //scroll down
+            if( self.drainAutoscroll() )
+            {
+                $('#drainContainer > ul').scrollTop($('#drainContainer > ul')[0].scrollHeight);
             }
         }
     };
