@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-07 17:47+0200\n"
+"POT-Creation-Date: 2015-05-22 16:20+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -239,7 +239,7 @@ msgid "Finally click on button to save access code"
 msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:19
-#: ../applications/security/html/security.xml.in.h:8
+#: ../applications/security/html/security.xml.in.h:9
 #: ../applications/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:13
@@ -583,7 +583,7 @@ msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:37
-#: ../help/debug/html/debug.xml.in.h:7
+#: ../help/debug/html/debug.xml.in.h:8
 msgid "Set"
 msgstr ""
 
@@ -614,68 +614,73 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#. security tabs
-#: ../applications/security/html/security.xml.in.h:2
-msgid "Security"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:3
-#: ../applications/zwave/html/zwave.xml.in.h:27
-#, fuzzy
-msgid "Status"
-msgstr "Status:"
-
-#: ../applications/security/html/security.xml.in.h:4
-#, fuzzy
-msgid "Pin configuration"
-msgstr "Push configuratie"
-
-#: ../applications/security/html/security.xml.in.h:5
-#, fuzzy
-msgid "Housemodes/zones Configuration"
-msgstr "Gebeurtenis Configuratie"
-
-#: ../applications/security/html/security.xml.in.h:6
-#, fuzzy
-msgid "Security Configuration"
-msgstr "Scenario Configuratie"
-
-#: ../applications/security/html/security.xml.in.h:7
-msgid "Change current housemode"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:9
-msgid "Change pin code"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:10
-msgid "Security devices"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:11
-msgid "Alarms"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:12
+#: ../applications/security/html/security.xml.in.h:1
 #: ../applications/zwave/html/zwave.xml.in.h:63
 #: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr ""
 
+#. security tabs
+#: ../applications/security/html/security.xml.in.h:3
+msgid "Security"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:4
+#: ../applications/zwave/html/zwave.xml.in.h:27
+#, fuzzy
+msgid "Status"
+msgstr "Status:"
+
+#: ../applications/security/html/security.xml.in.h:5
+#, fuzzy
+msgid "Pin configuration"
+msgstr "Push configuratie"
+
+#: ../applications/security/html/security.xml.in.h:6
+#, fuzzy
+msgid "Housemodes/zones Configuration"
+msgstr "Gebeurtenis Configuratie"
+
+#: ../applications/security/html/security.xml.in.h:7
+#, fuzzy
+msgid "Security Configuration"
+msgstr "Scenario Configuratie"
+
+#: ../applications/security/html/security.xml.in.h:8
+msgid "Change current housemode"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:10
+msgid "Change pin code"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:11
+msgid "Security devices"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:12
+msgid "Alarms"
+msgstr ""
+
 #: ../applications/security/html/security.xml.in.h:13
-msgid "Housemodes\\Zones"
+#: ../applications/onvif/html/onvif.xml.in.h:14
+msgid "Save changes"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:14
+msgid "Housemodes\\Zones"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:15
 #, fuzzy
 msgid "Delete zone"
 msgstr "Verwijderen"
 
-#: ../applications/security/html/security.xml.in.h:15
+#: ../applications/security/html/security.xml.in.h:16
 msgid "Delete housemode"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:16
+#: ../applications/security/html/security.xml.in.h:17
 #: ../applications/onvif/html/onvif.xml.in.h:50
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
@@ -683,42 +688,38 @@ msgstr ""
 msgid "Edit"
 msgstr "Bewerken"
 
-#: ../applications/security/html/security.xml.in.h:17
+#: ../applications/security/html/security.xml.in.h:18
 msgid "Delay (s)"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:18
+#: ../applications/security/html/security.xml.in.h:19
 #, fuzzy
 msgid "Add new housemode"
 msgstr "Voeg nieuwe variabele toe"
 
-#: ../applications/security/html/security.xml.in.h:19
+#: ../applications/security/html/security.xml.in.h:20
 #, fuzzy
 msgid "New housemode name"
 msgstr "Nieuwe kamer naam"
 
-#: ../applications/security/html/security.xml.in.h:20
+#: ../applications/security/html/security.xml.in.h:21
 msgid "Add housemode"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:21
+#: ../applications/security/html/security.xml.in.h:22
 #, fuzzy
 msgid "Add new zone"
 msgstr "Voeg nieuwe variabele toe"
 
-#: ../applications/security/html/security.xml.in.h:22
+#: ../applications/security/html/security.xml.in.h:23
 #, fuzzy
 msgid "New zone name"
 msgstr "Nieuwe kamer naam"
 
-#: ../applications/security/html/security.xml.in.h:23
+#: ../applications/security/html/security.xml.in.h:24
 #, fuzzy
 msgid "Add zone"
 msgstr "Voeg Commando toe"
-
-#: ../applications/security/html/security.xml.in.h:24
-msgid "Don't forget to save changes"
-msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:25
 msgid "Alarm message to send when alarm is armed"
@@ -1041,10 +1042,6 @@ msgstr ""
 #, fuzzy
 msgid "Camera password"
 msgstr "Je wachtwoord"
-
-#: ../applications/onvif/html/onvif.xml.in.h:14
-msgid "Save changes"
-msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:15
 msgid "Camera URI"
@@ -1691,6 +1688,10 @@ msgstr ""
 
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:7
+msgid "Autoscroll"
 msgstr ""
 
 #, fuzzy
