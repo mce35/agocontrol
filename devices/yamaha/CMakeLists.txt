@@ -22,6 +22,7 @@ file (GLOB_RECURSE DEVICE_SOURCE_FILES
 # your binary
 set (DEVICE_EXTRA_LIBRARIES
      agoclient
+     pthread
 )
 
 #set a device name. This will be the 'target'
