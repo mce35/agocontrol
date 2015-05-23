@@ -9,6 +9,7 @@ ENDIF()
 
 set (SYSTEM_LIBRARIES
     agoclient
+    pthread
 	${Boost_PROGRAM_DATE_TIME_LIBRARY}
 )
 
