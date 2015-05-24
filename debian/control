@@ -7,7 +7,7 @@ Standards-Version: 3.9.2
 
 Package: agocontrol
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends}, python, uuid-runtime, sqlite3, python-pysqlite2, python-qpid, libqpidmessaging2, libqpidtypes1, sasl2-bin, libsasl2-2, libsasl2-modules, qpidd, python-yaml, python-pandas, libjsoncpp0, libsqlite3-0, libagoclient1.0, python-agoclient, libssl-dev, libboost-program-options1.49.0, libboost-filesystem1.49.0, libboost-system1.49.0, libboost-thread1.49.0, python-nss, libboost-date-time1.49.0, libhdate1, python-psutil, python-dbus, librrd4, libboost-program-options1.49.0, procps
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends}, python, uuid-runtime, sqlite3, python-pysqlite2, libqpidmessaging2, libqpidtypes1, sasl2-bin, libsasl2-2, libsasl2-modules, qpidd, libjsoncpp0, libsqlite3-0, libagoclient1.0, python-agoclient, libssl-dev, libboost-program-options1.49.0, libboost-filesystem1.49.0, libboost-system1.49.0, libboost-thread1.49.0, python-nss, libboost-date-time1.49.0, libhdate1, python-dbus, librrd4, libboost-program-options1.49.0, procps
 Description: automation system
 
 Package: agocontrol-dbg
@@ -32,7 +32,7 @@ Description: Development header files for the agocontrol client library
 Package: python-agoclient
 Section: libs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-qpid, python-simplejson, python-augeas
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-qpid-messaging (>= 0.17) | python-qpid, python-simplejson, python-augeas
 Description: python client routines and utility functions for ago control device interfaces
 
 Package: agocontrol-owfs
@@ -67,7 +67,7 @@ Description: ZWave interface driver
 
 Package: agocontrol-knx
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqpidmessaging2, libqpidclient2, libqpidcommon2, libqpidtypes1, libuuid1, agocontrol, libeibclient0, libtinyxml2-0.0.0, libagoclient1.0
+Depends: ${shlibs:Depends}, ${misc:Depends}, libeibclient0, libtinyxml2-0.0.0, libagoclient1.0
 Description: KNX interface driver
 
 Package: agocontrol-iscp
@@ -82,7 +82,7 @@ Description: Enigma2/Dreambox interface
 
 Package: agocontrol-asterisk
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-qpid, python-twisted, python-starpy
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-twisted, python-starpy
 Description: Asterisk PBX interface
 
 Package: agocontrol-apc
@@ -92,7 +92,7 @@ Description: APC Switched Rack PDU interface
 
 Package: agocontrol-jointspace
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-qpid
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
 Description: JointSpace interface
 
 Package: agocontrol-rain8net
@@ -137,7 +137,7 @@ Description: EnOcean ESP3 interface driver
 
 Package: agocontrol-dmx
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0, ola
+Depends: ${shlibs:Depends}, ${misc:Depends}, libagoclient1.0, libola1
 Description: OLA DMX device
 
 Package: agocontrol-mediaproxy
