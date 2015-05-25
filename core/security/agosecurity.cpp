@@ -809,7 +809,8 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         else if( content["command"]=="setconfig" )
         {
             checkMsgParameter(content, "config", VAR_MAP);
-            checkMsgParameter(content, "armedMessage", VAR_STRING);
+            checkMsgParameter(content, "armedMessage", VAR_STRING, true);
+            checkMsgParameter(content, "disarmedMessage", VAR_STRING, true);
             checkMsgParameter(content, "defaultHousemode", VAR_STRING);
             checkMsgParameter(content, "pin", VAR_STRING);
 
