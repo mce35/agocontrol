@@ -209,7 +209,7 @@
                     <ko opts="foreach: zones">
                     <th style="text-align:center;">
                         <span data-bind="text: name"></span>
-                        <div class="small primary btn" style="margin-bottom:0px;">
+                        <div class="normal default btn" style="margin-bottom:0px;">
                             <i data-translateable="true" data-bind="click:$parent.delZone.bind($data,name)" class="icon-cancel" _title="Delete zone" _alt="Delete zone"></i>
                         </div>
                     </th>
@@ -221,10 +221,10 @@
                     <td>
                         <span data-bind="text: name" class="housemode"></span>
                         <br/>
-                        <div class="small default btn">
+                        <div class="normal primary btn">
                             <i data-translateable="true" data-bind="click:$parent.delHousemode.bind($data,name)" class="icon-cancel" _title="Delete housemode" _alt="Delete housemode"></i>
                         </div>
-                        <div class="small default btn">
+                        <div class="normal primary btn">
                             <i data-translateable="true" data-bind="click:$parent.startEditHousemode.bind($data,name)" class="icon-pencil" _title="Edit" _alt="Edit"></i>
                         </div>
                     </td>
