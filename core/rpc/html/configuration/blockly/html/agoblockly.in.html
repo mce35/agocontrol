@@ -237,11 +237,12 @@
     
     <!-- blockly -->
     <div class="row" style="margin-bottom:0px">
-        <div class="medium primary btn icon-left icon-install"><_a href="#" _title="Save your script" data-bind="click:save" data-translateable="true">Save</_a></div>
-        <div class="medium primary btn icon-left icon-up"><_a href="#" data-translateable="true" _title="Load existing scripts" data-bind="click:load">Load</_a></div>
+        <div class="medium primary btn icon-left icon-doc"><_a data-translateable="true" href="#" _title="New script" data-bind="click:clear">New</_a></div>
+        <div class="medium primary btn icon-left icon-install"><_a href="#" _title="Save" data-bind="click:save" data-translateable="true">Save</_a></div>
+        <div class="medium primary btn icon-left icon-install"><_a href="#" _title="Save as" data-bind="click:saveas" data-translateable="true">Save as</_a></div>
+        <div class="medium primary btn icon-left icon-up"><_a href="#" data-translateable="true" _title="Load script" data-bind="click:load">Load</_a></div>
         <div class="medium primary btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Check blocks" data-bind="click:check">Check</_a></div>
         <div class="medium primary btn icon-left icon-eye"><_a data-translateable="true" href="#" _title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
-        <div class="medium primary btn icon-left icon-trash" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Clear all blocks on workspace" data-bind="click:clear">Clear</_a></div>
         <div class="medium primary btn icon-left icon-flash" style="margin-left:20px;"><a href="#" data-bind="click:openDebug">Debug</a></div>
         <div style="margin-left:20px; display: inline-block;">
             <ko opts="if:scriptSaved">
@@ -288,14 +289,20 @@
     <script id="rowTemplate" type="text/html">
         <td class="rename_script" data-bind="attr: {'data-oldname': name}, text: name"></td>
         <td>
-            <_button data-translateable="true" data-bind="click: $parent.uiLoadScript.bind($data,name)">Load</_button>
-            <_button data-translateable="true" data-bind="click: $parent.uiDeleteScript.bind($data,name)">Delete</_button>
-            <_button data-translateable="true" data-bind="click: $parent.uiExportScript.bind($data,name)">Export</_button>
+            <div data-bind="event:{mousedown: $parent.uiLoadScript.bind($data,name)}" class="small primary btn">
+                <_a data-translateable="true" href="#">Load</_a>
+            </div>
+            <div data-bind="event:{mousedown: $parent.uiDeleteScript.bind($data,name)}" class="small primary btn">
+                <_a data-translateable="true" href="#">Delete</_a>
+            </div>
+            <div data-bind="event:{mousedown: $parent.uiExportScript.bind($data,name)}" class="small primary btn">
+                <_a data-translateable="true" href="#">Export</_a>
+            </div>
         </td>
     </script>
 
-    <!-- save dialog -->
-    <div class="modal small-modal" id="saveDialog" data-bind="gumbyModal:$root">
+    <!-- saveas dialog -->
+    <div class="modal small-modal" id="saveasDialog" data-bind="gumbyModal:$root">
         <div class="content">
             <div class="row">
                 <div class="twelve columns centered text-center">

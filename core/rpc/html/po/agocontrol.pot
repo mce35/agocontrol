@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-22 16:20+0200\n"
+"POT-Creation-Date: 2015-05-27 16:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,7 +235,7 @@ msgstr ""
 #: ../applications/agoalert/html/agoalert.xml.in.h:19
 #: ../applications/security/html/security.xml.in.h:9
 #: ../applications/zwave/html/zwave.xml.in.h:69
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
@@ -1221,40 +1221,39 @@ msgid "Event builder using blocks"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15
-msgid "Save your script"
+msgid "New script"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
-msgid "Load existing scripts"
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+msgid "New"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:18
-msgid "Load"
+msgid "Save as"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:19
-msgid "Check blocks"
+msgid "Load script"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:20
-msgid "Check"
+msgid "Load"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:21
-msgid "View your blocks under script format"
+msgid "Check blocks"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:22
-msgid "View"
+msgid "Check"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:23
-msgid "Clear all blocks on workspace"
+msgid "View your blocks under script format"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
-#: ../help/debug/html/debug.xml.in.h:6
-msgid "Clear"
+msgid "View"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:25
@@ -1586,6 +1585,10 @@ msgstr ""
 
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
+msgstr ""
+
+#: ../help/debug/html/debug.xml.in.h:6
+msgid "Clear"
 msgstr ""
 
 #: ../help/debug/html/debug.xml.in.h:7

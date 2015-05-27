@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-22 16:20+0200\n"
+"POT-Creation-Date: 2015-05-27 16:35+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -239,7 +239,7 @@ msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 #: ../applications/agoalert/html/agoalert.xml.in.h:19
 #: ../applications/security/html/security.xml.in.h:9
 #: ../applications/zwave/html/zwave.xml.in.h:69
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
 #: ../configuration/events/html/events.xml.in.h:13
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
@@ -1293,43 +1293,42 @@ msgstr "Ereignis Konfiguration"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15
 #, fuzzy
-msgid "Save your script"
-msgstr "Script importieren"
+msgid "New script"
+msgstr "Script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
-#, fuzzy
-msgid "Load existing scripts"
-msgstr "Vorhandenes Script"
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+msgid "New"
+msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:18
+#, fuzzy
+msgid "Save as"
+msgstr "Speichern"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#, fuzzy
+msgid "Load script"
+msgstr "Vorhandenes Script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:20
 msgid "Load"
 msgstr "Laden"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
 msgid "Check blocks"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:20
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
 msgid "Check"
 msgstr "Überprüfen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
 msgid "View your blocks under script format"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
 msgid "View"
 msgstr "Ansehen"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
-#, fuzzy
-msgid "Clear all blocks on workspace"
-msgstr "Kein Block im Arbeitsbereich definiert."
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
-#: ../help/debug/html/debug.xml.in.h:6
-msgid "Clear"
-msgstr "Löschen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:25
 msgid "saved"
@@ -1687,9 +1686,21 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
+#: ../help/debug/html/debug.xml.in.h:6
+msgid "Clear"
+msgstr "Löschen"
+
 #: ../help/debug/html/debug.xml.in.h:7
 msgid "Autoscroll"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Save your script"
+#~ msgstr "Script importieren"
+
+#, fuzzy
+#~ msgid "Clear all blocks on workspace"
+#~ msgstr "Kein Block im Arbeitsbereich definiert."
 
 #, fuzzy
 #~ msgid "Recording duration"
