@@ -770,7 +770,7 @@ function init_template(path, params, agocontrol)
 function reset_template(model)
 {
     //delete blockly divs (bug in blockly?)
-    $('.blocklyWidgetDiv').remove();
-    $('.blocklyTooltipDiv').remove();
-    $('.blocklyToolboxDiv').remove();
+    $('.blocklyWidgetDiv').hide();
+    $('.blocklyTooltipDiv').hide();
+    $('.blocklyToolboxDiv').hide();
 }
