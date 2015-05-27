@@ -709,3 +709,11 @@ function init_template(path, params, agocontrol)
 
     return model;
 }
+
+function reset_template(model)
+{
+    //delete blockly divs (bug in blockly?)
+    $('.blocklyWidgetDiv').remove();
+    $('.blocklyTooltipDiv').remove();
+    $('.blocklyToolboxDiv').remove();
+}
