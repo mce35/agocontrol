@@ -15,6 +15,18 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.scriptLoaded = false;
     self.debugData = ko.observable('{}');
     self.debugging = false;
+    self.defaultWorkspace = '<xml>'
+        + '<block type="controls_if">'
+        + '<value name="IF0">'
+        + '<block type="agocontrol_content">'
+        + '<value name="EVENT">'
+        + '<block type="agocontrol_eventAll"/>'
+        + '</value>'
+        + '</block>'
+        + '</value>'
+        + '</block>'
+        + '</xml>';
+    self.workspace = null; //blockly workspace
 
     //luacontroller uuid
     if( devices!==undefined )
@@ -31,7 +43,7 @@ function agoBlocklyPlugin(devices, agocontrol)
 
     //get unconnected block
     self.getUnconnectedBlock = function() {
-        var blocks = Blockly.mainWorkspace.getAllBlocks();
+        var blocks = self.workspace.getAllBlocks();
         for (var i = 0, block; block = blocks[i]; i++)
         {
             var connections = block.getConnections_(true);
@@ -49,7 +61,7 @@ function agoBlocklyPlugin(devices, agocontrol)
     //get block with warning
     self.getBlockWithWarning = function()
     {
-        var blocks = Blockly.mainWorkspace.getAllBlocks();
+        var blocks = self.workspace.getAllBlocks();
         for (var i = 0, block; block = blocks[i]; i++)
         {
             if (block.warning)
@@ -73,7 +85,7 @@ function agoBlocklyPlugin(devices, agocontrol)
     //check blocks
     self.checkBlocks = function(notifySuccess) {
         var warningText;
-        if( Blockly.mainWorkspace.getTopBlocks(false).length===0 )
+        if( self.workspace.getAllBlocks().length===0 )
         {
             //nothing to save
             notif.info('#nb');
@@ -164,27 +176,27 @@ function agoBlocklyPlugin(devices, agocontrol)
 
     //return xml code of blocks
     self.getXml = function() {
-        var dom = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+        var dom = Blockly.Xml.workspaceToDom(self.workspace);
         return Blockly.Xml.domToText(dom);
     };
 
     //set blocks structure
     self.setXml = function(xml) {
         //clear existing blocks
-        Blockly.mainWorkspace.clear();
+        self.workspace.clear();
         //load xml
         try {
             var dom = Blockly.Xml.textToDom(xml);
-            Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, dom);
-            Blockly.mainWorkspace.render();
+            Blockly.Xml.domToWorkspace(self.workspace, dom);
+            self.workspace.render();
         }
         catch(e) {
             //exception
-            console.log('Exception during xml loading:'+e);
+            console.error('Exception during xml loading:'+e);
             return false;
         }
         //check if loaded
-        if( Blockly.mainWorkspace.getTopBlocks(false).length===0 )
+        if( self.workspace.getTopBlocks(false).length===0 )
         {
             //no block in workspace
             return false;
@@ -198,12 +210,20 @@ function agoBlocklyPlugin(devices, agocontrol)
 
     //return lua code of blocks
     self.getLua = function() {
-        return Blockly.Lua.workspaceToCode();
+        return Blockly.Lua.workspaceToCode(self.workspace);
+    };
+
+    //set workspace
+    self.setWorkspace = function(workspace)
+    {
+        self.workspace = workspace;
+        //add listener
+        self.workspace.addChangeListener(self.onWorkspaceChanged);
     };
 
     //callback when workspace changed
     self.onWorkspaceChanged = function() {
-        if( Blockly.mainWorkspace.getTopBlocks(false).length>0 )
+        if( self.workspace.rendered )
         {
             if( !self.scriptLoaded )
             {
@@ -263,8 +283,8 @@ function agoBlocklyPlugin(devices, agocontrol)
                     scriptName = scriptName.replace('blockly_', '');
                 }
                 self.scriptName(scriptName);
-                self.scriptLoaded = true;
                 self.scriptSaved(true);
+                self.scriptLoaded = true;
                 notif.success('#sl');
             }
             else
@@ -320,22 +340,8 @@ function agoBlocklyPlugin(devices, agocontrol)
 
     //Add default blocks
     self.addDefaultBlocks = function() {
-        //create blocks
-        var ifBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'controls_if');
-        ifBlock.initSvg();
-        var contentBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'agocontrol_content');
-        contentBlock.initSvg();
-        var eventBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'agocontrol_eventAll');
-        eventBlock.initSvg();
-
-        //connect each others
-        ifBlock.getInput('IF0').connection.connect(contentBlock.outputConnection);
-        contentBlock.getInput('EVENT').connection.connect(eventBlock.outputConnection);
-
-        //render blocks
-        ifBlock.render();
-        contentBlock.render();
-        eventBlock.render();
+        var xml = Blockly.Xml.textToDom(self.defaultWorkspace);
+        Blockly.Xml.domToWorkspace(self.workspace, xml);
     };
 
     //============================
@@ -344,9 +350,9 @@ function agoBlocklyPlugin(devices, agocontrol)
 
     //clear button
     self.clear = function() {
-        if( Blockly.mainWorkspace.getTopBlocks(false).length<2 || window.confirm("Delete everything?") )
+        if( self.workspace.getAllBlocks().length<2 || window.confirm("Delete everything?") )
         {
-            Blockly.mainWorkspace.clear();
+            self.workspace.clear();
             self.scriptName('untitled');
             self.scriptSaved(true);
             self.addDefaultBlocks();
@@ -371,21 +377,6 @@ function agoBlocklyPlugin(devices, agocontrol)
         if( self.scriptName()==='untitled' )
         {
             $("#saveDialog").addClass('active');
-            /*$( "#saveDialog" ).dialog({
-                modal: true,
-                title: "Save script",
-                height: 175,
-                width: 375,
-                buttons: {
-                    "Ok": function() {
-                    },
-                    "Cancel": function() {
-                        notif.info('#ns');
-                        $(this).dialog("close");
-                        return;
-                    }
-                }
-            });*/
         }
         else
         {
@@ -448,7 +439,7 @@ function agoBlocklyPlugin(devices, agocontrol)
                     if( data.result.result.error.len>0 )
                     {
                         notif.error('Unable to import script');
-                        console.log('Unable to upload script: '+data.result.result.error);
+                        console.error('Unable to upload script: '+data.result.result.error);
                     }
                     else
                     {
@@ -482,17 +473,6 @@ function agoBlocklyPlugin(devices, agocontrol)
         {
             //open script dialog
             $("#loadDialog").addClass('active');
-            /*$( "#loadDialog" ).dialog({
-                modal: true,
-                title: "Load script",
-                height: 700,
-                width: 700,
-                buttons: {
-                    Close: function() {
-                        $(this).dialog("close");
-                    }
-                }
-            });*/
         });
     };
 
@@ -676,7 +656,8 @@ function agoBlocklyPlugin(devices, agocontrol)
     //view model
     this.blocklyViewModel = new ko.blockly.viewModel({
         onWorkspaceChanged: self.onWorkspaceChanged,
-        addDefaultBlocks: self.addDefaultBlocks
+        addDefaultBlocks: self.addDefaultBlocks,
+        setWorkspace: self.setWorkspace
     });
 }
 
@@ -689,6 +670,7 @@ function init_template(path, params, agocontrol)
         viewModel: function(config) {
             this.onWorkspaceChanged = config.onWorkspaceChanged;
             this.addDefaultBlocks = config.addDefaultBlocks;
+            this.setWorkspace = config.setWorkspace;
         }
     };
 
@@ -703,16 +685,15 @@ function init_template(path, params, agocontrol)
 
                 element.innerHTML = "";
                 //inject blockly
-                Blockly.inject( document.getElementById('blocklyDiv'), {
+                var workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
                     path: "configuration/blockly/blockly/",
                     toolbox: document.getElementById('toolbox')
                 });
+                viewmodel().setWorkspace(workspace);
                 //init agoblockly
                 if( BlocklyAgocontrol!==null && BlocklyAgocontrol.init!==undefined )
                 {
                     BlocklyAgocontrol.init(agocontrol.schema(), agocontrol.devices(), agocontrol.variables());
-                    //handle workspace changing event
-                    Blockly.addChangeListener(viewmodel().onWorkspaceChanged);
                 }
                 else
                 {

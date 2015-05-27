@@ -67,8 +67,18 @@ Blockly.Lua['variables_set_two'] = function(block) {
       Blockly.Lua.ORDER_NONE) || 'nil, nil';
   var varName1 = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR1'),
       Blockly.Variables.NAME_TYPE);
+  if( varName1.indexOf('ago_')===0 )
+  {
+      //variable is a context variable
+      varName1 = 'context.'+varName1;
+  }
   var varName2 = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR2'),
       Blockly.Variables.NAME_TYPE);
+  if( varName2.indexOf('ago_')===0 )
+  {
+      //variable is a context variable
+      varName2 = 'context.'+varName2;
+  }
   return varName1 + ', ' + varName2 + ' = ' + value + '\n';
 };
 
@@ -81,9 +91,32 @@ Blockly.Lua['variables_set_three'] = function(block) {
       Blockly.Lua.ORDER_NONE) || 'nil, nil, nil';
   var varName1 = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR1'),
       Blockly.Variables.NAME_TYPE);
+  if( varName1.indexOf('ago_')===0 )
+  {
+      //variable is a context variable
+      varName1 = 'context.'+varName1;
+  }
   var varName2 = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR2'),
       Blockly.Variables.NAME_TYPE);
+  if( varName2.indexOf('ago_')===0 )
+  {
+      //variable is a context variable
+      varName2 = 'context.'+varName2;
+  }
   var varName3 = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR3'),
       Blockly.Variables.NAME_TYPE);
+  if( varName3.indexOf('ago_')===0 )
+  {
+      //variable is a context variable
+      varName3 = 'context.'+varName3;
+  }
   return varName1 + ', ' + varName2 + ', ' + varName3 + ' = ' + value + '\n';
 };
+
+Blockly.Lua['variables_is_defined'] = function(block) {
+    //Return lua variable definition test
+    var argument0 = Blockly.Lua.valueToCode(block, 'VAR', Blockly.Lua.ORDER_NONE) || '\'\'';
+    var code = '' + argument0 + ' ~= nil';
+    return [code, Blockly.Lua.ORDER_RELATIONAL];
+};
+
