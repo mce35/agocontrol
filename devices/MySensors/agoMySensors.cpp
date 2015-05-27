@@ -382,11 +382,14 @@ bool openSerialPort(string device)
  * Close serial port
  */
 void closeSerialPort() {
-    try {
+    try
+    {
         serialPort.Close();
     }
-    catch( std::exception const&  ex) {
-        //cerr  << "Can't close serial port: " << ex.what() << endl;
+    catch( std::exception const&  ex)
+    {
+        if( DEBUG )
+            cout  << "Can't close serial port: " << ex.what() << endl;
     }
 }
 
@@ -879,9 +882,16 @@ std::string readLine(bool* error) {
  */
 void newDevice(std::string internalid, std::string devicetype)
 {
-    //init
-    qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+    //check internalid
+    if( !checkInternalid(internalid) )
+    {
+        //internal id is not valid!
+        cerr << "Unable to add device, internalid '" << internalid << "' is not valid" << endl;
+        return;
+    }
 
+    //check if device already exists
+    qpid::types::Variant::Map infos = getDeviceInfos(internalid);
     if( !devicemap["devices"].isVoid() )
     {
         qpid::types::Variant::Map devices = devicemap["devices"].asMap();
@@ -1258,6 +1268,8 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                 case V_WATT_V13:
                     break;
                 case V_KWH_V13:
+                    valid = 1;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.powerchanged", payload.c_str(), "kWh");
                     break;
                 case V_SCENE_ON_V13:
                     break;
@@ -1400,6 +1412,10 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case I_CONFIG_V14:
                     //return config
                     sendcommandV14(internalid, INTERNAL_V14, 0, I_CONFIG_V14, units.c_str());
+                case I_SKETCH_NAME_V14:
+                case I_SKETCH_VERSION_V14:
+                    //handled but useless
+                    break;
                 default:
                     cout << "INTERNAL subtype '" << subType << "' not supported (protocol v1.4)" << endl;
             }
@@ -1673,6 +1689,8 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case V_WATT_V14:
                     break;
                 case V_KWH_V14:
+                    valid = 1;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.powerchanged", payload.c_str(), "kWh");
                     break;
                 case V_SCENE_ON_V14:
                     break;
@@ -1730,6 +1748,14 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 case V_VOLUME_V14:
                     break;
                 case V_LOCK_STATUS_V14:
+                    break;
+                case V_DUST_LEVEL_V14:
+                    break;
+                case V_VOLTAGE_V14:
+                    break;
+                case V_CURRENT_V14:
+                    valid = 1;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.powerchanged", payload.c_str(), "A");
                     break;
                 default:
                     break;
@@ -1999,8 +2025,10 @@ int main(int argc, char **argv)
     std::string line = "";
     int attempts = 0;
     cout << "Waiting for the gateway starts..." << endl << flush;
-    for( int i=0; i<5; i++ )
+    for( int i=0; i<3; i++ )
     {
+        error = false;
+
         //open serial port
         if( DEBUG )
             cout << "Opening serial port '" << device << "'..." << endl;
@@ -2024,7 +2052,7 @@ int main(int argc, char **argv)
             }
 
             //check attemps
-            if( attempts>5 )
+            if( attempts>2 )
             {
                 //max attemps reached without receiving awaited string
                 if( DEBUG )
@@ -2040,6 +2068,8 @@ int main(int argc, char **argv)
         if( error )
         {
             //no way to get controller init, close port and start again
+            if( DEBUG )
+                cout << "Close serial port" << endl;
             closeSerialPort();
         }
         else
