@@ -4,5 +4,5 @@
         "description": "Variables configuration",
         "template": "html/variables",
         "listable": true,
-        "variables": "Variables"
+        "category": "Variables"
 }
