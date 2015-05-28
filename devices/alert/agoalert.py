@@ -61,9 +61,6 @@ class Alert(threading.Thread):
         self.connection = connection
         self.type = type
 
-    def __del__(self):
-        self.stop()
-
     def stop(self):
         #remove device from agocontrol
         self.remove_device()
@@ -76,6 +73,7 @@ class Alert(threading.Thread):
         Add agocontrol device
         """
         if Alert.GATEWAYS.has_key(self.type) and not Alert.GATEWAYS[self.type]:
+            self.log.debug('Add device type "%s" with uuid "%s"' % (self.type, Alert.UUIDS[self.type]))
             if self.type==Alert.TYPE_SMS:
                 self.connection.add_device(Alert.UUIDS[self.type], 'smsgateway')
             elif self.type==Alert.TYPE_SMTP:
@@ -94,6 +92,7 @@ class Alert(threading.Thread):
         """
         if Alert.GATEWAYS.has_key(self.type) and Alert.GATEWAYS[self.type]:
             try:
+                self.log.debug('Remove device type "%s" with uuid "%s"' % (self.type, Alert.UUIDS[self.type]))
                 self.connection.remove_device(Alert.UUIDS[self.type])
             except:
                 self.log.exception('Unable to remove device:')
@@ -103,6 +102,7 @@ class Alert(threading.Thread):
         """
         Queue specified message
         """
+        self.log.debug('%s: Queue message: %s' % (type(self).__name__, message))
         self.__queue.put(message)
 
     def get_config(self):
@@ -146,6 +146,44 @@ class Alert(threading.Thread):
         """
         raise NotImplementedError('_sendMessage method must be implemented')
 
+    def check_command_param(self, content, param, type=None, empty=False):
+        """
+        I'm lazy so it's a copy/paste of agoapp function
+        """
+        #check presence
+        if param not in content:
+            self.log.trace('Parameter "%s" not in %s' % (param, content))
+            return False, param
+
+        #check type
+        if type!=None:
+            try:
+                if type=='string':
+                    new_param = str(param)
+                    #check if str is empty
+                    if empty and isinstance(new_param, str) and len(new_param)==0:
+                        self.log.trace('Parameter "%s" is empty' % (new_param))
+                        return False, param
+                    else:
+                        return True, new_param
+                elif type=='int':
+                    return True, int(param)
+                elif type=='float':
+                    return True, float(param)
+                elif type=='bool':
+                    return True, bool(param)
+            except:
+                #conversion exception
+                self.log.trace('Conversion exception for "%s" [%s] to %s' % (param, type(param), type))
+                return False, param
+        else:
+            #check if str is empty
+            if empty and isinstance(param, str) and len(param)==0:
+                self.log.trace('Parameter "%s" is empty' % (param))
+                return False, param
+
+        return True, param
+
     def run(self):
         """
         Main process
@@ -154,7 +192,7 @@ class Alert(threading.Thread):
             if not self.__queue.empty():
                 #message to send
                 message = self.__queue.get()
-                self.log.info('send message: %s' % str(message))
+                self.log.debug('%s: Send message: %s' % (type(self).__name__, str(message)))
                 try:
                     self._sendMessage(message)
                 except Exception as e:
@@ -226,8 +264,8 @@ class SMSFreeMobile(Alert):
         """
         if self.__configured:
             #check parameters
-            if not content['text'] or len(content['text'])==0:
-                msg = 'Unable to add SMS because all parameters are mandatory'
+            if not self.check_command_param(content, 'text', empty=True)[0]:
+                msg = 'Unable to add SMS ("text" parameter is mandatory)'
                 self.log.error('SMSFreeMobile: %s' % msg)
                 return None, msg
             if len(content['text'])>160:
@@ -253,7 +291,7 @@ class SMSFreeMobile(Alert):
         lines = req.readlines()
         status = req.getcode()
         req.close()
-        self.log.debug('url=%s status=%s' % (url, str(status)))
+        self.log.trace('url=%s status=%s' % (url, str(status)))
         if status==200:
             return True, 'SMS sent successfully'
         else:
@@ -306,8 +344,12 @@ class SMS12voip(Alert):
         """
         if self.__configured:
             #check parameters
-            if not content['to'] or not content['text'] or len(content['to'])==0 or len(content['text'])==0:
-                msg = 'Unable to add SMS because all parameters are mandatory'
+            if not self.check_command_param(content, 'text', empty=True)[0]:
+                msg = 'Unable to add SMS ("text" parameter is mandatory)'
+                self.log.error('SMS12voip: %s' % msg)
+                return None, msg
+            if not self.check_command_param(content, 'to', empty=True)[0]:
+                msg = 'Unable to add SMS ("to" parameter is mandatory)'
                 self.log.error('SMS12voip: %s' % msg)
                 return None, msg
             if not content['to'].startswith('+') and content['to']!=self.username:
@@ -337,7 +379,7 @@ class SMS12voip(Alert):
         lines = req.readlines()
         status = req.getcode()
         req.close()
-        self.log.debug('url=%s status=%s' % (url, str(status)))
+        self.log.trace('url=%s status=%s' % (url, str(status)))
         if status==200:
             return True, 'SMS sent successfully'
         else:
@@ -421,8 +463,8 @@ class Twitter(Alert):
         """
         if self.__configured:
             #check parameters
-            if not content['tweet'] and len(content['tweet'])==0:
-                msg = 'Unable to add tweet (all parameters are mandatory)'
+            if not self.check_command_param(content, 'tweet', empty=True)[0]:
+                msg = 'Unable to add tweet ("tweet" parameter is mandatory)'
                 self.log.error('Twitter: %s' % msg)
                 return None, msg
             if len(content['tweet'])>140:
@@ -439,11 +481,11 @@ class Twitter(Alert):
         #connect using OAuth auth (basic auth deprecated)
         auth = tweepy.OAuthHandler(self.consumerKey, self.consumerSecret)
         auth.secure = True
-        self.log.debug('key=%s secret=%s' % (self.key, self.secret))
+        self.log.trace('key=%s secret=%s' % (self.key, self.secret))
         auth.set_access_token(self.key, self.secret)
         api = tweepy.API(auth)
         res = api.update_status(message['tweet'])
-        self.log.debug(res);
+        self.log.trace('Tweepy result: %s' % res);
         #check result
         if res.text.find(message['tweet'])!=-1:
             return True, 'Tweet successful'
@@ -516,13 +558,20 @@ class Mail(Alert):
         """
         if self.__configured:
             #check params
-            if not content.has_key('tos') or not content.has_key('body') or (content.has_key('tos') and len(content['tos'])==0) or (content.has_key('body') and len(content['body'])==0):
-                msg = 'Unable to add mail (all parameters are mandatory)'
+            if not self.check_command_param(content, 'body')[0]:
+                msg = 'Unable to add mail ("body" parameter is mandatory)'
                 self.log.error('Mail: %s' % msg)
                 return None, msg
-            if not content.has_key('subject') or (content.has_key('subject') and len(content['subject'])==0):
+            if not self.check_command_param(content, 'tos', empty=True)[0]:
+                msg = 'Unable to add mail ("tos" parameter is mandatory)'
+                self.log.error('Mail: %s' % msg)
+                return None, msg
+            if not self.check_command_param(content, 'subject', empty=True)[0]:
                 #no subject specified, add default one
                 content['subject'] = 'Agocontrol alert'
+            if not self.check_command_param(content, 'attachment')[0]:
+                #no attachement specified
+                content['attachment'] = ''
             #queue mail
             return {'subject':content['subject'], 'tos':content['tos'], 'content':content['body'], 'attachment':content['attachment']}, ''
         else:
@@ -635,10 +684,12 @@ class Pushover(Alert):
         """
         if self.__configured:
             #check params
-            if not content['message'] or len(content['message'])==0 or not content.has_key('priority'):
-                msg = 'Unable to add push (all parameters are mandatory)'
+            if not self.check_command_param(content, 'message', empty=True)[0]:
+                msg = 'Unable to add push ("message" parameter is mandatory)'
                 self.log.error('Pushover: %s' % msg)
                 return None, msg
+            if not self.check_command_param(content, 'priority')[0]:
+                content['priority'] = '0'
             #queue push message
             return {'message':content['message'], 'priority':content['priority']}, ''
         else:
@@ -658,12 +709,12 @@ class Pushover(Alert):
             'timestamp': int(time.time())
         }), { "Content-type": "application/x-www-form-urlencoded" })
         resp = conn.getresponse()
-        self.log.info(resp)
+        self.log.trace('Pushover response: %s' % resp)
         #check response
         if resp:
             try:
                 read = resp.read()
-                self.log.debug(read)
+                self.log.trace('Pushover response: %s' % read)
                 resp = json.loads(read)
                 #TODO handle receipt https://pushover.net/api#receipt
                 if resp['status']==0:
@@ -723,7 +774,7 @@ class Pushbullet(Alert):
         devices = []
         if self.pushbullet:
             devs = self.pushbullet.getDevices()
-            self.log.debug('pushbullet devs=%s' % str(devs))
+            self.log.trace('pushbullet devs=%s' % str(devs))
             for dev in devs:
                 name = '%s %s (%s)' % (dev['manufacturer'], dev['model'], dev['iden'])
                 self.pbdevices[name] = {'name':name, 'id':dev['iden']}
@@ -762,16 +813,10 @@ class Pushbullet(Alert):
         """
         if self.__configured:
             #check params
-            if not content['message'] or len(content['message'])==0:
-                if not content.has_key('file') or (content.has_key('file') and len(content['file'])==0):
-                    msg = 'Unable to add push (at least one parameter is mandatory)'
-                    self.log.error('Pushbullet: %s' % msg)
-                    return None, msg
-            elif not content.has_key('file') or (content.has_key('file') and len(content['file'])==0):
-                if not content['message'] or len(content['message'])==0:
-                    msg = 'Unable to add push (at least one parameter is mandatory)'
-                    self.log.error('Pushbullet: %s' % msg)
-                    return None, msg
+            if not self.check_command_param(content, 'message', empty=True)[0] and not self.check_command_param(content, 'file', empty=True)[0]:
+                msg = 'Unable to add push (at least one parameter ("message" or "file") is mandatory)'
+                self.log.error('Pushbullet: %s' % msg)
+                return None, msg
             if not content.has_key('message'):
                 content['message'] = ''
             if not content.has_key('file'):
@@ -786,18 +831,21 @@ class Pushbullet(Alert):
     def _sendMessage(self, message):
         #get devices from pushbullet if necessary
         if len(self.pbdevices)==0:
+            self.log.debug('Update pushbullet devices')
             self.getPushbulletDevices()
 
         #push message
         count = 0
         error = ''
+        self.log.trace('Pushbullet devices: %s' % self.pbdevices)
+        self.log.trace('Send bullet to devices: %s' % self.devices)
         for device in self.devices:
             #get device id
             if self.pbdevices.has_key(device):
                 if len(message['file'])==0:
                     #send a note
                     resp = self.pushbullet.pushNote(self.pbdevices[device]['id'], self.pushTitle, message['message'])
-                    self.log.debug(resp)
+                    self.log.trace('Pushbullet response: %s' % resp)
                     if resp.has_key('error'):
                         #error occured
                         error = resp['error']['message']
@@ -808,7 +856,7 @@ class Pushbullet(Alert):
                 else:
                     #send a file
                     resp = self.pushbullet.pushFile(self.pbdevices[device]['id'], message['file'])
-                    self.log.debug(resp)
+                    self.log.trace('Pushbullet response (file): %s' % resp)
                     if resp.has_key('error'):
                         #error occured
                         error = resp['error']['message']
@@ -865,7 +913,7 @@ class Notifymyandroid(Alert):
         self.add_device()
         return True
 
-    def prepare_message(self, content, priority='0'):
+    def prepare_message(self, content):
         """
         Add push
         @param message: push notification
@@ -873,10 +921,12 @@ class Notifymyandroid(Alert):
         """
         if self.__configured:
             #check params
-            if not content.has_key('message') or (content.has_key('message') and len(content['message'])==0) or not content.has_key('priority') or (content.has_key('priority') and len(content['priority'])==0):
-                msg = 'Unable to add push (all parameters are mandatory)'
+            if not self.check_command_param(content, 'message', empty=True)[0]:
+                msg = 'Unable to add push ("message" parameter is mandatory)'
                 self.log.error('Notifymyandroid: %s' % msg)
                 return None, msg
+            if not self.check_command_param(content, 'priority', empty=True)[0]:
+                content['priority'] = '0'
             #queue push message
             return {'message':content['message'], 'priority':content['priority']}, ''
         else:
@@ -1291,6 +1341,8 @@ class AgoAlert(agoclient.AgoApp):
                         pass
                     #save new sms provider
                     self.config['sms']['provider'] = provider
+                    #start new provider
+                    self.sms.start()
                         
                 if provider=='12voip':
                     if not self.check_command_param(content, 'username')[0]:
@@ -1393,6 +1445,8 @@ class AgoAlert(agoclient.AgoApp):
                         pass
                     #save new push provider
                     self.config['push']['provider'] = provider
+                    #start new provider
+                    self.push.start()
                         
                 if provider=='pushbullet':
                     if not self.check_command_param(content, 'subcmd')[0]:
