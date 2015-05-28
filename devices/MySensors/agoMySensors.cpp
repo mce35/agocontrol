@@ -116,6 +116,67 @@ std::string printDeviceInfos(std::string internalid, qpid::types::Variant::Map i
 }
 
 /**
+ * Return free id according to current known valid sensors
+ */
+int getFreeId()
+{
+    int freeId = 0;
+    qpid::types::Variant::List existingIds;
+
+    pthread_mutex_lock(&devicemapMutex);
+    if( !devicemap["devices"].isVoid() )
+    {
+        //get list of existing ids
+        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+        for( qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++ )
+        {
+            std::string internalid = it->first;
+            //format <int>/<int>
+            vector<string> splits;
+            boost::split(splits, internalid, boost::is_any_of("/"));
+            if( splits.size()==2 && splits[0].length()>0 && splits[1].length()>0 )
+            {
+                int nodeId = atoi(splits[0].c_str());
+                existingIds.push_back(nodeId);
+            }
+            else
+            {
+                //invalid internalid
+            }
+        }
+        if( DEBUG )
+            cout << "Existing ids list: " << existingIds << endl;
+
+        //search free id
+        bool found = false;
+        for( freeId=1; freeId<255; freeId++ )
+        {
+            found = false;
+            for( qpid::types::Variant::List::iterator it=existingIds.begin(); it!=existingIds.end(); it++ )
+            {
+                if( it->asInt32()==freeId )
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if( !found )
+            {
+                //free id found, return it
+                if( DEBUG )
+                    cout << "Free id found: " << freeId << endl;
+                return freeId;
+            }
+        }
+    }
+    pthread_mutex_unlock(&devicemapMutex);
+
+    //no id found
+    return 0;
+}
+
+/**
  * Save specified device infos
  */
 void setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos)
@@ -1060,17 +1121,14 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                     break;
                 case I_REQUEST_ID_V13:
                     //return radio id to sensor
-                    freeid = devicemap["nextid"];
+                    freeid = getFreeId();
                     //@info nodeId - The unique id (1-254) for this sensor. Default 255 (auto mode).
-                    if( freeid>=254 ) {
+                    if( freeid>254 || freeid==0 )
+                    {
                         cerr << "FATAL: no nodeId available!" << endl;
                     }
                     else
                     {
-                        pthread_mutex_lock(&devicemapMutex);
-                        devicemap["nextid"]=freeid+1;
-                        variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
-                        pthread_mutex_unlock(&devicemapMutex);
                         id << freeid;
                         sendcommandV13(internalid, INTERNAL_V13, I_REQUEST_ID_V13, id.str());
                     }
@@ -1390,18 +1448,14 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     break;
                 case I_ID_REQUEST_V14:
                     //return radio id to sensor
-                    freeid = devicemap["nextid"];
+                    freeid = getFreeId();
                     //@info nodeId - The unique id (1-254) for this sensor. Default 255 (auto mode).
-                    if( freeid>=254 )
+                    if( freeid>254 || freeid==0 )
                     {
                         cerr << "FATAL: no nodeId available!" << endl;
                     }
                     else
                     {
-                        pthread_mutex_lock(&devicemapMutex);
-                        devicemap["nextid"]=freeid+1;
-                        variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
-                        pthread_mutex_unlock(&devicemapMutex);
                         id << freeid;
                         sendcommandV14(internalid, INTERNAL_V14, 0, I_ID_RESPONSE_V14, id.str());
                     }
@@ -2008,15 +2062,10 @@ int main(int argc, char **argv)
     // load map, create sections if empty
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
     devicemap = jsonFileToVariantMap(dmf);
-    if (devicemap["nextid"].isVoid())
-    {
-        devicemap["nextid"]=1;
-        variantMapToJSONFile(devicemap, dmf);
-    }
     if (devicemap["devices"].isVoid())
     {
         qpid::types::Variant::Map devices;
-        devicemap["devices"]=devices;
+        devicemap["devices"] = devices;
         variantMapToJSONFile(devicemap, dmf);
     }
 
@@ -2148,10 +2197,12 @@ int main(int argc, char **argv)
     cout << "Register existing devices:" << endl;
     if( ( !devicemap["devices"].isVoid() ) && (devicemap["devices"].getType() == VAR_MAP ) )
     {
+        qpid::types::Variant::List devicesToPurge;
         qpid::types::Variant::Map devices = devicemap["devices"].asMap();
         for (qpid::types::Variant::Map::const_iterator it = devices.begin(); it != devices.end(); it++)
         {
-            if ( ( !it->second.isVoid() ) && (it->second.getType() == VAR_MAP ) ) {
+            if( ( !it->second.isVoid() ) && (it->second.getType() == VAR_MAP ) )
+            {
                 qpid::types::Variant::Map infos = it->second.asMap();
                 std::string internalid = (std::string)it->first;
                 cout << " - " << internalid << ":" << infos["type"].asString().c_str();
@@ -2161,12 +2212,30 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+                    devicesToPurge.push_back(internalid);
                     cout << " [INVALID]";
                 }
                 cout << endl;
-            } else {
+            }
+            else
+            {
                 cout << "Invalid entry in device map" << endl;
             }
+        }
+
+        //purge from config invalid entries
+        if( devicesToPurge.size()>0 )
+        {
+            for( qpid::types::Variant::List::iterator it=devicesToPurge.begin(); it!=devicesToPurge.end(); it++ )
+            {
+                if( DEBUG )
+                    cout << "Remove invalid device with internalid '" << (*it) << "' from map config file" << endl;
+                devices.erase((*it));
+            }
+
+            //and save config
+            devicemap["devices"] = devices;
+            variantMapToJSONFile(devicemap, dmf);
         }
     }
     else
