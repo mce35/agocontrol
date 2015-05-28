@@ -419,11 +419,12 @@ class AgoApp:
 
         return config.set_config_option(section, option, value, app)
 
-    def check_command_param(self, content, param, type=None):
+    def check_command_param(self, content, param, type=None, empty=False):
         """
         Check if content is containing specified parameters
         @param: parameter name
-        @type: if specified (!=None), check parameter type too or if it can be converted to
+        @type: if specified (!=None) check parameter type. Converted type is returned instead of raw parameter.
+        @empty: check if value is empty (only for string)
         @return res,param: res=True if success/False if something failed. param=parameter or converted parameter
         """
         #check presence
@@ -435,7 +436,13 @@ class AgoApp:
         if type!=None:
             try:
                 if type=='string':
-                    return True, str(param)
+                    new_param = str(param)
+                    #check if str is empty
+                    if empty and isinstance(new_param, str) and len(new_param)==0:
+                        self.log.trace('Parameter "%s" is empty' % (new_param))
+                        return False, param
+                    else:
+                        return True, new_param
                 elif type=='int':
                     return True, int(param)
                 elif type=='float':
@@ -445,6 +452,11 @@ class AgoApp:
             except:
                 #conversion exception
                 self.log.trace('Conversion exception for "%s" [%s] to %s' % (param, type(param), type))
+                return False, param
+        else:
+            #check if str is empty
+            if empty and isinstance(param, str) and len(param)==0:
+                self.log.trace('Parameter "%s" is empty' % (param))
                 return False, param
 
         return True, param
