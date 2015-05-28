@@ -1,0 +1,37 @@
+<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+
+    <div class="row dashboard-widget-header">
+        <ul class="two_up tiles" >
+            <li class="dashboard-widget-header-icon">
+                <div class="pretty large primary btn handle">
+                    <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-mail"></i>
+                </div>
+            </li>
+            <li class="dashboard-widget-header-infos">
+                <div class="row">
+                <ko opts="if: name ">
+                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
+                </ko>
+                <ko opts="ifnot: name ">
+                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
+                </ko>
+                <ko opts="if: room ">
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-location"/>
+                        <span data-bind="text: room"/>
+                    </div>
+                </ko>
+                    <div class="twelve columns dashboard-widget-header-info">
+                        <i class="icon-info"/>
+                        <span data-bind="text: state"/>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="row dashboard-widget-content">
+    </div>
+
+</div>
+
