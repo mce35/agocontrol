@@ -52,6 +52,7 @@ configuration/dashboards/html/dashboards.xml.in
 configuration/datalogger/html/datalogger.xml.in
 configuration/devices/html/devices.xml.in
 configuration/events/html/events.xml.in
+configuration/personal/html/personal.xml.in
 configuration/rooms/html/rooms.xml.in
 configuration/scenarios/html/scenarios.xml.in
 configuration/systemmonitoring/html/systemmonitoring.xml.in

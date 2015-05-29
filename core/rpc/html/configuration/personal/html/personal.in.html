@@ -1,0 +1,90 @@
+<div id="contentarea" class="container">
+
+    <h3>Personal informations</h3>
+
+    <section data-bind="gumbyTabs:$root, gumbyTabChanged:onTabChanged" class="tabs" id="personalTabs">
+        <ul class="tab-nav">
+            <li class="active"><_a href="#" data-translateable="true">Default contact</_a></li>
+            <li><_a href="#" data-translateable="true">Home position</_a></li>
+        </ul>
+        
+        <!-- contact -->
+        <div class="tab-content active">
+            <div class="row">
+                <div class="twelve columns text-center">
+                    <_span data-translateable="true">Configure your default contact informations. This allows you to not enter each time those informations.</_span>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Email address</_span>
+                </div>
+                <div class="four columns text-left field">
+                    <input type="text" placeholder="email@provider.com" data-bind="value:email" class="wide input"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Phone number</_span>
+                </div>
+                <div class="four columns text-left field">
+                    <input type="text" data-bind="value:phone" class="wide input"/>
+                </div>
+                <div class="four columns text-left">
+                    <_span data-translateable="true">(international number is preferable)</_span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="five columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-floppy">
+                        <_a data-translateable="true" href="#" data-bind="click:saveContact">Save</_a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- position -->
+        <div class="tab-content">
+            <div class="row">
+                <div class="twelve columns text-center">
+                    <_span data-translateable="true">Find and click on your home to find its position. Agocontrol needs this information to compute sunset/sunrise times.</_span>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="twelve columns text-right">
+                    <div style="width: 100%; height: 380px; margin-bottom: 20px;" id="myhome" data-bind="openlayers:openlayersViewModel"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Latitude</_span>
+                </div>
+                <div class="five columns text-left field">
+                    <input type="text" data-bind="value:latitude" class="normal input"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Longitude</_span>
+                </div>
+                <div class="five columns text-left field">
+                    <input type="text" data-bind="value:longitude" class="normal input"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="five columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-floppy">
+                        <_a data-translateable="true" href="#" data-bind="click:savePosition">Save</_a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>

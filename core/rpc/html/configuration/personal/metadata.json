@@ -1,0 +1,17 @@
+{
+        "name": "Personal infos",
+        "version": "1.0.0",
+        "description": "Set personal informations",
+        "template": "html/personal",
+        "listable": true,
+        "category": "personal",
+        "resources": {
+            "css": [
+                "../../js/libs/openlayers/ol.css"
+            ],
+            "js": [
+                "../../js/libs/openlayers/ol.js"
+            ]
+        }
+
+}
