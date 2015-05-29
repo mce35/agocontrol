@@ -368,7 +368,9 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
         } else if (content["command"] == "getconfigtree") {
             responseData["config"] = getConfigTree();
             return responseSuccess(responseData);
-        } else if (content["command"] == "setconfig") {
+        }
+        else if (content["command"] == "setconfig")
+        {
             // XXX: No access checks at all... may overwrite whatever
             checkMsgParameter(content, "section", VAR_STRING);
             checkMsgParameter(content, "option", VAR_STRING);
@@ -386,9 +388,22 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                     << " value = " << content["value"].asString()
                     << " app = " << content["app"].asString();
                 return responseSuccess();
-            } else {
-                return responseFailed("Failed to write config");
             }
+            else
+            {
+                return responseFailed("Failed to write config parameter");
+            }
+        }
+        else if( content["command"] == "getconfig" )
+        {
+            checkMsgParameter(content, "section", VAR_STRING);
+            checkMsgParameter(content, "option", VAR_STRING);
+            checkMsgParameter(content, "app", VAR_STRING);
+            std::string value = getConfigSectionOption(content["section"].asString().c_str(), content["option"].asString().c_str(),
+                                                       "", content["app"].asString().c_str());
+            qpid::types::Variant::Map response;
+            response["value"] = value;
+            return responseSuccess(response);
         }
 
         return responseUnknownCommand();
