@@ -52,6 +52,8 @@ private:
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
+    void sendDate();
+    void sendTime();
     void setupApp();
     void cleanupApp();
 
@@ -261,29 +263,41 @@ void *AgoKnx::listener() {
 
 void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content) {
     if (subject == "event.environment.timechanged") {
-        uint8_t timebytes[3];   
+        sendDate();
+        sendTime();
+    }
+}
+
+void AgoKnx::sendDate() {
         uint8_t datebytes[3];   
+        time_t now = time(NULL);
+        struct tm *lt = localtime(&now);
+        datebytes[0] = lt->tm_mday;
+        datebytes[1] = lt->tm_mon + 1;
+        datebytes[2] = lt->tm_year - 100;
+        Telegram *tg_date = new Telegram();
+        tg_date->setUserData(datebytes,3);
+        tg_date->setGroupAddress(Telegram::stringtogaddr(date_ga));
+        pthread_mutex_lock (&mutexCon);
+        AGO_TRACE() << "sending telegram";
+        tg_date->sendTo(eibcon);
+        pthread_mutex_unlock (&mutexCon);
+}
+
+void AgoKnx::sendTime() {
+        uint8_t timebytes[3];   
         time_t now = time(NULL);
         struct tm *lt = localtime(&now);
         timebytes[0]=((lt->tm_wday?lt->tm_wday:7)<<5) + lt->tm_hour;
         timebytes[1]= lt->tm_min;
         timebytes[2] = lt->tm_sec;
-        datebytes[0] = lt->tm_mday;
-        datebytes[1] = lt->tm_mon + 1;
-        datebytes[2] = lt->tm_year - 100;
         Telegram *tg_time = new Telegram();
-        Telegram *tg_date = new Telegram();
         tg_time->setUserData(timebytes,3);
         tg_time->setGroupAddress(Telegram::stringtogaddr(time_ga));
-        tg_date->setUserData(datebytes,3);
-        tg_date->setGroupAddress(Telegram::stringtogaddr(date_ga));
         pthread_mutex_lock (&mutexCon);
         AGO_TRACE() << "sending telegram";
         tg_time->sendTo(eibcon);
-        AGO_TRACE() << "sending telegram";
-        tg_date->sendTo(eibcon);
         pthread_mutex_unlock (&mutexCon);
-    }
 }
 
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
@@ -339,7 +353,6 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         checkMsgParameter(content, "red");
         checkMsgParameter(content, "green");
         checkMsgParameter(content, "blue");
-        int level=0;
         Telegram *tg2 = new Telegram();
         Telegram *tg3 = new Telegram();
         tg->setDataFromChar(atoi(content["red"].asString().c_str()));
