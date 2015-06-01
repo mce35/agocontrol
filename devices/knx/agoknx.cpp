@@ -54,6 +54,8 @@ private:
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
     void sendDate();
     void sendTime();
+    bool sendShortData(std::string dest, int data);
+
     void setupApp();
     void cleanupApp();
 
@@ -272,35 +274,47 @@ void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content
 }
 
 void AgoKnx::sendDate() {
-        uint8_t datebytes[3];   
-        time_t now = time(NULL);
-        struct tm *lt = localtime(&now);
-        datebytes[0] = lt->tm_mday;
-        datebytes[1] = lt->tm_mon + 1;
-        datebytes[2] = lt->tm_year - 100;
-        Telegram *tg_date = new Telegram();
-        tg_date->setUserData(datebytes,3);
-        tg_date->setGroupAddress(Telegram::stringtogaddr(date_ga));
-        pthread_mutex_lock (&mutexCon);
-        AGO_TRACE() << "sending telegram";
-        tg_date->sendTo(eibcon);
-        pthread_mutex_unlock (&mutexCon);
+    uint8_t datebytes[3];   
+    time_t now = time(NULL);
+    struct tm *lt = localtime(&now);
+    datebytes[0] = lt->tm_mday;
+    datebytes[1] = lt->tm_mon + 1;
+    datebytes[2] = lt->tm_year - 100;
+    Telegram *tg_date = new Telegram();
+    tg_date->setUserData(datebytes,3);
+    tg_date->setGroupAddress(Telegram::stringtogaddr(date_ga));
+    pthread_mutex_lock (&mutexCon);
+    AGO_TRACE() << "sending telegram";
+    tg_date->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+}
+
+bool AgoKnx::sendShortData(std::string dest, int data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setShortUserData(data > 0 ? 1 : 0);
+    AGO_TRACE() << "sending value " << data << " as short data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
 }
 
 void AgoKnx::sendTime() {
-        uint8_t timebytes[3];   
-        time_t now = time(NULL);
-        struct tm *lt = localtime(&now);
-        timebytes[0]=((lt->tm_wday?lt->tm_wday:7)<<5) + lt->tm_hour;
-        timebytes[1]= lt->tm_min;
-        timebytes[2] = lt->tm_sec;
-        Telegram *tg_time = new Telegram();
-        tg_time->setUserData(timebytes,3);
-        tg_time->setGroupAddress(Telegram::stringtogaddr(time_ga));
-        pthread_mutex_lock (&mutexCon);
-        AGO_TRACE() << "sending telegram";
-        tg_time->sendTo(eibcon);
-        pthread_mutex_unlock (&mutexCon);
+    uint8_t timebytes[3];   
+    time_t now = time(NULL);
+    struct tm *lt = localtime(&now);
+    timebytes[0]=((lt->tm_wday?lt->tm_wday:7)<<5) + lt->tm_hour;
+    timebytes[1]= lt->tm_min;
+    timebytes[2] = lt->tm_sec;
+    Telegram *tg_time = new Telegram();
+    tg_time->setUserData(timebytes,3);
+    tg_time->setGroupAddress(Telegram::stringtogaddr(time_ga));
+    pthread_mutex_lock (&mutexCon);
+    AGO_TRACE() << "sending telegram";
+    tg_time->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
 }
 
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
