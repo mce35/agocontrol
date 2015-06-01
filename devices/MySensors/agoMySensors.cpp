@@ -1116,6 +1116,11 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                     //emit battery level
                     agoConnection->emitEvent(internalid.c_str(), "event.device.batterylevelchanged", payload.c_str(), "percent");
                     break;
+                case I_SKETCH_NAME_V13:
+                    //only used to update timestamp. Useful if network relay support enabled
+                    infos["last_timestamp"] = (int)(time(NULL));
+                    setDeviceInfos(internalid, &infos);
+                    break;
                 case I_TIME_V13:
                     timestamp << time(NULL);
                     sendcommandV13(internalid, INTERNAL_V13, I_TIME_V13, timestamp.str());
@@ -1468,8 +1473,12 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     //return config
                     sendcommandV14(internalid, INTERNAL_V14, 0, I_CONFIG_V14, units.c_str());
                 case I_SKETCH_NAME_V14:
+                    //handled by useless (just to remove some unsupported log messages)
+                    break;
                 case I_SKETCH_VERSION_V14:
-                    //handled but useless
+                    //only used to update timestamp. Useful if network relay support enabled
+                    infos["last_timestamp"] = (int)(time(NULL));
+                    setDeviceInfos(internalid, &infos);
                     break;
                 default:
                     cout << "INTERNAL subtype '" << subType << "' not supported (protocol v1.4)" << endl;
@@ -2032,7 +2041,7 @@ int main(int argc, char **argv)
     handleNetworkRelay = atoi(getConfigSectionOption("mysensors", "networkrelay", "0").c_str());
     if( handleNetworkRelay==1 )
     {
-        cout << "Network relay devices handling support activated" << endl;
+        cout << "Network relay devices handling support enabled" << endl;
     }
 
     //get command line parameters
