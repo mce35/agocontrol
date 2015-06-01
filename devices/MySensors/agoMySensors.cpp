@@ -1987,8 +1987,8 @@ void *checkStale(void *param)
                             if( (int)now>(infos["last_timestamp"].asInt32()+staleThreshold) )
                             {
                                 //device is stalled
-                                //cout << "suspend device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
-                                //cout << "isstale? " << agoConnection->isDeviceStale(internalid.c_str()) << endl;
+                                if( DEBUG )
+                                    cout << "Stale: Suspend device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
                                 agoConnection->suspendDevice(internalid.c_str());
                             }
                         }
@@ -1997,7 +1997,8 @@ void *checkStale(void *param)
                             if( infos["last_timestamp"].asInt32()>=((int)now-staleThreshold) )
                             {
                                 //device woke up
-                                //cout << "resume device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
+                                if( DEBUG )
+                                    cout << "Stale: Resume device " << internalid << " last_ts=" << infos["last_timestamp"].asInt32() << " threshold=" << staleThreshold << " now=" << (int)now << endl;
                                 agoConnection->resumeDevice(internalid.c_str());
                             }
                         }
