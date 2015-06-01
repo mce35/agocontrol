@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-29 17:36+0200\n"
+"POT-Creation-Date: 2015-06-01 11:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -237,7 +237,7 @@ msgstr ""
 #: ../applications/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:17
 #: ../configuration/events/html/events.xml.in.h:13
-#: ../configuration/personal/html/personal.xml.in.h:7
+#: ../configuration/system/html/system.xml.in.h:8
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
 msgstr ""
@@ -1474,43 +1474,48 @@ msgstr ""
 msgid "Edit Event"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:1
+#: ../configuration/system/html/system.xml.in.h:1
+#: ../help/system/html/system.xml.in.h:1
+msgid "System informations"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:2
 msgid "Default contact"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:2
+#: ../configuration/system/html/system.xml.in.h:3
 msgid "Home position"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:3
+#: ../configuration/system/html/system.xml.in.h:4
 msgid ""
 "Configure your default contact informations. This allows you to not enter "
 "each time those informations."
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:4
+#: ../configuration/system/html/system.xml.in.h:5
 msgid "Email address"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:5
+#: ../configuration/system/html/system.xml.in.h:6
 msgid "Phone number"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:6
+#: ../configuration/system/html/system.xml.in.h:7
 msgid "(international number is preferable)"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:8
+#: ../configuration/system/html/system.xml.in.h:9
 msgid ""
 "Find and click on your home to find its position. Agocontrol needs this "
 "information to compute sunset/sunrise times."
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:9
+#: ../configuration/system/html/system.xml.in.h:10
 msgid "Latitude"
 msgstr ""
 
-#: ../configuration/personal/html/personal.xml.in.h:10
+#: ../configuration/system/html/system.xml.in.h:11
 msgid "Longitude"
 msgstr ""
 
@@ -1582,10 +1587,6 @@ msgstr ""
 
 #: ../configuration/variables/html/variables.xml.in.h:8
 msgid "Create variable"
-msgstr ""
-
-#: ../help/system/html/system.xml.in.h:1
-msgid "System informations"
 msgstr ""
 
 #: ../help/system/html/system.xml.in.h:2

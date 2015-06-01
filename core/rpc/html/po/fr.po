@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-29 17:36+0200\n"
+"POT-Creation-Date: 2015-06-01 11:02+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -240,7 +240,7 @@ msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 #: ../applications/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:17
 #: ../configuration/events/html/events.xml.in.h:13
-#: ../configuration/personal/html/personal.xml.in.h:7
+#: ../configuration/system/html/system.xml.in.h:8
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
 msgstr "Enregistrer"
@@ -1504,46 +1504,53 @@ msgstr "Entrer le nom de l'évènement"
 msgid "Edit Event"
 msgstr "Modifier l'évènement"
 
-#: ../configuration/personal/html/personal.xml.in.h:1
+#: ../configuration/system/html/system.xml.in.h:1
+#: ../help/system/html/system.xml.in.h:1
+msgid "System informations"
+msgstr "Informations système"
+
+#: ../configuration/system/html/system.xml.in.h:2
 msgid "Default contact"
 msgstr "Contact par défaut"
 
-#: ../configuration/personal/html/personal.xml.in.h:2
+#: ../configuration/system/html/system.xml.in.h:3
 msgid "Home position"
 msgstr "Position de la maison"
 
-#: ../configuration/personal/html/personal.xml.in.h:3
+#: ../configuration/system/html/system.xml.in.h:4
 msgid ""
 "Configure your default contact informations. This allows you to not enter "
 "each time those informations."
 msgstr ""
+"Configurer vos contacts par défaut. Cela vous permettra de ne pas "
+"entrer à chaque fois ces informations"
 
-#: ../configuration/personal/html/personal.xml.in.h:4
+#: ../configuration/system/html/system.xml.in.h:5
 msgid "Email address"
 msgstr "Adresse email"
 
-#: ../configuration/personal/html/personal.xml.in.h:5
+#: ../configuration/system/html/system.xml.in.h:6
 msgid "Phone number"
 msgstr "Numéro de téléphone"
 
-#: ../configuration/personal/html/personal.xml.in.h:6
+#: ../configuration/system/html/system.xml.in.h:7
 msgid "(international number is preferable)"
 msgstr "(un numéro international est préférable (+33))"
 
-#: ../configuration/personal/html/personal.xml.in.h:8
+#: ../configuration/system/html/system.xml.in.h:9
 msgid ""
 "Find and click on your home to find its position. Agocontrol needs this "
 "information to compute sunset/sunrise times."
 msgstr ""
 "Trouvez et cliquez sur votre maison pour avoir sa position géographique. "
-"Agocontrol a besoin de cette information pour calculer l'heure du lever"
-"/coucher de soleil"
+"Agocontrol a besoin de cette information pour calculer l'heure du lever/"
+"coucher de soleil"
 
-#: ../configuration/personal/html/personal.xml.in.h:9
+#: ../configuration/system/html/system.xml.in.h:10
 msgid "Latitude"
 msgstr "Latitude"
 
-#: ../configuration/personal/html/personal.xml.in.h:10
+#: ../configuration/system/html/system.xml.in.h:11
 msgid "Longitude"
 msgstr "Longitude"
 
@@ -1618,10 +1625,6 @@ msgstr "Nom de la variable"
 #: ../configuration/variables/html/variables.xml.in.h:8
 msgid "Create variable"
 msgstr "Créer une variable"
-
-#: ../help/system/html/system.xml.in.h:1
-msgid "System informations"
-msgstr "Informations système"
 
 #: ../help/system/html/system.xml.in.h:2
 msgid "System version"
