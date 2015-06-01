@@ -1,7 +1,7 @@
 /**
  * Model class
  */
-function PersonalConfig(agocontrol)
+function SystemConfig(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
@@ -185,7 +185,7 @@ function init_template(path, params, agocontrol)
         }
     };
 
-    var model = new PersonalConfig(agocontrol);
+    var model = new SystemConfig(agocontrol);
     return model;
 }
 

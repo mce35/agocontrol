@@ -1,10 +1,10 @@
 {
-        "name": "Personal infos",
+        "name": "System",
         "version": "1.0.0",
-        "description": "Set personal informations",
-        "template": "html/personal",
+        "description": "System configuration",
+        "template": "html/system",
         "listable": true,
-        "category": "personal",
+        "category": "core",
         "resources": {
             "css": [
                 "../../js/libs/openlayers/ol.css"
