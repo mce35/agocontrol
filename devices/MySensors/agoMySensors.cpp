@@ -69,6 +69,7 @@ serialib serialPort;
 string device = "";
 int staleThreshold = 86400;
 int resendEnabled = 0;
+int handleNetworkRelay = 0;
 
 /**
  * Convert timestamp to Human Readable date time string (19 chars)
@@ -1526,7 +1527,10 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     newDevice(internalid, "brightnesssensor");
                     break;
                 case S_ARDUINO_RELAY_V14:
-                    newDevice(internalid, "networkrelay");
+                    if( handleNetworkRelay )
+                    {
+                        newDevice(internalid, "networkrelay");
+                    }
                     break;
                 case S_LOCK_V14:
                     newDevice(internalid, "lock");
@@ -2025,6 +2029,11 @@ int main(int argc, char **argv)
     device = getConfigSectionOption("mysensors", "device", "/dev/ttyACM0");
     staleThreshold = atoi(getConfigSectionOption("mysensors", "staleThreshold", "86400").c_str());
     resendEnabled = atoi(getConfigSectionOption("mysensors", "resend", "0").c_str());
+    handleNetworkRelay = atoi(getConfigSectionOption("mysensors", "networkrelay", "0").c_str());
+    if( handleNetworkRelay==1 )
+    {
+        cout << "Network relay devices handling support activated" << endl;
+    }
 
     //get command line parameters
     bool continu = true;
