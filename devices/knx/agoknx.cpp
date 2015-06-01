@@ -263,8 +263,11 @@ void *AgoKnx::listener() {
 
 void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content) {
     if (subject == "event.environment.timechanged") {
-        sendDate();
-        sendTime();
+        // send time/date every hour
+        if (content["minute"].asInt32() == 0) {
+            sendDate();
+            sendTime();
+        }
     }
 }
 
