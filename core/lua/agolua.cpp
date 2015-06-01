@@ -739,7 +739,66 @@ void AgoLua::searchEvents(const fs::path& scriptPath, qpid::types::Variant::List
  */
 void AgoLua::purgeScripts()
 {
-    //TODO walk through all scripts in scriptsInfos and remove non existing entries
+    //check integrity
+    if( scriptsInfos["scripts"].isVoid() )
+    {
+        AGO_TRACE() << "No 'scripts' section in config file";
+        return;
+    }
+
+    //init
+    qpid::types::Variant::List localScripts;
+    qpid::types::Variant::List configScripts;
+    qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
+
+    //get list of local scripts
+    if( fs::exists(scriptdir) )
+    {
+        fs::recursive_directory_iterator it(scriptdir);
+        fs::recursive_directory_iterator endit;
+        while( it!=endit )
+        {
+            if( fs::is_regular_file(*it) && it->path().extension().string()==".lua" && it->path().filename().string()!="helper.lua" )
+            {
+                localScripts.push_back(it->path().string());
+            }
+            ++it;
+        }
+    };
+    AGO_TRACE() << "Local scripts: " << localScripts;
+
+    //get list of config scripts
+    for( qpid::types::Variant::Map::iterator it=scripts.begin(); it!=scripts.end(); it++ )
+    {
+        configScripts.push_back(it->first);
+    }
+    AGO_TRACE() << "Config scripts: " << configScripts;
+
+    //purge obsolete infos
+    bool found = false;
+    for( qpid::types::Variant::List::iterator it=configScripts.begin(); it!=configScripts.end(); it++ )
+    {
+        found = false;
+        for( qpid::types::Variant::List::iterator it2=localScripts.begin(); it2!=localScripts.end(); it2++ )
+        {
+            if( it->asString()==it2->asString() )
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if( !found )
+        {
+            AGO_DEBUG() << "Remove obsolete script infos '" << it->asString() << "'";
+            scripts.erase(it->asString());
+        }
+    }
+
+    //save modified config file
+    scriptsInfos["scripts"] = scripts;
+    variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
+    scriptsInfos = jsonFileToVariantMap(getConfigPath(SCRIPTSINFOSFILE));
 }
 
 /**
@@ -1255,6 +1314,15 @@ void AgoLua::eventHandler(std::string subject, qpid::types::Variant::Map content
     }
     else
     {
+        //daily script infos purge
+        if( subject=="event.environment.timechanged" &&
+            !content["minute"].isVoid() && content["minute"].asInt8()==0 && 
+            !content["hour"].isVoid() && content["hour"].asInt8()==0 )
+        {
+            AGO_DEBUG() << "Purge obsolete scripts";
+            purgeScripts();
+        }
+
         //execute scripts
         content["subject"] = subject;
         commandHandler(content);
