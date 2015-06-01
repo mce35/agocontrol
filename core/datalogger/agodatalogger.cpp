@@ -344,7 +344,8 @@ bool AgoDataLogger::prepareGraph(std::string uuid, int multiId, qpid::types::Var
                 colorL = "#FF0000";
                 colorA = "#FF8787";
             }
-            else if( device["devicetype"].asString()=="energysensor" || device["devicetype"].asString()=="batterysensor" )
+            else if( device["devicetype"].asString()=="energysensor" || device["devicetype"].asString()=="powersensor" || 
+                    device["devicetype"].asString()=="powermeter" || device["devicetype"].asString()=="batterysensor" )
             {
                 //green
                 colorL = "#007A00";
