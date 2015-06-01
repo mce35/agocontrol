@@ -223,3 +223,15 @@ units:
   inch:
     label: "inches"
     description: distance in inches
+  A:
+    label: "A"
+    description: Intensity in Ampere
+  V:
+    label: "V"
+    description: Voltage in Volt
+  kWh:
+    label: "kWh"
+    description: Power in kilowatt hour
+  Wh:
+    label: "Wh"
+    description: Power in watt hour
