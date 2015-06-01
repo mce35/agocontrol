@@ -55,6 +55,8 @@ private:
     void sendDate();
     void sendTime();
     bool sendShortData(std::string dest, int data);
+    bool sendCharData(std::string dest, int data);
+    bool sendFloatData(std::string dest, float data);
 
     void setupApp();
     void cleanupApp();
@@ -289,17 +291,6 @@ void AgoKnx::sendDate() {
     pthread_mutex_unlock (&mutexCon);
 }
 
-bool AgoKnx::sendShortData(std::string dest, int data) {
-    Telegram *tg = new Telegram();
-    tg->setGroupAddress(Telegram::stringtogaddr(dest));
-    tg->setShortUserData(data > 0 ? 1 : 0);
-    AGO_TRACE() << "sending value " << data << " as short data telegram to " << dest;
-    pthread_mutex_lock (&mutexCon);
-    bool result = tg->sendTo(eibcon);
-    pthread_mutex_unlock (&mutexCon);
-    AGO_DEBUG() << "Result: " << result;
-    return result;
-}
 
 void AgoKnx::sendTime() {
     uint8_t timebytes[3];   
@@ -316,6 +307,43 @@ void AgoKnx::sendTime() {
     tg_time->sendTo(eibcon);
     pthread_mutex_unlock (&mutexCon);
 }
+
+bool AgoKnx::sendShortData(std::string dest, int data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setShortUserData(data > 0 ? 1 : 0);
+    AGO_TRACE() << "sending value " << data << " as short data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
+}
+
+bool AgoKnx::sendCharData(std::string dest, int data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setDataFromChar(data);
+    AGO_TRACE() << "sending value " << data << " as char data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
+}
+
+bool AgoKnx::sendFloatData(std::string dest, float data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setDataFromFloat(data);
+    AGO_TRACE() << "sending value " << data << " as float data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
+}
+
 
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
     std::string internalid = content["internalid"].asString();
