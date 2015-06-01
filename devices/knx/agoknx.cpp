@@ -355,73 +355,41 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
     } else {
        return responseError(RESPONSE_ERR_INTERNAL, "Device not found in internal deviceMap");
     }
-    Telegram *tg = new Telegram();
-    eibaddr_t dest;
+    
+    bool result;
     if (content["command"] == "on") {
-        string destGA = device["onoff"];
-        dest = Telegram::stringtogaddr(destGA);
         if (device["devicetype"]=="drapes") {
-            tg->setShortUserData(0);
+            result = sendShortData(device["onoff"],0);
         } else {
-            tg->setShortUserData(1);
+            result = sendShortData(device["onoff"],1);
         }
     } else if (content["command"] == "off") {
-        string destGA = device["onoff"];
-        dest = Telegram::stringtogaddr(destGA);
         if (device["devicetype"]=="drapes") {
-            tg->setShortUserData(1);
+            result = sendShortData(device["onoff"],1);
         } else {
-            tg->setShortUserData(0);
+            result = sendShortData(device["onoff"],0);
         }
     } else if (content["command"] == "stop") {
-        string destGA = device["stop"];
-        dest = Telegram::stringtogaddr(destGA);
-        tg->setShortUserData(1);
+        result = sendShortData(device["stop"],1);
     } else if (content["command"] == "push") {
-        string destGA = device["push"];
-        dest = Telegram::stringtogaddr(destGA);
-        tg->setShortUserData(0);
+        result = sendShortData(device["push"],0);
     } else if (content["command"] == "setlevel") {
         checkMsgParameter(content, "level", VAR_INT32);
-        int level=0;
-        string destGA = device["setlevel"];
-        dest = Telegram::stringtogaddr(destGA);
-        level = atoi(content["level"].asString().c_str());
-        tg->setDataFromChar(level);
+        result = sendCharData(device["setlevel"],atoi(content["level"].asString().c_str()));
     } else if (content["command"] == "settemperature") {
         checkMsgParameter(content, "temperature");
-        float temp = content["temperature"];
-        string destGA = device["settemperature"];
-        dest = Telegram::stringtogaddr(destGA);
-        tg->setDataFromFloat(temp);
+        result = sendFloatData(device["settemperature"],content["temperature"]);
     } else if (content["command"] == "setcolor") {
         checkMsgParameter(content, "red");
         checkMsgParameter(content, "green");
         checkMsgParameter(content, "blue");
-        Telegram *tg2 = new Telegram();
-        Telegram *tg3 = new Telegram();
-        tg->setDataFromChar(atoi(content["red"].asString().c_str()));
-        dest = Telegram::stringtogaddr(device["red"].asString());
-        tg2->setDataFromChar(atoi(content["green"].asString().c_str()));
-        tg2->setGroupAddress(Telegram::stringtogaddr(device["green"].asString()));
-        tg3->setDataFromChar(atoi(content["blue"].asString().c_str()));
-        tg3->setGroupAddress(Telegram::stringtogaddr(device["blue"].asString()));
-        pthread_mutex_lock (&mutexCon);
-        AGO_TRACE() << "sending telegram";
-        tg2->sendTo(eibcon);
-        AGO_TRACE() << "sending telegram";
-        tg3->sendTo(eibcon);
-        pthread_mutex_unlock (&mutexCon);
+        result = sendCharData(device["red"],atoi(content["red"].asString().c_str()));
+        result &= sendCharData(device["green"],atoi(content["green"].asString().c_str()));
+        result &= sendCharData(device["blue"],atoi(content["blue"].asString().c_str()));
     } else {
         return responseUnknownCommand();
     }
 
-    tg->setGroupAddress(dest);
-    AGO_TRACE() << "sending telegram";
-    pthread_mutex_lock (&mutexCon);
-    bool result = tg->sendTo(eibcon);
-    pthread_mutex_unlock (&mutexCon);
-    AGO_DEBUG() << "Result: " << result;
     if (result)
     {
         return responseSuccess();
