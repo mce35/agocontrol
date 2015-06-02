@@ -35,6 +35,15 @@ ko.observableArray.fn.replaceAll = function(valuesToPush) {
 };
 
 /**
+ * Round a number to specified number of decimals
+ * @see http://www.jacklmoore.com/notes/rounding-in-javascript/
+ */
+function roundNumber(value, decimals)
+{
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+/**
  * Formats a date object
  * 
  * @param date
