@@ -30,6 +30,9 @@ values:
     name: process name
     description: name of a process
 events:
+  event.monitoring.processstarted:
+    description: event triggered when process is started
+    parameters: [process]
   event.monitoring.processdead:
     description: event triggered when process is dead
     parameters: [process]
