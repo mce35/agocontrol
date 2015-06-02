@@ -181,3 +181,13 @@ Blockly.Lua['agocontrol_valueOptions'] = function(block) {
     var code = "'"+block.getSelectedOption()+"'";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
+
+Blockly.Lua['agocontrol_defaultEmail'] = function(block) {
+    var code = "'"+block.getEmail()+"'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
+Blockly.Lua['agocontrol_defaultPhoneNumber'] = function(block) {
+    var code = "'"+block.getPhoneNumber()+"'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};

@@ -23,9 +23,10 @@ window.BlocklyAgocontrol = {
     eventBlocks: {},
 
     //init
-    init: function(schema, devices, variables) {
+    init: function(schema, devices, variables, extra) {
         this.schema = schema;
         this.devices = devices;
+        this.extra = extra; //extra parameters, could be anuything so make sure key exists to avoid js errors!
         //only variable names are useful
         this.variables = [];
         for( var i=0; i<variables.length; i++ )
@@ -393,6 +394,11 @@ window.BlocklyAgocontrol = {
             variables.push(['', '']);
         }
         return variables;
+    },
+
+    //get extra parameters
+    getExtra : function() {
+        return this.extra;
     },
     
     //clear blockly container
@@ -1662,3 +1668,53 @@ Blockly.Blocks['agocontrol_valueOptions'] = {
     }
 };
 
+//default email
+Blockly.Blocks['agocontrol_defaultEmail'] = {
+    init : function() {
+        var extra = window.BlocklyAgocontrol.getExtra();
+        this.email = '';
+        var caption = '<not configured>';
+        if( extra.email && extra.email.length>0 )
+        {
+            this.email = extra.email;
+            caption = this.email;
+        }
+
+        //block definition
+        this.setColour(330);
+        this.appendDummyInput()
+            .appendField('default email "' + caption + '"');
+        this.setOutput(true, "String");
+        this.setTooltip('Default email configured in system');
+    },
+
+    //return email
+    getEmail : function() {
+        return this.email;
+    }
+};
+
+//default phone number
+Blockly.Blocks['agocontrol_defaultPhoneNumber'] = {
+    init : function() {
+        var extra = window.BlocklyAgocontrol.getExtra();
+        this.phone = '';
+        var caption = '<not configured>';
+        if( extra.phone && extra.phone.length>0 )
+        {
+            this.phone = extra.phone;
+            caption = this.phone;
+        }
+        //block definition
+        this.setColour(330);
+        this.appendDummyInput()
+            .appendField('default phone number "' + caption + '"');
+        this.setOutput(true, "String");
+        this.setTooltip('Default phone number configured in system');
+    },
+
+    //return phone number
+    getPhoneNumber : function() {
+        return this.phone;
+    }
+};

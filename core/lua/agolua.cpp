@@ -1275,6 +1275,13 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 return responseFailed("File doesn't exist");
             }
         }
+        else if( content["command"]=="getcontacts" )
+        {
+            //return default contacts
+            returnData["email"] = getConfigOption("email", "", "system", "system");
+            returnData["phone"] = getConfigOption("phone", "", "system", "system");
+            return responseSuccess(returnData);
+        }
         else
         {
             return responseUnknownCommand();

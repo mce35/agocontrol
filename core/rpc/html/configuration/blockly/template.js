@@ -27,6 +27,24 @@ function agoBlocklyPlugin(devices, agocontrol)
         + '</block>'
         + '</xml>';
     self.workspace = null; //blockly workspace
+    self.email = '';
+    self.phone = '';
+    self.contactsUpdated = false;
+
+    //update default contacts
+    self.updateDefaultContacts = function()
+    {
+        var content = {
+            uuid: self.luaControllerUuid,
+            command: 'getcontacts'
+        };
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                self.email = res.data.email;
+                self.phone = res.data.phone;
+                self.contactsUpdated = true;
+            });
+    };
 
     //luacontroller uuid
     if( devices!==undefined )
@@ -36,10 +54,21 @@ function agoBlocklyPlugin(devices, agocontrol)
             if( devices[i].devicetype=='luacontroller' )
             {
                 self.luaControllerUuid = devices[i].uuid;
+                self.updateDefaultContacts();
                 break;
             }
         }
     }
+
+    //return default contacts
+    self.getDefaultContacts = function()
+    {
+        return {
+            'updated': self.contactsUpdated,
+            'email': self.email,
+            'phone': self.phone
+        };
+    };
 
     //get unconnected block
     self.getUnconnectedBlock = function()
@@ -734,36 +763,42 @@ function init_template(path, params, agocontrol)
     ko.bindingHandlers.blockly = {
         update: function(element, viewmodel) {
             var interval = window.setInterval(function() {
-                if( typeof Blockly != 'object' )
+                if( typeof Blockly!='object' )
+                {
+                    return;
+                }
+                var extra = model.getDefaultContacts();
+                if( extra && extra.updated===false )
                 {
                     return;
                 }
                 window.clearInterval(interval);
 
-                element.innerHTML = "";
                 //inject blockly
+                element.innerHTML = "";
                 var workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
                     path: "configuration/blockly/blockly/",
                     toolbox: document.getElementById('toolbox')
                 });
                 viewmodel().setWorkspace(workspace);
+
                 //init agoblockly
                 if( BlocklyAgocontrol!==null && BlocklyAgocontrol.init!==undefined )
                 {
-                    BlocklyAgocontrol.init(agocontrol.schema(), agocontrol.devices(), agocontrol.variables());
+                    BlocklyAgocontrol.init(agocontrol.schema(), agocontrol.devices(), agocontrol.variables(), extra);
                 }
                 else
                 {
                     notif.error('Unable to configure Blockly! Event builder shouldn\'t work.');
                 }
-                //init blocks
+
+                //init default blocks
                 viewmodel().addDefaultBlocks();
             }, 250);
         }
     };
 
     var model = new agoBlocklyPlugin(agocontrol.devices(), agocontrol);
-
     return model;
 }
 
