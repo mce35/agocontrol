@@ -47,7 +47,7 @@ function SystemConfig(agocontrol)
     //new tab selected
     self.onTabChanged = function(index, name)
     {
-        if( index==1 )
+        if( index==1 && self.map )
         {
             //workaround to display layer. It seems if div is hidden, layer is not displayed
             self.map.updateSize();
