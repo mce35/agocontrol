@@ -58,6 +58,7 @@ private:
     fs::path scriptdir;
     qpid::types::Variant::Map scriptContexts;
     pthread_mutex_t inventoryMutex;
+    pthread_mutex_t scriptsInfosMutex;
     int64_t lastInventoryUpdate;
 
     fs::path construct_script_name(fs::path input) ;
@@ -739,6 +740,8 @@ void AgoLua::searchEvents(const fs::path& scriptPath, qpid::types::Variant::List
  */
 void AgoLua::purgeScripts()
 {
+    pthread_mutex_lock(&scriptsInfosMutex);
+
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
     {
@@ -799,6 +802,8 @@ void AgoLua::purgeScripts()
     scriptsInfos["scripts"] = scripts;
     variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
     scriptsInfos = jsonFileToVariantMap(getConfigPath(SCRIPTSINFOSFILE));
+
+    pthread_mutex_unlock(&scriptsInfosMutex);
 }
 
 /**
@@ -975,6 +980,8 @@ void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &sc
  */
 bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path &script)
 {
+    pthread_mutex_lock(&scriptsInfosMutex);
+
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
     {
@@ -1043,6 +1050,8 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
         //config option disable events filtering
         executeScript = true;
     }
+
+    pthread_mutex_unlock(&scriptsInfosMutex);
 
     return executeScript;
 }
@@ -1333,6 +1342,7 @@ void AgoLua::setupApp()
 {
     //init mutex
     pthread_mutex_init(&inventoryMutex, NULL);
+    pthread_mutex_init(&scriptsInfosMutex, NULL);
 
     agocontroller = agoConnection->getAgocontroller();
 
