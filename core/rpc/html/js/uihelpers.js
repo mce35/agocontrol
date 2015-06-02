@@ -112,6 +112,16 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
         }
     };
 
+    //gumby tabs changed
+    ko.bindingHandlers.gumbyTabChanged = {
+        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            $(element).find('.tab-nav li > a').click(function() {
+                //call accessor with index and tab text as parameters
+                valueAccessor()($(this).parent().index(), $(this).text());
+            });
+        }
+    };
+
 };
 
 /**
