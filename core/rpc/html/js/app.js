@@ -133,7 +133,8 @@ function loadScript(url) {
             cleanup();
             reject();
         };
-    });
+    })
+    .cancellable();
 
     // Circumvent IE6 bugs with base elements (#2709 and #4378) by prepending
     // Use native DOM manipulation to avoid our domManip AJAX trickery
@@ -170,6 +171,8 @@ function AgocontrolViewModel()
     self.agocontrol = new Agocontrol();
     self.currentModel = null;
     self.plugins = {};
+    self.scriptPromise = null;
+    self.resourcePromise = null;
 
     //disable click event
     self.noclick = function()
@@ -222,9 +225,19 @@ function AgocontrolViewModel()
         init_template = null;
         afterrender_template = null;
 
+        //cancel previous template loading if necessary
+        if( self.scriptPromise!==null )
+        {
+            self.scriptPromise.cancel('aborted');
+            if( self.resourcePromise!==null )
+            {
+                self.resourcePromise.cancel('aborted');
+            }
+        }
+
         // Load template script file
-        var scriptPromise = loadScript(template.path+'/template.js');
-        var resourcePromise;
+        self.scriptPromise = loadScript(template.path+'/template.js');
+        self.resourcePromise = null;
 
         // Load other required resources in parallel
         if( template.resources )
@@ -251,12 +264,13 @@ function AgocontrolViewModel()
                         // head.load does not have any failure mechanism
                         resolve();
                     });
-                });
+                })
+                .cancellable();
             }
         }
 
         // Compound promise which fires when both above are ready
-        Promise.all([scriptPromise, resourcePromise])
+        Promise.all([self.scriptPromise, self.resourcePromise])
             .then(function(){
                 // Template script and Resources ready
                 if (typeof init_template == 'function')
@@ -279,12 +293,25 @@ function AgocontrolViewModel()
                     notif.fatal('Problem during page loading.');
                 }
             })
-            .catch(function(err) {
-                // Note that jquery fails our compound promise as soon as ANY fails.
-                console.error("Failed to load template or template resources", err);
-                notif.fatal('Problem during page loading: '+ err);
+            .catch(Promise.CancellationError, function(err) {
+                //aborted
+                //XXX seems not be triggered when cancel() is called :S
             })
-            .finally(function(){
+            .catch(function(err) {
+                if( err==='aborted' )
+                {
+                    //page loading aborted. Nothing else to do
+                }
+                else
+                {
+                    // Note that jquery fails our compound promise as soon as ANY fails.
+                    console.error("Failed to load template or template resources", err);
+                    notif.fatal('Problem during page loading: '+ err);
+                }
+            })
+            .finally(function() {
+                self.scriptPromise = null;
+                self.resourcePromise = null;
                 $.unblockUI();
             });
     };
