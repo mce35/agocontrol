@@ -66,52 +66,41 @@ function SystemConfig(agocontrol)
     //save position
     self.savePosition = function()
     {
-        var res1 = self.setParam('system', 'system', 'lat', self.latitude());
-        var res2 = self.setParam('system', 'system', 'lon', self.longitude());
-        if( res1 && res2 )
-        {
-            notif.success('Position saved');
-        }
-        else
-        {
-            notif.error('Unable to save position');
-        }
+        Promise.all([self.setParam('system', 'system', 'lat', self.latitude()), self.setParam('system', 'system', 'lon', self.longitude())])
+            .then(function(res) {
+                notif.success('Position saved');
+            });
     };
 
     //save contact
     self.saveContact = function()
     {
-        var res1 = self.setParam('system', 'system', 'email', self.email());
-        var res2 = self.setParam('system', 'system', 'phone', self.phone());
-        if( res1 && res2 )
-        {
-            notif.success('Contact saved');
-        }
-        else
-        {
-            notif.error('Unable to save contact');
-        }
+        Promise.all([self.setParam('system', 'system', 'email', self.email()), self.setParam('system', 'system', 'phone', self.phone())])
+            .then(function(res) {
+                notif.success('Contact saved');
+            });
     };
 
     //set specified parameter
     self.setParam = function(app, section, option, value)
     {
-        var content = {};
-        content.uuid = self.agocontrol.agoController;
-        content.command = 'setconfig';
-        content.app = app;
-        content.section = section;
-        content.option = option;
-        content.value = value;
-        result = true;
-        self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                result = true;
-            })
-            .catch(function(err) {
-                result = false;
-            });
-        return result;
+        return new Promise(function(resolve, reject) {
+            var content = {};
+            content.uuid = self.agocontrol.agoController;
+            content.command = 'setconfig';
+            content.app = app;
+            content.section = section;
+            content.option = option;
+            content.value = value;
+
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    resolve();
+                })
+                .catch(function(err) {
+                    reject();
+                });
+        });
     };
 
     //get specified parameter
@@ -132,18 +121,11 @@ function SystemConfig(agocontrol)
                 if( observable )
                 {
                     var value = res.data.value;
-                    if( value=='' )
+                    if( convertFunction )
                     {
-                        observable(null);
+                        value = convertFunction(value);
                     }
-                    else
-                    {
-                        if( convertFunction )
-                        {
-                            value = convertFunction(value);
-                        }
-                        observable(value);
-                    }
+                    observable(value);
                 }
             })
             .catch(function(err) {
