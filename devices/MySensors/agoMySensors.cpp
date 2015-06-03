@@ -399,7 +399,7 @@ void addDevice(std::string internalid, std::string devicetype, qpid::types::Vari
     infos["counter_received"] = 0;
     infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
-    infos["last_timestamp"] = 0;
+    infos["last_timestamp"] = (int)(time(NULL));
     infos["protocol"] = gateway_protocol_version;
     devices[internalid] = infos;
     devicemap["devices"] = devices;
@@ -651,7 +651,6 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                         infos["counter_sent"] = 0;
                         infos["counter_retries"] = 0;
                         infos["counter_failed"] = 0;
-                        infos["last_timestamp"] = 0;
                         setDeviceInfos(it->first, &infos);
                     }
                 }
@@ -675,7 +674,6 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                         infos["counter_sent"] = 0;
                         infos["counter_retries"] = 0;
                         infos["counter_failed"] = 0;
-                        infos["last_timestamp"] = 0;
                         setDeviceInfos(device["internalid"].asString(), &infos);
                     }
                 }
@@ -1042,7 +1040,7 @@ void* resendFunction(void* param)
                 //max attempts reached
                 cout << "Too many attemps. Command failed: " << it->second.command;
 
-                //increase counter
+                //update counters
                 qpid::types::Variant::Map infos = getDeviceInfos(it->first);
                 if( infos.size()>0 )
                 {
@@ -1098,7 +1096,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                         newDevice(internalid, "batterysensor");
                     }
 
-                    //increase counter
+                    //update counters
                     if( infos.size()>0 )
                     {
                         if( infos["counter_received"].isVoid() )
@@ -1218,7 +1216,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
         case REQUEST_VARIABLE_V13:
             if( infos.size()>0 )
             {
-                //increase counter
+                //update counters
                 if( infos["counter_sent"].isVoid() ) {
                     infos["counter_sent"] = 1;
                 }
@@ -1250,7 +1248,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                 pthread_mutex_unlock(&resendMutex);
             }
 
-            //increase counter
+            //update counters
             if( infos.size()>0 )
             {
                 if( infos["counter_received"].isVoid() )
@@ -1430,7 +1428,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                         newDevice(internalid, "batterysensor");
                     }
 
-                    //increase counter
+                    //update counters
                     if( infos.size()>0 )
                     {
                         if( infos["counter_received"].isVoid() )
@@ -1567,7 +1565,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
         case REQ_V14:
             if( infos.size()>0 )
             {
-                //increase counter
+                //update counters
                 if( infos["counter_sent"].isVoid() )
                 {
                     infos["counter_sent"] = 1;
@@ -1671,7 +1669,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                 pthread_mutex_unlock(&resendMutex);
             }
 
-            //increase counter
+            //update counters
             if( infos.size()>0 )
             {
                 if( infos["counter_received"].isVoid() )
