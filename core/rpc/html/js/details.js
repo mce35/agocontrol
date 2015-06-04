@@ -58,8 +58,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 var startEl = $('#start_date');
                 startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
                 startEl.datetimepicker({
-                    closeOnDateSelect: true,
-                    //value: $.datepicker.formatDate('dd.mm.yy', start) + ' 00:00',
+                    //closeOnDateSelect: true,
                     format: 'd.m.Y H:i',
                     onChangeDateTime: function(dp,$input)
                     {
@@ -80,7 +79,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 var endEl = $('#end_date');
                 endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
                 endEl.datetimepicker({
-                    closeOnDateSelect: true,
+                    //closeOnDateSelect: true,
                     format:'d.m.Y H:i',
                     onChangeDateTime: function(dp,$input)
                     {
