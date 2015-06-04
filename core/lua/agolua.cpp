@@ -153,91 +153,103 @@ void AgoLua::pushTableFromMap(lua_State *L, qpid::types::Variant::Map content)
     lua_createtable(L, 0, 0);
     for (qpid::types::Variant::Map::const_iterator it=content.begin(); it!=content.end(); it++)
     {
+        std::string key = it->first;
         switch (it->second.getType())
         {
             case qpid::types::VAR_INT8:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT8";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asInt8());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_INT16:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT16";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asInt16());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_INT32:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT16";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asInt32());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_INT64:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT16";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asInt64());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_UINT8:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT16";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asUint8());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_UINT16:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT16";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asUint16());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_UINT32:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT32";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asUint32());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_UINT64:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as INT64";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asUint64());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_FLOAT:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as FLOAT";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asFloat());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_DOUBLE:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as DOUBLE";
+                lua_pushstring(L,key.c_str());
                 lua_pushnumber(L,it->second.asDouble());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_STRING:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as STRING";
+                lua_pushstring(L,key.c_str());
                 lua_pushstring(L,it->second.asString().c_str());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_UUID:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as UUID";
+                lua_pushstring(L,key.c_str());
                 lua_pushstring(L,it->second.asString().c_str());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_MAP:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as MAP";
+                lua_pushstring(L,key.c_str());
                 pushTableFromMap(L,it->second.asMap());
                 lua_settable(L, -3);
                 break;
-            case qpid::types::VAR_LIST:
-                // TODO: push list
-                break;
             case qpid::types::VAR_BOOL:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as BOOL";
+                lua_pushstring(L,key.c_str());
                 lua_pushboolean(L,it->second.asBool());
                 lua_settable(L, -3);
                 break;
             case qpid::types::VAR_VOID:
-                lua_pushstring(L,it->first.c_str());
+                AGO_TRACE() << "Push '" << key << "' as VOID";
+                lua_pushstring(L,key.c_str());
                 lua_pushnil(L);
                 lua_settable(L, -3);
                 break;
-            //default:
-                //lua_pushstring(L,it->first.c_str());
-                //lua_pushstring(L,"unhandled");
-                //AGO_TRACE() << "undhandled type: " << it->second.getType();
-                //lua_settable(L, -3);
+            case qpid::types::VAR_LIST:
+                // TODO: push list
+            default:
+                AGO_WARNING() << "Push unsupported value type to map. Value dropped from map.";
         }
     }
 } 
@@ -251,27 +263,41 @@ void AgoLua::pullTableToMap(lua_State *L, qpid::types::Variant::Map& table)
     lua_pushnil(L);
     while( lua_next(L, -2)!=0 )
     {
+        std::string key = lua_tostring(L, -2);
         if( lua_isstring(L, -1) )
         {
-            table[lua_tostring(L, -2)] = lua_tostring(L, -1);
+            AGO_TRACE() << "Pull '" << key << "' as STRING";
+            table[key] = lua_tostring(L, -1);
         }
         else if( lua_isnumber(L, -1) )
         {
-            table[lua_tostring(L, -2)] = lua_tonumber(L, -1);
+            AGO_TRACE() << "Pull '" << key << "' as NUMBER";
+            table[key] = lua_tonumber(L, -1);
         }
         else if( lua_isboolean(L, -1) )
         {
-            table[lua_tostring(L, -2)] = lua_toboolean(L, -1);
+            AGO_TRACE() << "Pull '" << key << "' as BOOLEAN";
+            bool value = lua_toboolean(L, -1);
+            if( value )
+            {
+                table[key] = true;
+            }
+            else
+            {
+                table[key] = false;
+            }
         }
         else if( lua_isnoneornil(L, -1) )
         {
+            AGO_TRACE() << "Pull '" << key << "' as NULL (dropped!)";
             //drop null field
         }
         else if( lua_istable(L, -1) )
         {
+            AGO_TRACE() << "Pull '" << key << "' as TABLE";
             qpid::types::Variant::Map newTable;
             pullTableToMap(L, newTable);
-            table[lua_tostring(L, -2)] = newTable;
+            table[key] = newTable;
         }
 
         lua_pop(L, 1);
@@ -828,7 +854,10 @@ void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const 
     }
     else
     {
-        if (!scriptContexts[script].isVoid()) context = scriptContexts[script].asMap();
+        if( !scriptContexts[script].isVoid() )
+        {
+            context = scriptContexts[script].asMap();
+        }
     }
     AGO_TRACE() << "LUA context before:" << context;
 
