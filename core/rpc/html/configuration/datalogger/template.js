@@ -32,6 +32,9 @@ function dataloggerConfig(devices, agocontrol)
     self.positionCount = ko.observable(0);
     self.positionStart = ko.observable(0);
     self.positionEnd = ko.observable(0);
+    self.journalCount = ko.observable(0);
+    self.journalStart = ko.observable(0);
+    self.journalEnd = ko.observable(0);
     self.databaseSize = ko.observable(0);
 
     //return human readable time
@@ -40,7 +43,22 @@ function dataloggerConfig(devices, agocontrol)
         if( ts==0 )
             return 'X';
         var date = new Date(ts * 1000);
-        return ''+date.getFullYear()+'/'+(date.getMonth()+1)+'/'+date.getDate()+' '+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+        var hours = date.getHours();
+        if( hours<10 )
+            hours = '0'+hours;
+        var minutes = date.getMinutes();
+        if( minutes<10 )
+            minutes = '0'+minutes;
+        var seconds = date.getSeconds();
+        if( seconds<10 )
+            seconds = '0'+seconds;
+        var day = date.getDate();
+        if( day<10 )
+            day = '0'+day;
+        var month = date.getMonth()+1;
+        if( month<10 )
+            month = '0'+month;
+        return ''+date.getFullYear()+'/'+month+'/'+day+' '+hours+':'+minutes+':'+seconds;
     }
 
     //return human readable size
@@ -138,6 +156,9 @@ function dataloggerConfig(devices, agocontrol)
                     self.positionCount(data.database.infos.position_count);
                     self.positionStart(self.timestampToHRTime(data.database.infos.position_start));
                     self.positionEnd(self.timestampToHRTime(data.database.infos.position_end));
+                    self.journalCount(data.database.infos.journal_count);
+                    self.journalStart(self.timestampToHRTime(data.database.infos.journal_start));
+                    self.journalEnd(self.timestampToHRTime(data.database.infos.journal_end));
                 });
         }
     };
@@ -159,7 +180,6 @@ function dataloggerConfig(devices, agocontrol)
             content.period = self.multigraphPeriod();
             self.agocontrol.sendCommand(content)
                 .then(function(res) {
-                    notif.success(res.message);
                     self.getStatus();
                 });
         }
@@ -178,7 +198,6 @@ function dataloggerConfig(devices, agocontrol)
                 content.multigraph = self.selectedMultigraphToDel().name;
                 self.agocontrol.sendCommand(content)
                     .then(function(res) {
-                        notif.success(res.message);
                         self.getStatus();
                     });
             }
@@ -225,13 +244,20 @@ function dataloggerConfig(devices, agocontrol)
             }
         }
     };
+
     self.purgeDataTable = function()
     {
         self.purgeDatabaseTable('data');
     };
+
     self.purgePositionTable = function()
     {
         self.purgeDatabaseTable('position');
+    };
+
+    self.purgeJournalTable = function()
+    {
+        self.purgeDatabaseTable('journal');
     };
 
     self.getStatus();

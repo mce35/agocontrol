@@ -1,0 +1,7 @@
+{
+    "name": "Journal",
+    "version": "1.0.0",
+    "description": "Journal",
+    "template": "html/journal",
+    "listable": true
+}

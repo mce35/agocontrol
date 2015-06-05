@@ -223,6 +223,28 @@ commands:
       floorplan:
         name: uuid of the floorplan
         type: string
+  addmessage:
+    name: add a message
+    parameters:
+      type:
+        name: message type
+        type: option
+        options: ["all", "debug", "info", "warning", "error"]
+      message:
+        name: message
+        type: string
+  getmessages:
+    name: get messages
+    parameters:
+      start:
+        name: start timestamp
+        type: integer
+      end:
+        name: end timestamp
+        type: integer
+      filter:
+        name: filter
+        type: string
 devicetypes:
   dataloggercontroller:
     name: datalogger controller
@@ -259,6 +281,10 @@ devicetypes:
     name: event handler
     description: respond to events
     commands: []
+  journal:
+    name: journal
+    description: log event messages
+    commands: [addmessage, getmessages]
 values:
   devicetype:
     name: device type

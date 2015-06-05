@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-01 11:02+0200\n"
+"POT-Creation-Date: 2015-06-05 17:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -86,6 +86,7 @@ msgstr ""
 
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/multilevelsensor.xml.in.h:5
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
 msgid "Graph"
 msgstr ""
 
@@ -632,6 +633,7 @@ msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:13
 #: ../applications/onvif/html/onvif.xml.in.h:14
+#: ../configuration/datalogger/html/datalogger.xml.in.h:8
 msgid "Save changes"
 msgstr ""
 
@@ -943,6 +945,7 @@ msgid "Save configuration"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:1
+#: ../configuration/datalogger/html/datalogger.xml.in.h:2
 msgid "General"
 msgstr ""
 
@@ -1411,6 +1414,75 @@ msgstr ""
 msgid "Create dashboard"
 msgstr ""
 
+#: ../configuration/datalogger/html/datalogger.xml.in.h:1
+msgid "Datalogger configuration"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:4
+msgid "Database"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:5
+msgid "Activate SQL logging for all sensors except GPS sensors (plots+list)"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:6
+msgid "Activate SQL logging for GPS sensors only (map)"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:7
+msgid "Activate RRDTool logging (graph)"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:9
+msgid "Select sensors to display on graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:10
+msgid "Number of hours to display on thumb"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:11
+msgid "Add graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:12
+msgid "Delete graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:13
+msgid "Displayed sensors on selected graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:14
+msgid "Database size"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:15
+msgid "Sensor values"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:16
+msgid "Purge all values"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:17
+msgid "GPS positions"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:18
+msgid "Purge all positions"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
+#: ../help/journal/html/journal.xml.in.h:1
+msgid "Journal"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:20
+msgid "Purge all messages"
+msgstr ""
+
 #: ../configuration/devices/html/devices.xml.in.h:1
 #: ../configuration/rooms/html/rooms.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:4
@@ -1635,4 +1707,20 @@ msgstr ""
 
 #: ../help/debug/html/debug.xml.in.h:7
 msgid "Autoscroll"
+msgstr ""
+
+#: ../help/journal/html/journal.xml.in.h:2
+msgid "From"
+msgstr ""
+
+#: ../help/journal/html/journal.xml.in.h:3
+msgid "To"
+msgstr ""
+
+#: ../help/journal/html/journal.xml.in.h:4
+msgid "Filter"
+msgstr ""
+
+#: ../help/journal/html/journal.xml.in.h:5
+msgid "Get"
 msgstr ""

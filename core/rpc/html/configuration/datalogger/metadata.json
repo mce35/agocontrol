@@ -5,10 +5,5 @@
         "listable": true,
         "template": "html/datalogger",
         "depends": "agodatalogger",
-        "category": "core",
-        "resources": {
-            "css": [
-                "datalogger.css"
-            ]
-        }
+        "category": "core"
 }
