@@ -244,7 +244,7 @@ void *AgoKnx::listener() {
                         } else if (type == "brightness") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.brightnesschanged", tl.getFloatData(), "lux");
                         } else if (type == "energy") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "mA");
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "kA");
                         } else if (type == "energyusage") {
                             unsigned char buffer[4];
                             if (tl.getUserData(buffer,4) == 4) {
