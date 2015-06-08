@@ -229,7 +229,7 @@ commands:
       type:
         name: message type
         type: option
-        options: ["all", "debug", "info", "warning", "error"]
+        options: ["debug", "info", "warning", "error"]
       message:
         name: message
         type: string
