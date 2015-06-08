@@ -1427,7 +1427,6 @@ Blockly.Blocks['agocontrol_content'] = {
         this._conditionCount = parseInt(xmlElement.getAttribute('conditioncount'), 10);
         for( var i=1; i<=this._conditionCount; i++ )
         {
-            console.log("journal="+journalUuid);
             this.appendValueInput("PROP"+i)
                 .setCheck("Boolean")
                 .setAlign(Blockly.ALIGN_RIGHT)
