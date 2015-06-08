@@ -271,7 +271,6 @@ qpid::types::Variant::Map AgoEvent::commandHandler(qpid::types::Variant::Map con
         if (content["command"] == "setevent")
         {
             checkMsgParameter(content, "eventmap", VAR_MAP);
-            checkMsgParameter(content, "event", VAR_STRING);
 
             AGO_DEBUG() << "setevent request";
             qpid::types::Variant::Map newevent = content["eventmap"].asMap();
