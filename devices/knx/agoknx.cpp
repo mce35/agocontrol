@@ -238,7 +238,7 @@ void *AgoKnx::listener() {
                             agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", tl.getShortUserData()==1 ? 255 : 0, "");
                         } else if (type == "setlevel" || type == "levelstatus") {
                             int data = tl.getUIntData(); 
-                            agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", data, "");
+                            agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", data*100/255, "");
                         } else if (type == "temperature") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.temperaturechanged", tl.getFloatData(), "degC");
                         } else if (type == "brightness") {
@@ -377,7 +377,7 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         result = sendShortData(device["push"],0);
     } else if (content["command"] == "setlevel") {
         checkMsgParameter(content, "level", VAR_INT32);
-        result = sendCharData(device["setlevel"],atoi(content["level"].asString().c_str()));
+        result = sendCharData(device["setlevel"],atoi(content["level"].asString().c_str())*255/100);
     } else if (content["command"] == "settemperature") {
         checkMsgParameter(content, "temperature");
         result = sendFloatData(device["settemperature"],content["temperature"]);
