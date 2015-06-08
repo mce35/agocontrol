@@ -48,15 +48,15 @@ function Journal(agocontrol)
                     {
                         type = "primary";
                     }
-                    else if( type=="info" )
+                    else if( msg.type=="info" )
                     {
                         type = "default";
                     }
-                    else if( type=="warning" )
+                    else if( msg.type=="warning" )
                     {
                         type = "warning"
                     }
-                    else if( type=="error" )
+                    else if( msg.type=="error" )
                     {
                         type = "danger"
                     }
