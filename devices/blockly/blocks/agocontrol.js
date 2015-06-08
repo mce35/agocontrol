@@ -21,12 +21,14 @@ window.BlocklyAgocontrol = {
     devices: [],
     variables: [],
     eventBlocks: {},
+    journalUuid: null,
 
     //init
     init: function(schema, devices, variables, extra) {
         this.schema = schema;
         this.devices = devices;
         this.extra = extra; //extra parameters, could be anuything so make sure key exists to avoid js errors!
+
         //only variable names are useful
         this.variables = [];
         for( var i=0; i<variables.length; i++ )
@@ -34,6 +36,15 @@ window.BlocklyAgocontrol = {
             if( variables[i].variable )
             {
                 this.variables.push(variables[i].variable);
+            }
+        }
+
+        //get some uuids
+        for( var i=0; i<=devices.length; i++ )
+        {
+            if( devices[i] && devices[i].devicetype==="journal" )
+            {
+                this.journalUuid = devices[i].uuid;
             }
         }
     },
@@ -1416,6 +1427,7 @@ Blockly.Blocks['agocontrol_content'] = {
         this._conditionCount = parseInt(xmlElement.getAttribute('conditioncount'), 10);
         for( var i=1; i<=this._conditionCount; i++ )
         {
+            console.log("journal="+journalUuid);
             this.appendValueInput("PROP"+i)
                 .setCheck("Boolean")
                 .setAlign(Blockly.ALIGN_RIGHT)
@@ -1716,5 +1728,26 @@ Blockly.Blocks['agocontrol_defaultPhoneNumber'] = {
     //return phone number
     getPhoneNumber : function() {
         return this.phone;
+    }
+};
+
+//journalize message
+Blockly.Blocks['agocontrol_journal'] = {
+    init : function() {
+        //block definition
+        this.setColour(290);
+        this.appendValueInput("MSG")
+            .setCheck("String")
+            .appendField("journalize")
+            .appendField(new Blockly.FieldDropdown([["info", "info"], ["warning", "warning"], ["error", "error"], ["debug", "debug"]]), "TYPE")
+            .appendField("message");
+        this.setPreviousStatement(true, "null");
+        this.setNextStatement(true, "null");
+        this.setTooltip('Add message to journal');
+    },
+
+    //return journal uuid
+    getJournalUuid : function() {
+        return window.BlocklyAgocontrol.journalUuid;
     }
 };
