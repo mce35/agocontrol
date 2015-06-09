@@ -284,6 +284,7 @@ bool AgoDataLogger::prepareGraph(std::string uuid, int multiId, qpid::types::Var
         //prepare kind
         string kind = device["devicetype"].asString();
         replaceString(kind, "sensor", "");
+        replaceString(kind, "meter", "");
         string pretty_kind = kind;
         if( multiId>=0 )
         {
