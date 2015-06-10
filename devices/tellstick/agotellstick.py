@@ -165,21 +165,12 @@ class AgoTellstick(agoclient.AgoApp):
 
             value["new"] = False
             devId = str(id)
-            if value["isMultiLevel"]:
-                self.connection.add_device (devId, "multilevelsensor")
-                if value["isTempSensor"]:
-                    self.emitTempChanged(devId, float(value["temp"]))
-                if value["isHumiditySensor"]:
-                    self.emitHumidityChanged(devId, float(value["humidity"]))
-
-            else:
-                if value["isTempSensor"]:
-                    self.connection.add_device(devId, "temperaturesensor")
-                    self.emitTempChanged(devId, float(value["temp"]))
-
-                if value["isHumiditySensor"]:
-                    self.connection.add_device (devId, "multilevelsensor")
-                    self.emitHumidityChanged(devId, float(value["humidity"]))
+            if value["isTempSensor"]:
+                self.connection.add_device (devId + "-temp", "temperaturesensor")
+                self.emitTempChanged(devId + "-temp", float(value["temp"]))
+            if value["isHumiditySensor"]:
+                self.connection.add_device (devId + "-hum", "humiditysensor")
+                self.emitHumidityChanged(devId + "-hum", float(value["humidity"]))
 
     def agoSensorEvent(self, protocol, model, id, dataType, value, timestamp, callbackId):
         self.log.trace("SensorEvent protocol: %s model: %s id: %s dataType: %d value: %s timestamp: %d",
@@ -190,7 +181,7 @@ class AgoTellstick(agoclient.AgoApp):
             self.listNewSensors()
 
         if dataType & self.tellstick.TELLSTICK_TEMPERATURE == self.tellstick.TELLSTICK_TEMPERATURE:
-            self.emitTempChanged(devId, float(value))
+            self.emitTempChanged(devId + "-temp", float(value))
             # tempC = value
             # if TempUnits == 'F':
             #     tempF = 9.0/5.0 * tempC + 32.0
@@ -198,7 +189,7 @@ class AgoTellstick(agoclient.AgoApp):
             # else:
             #     self.connection.emit_event(str(devId), "event.environment.temperaturechanged", tempC, "degC")
         if dataType & self.tellstick.TELLSTICK_HUMIDITY == self.tellstick.TELLSTICK_HUMIDITY:
-            self.emitHumidityChanged(devId, float(value))
+            self.emitHumidityChanged(devId + "-hum", float(value))
             #self.connection.emit_event(str(devId), "event.environment.humiditychanged", float(value), "%")
 
     def setup_app(self):
