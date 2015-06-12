@@ -32,7 +32,7 @@ Description: Development header files for the agocontrol client library
 Package: python-agoclient
 Section: libs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-qpid-messaging (>= 0.17) | python-qpid, python-simplejson, python-augeas
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-qpid-messaging (>= 0.17) | python-qpid, python-qpid-python (>= 0.17) | python-qpid, python-simplejson, python-augeas
 Description: python client routines and utility functions for ago control device interfaces
 
 Package: agocontrol-owfs
