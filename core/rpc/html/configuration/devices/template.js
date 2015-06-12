@@ -24,7 +24,7 @@ function DeviceConfig(agocontrol)
                         column : "room",
                         value : dev.room,
                         selected : false,
-                        className : "default label"
+                        className : "btn btn-default btn-xs"
                     };
                 }
             }
@@ -60,7 +60,7 @@ function DeviceConfig(agocontrol)
                     column : "devicetype",
                     value : dev.devicetype,
                     selected : false,
-                    className : "default label"
+                    className : "btn btn-default btn-xs"
                 };
             }
         }
@@ -95,7 +95,7 @@ function DeviceConfig(agocontrol)
                         column : "handledBy",
                         value : dev.handledBy,
                         selected : false,
-                        className : "default label"
+                        className : "btn btn-default btn-xs"
                 };
             }
         }
@@ -147,15 +147,15 @@ function DeviceConfig(agocontrol)
             {
                 if (self.deviceTypeFilters()[i].value == item.value)
                 {
-                    if( item.className == "default label" )
+                    if( item.className == "btn btn-default btn-xs" )
                     {
                         self.deviceTypeFilters()[i].selected = true;
-                        self.deviceTypeFilters()[i].className = "primary label";
+                        self.deviceTypeFilters()[i].className = "btn btn-primary btn-xs"
                     }
                     else
                     {
                         self.deviceTypeFilters()[i].selected = false;
-                        self.deviceTypeFilters()[i].className = "default label";
+                        self.deviceTypeFilters()[i].className = "btn btn-default btn-xs";
                     }
                 }
             }
@@ -170,15 +170,15 @@ function DeviceConfig(agocontrol)
             {
                 if (self.roomFilters()[i].value == item.value)
                 {
-                    if( item.className == "default label" )
+                    if( item.className == "btn btn-default btn-xs" )
                     {
                         self.roomFilters()[i].selected = true;
-                        self.roomFilters()[i].className = "primary label";
+                        self.roomFilters()[i].className = "btn btn-primary btn-xs";
                     }
                     else
                     {
                         self.roomFilters()[i].selected = false;
-                        self.roomFilters()[i].className = "default label";
+                        self.roomFilters()[i].className = "btn btn-default btn-xs";
                     }
                 }
             }
@@ -193,15 +193,15 @@ function DeviceConfig(agocontrol)
             {
                 if( self.handlerFilters()[i].value==item.value )
                 {
-                    if( item.className=="default label" )
+                    if( item.className=="btn btn-default btn-xs" )
                     {
                         self.handlerFilters()[i].selected = true;
-                        self.handlerFilters()[i].className = "primary label";
+                        self.handlerFilters()[i].className = "btn btn-primary btn-xs";
                     }
                     else
                     {
                         self.handlerFilters()[i].selected = false;
-                        self.handlerFilters()[i].className = "default label";
+                        self.handlerFilters()[i].className = "btn btn-default btn-xs";
                     }
                 }
             }
