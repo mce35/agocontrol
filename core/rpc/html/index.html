@@ -10,12 +10,10 @@
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-
 <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
-<link rel="stylesheet" href="css/gumby.css" />
-<link rel="stylesheet" href="css/style.css" />
-
-<link rel="stylesheet" href="css/jquery-ui/jquery.ui.all.css" />
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<!-- <link rel="stylesheet" href="css/font-awesome.min.css"> -->
+<link rel="stylesheet" href="css/entypo-embedded.css">
 
 <script type="text/javascript" src="js/libs/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/libs/jquery-ui.js"></script>
@@ -32,19 +30,7 @@
 <script type="text/javascript" src="js/libs/koExternalTemplateEngine_all.js"></script>
 <script type="text/javascript" src="js/libs/knockout.agoGrid.1.0.js"></script>
 <script type="text/javascript" src="js/libs/bluebird-2.9.19.min.js"></script>
-
-<script src="js/libs/modernizr-2.6.2.min.js"></script>
-<script gumby-touch="js/libs" src="js/libs/gumby.js"></script>
-<script src="js/libs/ui/gumby.retina.js"></script>
-<script src="js/libs/ui/gumby.fixed.js"></script>
-<script src="js/libs/ui/gumby.skiplink.js"></script>
-<script src="js/libs/ui/gumby.toggleswitch.js"></script>
-<script src="js/libs/ui/gumby.checkbox.js"></script>
-<script src="js/libs/ui/gumby.radiobtn.js"></script>
-<script src="js/libs/ui/gumby.tabs.js"></script>
-<script src="js/libs/ui/gumby.navbar.js"></script>
-<script src="js/libs/ui/jquery.validation.js"></script>
-<script src="js/libs/gumby.init.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
 
 <script type="text/javascript" src="js/libs/head.load.min.js"></script>
 <script type="text/javascript" src="js/libs/sammy.min.js"></script>
@@ -60,87 +46,64 @@
 <div id="detailsPage" style="display: none">&nbsp;</div>
 
 <!-- HEADER -->
-<nav id="navbar-main-nav" class="navbar pretty">
-    <div class="row">
-        <a class="toggle" gumby-trigger="#navbar-main-nav #main-nav" href="#"><i class="icon-menu"></i></a>
-        <h1 class="three columns logo">
-            <a href="http://www.agocontrol.com" target="_blank"><img src="img/agocontrol_logo.png" gumby-retina /></a>
-        </h1>
-        <nav class="eight columns pull_right">
-            <ul id="main-nav">
-                <li>
-                    <a href="#" data-bind="click:$root.noclick">
-                        <i class="icon-layout" title="Dashboards"></i>
-                        <span>Dashboards</span>
-                    </a>
-                    <div class="dropdown">
-                        <ul data-bind="foreach: agocontrol.dashboards">
-                            <li><a href="#" data-bind="text:ucName, click:$root.gotoDashboard"></a></li>
-                        </ul>
-                    </div>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://www.agocontrol.com" target="_blank"><img src="img/agocontrol_logo.png" /></a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="en-layout"></span> Dashboards <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu" data-bind="foreach: agocontrol.dashboards">
+                        <li><a href="#" data-bind="text:ucName, click:$root.gotoDashboard"></a></li>
+                    </ul>
                 </li>
-                <li>
-                    <a href="#" data-bind="click:$root.noclick">
-                        <i class="icon-archive" title="Applications"></i>
-                        <span>Applications</span>
-                    </a>
-                    <div class="dropdown">
-                        <ul data-bind="foreach: agocontrol.applications">
-                            <!-- ko if: fav -->
-                                <li><a href="#" data-bind="text:name, click:$root.gotoApplication"></a></li>
-                            <!-- /ko -->
-                        </ul>
-                    </div>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="en-archive"></span> Applications <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu" data-bind="foreach: agocontrol.applications">
+                        <!-- ko if: fav -->
+                        <li><a href="#" data-bind="text:name, click:$root.gotoApplication"></a></li>
+                        <!-- /ko -->
+                    </ul>
                 </li>
-                <li>
-                    <a href="#" data-bind="click:$root.noclick">
-                        <i class="icon-tools" title="Configuration"></i>
-                        <span>Configuration</span>
-                    </a>
-                    <div class="dropdown">
-                        <ul data-bind="foreach: agocontrol.configurations">
-                            <!-- ko ifnot: subMenus -->
-                                <li><a href="#" data-bind="text:menu.name, click:$root.gotoConfiguration.bind($data, menu)"></a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="en-tools"></span> Configuration <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu" data-bind="foreach: agocontrol.configurations">
+                        <!-- ko ifnot: subMenus -->
+                            <li><a href="#" data-bind="text:menu.name, click:$root.gotoConfiguration.bind($data, menu)"></a></li>
+                        <!-- /ko -->
+                        <!-- ko if: subMenus -->
+                            <li role="presentation" class="dropdown-header" data-bind="text:menu"></li>
+                            <!-- ko foreach: subMenus -->
+                            <li><a href="#" data-bind="click:$root.gotoConfiguration"><span class="en-level-down"></span> <span data-bind="text:name"></span></a></li>
                             <!-- /ko -->
-                            <!-- ko if: subMenus -->
-                                <li>
-                                    <a href="#" data-bind="click:$root.noclick">
-                                        <span data-bind="text:menu"></span>
-                                        <i class="icon-right-open-mini"></i>
-                                    </a>
-                                    <div class="dropdown">
-                                        <ul data-bind="foreach:subMenus">
-                                            <li><a href="#" data-bind="text:name, click:$root.gotoConfiguration"></a></li>
-                                        </ul>
-                                    </div>
-                                </li>
-                            <!-- /ko -->
-                        </ul>
-                    </div>
+                        <!-- /ko -->
+                    </ul>
                 </li>
-                <li>
-                    <a href="#" data-bind="click:$root.noclick">
-                        <i class="icon-help" title="Help"></i>
-                        <span>Help</span>
-                    </a>
-                    <div class="dropdown">
-                        <ul data-bind="foreach: agocontrol.helps">
-                            <!-- ko if:url===null -->
-                                <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
-                            <!-- /ko -->
-                            <!-- ko ifnot:url===null -->
-                                <li>
-                                    <a href="#" data-bind="attr:{'href':url, 'target':'_blank'}">
-                                        <span data-bind="text:name"></span>
-                                        <i class="icon-link"></i>
-                                    </a>
-                                </li>
-                            <!-- /ko -->
-                        </ul>
-                    </div>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="en-help"></span> Help <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu" data-bind="foreach: agocontrol.helps">
+                        <!-- ko if:url===null -->
+                            <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
+                        <!-- /ko -->
+                        <!-- ko ifnot:url===null -->
+                            <li>
+                                <a href="#" data-bind="attr:{'href':url, 'target':'_blank'}">
+                                    <span class="en-link"></span> <span data-bind="text:name"></span>
+                                </a>
+                            </li>
+                        <!-- /ko -->
+                    </ul>
                 </li>
             </ul>
-        </nav>
+        </div>
     </div>
 </nav>
 
