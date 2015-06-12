@@ -62,7 +62,7 @@ Description: meloware lightswitch app gateway
 
 Package: agocontrol-zwave
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libudev0, libopenzwave1.0, libagoclient1.0
+Depends: ${shlibs:Depends}, ${misc:Depends}, libopenzwave1.0, libagoclient1.0
 Description: ZWave interface driver
 
 Package: agocontrol-knx
