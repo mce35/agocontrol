@@ -1,0 +1,40 @@
+/* Bootstrap customization for agocontrol */
+
+/* extra large button */
+.btn-xl {
+    padding: 18px 28px;
+    font-size: 22px;
+    border-radius: 8px;
+}
+
+/* body background */
+body {
+    background-color: #C8C8C8;
+}
+
+/* ago container */
+.agocontainer {
+    background-color: #FFFFFF;
+    padding-left: 30px;
+    padding-right: 30px;
+    border: 1px solid #A0A0A0;
+    border-radius: 5px;
+}
+
+.agorowbottom {
+    margin-bottom: 20px;
+}
+
+/* dashboard widget device icon */
+.dashboard-widget {
+    min-height: 150px;
+    background-color: #DFDFDF;
+}
+.dashboard-widget > .well {
+    margin-bottom: 10px !important;
+}
+.dashboard-widget h3 {
+    margin:0px !important;
+    overflow:hidden;
+    white-space: nowrap;
+}
