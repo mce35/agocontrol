@@ -46,22 +46,22 @@ function Journal(agocontrol)
                     var type = "default";
                     if( msg.type=="debug" )
                     {
-                        type = "primary";
+                        type = "list-group-item-info";
                     }
                     else if( msg.type=="info" )
                     {
-                        type = "default";
+                        type = "";
                     }
                     else if( msg.type=="warning" )
                     {
-                        type = "warning"
+                        type = "list-group-item-warning"
                     }
                     else if( msg.type=="error" )
                     {
-                        type = "danger"
+                        type = "list-group-item-danger"
                     }
                     var d = datetimeToString(new Date(msg.time*1000));
-                    $('#messagesContainer > ul').append('<li class="'+type+' alert">'+d+' : '+msg.message+'</i>');
+                    $('#messagesContainer > ul').append('<li class="list-group-item '+type+'">'+d+' : '+msg.message+'</i>');
                 }
 
                 //scroll to end of container

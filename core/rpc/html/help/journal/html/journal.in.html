@@ -1,35 +1,24 @@
-<div id="contentarea" class="container">
+<div id="contentarea" class="container agocontainer">
 
-    <_h3 data-translateable="true">Journal</_h3>
+    <_h2 data-translateable="true">Journal</_h2>
 
-    <div class="row">
-        <div class="three columns text-right field">
-            <_span data-translateable="true" style="padding-right: 5px;">From</_span>
-            <input type="text" id="dummyDate1" style="opacity: 0; position: absolute; top: 0; left: 0;" />
-            <input class="xwide text input" type="text" id="journal_start" data-bind="dateTimePicker:$root" readonly="readonly" />
-        </div>
-        <div class="three columns text-left field">
-            <_span data-translateable="true" style="padding-right: 5px;">To</_span>
-            <input class="xwide text input" type="text" id="journal_end" data-bind="dateTimePicker:$root" readonly="readonly"/>
-        </div>
-        <div class="two columns text-center field">
-            <div class="picker">
-                <select data-bind="options:types, value:type"></select>
+    <div class="row agorowbottom">
+        <form class="form-inline">
+            <div class="form-group">
+                <_label data-translateable="true" for="start_date">From</_label>
+                <input type="text" class="form-control" id="journal_start" data-bind="dateTimePicker:$root" readonly="readonly"/>
             </div>
-        </div>
-        <div class="three columns text-center field">
-            <input data-translateable="true" class="xwide text input" type="text" _placeholder="Filter" data-bind="value:filter"/>
-        </div>
-        <div class="one columns text-center field">
-            <div class="medium primary btn">
-                <_a data-translateable="true" data-bind="click:getMessages" href="#">Get</_a>
+            <div class="form-group">
+                <_label data-translateable="true" for="end_date">To</_label>
+                <input type="text" class="form-control" id="journal_end" data-bind="dateTimePicker:$root" readonly="readonly"/>
             </div>
-        </div> 
+            <select class="form-control" data-bind="options:types, value:type" />
+            <input type="text" class="form-control" placeholder="Filter" data-bind="value:filter" />
+            <_button data-translateable="true" type="submit" class="btn btn-primary" data-bind="click:getMessages">Get</_button>
+        </form>
     </div>
-    <div class="row">
-        <div id="messagesContainer">
-            <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
-            </ul>
-        </div>
+    <div class="row" id="messagesContainer">
+        <ul class="list-group" style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
+        </ul>
     </div>
 </div>
