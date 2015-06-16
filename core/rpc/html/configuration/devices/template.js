@@ -150,7 +150,7 @@ function DeviceConfig(agocontrol)
                     if( item.className == "btn btn-default btn-xs" )
                     {
                         self.deviceTypeFilters()[i].selected = true;
-                        self.deviceTypeFilters()[i].className = "btn btn-primary btn-xs"
+                        self.deviceTypeFilters()[i].className = "btn btn-primary btn-xs";
                     }
                     else
                     {
