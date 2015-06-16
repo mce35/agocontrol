@@ -3,9 +3,20 @@
  */
 
 //Opens details page for the given device
-Agocontrol.prototype.showDetails = function(device, environment)
+Agocontrol.prototype.showDetails = function(device)
 {
     var self = this;
+
+    //get environment
+    var environment = null;
+    if( device && device.valueList && device.valueList() )
+    {
+        for( var i=0; i<device.valueList().length; i++ )
+        {
+            environment = device.valueList()[i].name;
+            break;
+        }
+    }
 
     //Check if we have a template if yes use it otherwise fall back to default
     $.ajax({
@@ -17,7 +28,7 @@ Agocontrol.prototype.showDetails = function(device, environment)
         },
         error : function()
         {
-            self.doShowDetails(device, "default");
+            notif.error('Internal error, unable to open device details');
         }
     });
 };
