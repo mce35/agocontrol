@@ -1,66 +1,79 @@
-<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div class="col-sm-2">
+<div data-bind="attr: {'data-uuid': uuid}" class="thumbnail dashboard-widget">
 
-    <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
-            <li class="dashboard-widget-header-icon">
+    <div class="well well-sm">
+        <div class="row">
+            <div class="col-sm-3 text-center">
                 <ko opts="if: stale">
-                    <div class="pretty large danger btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-adjust"></i>
-                    </div>
+                    <button type="button" class="btn btn-danger btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
+                        <span style="font-size:200%;" class="en-adjust"></span>
+                    </button>
                 </ko>
                 <ko opts="ifnot: stale">
-                    <div class="pretty large primary btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-adjust"></i>
-                    </div>
+                    <button type="button" class="btn btn-primary btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
+                        <span style="font-size:200%;" class="en-adjust"></span>
+                    </button>
                 </ko>
-            </li>
-            <li class="dashboard-widget-header-infos">
+            </div>
+            <div class="col-sm-9 text-left">
                 <div class="row">
-                <ko opts="if: name ">
-                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
-                </ko>
-                <ko opts="ifnot: name ">
-                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
-                </ko>
-                <ko opts="if: room ">
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-location"/>
-                        <span data-bind="text: room"/>
+                    <!-- device name -->
+                    <ko opts="if: name ">
+                        <div class="col-sm-12">
+                            <h3 style="margin:0px !important;" data-bind="text: name"></h3>
+                        </div>
+                    </ko>
+                    <ko opts="ifnot: name ">
+                        <div class="col-sm-12">
+                            <h3 style="margin:0px !important;" data-bind="text: devicetype"></h3>
+                        </div>
+                    </ko>
+                    <!-- device room -->
+                    <ko opts="if: room ">
+                        <div class="col-sm-12">
+                            <span class="en-location"></span>
+                            <span data-bind="text: room"></span>
+                        </div>
+                    </ko>
+                    <!-- device state -->
+                    <div class="col-sm-12">
+                        <span class="en-info"></span>
+                        <ko opts="ifnot: state">
+                        <_span data-translateable="true">OFF</_span>
+                        </ko>
+                        <ko opts="if: state">
+                        <_span data-translateable="true">ON</_span>
+                        </ko>
                     </div>
-                </ko>
                 </div>
-            </li>
-        </ul>
+            </div>
+        </div>
     </div>
 
-    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
-        <ul class="two_up tiles" style="margin-bottom:0px;">
-            <li class="dashboard-widget-content-button">
-            <ko opts="if: state ">
-                <div class="pretty default btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
-                </ko>
-                <ko opts="ifnot: state">
-                <div class="pretty primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-content-button">
-                <ko opts="if: state">
-                    <div class="pretty primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
-                </ko>
-                <ko opts="ifnot: state">
-                    <div class="pretty default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
-                </ko> 
-            </li>
-        </ul>
-        <ul class="two_up tiles">
-            <li class="dashboard-widget-content-button">
-                <div class="pretty primary btn btn-full" data-bind="attr { 'id':'color-'+uuid, 'uuid':uuid }, click:openColorPicker">SETCOLOR</div>
-            </li>
-            <li class="dashboard-widget-content-button" style="padding-top:6px;">
-                <div class="slider" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}" ></div>
-            </li>
-        </ul>
+    <div class="btn-group btn-group-justified" role="group">
+        <div class="btn-group" role="group">
+            <ko opts="if: state">
+                <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOn">ON</_button>
+            </ko>
+            <ko opts="ifnot: state">
+                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOn">ON</_button>
+            </ko>
+        </div>
+        <div class="btn-group" role="group">
+            <ko opts="if: state">
+                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOff">OFF</_button>
+            </ko>
+            <ko opts="ifnot: state">
+                <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOff">OFF</_button>
+            </ko>
+        </div>
+        <div class="btn-group" role="group">
+            <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="attr { 'id':'color-'+uuid, 'uuid':uuid }, click:openColorPicker">COLOR</_button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="slider col-sm-12" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}"></div>
     </div>
 
 </div>
-
+</div>

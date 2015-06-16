@@ -1,37 +1,49 @@
-<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+v class="col-sm-2">
+<div data-bind="attr: {'data-uuid': uuid}" class="thumbnail dashboard-widget">
 
-    <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
-            <li class="dashboard-widget-header-icon">
-                <div class="pretty large primary btn handle">
-                    <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-mail"></i>
-                </div>
-            </li>
-            <li class="dashboard-widget-header-infos">
+    <div class="well well-sm">
+        <div class="row">
+            <div class="col-sm-3 text-center">
+                <ko opts="if: stale">
+                    <button type="button" class="btn btn-danger btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
+                        <span style="font-size:200%;" class="en-mail"></span>
+                    </button>
+                </ko>
+                <ko opts="ifnot: stale">
+                    <button type="button" class="btn btn-primary btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
+                        <span style="font-size:200%;" class="en-mail"></span>
+                    </button>
+                </ko>
+            </div>
+            <div class="col-sm-9 text-left">
                 <div class="row">
-                <ko opts="if: name ">
-                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
-                </ko>
-                <ko opts="ifnot: name ">
-                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
-                </ko>
-                <ko opts="if: room ">
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-location"/>
-                        <span data-bind="text: room"/>
-                    </div>
-                </ko>
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-info"/>
-                        <span data-bind="text: state"/>
+                    <!-- device name -->
+                    <ko opts="if: name ">
+                        <div class="col-sm-12">
+                            <h3 style="margin:0px !important;" data-bind="text: name"></h3>
+                        </div>
+                    </ko>
+                    <ko opts="ifnot: name ">
+                        <div class="col-sm-12">
+                            <h3 style="margin:0px !important;" data-bind="text: devicetype"></h3>
+                        </div>
+                    </ko>
+                    <!-- device room -->
+                    <ko opts="if: room ">
+                        <div class="col-sm-12">
+                            <span class="en-location"></span>
+                            <span data-bind="text: room"></span>
+                        </div>
+                    </ko>
+                    <!-- device state -->
+                    <div class="col-sm-12">
+                        <span class="en-info"></span>
+                        <span data-bind="text: state"></span>
                     </div>
                 </div>
-            </li>
-        </ul>
-    </div>
-
-    <div class="row dashboard-widget-content">
+            </div>
+        </div>
     </div>
 
 </div>
-
+</div>
