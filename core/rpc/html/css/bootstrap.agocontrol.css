@@ -27,7 +27,7 @@ body {
 
 /* dashboard widget device icon */
 .dashboard-widget {
-    min-height: 150px;
+    min-height: 155px;
     background-color: #DFDFDF;
 }
 .dashboard-widget > .well {
