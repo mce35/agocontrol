@@ -276,14 +276,14 @@
     templateEngine.addTemplate("ko_agoGrid_header", "\
                 <!-- ko if: displayPagination||displaySearch -->\
                 <div class=\"row\" style=\"margin-bottom:10px;\">\
-                    <div class=\"col-md-2\">\
+                    <div class=\"col-md-5\">\
                         <!-- ko if:displayPagination -->\
-                        <select class=\"form-control input-sm\" data-bind=\"options:pageSizes, value:pageSize\"></select>\
+                        <select class=\"form-control input-sm\" data-bind=\"options:pageSizes, value:pageSize\" style=\"max-width:100px;\"></select>\
                         <!-- /ko -->\
                     </div>\
-                    <div class=\"col-md-7\" style=\"text-align:right;\">\
+                    <div class=\"col-md-2\" style=\"text-align:right;\">\
                     </div>\
-                    <div class=\"col-md-3\" style=\"text-align:right;\">\
+                    <div class=\"col-md-5\" style=\"text-align:right;\">\
                         <!-- ko if:displaySearch -->\
                         <form class=\"form-inline\">\
                             <span class=\"en-search\"></span>\
