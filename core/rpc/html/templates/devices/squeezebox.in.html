@@ -59,22 +59,22 @@
         </div>
     </div>
 
-    <ko opts="if: state()!=25">
+    <ko opts="if: state()!=50">
     <div class="btn-group btn-group-justified" role="group">
         <div class="btn-group" role="group">
-            <ko opts="if: state()!=0">
+            <ko opts="if: state()==0">
                 <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOn">ON</_button>
             </ko>
-		    <ko opts="ifnot: state()!=0">
+		    <ko opts="ifnot: state()==0">
                 <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOn">ON</_button>
             </ko>
         </div>
         <div class="btn-group" role="group">
-            <ko opts="if: (state()==0 || state()==50)">
-                <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOff">OFF</_button>
-            </ko>
-            <ko opts="ifnot: (state()==0 || state()==50)">
+            <ko opts="if: state()!=0">
                 <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOff">OFF</_button>
+            </ko>
+            <ko opts="ifnot: state()!=0">
+                <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOff">OFF</_button>
             </ko>
         </div>
         <div class="btn-group" role="group">
