@@ -99,20 +99,20 @@
         //show notification
         self.show = function() {
             //build elem
-            self.elem = $("<div></div>").css("margin-bottom", "0px");
+            self.elem = $("<div></div>").css("margin-bottom", "0px").css("padding", "5px 15px 5px 15px");
             if( self.type==NOTIF_SUCC )
-                self.elem.attr("class", "success alert");
+                self.elem.attr("class", "alert alert-success");
             else if( self.type==NOTIF_ERRO )
-                self.elem.attr("class", "danger alert");
+                self.elem.attr("class", "alert alert-danger");
             else if( self.type==NOTIF_WARN )
-                self.elem.attr("class", "warning alert");
+                self.elem.attr("class", "alert alert-warning");
             else if( self.type==NOTIF_FATA )
-                self.elem.attr("class", "info alert");
+                self.elem.attr("class", "alert alert-danger");
             else
-                self.elem.attr("class", "primary alert");
+                self.elem.attr("class", "alert alert-info");
             //build close
             self.close = $("<i></i>");
-            self.close.attr("class", "icon-cancel-circled").css("cursor", "pointer").click(function() { self.hide(); });
+            self.close.attr("class", "en-cancel").css("cursor", "pointer").click(function() { self.hide(); });
             //build msg
             self.msg = $("<span></span>");
             self.msg.html(self.message);
