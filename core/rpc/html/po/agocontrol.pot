@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-05 17:27+0200\n"
+"POT-Creation-Date: 2015-06-16 19:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,97 +17,191 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: ../templates/details/barometersensor.xml.in.h:1
+#: ../templates/details/batterysensor.xml.in.h:1
+#: ../templates/details/brightnesssensor.xml.in.h:1
 #: ../templates/details/camera.xml.in.h:1
 #: ../templates/details/default.xml.in.h:1
+#: ../templates/details/distancesensor.xml.in.h:1
+#: ../templates/details/energymeter.xml.in.h:1
 #: ../templates/details/gpssensor.xml.in.h:1
 #: ../templates/details/humiditysensor.xml.in.h:1
+#: ../templates/details/multigraph.xml.in.h:1
 #: ../templates/details/multilevelsensor.xml.in.h:1
-msgid "Room:"
+#: ../templates/details/powermeter.xml.in.h:1
+#: ../templates/details/temperaturesensor.xml.in.h:1
+#: ../configuration/events/html/events.xml.in.h:10
+#: ../configuration/scenarios/html/scenarios.xml.in.h:12
+msgid "Name"
 msgstr ""
 
+#: ../templates/details/barometersensor.xml.in.h:2
+#: ../templates/details/batterysensor.xml.in.h:2
+#: ../templates/details/brightnesssensor.xml.in.h:2
 #: ../templates/details/camera.xml.in.h:2
-#: ../templates/details/default.xml.in.h:3
+#: ../templates/details/default.xml.in.h:2
+#: ../templates/details/distancesensor.xml.in.h:2
+#: ../templates/details/energymeter.xml.in.h:2
 #: ../templates/details/gpssensor.xml.in.h:2
 #: ../templates/details/humiditysensor.xml.in.h:2
+#: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/multilevelsensor.xml.in.h:2
-msgid "Type:"
+#: ../templates/details/powermeter.xml.in.h:2
+#: ../templates/details/temperaturesensor.xml.in.h:2
+msgid "Device type"
 msgstr ""
 
+#: ../templates/details/barometersensor.xml.in.h:3
+#: ../templates/details/batterysensor.xml.in.h:3
+#: ../templates/details/brightnesssensor.xml.in.h:3
 #: ../templates/details/camera.xml.in.h:3
-#: ../templates/details/default.xml.in.h:4
+#: ../templates/details/default.xml.in.h:3
+#: ../templates/details/distancesensor.xml.in.h:3
+#: ../templates/details/energymeter.xml.in.h:3
 #: ../templates/details/gpssensor.xml.in.h:3
 #: ../templates/details/humiditysensor.xml.in.h:3
+#: ../templates/details/multigraph.xml.in.h:3
 #: ../templates/details/multilevelsensor.xml.in.h:3
-msgid "Lastseen:"
+#: ../templates/details/powermeter.xml.in.h:3
+#: ../templates/details/temperaturesensor.xml.in.h:3
+msgid "Room"
 msgstr ""
 
+#: ../templates/details/barometersensor.xml.in.h:4
+#: ../templates/details/batterysensor.xml.in.h:4
+#: ../templates/details/brightnesssensor.xml.in.h:4
 #: ../templates/details/camera.xml.in.h:4
+#: ../templates/details/default.xml.in.h:4
+#: ../templates/details/distancesensor.xml.in.h:4
+#: ../templates/details/energymeter.xml.in.h:4
+#: ../templates/details/gpssensor.xml.in.h:4
+#: ../templates/details/humiditysensor.xml.in.h:4
+#: ../templates/details/multigraph.xml.in.h:4
+#: ../templates/details/multilevelsensor.xml.in.h:4
+#: ../templates/details/powermeter.xml.in.h:4
+#: ../templates/details/temperaturesensor.xml.in.h:4
+msgid "Timestamp"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:5
+#: ../templates/details/batterysensor.xml.in.h:5
+#: ../templates/details/brightnesssensor.xml.in.h:5
+#: ../templates/details/distancesensor.xml.in.h:5
+#: ../templates/details/energymeter.xml.in.h:5
+#: ../templates/details/humiditysensor.xml.in.h:5
+#: ../templates/details/multilevelsensor.xml.in.h:5
+#: ../templates/details/powermeter.xml.in.h:5
+#: ../templates/details/temperaturesensor.xml.in.h:5
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:6
+#: ../templates/details/batterysensor.xml.in.h:6
+#: ../templates/details/brightnesssensor.xml.in.h:6
+#: ../templates/details/distancesensor.xml.in.h:6
+#: ../templates/details/energymeter.xml.in.h:6
+#: ../templates/details/humiditysensor.xml.in.h:6
+#: ../templates/details/multilevelsensor.xml.in.h:6
+#: ../templates/details/powermeter.xml.in.h:6
+#: ../templates/details/temperaturesensor.xml.in.h:6
+msgid "Plots"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:7
+#: ../templates/details/batterysensor.xml.in.h:7
+#: ../templates/details/brightnesssensor.xml.in.h:7
+#: ../templates/details/distancesensor.xml.in.h:7
+#: ../templates/details/energymeter.xml.in.h:7
+#: ../templates/details/gpssensor.xml.in.h:6
+#: ../templates/details/humiditysensor.xml.in.h:7
+#: ../templates/details/multilevelsensor.xml.in.h:7
+#: ../templates/details/powermeter.xml.in.h:7
+#: ../templates/details/temperaturesensor.xml.in.h:7
+msgid "List"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:8
+#: ../templates/details/batterysensor.xml.in.h:8
+#: ../templates/details/brightnesssensor.xml.in.h:8
+#: ../templates/details/distancesensor.xml.in.h:8
+#: ../templates/details/energymeter.xml.in.h:8
+#: ../templates/details/gpssensor.xml.in.h:7
+#: ../templates/details/humiditysensor.xml.in.h:8
+#: ../templates/details/multigraph.xml.in.h:5
+#: ../templates/details/multilevelsensor.xml.in.h:8
+#: ../templates/details/powermeter.xml.in.h:8
+#: ../templates/details/temperaturesensor.xml.in.h:8
+#: ../help/journal/html/journal.xml.in.h:2
+msgid "From"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:9
+#: ../templates/details/batterysensor.xml.in.h:9
+#: ../templates/details/brightnesssensor.xml.in.h:9
+#: ../templates/details/distancesensor.xml.in.h:9
+#: ../templates/details/energymeter.xml.in.h:9
+#: ../templates/details/gpssensor.xml.in.h:8
+#: ../templates/details/humiditysensor.xml.in.h:9
+#: ../templates/details/multigraph.xml.in.h:6
+#: ../templates/details/multilevelsensor.xml.in.h:9
+#: ../templates/details/powermeter.xml.in.h:9
+#: ../templates/details/temperaturesensor.xml.in.h:9
+#: ../help/journal/html/journal.xml.in.h:3
+msgid "To"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:10
+#: ../templates/details/batterysensor.xml.in.h:10
+#: ../templates/details/brightnesssensor.xml.in.h:10
+#: ../templates/details/camera.xml.in.h:5
+#: ../templates/details/distancesensor.xml.in.h:10
+#: ../templates/details/energymeter.xml.in.h:10
+#: ../templates/details/gpssensor.xml.in.h:9
+#: ../templates/details/humiditysensor.xml.in.h:10
+#: ../templates/details/multigraph.xml.in.h:7
+#: ../templates/details/multilevelsensor.xml.in.h:10
+#: ../templates/details/powermeter.xml.in.h:10
+#: ../templates/details/temperaturesensor.xml.in.h:10
+#: ../applications/zwave/html/zwave.xml.in.h:41
+msgid "Refresh"
+msgstr ""
+
 #: ../templates/details/default.xml.in.h:5
 msgid "Command:"
 msgstr ""
 
-#: ../templates/details/camera.xml.in.h:5
 #: ../templates/details/default.xml.in.h:6
 #: ../configuration/scenarios/html/scenarios.xml.in.h:5
 msgid "Run"
-msgstr ""
-
-#: ../templates/details/default.xml.in.h:2
-msgid "State:"
-msgstr ""
-
-#: ../templates/details/gpssensor.xml.in.h:4
-#: ../templates/details/humiditysensor.xml.in.h:4
-#: ../templates/details/multilevelsensor.xml.in.h:4
-msgid "Show as:"
 msgstr ""
 
 #: ../templates/details/gpssensor.xml.in.h:5
 msgid "Map"
 msgstr ""
 
-#: ../templates/details/gpssensor.xml.in.h:6
-#: ../templates/details/humiditysensor.xml.in.h:7
-#: ../templates/details/multilevelsensor.xml.in.h:7
-msgid "List"
-msgstr ""
-
-#: ../templates/details/gpssensor.xml.in.h:7
-#: ../templates/details/humiditysensor.xml.in.h:8
-#: ../templates/details/multilevelsensor.xml.in.h:8
-msgid "From:"
-msgstr ""
-
-#: ../templates/details/gpssensor.xml.in.h:8
-#: ../templates/details/humiditysensor.xml.in.h:9
-#: ../templates/details/multilevelsensor.xml.in.h:9
-msgid "To:"
-msgstr ""
-
-#: ../templates/details/humiditysensor.xml.in.h:5
-#: ../templates/details/multilevelsensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
-msgstr ""
-
-#: ../templates/details/humiditysensor.xml.in.h:6
-msgid "Plots"
-msgstr ""
-
-#: ../templates/details/multilevelsensor.xml.in.h:6
-msgid "PLots"
+#: ../templates/devices/binarysensor.xml.in.h:1
+msgid "Current value"
 msgstr ""
 
 #: ../templates/devices/computer.xml.in.h:1
 #: ../templates/devices/dimmer.xml.in.h:1
-#: ../templates/devices/switch.xml.in.h:1
+#: ../templates/devices/dimmerrgb.xml.in.h:1
+#: ../templates/devices/squeezebox.xml.in.h:2
+#: ../templates/devices/switch.xml.in.h:2
 msgid "OFF"
 msgstr ""
 
 #: ../templates/devices/computer.xml.in.h:2
 #: ../templates/devices/dimmer.xml.in.h:2
-#: ../templates/devices/switch.xml.in.h:2
+#: ../templates/devices/dimmerrgb.xml.in.h:2
+#: ../templates/devices/squeezebox.xml.in.h:1
+#: ../templates/devices/switch.xml.in.h:1
 msgid "ON"
+msgstr ""
+
+#: ../templates/devices/dimmerrgb.xml.in.h:3
+msgid "COLOR"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:1
@@ -148,6 +242,22 @@ msgstr ""
 
 #: ../templates/devices/ipx800v3board.xml.in.h:2
 msgid "CLOSE ALL"
+msgstr ""
+
+#: ../templates/devices/pushbutton.xml.in.h:1
+msgid "PUSH"
+msgstr ""
+
+#: ../templates/devices/scenario.xml.in.h:1
+msgid "RUN SCENARIO"
+msgstr ""
+
+#: ../templates/devices/squeezebox.xml.in.h:3
+msgid "PLAY"
+msgstr ""
+
+#: ../templates/devices/squeezebox.xml.in.h:4
+msgid "PAUSE"
 msgstr ""
 
 #: ../templates/devices/thermostat.xml.in.h:1
@@ -850,10 +960,6 @@ msgstr ""
 msgid "Refresh node informations"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:41
-msgid "Refresh"
-msgstr ""
-
 #: ../applications/zwave/html/zwave.xml.in.h:42
 msgid "Test this node"
 msgstr ""
@@ -1533,11 +1639,6 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-#: ../configuration/events/html/events.xml.in.h:10
-#: ../configuration/scenarios/html/scenarios.xml.in.h:12
-msgid "Name"
-msgstr ""
-
 #: ../configuration/events/html/events.xml.in.h:11
 msgid "Input event name"
 msgstr ""
@@ -1709,18 +1810,6 @@ msgstr ""
 msgid "Autoscroll"
 msgstr ""
 
-#: ../help/journal/html/journal.xml.in.h:2
-msgid "From"
-msgstr ""
-
-#: ../help/journal/html/journal.xml.in.h:3
-msgid "To"
-msgstr ""
-
 #: ../help/journal/html/journal.xml.in.h:4
-msgid "Filter"
-msgstr ""
-
-#: ../help/journal/html/journal.xml.in.h:5
 msgid "Get"
 msgstr ""

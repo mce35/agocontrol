@@ -32,11 +32,15 @@ templates/devices/multilevelsensor.xml.in
 templates/devices/phone.xml.in
 templates/devices/powermeter.xml.in
 templates/devices/pushbutton.xml.in
+templates/devices/pushgateway.xml.in
 templates/devices/scenario.xml.in
+templates/devices/smsgateway.xml.in
+templates/devices/smtpgateway.xml.in
 templates/devices/squeezebox.xml.in
 templates/devices/switch.xml.in
 templates/devices/temperaturesensor.xml.in
 templates/devices/thermostat.xml.in
+templates/devices/twittergateway.xml.in
 templates/plugins/plugins.xml.in
 applications/agoalert/html/agoalert.xml.in
 applications/agoscheduler/html/agoscheduler.xml.in
