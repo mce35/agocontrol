@@ -207,8 +207,17 @@ void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map conte
                             {
                                 criteria[crit->first] = lval.isEqualTo(rval);
                             }
-                        }
-                        else if (element["comp"] == "lt")
+                        } else if (element["comp"] == "neq")
+                        {
+                            if (lval.getType()==qpid::types::VAR_STRING || rval.getType()==qpid::types::VAR_STRING) // compare as string
+                            {
+                                criteria[crit->first] = lval.asString() != rval.asString(); 
+                            }
+                            else
+                            {
+                                criteria[crit->first] = !(lval.isEqualTo(rval));
+                            }
+                        } else if (element["comp"] == "lt")
                         {
                             criteria[crit->first] = lval < rval;
                         }
