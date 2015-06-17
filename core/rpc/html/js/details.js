@@ -28,7 +28,7 @@ Agocontrol.prototype.showDetails = function(device)
         },
         error : function()
         {
-            notif.error('Internal error, unable to open device details');
+            self.doShowDetails(device, "default", environment);
         }
     });
 };
