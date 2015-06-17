@@ -44,6 +44,18 @@ function dashBoard(agocontrol)
         return list;
     });
 
+    self.devicesPerPage = ko.computed(function()
+    {
+        //return self.deviceList().chunk(self.itemsPerPage);
+        var currentList = self.deviceList().chunk(self.itemsPerPage);
+        if (currentList.length < self.currentPage())
+        {
+            return [];
+        }
+        currentList = currentList[self.currentPage() - 1];
+        return currentList;
+    });
+
     self.pages = ko.computed(function()
     {
         var pages = [];
