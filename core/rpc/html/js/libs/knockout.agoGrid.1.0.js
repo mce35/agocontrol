@@ -290,7 +290,7 @@
                             <div class=\"input-group input-group-sm\">\
                                 <input type=\"text\" class=\"form-control\" data-bind=\"textInput:search\">\
                                 <span class=\"input-group-btn\">\
-                                    <button class=\"btn btn-primary\" type=\"button\" data-bind=\"click:function(){clearSearch();}\">x</button>\
+                                    <button class=\"btn btn-primary\" type=\"button\" data-bind=\"click:function(){clearSearch();}\"><span class=\"en-cancel\"/></button>\
                                 </span>\
                             </div>\
                         </form>\
