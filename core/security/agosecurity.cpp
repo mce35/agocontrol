@@ -230,9 +230,9 @@ void AgoSecurity::enableAlarm(std::string zone, std::string housemode, int16_t d
     }
     catch(boost::thread_interrupted &e)
     {
-        //alarm has been canceled by user
+        //alarm has been cancelled by user
         AGO_DEBUG() << "Alarm thread cancelled";
-        agoConnection->emitEvent("securitycontroller", "event.security.alarmcanceled", content);
+        agoConnection->emitEvent("securitycontroller", "event.security.alarmcancelled", content);
 
         //finally change housemode to default one
         //this is implemented to toggle automatically to another housemode that disable alarm (but it's not mandatory)

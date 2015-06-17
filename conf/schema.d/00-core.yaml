@@ -267,7 +267,7 @@ devicetypes:
     name: security system
     description: ago control security system module
     commands: [gethousemode, sethousemode, triggerzone, setzones, cancel]
-    events: [event.security.housemodechanged, event.security.countdown.started, event.security.countdown, event.security.intruderalert, event.security.alarmcanceled]
+    events: [event.security.housemodechanged,event.security.countdown.started,event.security.countdown,event.security.intruderalert,event.security.alarmcanceled,event.security.alarmstopped]
   luacontroller:
     name: lua event scripting
     description: use lua scripts to act on events
@@ -351,17 +351,22 @@ events:
   event.environment.timechanged:
     description: time did advance
     parameters: [minute, hour, month, day, year, weekday, yday]
-  event.security.countdown:
-    description: intruder alarm countdown couting down
-    parameters: [zone, delay]
+  event.security.housemodechanged:
+    description: house security mode changed
+    parameters: [housemode]
   event.security.countdown.started:
     description: intruder alarm countdown started
     parameters: [zone, delay]
-  event.security.countdown.cancelled:
-    description: intruder alarm countdown cancelled
+  event.security.countdown:
+    description: intruder alarm countdown couting down
+    parameters: [zone, delay]
   event.security.intruderalert:
     description: intruder alarm
     parameters: [zone]
+  event.security.alarmcancelled:
+    description: intruder alarm countdown cancelled
+  event.security.alarmstopped:
+    description: intruder alarm stopped
   event.system.roomnamechanged: 
     description: a room name has been changed
     parameters: [name, uuid]
