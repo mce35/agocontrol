@@ -62,7 +62,7 @@
     <ko opts="if: state()!=25">
     <div class="btn-group btn-group-justified" role="group">
         <div class="btn-group" role="group">
-            <ko opts="ifnot: state()!=0">
+            <ko opts="if: state()!=0">
                 <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOn">ON</_button>
             </ko>
 		    <ko opts="ifnot: state()!=0">
