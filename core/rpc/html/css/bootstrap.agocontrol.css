@@ -19,10 +19,15 @@ body {
     padding-right: 30px;
     border: 1px solid #A0A0A0;
     border-radius: 5px;
+    padding-bottom: 10px;
 }
 
-.agorowbottom {
+.agomarginbottom {
     margin-bottom: 20px;
+}
+
+.agomargintop {
+    margin-top: 20px;
 }
 
 /* dashboard widget device icon */
