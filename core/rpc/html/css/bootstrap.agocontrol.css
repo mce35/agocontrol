@@ -22,12 +22,17 @@ body {
     padding-bottom: 10px;
 }
 
+/* some margins */
 .agomarginbottom {
     margin-bottom: 20px;
 }
-
 .agomargintop {
     margin-top: 20px;
+}
+
+/* notifications area */
+.agonotif {
+    display: none;
 }
 
 /* dashboard widget device icon */
