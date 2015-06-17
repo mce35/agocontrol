@@ -983,7 +983,7 @@ function EventsConfig(agocontrol)
         var comp = document.createElement("select");
         comp.name = path + ".comp";
         comp.options[0] = new Option("=", "eq");
-        comp.options[1] = new Option("!=", "new");
+        comp.options[1] = new Option("!=", "neq");
         comp.options[2] = new Option(">", "gt");
         comp.options[3] = new Option("<", "lt");
         comp.options[4] = new Option(">=", "gte");
