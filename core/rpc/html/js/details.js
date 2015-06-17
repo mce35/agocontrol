@@ -37,7 +37,6 @@ Agocontrol.prototype.showDetails = function(device)
 Agocontrol.prototype.doShowDetails = function(device, template, environment)
 {
     var self = this;
-    console.log('env='+environment);
 
     ko.renderTemplate("templates/details/" + template, device,
     {
