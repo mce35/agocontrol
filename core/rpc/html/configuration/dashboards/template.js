@@ -60,7 +60,7 @@ function DashboardConfig(agocontrol)
         rowTemplate: 'rowTemplate'
     });
 
-    self.deletePlan = function(item, event)
+    self.deleteDashboard = function(item, event)
     {
         var button_yes = $("#confirmDeleteButtons").data("yes");
         var button_no = $("#confirmDeleteButtons").data("no");
@@ -71,7 +71,7 @@ function DashboardConfig(agocontrol)
         };
         buttons[button_yes] = function()
         {
-            self.doDeletePlan(item, event);
+            self.doDeleteDashboard(item, event);
             $("#confirmDelete").dialog("close");
         };
         $("#confirmDelete").dialog({
@@ -82,7 +82,7 @@ function DashboardConfig(agocontrol)
         });
     };
 
-    self.doDeletePlan = function(item, event)
+    self.doDeleteDashboard = function(item, event)
     {
         self.agocontrol.block($('#agoGrid'));
         var content = {};

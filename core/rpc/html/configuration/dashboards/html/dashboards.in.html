@@ -13,11 +13,13 @@
     <td class="edit_dashboard" data-bind="attr: {'data-uuid': $data.uuid}">unset</td>
 </ko>
     <td>
-        <div class="pretty medium default btn">
-        	<i class="icon-pencil"  data-translateable="true" _alt="Edit" _title="Edit" data-bind="click: $root.gotoDashboard.bind($data, $data, true)"></i>
-        </div>
-        <div class="pretty medium default btn">
-        	<i class="icon-cancel"  data-translateable="true" _alt="Delete" _title="Delete" data-bind="click: $parent.deletePlan"></i>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary btn-xs" _alt="Edit" _title="Edit" data-translateable="true" data-bind="click: $root.gotoDashboard.bind($data, $data, true)">
+                <span class="en-pencil"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDashboard">
+                <span class="en-cancel"></span>
+            </button>
         </div>
     </td>
 </script>
