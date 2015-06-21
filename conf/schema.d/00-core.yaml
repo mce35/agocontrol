@@ -26,7 +26,7 @@ commands:
   sethousemode:
     name: set the house mode
     parameters:
-      mode:
+      housemode:
         name: house mode
         type: string
       pin:
