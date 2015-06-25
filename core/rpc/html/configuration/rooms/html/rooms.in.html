@@ -1,4 +1,4 @@
-<div class="container" id="contentarea agocontainer">
+<div id="contentarea" class="container agocontainer">
 
     <div class="agonotif">
         <_div data-translateable="true" id="confirmDelete">Are you sure that you want to delete this room?</_div>
@@ -13,10 +13,12 @@
     <ko opts="ifnot: name">
         <_td data-translateable="true" class="edit_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
     </ko>
-        <td>
-            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteRoom">
-                <span class="en-cancel"></span>
-            </button>
+        <td class="delete_room">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteRoom">
+                    <span class="en-cancel"></span>
+                </button>
+            </div>
         </td>
 </ko>
 </script>
@@ -45,6 +47,7 @@
                         <_button type="submit" class="btn btn-primary" data-bind="click: createRoom" data-translateable="true">Create room</_button>
                     </div>
                 </div>
+            </form>
         </div>
     </div>
 
