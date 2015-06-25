@@ -1,49 +1,40 @@
-<div id="draganddroparea">
+<div id="draganddroparea" class="container-fluid">
     
     <!-- EDITOR -->
     <div id="dashboardEditor" class="dashboard-editor">
-        <div class="row">
-            <div class="three columns" style="padding-top:10px; padding-left:20px;">
-                <ul>
-                    <li class="field" style="margin:0px;">
-                        <div class="picker">
-                            <select data-bind="value:selectedMainFilter">
-                                <option value="all">All</option>
-                                <option value="rooms">Rooms</option>
-                                <option value="types">Device types</option>
-                            </select>
-                        </div>
-                    </li>
-                    <li class="field" style="margin:0px;">
-                        <div class="picker">
-                            <select data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter">
-                            </select>
-                        </div>
-                    </li>
-                    <li class="append field" style="margin:0px;">
-                        <input class="xwide text input" type="text" placeholder="Filter" data-bind="value:selectedTextFilter"/>
-                        <div class="medium primary btn" style="color:#FFFFFF;" data-bind="click:clearTextFilter">
-                            <i class="icon-cancel" title="Clear filter"></i>
-                        </div>
-                    </li>
-                </ul>
+        <div style="padding-top:10px; padding-left:20px;" class="col-sm-3">
+            <div class="form-group">
+                <select class="form-control" data-bind="value:selectedMainFilter">
+                    <option value="all">All</option>
+                    <option value="rooms">Rooms</option>
+                    <option value="types">Device types</option>
+                </select>
             </div>
-            <div class="nine columns">
-                <div class="device-list" data-bind="template: {name:listDeviceTemplate, foreach:filteredDevices }">
-                </div>
+            <div class="form-group">
+                <select class="form-control" data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter"></select>
             </div>
+            <div class="form-group form-inline">
+                <input type="text" class="form-control" data-bind="textInput:selectedTextFilter" />
+                <button type="submit" class="btn btn-primary" data-bind="click:clearTextFilter">
+                    <span class="en-cancel"></span>
+                </button>
+            </div>
+        </div>
+        <div class="col-sm-9">
+            <div data-bind="template: {name:listDeviceTemplate, foreach:filteredDevices }" class="device-list"></div>
         </div>
     </div>
 
     <!-- DASHBOARD -->
     <div class="row">
-        <div class="ten columns">
-            <h4 data-bind="text: dashboardName"></h4>
+        <div class="col-sm-10 text-left">
+            <h2 style="margin-top:0px;" data-bind="text: dashboardName"/>
         </div>
-        <div class="two columns" style="text-align:right;">
-            <div class="small default btn pretty icon-left entypo icon-pencil">
-                <a href="#" data-bind="text:editLabel, click:showEditor"></a>
-            </div>
+        <div class="col-sm-2 text-right">
+            <button type="button" class="btn btn-default btn-sm" data-bind="click:showEditor">
+                <span class="en-pencil"></span>
+                <span data-bind="text:editLabel"></span>
+            </button>
         </div>
     </div>
     <div data-bind="template: {name: deviceTemplate, foreach: firstRow}" class="row grid"/>

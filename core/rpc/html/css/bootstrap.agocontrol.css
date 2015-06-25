@@ -22,29 +22,97 @@ body {
     padding-bottom: 10px;
 }
 
-/* some margins */
-.agomarginbottom {
+.agorowbottom {
     margin-bottom: 20px;
 }
-.agomargintop {
-    margin-top: 20px;
-}
 
-/* notifications area */
-.agonotif {
-    display: none;
+.agorowtop {
+    margin-top: 20px;
 }
 
 /* dashboard widget device icon */
 .dashboard-widget {
-    min-height: 155px;
+    min-height: 160px;
     background-color: #DFDFDF;
 }
+
 .dashboard-widget > .well {
     margin-bottom: 10px !important;
 }
+
 .dashboard-widget h3 {
     margin:0px !important;
     overflow:hidden;
     white-space: nowrap;
 }
+
+div.dashboard-widget-draggable {
+    cursor:move;
+}
+
+.dashboard-widget-active {
+    border: 2px solid #3085D6;
+}
+
+.dashboard-widget-hover {
+    background-color: #3085D6;
+}
+
+/* custom dashboard editor */
+.dashboard-editor {
+    display:none;
+    height:160px;
+    width:100%;
+    background-color:#DFDFDF;
+    border-radius:5px;
+    margin-bottom:10px;
+}
+
+/* device list */
+.device-list {
+    background-color:#FFFFFF;
+    border:1px solid #D8D8D8;
+    margin:10px;
+    padding:2px;
+    width:95%;
+    height:135px;
+    border-radius:5px;
+    overflow:scroll;
+    overflow-x:hidden;
+}
+
+.device-list-active {
+    border:1px solid #3085D6;
+    overflow:hidden;
+    background-image: url('../img/icon_trash.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.device-list-hover {
+    background-color:#3085D6;
+}
+
+.device-list-item {
+    width:200px;
+    height:30px;
+    border:1px solid #A0A0A0;
+    margin:2px;
+    border-radius:5px;
+    float:left;
+    overflow:hidden;
+    text-overflow:clip;
+    white-space:nowrap;
+    background-color:#DFDFDF;
+    padding:4px 0px 0px 4px;
+}
+
+.device-list-item-draggable {
+    cursor:move;
+}
+
+.device-list-item i {
+    margin-right:0px;
+    color:#3085D6;
+}
+

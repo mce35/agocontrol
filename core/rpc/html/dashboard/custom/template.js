@@ -91,25 +91,20 @@ function Dashboard(dashboard, edition, agocontrol)
             $(this).droppable({
                 accept: '.device-list-item, .dashboard-widget',
                 activate: function(event, ui) {
-                    $(this).find('div.dashboard-widget-header').addClass('dashboard-widget-header-active');
-                    $(this).find('div.dashboard-widget-content').addClass('dashboard-widget-content-active');
+                    $(this).addClass('dashboard-widget-active');
                 },
                 deactivate: function(event, ui) {
-                    $(this).find('div.dashboard-widget-header').removeClass('dashboard-widget-header-active');
-                    $(this).find('div.dashboard-widget-content').removeClass('dashboard-widget-content-active');
+                    $(this).removeClass('dashboard-widget-active');
                 },
                 over: function(event, ui) {
-                    $(this).find('div.dashboard-widget-header').addClass('dashboard-widget-header-hover');
-                    $(this).find('div.dashboard-widget-content').addClass('dashboard-widget-content-hover');
+                    $(this).addClass('dashboard-widget-hover');
                 },
                 out: function(event, ui) {
-                    $(this).find('div.dashboard-widget-header').removeClass('dashboard-widget-header-hover');
-                    $(this).find('div.dashboard-widget-content').removeClass('dashboard-widget-content-hover');
+                    $(this).removeClass('dashboard-widget-hover');
                 },
                 drop: function(event, ui) {
                     //remove style
-                    $(this).find('div.dashboard-widget-header').removeClass('dashboard-widget-header-hover');
-                    $(this).find('div.dashboard-widget-content').removeClass('dashboard-widget-content-hover');
+                    $(this).removeClass('dashboard-widget-hover');
 
                     //handle dropped item
                     var x = $(this).data('x');
@@ -117,10 +112,9 @@ function Dashboard(dashboard, edition, agocontrol)
                     var uuid = ui.draggable.attr('data-uuid');
 
                     //need to delay dashboard widget update to avoid js bug (items are destroyed before this function ends!)
-                    //delay must be long enough to allow html template to be downloaded, otherwise dnd won't be enable on it
+                    //delay ust be long enough to allow html template to be downloaded, otherwise dnd won't be enable on it
                     //until other item is moved.
-                    setTimeout(function()
-                    {
+                    setTimeout(function() {
                         self.updateDashboard(uuid, x, y);
                     }, 250);
                 }
@@ -328,9 +322,10 @@ function Dashboard(dashboard, edition, agocontrol)
     self.rooms = ko.computed(function()
     {
         var output = [];
-        for( var uuid in self.agocontrol.rooms() )
+        for( var i=0; i<self.agocontrol.rooms().length; i++ )
         {
-            output.push({uuid:uuid, name:self.agocontrol.rooms()[uuid].name, location:self.agocontrol.rooms()[uuid].location});
+            var room = self.agocontrol.rooms()[i];
+            output.push({uuid:room.uuid, name:room.name, location:room.location});
         }
         return output;
     });
@@ -342,7 +337,6 @@ function Dashboard(dashboard, edition, agocontrol)
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             var device = self.agocontrol.devices()[i];
-            //console.log(device);
             if( device.name && device.name.length>0 )
             {
                 var found = false;
@@ -543,5 +537,4 @@ function init_template(path, params, agocontrol)
 
     return model;
 }
-
 
