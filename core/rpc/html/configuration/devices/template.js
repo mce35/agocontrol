@@ -362,7 +362,7 @@ function DeviceConfig(agocontrol)
     self.doDeleteDevice = function()
     {
         self.agocontrol.block($('#agoGrid'));
-        $("#confirmPopup").modal('hide')
+        $("#confirmPopup").modal('hide');
 
         var item = $("#confirmPopup").data('item');
         var request = {};
