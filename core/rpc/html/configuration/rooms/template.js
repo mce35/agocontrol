@@ -74,45 +74,32 @@ function RoomConfig(agocontrol)
 
     self.deleteRoom = function(item, event)
     {
-        var button_yes = $("#confirmDeleteButtons").data("yes");
-        var button_no = $("#confirmDeleteButtons").data("no");
-        var buttons = {};
-        buttons[button_no] = function()
-        {
-            $("#confirmDelete").dialog("close");
-        };
-        buttons[button_yes] = function()
-        {
-            self.doDeleteRoom(item, event);
-            $("#confirmDelete").dialog("close");
-        };
-        $("#confirmDelete").dialog({
-            modal : true,
-            height : 180,
-            width : 500,
-            buttons : buttons
-        });
+        $("#confirmPopup").data('item', item);
+        $("#confirmPopup").modal('show');
     };
 
-    self.doDeleteRoom = function(item, event)
+    self.doDeleteRoom = function()
     {
         self.agocontrol.block($('#agoGrid'));
+        $("#confirmPopup").modal('hide');
+
+        var item = $("#confirmPopup").data('item');
         var content = {};
         content.room = item.uuid;
         content.uuid = self.agocontrol.agoController;
         content.command = 'deleteroom';
         self.agocontrol.sendCommand(content)
-        .then(function(res) {
-            self.agocontrol.rooms.remove(function(e) {
-                return e.uuid == item.uuid;
+            .then(function(res) {
+                self.agocontrol.rooms.remove(function(e) {
+                    return e.uuid == item.uuid;
+                });
+            })
+            .catch(function(err) {
+                notif.error("Error while deleting room!");
+            })
+            .finally(function() {
+                self.agocontrol.unblock($('#agoGrid'));
             });
-        })
-        .catch(function(err) {
-            notif.error("Error while deleting room!");
-        })
-        .finally(function() {
-            self.agocontrol.unblock($('#agoGrid'));
-        });
     };
 }
 
