@@ -353,27 +353,18 @@ function DeviceConfig(agocontrol)
         rowTemplate: 'rowTemplate'
     });
 
-    self.deleteDevice = function(item, event) {
-        var button_yes = $("#confirmDeleteButtons").data("yes");
-        var button_no = $("#confirmDeleteButtons").data("no");
-        var buttons = {};
-        buttons[button_no] = function() {
-            $("#confirmDelete").dialog("close");
-        };
-        buttons[button_yes] = function() {
-            self.doDeleteDevice(item, event);
-            $("#confirmDelete").dialog("close");
-        };
-        $("#confirmDelete").dialog({
-            modal : true,
-            height : 180,
-            width : 500,
-            buttons : buttons
-        });
+    self.deleteDevice = function(item, event)
+    {
+        $("#confirmPopup").data('item', item);
+        $("#confirmPopup").modal('show');
     };
 
-    self.doDeleteDevice = function(item, event) {
+    self.doDeleteDevice = function()
+    {
         self.agocontrol.block($('#agoGrid'));
+        $("#confirmPopup").modal('hide')
+
+        var item = $("#confirmPopup").data('item');
         var request = {};
         request.method = "message";
         request.params = {};
@@ -396,12 +387,15 @@ function DeviceConfig(agocontrol)
                 content.uuid = self.agocontrol.agoController;
                 content.command = "setdevicename";
                 content.name = "";
-                self.agocontrol.sendCommand(content, function() {
-                    self.agocontrol.devices.remove(function(e) {
-                        return e.uuid == item.uuid;
+                self.agocontrol.sendCommand(content)
+                    .then(function(res) {
+                        self.agocontrol.devices.remove(function(e) {
+                            return e.uuid == item.uuid;
+                        });
+                    })
+                    .finally(function() {
+                        self.agocontrol.unblock($('#agoGrid'));
                     });
-                    self.agocontrol.unblock($('#agoGrid'));
-                });
             },
             dataType : "json",
             async : true

@@ -1,38 +1,24 @@
 <div class="container agocontainer" id="contentarea">
 
-<script type="text/html" id="rowTemplate">
-<ko opts="if: name">
-    <td class="edit_device" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-</ko>
-<ko opts="ifnot: name">
-    <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-</ko>
-<ko opts="if: room">
-    <td class="select_device_room" data-bind="attr: {'data-uuid': uuid}, text: room"></td>
-</ko>
-<ko opts="ifnot: room">
-    <_td data-translateable="true" class="select_device_room" data-bind="attr: {'data-uuid': uuid}" >unset</_td>
-</ko>
-    <td data-bind="text: devicetype"></td>
-    <td data-bind="text: handledBy"></td>
-    <td data-bind="attr: {'title': internalid }, text: internalid"></td>
-    <td>
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary btn-xs" _alt="Details" _title="Details" data-translateable="true" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-                <span class="en-popup"></span>
-            </button>
-            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
-                <span class="en-cancel"></span>
-            </button>
+    <!-- popup -->
+    <div class="modal fade" id="confirmPopup">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <_span data-translateable="true">Are you sure that you want to delete this device?</_span>
+                </div>
+                <div class="modal-footer">
+                    <_button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</_button>
+                    <_button data-translateable="true" type="button" class="btn btn-danger" data-bind="click: doDeleteDevice">Delete</_button>
+                </div>
+            </div>
         </div>
-    </td>
-</script>
+    </div> 
 
-	<_div data-translateable="true" id="confirmDelete" style="display:none">Are you sure that you want to delete this device?</_div>
-	<_div data-translateable="true" id="confirmDeleteButtons" style="display:none" _data-yes="Yes" _data-no="No" />
+    <!-- title -->
+    <_h2 data-translateable="true">Device configuration</_h2>
 
-	<_h2 data-translateable="true">Device Configuration</_h2>
-
+    <!-- filter -->
     <div class="well well-sm">
     	<div class="row">
             <div class="col-sm-2">
@@ -66,6 +52,34 @@
         </div>
     </div>
 
+    <!-- grid -->
+<script type="text/html" id="rowTemplate">
+<ko opts="if: name">
+    <td class="edit_device" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+</ko>
+<ko opts="ifnot: name">
+    <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+</ko>
+<ko opts="if: room">
+    <td class="select_device_room" data-bind="attr: {'data-uuid': uuid}, text: room"></td>
+</ko>
+<ko opts="ifnot: room">
+    <_td data-translateable="true" class="select_device_room" data-bind="attr: {'data-uuid': uuid}" >unset</_td>
+</ko>
+    <td data-bind="text: devicetype"></td>
+    <td data-bind="text: handledBy"></td>
+    <td data-bind="attr: {'title': internalid }, text: internalid"></td>
+    <td>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary btn-xs" _alt="Details" _title="Details" data-translateable="true" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+                <span class="en-popup"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
+                <span class="en-cancel"></span>
+            </button>
+        </div>
+    </td>
+</script>
     <div data-bind="agoGrid:grid"></div>
 
 </div>
