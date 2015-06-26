@@ -73,46 +73,32 @@ function VariablesConfig(agocontrol)
 
     self.deleteVariable = function(item, event)
     {
-        var button_yes = $("#confirmDeleteButtons").data("yes");
-        var button_no = $("#confirmDeleteButtons").data("no");
-        var buttons = {};
-        buttons[button_no] = function()
-        {
-            $("#confirmDelete").dialog("close");
-        };
-        buttons[button_yes] = function()
-        {
-            $("#confirmDelete").dialog("close");
-            self.doDeleteVariable(item, event);
-        };
-        $("#confirmDelete").dialog({
-            modal : true,
-            height : 180,
-            width : 500,
-            buttons : buttons
-        });
+        $("#confirmPopup").data('item', item);
+        $("#confirmPopup").modal('show');
     };
 
-    self.doDeleteVariable = function(item, event)
+    self.doDeleteVariable = function()
     {
         self.agocontrol.block($('#agoGrid'));
+        $("#confirmPopup").modal('hide');
+
+        var item = $("#confirmPopup").data('item');
         var content = {};
         content.variable = item.variable;
         content.uuid = self.agocontrol.agoController;
         content.command = 'delvariable';
-        self.agocontrol.sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0)
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.agocontrol.variables.remove(function(e) {
                     return e.variable == item.variable;
                 });
-            }
-            else
-            {
+            })
+            .catch(function(err) {
                 notif.error("Error while deleting variable!");
-            }
-            self.agocontrol.unblock($('#agoGrid'));
-        });
+            })
+            .finally(function() {
+                self.agocontrol.unblock($('#agoGrid'));
+            });
     };
 }
 
