@@ -90,38 +90,26 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
         }
     };
 
-    //gumby tabs bindings
-    ko.bindingHandlers.gumbyTabs = {
+    //bootstrap tabs
+    ko.bindingHandlers.bootstrapTabs = {
         init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            //handle tab changing
-            $(element).find('.tab-nav li > a').click(function() {
-                //update style
-                $(element).find(".tab-nav li").each(function() {
-                    $(this).removeClass('active');
+            //prevent from link redirection
+            $(element).find('a').click(function(e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            //handle onChanged event
+            var accessor = valueAccessor();
+            if( accessor.onChanged && accessor.onChanged instanceof Function )
+            {
+                $(element).find('a').on('shown.bs.tab', function (e) {
+                    //return selected tab index (first tab index is 0) and selected tab text (usually tab title)
+                    accessor.onChanged($(e.target).closest('li').index(), $(e.target).text());
                 });
-                $(this).parent().addClass('active');
-
-                this.$el = $(element);
-                var index = $(this).parent().index();
-                this.$content = this.$el.find(".tab-content");
-                this.$nav = $(this).parent().find('li');
-                this.$nav.add(this.$content).removeClass("active");
-                this.$nav.eq(index).add(this.$content.eq(index)).addClass("active");
-                return false; //prevent from bubbling
-            });
+            }
         }
     };
-
-    //gumby tabs changed
-    ko.bindingHandlers.gumbyTabChanged = {
-        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            $(element).find('.tab-nav li > a').click(function() {
-                //call accessor with index and tab text as parameters
-                valueAccessor()($(this).parent().index(), $(this).text());
-            });
-        }
-    };
-
 };
 
 /**
