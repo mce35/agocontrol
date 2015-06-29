@@ -1,174 +1,160 @@
-<div id="contentarea" class="container">
+<div class="container agocontainer" id="contentarea">
 
-    <div style="display:none;">
+    <div class="agonotif">
         <span id="reallyreset" data-translateable="true">Reset controller (everything will be lost!)</span>
     </div>
 
-    <_h3 data-translateable="true">Datalogger configuration</_h3>
+    <!-- title -->
+    <_h2 data-translateable="true">Datalogger configuration</_h2>
 
-    <section class="tabs" data-bind="gumbyTabs:$root">
-        <ul class="tab-nav">
-            <li class="active"><_a data-translateable="true" href="#">General</_a></li>
-            <li><_a data-translateable="true" href="#">Graph</_a></li>
-            <li><_a data-translateable="true" href="#">Database</_a></li>
-        </ul>
-
+    <!-- tabs -->
+    <ul class="nav nav-tabs" data-bind="bootstrapTabs:$root">
+        <li role="presentation" class="active"><_a href="#general" data-translateable="true">General</_a></li>
+        <li role="presentation"><_a href="#graph" data-translateable="true">Graph</_a></li>
+        <li role="presentation"><_a href="#database" data-translateable="true">Database</_a></li>
+    </ul>
+    <div class="tab-content" style="padding-top:10px;">
         <!-- general tab -->
-        <div class="tab-content active">
-            <div class="row" style="height: 35px;">
-                <div class="twelve columns">
-                    <label class="checkbox" for="checkData">
-                        <input id="checkData" type="checkbox" data-bind="checked: dataLogging" />
-                        <_span data-translateable="true"> Activate SQL logging for all sensors except GPS sensors (plots+list)</_span>
-                    </label>
-                </div>
-            </div>
-            <div class="row" style="height: 35px;">
-                <div class="twelve columns">
-                    <label class="checkbox" for="checkGps">
-                        <input id="checkGps" type="checkbox" data-bind="checked: gpsLogging" />
-                        <_span data-translateable="true"> Activate SQL logging for GPS sensors only (map)</_span>
-                    </label>
-                </div>
-            </div>
-            <div class="row" style="height: 35px;">
-                <div class="twelve columns">
-                    <label class="checkbox" for="checkRrd">
-                        <input id="checkRrd" type="checkbox" data-bind="checked: rrdLogging" />
-                        <_span data-translateable="true"> Activate RRDTool logging (graph)</_span>
-                    </label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="ten columns field">
-                    <div class="medium primary btn icon-left entypo icon-floppy">
-                        <_a data-translateable="true" href="#" data-bind="click: saveEnabledModules">Save changes</_a>
+        <div id="general" class="tab-pane fade in active">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" data-bind="checked: dataLogging" />
+                                <_span data-translateable="true">Activate SQL logging for all sensors except GPS sensors (plots+list)</_span>
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" data-bind="checked: gpsLogging" />
+                                <_span data-translateable="true">Activate SQL logging for GPS sensors only (map)</_span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" data-bind="checked: rrdLogging" />
+                                <_span data-translateable="true">Activate RRDTool logging (graph)</_span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: saveEnabledModules">Save changes</_button>
+                    </div>
+                </div>
+            </form>
         </div>
-
         <!-- graph tab -->
-        <div class="tab-content">
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Select sensors to display on graph</_span>
+        <div id="graph" class="tab-pane fade">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <_h3 class="panel-title" data-translateable="true">Add graph</_h3>
                 </div>
-                <div class="six columns text-left field">
-                    <select size="6" multiple="true" data-bind="options:sensors, optionsText:'name', selectedOptions::selectedSensors"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Number of hours to display on thumb</_span>
-                </div>
-                <div class="four columns text-left field">
-                    <input data-translateable="true" class="narrow text input" type="text" placeholder="12" data-bind="value: multigraphPeriod"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                </div>
-                <div class="four columns text-left field">
-                    <div class="medium primary btn icon-left entypo icon-plus">
-                        <_a data-translateable="true" data-bind="click:addMultigraph" href="#">Add graph</_a>
-                    </div>
-                </div>
-            </div>
-            <hr/>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Delete graph</_span>
-                </div>
-                <div class="four columns text-left field">
-                    <div class="picker">
-                        <select data-bind="options:multigraphs, optionsText:'name', value:selectedMultigraphToDel"/>
-                    </div>
+                <div class="panel-body">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label for="sensors" class="col-sm-2 control-label" data-translateable="true">Select sensors to display on graph</_label>
+                            <div class="col-sm-6">
+                                <select size="6" multiple="true" data-bind="options:sensors, optionsText:'name', selectedOptions::selectedSensors" class="form-control" id="sensors"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <_label for="hours" class="col-sm-2 control-label" data-translateable="true">Number of hours to display on thumb</_label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control" id="hours" placeholder="12" data-bind="value: multigraphPeriod"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: addMultigraph">Add graph</_button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Displayed sensors on selected graph</_span>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <_h3 class="panel-title" data-translateable="true">Delete graph</_h3>
                 </div>
-                <div class="six columns text-left field">
-                    <ul data-bind="foreach:selectedMultigraphSensors" style="list-style: disc inside;">
-                        <li><span data-bind="text:$data"/></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                </div>
-                <div class="six columns text-left field">
-                    <div class="medium primary btn icon-left entypo icon-trash">
-                        <_a href="#" data-bind="click: deleteMultigraph">Delete graph</_a>
-                    </div>
+                <div class="panel-body">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-2 control-label" data-translateable="true">Graphs</_label>
+                            <div class="col-sm-6">
+                                <select class="form-control" data-bind="options:multigraphs, optionsText:'name', value:selectedMultigraphToDel"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <_label class="col-sm-2 control-label" data-translateable="true">Graphs</_label>
+                            <div class="col-sm-10">
+                                <ul class="form-control-static" data-bind="foreach:selectedMultigraphSensors" style="list-style: disc inside;">
+                                    <li><span data-bind="text:$data"/></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: deleteMultigraph">Delete graph</_button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
         <!-- database tab -->
-        <div class="tab-content">
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Database size</_span>:
-                </div>
-                <div class="six columns text-left field">
-                    <span data-translateable="true" data-bind="text:databaseSize"></span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Sensor values</_span>:
-                </div>
-                <div class="six columns text-left field">
-                    <span data-translateable="true" data-bind="text:dataCount()+' records over '+dataStart()+' - '+dataEnd()"></span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                </div>
-                <div class="four columns text-left field">
-                    <div class="medium primary btn icon-left entypo icon-cancel">
-                        <_a href="#" data-bind="click: purgeDataTable">Purge all values</_a>
+        <div id="database" class="tab-pane fade">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label for="selected" class="col-sm-2 control-label" data-translateable="true">Database size</_label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" data-bind="text:databaseSize"></p>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">GPS positions</_span>:
-                </div>
-                <div class="six columns text-left field">
-                    <span data-translateable="true" data-bind="text: positionCount()+' records over '+positionStart()+' - '+positionEnd()"></span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                </div>
-                <div class="four columns text-left field">
-                    <div class="medium primary btn icon-left entypo icon-cancel">
-                        <_a href="#" data-bind="click: purgePositionTable">Purge all positions</_a>
+                <div class="form-group">
+                    <_label class="col-sm-2 control-label" data-translateable="true">Sensor values</_label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" data-bind="text:dataCount()+' records over '+dataStart()+' - '+dataEnd()"></p>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Journal</_span>:
-                </div>
-                <div class="six columns text-left field">
-                    <span data-translateable="true" data-bind="text: journalCount()+' messages over '+journalStart()+' - '+journalEnd()"></span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                </div>
-                <div class="four columns text-left field">
-                    <div class="medium primary btn icon-left entypo icon-cancel">
-                        <_a href="#" data-bind="click: purgeJournalTable">Purge all messages</_a>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: purgeDataTable">Purge all values</_button>
                     </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <_label class="col-sm-2 control-label" data-translateable="true">GPS positions</_label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" data-bind="text:positionCount()+' records over '+positionStart()+' - '+positionEnd()"></p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: purgePositionTable">Purge all positions</_button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-2 control-label" data-translateable="true">Journal</_label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" data-bind="text:journalCount()+' messages over '+journalStart()+' - '+journalEnd()"></p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: purgeJournalTable">Purge all messages</_button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </section>
+    </div>
 
 </div>
