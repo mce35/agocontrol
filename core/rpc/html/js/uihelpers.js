@@ -43,7 +43,7 @@ function getErrorMessage(error) {
  *  promise.catch(notifCommandError)
  */
 function notifCommandError(error) {
-    notif.error("ERROR: " + getErrorMessage(msg));
+    notif.error("ERROR: " + getErrorMessage(error));
 }
 
 //Init specific knockout bindings
