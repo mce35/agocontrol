@@ -25,6 +25,7 @@ body {
     border: 1px solid #A0A0A0;
     border-radius: 5px;
     padding-bottom: 10px;
+    min-height: 350px;
 }
 
 .agorowbottom {
