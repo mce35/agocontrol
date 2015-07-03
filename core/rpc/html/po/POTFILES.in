@@ -42,7 +42,7 @@ templates/devices/temperaturesensor.xml.in
 templates/devices/thermostat.xml.in
 templates/devices/twittergateway.xml.in
 templates/plugins/plugins.xml.in
-applications/agoalert/html/agoalert.xml.in
+applications/alert/html/alert.xml.in
 applications/agoscheduler/html/agoscheduler.xml.in
 applications/applications/html/applications.xml.in
 applications/ipx800/html/ipx800.xml.in
