@@ -1,41 +1,52 @@
-<div id="contentarea" class="container">
-    <div style="display:none;">
-    </div>
+<div class="container agocontainer" id="contentarea">
 
-    <h3>System monitoring configuration</h3>
-    <br/>
+    <!-- title -->
+    <_h2 data-translateable="true">System monitoring configuration</_h2>
 
-    <div data-bind="jqTabs:{}">
-        <ul>
-            <li><a href="#tabs-processes">Process monitoring</a></li>
-            <li><a href="#tabs-memory">Memory monitoring</a></li>
-        </ul>
-
-        <div id="tabs-processes">
-            <span>Agocontrol can trigger an event when a process is missing.</span>
-            <br/>
-            <select data-bind="options:processes, selectedOptions:monitoredProcesses" size="20" multiple="true" style="width:300px;"></select>
-            <div class="medium pretty primary btn">
-                <a href="#" data-bind="click:setMonitoredProcesses">Save list</a>
+    <!-- tabs -->
+    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+        <li class="active"><_a href="#processes" data-translateable="true">Process monitoring</_a></li>
+        <li ><_a href="#memory" data-translateable="true">Memory monitoring</_a></li>
+    </ul>
+    <div class="tab-content" style="padding-top:10px;">
+        <!-- processes tab -->
+        <div id="processes" class="tab-pane fade in active">
+            <div class="alert alert-info">
+                <_span data-translateable="true">Agocontrol can triggers an event when selected process is missing</_span>
             </div>
-        </div>
-
-        <div id="tabs-memory">
-            <ul>
-                <li>
-                    <span>Agocontrol can trigger an event when a process reach a memory threshold.</span>
-                </li>
-                <li class="prepend append field">
-                    <span class="adjoined">Memory threshold (in Mo)</span>
-                    <input class="xnarrow text input" type="text" placeholder="Memory threshold" data-bind="value:memoryThreshold"/>
-                    <div class="medium primary btn">
-                        <a href="#" data-bind="click:setMemoryThreshold">Set</a>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label for="sensors" class="col-sm-2 control-label" data-translateable="true">Selected processes</_label>
+                    <div class="col-sm-6">
+                        <select class="form-control" data-bind="options:processes, selectedOptions:monitoredProcesses" size="20" multiple="true" style="width:300px;"></select>
                     </div>
-                </li>
-            </ul>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: setMonitoredProcesses">Save changes</_button>
+                    </div>
+                </div>
+            </form>
         </div>
-
+        <!-- memory tab -->
+        <div id="memory" class="tab-pane fade">
+            <div class="alert alert-info">
+                <_span data-translateable="true">Agocontrol can trigger an event when a process reach a memory threshold</_span>
+            </div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label for="sensors" class="col-sm-2 control-label" data-translateable="true">Memory threshold (mo)</_label>
+                    <div class="col-sm-3">
+                        <input data-translateable="true" type="text" class="form-control" id="hours" _placeholder="Memory threshold" data-bind="value:memoryThreshold"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click:setMemoryThreshold">Save changes</_button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <br/>
 </div>

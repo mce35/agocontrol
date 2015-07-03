@@ -53,33 +53,33 @@
     </div>
 
     <!-- grid -->
-<script type="text/html" id="rowTemplate">
-<ko opts="if: name">
-    <td class="edit_device" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-</ko>
-<ko opts="ifnot: name">
-    <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-</ko>
-<ko opts="if: room">
-    <td class="select_device_room" data-bind="attr: {'data-uuid': uuid}, text: room"></td>
-</ko>
-<ko opts="ifnot: room">
-    <_td data-translateable="true" class="select_device_room" data-bind="attr: {'data-uuid': uuid}" >unset</_td>
-</ko>
-    <td data-bind="text: devicetype"></td>
-    <td data-bind="text: handledBy"></td>
-    <td data-bind="attr: {'title': internalid }, text: internalid"></td>
-    <td>
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary btn-xs" _alt="Details" _title="Details" data-translateable="true" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-                <span class="en-popup"></span>
-            </button>
-            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
-                <span class="en-cancel"></span>
-            </button>
-        </div>
-    </td>
-</script>
+    <script type="text/html" id="rowTemplate">
+    <ko opts="if: name">
+        <td class="edit_device" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+    </ko>
+    <ko opts="ifnot: name">
+        <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+    </ko>
+    <ko opts="if: room">
+        <td class="select_device_room" data-bind="attr: {'data-uuid': uuid}, text: room"></td>
+    </ko>
+    <ko opts="ifnot: room">
+        <_td data-translateable="true" class="select_device_room" data-bind="attr: {'data-uuid': uuid}" >unset</_td>
+    </ko>
+        <td data-bind="text: devicetype"></td>
+        <td data-bind="text: handledBy"></td>
+        <td data-bind="attr: {'title': internalid }, text: internalid"></td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary btn-xs" _alt="Details" _title="Details" data-translateable="true" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+                    <span class="en-popup"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
+                    <span class="en-cancel"></span>
+                </button>
+            </div>
+        </td>
+    </script>
     <div data-bind="agoGrid:grid"></div>
 
 </div>

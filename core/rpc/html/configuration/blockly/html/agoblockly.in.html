@@ -240,9 +240,9 @@
     </xml>
    
     <!-- toolbar -->
-    <div class="agomarginbottom">
-        <div class="btn-toolbar" role="toolbar">
-            <div class="btn-group" role="group">
+    <div class="agorowbottom">
+        <div class="btn-toolbar">
+            <div class="btn-group">
                 <button type="button" class="btn btn-primary" data-bind="click:clear">
                     <span class="en-doc"></span>
                     <_span data-translateable="true">New</_span>
@@ -259,7 +259,7 @@
                         <span class="caret"></span>
                         <_span data-translateable="true" class="sr-only">Toggle Dropdown</_span>
                     </button>
-                    <ul class="dropdown-menu" role="menu">
+                    <ul class="dropdown-menu">
                         <li><_a href="#" data-bind="click:saveas" data-translateable="true">Save as</_a></li>
                     </ul>
                 </div>
@@ -272,7 +272,7 @@
                     <_span data-translateable="true">Import</_span>
                 </button>
             </div>
-            <div class="btn-group" role="group">
+            <div class="btn-group">
                 <button type="button" class="btn btn-primary" data-bind="click:check">
                     <span class="en-check"></span>
                     <_span data-translateable="true">Check</_span>
@@ -293,7 +293,7 @@
     <div style="height:800px; width:1100px;" id="blocklyDiv" data-bind="blockly:blocklyViewModel"/>
 
     <!-- lua dialog -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="luaDialog">
+    <div class="modal fade" tabindex="-1" id="luaDialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -310,7 +310,7 @@
     </div>
 
     <!-- load dialog -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="loadDialog">
+    <div class="modal fade" tabindex="-1" id="loadDialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -326,7 +326,7 @@
     <script type="text/html" id="rowTemplate">
         <td data-bind="attr: {'data-oldname': name}, text: name" class="rename_script"/>
         <td>
-            <div class="btn-group" role="group">
+            <div class="btn-group">
                 <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiLoadScript.bind($data,name)" data-translateable="true" _alt="Load" _title="Load">
                     <span class="en-doc-text"></span>
                 </button>
@@ -341,7 +341,7 @@
     </script>
 
     <!-- import dialog -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="importDialog">
+    <div class="modal fade" tabindex="-1" id="importDialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -351,7 +351,7 @@
                 <div class="modal-body">
                     <input type="file" name="files" id="fileupload" data-url="/upload"/>
                     <div class="progress agomargintop">
-                        <div class="progress-bar progress-bar-striped active" id="progress" role="progressbar"></div>
+                        <div class="progress-bar progress-bar-striped active" id="progress"></div>
                     </div>
                 </div>
             </div>
@@ -359,7 +359,7 @@
     </div>
     
     <!-- saveas dialog -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="saveasDialog">
+    <div class="modal fade" tabindex="-1" id="saveasDialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -386,7 +386,7 @@
     </div>
 
     <!-- debug dialog -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="debugDialog">
+    <div class="modal fade" tabindex="-1" id="debugDialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -394,12 +394,12 @@
                     <_h4 data-translateable="true" class="modal-title">Debug script</_h4>
                 </div>
                 <div class="modal-body">
-                    <div class="btn-group" role="group">
+                    <div class="btn-group">
                         <button type="button" class="btn btn-primary" data-bind="click:startDebug"><_span data-translateable="true">Start</_span></button>
                         <button type="button" class="btn btn-primary" data-bind="click:stopDebug"><_span data-translateable="true">Stop</_span></button>
                         <button type="button" class="btn btn-primary" data-bind="click:clearDebug"><_span data-translateable="true">Clear</_span></button>
                     </div>
-                    <textarea class="form-control agomarginbottom agomargintop" rows="2" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}" data-bind="value:debugData"></textarea>
+                    <textarea class="form-control agorowbottom agomargintop" rows="2" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}" data-bind="value:debugData"></textarea>
                     <div id="debugContainer">
                         <ul class="list-group" style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
                         </ul>

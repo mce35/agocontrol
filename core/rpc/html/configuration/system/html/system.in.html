@@ -5,13 +5,13 @@
 
     <!-- tabs -->
     <ul class="nav nav-tabs" data-bind="bootstrapTabs:{onChanged: onTabChanged}">
-        <li role="presentation" class="active"><_a href="#contact" data-translateable="true">Default contact</_a></li>
-        <li role="presentation"><_a href="#home" data-translateable="true">Home position</_a></li>
+        <li class="active"><_a href="#contact" data-translateable="true">Default contact</_a></li>
+        <li><_a href="#home" data-translateable="true">Home position</_a></li>
     </ul>
     <div class="tab-content" style="padding-top:10px;">
         <!-- contact tab -->
         <div id="contact" class="tab-pane fade in active">
-            <div class="alert alert-info" role="alert">
+            <div class="alert alert-info">
                 <_span data-translateable="true">Configure your default contact informations. This allows you to not enter each time those informations.</_span>
             </div>
             <form class="form-horizontal">
@@ -37,7 +37,7 @@
         </div>
         <!-- home position tab -->
         <div id="home" class="tab-pane fade">
-            <div class="alert alert-info" role="alert">
+            <div class="alert alert-info">
                 <_span data-translateable="true">Find and click on your home to find its position. Agocontrol needs this information to compute sunset/sunrise times.</_span>
             </div>
             <div class="col-sm-12">
