@@ -43,10 +43,14 @@
             <script type="text/html" id="configTreeRowTemplate">
                 <td><span data-bind="text:name"/></td>
                 <td class="field">
-                    <input class="xwide input" type="text" data-bind="textInput:value"/>
+                    <input class="form-control" type="text" data-bind="textInput:value"/>
                 </td>
                 <td>
-                    <_button type="button" class="btn btn-primary btn-sm" data-bind="click:$parent.setConfig">Set</_button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary btn-xs" data-translateable="true" data-bind="click:$parent.setConfig">
+                            <span class="en-install"></span>
+                        </button>
+                    </div>
                 </td>
             </script>
             <div data-bind="agoGrid:configTreeGrid"></div>
