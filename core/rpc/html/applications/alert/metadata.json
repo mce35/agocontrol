@@ -1,8 +1,8 @@
 {
     "name": "Alert",
     "version": "0.0.2",
-    "description": "Configure agocontrol alerts",
-    "template": "html/agoalert",
+    "description": "Configure alert gateways (sms, twitter, mail, push)",
+    "template": "html/alert",
     "listable": true,
     "depends": "agoalert.py"
 }

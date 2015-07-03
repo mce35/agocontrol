@@ -1,5 +1,6 @@
-<div id="contentarea" class="container">
-    <div style="display:none;">
+<div class="container agocontainer" id="contentarea">
+
+    <div class="agonotif">
         <_span data-translateable="true" id="nr">Agoalert is not responding</_span>
         <_span data-translateable="true" id="ie">Internal error</_span>
         <_span data-translateable="true" id="rdpb">Unable to refresh PushBullet devices</_span>
@@ -10,443 +11,303 @@
         <_span data-translateable="true" id="cko">Failed to save configuration</_span>
     </div>
 
-    <h3>Alert</h3>
+    <!-- title -->
+    <_h2 data-translateable="true">Alert</_h2>
 
-    <section class="tabs" data-bind="gumbyTabs:$root">
-        <ul class="tab-nav">
-            <li class="active"><a href="#"><i class="icon-twitter"></i>Twitter</a></li>
-            <li><a href="#"><i class="icon-comment"></i>SMS</a></li>
-            <li><a href="#"><i class="icon-mail"></i>Mail</a></li>
-            <li><a href="#"><i class="icon-direction"></i>Push</a></li>
-        </ul>
-
-        <!-- twitter -->
-        <div class="tab-content active">
-            <div class="row">
-                <ko opts="if: twitterStatus()">
-                <div class="twelve columns success alert">
-                    <i class="icon-check"></i>
-                <_span data-translateable="true">Twitter is configured</_span>
-                </div>
-                </ko>
-                <ko opts="ifnot: twitterStatus()"> 
-                <div class="twelve columns info alert">
-                    <i class="icon-cancel"></i>
-                <_span data-translateable="true">Twitter is not configured</_span>
-                </div>
-                </ko>
-            </div>
-            <div class="row">
-                <_span data-translateable="true">Follow instructions above to authorize agocontrol to access your Twitter account</_span>:
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <span>1 -</span>
-                    <_span data-translateable="true">Click</_span> 
-                    <_a href="#" data-translateable="true" data-bind="click: twitterUrl">here</_a> 
-                    <_span data-translateable="true">to generate an authorization url</_span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <span>2 -</span>
-                    <_span data-translateable="true">Then click on generated link</_span>
-                </div>
-                <div class="four columns">
-                    <span class="twitterUrl" id="twitterUrl" style="color: darkorange"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <span>3 -</span>
-                    <span data-translateable="true">Authorize access on Twitter</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <span>4 -</span>
-                    <_span data-translateable="true">Type given access code here</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="wide input twitterAccessCode" type="text" id="twitterAccessCode" _placeholder="Twitter code"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <span>5 -</span>
-                    <_span data-translateable="true">Finally click on button to save access code</_span>
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: twitterAccessCode">Save</_a>
+    <!-- tabs -->
+    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+        <li class="active"><_a href="#twitter" data-translateable="true" class="en-twitter">Twitter</_a></li>
+        <li><_a href="#sms" data-translateable="true" class="en-comment">SMS</_a></li>
+        <li><_a href="#mail" data-translateable="true" class="en-mail">Mail</_a></li>
+        <li><_a href="#push" data-translateable="true" class="en-direction">Push</_a></li>
+    </ul>
+    <div class="tab-content" style="padding-top:10px;">
+        <!-- twitter tab -->
+        <div id="twitter" class="tab-pane fade in active">
+            <div class="bs-callout bs-callout-info" data-translateable="true">Follow instructions above to authorize agocontrol to access your Twitter account</div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Configured?</_label>
+                    <div class="col-sm-6 form-control-static">
+                        <ko opts="if: twitterStatus()">
+                        <span class="label label-success en-check" data-translateable="true">Configured</span>
+                        </ko>
+                        <ko opts="ifnot: twitterStatus()">
+                        <span class="label label-danger en-cancel" data-translateable="true">Not configured</span>
+                        </ko>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <hr/>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">To send test tweet on your account, click on button</_span>
-                </div>
-                <div class="four columns">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: twitterTest">Test</_a>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Click on link to generate an authorization url</_label>
+                    <div class="col-sm-6 form-control-static">
+                        <_a href="#" data-translateable="true" data-bind="click: twitterUrl">here</_a>
                     </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Then click on generated link</_label>
+                    <div class="col-sm-6 form-control-static">
+                        <span class="twitterUrl" id="twitterUrl"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Authorize access on Twitter</_label>
+                    <div class="col-sm-6">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Type given access code here</_label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control twitterAccessCode" type="text" id="twitterAccessCode" _placeholder="Twitter code"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Finally click on button to save access code</_label>
+                    <div class="col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: twitterAccessCode">Save changes</_button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">To send test tweet on your account, click on button</_label>
+                    <div class="col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: twitterTest">Test</_button>
+                    </div>
+                </div>
+            </form>
         </div>
-
-        <!-- SMS -->
-        <div class="tab-content">
-            <div class="row">
-                <ko opts="if: smsStatus()"> 
-                    <div class="twelve columns success alert">
-                        <i class="icon-check"></i>
-                        <_span data-translateable="true">SMS is configured</_span>
+        <!-- sms tab -->
+        <div id="sms" class="tab-pane fade">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Configured?</_label>
+                    <div class="col-sm-6 form-control-static">
+                        <ko opts="if: smsStatus()">
+                        <span class="label label-success en-check" data-translateable="true">Configured</span>
+                        </ko>
+                        <ko opts="ifnot: smsStatus()">
+                        <span class="label label-danger en-cancel" data-translateable="true">Not configured</span>
+                        </ko>
                     </div>
-                </ko>
-                <ko opts="ifnot: smsStatus()"> 
-                    <div class="twelve columns info alert">
-                        <i class="icon-cancel"></i>
-                        <_span data-translateable="true">SMS is not yet configured</_span>
-                    </div>
-                </ko>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Choose SMS provider in list</_span>
                 </div>
-                <div class="four columns field">
-                    <div class="picker" style="float:left;">
-                        <select data-bind="value:selectedSmsProvider">
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Choose SMS provider in list</_label>
+                    <div class="col-sm-6">
+                        <select data-bind="value:selectedSmsProvider" class="form-control">
                             <option value="12voip">12voip</option>
                             <option value="freemobile">Free Mobile</option>
                         </select>
                     </div>
                 </div>
-            </div>
-            <ko opts="if: selectedSmsProvider()=='12voip'">
-            <div class="row">
-                <div class="twelve columns">
+                <ko opts="if: selectedSmsProvider()=='12voip'">
+                <div class="bs-callout bs-callout-info">
                     <_span data-translateable="true">You need to create an account on</_span> 
                     <a target="_blank" href="http://www.12voip.com/">12voip</a> 
-                    <_span data-translateable="true">and add credits to send SMS</_span>
-                   (<_a target="_blank" href="https://www.12voip.com/sms_rates" data-translateable="true">SMS rates</_a>)
+                    <_span data-translateable="true">and add credits to send SMS</_span> 
+                    (<_a target="_blank" href="https://www.12voip.com/sms_rates" data-translateable="true">SMS rates</_a>)
                 </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Username</_span>
-                </div>
-                <div class="four columns field">
-                    <input type="text" data-translateable="true" data-bind="value:twelvevoipUsername" class="wide input" _placeholder="12voip username"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Password</_span>
-                </div>
-                <div class="four columns field">
-                    <input type="password" data-translateable="true" data-bind="value:twelvevoipPassword" class="wide input" _placeholder="12voip password"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: smsConfig">Save</_a>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Username</_label>
+                    <div class="col-sm-6">
+                        <input type="text" data-translateable="true" data-bind="value:twelvevoipUsername" class="form-control" _placeholder="12voip username"></input>
                     </div>
                 </div>
-            </div>
-            </ko>
-            <ko opts="if: selectedSmsProvider()=='freemobile'">
-            <div class="row">
-                <div class="twelve columns">
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Password</_label>
+                    <div class="col-sm-6">
+                        <input type="password" data-translateable="true" data-bind="value:twelvevoipPassword" class="form-control" _placeholder="12voip password"></input>
+                    </div>
+                </div>
+                </ko>
+                <ko opts="if: selectedSmsProvider()=='freemobile'">
+                <div class="bs-callout bs-callout-info">
                     <_span data-translateable="true">Free Mobile is a french internet/mobile provider. It offers for free to send SMS to mobile account owner and only for its number.</_span>
                     <br/>
                     <_span data-translateable="true">To use it in ago control, activate option in your free account and save provided apikey</_span>
                 </div>
-                <div class="row">
-                    <div class="four columns text-right">
-                        <_span data-translateable="true">User</_span>
-                    </div>
-                    <div class="four columns field">
-                        <input type="text" data-translateable="true" data-bind="value:freemobileUser" class="wide input" _placeholder="Free user"></input>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">User</_label>
+                    <div class="col-sm-6">
+                        <input type="text" data-translateable="true" data-bind="value:freemobileUser" class="form-control" _placeholder="Free user"></input>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="four columns text-right">
-                        <_span data-translateable="true">Apikey</_span>
-                    </div>
-                    <div class="four columns field">
-                        <input type="text" data-translateable="true" data-bind="value:freemobileApikey" class="xwide input" _placeholder="Apikey"></input>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Apikey</_label>
+                    <div class="col-sm-6">
+                        <input type="password" data-translateable="true" data-bind="value:freemobileApikey" class="form-control" _placeholder="Apikey"></input>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="four columns">
+                </ko>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: smsConfig">Save changes</_button>
                     </div>
-                    <div class="four columns field">
-                        <div class="medium primary btn">
-                            <_a href="#" data-translateable="true" data-bind="click: smsConfig">Save</_a>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">To send you a test SMS, click on button</_label>
+                    <div class="col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: smsTest">Test</_button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- mail tab -->
+        <div id="mail" class="tab-pane fade">
+            <div class="bs-callout bs-callout-info" data-translateable="true">Specify your email SMTP server and a sender email address (* is mandatory)</div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Configured?</_label>
+                    <div class="col-sm-6 form-control-static">
+                        <ko opts="if: mailStatus()">
+                        <span class="label label-success en-check" data-translateable="true">Configured</span>
+                        </ko>
+                        <ko opts="ifnot: mailStatus()">
+                        <span class="label label-danger en-cancel" data-translateable="true">Not configured</span>
+                        </ko>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">SMTP server* (smtp:port)</_label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="text" data-bind="value:mailSmtp" _placeholder="smtp"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Sender email*</_label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="text" data-bind="value:mailSender" _placeholder="email"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Login</_label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="text" data-bind="value:mailLogin" _placeholder="login"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Password</_label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="password" data-bind="value:mailPassword" _placeholder="password"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-6">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" data-bind="checked:mailTls" id="checkTLS"/> 
+                                <_span data-translateable="true">TLS</_span>?
+                            </label>
                         </div>
                     </div>
                 </div>
-            </div>
-            </ko>
-            <div class="row">
-                <hr/>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">To send you a test SMS, click on button</_span>
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: smsTest">Test</_a>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: mailConfig">Save changes</_button>
                     </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">To send you a test email, type your email address and click on button</_label>
+                    <div class="col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: mailTest">Test</_button>
+                    </div>
+                </div>
+            </form>
         </div>
-
-        <!-- mail -->
-        <div class="tab-content">
-            <div class="row">
-                <ko opts="if: mailStatus"> 
-                    <div class="twelve columns success alert"> 
-                        <i class="icon-check"></i>
-                        <_span data-translateable="true">Mail is configured</_span>
+        <!-- push tab -->
+        <div id="push" class="tab-pane fade">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Configured?</_label>
+                    <div class="col-sm-6 form-control-static">
+                        <ko opts="if: pushStatus()">
+                        <span class="label label-success en-check" data-translateable="true">Configured</span>
+                        </ko>
+                        <ko opts="ifnot: pushStatus()">
+                        <span class="label label-danger en-cancel" data-translateable="true">Not configured</span>
+                        </ko>
                     </div>
-                </ko>
-                <ko opts="ifnot: mailStatus"> 
-                    <div class="twelve columns info alert"> 
-                        <i class="icon-cancel"></i>
-                        <_span data-translateable="true">Mail is not yet configured</_span>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Choose push provider in list</_label>
+                    <div class="col-sm-6">
+                        <select data-bind="value:selectedPushProvider" class="form-control">
+                            <option value="pushbullet">Pushbullet</option>
+                            <option value="pushover">Pushover</option>
+                            <option value="notifymyandroid">Notifymyandroid</option>
+                        </select>
                     </div>
-                </ko>
-            </div>
-            <div class="row">
-                <div class="twelve columns">
-                    <_span data-translateable="true">Specify your email SMTP server and a sender email address (* is mandatory)</_span>
                 </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">SMTP server* (smtp:port)</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="wide text input" type="text" data-bind="value:mailSmtp" _placeholder="smtp"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Sender email*</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="wide text input" type="text" data-bind="value:mailSender" _placeholder="email"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Login</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="wide text input" type="text" data-bind="value:mailLogin" _placeholder="login"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Password</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="wide text input" type="password" data-bind="value:mailPassword" _placeholder="password"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                </div>
-                <div class="four columns">
-                    <label class="checkbox" for="checkTLS">
-                        <input type="checkbox" data-bind="checked:mailTls" id="checkTLS"/>
-                        <_span data-translateable="true"> TLS</_span>?
+                <ko opts="if: selectedPushProvider()=='pushbullet'">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">
+                        <_span data-translateable="true">Enter your apikey</_span> 
+                        (<_a data-translateable="true" target="_blank" href="https://www.pushbullet.com/account">available here</_a>)
                     </label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                </div>
-                <div class="four columns">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: mailConfig">Save</_a>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="text" data-bind="value:pushbulletApikey" _placeholder="apikey"></input>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <hr/>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">To send you a test email, type your email address and click on button</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="xwide input mailEmail" type="text" name="value" _placeholder="email address"></input>
-                </div>
-                <div class="four colums field">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: mailTest">Test</_a>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Refresh your devices list clicking on the button</_label>
+                    <div class="col-sm-6">
+                        <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: pushbulletRefreshDevices">Refresh list</_button>
                     </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">And choose your devices that will be notified</_label>
+                    <div class="col-sm-6">
+                        <select class="form-control" data-bind="options:pushbulletAvailableDevices, selectedOptions:pushbulletSelectedDevices" size="5" multiple="true" style="width:300px;"></select>
+                    </div>
+                </div>
+                </ko>
+                <ko opts="if: selectedPushProvider()=='pushover'">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">
+                        <_span data-translateable="true">Enter your userid</_span>
+                        (<_a data-translateable="true" target="_blank" href="https://pushover.net/dashboard">available here</_a>)
+                    </label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="text" data-bind="value:pushoverUserid" _placeholder="userid"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Enter your registered application token</_label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" type="text" data-bind="value:pushoverToken" class="form-control" _placeholder="token"></input>
+                    </div>
+                </div>
+                </ko>
+                <ko opts="if: selectedPushProvider()=='notifymyandroid'">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">
+                        <_span data-translateable="true">Enter your apikeys</_span>
+                        (<_a data-translateable="true" target="_blank" href="https://www.notifymyandroid.com/account.jsp">available here</_a>)
+                    </label>
+                    <div class="col-sm-6">
+                        <input data-translateable="true" class="form-control" type="text" data-bind="value:nmaApikey" _placeholder="apikey"></input>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bind="click: nmaAddApikey">+</button>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">Apikeys</_label>
+                    <div class="col-sm-6">
+                        <select data-bind="options:nmaAvailableApikeys, selectedOptions:nmaSelectedApikeys" size="5" multiple="true" class="form-control"></select>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bind="click: nmaDelApikey">-</button>
+                </div>
+                </ko>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: pushConfig">Save changes</_button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <_label class="col-sm-4 control-label" data-translateable="true">To push you test notification, click on button</_label>
+                    <div class="col-sm-6">
+                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: pushTest">Test</_button>
+                    </div>
+                </div>
+            </form>
         </div>
+    </div>
     
-        <!-- push -->
-        <div class="tab-content">
-            <div class="row">
-                <ko opts="if: pushStatus"> 
-                    <div class="twelve columns success alert">
-                        <i class="icon-check"></i>
-                        <_span data-translateable="true">Push is configured</_span>
-                    </div>
-                </ko>
-                <ko opts="ifnot: pushStatus"> 
-                    <div class="twelve columns info alert">
-                        <i class="icon-cancel"></i>
-                        <_span data-translateable="true">Push is not yet configured</_span>
-                    </div>
-                </ko>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Choose push provider in list</_span>
-                </div>
-                <div class="four columns picker">
-                    <select data-bind="value:selectedPushProvider">
-                        <option value="pushbullet">Pushbullet</option>
-                        <option value="pushover">Pushover</option>
-                        <option value="notifymyandroid">Notifymyandroid</option>
-                    </select>
-                </div>
-            </div>
-            <ko opts="if: selectedPushProvider()=='pushbullet'">
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Enter your apikey</_span> 
-                    (<_a data-translateable="true" target="_blank" href="https://www.pushbullet.com/account">available here</_a>)
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="xwide text input" type="text" data-bind="value:pushbulletApikey" _placeholder="apikey"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Refresh your devices list clicking on the button</_span>
-                </div>
-                <div class="four columns">
-                    <div class="medium primary btn">
-                        <_a class="icon-cycle" data-translateable="true" href="#" data-bind="click: pushbulletRefreshDevices">Refresh list</_a>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">And choose your devices that will be notified</_span>
-                </div>
-                <div class="four columns field">
-                    <select data-bind="options:pushbulletAvailableDevices, selectedOptions:pushbulletSelectedDevices" size="5" multiple="true" style="width:300px;"></select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Finally save your settings</_span>
-                </div>
-                <div class="four columns">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: pushConfig">Save</_a>
-                    </div>
-                </div>
-            </div>
-            </ko>
-            <ko opts="if: selectedPushProvider()=='pushover'">
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Enter your userid</_span> 
-                    (<_a data-translateable="true" target="_blank" href="https://pushover.net/dashboard">available here</_a>)
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="xwide text input" type="text" data-bind="value:pushoverUserid" _placeholder="userid"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Enter your registered application token</_span>
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" type="text" data-bind="value:pushoverToken" class="xwide text input" _placeholder="token"></input>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">And save your settings</_span>
-                </div>
-                <div class="four columns">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: pushConfig">Save</_a>
-                    </div>
-                </div>
-            </div>
-            </ko>
-            <ko opts="if: selectedPushProvider()=='notifymyandroid'">
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">Enter your apikeys</_span> 
-                    (<_a data-translateable="true" target="_blank" href="https://www.notifymyandroid.com/account.jsp">available here</_a>)
-                </div>
-                <div class="four columns field">
-                    <input data-translateable="true" class="xwide text input" type="text" data-bind="value:nmaApikey" _placeholder="apikey"></input>
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <a href="#" data-bind="click: nmaAddApikey">+</a>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                </div>
-                <div class="four columns">
-                    <select data-bind="options:nmaAvailableApikeys, selectedOptions:nmaSelectedApikeys" size="5" multiple="true" style="width:400px;"></select>
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <a href="#" data-bind="click: nmaDelApikey">-</a>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">And save your settings</_span>
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: pushConfig">Save</_a>
-                    </div>
-                </div>
-            </div>
-            </ko>
-            <div class="row">
-                <hr/>
-            </div>
-            <div class="row">
-                <div class="four columns text-right">
-                    <_span data-translateable="true">To push you test notification, click on button</_span>
-                </div>
-                <div class="four columns field">
-                    <div class="medium primary btn">
-                        <_a data-translateable="true" href="#" data-bind="click: pushTest">Test</_a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 </div>
+

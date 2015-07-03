@@ -1,8 +1,8 @@
 /**
- * Agoalert plugin
+ * alert plugin
  * @returns {agoalert}
  */
-function agoAlertPlugin(devices, agocontrol)
+function AlertPlugin(devices, agocontrol)
 {
     //members
     var self = this;
@@ -251,7 +251,7 @@ function agoAlertPlugin(devices, agocontrol)
 
     this.nmaAddApikey = function()
     {
-        if (self.nmaApikey().length > 0)
+        if ( self.nmaApikey() && self.nmaApikey().length > 0)
         {
             self.nmaAvailableApikeys.push(self.nmaApikey());
         }
@@ -319,6 +319,6 @@ function agoAlertPlugin(devices, agocontrol)
  */
 function init_template(path, params, agocontrol)
 {
-    var model = new agoAlertPlugin(agocontrol.devices(), agocontrol);
+    var model = new AlertPlugin(agocontrol.devices(), agocontrol);
     return model;
 }
