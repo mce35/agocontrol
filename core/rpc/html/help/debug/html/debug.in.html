@@ -1,44 +1,39 @@
-<div id="contentarea" class="container">
-    <_h3 data-translateable="true">Debug tools</_h3>
-    <section class="tabs" data-bind="gumbyTabs:$root">
-        <ul class="tab-nav">
-            <li class="active"><_a data-translateable="true" href="#">Events draining</_a></li>
-            <li><_a data-translateable="true" href="#">Configuration overview</_a></li>
-        </ul>
+<div class="container agocontainer" id="contentarea">
 
-        <div class="tab-content active">
+    <!-- title -->
+    <_h2 data-translateable="true">Debug tools</_h2>
+
+    <!-- tabs -->
+    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+        <li role="presentation" class="active"><_a href="#drain" data-translateable="true">Events draining</_a></li>
+    </ul>
+    <div class="tab-content" style="padding-top:10px;">
+        <!-- drain tab -->
+        <div id="drain" class="tab-pane fade in active">
             <div class="row">
-                <div class="ten columns text-left">
-                    <div data-bind="event{'click':startDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Start</_a></div>
-                    <div data-bind="event{'click':stopDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Stop</_a></div>
-                    <div data-bind="event{'click':clear}" class="medium primary btn"><_a data-translateable="true" href="#">Clear</_a></div>
+                <div class="col-sm-8">
+                    <div class="btn-group">
+                        <_button type="button" class="btn btn-primary" data-bind="event{'click':startDrain}" data-translateable="true">Start</_button>
+                        <_button type="button" class="btn btn-primary" data-bind="event{'click':stopDrain}" data-translateable="true">Stop</_button>
+                        <_button type="button" class="btn btn-primary" data-bind="event{'click':clear}" data-translateable="true">Clear</_button>
+                    </div>
                 </div>
-                <div class="two columns text-right">
-                    <input type="checkbox" data-bind="checked: drainAutoscroll"></input>
-                    <span> </span><_span data-translateable="true">Autoscroll</_span>
+                <div class="col-sm-4 text-right">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" data-bind="checked: drainAutoscroll"/>
+                            <_span data-translateable="true">Autoscroll</_span>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <div>
-                <div id="drainContainer">
+            <div class="col-sm-12">
+                <div class="row" id="drainContainer">
                     <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
                     </ul>
                 </div>
             </div>
         </div>
-
-        <div class="tab-content">
-            <script type="text/html" id="configTreeRowTemplate">
-                <td><span data-bind="text:name"/></td>
-                <td class="field">
-                    <input class="xwide input" type="text" data-bind="textInput:value"/>
-                </td>
-                <td>
-                    <div data-bind="event:{mousedown:$parent.setConfig}" class="small primary btn">
-                        <_a data-translateable="true" href="#">Set</_a>
-                    </div>
-                </td>
-            </script>
-            <div data-bind="agoGrid:configTreeGrid"></div>
-        </div>
-    </section>
+    </div>
+                    
 </div>
