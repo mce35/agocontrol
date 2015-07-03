@@ -1,35 +1,56 @@
-<div id="contentarea" class="container" data-bind="initTabs: $root">
-    <_h3 data-translateable="true">System informations</_h3>
-    <section class="tabs" data-bind="gumbyTabs:$root">
-        <ul class="tab-nav">
-            <li class="active"><_a data-translateable="true" href="#">System version</_a></li>
-            <li><_a data-translateable="true" href="#">Process list</_a></li>
-            <li><_a data-translateable="true" href="#">Inventory</_a></li>
-        </ul>
+<div class="container agocontainer" id="contentarea">
 
-        <div class="tab-content active">
+    <!-- title -->
+    <_h2 data-translateable="true">System informations</_h2>
+
+    <!-- tabs -->
+    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+        <li class="active"><_a href="#version" data-translateable="true">Version</_a></li>
+        <li><_a href="#process" data-translateable="true">Process list</_a></li>
+        <li><_a href="#inventory" data-translateable="true">Inventory</_a></li>
+        <li><_a href="#configuration" data-translateable="true">Configuration overview</_a></li>
+    </ul>
+    <div class="tab-content" style="padding-top:10px;">
+        <!-- version tab -->
+        <div id="version" class="tab-pane fade in active">
             <p>
                 <_span data-translateable="true">You are running</_span> ago control GPL - build <span data-bind="text: agocontrol.system().version"/>.
                 <br/>
                 <_span data-translateable="true">System</_span> UUID: <span style="font-weight:bold;" data-bind="text: agocontrol.system().uuid"/>.
             </p>
         </div>
-        <div class="tab-content">
+        <!-- process list tab -->
+        <div id="process" class="tab-pane fade">
             <script id="rowTemplate" type="text/html">
                 <td data-bind="text: name"></td>
                 <ko opts="if: running">
-                    <td><i style="color:green; font-weight:bold;" class="icon-check"></i></td>
+                    <td><i style="color:green; font-weight:bold;" class="en-check"></i></td>
                 </ko>
                 <ko opts="ifnot: running">
-                    <td><i style="color:red; font-weight:bold;" class="icon-cancel"></i></td>
+                    <td><i style="color:red; font-weight:bold;" class="en-cancel"></i></td>
                 </ko>
                 <td data-bind="text: cpu"></td>
                 <td data-bind="text: sizeToHRSize(memRes)"></td>
             </script>
             <div data-bind="agoGrid:grid"/>
         </div>
-        <div class="tab-content">
-            <pre style="padding:10px; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;" data-bind="text: inventory"/>
+        <!-- inventory tab -->
+        <div id="inventory" class="tab-pane fade">
+            <pre style="padding:10px; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:smaller; border-radius:5px;" data-bind="text: inventory"/>
         </div>
-    </section>
+        <!-- configuration tab -->
+        <div id="configuration" class="tab-pane fade">
+            <script type="text/html" id="configTreeRowTemplate">
+                <td><span data-bind="text:name"/></td>
+                <td class="field">
+                    <input class="xwide input" type="text" data-bind="textInput:value"/>
+                </td>
+                <td>
+                    <_button type="button" class="btn btn-primary btn-sm" data-bind="click:$parent.setConfig">Set</_button>
+                </td>
+            </script>
+            <div data-bind="agoGrid:configTreeGrid"></div>
+        </div>
+    </div>
+
 </div>
