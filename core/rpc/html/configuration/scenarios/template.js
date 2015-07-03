@@ -411,21 +411,7 @@ function ScenarioConfig(agocontrol)
             self.openScenario = item.uuid;
 
             // Open the dialog
-            if( $("#editScenarioDialogTitle") )
-            {
-                $("#editScenarioDialog").dialog({
-                    title : document.getElementById("editScenarioDialogTitle").innerHTML,
-                    modal : true,
-                    width : 940,
-                    height : 600,
-                    close : function()
-                    {
-                        // Done, restore stuff
-                        $('#scenarioBuilderEdit').html('');
-                        self.openScenario = null;
-                    }
-                });
-            }
+            $("#editPopup").modal('show');
         });
     };
 
@@ -438,7 +424,9 @@ function ScenarioConfig(agocontrol)
         content.scenariomap = self.buildScenarioMap("scenarioBuilderEdit");
         self.agocontrol.sendCommand(content)
         .then(function(res) {
-            $("#editScenarioDialog").dialog("close");
+            $('#scenarioBuilderEdit').html('');
+            self.openScenario = null;
+            $("#editPopup").modal('hide');
         });
     };
 
