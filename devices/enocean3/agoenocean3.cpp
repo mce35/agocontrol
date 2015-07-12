@@ -53,7 +53,7 @@ void AgoEnocean3::_handler(esp3::Notification const* message) {
     AGO_DEBUG() << "Received Enocean Notification type: " << message->getType() << " ID: " << std::hex << message->getId();
     stringstream id;
     id << std::hex << message->getId();
-	if (message->getType() == "Switch") {
+    if (message->getType() == "Switch") {
         const esp3::SwitchNotification *switchNotif = (const esp3::SwitchNotification *)message;
         if (switchNotif->getIsPressed()) AGO_DEBUG() << "isPressed() == true";
         AGO_DEBUG() << "Rocker id: " << switchNotif->getRockerId();
@@ -85,7 +85,7 @@ void AgoEnocean3::_handler(esp3::Notification const* message) {
                 }
             }
         }
-	}
+    }
 }
 
 qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map content) {
