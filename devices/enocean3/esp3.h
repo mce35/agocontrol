@@ -149,6 +149,32 @@ typedef enum
 } RETURN_TYPE;
 // end of lines from EO300I API header file
 
+	class Notification {
+		public:
+			Notification();
+			~Notification();
+			virtual std::string getType() const =0;
+			void setId(uint32_t id);
+			uint32_t getId() const;
+		protected:
+			uint32_t id;
+	};
+
+	typedef void (*pfnOnNotification_t)( Notification const* _pNotification, void* _context );
+
+	class SwitchNotification : public Notification {
+		public:
+			SwitchNotification();
+			~SwitchNotification();
+			std::string getType() const { return "Switch"; }
+			void setRockerId(int id);
+			int getRockerId() const;
+			void setIsPressed(bool pressed);
+			bool getIsPressed() const;
+		private:
+			bool isPressed;
+			int rockerId;
+	};
 
 	class ESP3 {
 		public:
@@ -157,6 +183,7 @@ typedef enum
 			bool init();
 			void *readerFunction();
 			uint32_t getIdBase();
+			bool setHandler(pfnOnNotification_t _handler, void *_context);
 			bool fourbsCentralCommandDimLevel(uint16_t rid, uint8_t level, uint8_t speed);
 			bool fourbsCentralCommandDimOff(uint16_t rid);
 			bool fourbsCentralCommandDimTeachin(uint16_t rid);
@@ -166,16 +193,20 @@ typedef enum
 		private:
 			int readFrame(uint8_t *buf, int &datasize, int &optdatasize);
 			void parseFrame(uint8_t *buf, int datasize, int optdatasize);
+			RETURN_TYPE parse_radio(uint8_t *buf, size_t len, size_t optlen);
 			bool sendFrame(uint8_t frametype, uint8_t *databuf, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 			bool readIdBase();
 
 			uint32_t idBase;
 			std::string devicefile;
 			int fd;
+			pfnOnNotification_t handler;
+			void *context;
 			pthread_t eventThread;
 			pthread_mutex_t serialMutex;
 
 	};
+
 
 }
 

@@ -21,6 +21,9 @@
 #include "agoapp.h"
 #include "esp3.h"
 
+#ifndef DEVICEMAPFILE
+#define DEVICEMAPFILE "/maps/enocean3.json"
+#endif
 
 using namespace std;
 using namespace qpid::types;
@@ -29,12 +32,61 @@ using namespace agocontrol;
 class AgoEnocean3: public AgoApp {
 private:
     esp3::ESP3 *myESP3;
-
+    bool learnmode;
+    qpid::types::Variant::Map devicemap;
     void setupApp();
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
 public:
-    AGOAPP_CONSTRUCTOR(AgoEnocean3);
+    AGOAPP_CONSTRUCTOR_HEAD(AgoEnocean3)
+        , learnmode(false)
+        {}
+
+    void _handler(esp3::Notification const* message);
 };
+
+void handler(esp3::Notification const* _message, void *context) {
+    AgoEnocean3 *inst = static_cast<AgoEnocean3*>(context);
+    inst->_handler(_message);
+}
+
+void AgoEnocean3::_handler(esp3::Notification const* message) {
+    AGO_DEBUG() << "Received Enocean Notification type: " << message->getType() << " ID: " << std::hex << message->getId();
+    stringstream id;
+    id << std::hex << message->getId();
+	if (message->getType() == "Switch") {
+        const esp3::SwitchNotification *switchNotif = (const esp3::SwitchNotification *)message;
+        if (switchNotif->getIsPressed()) AGO_DEBUG() << "isPressed() == true";
+        AGO_DEBUG() << "Rocker id: " << switchNotif->getRockerId();
+        if (learnmode) {
+            learnmode=false;
+            int max;
+            if (switchNotif->getRockerId() > 2) { // this is a two paddle switch - beware, user has to press the second paddle in learn mode for this detection to work
+                max = 4;
+            } else max = 2;
+                
+            for (int i=1; i<= max; i++) {
+                stringstream internalid;
+                internalid << id.str() << "-" << i;
+                devicemap[internalid.str()]="remoteswitch";
+                agoConnection->addDevice(internalid.str().c_str(), "remoteswitch");
+            }
+            variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
+        } else {
+            if (switchNotif->getIsPressed()) {
+                stringstream internalid;
+                internalid << id.str() << "-" << switchNotif->getRockerId();
+                agoConnection->emitEvent(internalid.str().c_str(), "event.device.statechanged", 255, "");
+            } else {
+                for (qpid::types::Variant::Map::iterator it = devicemap.begin(); it!=devicemap.end(); it++) {
+                    AGO_DEBUG() << "matching id: " << it->first;
+                    if (it->first.find(id.str()) != std::string::npos) {
+                        agoConnection->emitEvent(it->first.c_str(), "event.device.statechanged", 0, "");
+                    }
+                }
+            }
+        }
+	}
+}
 
 qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map content) {
     std::string internalid = content["internalid"].asString();
@@ -51,7 +103,13 @@ qpid::types::Variant::Map AgoEnocean3::commandHandler(qpid::types::Variant::Map 
             }
             return responseSuccess();
         } else if (content["command"] == "setlearnmode") {
-            return responseError(RESPONSE_ERR_INTERNAL, "learnmode not yet implemented");
+            checkMsgParameter(content, "mode");
+            if (content["mode"]=="start") {
+                learnmode = true;
+            } else {
+                learnmode = false;
+            }
+            return responseSuccess();
         } else if (content["command"] == "setidbase") {
             return responseError(RESPONSE_ERR_INTERNAL, "set id base not yet implemented");
         }
@@ -90,6 +148,7 @@ void AgoEnocean3::setupApp() {
         AGO_FATAL() << "cannot initalize enocean ESP3 protocol on device " << devicefile;
         throw StartupError();
     }
+    myESP3->setHandler(handler, this);
 
     addCommandHandler();
     agoConnection->addDevice("enoceancontroller", "enoceancontroller");
@@ -107,6 +166,11 @@ void AgoEnocean3::setupApp() {
         AGO_DEBUG() << "adding rid " << switchdevice << " as switch";
     } 
 
+    devicemap = jsonFileToVariantMap(getConfigPath(DEVICEMAPFILE));
+    for (qpid::types::Variant::Map::iterator it = devicemap.begin(); it!=devicemap.end(); it++) {
+        AGO_DEBUG() << "Found id in devicemap file: " << it->first;
+        agoConnection->addDevice(it->first.c_str(), it->second.asString().c_str());
+    }
 }
 
 AGOAPP_ENTRY_POINT(AgoEnocean3);

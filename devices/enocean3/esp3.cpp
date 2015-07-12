@@ -82,8 +82,15 @@ esp3::ESP3::ESP3(std::string _devicefile) {
 }
 
 bool esp3::ESP3::init() {
+    cout << "opening file" << endl;
 	fd = open(devicefile.c_str(), O_RDWR);
+    if (fd == -1) {
+        cout << "Error " << errno << " from open: " << strerror(errno) << endl;
+        return false;
+    }
+
 	struct termios tio;
+    cout << "tcgetattr" << endl;
 	if (tcgetattr(fd, &tio) != 0) {
 
 		cout << "Error " << errno << " from tcgetattr: " << strerror(errno) << endl;
@@ -114,7 +121,7 @@ bool esp3::ESP3::init() {
 	return true;
 }
 
-RETURN_TYPE parse_radio(uint8_t *buf, size_t len, size_t optlen) {
+RETURN_TYPE esp3::ESP3::parse_radio(uint8_t *buf, size_t len, size_t optlen) {
 	if (len <1) return ADDR_OUT_OF_MEM;
 	if (buf == NULL) return ADDR_OUT_OF_MEM;
 	for (uint32_t i=0;i<len+optlen;i++) {
@@ -127,19 +134,70 @@ RETURN_TYPE parse_radio(uint8_t *buf, size_t len, size_t optlen) {
 	} else {
 		cout << "Optional data size:" << optlen << endl;
 	}
+	Notification *notif = NULL;
 	switch (buf[0]) {
 		case RORG_4BS: // 4 byte communication
 			cout << "4BS data: ";
 			printf("Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x\n",buf[5],buf[6],buf[7],buf[8],buf[9],buf[3]);
 			break;
 		case RORG_RPS: // repeated switch communication
-			cout << "RPS data: ";
-			printf("Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x\n",buf[2],buf[3],buf[4],buf[5],buf[6],buf[1]);
-			if (buf[6] & (1 << 2)) cout << "T21" << endl;
+			{
+				SwitchNotification *switchNotif =  new SwitchNotification();
+				switchNotif->setId((buf[2]<<24) + (buf[3] << 16) + (buf[4] << 8) + buf[5]);
+				cout << "RPS data: ";
+				printf("Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x\n",buf[2],buf[3],buf[4],buf[5],buf[6],buf[1]);
+				if (buf[6] & (1 << 5)) {
+					cout << "T21=1 (PTM2xx)" << endl;
+				} else {
+					cout << "T21=0 (PTM1xx)" << endl;
+				}
+				if (buf[6] & (1 << 4)) {
+					cout << "NU=1 (N-Message - normal)" << endl;
+					switch ((buf[1] >> 5) & 7) {
+						case 0: cout << "AI" << endl;
+                            switchNotif->setRockerId(2);
+							break;
+						case 1: cout << "AO" << endl;
+                            switchNotif->setRockerId(1);
+							break;
+						case 2: cout << "BI" << endl;
+                            switchNotif->setRockerId(4);
+							break;
+						case 3: cout << "B0" << endl;
+                            switchNotif->setRockerId(3);
+							break;
+						default:
+							break;
+					}
+					if ((buf[1] >> 4) & 1) { cout << "pressed" << endl; switchNotif->setIsPressed(true); }  else { cout << "released" << endl; switchNotif->setIsPressed(false); }
+				} else {
+					cout << "NU=0 (U-Message - unassigned)" << endl;
+					switch ((buf[1] >> 5) & 7) {
+						case 0: cout << "no button" << endl;
+							break;
+						case 3: cout << "3 or 4 buttons" << endl;
+							break;
+						default:
+							break;
+					}
+					if ((buf[1] >> 4) & 1) { cout << "pressed" << endl; switchNotif->setIsPressed(true); }  else { cout << "released" << endl; switchNotif->setIsPressed(false); }
+				}
+				cout << "Repeat count: " << (buf[6] & 0xf) << endl;
+				notif = switchNotif;
+			}
+				
 			break;	
 		default:
 			printf("WARNING: Unhandled RORG: %02x\n",buf[0]);
 			break;
+	}
+	if (handler && notif) {
+		// printf("RUNNING HANDLER\n");
+		handler(notif, context); 
+	} else {
+		if (!(handler)) printf("WARNING: No handler defined\n");
+		// if (!(notif)) printf("WARNING: No notification object defined\n");
+
 	}
 	return OK;
 }
@@ -502,3 +560,45 @@ bool esp3::ESP3::fourbsCentralCommandSwitchTeachin(uint16_t rid) {
 	return false;
 }
 
+bool esp3::ESP3::setHandler(pfnOnNotification_t _handler, void *_context) {
+	context = _context;
+	handler = _handler;
+	return handler ? true : false;
+}
+
+esp3::Notification::Notification() {
+}
+esp3::Notification::~Notification() {
+}
+
+uint32_t esp3::Notification::getId() const {
+	return id;
+}
+
+void esp3::Notification::setId(uint32_t _id) {
+	id = _id;
+}
+
+esp3::SwitchNotification::SwitchNotification() {
+    isPressed = false;
+    rockerId = 0;
+    id= 0;
+}
+esp3::SwitchNotification::~SwitchNotification() {
+}
+
+void esp3::SwitchNotification::setRockerId(int _id) {
+	rockerId = _id;
+}
+
+int esp3::SwitchNotification::getRockerId() const {
+	return rockerId;
+}
+
+void esp3::SwitchNotification::setIsPressed(bool pressed) {
+	isPressed = pressed;
+}
+
+bool esp3::SwitchNotification::getIsPressed() const {
+	return isPressed;
+}
