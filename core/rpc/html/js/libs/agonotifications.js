@@ -25,17 +25,18 @@
         //members
         var self = this;
         self.name = "notification-box";
-        self.duration = 4; //seconds
+        self.duration = 5; //seconds
 
         //create main container
         self.init = function() {
             self.container = $("<div></div>");
             self.container.css({
-                "width":"100%",
-                "top":"0px",
-                "left":"0px",
-                "z-index":"1000000", //must be greater than gumby's modal
-                "position":"fixed"
+                "width":"20%",
+                "bottom":"0px",
+                "right":"0px",
+                "z-index":"1000000",
+                "position":"fixed",
+                "margin-right":"10px"
             }).attr("name", self.name);
             self.container.appendTo($(document.body));
         };
@@ -99,27 +100,48 @@
         //show notification
         self.show = function() {
             //build elem
-            self.elem = $("<div></div>").css("margin-bottom", "0px").css("padding", "5px 15px 5px 15px");
+            self.elem = $("<div></div>").css({
+                "width":"100%",
+                "cursor":"pointer"
+            });
+            var icon;
             if( self.type==NOTIF_SUCC )
-                self.elem.attr("class", "alert alert-success");
+            {
+                self.elem.attr("class", "row agonotif agonotif-success");
+                icon = "en-thumbs-up";
+            }
             else if( self.type==NOTIF_ERRO )
-                self.elem.attr("class", "alert alert-danger");
+            {
+                self.elem.attr("class", "row agonotif agonotif-error");
+                icon = "en-alert";
+            }
             else if( self.type==NOTIF_WARN )
-                self.elem.attr("class", "alert alert-warning");
+            {
+                self.elem.attr("class", "row agonotif agonotif-warning");
+                icon = "en-attention";
+            }
             else if( self.type==NOTIF_FATA )
-                self.elem.attr("class", "alert alert-danger");
+            {
+                self.elem.attr("class", "row agonotif agonotif-fatal");
+                icon = "en-thumbs-down";
+            }
             else
-                self.elem.attr("class", "alert alert-info");
-            //build close
-            self.close = $("<i></i>");
-            self.close.attr("class", "en-cancel").css("cursor", "pointer").click(function() { self.hide(); });
-            //build msg
-            self.msg = $("<span></span>");
+            {
+                self.elem.attr("class", "row agonotif agonotif-info");
+                icon = "en-info-circled";
+            }
+            //icon
+            self.icon = $("<div></div>").attr("class", "col-sm-2").css("padding-left", "0px");
+            self.icon.html('<span class="'+icon+'" style="font-size:200%;"></span>');
+            //message
+            self.msg = $("<div></div>").attr("class", "col-sm-10").css("padding-left", "0px");
             self.msg.html(self.message);
             //append to notification container
-            self.elem.append(self.close);
+            self.elem.append(self.icon);
             self.elem.append(self.msg);
             self.container.append(self.elem);
+            //close event
+            self.elem.click(function() { self.hide(); });
             //autoclose after duration
             if( self.duration>0 )
             {
