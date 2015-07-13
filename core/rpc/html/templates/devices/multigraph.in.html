@@ -1,7 +1,7 @@
-<div class="col-sm-2">
+<div class="col-sm-3">
 <div data-bind="attr: {'data-uuid': uuid}" class="thumbnail dashboard-widget">
 
-    <div class="well well-sm">
+    <div class="well well-sm" style="margin-bottom: 2px !important;">
         <div class="row">
             <div class="col-sm-3 text-center">
                 <ko opts="if: stale">
@@ -46,7 +46,7 @@
     </div>
 
     <a href="#" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-       <img class="img-responsive" data-bind="attr: {'src':multigraphThumb}"/>
+        <img class="img-responsive" data-bind="attr: {'src':multigraphThumb}"/>
     </a>
 
 </div>
