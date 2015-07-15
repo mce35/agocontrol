@@ -61,7 +61,8 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //sensor template
                     
                 //add refresh button action
-                $('#get_graph').click(function() {
+                $('#get_graph').click(function(e) {
+                    e.preventDefault();
                     self.render(device, environment);
                 });
 
