@@ -23,7 +23,7 @@
             <div class="btn-group btn-group-justified">
                 <div class="btn-group">
                     <ko opts="if: state()==0">
-                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOn">ON</_button>
+                    <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: turnOn">ON</_button>
                     </ko>
         		    <ko opts="ifnot: state()==0">
                     <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOn">ON</_button>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="btn-group">
                     <ko opts="if: state()!=0">
-                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOff">OFF</_button>
+                    <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: turnOff">OFF</_button>
                     </ko>
                     <ko opts="ifnot: state()!=0">
                     <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOff">OFF</_button>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="btn-group">
                     <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
-                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: play">PLAY</_button>
+                    <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: play">PLAY</_button>
                     </ko>
                     <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
                     <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: play">PLAY</_button>
@@ -47,7 +47,7 @@
                 </div>
                 <div class="btn-group">
                     <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
-                   <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: pause">PAUSE</_button>
+                   <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: pause">PAUSE</_button>
                     </ko>
                     <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
                     <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: pause">PAUSE</_button>
