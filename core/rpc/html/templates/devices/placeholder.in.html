@@ -1,5 +1,13 @@
-<div class="col-sm-3">
-<div class="thumbnail dashboard-widget placeholder" data-bind="attr: {'data-x': x, 'data-y': y}">
+<div class="col-sm-3 dashboard-widget placeholder" data-bind="attr: {'data-uuid': uuid}">
 
-</div>
+    <div class="small-box bg-gray">
+        <div class="inner" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+        </div>
+        <div class="icon">
+            <i class="en-bookmark"></i>
+        </div>
+        <div class="small-box-footer">
+        </div>
+    </div>
+
 </div>

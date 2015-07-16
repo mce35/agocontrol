@@ -1,62 +1,37 @@
-<div class="col-sm-3">
-<div data-bind="attr: {'data-uuid': uuid}" class="thumbnail dashboard-widget">
+<div class="col-sm-3 dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
 
-    <div class="well well-sm">
-        <div class="row">
-            <div class="col-sm-3 text-center">
-                <ko opts="if: stale">
-                    <button type="button" class="btn btn-danger btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
-                        <span style="font-size:200%;" class="en-progress-3"></span>
-                    </button>
-                </ko>
-                <ko opts="ifnot: stale">
-                    <button type="button" class="btn btn-primary btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
-                        <span style="font-size:200%;" class="en-progress-3"></span>
-                    </button>
-                </ko>
-            </div>
-            <div class="col-sm-9 text-left">
+    <div class="small-box" data-bind="css:staleStyle">
+        <div class="inner" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <ko opts="if: name">
+            <h3 data-bind="text: name"></h3>
+            </ko>
+            <ko opts="ifnot: name ">
+            <h3 data-bind="text: devicetype"></h3>
+            </ko>
+            <ko opts="if: room ">
+            <p>
+            <i class="en-location"></i>
+            <span data-bind="text: room"></span>
+            </p>
+            </ko>
+        </div>
+        <div class="icon">
+            <i class="en-progress-3"></i>
+        </div>
+        <div class="small-box-footer">
+            <ko opts="foreach: valueList">
+            <div class="well well-sm">
                 <div class="row">
-                    <!-- device name -->
-                    <ko opts="if: name ">
-                        <div class="col-sm-12">
-                            <h3 style="margin:0px !important;" data-bind="text: name"></h3>
-                        </div>
-                    </ko>
-                    <ko opts="ifnot: name ">
-                        <div class="col-sm-12">
-                            <h3 style="margin:0px !important;" data-bind="text: devicetype"></h3>
-                        </div>
-                    </ko>
-                    <!-- device room -->
-                    <ko opts="if: room ">
-                        <div class="col-sm-12">
-                            <span class="en-location"></span>
-                            <span data-bind="text: room"></span>
-                        </div>
-                    </ko>
-                    <!-- device state -->
-                    <div class="col-sm-12">
-                        <span class="en-info"></span>
-                        <span data-bind="text: state"></span>
+                    <div class="col-sm-6 text-center">
+                        <span data-bind="text: name"/>
+                    </div>
+                    <div class="col-sm-6 text-center">
+                        <strong data-bind="text: levelUnit"/>
                     </div>
                 </div>
             </div>
+            </ko>
         </div>
     </div>
 
-    <ko opts="foreach: valueList">
-    <div class="well well-sm">
-        <div class="row">
-            <div class="col-sm-6 text-center">
-                <span data-bind="text: name"/>
-            </div>
-            <div class="col-sm-6 text-center">
-                <strong data-bind="text: levelUnit"/>
-            </div>
-        </div>
-    </div>
-    </ko>
-    
-</div>
 </div>
