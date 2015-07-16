@@ -23,6 +23,10 @@ function device(agocontrol, obj, uuid) {
     this.stale = ko.observable(this.stale);
     this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
 
+    self.staleStyle = ko.pureComputed(function() {
+        return self.stale ? 'bg-light-blue' : 'bg-red';
+    });
+
     if (this.devicetype == "dimmer" || this.devicetype == "dimmerrgb")
     {
         this.level = ko.observable(currentState);

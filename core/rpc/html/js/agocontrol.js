@@ -122,9 +122,19 @@ Agocontrol.prototype = {
         // Required but non-dependent
         this.updateFavorites();
 
-        return Promise.all([p1, p2]);
+        return Promise.all([p1, p2]).then(this.initializeComplete.bind(this));
     },
-
+    
+    /**
+     * Initialization complete
+     */
+    initializeComplete : function() {
+        //remove all click events (added by adminLTE lib)
+        //$("li a", ".sidebar").off('click');
+        //console.log($("li ul li ul li a", ".sidebar"));
+        //init again treeview
+        $.AdminLTE.tree('.sidebar');
+    },
 
     /**
      * Send a command to an arbitrary Ago component.
@@ -467,7 +477,7 @@ Agocontrol.prototype = {
         var content = {};
         content.command = "getprocesslist";
         content.uuid = self.systemController;
-        self.sendCommand(content, 1)
+        self.sendCommand(content)
             .then(function(res) {
                 var values = [];
                 for( var procName in res.data )
@@ -476,11 +486,10 @@ Agocontrol.prototype = {
                     proc.name = procName;
                     values.push(proc);
                 }
-
                 self.processes.pushAll(values);
             })
             .catch(function(err){
-                notif.warn('Unable to get processes list, Applications will not be available: '+getErrorMessage(err));
+                notif.warning('Unable to get processes list, Applications will not be available: '+getErrorMessage(err));
                 self._noProcesses(true);
             });
     },
