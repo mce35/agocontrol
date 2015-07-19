@@ -2103,7 +2103,7 @@ int main(int argc, char **argv)
             exit(1);
         }
 
-        while( !error && line.find("Gateway startup complete")==string::npos )
+        while( !error )
         {
             //read line from serial port
             line = readLine(&error);
@@ -2117,8 +2117,18 @@ int main(int argc, char **argv)
                 exit(1);
             }
 
+            //check gateway startup string
+            cout << line.find("Gateway startup complete") << endl;
+            if( line.find("Gateway startup complete")!=string::npos )
+            {
+                //gateway is started
+                if( DEBUG )
+                    cout << "Startup string found, continue" << endl;
+                break;
+            }
+
             //check attemps
-            if( attempts>2 )
+            if( attempts>3 )
             {
                 //max attemps reached without receiving awaited string
                 if( DEBUG )
