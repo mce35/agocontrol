@@ -7,11 +7,14 @@
 # - config: returns configuration pages
 # - help: returns help pages
 # - supported: returns supported devices
+# - time : returns current server timestamp
 
 import cgi
 import json
 import os
 import re
+import time
+import sqlite3
 
 def loadMetadatasInDir(d):
     items = {}
@@ -41,6 +44,9 @@ def getSupportedDevices():
                 result.append(match[0])
     return result
 
+def getServerTime():
+    return int(time.time())
+
 #globals
 result = {}
 get = 'all'
@@ -60,6 +66,7 @@ try:
         result['config'] = loadMetadatasInDir('../configuration/')
         result['help'] = loadMetadatasInDir('../help/')
         result['supported'] = getSupportedDevices()
+        result['server_time'] = getServerTime()
     elif get=='config':
         result = loadMetadatasInDir('../configuration/')
     elif get=='help':
@@ -68,6 +75,8 @@ try:
         result = loadMetadatasInDir('../applications/')
     elif get=='supported':
         result = getSupportedDevices()
+    elif get=='time':
+        result = getServerTime()
 
 except Exception as e:
     #TODO add message to agolog

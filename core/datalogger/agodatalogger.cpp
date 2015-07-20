@@ -4,7 +4,6 @@
 #include <time.h>
 #include <sys/stat.h>
 
-
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -14,6 +13,8 @@
 
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <jsoncpp/json/writer.h>
 #include <jsoncpp/json/reader.h>
 #include <boost/algorithm/string/predicate.hpp>
@@ -40,6 +41,8 @@
 using namespace std;
 using namespace agocontrol;
 using namespace qpid::types;
+using namespace boost::posix_time;
+using namespace boost::gregorian;
 namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
@@ -1065,6 +1068,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
 
 /**
  * Return messages from journal
+ * datetime format: 2015-07-12T22:00:00.000Z
  */
 bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, qpid::types::Variant::Map& result)
 {
@@ -1331,7 +1335,6 @@ qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
  */
 bool AgoDataLogger::purgeTable(std::string table)
 {
-    //sqlite3_stmt *stmt;
     int rc;
     char *zErrMsg = 0;
     std::string query = "DELETE FROM ";
@@ -1349,6 +1352,24 @@ bool AgoDataLogger::purgeTable(std::string table)
         rc = sqlite3_exec(db, "VACUUM", NULL, NULL, &zErrMsg);
         return true;
     }
+}
+
+/**
+ * Return specified datetime as database format
+ * Datetime format: 2015-07-12T22:00:00.000Z
+ */
+std::string dateToDatabaseFormat(boost::posix_time::ptime pt)
+{
+  std::string s;
+  std::ostringstream datetime_ss;
+  time_facet * p_time_output = new time_facet;
+  std::locale special_locale (std::locale(""), p_time_output);
+  datetime_ss.imbue (special_locale);
+  (*p_time_output).format("%Y-%m-%dT%H:%M:%SZ");
+  datetime_ss << pt;
+  s = datetime_ss.str().c_str();
+  return s;
+
 }
 
 /**
@@ -1677,6 +1698,25 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             checkMsgParameter(content, "filter", VAR_STRING, true);
             checkMsgParameter(content, "type", VAR_STRING, false);
 
+            if( getMessagesFromJournal(content, returnData) )
+            {
+                return responseSuccess(returnData);
+            }
+            else
+            {
+                return responseFailed("Internal error");
+            }
+        }
+        else if( content["command"]=="today" )
+        {
+            ptime s(date(day_clock::local_day()), hours(0));
+            ptime e(date(day_clock::local_day()), hours(23)+minutes(59)+seconds(59));
+
+            qpid::types::Variant::Map content;
+            content["start"] = dateToDatabaseFormat(s);
+            content["end"] = dateToDatabaseFormat(e);
+            content["type"] = "all";
+            content["filter"] = "";
             if( getMessagesFromJournal(content, returnData) )
             {
                 return responseSuccess(returnData);

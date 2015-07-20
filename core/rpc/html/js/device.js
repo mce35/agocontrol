@@ -47,20 +47,21 @@ function device(agocontrol, obj, uuid) {
     {
         self.agocontrol.agoController = uuid;
     }
-
-    if (this.devicetype == "eventcontroller")
+    else if (this.devicetype == "eventcontroller")
     {
         self.agocontrol.eventController = uuid;
     }
-
-    if (this.devicetype == "scenariocontroller")
+    else if (this.devicetype == "scenariocontroller")
     {
         self.agocontrol.scenarioController = uuid;
     }
-
-    if (this.devicetype == "systemcontroller")
+    else if (this.devicetype == "systemcontroller")
     {
         self.agocontrol.systemController = uuid;
+    }
+    else if( this.devicetype=="journal" )
+    {
+        self.agocontrol.journal = uuid;
     }
 
     if (this.devicetype == "dimmerrgb")

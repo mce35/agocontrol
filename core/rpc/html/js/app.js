@@ -86,6 +86,24 @@ function datetimeToString(dt)
 }
 
 /**
+ * Convert timestamp to string under format "d.m.y h:m"
+ */
+function timestampToString(ts)
+{
+    var dt = new Date(ts*1000);
+    var str = dt.getDate();
+    str += '.';
+    str += dt.getMonth()+1;
+    str += '.';
+    str += dt.getFullYear();
+    str += ' ';
+    str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
+    str += ':';
+    str += ( dt.getMinutes()<10 ? '0'+dt.getMinutes() : dt.getMinutes() );
+    return str;
+}
+
+/**
  * Loads a new JavaScript using <script> element.
  *
  * This is used instead of $.ajax(), since ajax only uses <script> elements

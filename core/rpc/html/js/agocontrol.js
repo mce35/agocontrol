@@ -30,6 +30,8 @@ Agocontrol.prototype = {
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
+    serverTime: ko.observable(''),
+    journalEntries: ko.observableArray([]),
 
     agoController: null,
     scenarioController: null,
@@ -37,6 +39,7 @@ Agocontrol.prototype = {
     inventory: null,
     dataLoggerController: null,
     systemController: null,
+    journal: null,
 
     _init : function(){
         /**
@@ -116,7 +119,8 @@ Agocontrol.prototype = {
      */
     initialize : function() {
         var p1 = this.getInventory()
-            .then(this.handleInventory.bind(this));
+            .then(this.handleInventory.bind(this))
+            .then(this.getJournalEntries.bind(this)); //need datalogger uuid
         var p2 = this.updateListing();
 
         // Required but non-dependent
@@ -129,10 +133,7 @@ Agocontrol.prototype = {
      * Initialization complete
      */
     initializeComplete : function() {
-        //remove all click events (added by adminLTE lib)
-        //$("li a", ".sidebar").off('click');
-        //console.log($("li ul li ul li a", ".sidebar"));
-        //init again treeview
+        //init sidebar
         $.AdminLTE.tree('.sidebar');
     },
 
@@ -384,6 +385,29 @@ Agocontrol.prototype = {
         return self.sendCommand(content);
     },
 
+    //get journal entries for today
+    getJournalEntries: function()
+    {
+        var self = this;
+        if( self.dataLoggerController )
+        {
+            var content = {};
+            content.uuid = self.journal;
+            content.command = 'today';
+            self.sendCommand(content)
+                .then(function(res) {
+                    self.journalEntries(res.data.messages);
+                })
+                .catch(function(err) {
+                    console.error(err);
+                });
+        }
+        else
+        {
+            console.warn('No datalogger found!');
+        }
+    },
+
     //handle inventory
     handleInventory: function(result)
     {
@@ -592,6 +616,14 @@ Agocontrol.prototype = {
             helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
             helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
             self.helps.replaceAll(helps);
+
+            //SERVER TIME
+            var serverTime = result.server_time;
+            self.serverTime( timestampToString(serverTime) );
+            window.setInterval(function() {
+                serverTime += 60;
+                self.serverTime( timestampToString(serverTime) );
+            }, 60000);
         });
     },
 
