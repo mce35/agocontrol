@@ -2118,8 +2118,7 @@ int main(int argc, char **argv)
             }
 
             //check gateway startup string
-            cout << line.find("Gateway startup complete") << endl;
-            if( line.find("Gateway startup complete")!=string::npos )
+            if( line.find(" startup complete")!=string::npos )
             {
                 //gateway is started
                 if( DEBUG )
