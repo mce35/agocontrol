@@ -2161,13 +2161,37 @@ int main(int argc, char **argv)
     cout << "Done." << endl << flush;
 
     cout << "Requesting gateway version..." << endl << flush;
-    std::string getVersion = "0;0;3;0;2\n";
-    serialPort.WriteString(getVersion.c_str());
-    while( !error && !boost::algorithm::starts_with(line, "0;0;3;0;2;") )
+    while( !error )
     {
+        //request v1.4 version
+        serialPort.WriteString("0;0;3;0;2\n");
         line = readLine(&error);
         if( DEBUG )
             cout << "Read: " << line << endl << flush;
+        if( boost::algorithm::starts_with(line, "0;0;3;0;2;") )
+        {
+            //found protocol 1.4
+            if( DEBUG )
+                cout << "Found protocol 1.4" << endl;
+            break;
+        }
+
+        if( error )
+            break;
+
+        //request v1.3
+        serialPort.WriteString("0;0;4;4\n");
+        line = readLine(&error);
+        if( DEBUG )
+            cout << "Read: " << line << endl << flush;
+        if( boost::algorithm::starts_with(line, "0;0;4;4;") )
+        {
+            //found protocol 1.3
+            if( DEBUG )
+                cout << "Found protocol 1.3" << endl;
+            break;
+        }
+
     }
     if( !error )
     {
