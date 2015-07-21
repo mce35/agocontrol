@@ -9,6 +9,7 @@ function Journal(agocontrol)
     self.types = ko.observableArray(['all', 'debug', 'info', 'warning', 'error']);
     self.type = ko.observable('all');
     self.filter = ko.observable('');
+    self.messages = ko.observableArray([]);
 
     if( self.agocontrol.devices()!==undefined )
     {
@@ -25,6 +26,8 @@ function Journal(agocontrol)
     //get messages from journal
     self.getMessages = function()
     {
+        self.agocontrol.block($('#messagesContainer'));
+
         var content = {};
         content.uuid = self.journalUuid;
         content.command = 'getmessages';
@@ -34,38 +37,41 @@ function Journal(agocontrol)
         content.end = stringToDatetime($('#journal_end').val());
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                self.agocontrol.block($('#messagesContainer'));
-
-                //clear container
-                $('#messagesContainer > ul').empty();
-
-                //inject all messages to container
+                var prevDay = null;
+                var messages = [];
                 for( var i=0; i<res.data.messages.length; i++ )
                 {
+                    var item = {'type':null, 'text':null, 'date':null};
                     var msg = res.data.messages[i];
-                    var type = "default";
-                    if( msg.type=="debug" )
-                    {
-                        type = "list-group-item-info";
-                    }
-                    else if( msg.type=="info" )
-                    {
-                        type = "";
-                    }
-                    else if( msg.type=="warning" )
-                    {
-                        type = "list-group-item-warning"
-                    }
-                    else if( msg.type=="error" )
-                    {
-                        type = "list-group-item-danger"
-                    }
-                    var d = datetimeToString(new Date(msg.time*1000));
-                    $('#messagesContainer > ul').append('<li class="list-group-item '+type+'">'+d+' : '+msg.message+'</i>');
-                }
+                    var d = new Date(msg.time*1000);
 
+                    //add new time label
+                    if( prevDay!=d.getDate() )
+                    {
+                        messages.push({
+                            'kind': 'label',
+                            'text': d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate()
+                        });
+                        prevDay = d.getDate();
+                    }
+
+                    //add new item
+                    messages.push({
+                        'kind': 'item',
+                        'type': msg.type,
+                        'text': msg.message,
+                        'time': timeToString(d)
+                    });
+                }
+                messages.push({
+                    'kind': 'end'
+                });
+                self.messages.replaceAll(messages);
+
+            })
+            .finally(function() {
                 //scroll to end of container
-                $('#messagesContainer > ul').scrollTop($('#messagesContainer > ul')[0].scrollHeight);
+                $('#messagesContainer').scrollTop($('#messagesContainer')[0].scrollHeight);
 
                 self.agocontrol.unblock($('#messagesContainer'));
             });
