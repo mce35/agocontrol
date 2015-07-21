@@ -13,6 +13,7 @@ body {
 }
 
 /* notifications */
+.content-notifs,
 .agonotif-box {
     display:none;
 }
