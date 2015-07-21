@@ -79,17 +79,6 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
         }
     };
 
-    //gumby modal bindings
-    ko.bindingHandlers.gumbyModal = {
-        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            //handle close button
-            $('.close.switch').click(function() {
-                $(this).parents('.modal').removeClass('active');
-                return false; //prevent from bubbling
-            });
-        }
-    };
-
     //bootstrap tabs
     ko.bindingHandlers.bootstrapTabs = {
         init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
@@ -110,6 +99,35 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
             }
         }
     };
+
+    //bootstrap toggle switch
+    ko.bindingHandlers.toggleSwitch = {
+        init : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            var accessor = valueAccessor();
+            if( accessor.onSwitchChange && accessor.onSwitchChange instanceof Function )
+            {
+                var cb = accessor.onSwitchChange;
+                if( accessor.data )
+                {
+                    //overwrite onSwitchChange callback to pass data
+                    accessor.onSwitchChange = function(event, state) {
+                        cb(event, state, accessor.data, element);
+                    };
+                }
+                else
+                {
+                    //no data, pass element
+                    accessor.onSwitchChange = function(event, state) {
+                        cb(event, state, element);
+                    };
+                }
+            }
+
+            //init widget with specified options
+            //@see options http://www.bootstrap-switch.org/options.html
+            $(element).bootstrapSwitch(accessor);
+        }
+    };
 };
 
 /**
@@ -118,7 +136,7 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
  */
 function sizeToHRSize(a,b,c,d,e)
 {
-    return (b=Math,c=b.log,d=1e3,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2) +' '+(e?'kMGTPEZY'[--e]+'B':'Bytes')
+    return (b=Math,c=b.log,d=1e3,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2) +' '+(e?'kMGTPEZY'[--e]+'B':'Bytes');
 }
 
 /**
