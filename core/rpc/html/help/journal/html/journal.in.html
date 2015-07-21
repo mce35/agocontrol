@@ -6,19 +6,26 @@
     <section class="content">
         <div class="row agorowbottom">
             <div class="col-md-12">
-                <form class="form-inline">
-                    <div class="form-group">
-                        <_label for="start_date" data-translateable="true">From</_label>
-                        <input type="text" readonly="readonly" id="journal_start" data-bind="dateTimePicker:$root" class="form-control"/>
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Message filter</h3>
                     </div>
-                    <div class="form-group">
-                        <_label for="end_date" data-translateable="true">To</_label>
-                        <input type="text" readonly="readonly" id="journal_end" data-bind="dateTimePicker:$root" class="form-control"/>
+                    <div class="box-body">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <_label for="start_date" data-translateable="true">From</_label>
+                                <input type="text" readonly="readonly" id="journal_start" data-bind="dateTimePicker:$root" class="form-control"/>
+                            </div>
+                            <div class="form-group">
+                                <_label for="end_date" data-translateable="true">To</_label>
+                                <input type="text" readonly="readonly" id="journal_end" data-bind="dateTimePicker:$root" class="form-control"/>
+                            </div>
+                            <select data-bind="options:types, value:type" class="form-control"/>
+                            <input type="text" placeholder="Filter" data-bind="value:filter" class="form-control"/>
+                            <_button type="submit" data-translateable="true" data-bind="click:getMessages" class="btn btn-primary">Get</_button>
+                        </form>
                     </div>
-                    <select data-bind="options:types, value:type" class="form-control"/>
-                    <input type="text" placeholder="Filter" data-bind="value:filter" class="form-control"/>
-                    <_button type="submit" data-translateable="true" data-bind="click:getMessages" class="btn btn-primary">Get</_button>
-                </form>
+                </div>
             </div>
         </div>
 
