@@ -1,26 +1,28 @@
-<div id="contentarea" class="container agocontainer">
+<div>
+    <section class="content-header">
+        <_h1 data-translateable="true">Available applications</_h1>
+    </section>
 
-<script id="rowTemplate" type="text/html">
+<script type="text/html" id="rowTemplate">
     <td>
-        <a href="#" data-bind="text:name, click:$root.gotoApplication"></a>
+        <a href="#" data-bind="text:name, click:$root.gotoApplication"/>
     </td>
-    <td data-bind="text: version"></td>
-    <td data-bind="text: description"></td>
+    <td data-bind="text: version"/>
+    <td data-bind="text: description"/>
     <td>
-        <ko opts="if: fav">
-            <a class="label label-primary" href="#" data-bind="click:$parent.favoriteClick">Yes</a>
-            <a class="label label-default" href="#" data-bind="click:$parent.favoriteClick">No</a>
-        </ko>
-        <ko opts="ifnot: fav">
-            <a class="label label-default" href="#" data-bind="click:$parent.favoriteClick">Yes</a>
-            <a class="label label-primary" href="#" data-bind="click:$parent.favoriteClick">No</a>
-        </ko>
+        <input type="checkbox" data-bind="toggleSwitch:{data:$data, size:'mini', state:favorite, onSwitchChange:$parent.favoriteClick}"/>
     </td>
 </script>
 
-    <_h2 data-translateable="true">Available applications</_h2>
-    <div data-bind="agoGrid:grid"/>
-    <div class="row text-right agorowbottom">
-        <span data-bind="text:favoritesMax"></span> <_span data-translateable="true">favorites applications max</_span>
-    </div>
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div data-bind="agoGrid:grid"/>
+            </div>
+            <div class="col-md-12 text-right">
+                <span data-bind="text:favoritesMax"/> <_span data-translateable="true">favorites applications max</_span>
+            </div>
+        </div>
+    </section>
+
 </div>
