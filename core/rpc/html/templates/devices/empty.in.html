@@ -1,24 +1,31 @@
-<div class="col-sm-3 dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="small-box" data-bind="css:staleStyle">
-        <div class="inner" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-            <ko opts="if: name">
-            <h3 data-bind="text: name"></h3>
-            </ko>
-            <ko opts="ifnot: name ">
-            <h3 data-bind="text: devicetype"></h3>
-            </ko>
-            <ko opts="if: room ">
-            <p>
-            <i class="en-location"></i>
-            <span data-bind="text: room"></span>
-            </p>
-            </ko>
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-cog"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
+                </ko>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
+                </ko>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+            </div>
         </div>
-        <div class="icon">
-            <i class="en-cog"></i>
-        </div>
-        <div class="small-box-footer">
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
         </div>
     </div>
 

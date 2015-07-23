@@ -1,22 +1,22 @@
-<div class="col-sm-3 dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-sm-3 dashboard-widget">
 
-    <div class="small-box" data-bind="css:staleStyle">
-        <div class="inner" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+    <div data-bind="css:staleStyle" class="small-box">
+        <div data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="inner">
             <ko opts="if: name">
-            <h3 data-bind="text: name"></h3>
+            <h3 data-bind="text: name"/>
             </ko>
             <ko opts="ifnot: name ">
-            <h3 data-bind="text: devicetype"></h3>
+            <h3 data-bind="text: devicetype"/>
             </ko>
             <ko opts="if: room ">
             <p>
-            <i class="en-location"></i>
-            <span data-bind="text: room"></span>
+            <i class="en-location"/>
+            <span data-bind="text: room"/>
             </p>
             </ko>
         </div>
         <div class="icon">
-            <i class="en-address"></i>
+            <i class="en-address"/>
         </div>
         <div class="small-box-footer">
             <ko opts="foreach: valueList">

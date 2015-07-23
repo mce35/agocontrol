@@ -1,76 +1,68 @@
-<div class="col-sm-3">
-<div data-bind="attr: {'data-uuid': uuid}" class="thumbnail dashboard-widget">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="well well-sm">
-        <div class="row">
-            <div class="col-sm-3 text-center">
-                <ko opts="if: stale">
-                    <button type="button" class="btn btn-danger btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
-                        <span style="font-size:200%;" class="en-adjust"></span>
-                    </button>
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-adjust"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
                 </ko>
-                <ko opts="ifnot: stale">
-                    <button type="button" class="btn btn-primary btn-xl" data-bind="click: function(data, event){agocontrol.showDetails(data)}" style="padding:0px !important;">
-                        <span style="font-size:200%;" class="en-adjust"></span>
-                    </button>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
                 </ko>
             </div>
-            <div class="col-sm-9 text-left">
-                <div class="row">
-                    <!-- device name -->
-                    <ko opts="if: name ">
-                        <div class="col-sm-12">
-                            <h3 style="margin:0px !important;" data-bind="text: name"></h3>
-                        </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
+                    <ko opts="ifnot:state">
+                    <_span data-translateable="true">OFF</_span>
                     </ko>
-                    <ko opts="ifnot: name ">
-                        <div class="col-sm-12">
-                            <h3 style="margin:0px !important;" data-bind="text: devicetype"></h3>
-                        </div>
+                    <ko opts="if:state">
+                    <_span data-translateable="true">ON</_span>
                     </ko>
-                    <!-- device room -->
-                    <ko opts="if: room ">
-                        <div class="col-sm-12">
-                            <span class="en-location"></span>
-                            <span data-bind="text: room"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left" style="padding-top:2px; padding-bottom:2px;">
+            <div class="well no-padding">
+                <div class="row margin">
+                    <div class="btn-group btn-group-justified">
+                        <div class="btn-group">
+                            <ko opts="if:state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-default">ON</_button>
+                            </ko>
+                            <ko opts="ifnot:state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-primary">ON</_button>
+                            </ko>
                         </div>
-                    </ko>
-                    <!-- device state -->
-                    <div class="col-sm-12">
-                        <span class="en-info"></span>
-                        <ko opts="ifnot: state">
-                        <_span data-translateable="true">OFF</_span>
-                        </ko>
-                        <ko opts="if: state">
-                        <_span data-translateable="true">ON</_span>
-                        </ko>
+                        <div class="btn-group">
+                            <ko opts="if: state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-primary">OFF</_button>
+                            </ko>
+                            <ko opts="ifnot: state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-default">OFF</_button>
+                            </ko>
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin">
+                    <div class="col-xs-12 col-md-12">
+                        <input data-bind="sliderValue:{value:level, min:0, max:100, step:1, ticks:[0,25,50,75,100], ticks_snap_bounds:5, orientation:'horizontal', id:'slider-'+$data.uuid, device:$data}" type="text" class="slider form-control"/>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="btn-group btn-group-justified">
-        <div class="btn-group">
-            <ko opts="if: state">
-                <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOn">ON</_button>
-            </ko>
-            <ko opts="ifnot: state">
-                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOn">ON</_button>
-            </ko>
-        </div>
-        <div class="btn-group">
-            <ko opts="if: state">
-                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: turnOff">OFF</_button>
-            </ko>
-            <ko opts="ifnot: state">
-                <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOff">OFF</_button>
-            </ko>
-        </div>
-    </div>
-    <div class="row">
-        <div class="slider col-sm-12" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}"></div>
-    </div>
-
-</div>
-</div>
+</div>                   

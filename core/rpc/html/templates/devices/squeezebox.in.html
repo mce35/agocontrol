@@ -1,60 +1,84 @@
-<div class="col-sm-3 dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="small-box" data-bind="css:staleStyle">
-        <div class="inner" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-            <ko opts="if: name">
-            <h3 data-bind="text: name"></h3>
-            </ko>
-            <ko opts="ifnot: name ">
-            <h3 data-bind="text: devicetype"></h3>
-            </ko>
-            <ko opts="if: room ">
-            <p>
-            <i class="en-location"></i>
-            <span data-bind="text: room"></span>
-            </p>
-            </ko>
-        </div>
-        <div class="icon">
-            <i class="en-note-beamed"></i>
-        </div>
-        <div class="small-box-footer">
-            <ko opts="if: state()!=50">
-            <div class="btn-group btn-group-justified">
-                <div class="btn-group">
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-note-beamed"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
+                </ko>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
+                </ko>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
                     <ko opts="if: state()==0">
-                    <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: turnOn">ON</_button>
+                    <span>off</span>
                     </ko>
-        		    <ko opts="ifnot: state()==0">
-                    <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOn">ON</_button>
+                    <ko opts="if: state()==50">
+                    <span>streaming</span>
                     </ko>
-                </div>
-                <div class="btn-group">
-                    <ko opts="if: state()!=0">
-                    <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: turnOff">OFF</_button>
+                    <ko opts="if: state()==100">
+                    <span>playing</span>
                     </ko>
-                    <ko opts="ifnot: state()!=0">
-                    <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: turnOff">OFF</_button>
-                    </ko>
-                </div>
-                <div class="btn-group">
-                    <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
-                    <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: play">PLAY</_button>
-                    </ko>
-                    <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
-                    <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: play">PLAY</_button>
-                    </ko>
-                </div>
-                <div class="btn-group">
-                    <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
-                   <_button type="button" class="btn btn-info" data-translateable="true" data-bind="click: pause">PAUSE</_button>
-                    </ko>
-                    <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
-                    <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click: pause">PAUSE</_button>
+                    <ko opts="if: state()==200">
+                    <span>pause</span>
                     </ko>
                 </div>
             </div>
-            </ko>
+        </div>
+    </div>            
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
+            <div class="well">
+                <ko opts="if: state()!=50">
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <ko opts="if: state()==0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-primary">ON</_button>
+                        </ko>
+        		        <ko opts="ifnot: state()==0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-default">ON</_button>
+                        </ko>
+                    </div>
+                    <div class="btn-group">
+                        <ko opts="if: state()!=0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-primary">OFF</_button>
+                        </ko>
+                        <ko opts="ifnot: state()!=0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-default">OFF</_button>
+                        </ko>
+                    </div>
+                    <div class="btn-group">
+                        <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: play" class="btn btn-primary">PLAY</_button>
+                        </ko>
+                        <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: play" class="btn btn-default">PLAY</_button>
+                        </ko>
+                    </div>
+                    <div class="btn-group">
+                        <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: pause" class="btn btn-primary">PAUSE</_button>
+                        </ko>
+                        <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: pause" class="btn btn-default">PAUSE</_button>
+                        </ko>
+                    </div>
+                </div>
+                </ko>
+            </div>
         </div>
     </div>
 
