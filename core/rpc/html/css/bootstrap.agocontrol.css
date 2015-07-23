@@ -187,3 +187,50 @@ div.dashboard-widget-draggable {
     border-bottom: 1px solid #CCCCCC;
     padding-bottom: 10px;
 }
+
+.no-margin-bottom {
+    margin-bottom: 0px !important;
+}
+
+.no-margin-left {
+    margin-left: 0px !important;
+}
+
+.no-padding {
+    padding: 0px !important;
+}
+
+.dashboard-widget .info-box-icon {
+    cursor: pointer;
+}
+
+.info-box-title > h1,h2,h3,h4,h5,h6 {
+    margin-top: 10px !important;
+}
+
+.info-box-title {
+    display: block;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /*text-transform: uppercase;*/
+}
+
+.info-box-detail {
+    width:100%;
+}
+
+.info-box-location, .info-box-state {
+    padding-right: 10px;
+    float: left;
+}
+
+.dashboard-widget .info-box-content .well {
+    margin-bottom: 0px !important;
+    background-color: transparent;
+    border: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    /*padding: 19px 0px 19px 0px;*/
+}

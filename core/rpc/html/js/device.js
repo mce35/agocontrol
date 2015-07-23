@@ -27,14 +27,13 @@ function device(agocontrol, obj, uuid) {
         return self.stale ? 'bg-light-blue' : 'bg-red';
     });
 
-    if (this.devicetype == "dimmer" || this.devicetype == "dimmerrgb")
+    if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" )
     {
         this.level = ko.observable(currentState);
         this.state.subscribe(function(v){
             this.level(v);
         }, this);
-        this.syncLevel = function()
-        {
+        this.syncLevel = function() {
             var content = {};
             content.uuid = uuid;
             content.command = "setlevel";
@@ -64,24 +63,18 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.journal = uuid;
     }
 
-    if (this.devicetype == "dimmerrgb")
+    if( this.devicetype=="dimmerrgb" )
     {
-        this.openColorPicker = function() {
-            var picker = $('#color-'+uuid).colpick({
-                layout:'hex',
-                onSubmit: function(hsb,hex,rgb,el) {
-                    var content = {};
-                    content.uuid = $(el).attr('uuid');
-                    content.command = "setcolor";
-                    content.red = rgb.r;
-                    content.green = rgb.g;
-                    content.blue = rgb.b;
-                    self.agocontrol.sendCommand(content);
-  
-                    $(el).colpickHide();
-                },
-            });
-            picker.colpickShow();
+        self.color = ko.observableArray([255,0,0]);
+
+        self.syncColor = function() {
+            var content = {};
+            content.uuid = uuid;
+            content.command = "setcolor";
+            content.red = self.color()[0];
+            content.green = self.color()[1];
+            content.blue = self.color()[2];
+            self.agocontrol.sendCommand(content);
         };
     }
 
