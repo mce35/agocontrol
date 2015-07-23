@@ -1,10 +1,7 @@
 <div class="container-fluid">
     <div class="row agorowtop" style="height:60px;">
-        <!-- empty -->
-        <div class="col-sm-4"></div>
-
         <!-- pagination -->
-        <div class="col-sm-4 text-center">
+        <div class="col-xs-12 col-md-offset-4 col-md-4 text-center">
             <ul class="pagination" data-bind="foreach:pages" style="margin:0px !important;">
                 <ko opts="if: idx==$parent.currentPage()">
                     <li class="active">
@@ -20,17 +17,15 @@
         </div>
 
         <!-- search -->
-        <div class="col-sm-4 text-right">
+        <div class="col-xs-12 col-md-4 text-right">
             <form class="form-inline">
-                <span class="en-search"></span>
-                <div class="input-group">
-                    <input type="text" class="form-control" data-bind="textInput:keyword" />
-                    <span class="input-group-btn">
-                        <button class="btn btn-primary" type="button" data-bind="click:clearSearch">
-                            <span class="en-cancel"></span>
-                        </button>
-                    </span>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon"><span class="en-search"/></div>
+                        <input type="text" data-bind="textInput:keyword" class="form-control" placeholder="search"/>
+                    </div>
                 </div>
+                <button type="button" data-bind="click:clearSearch" class="btn btn-primary hidden-xs"><span class="en-cancel"/></button>
             </form>
         </div>
     </div>
@@ -43,7 +38,7 @@
         <div class="col-sm-4"></div>
 
         <!-- pagination -->
-        <div class="col-sm-4 text-center">
+        <div class="col-xs-12 col-md-offset-4 col-sm-4 text-center">
             <ul class="pagination" data-bind="foreach:pages" style="margin:0px !important;">
                 <ko opts="if: idx==$parent.currentPage()">
                     <li class="active">
