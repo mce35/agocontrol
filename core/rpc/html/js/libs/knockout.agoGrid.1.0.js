@@ -276,17 +276,15 @@
     templateEngine.addTemplate("ko_agoGrid_header", "\
                 <!-- ko if: displayPagination||displaySearch -->\
                 <div class=\"row\" style=\"margin-bottom:10px;\">\
-                    <div class=\"col-md-5\">\
+                    <div class=\"col-md-5 hidden-xs\">\
                         <!-- ko if:displayPagination -->\
                         <select class=\"form-control input-sm\" data-bind=\"options:pageSizes, value:pageSize\" style=\"max-width:100px;\"></select>\
                         <!-- /ko -->\
                     </div>\
-                    <div class=\"col-md-2\" style=\"text-align:right;\">\
-                    </div>\
-                    <div class=\"col-md-5\" style=\"text-align:right;\">\
+                    <div class=\"col-xs-9 col-md-offset-2 col-md-5\" style=\"text-align:right;\">\
                         <!-- ko if:displaySearch -->\
                         <form class=\"form-inline\">\
-                            <span class=\"en-search\"></span>\
+                            <span class=\"en-search hidden-xs\"></span>\
                             <div class=\"input-group input-group-sm\">\
                                 <input type=\"text\" class=\"form-control\" data-bind=\"textInput:search\">\
                                 <span class=\"input-group-btn\">\
@@ -301,6 +299,7 @@
 
     //default grid template
     templateEngine.addTemplate("ko_agoGrid_grid", "\
+                    <div class=\"table-responsive\"> \
                     <table class=\"table table-hover\" style=\"margin-top:0px; margin-bottom:0px;\" data-bind=\"attr: {id:gridId}\"> \
                         <thead>\
                             <tr data-bind=\"foreach: columns\">\
@@ -324,7 +323,8 @@
                         </thead>\
                         <tbody data-bind=\"template : { name:bodyTemplate, foreach:itemsOnCurrentPage, as:'myrow' }\">\
                         </tbody>\
-                    </table>");
+                    </table> \
+                    </div>");
 
     //default body template
     templateEngine.addTemplate("ko_agoGrid_body", "\
@@ -341,12 +341,12 @@
     templateEngine.addTemplate("ko_agoGrid_footer", "\
                     <!-- ko if: displayPagination||displayRowCount -->\
                     <div class=\"row\" style=\"margin-top:10px;\">\
-                        <div class=\"col-md-4\">\
+                        <div class=\"col-md-4 hidden-xs\">\
                             <!-- ko if:displayRowCount -->\
                             <span data-bind=\"text:range\" style=\"font-weight:bold;\"></span>\
                             <!-- /ko -->\
                         </div>\
-                        <div class=\"col-md-8\" style=\"text-align:right;\">\
+                        <div class=\"col-xs-12 col-md-8\" style=\"text-align:right;\">\
                             <!-- ko if:displayPagination -->\
                             <ul class=\"pagination pagination-sm\" style=\"margin: 0px !important;\">\
                                 <li>\
