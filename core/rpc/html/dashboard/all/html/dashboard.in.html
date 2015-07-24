@@ -20,12 +20,14 @@
         <div class="col-xs-12 col-md-4 text-right">
             <form class="form-inline">
                 <div class="form-group">
+                    <span class="en-search hidden-xs"></span>
                     <div class="input-group">
-                        <div class="input-group-addon"><span class="en-search"/></div>
-                        <input type="text" data-bind="textInput:keyword" class="form-control" placeholder="search"/>
+                        <input type="text" class="form-control" data-bind="textInput:keyword"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" data-bind="click:clearSearch"><span class="en-cancel"/></button>
+                        </span>
                     </div>
                 </div>
-                <button type="button" data-bind="click:clearSearch" class="btn btn-primary hidden-xs"><span class="en-cancel"/></button>
             </form>
         </div>
     </div>
