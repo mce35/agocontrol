@@ -23,7 +23,7 @@
                 <div class="info-box-state" data-bind="foreach:valueList">
                     <i class="en-volume"/>
                     <ko opts="if: name=='Mode'">
-                    <_span data-translateable="true">Mode</span>:<span data-bind="text:level"></_span>
+                    <_span data-translateable="true">Mode</_span>:<span data-bind="text:level"></span>
                     </ko>
                     <ko opts="if:name=='Operatingstate'">
                     (<span data-bind="text:level"/>)
@@ -32,7 +32,7 @@
                 <div class="info-box-state">
                     <i class="en-shuffle"/>
                     <ko opts="if:name=='Fanmode'">
-                    <_span data-translateable="true">FanMode</span>:<span data-bind="text:level"></_span>
+                    <_span data-translateable="true">FanMode</_span>:<span data-bind="text:level"></span>
                     </ko>
                     <ko opts="if:name=='Fanstate'">
                     (<span data-bind="text:level"/>)
