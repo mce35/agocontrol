@@ -86,6 +86,17 @@ function datetimeToString(dt)
 }
 
 /**
+ * Convert datetime js object to string under format "h:m"
+ */
+function timeToString(dt)
+{
+    var str = ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
+    str += ':';
+    str += ( dt.getMinutes()<10 ? '0'+dt.getMinutes() : dt.getMinutes() );
+    return str;
+}
+
+/**
  * Convert timestamp to string under format "d.m.y h:m"
  */
 function timestampToString(ts)
@@ -421,30 +432,12 @@ function AgocontrolViewModel()
         {
             //get config infos
             var config = null;
-            for( var category in self.agocontrol.configurations() )
+            for( var i=0; i<self.agocontrol.configurations().length; i++ )
             {
-                if( self.agocontrol.configurations()[category].subMenus===null )
+                if( self.agocontrol.configurations()[i].name==this.params.name )
                 {
-                    if( self.agocontrol.configurations()[category].menu.name==this.params.name )
-                    {
-                        config = self.agocontrol.configurations()[category].menu;
-                        break;
-                    }
-                }
-                else
-                {
-                    for( var i=0; i<self.agocontrol.configurations()[category].subMenus.length; i++ )
-                    {
-                        if( self.agocontrol.configurations()[category].subMenus[i].name==this.params.name )
-                        {
-                            config = self.agocontrol.configurations()[category].subMenus[i];
-                            break;
-                        }
-                    }
-                    if( config!=null )
-                    {
-                        break;
-                    }
+                    config = self.agocontrol.configurations()[i];
+                    break;
                 }
             }
             if( config )

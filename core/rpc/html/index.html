@@ -102,8 +102,8 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <ul class="menu" data-bind="foreach: $root.agocontrol.journalEntries">
-                                    <li style="cursor:default">
-                                        <a href="#" data-bind="click:$root.noclick">
+                                    <li>
+                                        <a href="#" data-bind="click:$root.noclick" style="cursor:default">
                                             <!-- ko if:type=='warning' -->
                                             <i class="en-attention text-orange"></i>
                                             <!-- /ko -->
@@ -124,72 +124,95 @@
                             <li class="footer"><a href="#help/Journal">See journal</a></li>
                         </ul>
                     </li>
+                    <li class="dropdown messages-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="control-sidebar">
+                            <i class="en-cog"></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>
 
     </header>
 
-    <!-- SIDE BAR -->
+    <!-- LEFT SIDE BAR -->
     <aside class="main-sidebar">
         <section class="sidebar">
             <ul class="sidebar-menu">
-                <li class="active treeview">
-                    <a href="#">
-                        <i class="en-layout"></i> <span>Dashboards</span> <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu" data-bind="foreach: agocontrol.dashboards">
-                        <li><a href="#" data-bind="text:ucName, click:$root.gotoDashboard"></a></li>
-                    </ul>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="en-archive"></i> <span>Applications</span> <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu" data-bind="foreach: agocontrol.applications">
-                        <!-- ko if: fav -->
-                        <li><a href="#" data-bind="text:name, click:$root.gotoApplication"></a></li>
-                        <!-- /ko -->
-                    </ul>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="en-tools"></i> <span>Configuration</span> <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu" data-bind="foreach: agocontrol.configurations">
-                        <!-- ko ifnot: subMenus -->
-                        <li><a href="#" data-bind="text:menu.name, click:$root.gotoConfiguration.bind($data, menu)"></a></li>
-                        <!-- /ko -->
-                        <!-- ko if: subMenus -->
-                        <li>
-                            <a href="#" data-bind="click:$root.noclick"><span data-bind="text:menu"></span> <i class="fa fa-angle-left pull-right"></i></a>
-                            <ul class="treeview-menu" data-bind="foreach:subMenus">
-                                <li><a href="#" data-bind="click:$root.gotoConfiguration"><span data-bind="text:name"></span></a></li>
-                            </ul>
-                        </li>
-                        <!-- /ko -->
-                    </ul>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="en-help"></i> <span>Help</span> <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu" data-bind="foreach: agocontrol.helps">
-                        <!-- ko if:url===null -->
-                        <li><a href="#" data-bind="text:name, click:$root.gotoHelp"></a></li>
-                        <!-- /ko -->
-                        <!-- ko ifnot:url===null -->
-                        <li>
-                            <a href="#" data-bind="attr:{'href':url, 'target':'_blank'}">
-                                <span class="en-link"></span> <span data-bind="text:name"></span>
-                            </a>
-                        </li>
-                        <!-- /ko -->
-                    </ul>
-                </li>
+                <li class="header">DASHBOARDS</li>
+                <!-- ko foreach:agocontrol.dashboards -->
+                <!-- ko if:icon -->
+                <li><a href="#" data-bind="click:$root.gotoDashboard"><i data-bind="attr:{'class':'fa '+icon}"></i><span data-bind="text:ucName"/></a>
+                <!-- /ko -->
+                <!-- ko ifnot:icon -->
+                <li><a href="#" data-bind="click:$root.gotoDashboard"><i class="fa fa-circle-o"></i><span data-bind="text:ucName"/></a>
+                <!-- /ko -->
+                <!-- /ko -->
+                <li class="header">APPLICATIONS</li>
+                <!-- ko foreach:agocontrol.applications -->
+                <!-- ko if:fav -->
+                <!-- ko if:icon -->
+                <li><a href="#" data-bind="click:$root.gotoApplication"><i data-bind="attr:{'class':'fa '+icon}"></i><span data-bind="text:name"/></a>
+                <!-- /ko -->
+                <!-- ko ifnot:icon -->
+                <li><a href="#" data-bind="click:$root.gotoApplication"><i class="fa fa-circle-o"></i><span data-bind="text:name"/></a>
+                <!-- /ko -->
+                <!-- /ko -->
+                <!-- /ko -->
             </ul>
         </section>
     </aside>
+
+    <!-- RIGHT SIDE BAR -->
+    <aside class="control-sidebar control-sidebar-light">
+        <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+            <li class="active"><a href="#control-sidebar-config-tab" data-toggle="tab"><i class="en-tools"></i></a></li>
+            <li><a href="#control-sidebar-color-tab" data-toggle="tab"><i class="en-palette"></i></a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="control-sidebar-config-tab">
+                <h3 class="control-sidebar-heading">Agocontrol configuration</h3>
+                <ul class="control-sidebar-menu" data-bind="foreach: agocontrol.configurations">
+                    <li>
+                        <a href="#" data-bind="click:$root.gotoConfiguration.bind($data)">
+                            <!-- ko if:category=='events' -->
+                            <i class="menu-icon fa fa-bolt bg-red"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='cloud' -->
+                            <i class="menu-icon fa fa-cloud bg-blue"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='dashboards' -->
+                            <i class="menu-icon fa fa-th-large bg-maroon"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='core' -->
+                            <i class="menu-icon fa fa-cog bg-black"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='devices' -->
+                            <i class="menu-icon fa fa-cube bg-green"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='rooms' -->
+                            <i class="menu-icon fa fa-home bg-aqua"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='scenarios' -->
+                            <i class="menu-icon fa fa-list-ol bg-orange"></i>
+                            <!-- /ko -->
+                            <!-- ko if:category=='variables' -->
+                            <i class="menu-icon fa fa-superscript bg-purple"></i>
+                            <!-- /ko -->
+                            <div class="menu-info">
+                                <h4 class="control-sidebar-subheading" data-bind="text:name"></h4>
+                                <p data-bind="text:description"></p>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-pane" id="control-sidebar-color-tab">
+                <h3 class="control-sidebar-heading">Color theme</h3>
+            </div>
+        </div>
+    </aside>
+    <div class="control-sidebar-bg"></div>
 
     <!-- PAGE CONTENT -->
     <div class="content-wrapper" style="min-height: 916px;">
@@ -210,8 +233,6 @@
 <script type="text/javascript" src="js/uihelpers.js"></script>
 <script type="text/javascript" src="js/plugins.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
-<!-- <script type="text/javascript" src="js/libs/metismenu.min.js"></script> -->
-<!-- <script type="text/javascript" src="js/libs/bootstrap.sbadmin2.js"></script> -->
 <script src="js/libs/jquery.slimscroll.min.js" type="text/javascript"></script>
 <script src="js/libs/bootstrap-switch.min.js" type="text/javascript"></script>
 <script>

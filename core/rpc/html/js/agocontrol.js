@@ -482,7 +482,7 @@ Agocontrol.prototype = {
     // Handle dashboard-part of inventory
     handleDashboards : function(floorplans) {
         var dashboards = [];
-        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false, icon:'fa-th-large'});
         for( uuid in floorplans )
         {
             var dashboard = floorplans[uuid];
@@ -490,6 +490,10 @@ Agocontrol.prototype = {
             dashboard.action = '';
             dashboard.ucName = dashboard.name;
             dashboard.editable = true;
+            if( dashboard.icon===undefined )
+            {
+                dashboard.icon = null;
+            }
             dashboards.push(dashboard);
         }
         this.dashboards.replaceAll(dashboards);
@@ -555,6 +559,10 @@ Agocontrol.prototype = {
             for( var i=0; i<result.applications.length; i++ )
             {
                 var application = result.applications[i];
+                if( application.icon===undefined )
+                {
+                    application.icon = null;
+                }
                 application.ucName = ucFirst(application.name);
                 applications.push(application);
             }
@@ -563,44 +571,7 @@ Agocontrol.prototype = {
             self._allApplications(applications);
 
             //CONFIGURATION PAGES
-            var categories = {};
-            for( var i=0; i<result.config.length; i++ )
-            {
-                //check missing category
-                if( result.config[i].category===undefined )
-                {
-                    result.config[i].category = 'Uncategorized';
-                }
-                //add new category if necessary
-                var category = ucFirst(result.config[i].category);
-                if( categories[category]===undefined )
-                {
-                    categories[category] = [];
-                }
-                //append page to its category
-                categories[category].push(result.config[i]);
-            }
-
-            var configurations = [];
-            for( var category in categories )
-            {
-                var subMenus = [];
-                for( var i=0; i<categories[category].length; i++ )
-                {
-                    subMenus.push(categories[category][i]);
-                }
-                if( subMenus.length==1 )
-                {
-                    //no submenu
-                    configurations.push({'menu':subMenus[0], 'subMenus':null});
-                }
-                else
-                {
-                    //submenus
-                    configurations.push({'menu':category, 'subMenus':subMenus});
-                }
-            }
-            self.configurations.replaceAll(configurations);
+            self.configurations.replaceAll(result.config);
 
             //SUPPORTED DEVICES
             self.supported_devices(result.supported)
@@ -641,6 +612,7 @@ Agocontrol.prototype = {
                 return null;
             });
     },
+
     getDashboard:function(name){
         var dashboards = this.dashboards();
         for( var i=0; i < dashboards.length; i++ )
