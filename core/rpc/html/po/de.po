@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-03 10:24+0200\n"
+"POT-Creation-Date: 2015-07-27 22:50+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -27,7 +27,6 @@ msgstr ""
 #: ../templates/details/gpssensor.xml.in.h:1
 #: ../templates/details/humiditysensor.xml.in.h:1
 #: ../templates/details/multigraph.xml.in.h:1
-#: ../templates/details/multilevelsensor.xml.in.h:1
 #: ../templates/details/powermeter.xml.in.h:1
 #: ../templates/details/temperaturesensor.xml.in.h:1
 msgid "Name"
@@ -43,7 +42,6 @@ msgstr "Name"
 #: ../templates/details/gpssensor.xml.in.h:2
 #: ../templates/details/humiditysensor.xml.in.h:2
 #: ../templates/details/multigraph.xml.in.h:2
-#: ../templates/details/multilevelsensor.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
 #, fuzzy
@@ -60,7 +58,6 @@ msgstr "Gerätetyp"
 #: ../templates/details/gpssensor.xml.in.h:3
 #: ../templates/details/humiditysensor.xml.in.h:3
 #: ../templates/details/multigraph.xml.in.h:3
-#: ../templates/details/multilevelsensor.xml.in.h:3
 #: ../templates/details/powermeter.xml.in.h:3
 #: ../templates/details/temperaturesensor.xml.in.h:3
 msgid "Room"
@@ -76,7 +73,6 @@ msgstr "Raum"
 #: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
 #: ../templates/details/multigraph.xml.in.h:4
-#: ../templates/details/multilevelsensor.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
 msgid "Timestamp"
@@ -88,7 +84,6 @@ msgstr ""
 #: ../templates/details/distancesensor.xml.in.h:5
 #: ../templates/details/energymeter.xml.in.h:5
 #: ../templates/details/humiditysensor.xml.in.h:5
-#: ../templates/details/multilevelsensor.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
 #: ../configuration/datalogger/html/datalogger.xml.in.h:4
@@ -101,7 +96,6 @@ msgstr "Graph"
 #: ../templates/details/distancesensor.xml.in.h:6
 #: ../templates/details/energymeter.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:6
-#: ../templates/details/multilevelsensor.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
 msgid "Plots"
@@ -114,7 +108,6 @@ msgstr ""
 #: ../templates/details/energymeter.xml.in.h:7
 #: ../templates/details/gpssensor.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:7
-#: ../templates/details/multilevelsensor.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
 msgid "List"
@@ -128,10 +121,9 @@ msgstr "Liste"
 #: ../templates/details/gpssensor.xml.in.h:7
 #: ../templates/details/humiditysensor.xml.in.h:8
 #: ../templates/details/multigraph.xml.in.h:5
-#: ../templates/details/multilevelsensor.xml.in.h:8
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-#: ../help/journal/html/journal.xml.in.h:3
+#: ../help/journal/html/journal.xml.in.h:2
 #, fuzzy
 msgid "From"
 msgstr "Von:"
@@ -144,10 +136,9 @@ msgstr "Von:"
 #: ../templates/details/gpssensor.xml.in.h:8
 #: ../templates/details/humiditysensor.xml.in.h:9
 #: ../templates/details/multigraph.xml.in.h:6
-#: ../templates/details/multilevelsensor.xml.in.h:9
 #: ../templates/details/powermeter.xml.in.h:9
 #: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../help/journal/html/journal.xml.in.h:4
+#: ../help/journal/html/journal.xml.in.h:3
 #, fuzzy
 msgid "To"
 msgstr "Bis:"
@@ -161,7 +152,6 @@ msgstr "Bis:"
 #: ../templates/details/gpssensor.xml.in.h:9
 #: ../templates/details/humiditysensor.xml.in.h:10
 #: ../templates/details/multigraph.xml.in.h:7
-#: ../templates/details/multilevelsensor.xml.in.h:10
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:41
@@ -181,20 +171,7 @@ msgstr "Ausführen"
 msgid "Map"
 msgstr ""
 
-#: ../templates/devices/binarysensor.xml.in.h:1
-#, fuzzy
-msgid "Current value"
-msgstr "Setze Wert"
-
 #: ../templates/devices/computer.xml.in.h:1
-#: ../templates/devices/dimmer.xml.in.h:1
-#: ../templates/devices/dimmerrgb.xml.in.h:1
-#: ../templates/devices/squeezebox.xml.in.h:2
-#: ../templates/devices/switch.xml.in.h:2
-msgid "OFF"
-msgstr "AUS"
-
-#: ../templates/devices/computer.xml.in.h:2
 #: ../templates/devices/dimmer.xml.in.h:2
 #: ../templates/devices/dimmerrgb.xml.in.h:2
 #: ../templates/devices/squeezebox.xml.in.h:1
@@ -202,39 +179,26 @@ msgstr "AUS"
 msgid "ON"
 msgstr "EIN"
 
+#: ../templates/devices/dimmer.xml.in.h:1
+#: ../templates/devices/dimmerrgb.xml.in.h:1
+#: ../templates/devices/squeezebox.xml.in.h:2
+#: ../templates/devices/switch.xml.in.h:2
+msgid "OFF"
+msgstr "AUS"
+
 #: ../templates/devices/dimmerrgb.xml.in.h:3
 msgid "COLOR"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:1
-msgid "CLOSED"
-msgstr ""
-
-#: ../templates/devices/drapes.xml.in.h:2
-msgid "OPENED"
-msgstr ""
-
-#: ../templates/devices/drapes.xml.in.h:3
-msgid "OPENING"
-msgstr ""
-
-#: ../templates/devices/drapes.xml.in.h:4
-msgid "CLOSING"
-msgstr ""
-
-#: ../templates/devices/drapes.xml.in.h:5
-msgid "PARTIAL"
-msgstr ""
-
-#: ../templates/devices/drapes.xml.in.h:6
 msgid "OPEN"
 msgstr ""
 
-#: ../templates/devices/drapes.xml.in.h:7
+#: ../templates/devices/drapes.xml.in.h:2
 msgid "STOP"
 msgstr ""
 
-#: ../templates/devices/drapes.xml.in.h:8
+#: ../templates/devices/drapes.xml.in.h:3
 msgid "CLOSE"
 msgstr ""
 
@@ -269,6 +233,14 @@ msgstr "Modus"
 #: ../templates/devices/thermostat.xml.in.h:2
 msgid "FanMode"
 msgstr "Ventilator"
+
+#: ../templates/devices/thermostat.xml.in.h:3
+msgid "Heat"
+msgstr ""
+
+#: ../templates/devices/thermostat.xml.in.h:4
+msgid "Cool"
+msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:1
 msgid "Agoalert is not responding"
@@ -305,65 +277,63 @@ msgstr "Verbindung wurde erfolgreich hinzugefügt"
 msgid "Failed to save configuration"
 msgstr "Konfiguration speichern"
 
-#. title
-#: ../applications/alert/html/alert.xml.in.h:10
+#: ../applications/alert/html/alert.xml.in.h:9
 msgid "Alert"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:11
+#: ../applications/alert/html/alert.xml.in.h:10
 #, fuzzy
 msgid "Twitter"
 msgstr "Twitter Kode"
 
-#: ../applications/alert/html/alert.xml.in.h:12
+#: ../applications/alert/html/alert.xml.in.h:11
 msgid "SMS"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:13
+#: ../applications/alert/html/alert.xml.in.h:12
 msgid "Mail"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:14
+#: ../applications/alert/html/alert.xml.in.h:13
 msgid "Push"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:15
+#: ../applications/alert/html/alert.xml.in.h:14
 #, fuzzy
 msgid "Configured?"
 msgstr "Konfiguration"
 
-#: ../applications/alert/html/alert.xml.in.h:16
+#: ../applications/alert/html/alert.xml.in.h:15
 #, fuzzy
 msgid "Click on link to generate an authorization url"
 msgstr "Genehmigungs-URL"
 
-#: ../applications/alert/html/alert.xml.in.h:17
+#: ../applications/alert/html/alert.xml.in.h:16
 msgid "here"
 msgstr "hier"
 
-#: ../applications/alert/html/alert.xml.in.h:18
+#: ../applications/alert/html/alert.xml.in.h:17
 #, fuzzy
 msgid "Then click on generated link"
 msgstr "Dann klicke auf den generierten Link"
 
-#: ../applications/alert/html/alert.xml.in.h:19
+#: ../applications/alert/html/alert.xml.in.h:18
 msgid "Authorize access on Twitter"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:20
+#: ../applications/alert/html/alert.xml.in.h:19
 msgid "Type given access code here"
 msgstr "Gib den Zugangscode hier ein"
 
-#: ../applications/alert/html/alert.xml.in.h:21
+#: ../applications/alert/html/alert.xml.in.h:20
 msgid "Twitter code"
 msgstr "Twitter Kode"
 
-#: ../applications/alert/html/alert.xml.in.h:22
+#: ../applications/alert/html/alert.xml.in.h:21
 msgid "Finally click on button to save access code"
 msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
-#: ../applications/alert/html/alert.xml.in.h:23
-#: ../applications/security/html/security.xml.in.h:13
+#: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/onvif/html/onvif.xml.in.h:14
 #: ../configuration/datalogger/html/datalogger.xml.in.h:9
 #: ../configuration/system/html/system.xml.in.h:8
@@ -371,50 +341,50 @@ msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 msgid "Save changes"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:24
+#: ../applications/alert/html/alert.xml.in.h:23
 msgid "To send test tweet on your account, click on button"
 msgstr ""
 "Um einen Test Tweet auf den Twitter-Konto senden, klicke auf den Button"
 
-#: ../applications/alert/html/alert.xml.in.h:25
+#: ../applications/alert/html/alert.xml.in.h:24
 #: ../applications/zwave/html/zwave.xml.in.h:43
 msgid "Test"
 msgstr "Test"
 
-#: ../applications/alert/html/alert.xml.in.h:26
+#: ../applications/alert/html/alert.xml.in.h:25
 msgid "Choose SMS provider in list"
 msgstr "Wähle einen SMS Anbieter aus der Liste"
 
-#: ../applications/alert/html/alert.xml.in.h:27
+#: ../applications/alert/html/alert.xml.in.h:26
 msgid "You need to create an account on"
 msgstr "Erstelle ein Konto erstellen bei"
 
-#: ../applications/alert/html/alert.xml.in.h:28
+#: ../applications/alert/html/alert.xml.in.h:27
 msgid "and add credits to send SMS"
 msgstr "und lade Guthaben auf um SMS senden zu können"
 
-#: ../applications/alert/html/alert.xml.in.h:29
+#: ../applications/alert/html/alert.xml.in.h:28
 msgid "SMS rates"
 msgstr "SMS Traife"
 
-#: ../applications/alert/html/alert.xml.in.h:30
+#: ../applications/alert/html/alert.xml.in.h:29
 msgid "Username"
 msgstr "Benutzername"
 
-#: ../applications/alert/html/alert.xml.in.h:31
+#: ../applications/alert/html/alert.xml.in.h:30
 msgid "12voip username"
 msgstr "12voip Benutzername"
 
-#: ../applications/alert/html/alert.xml.in.h:32
+#: ../applications/alert/html/alert.xml.in.h:31
 #: ../applications/onvif/html/onvif.xml.in.h:13
 msgid "Password"
 msgstr "Passwort"
 
-#: ../applications/alert/html/alert.xml.in.h:33
+#: ../applications/alert/html/alert.xml.in.h:32
 msgid "12voip password"
 msgstr "12voip Passwort"
 
-#: ../applications/alert/html/alert.xml.in.h:34
+#: ../applications/alert/html/alert.xml.in.h:33
 msgid ""
 "Free Mobile is a french internet/mobile provider. It offers for free to send "
 "SMS to mobile account owner and only for its number."
@@ -422,7 +392,7 @@ msgstr ""
 "Free Mobile ist ein französicher Internet- und Mobilfunkanbieter, der "
 "kostenlose SMS nachrichten zu Deiner Mobilnummer anbietet."
 
-#: ../applications/alert/html/alert.xml.in.h:35
+#: ../applications/alert/html/alert.xml.in.h:34
 msgid ""
 "To use it in ago control, activate option in your free account and save "
 "provided apikey"
@@ -430,114 +400,114 @@ msgstr ""
 "Um es in ago control zu verwenden, aktiviere die Option in Deinem freien "
 "Account und speichere den den übermittelten apikey"
 
-#: ../applications/alert/html/alert.xml.in.h:36
+#: ../applications/alert/html/alert.xml.in.h:35
 msgid "User"
 msgstr "Benutzername"
 
-#: ../applications/alert/html/alert.xml.in.h:37
+#: ../applications/alert/html/alert.xml.in.h:36
 msgid "Free user"
 msgstr "Freier Benutzer"
 
-#: ../applications/alert/html/alert.xml.in.h:38
+#: ../applications/alert/html/alert.xml.in.h:37
 msgid "Apikey"
 msgstr "Apikey"
 
-#: ../applications/alert/html/alert.xml.in.h:39
+#: ../applications/alert/html/alert.xml.in.h:38
 msgid "To send you a test SMS, click on button"
 msgstr "Um ein Test-SMS zu senden, klicke den Knopf"
 
-#: ../applications/alert/html/alert.xml.in.h:40
+#: ../applications/alert/html/alert.xml.in.h:39
 msgid "SMTP server* (smtp:port)"
 msgstr "SMTP Server* (Server:Port)"
 
-#: ../applications/alert/html/alert.xml.in.h:41
+#: ../applications/alert/html/alert.xml.in.h:40
 msgid "smtp"
 msgstr "SMTP"
 
-#: ../applications/alert/html/alert.xml.in.h:42
+#: ../applications/alert/html/alert.xml.in.h:41
 msgid "Sender email*"
 msgstr "E-Mail Adresse des Absenders*"
 
-#: ../applications/alert/html/alert.xml.in.h:43
+#: ../applications/alert/html/alert.xml.in.h:42
 msgid "email"
 msgstr "Email"
 
-#: ../applications/alert/html/alert.xml.in.h:44
+#: ../applications/alert/html/alert.xml.in.h:43
 #: ../applications/onvif/html/onvif.xml.in.h:11
 msgid "Login"
 msgstr "Benutzer"
 
-#: ../applications/alert/html/alert.xml.in.h:45
+#: ../applications/alert/html/alert.xml.in.h:44
 msgid "login"
 msgstr "Benutzername"
 
-#: ../applications/alert/html/alert.xml.in.h:46
+#: ../applications/alert/html/alert.xml.in.h:45
 msgid "password"
 msgstr "Passwort"
 
-#: ../applications/alert/html/alert.xml.in.h:47
+#: ../applications/alert/html/alert.xml.in.h:46
 msgid "TLS"
 msgstr "TLS"
 
-#: ../applications/alert/html/alert.xml.in.h:48
+#: ../applications/alert/html/alert.xml.in.h:47
 msgid "To send you a test email, type your email address and click on button"
 msgstr ""
 "Um eine Testmail zu senden gib die E-Mail Adresse an und klicke auf den Knopf"
 
-#: ../applications/alert/html/alert.xml.in.h:49
+#: ../applications/alert/html/alert.xml.in.h:48
 msgid "Choose push provider in list"
 msgstr "Wähle einen Push Anbieter aus der Liste"
 
-#: ../applications/alert/html/alert.xml.in.h:50
+#: ../applications/alert/html/alert.xml.in.h:49
 msgid "Enter your apikey"
 msgstr "Gib Deinen API Key ein"
 
-#: ../applications/alert/html/alert.xml.in.h:51
+#: ../applications/alert/html/alert.xml.in.h:50
 msgid "available here"
 msgstr "hier verfügbar"
 
-#: ../applications/alert/html/alert.xml.in.h:52
+#: ../applications/alert/html/alert.xml.in.h:51
 msgid "apikey"
 msgstr "API Key"
 
-#: ../applications/alert/html/alert.xml.in.h:53
+#: ../applications/alert/html/alert.xml.in.h:52
 msgid "Refresh your devices list clicking on the button"
 msgstr "Um die Geräteliste zu aktualisieren klicke auf den Knopf"
 
-#: ../applications/alert/html/alert.xml.in.h:54
+#: ../applications/alert/html/alert.xml.in.h:53
 msgid "Refresh list"
 msgstr "Liste aktualisieren"
 
-#: ../applications/alert/html/alert.xml.in.h:55
+#: ../applications/alert/html/alert.xml.in.h:54
 msgid "And choose your devices that will be notified"
 msgstr "Füge Geräte hinzu die Meldungen erhalten sollen"
 
-#: ../applications/alert/html/alert.xml.in.h:56
+#: ../applications/alert/html/alert.xml.in.h:55
 msgid "Enter your userid"
 msgstr "Benutzername eingeben"
 
-#: ../applications/alert/html/alert.xml.in.h:57
+#: ../applications/alert/html/alert.xml.in.h:56
 msgid "userid"
 msgstr "Benutzer ID"
 
-#: ../applications/alert/html/alert.xml.in.h:58
+#: ../applications/alert/html/alert.xml.in.h:57
 msgid "Enter your registered application token"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:59
+#: ../applications/alert/html/alert.xml.in.h:58
 msgid "token"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:60
+#: ../applications/alert/html/alert.xml.in.h:59
 msgid "Enter your apikeys"
 msgstr "Gib Deine API-Keys ein"
 
-#: ../applications/alert/html/alert.xml.in.h:61
+#: ../applications/alert/html/alert.xml.in.h:60
 #, fuzzy
 msgid "Apikeys"
 msgstr "Apikey"
 
-#: ../applications/alert/html/alert.xml.in.h:62
+#: ../applications/alert/html/alert.xml.in.h:61
 msgid "To push you test notification, click on button"
 msgstr "Um eine Push Test-Nachricht zu senden, klicke den Knopf"
 
@@ -664,7 +634,6 @@ msgstr "USB Port vom Controller"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:37
-#: ../help/system/html/system.xml.in.h:9
 msgid "Set"
 msgstr "Setzen"
 
@@ -689,11 +658,6 @@ msgid "Reset all"
 msgstr "Zurücksetzen"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:13
-#, fuzzy
-msgid "Remove device"
-msgstr "Entfernen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Remove"
 msgstr "Entfernen"
@@ -710,36 +674,36 @@ msgstr "Entfernen"
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#. security tabs
-#: ../applications/security/html/security.xml.in.h:3
+#: ../applications/security/html/security.xml.in.h:2
 msgid "Security"
 msgstr "Security"
 
-#: ../applications/security/html/security.xml.in.h:4
+#: ../applications/security/html/security.xml.in.h:3
 #: ../applications/zwave/html/zwave.xml.in.h:27
 msgid "Status"
 msgstr "Status"
 
-#: ../applications/security/html/security.xml.in.h:5
+#: ../applications/security/html/security.xml.in.h:4
 #, fuzzy
 msgid "Pin configuration"
 msgstr "Push Konfiguration"
 
-#: ../applications/security/html/security.xml.in.h:6
+#: ../applications/security/html/security.xml.in.h:5
 #, fuzzy
-msgid "Housemodes/zones Configuration"
+msgid "Housemodes/zones configuration"
 msgstr "Ereignis Konfiguration"
 
-#: ../applications/security/html/security.xml.in.h:7
-msgid "Security Configuration"
+#: ../applications/security/html/security.xml.in.h:6
+#, fuzzy
+msgid "Security configguration"
 msgstr "Security Konfiguration"
 
-#: ../applications/security/html/security.xml.in.h:8
+#: ../applications/security/html/security.xml.in.h:7
 #, fuzzy
 msgid "Change current housemode"
 msgstr "Aktiven Hausmodus setzen"
 
-#: ../applications/security/html/security.xml.in.h:9
+#: ../applications/security/html/security.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:7
@@ -747,9 +711,14 @@ msgstr "Aktiven Hausmodus setzen"
 msgid "Save"
 msgstr "Speichern"
 
-#: ../applications/security/html/security.xml.in.h:10
+#: ../applications/security/html/security.xml.in.h:9
 #, fuzzy
 msgid "Change pin code"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:10
+#, fuzzy
+msgid "pin code"
 msgstr "Aktiven Hausmodus setzen"
 
 #: ../applications/security/html/security.xml.in.h:11
@@ -761,21 +730,21 @@ msgstr "Security"
 msgid "Alarms"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:14
+#: ../applications/security/html/security.xml.in.h:13
 msgid "Housemodes\\Zones"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:15
+#: ../applications/security/html/security.xml.in.h:14
 #, fuzzy
 msgid "Delete zone"
 msgstr "Löschen"
 
-#: ../applications/security/html/security.xml.in.h:16
+#: ../applications/security/html/security.xml.in.h:15
 #, fuzzy
 msgid "Delete housemode"
 msgstr "Hausmodus hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:17
+#: ../applications/security/html/security.xml.in.h:16
 #: ../applications/onvif/html/onvif.xml.in.h:50
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
 #: ../configuration/events/html/events.xml.in.h:10
@@ -783,49 +752,49 @@ msgstr "Hausmodus hinzufügen"
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: ../applications/security/html/security.xml.in.h:18
+#: ../applications/security/html/security.xml.in.h:17
 msgid "Delay (s)"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:19
+#: ../applications/security/html/security.xml.in.h:18
 msgid "Add new housemode"
 msgstr "Neuen Hausmodus hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:20
+#: ../applications/security/html/security.xml.in.h:19
 #, fuzzy
 msgid "New housemode name"
 msgstr "Neuer Raumname"
 
-#: ../applications/security/html/security.xml.in.h:21
+#: ../applications/security/html/security.xml.in.h:20
 msgid "Add housemode"
 msgstr "Hausmodus hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:22
+#: ../applications/security/html/security.xml.in.h:21
 msgid "Add new zone"
 msgstr "Neue Zone hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:23
+#: ../applications/security/html/security.xml.in.h:22
 #, fuzzy
 msgid "New zone name"
 msgstr "Neuer Raumname"
 
-#: ../applications/security/html/security.xml.in.h:24
+#: ../applications/security/html/security.xml.in.h:23
 msgid "Add zone"
 msgstr "Neue Zone hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:25
+#: ../applications/security/html/security.xml.in.h:24
 msgid "Alarm message to send when alarm is armed"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:26
+#: ../applications/security/html/security.xml.in.h:25
 msgid "message"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:27
+#: ../applications/security/html/security.xml.in.h:26
 msgid "Alarm message to send when alarm is disarmed"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:28
+#: ../applications/security/html/security.xml.in.h:27
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
@@ -1657,9 +1626,8 @@ msgstr ""
 msgid "Purge all positions"
 msgstr ""
 
-#. title
 #: ../configuration/datalogger/html/datalogger.xml.in.h:20
-#: ../help/journal/html/journal.xml.in.h:2
+#: ../help/journal/html/journal.xml.in.h:1
 msgid "Journal"
 msgstr ""
 
@@ -1938,10 +1906,18 @@ msgstr "Ereignis Konfiguration"
 msgid "Autoscroll"
 msgstr ""
 
-#: ../help/journal/html/journal.xml.in.h:5
+#: ../help/journal/html/journal.xml.in.h:4
 #, fuzzy
 msgid "Get"
 msgstr "Setzen"
+
+#, fuzzy
+#~ msgid "Current value"
+#~ msgstr "Setze Wert"
+
+#, fuzzy
+#~ msgid "Remove device"
+#~ msgstr "Entfernen"
 
 #~ msgid "Twitter is configured"
 #~ msgstr "Twitter ist konfiguriert"

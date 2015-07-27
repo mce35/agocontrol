@@ -9,7 +9,6 @@ templates/details/energymeter.xml.in
 templates/details/gpssensor.xml.in
 templates/details/humiditysensor.xml.in
 templates/details/multigraph.xml.in
-templates/details/multilevelsensor.xml.in
 templates/details/powermeter.xml.in
 templates/details/temperaturesensor.xml.in
 templates/devices/barometersensor.xml.in
@@ -28,7 +27,6 @@ templates/devices/gpssensor.xml.in
 templates/devices/humiditysensor.xml.in
 templates/devices/ipx800v3board.xml.in
 templates/devices/multigraph.xml.in
-templates/devices/multilevelsensor.xml.in
 templates/devices/phone.xml.in
 templates/devices/powermeter.xml.in
 templates/devices/pushbutton.xml.in
