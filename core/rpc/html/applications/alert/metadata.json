@@ -1,5 +1,6 @@
 {
     "name": "Alert",
+    "icon": "fa-bell",
     "version": "0.0.2",
     "description": "Configure alert gateways (sms, twitter, mail, push)",
     "template": "html/alert",
