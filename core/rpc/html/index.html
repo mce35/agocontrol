@@ -124,6 +124,25 @@
                             <li class="footer"><a href="#help/Journal">See journal</a></li>
                         </ul>
                     </li>
+                    <li class="dropdown notifications-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="en-help-circled"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <ul class="menu" data-bind="foreach: $root.agocontrol.helps">
+                                    <li>
+                                        <a href="#" data-bind="click:$root.gotoHelp">
+                                            <!-- ko ifnot:url===null -->
+                                            <i class="en-link"></i>
+                                            <!-- /ko -->
+                                            <span data-bind="text:name"/>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="dropdown messages-menu">
                         <a href="#" class="dropdown-toggle" data-toggle="control-sidebar">
                             <i class="en-cog"></i>
