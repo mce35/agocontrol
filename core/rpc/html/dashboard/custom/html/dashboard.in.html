@@ -1,44 +1,50 @@
-<div id="draganddroparea" class="container-fluid">
+<div>
     
-    <!-- EDITOR -->
-    <div id="dashboardEditor" class="dashboard-editor">
-        <div style="padding-top:10px; padding-left:20px;" class="col-sm-3">
-            <div class="form-group">
-                <select class="form-control" data-bind="value:selectedMainFilter">
-                    <option value="all">All</option>
-                    <option value="rooms">Rooms</option>
-                    <option value="types">Device types</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <select class="form-control" data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter"></select>
-            </div>
-            <div class="form-group form-inline">
-                <input type="text" class="form-control" data-bind="textInput:selectedTextFilter" />
-                <button type="submit" class="btn btn-primary" data-bind="click:clearTextFilter">
-                    <span class="en-cancel"></span>
-                </button>
-            </div>
-        </div>
-        <div class="col-sm-9">
-            <div data-bind="template: {name:listDeviceTemplate, foreach:filteredDevices }" class="device-list"></div>
-        </div>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div class="row">
-        <div class="col-sm-10 text-left">
-            <h2 style="margin-top:0px;" data-bind="text: dashboardName"/>
-        </div>
-        <div class="col-sm-2 text-right">
-            <button type="button" class="btn btn-default btn-sm" data-bind="click:showEditor">
-                <span class="en-pencil"></span>
-                <span data-bind="text:editLabel"></span>
+    <section class="content-header"> 
+        <h1>
+            <span data-bind="text: dashboardName"></span>
+            <button type="button" data-bind="click:showEditor" class="btn btn-default btn-xs hidden-xs">
+                <i class="en-pencil"/>
+                <span data-bind="text:editLabel"/>
             </button>
+        </h1>
+    </section>
+
+    <section class="content" id="draganddroparea">
+        <!-- EDITOR -->
+        <div id="dashboardEditor" class="box box-info" style="display:none;">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <select data-bind="value:selectedMainFilter" class="form-control">
+                                <_option data-translateable="true" value="all">All</_option>
+                                <_option data-translateable="true" value="rooms">Rooms</_option>
+                                <_option data-translateable="true" value="types">Device types</_option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter" class="form-control"/>
+                        </div>
+                        <div class="form-group form-inline">
+                            <input type="text" data-bind="textInput:selectedTextFilter" class="form-control"/>
+                            <button type="submit" data-bind="click:clearTextFilter" class="btn btn-primary">
+                                <span class="en-cancel"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-sm-9">
+                        <div data-bind="template: {name:listDeviceTemplate, foreach:filteredDevices }" class="device-list"/>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <div data-bind="template: {name: deviceTemplate, foreach: firstRow}" class="row grid"/>
-    <div data-bind="template: {name: deviceTemplate, foreach: secondRow}" class="row grid"/>
-    <div data-bind="template: {name: deviceTemplate, foreach: thirdRow}" class="row grid"/>
+    
+        <!-- DASHBOARD -->
+        <div data-bind="template: {name: deviceTemplate, foreach: firstRow}" class="row grid"/>
+        <div data-bind="template: {name: deviceTemplate, foreach: secondRow}" class="row grid"/>
+        <div data-bind="template: {name: deviceTemplate, foreach: thirdRow}" class="row grid"/>
+        <div data-bind="template: {name: deviceTemplate, foreach: fourthRow}" class="row grid"/>
+    </section>
 
 </div>

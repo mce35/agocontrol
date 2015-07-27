@@ -20,6 +20,8 @@ function Dashboard(dashboard, edition, agocontrol)
     self.selectedSubFilter = ko.observable('');
     self.placedDevices = ko.observable([]);
     self.editorOpened = false;
+    self.lineNumber = 4;
+    self.itemsPerLine = 4;
 
     //after render
     self.afterRender = function()
@@ -91,16 +93,20 @@ function Dashboard(dashboard, edition, agocontrol)
             $(this).droppable({
                 accept: '.device-list-item, .dashboard-widget',
                 activate: function(event, ui) {
-                    $(this).addClass('dashboard-widget-active');
+                    $(this).find('div.info-box:first-child').addClass('border-t-r-l');
+                    $(this).find('div.info-box:last-child').addClass('border-r-b-l');
                 },
                 deactivate: function(event, ui) {
-                    $(this).removeClass('dashboard-widget-active');
+                    $(this).find('div.info-box:first-child').removeClass('border-t-r-l');
+                    $(this).find('div.info-box:last-child').removeClass('border-r-b-l');
                 },
                 over: function(event, ui) {
-                    $(this).addClass('dashboard-widget-hover');
+                    $(this).find('div.info-box:first-child').removeClass('bg-white').addClass('bg-aqua');
+                    $(this).find('div.info-box:last-child').removeClass('bg-white').addClass('bg-aqua');
                 },
                 out: function(event, ui) {
-                    $(this).removeClass('dashboard-widget-hover');
+                    $(this).find('div.info-box:first-child').removeClass('bg-aqua').addClass('bg-white');
+                    $(this).find('div.info-box:last-child').removeClass('bg-aqua').addClass('bg-white');
                 },
                 drop: function(event, ui) {
                     //remove style
@@ -135,10 +141,10 @@ function Dashboard(dashboard, edition, agocontrol)
                     $(this).find('div.device-list-item').show();
                 },
                 over: function(event, ui) {
-                    $(this).addClass('device-list-hover');
+                    $(this).addClass('bg-aqua');
                 },
                 out: function(event, ui) {
-                    $(this).removeClass('device-list-hover');
+                    $(this).removeClass('bg-aqua');
                 },
                 drop: function(event, ui) {
                     //remove style
@@ -151,7 +157,7 @@ function Dashboard(dashboard, edition, agocontrol)
                     setTimeout(function()
                     {
                         self.updateDashboard(uuid, -1, -1);
-                    }, 50);
+                    }, 100);
                 }
             });
         });
@@ -240,7 +246,7 @@ function Dashboard(dashboard, edition, agocontrol)
         setTimeout(function()
         {
             self.enableDragAndDrop();
-        }, 50);
+        }, 100);
 
         return output;
     });
@@ -375,7 +381,16 @@ function Dashboard(dashboard, edition, agocontrol)
     self.renderDashboard = function()
     {
         //init
-        var content = [[null, null, null], [null, null, null], [null, null, null]];
+        var content = [];
+        for( var i=0; i<self.lineNumber; i++ )
+        {
+            var line = [];
+            for( var j=0; j<self.itemsPerLine; j++ )
+            {
+                line.push(null);
+            }
+            content.push(line);
+        }
 	    self.placedDevices(content);
 
         if (self.agocontrol.devices().length===0)
@@ -385,7 +400,7 @@ function Dashboard(dashboard, edition, agocontrol)
 
         for ( var k in self.currentDashboard )
         {
-            if( self.currentDashboard[k].x===undefined || self.currentDashboard[k].y===undefined )
+            if( self.currentDashboard[k]===null || self.currentDashboard[k].x===undefined || self.currentDashboard[k].y===undefined )
             {
                 //skip uneeded items
                 continue;
@@ -401,8 +416,8 @@ function Dashboard(dashboard, edition, agocontrol)
             content[x][y] = self.findDevice(k);
         }
 
-	    self.placedDevices([]);
-	    self.placedDevices(content);
+        self.placedDevices([]);
+        self.placedDevices(content);
 
         if( self.editorOpened )
         {
@@ -410,7 +425,7 @@ function Dashboard(dashboard, edition, agocontrol)
             setTimeout(function()
             {
                 self.enableDragAndDrop();
-            }, 50);
+            }, 250);
         }
 
     };
@@ -488,6 +503,30 @@ function Dashboard(dashboard, edition, agocontrol)
     {
         var result = [];
         var x = 2;
+        for ( var y=0; y<self.itemsPerRow; y++ )
+        {
+            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
+            {
+                result.push(self.placedDevices()[x][y]);
+            }
+            else
+            {
+                result.push({
+                    devicetype : "placeholder",
+                    x : x,
+                    y : y
+                });
+            }
+        }
+
+        return result;
+    });
+
+    //fourth row content
+    this.fourthRow = ko.computed(function()
+    {
+        var result = [];
+        var x = 3;
         for ( var y=0; y<self.itemsPerRow; y++ )
         {
             if( self.placedDevices()[x] && self.placedDevices()[x][y] )
