@@ -22,7 +22,12 @@
                 </ko>
                 <div class="info-box-state">
                     <i class="en-info-circled"/>
-                    <span data-bind="text:state"/>
+                    <ko opts="ifnot:state">
+                    <_span data-translateable="true">OFF</_span>
+                    </ko>
+                    <ko opts="if:state">
+                    <_span data-translateable="true">ON</_span>
+                    </ko>
                 </div>
             </div>
         </div>
