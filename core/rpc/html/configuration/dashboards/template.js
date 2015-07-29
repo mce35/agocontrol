@@ -57,7 +57,9 @@ function DashboardConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate'
+        rowTemplate: 'rowTemplate',
+        boxTitle: 'Existing dashboards',
+        boxStyle: 'box-primary'
     });
 
     self.deleteDashboard = function(item, event)
