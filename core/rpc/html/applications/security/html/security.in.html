@@ -1,63 +1,110 @@
 <div>
 
+    <!-- zone modal -->
+    <div id="zoneModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <_h4 class="modal-title" data-translateable="true">Enter zone name</_h4>
+                </div>
+                <div class="modal-body">
+                    <input type="text" data-bind="value:newZone" data-translateable="true" _placeholder="New zone name" class="form-control"/>
+                </div>
+                <div class="modal-footer">
+                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:addZone">Ok</_button>
+                    <_button type="button" class="btn btn-default" data-translateable="true" data-dismiss="modal">Cancel</_button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- housemode modal -->
+    <div id="housemodeModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <_h4 class="modal-title" data-translateable="true">Enter housemode name</_h4>
+                </div>
+                <div class="modal-body">
+                    <input type="text" data-bind="value:newHousemode" data-translateable="true" _placeholder="New housemode name" class="form-control"/>
+                </div>
+                <div class="modal-footer">
+                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:addHousemode">Ok</_button>
+                    <_button type="button" class="btn btn-default" data-translateable="true" data-dismiss="modal">Cancel</_button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- security pin panel -->
-    <div class="modal" id="pinPanel">
-        <div class="content" style="width:350px;">
-            <div class="row">
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'1')" href="#">1</a></div>
+    <div id="pinPanel" class="modal fade">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <_h4 class="modal-title" data-translateable="true">Enter Pin code</_h4>
                 </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'2')" href="#">2</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'3')" href="#">3</a></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'4')" href="#">4</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'5')" href="#">5</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'6')" href="#">6</a></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'7')" href="#">7</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'8')" href="#">8</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'9')" href="#">9</a></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'*')" href="#">*</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'0')" href="#">0</a></div>
-                </div>
-                <div class="four columns">
-                    <div class="xlarge primary btn"><a data-bind="click:keyPressed.bind($data,'#')" href="#">#</a></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="six columns text-center">
-                    <div class="append field">
-                        <input class="narrow text input" type="password" placeholder="pin code" disabled="disabled" data-bind="value:currentPin"/>
-                        <div class="medium primary btn"><a href="#" data-bind="click:resetPin">X</a></div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'1')" class="btn btn-primary btn-pin">1</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'2')" class="btn btn-primary btn-pin">2</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'3')" class="btn btn-primary btn-pin">3</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'4')" class="btn btn-primary btn-pin">4</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'5')" class="btn btn-primary btn-pin">5</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'6')" class="btn btn-primary btn-pin">6</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'7')" class="btn btn-primary btn-pin">7</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'8')" class="btn btn-primary btn-pin">8</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'9')" class="btn btn-primary btn-pin">9</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'*')" class="btn btn-primary btn-pin">*</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'0')" class="btn btn-primary btn-pin">0</button>
+                        </div>
+                        <div class="col-md-4" style="padding:2px; height:60px;">
+                            <button type="button" data-bind="click:keyPressed.bind($data,'#')" class="btn btn-primary btn-pin">#</button>
+                        </div>
+                    </div>
+                    <div class="row margin-top-10">
+                        <div class="col-md-12 text-center">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" disabled="disabled" data-translateable="true" data-bind="value:currentPin" _placeholder="pin code"></input>
+                                        <span class="input-group-btn">
+                                            <button type="button" data-bin="click:resetPin" class="btn btn-primary" data-bind="click:resetPin"><i class="en-cancel"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="six columns text-center">
-                    <div class="medium primary btn icon-left entypo icon-cancel">
-                        <_a data-translateable="true" href="#" data-bind="click:closePinPanel">Cancel</_a>
-                    </div>
+                <div class="modal-footer">
+                    <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click:closePinPanel">Cancel</_button>
                 </div>
             </div>
         </div>
@@ -73,9 +120,9 @@
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
                 <li class="active"><_a href="#status" data-translateable="true" class="en-info-circled">Status</_a></li>
-                <li><_a href="#pin" data-translateable="true" class="en-info-circled">Pin configuration</_a></li>
-                <li><_a href="#housemodes" data-translateable="true" class="en-info-circled">Housemodes/zones configuration</_a></li>
-                <li><_a href="#security" data-translateable="true" class="en-info-circled">Security configguration</_a></li>
+                <li><_a href="#pin" data-translateable="true" class="en-lock">Pin configuration</_a></li>
+                <li><_a href="#housemodes" data-translateable="true" class="en-home">Housemodes/zones configuration</_a></li>
+                <li><_a href="#security" data-translateable="true" class="en-tools">Security configguration</_a></li>
             </ul>
             <div class="tab-content">
 
@@ -84,9 +131,13 @@
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Change current housemode</_label>
-                            <div class="col-sm-6 form-control-static">
-                                <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:currentHousemode" class="form-control"></select>
-                                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:checkPin.bind($data, setHousemode)">Save</_button>
+                            <div class="col-sm-4 form-control-static">
+                                <div class="input-group">
+                                    <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:currentHousemode" class="form-control"></select>
+                                    <span class="input-group-btn">
+                                        <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:checkPin.bind($data, setHousemode)">Save</_button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -95,60 +146,60 @@
                 <!-- pin configuration tab -->
                 <div id="pin" class="tab-pane fade">
                     <div class="row">
-                        <div class="col-md-12 text-center">
+                        <div class="col-md-offset-3 col-md-3 text-center">
                             <_span data-translateable="true">Change pin code</_span>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-offset-4 col-md-1">
+                    <div class="row margin-top-20">
+                        <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'1')">1</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'2')">2</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'3')">3</button>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-offset-4 col-md-1">
+                        <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'4')">4</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'5')">5</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'6')">6</button>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-offset-4 col-md-1">
+                        <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'7')">7</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'8')">8</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'9')">9</button>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-offset-4 col-md-1">
+                        <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'*')">*</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'0')">0</button>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
                             <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'#')">#</button>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-offset-4 col-md-3 text-center">
+                    <div class="row margin-top-10">
+                        <div class="col-md-offset-3 col-md-3 text-center">
                             <div class="form-inline">
                                 <div class="form-group">
                                     <div class="input-group">
-                                        <input data-translateable="true" type="password" _placeholder="pin code" disabled="disabled" data-bind="value:currentPin"/>
+                                        <input data-translateable="true" type="password" class="form-control" _placeholder="pin code" disabled="disabled" data-bind="value:currentPin"/>
                                         <span class="input-group-btn">
                                             <button type="button" class="btn btn-primary" data-bin="click:resetPin"><i class="en-cancel"></i></button>
                                         </span>
@@ -161,148 +212,120 @@
 
                 <!-- housemodes/zones configuration tab -->
                 <div id="housemodes" class="tab-pane fade">
-                    <!-- editor -->
-                    <div id="housemodeEditor" class="box box-info">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h3><i class="en-cog"></i><_span data-translateable="true">Security devices</_span></h3>
-                                <div class="device-list security-device-list" data-bind="template: {name:listDeviceTemplate, foreach:triggerableDevices }"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <h3><i class="en-bell"></i><_span data-translateable="true">Alarms</_span></h3>
-                                <div class="device-list security-alarm-list" data-bind="template: {name:listDeviceTemplate, foreach:alarmableDevices }"></div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 text-right">
-                                <button type="button" class="btn btn-primary" data-bin="click:stopEditHousemode">
-                                    <i class="en-floppy"></i>
-                                    <_span data-translateable="true">Save</_span>
-                                </button>
-                                <button type="button" class="btn btn-primary" data-bin="click:cancelEditHousemode">
-                                    <i class="en-cancel-circled"></i>
-                                    <_span data-translateable="true">Cancel</_span>
-                                </button>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-12 text-left">
+                            <ko opts="if:configChanged">
+                            <_button type="button" class="btn btn-danger" data-translateable="true" data-bind="click:uiSaveConfig">Save changes</_button>
+                            </ko>
+                            <ko opts="ifnot:configChanged">
+                            <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:uiSaveConfig">Save changes</_button>
+                            </ko>
+                            <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click:restoreConfig">Cancel changes</_button>
                         </div>
                     </div>
-
-                    <!-- saving reminder -->
-                    <ko opts="if: housemodeZoneChanged">
-                    </ko>
-
-                    <!-- table -->
-                    <table class="table table-striped" id="securityTable">
-                    <thead>
-                        <tr>
-                            <th>
-                                <i class="icon-down-dir"></i><_span data-translateable="true">Housemodes\Zones</_span><i class="icon-right-dir"></i>
-                            </th>
-                            <ko opts="foreach: zones">
-                            <th style="text-align:center;">
-                                <span data-bind="text: name"></span>
-                                <div class="normal default btn" style="margin-bottom:0px;">
-                                    <i data-translateable="true" data-bind="click:$parent.delZone.bind($data,name)" class="icon-cancel" _title="Delete zone" _alt="Delete zone"></i>
-                                </div>
-                            </th>
-                            </ko>
-                        </tr>
-                    </thead>
-                    <tbody id="housemodesTable" data-bind="foreach: housemodes">
-                        <tr data-bind="attr:{'id':name}">
-                            <td>
-                                <span data-bind="text: name" class="housemode"></span>
-                                <br/>
-                                <div class="normal primary btn">
-                                    <i data-translateable="true" data-bind="click:$parent.delHousemode.bind($data,name)" class="icon-cancel" _title="Delete housemode" _alt="Delete housemode"></i>
-                                </div>
-                                <div class="normal primary btn">
-                                    <i data-translateable="true" data-bind="click:$parent.startEditHousemode.bind($data,name)" class="icon-pencil" _title="Edit" _alt="Edit"></i>
-                                </div>
-                            </td>
-                            <ko opts="foreach: configs">
-                            <td>
-                                <div class="row">
-                                    <div data-translateable="true" class="one columns ttip" _data-tooltip="Delay (s)">
-                                        <i class="icon-hourglass"></i>
-                                    </div>
-                                    <div class="eleven columns">
-                                        <div class="picker" style="width:235px;">
-                                            <select class="delay" disabled="disabled" style="cursor:auto;" data-bind="options:$parents[1].possibleDelays, value:$data.delay, optionsText:'label', optionsValue:'value'"></select>
+                    <div class="row margin-top-20">
+                        <div class="col-md-12">
+                            <table id="securityTable" class="table table-striped table-bordered">
+                            <tbody id="housemodesTable">
+                                <tr>
+                                    <th>
+                                        <p style="white-space:nowrap;">
+                                            <i class="en-down-dir"></i><_span data-translateable="true">Housemodes\Zones</_span>
+                                            <_span xml:lang="fr" data-translateable="true">Modes\Zones</_span><i class="en-right-dir"></i>
+                                        </p>
+                                    </th>
+                                    <ko opts="foreach: zones">
+                                    <th style="text-align:center;">
+                                        <span data-bind="text: name"/>
+                                        <button type="button" class="btn btn-primary btn-xs" _title="Delete zone" _alt="Delete zone" data-translateable="true" data-bind="click:$parent.delZone.bind($data,name)"><i class="en-cancel"></i></button>
+                                    </th>
+                                    </ko>
+                                    <th data-bind="attr:{'rowspan':housemodes().length+2}" style="width:25px;">
+                                        <button type="button" class="btn btn-primary btn-sm" data-translateable="true" data-bind="click:openZoneModal" data-toggle="tooltip" data-placement="left" _title="Add new zone"><i class="en-plus"></i></button>
+                                    </th>
+                                </tr>
+                                <ko opts="foreach: housemodes">
+                                <tr data-bind="attr:{'id':name}">
+                                    <td>
+                                        <span data-bind="text: name" class="housemode"/>
+                                        <br/>
+                                        <button type="button" class="btn btn-primary btn-xs" _title="Delete housemode" _alt="Delete housemode" data-translateable="true" data-bind="click:$parent.delHousemode.bind($data,name)"><i class="en-cancel"></i></button>
+                                    </td>
+                                    <ko opts="foreach: configs">
+                                    <td>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon"><i class="en-hourglass" data-translateable="true" data-toggle="tooltip" data-placement="left" _title="Delay (s)"></i></span>
+                                                    <select data-bind="options:$parents[1].possibleDelays, value:$data.delay, optionsText:'label', optionsValue:'value', event:{change:$parents[1].uiConfigChanged}" class="form-control"/>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div data-translateable="true" class="one columns ttip" _data-tooltip="Security devices">
-                                        <i class="icon-cog"></i>
-                                    </div>
-                                    <div class="eleven columns">
-                                        <div class="housemode-item-list housemode-device-list" data-bind="template:{name:$parents[1].housemodeDevicesTemplate, foreach:$data.devices}, attr:{'data-hm':$data.hm, 'data-zn':$data.zn}"></div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div data-translateable="true" class="one columns ttip" _data-tooltip="Alarms">
-                                        <i class="icon-bell"></i>
-                                    </div>
-                                    <div class="eleven columns">
-                                        <div class="housemode-item-list housemode-alarm-list" data-bind="template:{name:$parents[1].housemodeDevicesTemplate, foreach:$data.alarms}, attr:{'data-hm':$data.hm, 'data-zn':$data.zn}"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            </ko>
-                        </tr>
-                    </tbody>
-                    </table>
-
-                    <!-- saving reminder -->
-                    <ko opts="if: housemodeZoneChanged">
-                    </ko>
-
-                    <!-- new elements -->
-                    <div class="box box-default">
-                        <div class="box-body">
-                            <div class="form-group">
-                                <_label class="col-sm-4 control-label" data-translateable="true">Add new housemode</_label>
-                                <div class="col-sm-6 form-control-static">
-                                    <input data-translateable="true" class="form-control" type="text" _placeholder="New housemode name" data-bind="value:newHousemode"></input>
-                                    <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click:addHousemode">Add housemode</_button>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <_label class="col-sm-4 control-label" data-translateable="true">Add new zone</_label>
-                                <div class="col-sm-6 form-control-static">
-                                    <input data-translateable="true" class="form-control" type="text" _placeholder="New zone name" data-bind="value:newZone"></input>
-                                    <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click:addZone">Add zone</_button>
-                                </div>
-                            </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon"><i class="en-cog" data-translateable="true" data-toggle="tooltip" data-placement="left" _title="Security devices"></i></span>
+                                                    <select class="form-control select2" data-bind="options:$parents[1].triggerableDevices, selectedOptions:$data.devices, optionsText:'name', optionsValue:'uuid', event:{change:$parents[1].uiConfigChanged}, select2:{minimumResultsForSearch: Infinity}" style="width:100%; display:none;" multiple="multiple"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon"><i class="en-bell" data-translateable="true" data-toggle="tooltip" data-placement="left" _title="Alarm devices"></i></span>
+                                                    <select class="form-control select2" data-bind="options:$parents[1].alarmableDevices, selectedOptions:$data.alarms, optionsText:'name', optionsValue:'uuid', event:{change:$parents[1].uiConfigChanged}, select2:{multiple:true, tags:false}" style="width:100%; display:none;" multiple="multiple"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    </ko>
+                                </tr>
+                                </ko>
+                                <tr>
+                                    <td data-bind="attr:{'colspan':zones().length+1}">
+                                        <button class="btn btn-primary btn-sm" type="button" data-bind="click:openHousemodeModal" data-translateable="true" data-toggle="tooltip" data-placement="right" _title="Add new housemode"><i class="en-plus"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            </table>
                         </div>
                     </div>
-
+                    <div class="row">
+                        <div class="col-md-12 text-left">
+                            <ko opts="if:configChanged">
+                            <_button type="button" class="btn btn-danger" data-translateable="true" data-bind="click:uiSaveConfig">Save changes</_button>
+                            </ko>
+                            <ko opts="ifnot:configChanged">
+                            <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:uiSaveConfig">Save changes</_button>
+                            </ko>
+                            <_button type="button" class="btn btn-default" data-translateable="true" data-bind="click:restoreConfig">Cancel changes</_button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- security config tab -->
                 <div id="security" class="tab-pane fade">
                     <form class="form-horizontal">
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Alarm message to send when alarm is armed</_label>
-                            <div class="col-sm-6 form-control-static">
-                                <input type="text" data-translateable="true" _placeholder="message" data-bind="value:armedMessage"/>
+                            <_label class="col-md-4 control-label" data-translateable="true">Alarm message to send when alarm is armed</_label>
+                            <div class="col-md-4 form-control-static">
+                                <input type="text" class="form-control" data-translateable="true" _placeholder="message" data-bind="value:armedMessage"/>
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Alarm message to send when alarm is disarmed</_label>
-                            <div class="col-sm-6 form-control-static">
-                                <input type="text" data-translateable="true" _placeholder="message" data-bind="value:disarmedMessage"/>
+                            <_label class="col-md-4 control-label" data-translateable="true">Alarm message to send when alarm is disarmed</_label>
+                            <div class="col-md-4 form-control-static">
+                                <input type="text" class="form-control" data-translateable="true" _placeholder="message" data-bind="value:disarmedMessage"/>
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Default housemode (activated after valid pin is entered)</_label>
-                            <div class="col-sm-6 form-control-static">
+                            <_label class="col-md-4 control-label" data-translateable="true">Default housemode (activated after valid pin is entered)</_label>
+                            <div class="col-md-4 form-control-static">
                                 <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:defaultHousemode" class="form-control"/>
                             </div>
                         </div>
                         <div class="form-group">
-                            <div class="col-sm-6 form-control-static">
+                            <div class="col-md-offset-4 col-md-4">
                                 <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click:checkPin.bind($data, saveConfig)">Save</_button>
                             </div>
                         </div>

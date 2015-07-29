@@ -17,7 +17,6 @@ function SecurityConfig(agocontrol)
     self.newZone = ko.observable('');
     self.possibleDelays = ko.observableArray([]);
     self.zoneMap = ko.observable([]);
-    self.editorOpened = false;
     self.defaultHousemode = ko.observable();
     self.armedMessage = ko.observable('');
     self.disarmedMessage = ko.observable('');
@@ -25,425 +24,8 @@ function SecurityConfig(agocontrol)
     self.initialized = false;
     self.pinChecking = false;
     self.newPin = '';
-    self.housemodeZoneChanged = ko.observable(false);
+    self.configChanged = ko.observable(false);
     
-    //==================
-    //EDITOR
-    //==================
-    
-    //open editor
-    self.openEditor = function()
-    {
-        $('#housemodeEditor').slideDown({
-            duration: 300,
-            complete: function() {
-            },
-            always: function() {
-                self.editorOpened = true;
-
-                //editor opened, init draggables and droppables
-                self.enableDragAndDrop();
-            }
-        });
-    };
-
-    //close editor
-    self.closeEditor = function()
-    {
-        $('#housemodeEditor').slideUp({
-            duration: 300,
-            complete: function() {
-            },
-            always: function() {
-                self.editorOpened = false;
-
-                //close editor, disable edition mode
-                self.disableDragAndDrop();
-            }
-        });
-    };
-    
-    //add droppable item to device list (ensure there is no duplicate)
-    //@param type: <device|alarm>
-    self.addDroppableItem = function(type, housemode, zone, uuid)
-    {
-        //get device
-        device = self.getDevice(uuid);
-        if( device!==null )
-        {
-            //add device to housemode device list
-            for( var i=0; i<self.housemodes().length; i++ )
-            {
-                if( self.housemodes()[i].name==housemode )
-                {
-                    for( var j=0; j<self.housemodes()[i].configs.length; j++ )
-                    {
-                        if( self.housemodes()[i].configs[j].zn==zone )
-                        {
-                            //housemode found
-                            //check if device wasn't already added
-                            var added = false;
-                            if( type=='device' )
-                            {
-                                for( var k=0; k<self.housemodes()[i].configs[j].devices().length; k++ )
-                                {
-                                    if( self.housemodes()[i].configs[j].devices()[k].uuid===uuid )
-                                    {
-                                        //device already added
-                                        added = true;
-                                        break;
-                                    }
-                                }
-                                //add device
-                                if( !added )
-                                {
-                                    self.housemodes()[i].configs[j].devices.push(device);
-                                }
-                            }
-                            else if( type=='alarm' )
-                            {
-                                for( var k=0; k<self.housemodes()[i].configs[j].alarms().length; k++ )
-                                {
-                                    if( self.housemodes()[i].configs[j].alarms()[k].uuid===uuid )
-                                    {
-                                        //alarm already added
-                                        added = true;
-                                        break;
-                                    }
-                                }
-                                //add device
-                                if( !added )
-                                {
-                                    self.housemodes()[i].configs[j].alarms.push(device);
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        else
-        {
-            console.error('Device with uuid "'+uuid+'" was not found');
-        }
-    };
-
-    //remove droppable item
-    self.removeDroppableItem = function(type, housemode, zone, uuid)
-    {
-        //add device to housemode device list
-        for( var i=0; i<self.housemodes().length; i++ )
-        {
-            if( self.housemodes()[i].name==housemode )
-            {
-                for( var j=0; j<self.housemodes()[i].configs.length; j++ )
-                {
-                    if( self.housemodes()[i].configs[j].zn==zone )
-                    {
-                        //housemode found
-                        //check if device wasn't already added
-                        if( type=='device' )
-                        {
-                            for( var k=0; k<self.housemodes()[i].configs[j].devices().length; k++ )
-                            {
-                                if( self.housemodes()[i].configs[j].devices()[k].uuid===uuid )
-                                {
-                                    //delete item
-                                    self.housemodes()[i].configs[j].devices.splice(k,1);
-                                    break;
-                                }
-                            }
-                        }
-                        else if( type=='alarm' )
-                        {
-                            for( var k=0; k<self.housemodes()[i].configs[j].alarms().length; k++ )
-                            {
-                                if( self.housemodes()[i].configs[j].alarms()[k].uuid===uuid )
-                                {
-                                    //delete item
-                                    self.housemodes()[i].configs[j].alarms.splice(k,1);
-                                    break;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    };
-
-    //update device items (ie after drag n' drop)
-    self.updateDeviceItems = function()
-    {
-        //make sure all items in housemode lists are trashable
-        $('.housemode-device-list > .device-list-item').each(function() {
-            //add trashable property
-            $(this).addClass('security-device-item-trash');
-
-            //add draggable property
-            $(this).addClass('device-list-item-draggable');
-
-            //add draggable possibility
-            $(this).draggable({
-                opacity: 0.7,
-                cursor: 'move',
-                revert: 'invalid',
-                helper: 'clone',
-                appendTo: $('#contentarea'),
-                containment: $('#contentarea'),
-                zIndex: 10000
-            });
-        });
-
-        //set all housemode items trashable
-        self.makeDeviceItemsTrashable();
-    };
-
-    //update device items (ie after drag n' drop)
-    self.updateAlarmItems = function()
-    {
-        //make sure all items in housemode lists are trashable
-        $('.housemode-alarm-list > .device-list-item').each(function() {
-            //add trashable flag
-            $(this).addClass('security-alarm-item-trash');
-
-            //add draggable property
-            $(this).addClass('device-list-item-draggable');
-
-            //add draggable possibility
-            $(this).draggable({
-                opacity: 0.7,
-                cursor: 'move',
-                revert: 'invalid',
-                helper: 'clone',
-                appendTo: $('#contentarea'),
-                containment: $('#contentarea'),
-                zIndex: 10000
-            });
-        });
-
-        //set all housemode items trashable
-        self.makeAlarmItemsTrashable();
-    };
-
-    //enable drag and drop
-    self.enableDragAndDrop = function()
-    {
-        //EDITOR ITEMS
-        //droppable device areas
-        $('.housemode-device-list').each(function() {
-            $(this).droppable({
-                accept: '.security-device-item',
-                activate: function(event, ui) {
-                    $(this).addClass('housemode-list-active');
-                    $(this).find('div.device-list-item').hide();
-                },
-                deactivate: function(event, ui) {
-                    $(this).removeClass('housemode-list-active');
-                    $(this).find('div.device-list-item').show();
-                },
-                over: function(event, ui) {
-                    $(this).addClass('housemode-list-hover');
-                },
-                out: function(event, ui) {
-                    $(this).removeClass('housemode-list-hover');
-                },
-                drop: function(event, ui) {
-                    //update style
-                    $(this).removeClass('housemode-list-hover');
-
-                    //handle dropped item
-                    var housemode = $(this).data('hm');
-                    var zone = $(this).data('zn');
-                    var uuid = ui.draggable.attr('data-uuid');
-                    self.addDroppableItem('device', housemode, zone, uuid);
-
-                    //add missing class of brand new item (the clone)
-                    //delay this action to make sure item is completely loaded in container
-                    setTimeout(function() {
-                        self.updateDeviceItems();
-                    }, 250);
-                }
-            });
-        });
-
-        //droppable alarm areas
-        $('.housemode-alarm-list').each(function() {
-            $(this).droppable({
-                accept: '.security-alarm-item',
-                activate: function(event, ui) {
-                    $(this).addClass('housemode-list-active');
-                    $(this).find('div.device-list-item').hide();
-                },
-                deactivate: function(event, ui) {
-                    $(this).removeClass('housemode-list-active');
-                    $(this).find('div.device-list-item').show();
-                },
-                over: function(event, ui) {
-                    $(this).addClass('housemode-list-hover');
-                },
-                out: function(event, ui) {
-                    $(this).removeClass('housemode-list-hover');
-                },
-                drop: function(event, ui) {
-                    //remove style
-                    $(this).removeClass('housemode-list-hover');
-
-                    //handle dropped item
-                    var housemode = $(this).data('hm');
-                    var zone = $(this).data('zn');
-                    var uuid = ui.draggable.attr('data-uuid');
-                    self.addDroppableItem('alarm', housemode, zone, uuid);
-
-                    //add missing class of brand new item (the clone)
-                    //delay this action to make sure item is completely loaded in container
-                    setTimeout(function() {
-                        self.updateAlarmItems();
-                    }, 250);
-                }
-            });
-        });
-
-        //items draggable (device and alarm items)
-        $('.device-list-item').each(function() {
-            $(this).addClass('device-list-item-draggable');
-            $(this).draggable({
-                opacity: 0.7,
-                cursor: 'move',
-                revert: 'invalid',
-                helper: 'clone',
-                appendTo: $('#contentarea'),
-                containment: $('#contentarea'),
-                zIndex: 10000
-            });
-        });
-
-        //HOUSEMODE ITEMS
-        self.makeDeviceItemsTrashable();
-        self.makeAlarmItemsTrashable();
-
-        self.updateDeviceItems();
-        self.updateAlarmItems();
-
-        //SELECT DELAY
-        //enable select elements
-        $('#securityTable').find('select').removeAttr('disabled').css('cursor', 'pointer');
-    };
-
-    //make device items trashables
-    self.makeDeviceItemsTrashable = function()
-    {
-        //trash for device items
-        $('.security-device-list').each(function() {
-            $(this).droppable({
-                accept: '.security-device-item-trash',
-                activate: function(event, ui) {
-                    $(this).addClass('device-list-active');
-                    $(this).find('div.device-list-item').hide();
-                },
-                deactivate: function(event, ui) {
-                    $(this).removeClass('device-list-active');
-                    $(this).find('div.device-list-item').show();
-                },
-                over: function(event, ui) {
-                    $(this).addClass('device-list-hover');
-                },
-                out: function(event, ui) {
-                    $(this).removeClass('device-list-hover');
-                },
-                drop: function(event, ui) {
-                    //remove style
-                    $(this).removeClass('device-list-hover');
-
-                    //handle dropped item
-                    var housemode = ui.draggable.parent().data('hm');
-                    var zone = ui.draggable.parent().data('zn');
-                    var uuid = ui.draggable.attr('data-uuid');
-                    self.removeDroppableItem('device', housemode, zone, uuid);
-                }
-            });
-        });
-    };
-
-    //make alarm items trashable
-    self.makeAlarmItemsTrashable = function()
-    {
-        //trash for alarm items
-        $('.security-alarm-list').each(function() {
-            $(this).droppable({
-                accept: '.security-alarm-item-trash',
-                activate: function(event, ui) {
-                    $(this).addClass('device-list-active');
-                    $(this).find('div.device-list-item').hide();
-                },
-                deactivate: function(event, ui) {
-                    $(this).removeClass('device-list-active');
-                    $(this).find('div.device-list-item').show();
-                },
-                over: function(event, ui) {
-                    $(this).addClass('device-list-hover');
-                },
-                out: function(event, ui) {
-                    $(this).removeClass('device-list-hover');
-                },
-                drop: function(event, ui) {
-                    //remove style
-                    $(this).removeClass('device-list-hover');
-
-                    //handle dropped item
-                    var housemode = ui.draggable.parent().data('hm');
-                    var zone = ui.draggable.parent().data('zn');
-                    var uuid = ui.draggable.attr('data-uuid');
-                    self.removeDroppableItem('alarm', housemode, zone, uuid);
-                }
-            });
-        });
-    };
-
-    //disable drag and drop
-    self.disableDragAndDrop = function()
-    {
-        //destroy draggable and droppable
-        $('.housemode-device-list').each(function() {
-            if( $(this).hasClass('ui-droppable') )
-            {
-                $(this).droppable('destroy');
-            }
-        });
-        $('.housemode-alarm-list').each(function() {
-            if( $(this).hasClass('ui-droppable') )
-            {
-                $(this).droppable('destroy');
-            }
-        });
-        $('.device-list-item').each(function() {
-            $(this).removeClass('device-list-item-draggable');
-            if( $(this).hasClass('ui-draggable') )
-            {
-                $(this).draggable('destroy');
-            }
-        });
-        $('.security-device-list').each(function() {
-            if( $(this).hasClass('ui-droppable') )
-            {
-                $(this).droppable('destroy');
-            }
-        });
-        $('.security-alarm-list').each(function() {
-            if( $(this).hasClass('ui-droppable') )
-            {
-                $(this).droppable('destroy');
-            }
-        });
-
-        //disable select elements
-        $('#securityTable').find('select').attr('disabled', 'disabled').css('cursor', 'auto');
-    };
-
     //triggerable devices
     self.triggerableDevices = ko.computed(function()
     {
@@ -491,6 +73,12 @@ function SecurityConfig(agocontrol)
     //==================
     //GENERAL
     //==================
+    
+    //config changed
+    self.uiConfigChanged = function()
+    {
+        self.configChanged(true);
+    };
    
     //init security application
     self.init = function()
@@ -602,7 +190,8 @@ function SecurityConfig(agocontrol)
                     var device = self.getDevice(uuid);
                     if( device )
                     {
-                        configs[zoneIdx[zoneMap[housemode][i].zone]].alarms.push(device);
+                        //configs[zoneIdx[zoneMap[housemode][i].zone]].alarms.push(device);
+                        configs[zoneIdx[zoneMap[housemode][i].zone]].alarms.push(uuid);
                     }
                     else
                     {
@@ -615,7 +204,8 @@ function SecurityConfig(agocontrol)
                     var device = self.getDevice(uuid);
                     if( device )
                     {
-                        configs[zoneIdx[zoneMap[housemode][i].zone]].devices.push(device);
+                        //configs[zoneIdx[zoneMap[housemode][i].zone]].devices.push(device);
+                        configs[zoneIdx[zoneMap[housemode][i].zone]].devices.push(uuid);
                     }
                     else
                     {
@@ -659,6 +249,9 @@ function SecurityConfig(agocontrol)
     //get current security config
     this.loadSecurityConfig = function()
     {
+        //block ui
+        self.agocontrol.block($('#securityTable'));
+
         var content = {};
         content.command = "getconfig";
         content.uuid = self.securityController;
@@ -673,24 +266,31 @@ function SecurityConfig(agocontrol)
                     self.defaultHousemode(res.data.defaultHousemode);
                     self.initialized = true;
                 }
+            })
+            .finally(function() {
+                //unblock ui
+                self.agocontrol.unblock($('#securityTable'));
             });
     };
 
     //restore config from agosecurity
     self.restoreConfig = function()
     {
-        //block ui
-        self.agocontrol.block($('#securityTable'));
-
         //load config
         self.loadSecurityConfig();
 
-        //unblock ui
-        self.agocontrol.unblock($('#securityTable'));
+        //update config flag
+        self.configChanged(false);
     };
 
+    //ui event to save config
+    self.uiSaveConfig = function()
+    {
+        self.checkPin(self.saveConfig);
+    }
+
     //save security configuration
-    // /!\ need pin
+    // /!\ need pin so open pin modal first and call this function in callback
     self.saveConfig = function()
     {
         //block ui
@@ -706,20 +306,9 @@ function SecurityConfig(agocontrol)
                 var config = {
                     'zone' : self.housemodes()[i].configs[j].zn,
                     'delay' : self.housemodes()[i].configs[j].delay(),
-                    'devices' : [],
-                    'alarms' : []
+                    'devices' : self.housemodes()[i].configs[j].devices(),
+                    'alarms' : self.housemodes()[i].configs[j].alarms()
                 };
-
-                for( var k=0; k<self.housemodes()[i].configs[j].devices().length; k++ )
-                {
-                    config.devices.push(self.housemodes()[i].configs[j].devices()[k].uuid);
-                }
-
-                for( var k=0; k<self.housemodes()[i].configs[j].alarms().length; k++ )
-                {
-                    config.alarms.push(self.housemodes()[i].configs[j].alarms()[k].uuid);
-                }
-
                 configs.push(config);
             }
             securityConf[self.housemodes()[i].name] = configs;
@@ -736,6 +325,9 @@ function SecurityConfig(agocontrol)
         self.agocontrol.sendCommand(content)
             .then(function(res) {
                 notif.success('Security config saved successfully');
+
+                //update config flag
+                self.configChanged(false);
             })
             .catch(function(err) {
                 //error occured, restore config
@@ -823,7 +415,7 @@ function SecurityConfig(agocontrol)
             self.resetPin();
 
             //display modal
-            $('#pinPanel').addClass('active');
+            $('#pinPanel').modal('show');
         }
     };
 
@@ -831,7 +423,7 @@ function SecurityConfig(agocontrol)
     self.closePinPanel = function()
     {
         //just hide modal
-        $('#pinPanel').removeClass('active');
+        $('#pinPanel').modal('hide');
 
         //and reset password
         self.resetPin();
@@ -871,8 +463,14 @@ function SecurityConfig(agocontrol)
     }
 
     //==================
-    //HOUSEMODES TAB
+    //HOUSEMODES
     //==================
+    
+    //open housemode modal
+    self.openHousemodeModal = function()
+    {
+        $('#housemodeModal').modal('show');
+    };
 
     //define housemodes grid
     self.housemodesGrid = new ko.agoGrid.viewModel({
@@ -890,12 +488,6 @@ function SecurityConfig(agocontrol)
     //Add new housemode
     self.addHousemode = function()
     {
-        if( self.editorOpened )
-        {
-            notif.warning('Please stop edition before add housemode');
-            return;
-        }
-
         //check housemode validity
         if( $.trim(self.newHousemode()).length===0 )
         {
@@ -946,18 +538,15 @@ function SecurityConfig(agocontrol)
         self.newHousemode('');
 
         //set changes done
-        self.housemodeZoneChanged(true);
+        self.configChanged(true);
+
+        //close modal
+        $('#housemodeModal').modal('hide');
     };
 
     //delete house mode
     self.delHousemode = function(housemode)
     {
-        if( self.editorOpened )
-        {
-            notif.warning('Please stop edition before delete housemode');
-            return;
-        }
-
         for( var i=0; i<self.housemodes().length; i++ )
         {
             if( self.housemodes()[i].name==housemode )
@@ -968,86 +557,18 @@ function SecurityConfig(agocontrol)
         }
 
         //set changes done
-        self.housemodeZoneChanged(true);
-    };
-
-    //start edit housemode
-    self.startEditHousemode = function(housemode)
-    {
-        if( self.editorOpened )
-        {
-            notif.warning('Editor already opened');
-            return;
-        }
-
-        //hide all housemodes except edited one
-        $('#housemodesTable tr').each(function() {
-            if( $(this).attr('id')!=housemode )
-            {
-                //$(this).css('display', 'none');
-                $(this).hide();
-            }
-        });
-
-        //add dummy class to device and alarm items to allow dropping them in specific area
-        $('.security-alarm-list > .device-list-item').each(function() {
-            $(this).addClass('security-alarm-item');
-        }); 
-        $('.security-device-list > .device-list-item').each(function() {
-            $(this).addClass('security-device-item');
-        });
-
-        //show editor
-        self.openEditor();
-    };
-
-    //stop edit housemode
-    self.stopEditHousemode = function()
-    {
-        if( self.editorOpened )
-        {
-            //close editor
-            self.closeEditor();
-
-            //display all housemodes
-            $('#housemodesTable tr').each(function() {
-                $(this).show();
-            });
-
-            //save config
-            self.checkPin(self.saveConfig);
-        }
-    };
-
-    //cancel edit housemode
-    self.cancelEditHousemode = function()
-    {
-        if( self.editorOpened )
-        {
-            //close editor
-            self.closeEditor();
-
-            //display all housemodes
-            $('#housemodesTable tr').each(function() {
-                $(this).show();
-            });
-
-            //restore old config
-            self.restoreConfig();
-        }
-    };
-
-    //save new housemode/zone added
-    self.saveNewHousemodeZone = function()
-    {
-        //save config
-        self.housemodeZoneChanged(false);
-        self.checkPin(self.saveConfig);
+        self.configChanged(true);
     };
 
     //==================
     //ZONES
     //==================
+    
+    //open zone modal
+    self.openZoneModal = function()
+    {
+        $('#zoneModal').modal('show');
+    };
 
     //define zones grid
     self.zonesGrid = new ko.agoGrid.viewModel({
@@ -1066,12 +587,6 @@ function SecurityConfig(agocontrol)
     //add new zone
     self.addZone = function()
     {
-        if( self.editorOpened )
-        {
-            notif.warning('Please stop edition before add zone');
-            return;
-        }
-
         //check if housemode exists
         if( self.housemodes().length===0 )
         {
@@ -1128,18 +643,15 @@ function SecurityConfig(agocontrol)
         self.newZone('');
 
         //set changes done
-        self.housemodeZoneChanged(true);
+        self.configChanged(true);
+
+        //close modal
+        $('#zoneModal').modal('hide');
     };
 
     //delete zone
     self.delZone = function(zone)
     {
-        if( self.editorOpened )
-        {
-            notif.warning('Please stop edition before delete zone');
-            return;
-        }
-
         var zoneIndex = -1;
 
         //delete specified zone
@@ -1166,7 +678,7 @@ function SecurityConfig(agocontrol)
         }
 
         //set changes done
-        self.housemodeZoneChanged(true);
+        self.configChanged(true);
     };
     
     //init application
