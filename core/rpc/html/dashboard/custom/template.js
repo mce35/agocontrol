@@ -149,6 +149,7 @@ function Dashboard(dashboard, edition, agocontrol)
                 drop: function(event, ui) {
                     //remove style
                     $(this).removeClass('device-list-hover');
+                    $(this).removeClass('bg-aqua');
 
                     //handle dropped item
                     var uuid = ui.draggable.attr('data-uuid');

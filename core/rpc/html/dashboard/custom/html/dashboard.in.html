@@ -17,20 +17,29 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
-                            <select data-bind="value:selectedMainFilter" class="form-control">
-                                <_option data-translateable="true" value="all">All</_option>
-                                <_option data-translateable="true" value="rooms">Rooms</_option>
-                                <_option data-translateable="true" value="types">Device types</_option>
-                            </select>
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-filter" data-toggle="tooltip" data-placement="left" title="Filter devices by"></i></span>
+                                <select data-bind="value:selectedMainFilter" class="form-control">
+                                    <_option data-translateable="true" value="all">No filter</_option>
+                                    <_option data-translateable="true" value="rooms">Rooms</_option>
+                                    <_option data-translateable="true" value="types">Device types</_option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <select data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter" class="form-control"/>
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-star" data-toggle="tooltip" data-placement="left" title="Filter value"></i></span>
+                                <select data-bind="options:subFilterOptions, optionsText:'name', value:selectedSubFilter" class="form-control"/>
+                            </div>
                         </div>
-                        <div class="form-group form-inline">
-                            <input type="text" data-bind="textInput:selectedTextFilter" class="form-control"/>
-                            <button type="submit" data-bind="click:clearTextFilter" class="btn btn-primary">
-                                <span class="en-cancel"/>
-                            </button>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-search" data-toggle="tooltip" data-placement="left" title="Filter devices by string"></i></span>
+                                <input type="text" data-bind="textInput:selectedTextFilter" class="form-control"/>
+                                <span class="input-group-btn">
+                                    <button type="submit" data-bind="click:clearTextFilter" class="btn btn-primary"><span class="en-cancel"/></button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="col-sm-9">
