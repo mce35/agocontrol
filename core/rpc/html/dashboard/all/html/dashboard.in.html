@@ -36,11 +36,8 @@
 	<div class="row" data-bind="template: {name: deviceTemplate, foreach:devicesPerPage }"></div>
 
     <div class="row">
-        <!-- empty -->
-        <div class="col-sm-4"></div>
-
         <!-- pagination -->
-        <div class="col-xs-12 col-md-offset-4 col-sm-4 text-center">
+        <div class="col-xs-12 col-md-offset-4 col-md-4 text-center">
             <ul class="pagination" data-bind="foreach:pages" style="margin:0px !important;">
                 <ko opts="if: idx==$parent.currentPage()">
                     <li class="active">
