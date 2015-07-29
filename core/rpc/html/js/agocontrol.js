@@ -126,17 +126,9 @@ Agocontrol.prototype = {
         // Required but non-dependent
         this.updateFavorites();
 
-        return Promise.all([p1, p2]).then(this.initializeComplete.bind(this));
+        return Promise.all([p1, p2]);
     },
     
-    /**
-     * Initialization complete
-     */
-    initializeComplete : function() {
-        //init sidebar
-        $.AdminLTE.tree('.sidebar');
-    },
-
     /**
      * Send a command to an arbitrary Ago component.
      *

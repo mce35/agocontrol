@@ -372,6 +372,10 @@ function AgocontrolViewModel()
     self.agocontrol.initialize()
         .then(function() {
             sammyApp.run();
+        })
+        .then(function() {
+            //everything is loaded, init here all needed stuff
+            $.AdminLTE.tree('.sidebar');
         });
 
     /* While waiting, configure routes using sammy.js framework */
