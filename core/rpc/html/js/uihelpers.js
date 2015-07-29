@@ -236,6 +236,100 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
             });
         }
     };
+
+    ko.bindingHandlers.select2 = {
+        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            //var allBindings = allBindingsAccessor();
+            var options = valueAccessor();
+
+            //handle selected options
+            /*var selection = null;
+            if( allBindings.value )
+            {
+                //simple value configured
+                selection = ko.unwrap(allBindings.value());
+            }
+            else if( allBindings.selectedOptions )
+            {
+                selection = ko.unwrap(allBindings.selectedOptions);
+            }*/
+            
+            //handle select2 data
+            /*if( allBindings.options && ko.isObservable(allBindings.options) )
+            {
+                //ko values
+                options.data = [];
+                if( allBindings.optionsText )
+                {
+                    //user specify a text to display, we need to build specific value array
+                    for( var i=0; i<allBindings.options().length; i++ )
+                    {
+                        options.data.push( allBindings.options()[i][allBindings.optionsText] );
+                    }
+                }
+                else
+                {
+                    //no specific field to display, add array content
+                    for( var i=0; i<allBindings.options().length; i++ )
+                    {
+                        options.data.push( allBindings.options()[i] );
+                    }
+                }
+            }
+            else
+            {
+                //static array
+                options.data = allBindings.options;
+            }
+            console.log(options.data);*/
+
+            $(element).select2(options);
+            /*if( selection )
+            {
+                $(element).val(selection).trigger("change");
+            }*/
+            
+            //clean up
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).select2('destroy');
+            });
+        },
+        update : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        }
+    /*update: function (el, valueAccessor, allBindingsAccessor, viewModel) {
+        var allBindings = allBindingsAccessor();
+
+        if ("value" in allBindings) {
+            if (allBindings.select2.multiple && allBindings.value().constructor != Array) {                
+                $(el).select2("val", allBindings.value().split(","));
+            }
+            else {
+                $(el).select2("val", allBindings.value());
+            }
+        } else if ("selectedOptions" in allBindings) {
+            var converted = [];
+            var textAccessor = function(value) { return value; };
+            if ("optionsText" in allBindings) {
+                textAccessor = function(value) {
+                    var valueAccessor = function (item) { return item; }
+                    if ("optionsValue" in allBindings) {
+                        valueAccessor = function (item) { return item[allBindings.optionsValue]; }
+                    }
+                    var items = $.grep(allBindings.options(), function (e) { return valueAccessor(e) == value});
+                    if (items.length == 0 || items.length > 1) {
+                        return "UNKNOWN";
+                    }
+                    return items[0][allBindings.optionsText];
+                }
+            }
+            $.each(allBindings.selectedOptions(), function (key, value) {
+                converted.push({id: value, text: textAccessor(value)});
+            });
+            $(el).select2("data", converted);
+        }
+    }*/
+    };
+
 };
 
 /**
