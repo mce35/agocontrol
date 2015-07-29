@@ -35,6 +35,10 @@
  *  - displaySearch: display search box (top right) [DEFAULT=true]
  *  - displayPagination: display pagination (top left and bottom right) [DEFAULT=true]
  *  - gridId: set grid table id [DEFAULT=agoGrid]
+ *  - boxStyle: set box style. See adminLTE for available style [DEFAULT='box-default']
+ *  - boxTitle: set box title. [DEFAULT='']
+ *  - tableStyle: set table style. See bootstrap for available table style [DEFAULT='table-hover table-bordered table-stripped']
+ *  - defaultSort: set default sort [DEFAULT=first grid key]
  *
  * Usage:
  *  1 - Declare new agoGrid (called myGrid) in your knockout code and configure it.
@@ -58,7 +62,7 @@
 
     ko.agoGrid = {
         // Defines a view model class you can use to populate a grid
-        viewModel: function (configuration) {
+        viewModel: function(configuration) {
             this.allData = configuration.data;
             this.data = configuration.data;
             this.displayRowCount = configuration.displayRowCount===undefined ? true : configuration.displayRowCount;
@@ -72,13 +76,16 @@
             this.hasNextPage = ko.observable(false);
             this.search = ko.observable('');
             this.filters = ko.observableArray([]);
-            this.sortKey = ko.observable('');
-            this.sortAsc = ko.observable(true);
             this.gridId = configuration.gridId || 'agoGrid';
             // If you don't specify columns configuration, we'll use scaffolding
             this.columns = configuration.columns || getColumnsForScaffolding(ko.unwrap(this.data));
+            this.sortKey = ko.observable(configuration.defaultSort ? configuration.defaultSort : this.columns.length>0 ? this.columns[0].rowText : '');
+            this.sortAsc = ko.observable(true);
             this.rowTemplate = configuration.rowTemplate || "ko_agoGrid_row";
             this.bodyTemplate = configuration.rowTemplate ? "ko_agoGrid_customBody" : "ko_agoGrid_body";
+            this.boxStyle = configuration.boxStyle ? configuration.boxStyle : "box-default";
+            this.boxTitle = configuration.boxTitle ? $.trim(configuration.boxTitle) : "";
+            this.tableStyle = ko.observable(configuration.tableStyle ? configuration.tableStyle : "table-hover table-bordered table-stripped");
 
             this.data = ko.computed(function() {
                 var out = [];
@@ -275,7 +282,7 @@
     //default header template
     templateEngine.addTemplate("ko_agoGrid_header", "\
                 <!-- ko if: displayPagination||displaySearch -->\
-                <div class=\"row\" style=\"margin-bottom:10px;\">\
+                <div class=\"row\" style=\"padding: 10px 15px 10px 15px;\">\
                     <div class=\"col-md-5 hidden-xs\">\
                         <!-- ko if:displayPagination -->\
                         <select class=\"form-control input-sm\" data-bind=\"options:pageSizes, value:pageSize\" style=\"max-width:100px;\"></select>\
@@ -300,7 +307,7 @@
     //default grid template
     templateEngine.addTemplate("ko_agoGrid_grid", "\
                     <div class=\"table-responsive\"> \
-                    <table class=\"table table-hover\" style=\"margin-top:0px; margin-bottom:0px;\" data-bind=\"attr: {id:gridId}\"> \
+                    <table class=\"table table-hover table-bordered table-stripped\" style=\"margin-top:0px; margin-bottom:0px;\" data-bind=\"attr: {id:gridId}\"> \
                         <thead>\
                             <tr data-bind=\"foreach: columns\">\
                                <th>\
@@ -340,7 +347,7 @@
     //default footer template
     templateEngine.addTemplate("ko_agoGrid_footer", "\
                     <!-- ko if: displayPagination||displayRowCount -->\
-                    <div class=\"row\" style=\"margin-top:10px;\">\
+                    <div class=\"row\" style=\"padding: 10px 15px 10px 15px;\">\
                         <div class=\"col-md-4 hidden-xs\">\
                             <!-- ko if:displayRowCount -->\
                             <span data-bind=\"text:range\" style=\"font-weight:bold;\"></span>\
@@ -397,28 +404,42 @@
                     }
             );
 
+            //get options
+            var options = valueAccessor();
+
             // Allow the default templates to be overridden
             var gridTemplateName   = allBindings.get("agoGridTemplate") || "ko_agoGrid_grid",
                 headerTemplateName = allBindings.get("agoGridHeaderTemplate") || "ko_agoGrid_header";
                 footerTemplateName = allBindings.get("agoGridFooterTemplate") || "ko_agoGrid_footer";
 
-            var panel = element.appendChild(document.createElement("DIV"));
-            $(panel).addClass("panel");
-            $(panel).addClass("panel-default");
-            var panelBody = panel.appendChild(document.createElement("DIV"));
-            $(panelBody).addClass("panel-body");
-            //<div class=\"panel panel-default\"><div class=\"panel-body\">
+            var container = element.appendChild(document.createElement("DIV"));
+            $(container).addClass("box");
+            $(container).addClass(options.boxStyle);
 
-            // Render the header
-            var headerContainer = panelBody.appendChild(document.createElement("DIV"));
+            // Render box header
+            if( options.boxTitle.length>0 )
+            {
+                var boxHeader = container.appendChild(document.createElement("DIV"));
+                $(boxHeader).addClass("box-header with-border");
+                var boxTitle = boxHeader.appendChild(document.createElement("H3"));
+                $(boxTitle).addClass("box-title");
+                $(boxTitle).text(options.boxTitle);
+            }
+
+            // Render box body
+            var boxBody = container.appendChild(document.createElement("DIV"));
+            $(boxBody).addClass("box-body no-padding");
+
+            // Render box body header
+            var headerContainer = boxBody.appendChild(document.createElement("DIV"));
             ko.renderTemplate(headerTemplateName, childBindingContext, { templateEngine: templateEngine }, headerContainer, "replaceNode");
-
-            // Render the main grid
-            var gridContainer = panelBody.appendChild(document.createElement("DIV"));
+            
+            // Render box body grid
+            var gridContainer = boxBody.appendChild(document.createElement("DIV"));
             ko.renderTemplate(gridTemplateName, childBindingContext, { templateEngine: templateEngine }, gridContainer, "replaceNode");
 
-            // Render the footer
-            var footerContainer = panelBody.appendChild(document.createElement("DIV"));
+            // Render box body footer
+            var footerContainer = boxBody.appendChild(document.createElement("DIV"));
             ko.renderTemplate(footerTemplateName, childBindingContext, { templateEngine: templateEngine }, footerContainer, "replaceNode");
         }
     };
