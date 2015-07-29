@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-27 22:50+0200\n"
+"POT-Creation-Date: 2015-07-29 12:02+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -332,6 +332,7 @@ msgid "Finally click on button to save access code"
 msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 
 #: ../applications/alert/html/alert.xml.in.h:22
+#: ../applications/security/html/security.xml.in.h:17
 #: ../applications/onvif/html/onvif.xml.in.h:14
 #: ../configuration/datalogger/html/datalogger.xml.in.h:9
 #: ../configuration/system/html/system.xml.in.h:8
@@ -652,6 +653,19 @@ msgid "Remove"
 msgstr "Supprimer"
 
 #: ../applications/security/html/security.xml.in.h:1
+#, fuzzy
+msgid "Enter zone name"
+msgstr "Nom de la zone"
+
+#: ../applications/security/html/security.xml.in.h:2
+msgid "New zone name"
+msgstr "Nom de la zone"
+
+#: ../applications/security/html/security.xml.in.h:3
+msgid "Ok"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:4
 #: ../applications/zwave/html/zwave.xml.in.h:63
 #: ../configuration/blockly/html/agoblockly.xml.in.h:32
 #: ../configuration/dashboards/html/dashboards.xml.in.h:2
@@ -663,34 +677,53 @@ msgstr "Supprimer"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: ../applications/security/html/security.xml.in.h:2
+#: ../applications/security/html/security.xml.in.h:5
+#, fuzzy
+msgid "Enter housemode name"
+msgstr "Nom du mode"
+
+#: ../applications/security/html/security.xml.in.h:6
+msgid "New housemode name"
+msgstr "Nom du mode"
+
+#: ../applications/security/html/security.xml.in.h:7
+#, fuzzy
+msgid "Enter Pin code"
+msgstr "Mettre à jour le code pin"
+
+#: ../applications/security/html/security.xml.in.h:8
+#, fuzzy
+msgid "pin code"
+msgstr "Mettre à jour le code pin"
+
+#: ../applications/security/html/security.xml.in.h:9
 msgid "Security"
 msgstr "Sécurité"
 
-#: ../applications/security/html/security.xml.in.h:3
+#: ../applications/security/html/security.xml.in.h:10
 #: ../applications/zwave/html/zwave.xml.in.h:27
 msgid "Status"
 msgstr "Statut"
 
-#: ../applications/security/html/security.xml.in.h:4
+#: ../applications/security/html/security.xml.in.h:11
 msgid "Pin configuration"
 msgstr "Code pin"
 
-#: ../applications/security/html/security.xml.in.h:5
+#: ../applications/security/html/security.xml.in.h:12
 #, fuzzy
 msgid "Housemodes/zones configuration"
 msgstr "Config des modes/zones"
 
-#: ../applications/security/html/security.xml.in.h:6
+#: ../applications/security/html/security.xml.in.h:13
 #, fuzzy
 msgid "Security configguration"
 msgstr "Config de sécurité"
 
-#: ../applications/security/html/security.xml.in.h:7
+#: ../applications/security/html/security.xml.in.h:14
 msgid "Change current housemode"
 msgstr "Modifie le mode courant"
 
-#: ../applications/security/html/security.xml.in.h:8
+#: ../applications/security/html/security.xml.in.h:15
 #: ../applications/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../configuration/events/html/events.xml.in.h:7
@@ -698,84 +731,66 @@ msgstr "Modifie le mode courant"
 msgid "Save"
 msgstr "Enregistrer"
 
-#: ../applications/security/html/security.xml.in.h:9
+#: ../applications/security/html/security.xml.in.h:16
 msgid "Change pin code"
 msgstr "Mettre à jour le code pin"
 
-#: ../applications/security/html/security.xml.in.h:10
+#: ../applications/security/html/security.xml.in.h:18
 #, fuzzy
-msgid "pin code"
-msgstr "Mettre à jour le code pin"
+msgid "Cancel changes"
+msgstr "Sauvegarder"
 
-#: ../applications/security/html/security.xml.in.h:11
-msgid "Security devices"
-msgstr "Dispositif de sécurité"
-
-#: ../applications/security/html/security.xml.in.h:12
-msgid "Alarms"
-msgstr "Dispositif d'alarme"
-
-#: ../applications/security/html/security.xml.in.h:13
+#: ../applications/security/html/security.xml.in.h:19
 msgid "Housemodes\\Zones"
 msgstr "Modes\\Zones"
 
-#: ../applications/security/html/security.xml.in.h:14
+#: ../applications/security/html/security.xml.in.h:20
+#, fuzzy
+msgid "Modes\\Zones"
+msgstr "Modes\\Zones"
+
+#: ../applications/security/html/security.xml.in.h:21
 msgid "Delete zone"
 msgstr "Supprimer la zone"
 
-#: ../applications/security/html/security.xml.in.h:15
-msgid "Delete housemode"
-msgstr "Supprimer le mode"
-
-#: ../applications/security/html/security.xml.in.h:16
-#: ../applications/onvif/html/onvif.xml.in.h:50
-#: ../configuration/dashboards/html/dashboards.xml.in.h:6
-#: ../configuration/events/html/events.xml.in.h:10
-#: ../configuration/scenarios/html/scenarios.xml.in.h:12
-msgid "Edit"
-msgstr "Editer"
-
-#: ../applications/security/html/security.xml.in.h:17
-msgid "Delay (s)"
-msgstr "Délai (s)"
-
-#: ../applications/security/html/security.xml.in.h:18
-msgid "Add new housemode"
-msgstr "Ajouter un mode"
-
-#: ../applications/security/html/security.xml.in.h:19
-msgid "New housemode name"
-msgstr "Nom du mode"
-
-#: ../applications/security/html/security.xml.in.h:20
-msgid "Add housemode"
-msgstr "Ajouter le mode"
-
-#: ../applications/security/html/security.xml.in.h:21
+#: ../applications/security/html/security.xml.in.h:22
 msgid "Add new zone"
 msgstr "Ajouter une zone"
 
-#: ../applications/security/html/security.xml.in.h:22
-msgid "New zone name"
-msgstr "Nom de la zone"
-
 #: ../applications/security/html/security.xml.in.h:23
-msgid "Add zone"
-msgstr "Ajouter la zone"
+msgid "Delete housemode"
+msgstr "Supprimer le mode"
 
 #: ../applications/security/html/security.xml.in.h:24
+msgid "Delay (s)"
+msgstr "Délai (s)"
+
+#: ../applications/security/html/security.xml.in.h:25
+msgid "Security devices"
+msgstr "Dispositif de sécurité"
+
+#: ../applications/security/html/security.xml.in.h:26
+#, fuzzy
+msgid "Alarm devices"
+msgstr "Dispositif d'alarme"
+
+#: ../applications/security/html/security.xml.in.h:27
+msgid "Add new housemode"
+msgstr "Ajouter un mode"
+
+#: ../applications/security/html/security.xml.in.h:28
 msgid "Alarm message to send when alarm is armed"
 msgstr "Message d'alarme à envoyer lorsque l'alarme est activée"
 
-#: ../applications/security/html/security.xml.in.h:25
+#: ../applications/security/html/security.xml.in.h:29
 msgid "message"
 msgstr "message"
 
-#: ../applications/security/html/security.xml.in.h:26
+#: ../applications/security/html/security.xml.in.h:30
 msgid "Alarm message to send when alarm is disarmed"
 msgstr "Message d'alarme à envoyer lorsque l'alarme est désactivée"
 
-#: ../applications/security/html/security.xml.in.h:27
+#: ../applications/security/html/security.xml.in.h:31
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr "Mode par défaut (activé après qu'un code pin valide est tapé)"
 
@@ -1213,6 +1228,13 @@ msgstr "Ajouter une caméra"
 #: ../applications/onvif/html/onvif.xml.in.h:49
 msgid "Recordings config"
 msgstr "Config des enreg."
+
+#: ../applications/onvif/html/onvif.xml.in.h:50
+#: ../configuration/dashboards/html/dashboards.xml.in.h:6
+#: ../configuration/events/html/events.xml.in.h:10
+#: ../configuration/scenarios/html/scenarios.xml.in.h:12
+msgid "Edit"
+msgstr "Editer"
 
 #: ../applications/onvif/html/onvif.xml.in.h:51
 #: ../configuration/blockly/html/agoblockly.xml.in.h:27
@@ -1856,6 +1878,12 @@ msgstr "Autoscroll"
 #: ../help/journal/html/journal.xml.in.h:4
 msgid "Get"
 msgstr "Rechercher"
+
+#~ msgid "Add housemode"
+#~ msgstr "Ajouter le mode"
+
+#~ msgid "Add zone"
+#~ msgstr "Ajouter la zone"
 
 #, fuzzy
 #~ msgid "Current value"
