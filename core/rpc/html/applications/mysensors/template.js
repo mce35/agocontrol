@@ -19,7 +19,8 @@ function MySensors(devices, agocontrol)
             {headerText: 'Sent', rowText:'counter_sent'},
             {headerText: 'Retries', rowText:'counter_retries'},
             {headerText: 'Failed', rowText:'counter_failed'},
-            {headerText: 'Received', rowText:'counter_received'}
+            {headerText: 'Received', rowText:'counter_received'},
+            {headerText: 'Last message', rowText:'last_timestamp'}
         ],
         rowTemplate: 'countersRowTemplate',
         pageSize: 25
