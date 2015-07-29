@@ -1,6 +1,6 @@
 <div>
 
-    <section style="content-notif">
+    <section class="content-notifs">
         <_span id="nr" data-translateable="true">mysensorscontroller is not responding. Unable to execute action.</_span>
         <_span id="sp" data-translateable="true">Serial port configured successfully.</_span>
         <_span id="rc" data-translateable="true">Counters resetted successfully.</_span>
@@ -9,15 +9,15 @@
 
     <!-- title -->
     <section class="content-header">
-        <h2>MySensors</h2>
+        <h1>MySensors</h1>
     </section>
 
     <!-- content -->
     <section class="content">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
-                <li class="active"><_a href="#stats" data-translateable="true" class="fa fa-bar-chart">Statistics</_a></li>
-                <li><_a href="#config" data-translateable="true" class="fa fa-cogs">Configuration</_a></li>
+                <li class="active"><a href="#stats"><i class="fa fa-bar-chart"></i><_span data-translateable="true">Statistics</_span></a></li>
+                <li><a href="#config"><i class="fa fa-cogs"></i><_span data-translateable="true">Configuration</_span></a></li>
             </ul>
             <div class="tab-content">
                 <!-- statistics tab -->
@@ -28,6 +28,7 @@
                         <td data-bind="text:counter_retries"></td>
                         <td data-bind="text:counter_failed"></td>
                         <td data-bind="text:counter_received"></td>
+                        <td data-bind="text:timestampToString(last_timestamp)"/>
                     </script>
                     <div data-bind="agoGrid:countersGrid"></div>
                 </div>
@@ -37,25 +38,33 @@
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Configure serial port</_label>
-                            <div class="col-sm-6">
-                                <input type="text" data-translateable="true" data-bind="value:port" class="form-control" placeholder="/dev/ttyACM0"></input>
-                                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:setPort">Set</_button>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <input type="text" data-translateable="true" data-bind="value:port" class="form-control" placeholder="/dev/ttyACM0"></input>
+                                    <span class="input-group-btn">
+                                        <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:setPort">Set</_button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </form>
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Reset device counters</_label>
-                            <div class="col-sm-6">
-                                <select data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedCountersDevice" class="form-control"></select>
-                                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:resetCounters">Reset</_button>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <select data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedCountersDevice" class="form-control"></select>
+                                    <span class="input-group-btn">
+                                        <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:resetCounters">Reset</_button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </form>
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Reset all counters</_label>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:resetAllCounters">Reset all</_button>
                             </div>
                         </div>
@@ -63,9 +72,13 @@
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Reset device counters</_label>
-                            <div class="col-sm-6">
-                                <select data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedRemoveDevice" class="form-control"></select>
-                                <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:removeDevice">Remove</_button>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <select data-bind="options:devices, optionsText: function(item){ return item.internalid+' ('+item.type+')'}, value:selectedRemoveDevice" class="form-control"></select>
+                                    <span class="input-group-btn">
+                                        <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:removeDevice">Remove</_button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </form>
