@@ -1,5 +1,6 @@
 {
     "name": "OnVIF",
+    "icon": "fa-camera",
     "version": "0.0.1",
     "description": "Configure OnVIF cameras",
     "template": "html/onvif",
