@@ -199,10 +199,9 @@ div.dashboard-widget-draggable {
     color:#3085D6;
 }
 
-/* adminLTE tweaks */
-.content-header h1 {
-    border-bottom: 1px solid #CCCCCC;
-    padding-bottom: 10px;
+/* css helpers */
+.nowrap {
+    white-space: nowrap;
 }
 
 .no-margin-bottom {
@@ -219,6 +218,12 @@ div.dashboard-widget-draggable {
 
 .margin-top-20 {
     margin-top: 20px !important;
+}
+
+/* adminLTE tweaks */
+.content-header h1 {
+    border-bottom: 1px solid #CCCCCC;
+    padding-bottom: 10px;
 }
 
 .dashboard-widget .info-box-icon {
