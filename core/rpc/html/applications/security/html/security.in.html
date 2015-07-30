@@ -8,7 +8,7 @@
                     <_h4 class="modal-title" data-translateable="true">Enter zone name</_h4>
                 </div>
                 <div class="modal-body">
-                    <input type="text" data-bind="value:newZone" data-translateable="true" _placeholder="New zone name" class="form-control"/>
+                    <input type="text" data-bind="value:newZone" data-translateable="true" _placeholder="New zone name" class="form-control" autofocus="autofocus"/>
                 </div>
                 <div class="modal-footer">
                     <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:addZone">Ok</_button>
@@ -26,7 +26,7 @@
                     <_h4 class="modal-title" data-translateable="true">Enter housemode name</_h4>
                 </div>
                 <div class="modal-body">
-                    <input type="text" data-bind="value:newHousemode" data-translateable="true" _placeholder="New housemode name" class="form-control"/>
+                    <input type="text" data-bind="value:newHousemode" data-translateable="true" _placeholder="New housemode name" class="form-control" autofocus="autofocus"/>
                 </div>
                 <div class="modal-footer">
                     <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:addHousemode">Ok</_button>
@@ -131,7 +131,7 @@
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Change current housemode</_label>
-                            <div class="col-sm-4 form-control-static">
+                            <div class="col-sm-4">
                                 <div class="input-group">
                                     <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:currentHousemode" class="form-control"></select>
                                     <span class="input-group-btn">
@@ -152,46 +152,46 @@
                     </div>
                     <div class="row margin-top-20">
                         <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'1')">1</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'1')">1</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'2')">2</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'2')">2</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'3')">3</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'3')">3</button>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'4')">4</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'4')">4</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'5')">5</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'5')">5</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'6')">6</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'6')">6</button>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'7')">7</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'7')">7</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'8')">8</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'8')">8</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'9')">9</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'9')">9</button>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-offset-3 col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'*')">*</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'*')">*</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'0')">0</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'0')">0</button>
                         </div>
                         <div class="col-md-1" style="height:60px; margin-top:2px; margin-bottom:2px;">
-                            <button type="button" class="btn btn-primary btn-lg" data-bind="click:keyPressed.bind($data,'#')">#</button>
+                            <button type="button" class="btn btn-primary btn-pin" data-bind="click:keyPressed.bind($data,'#')">#</button>
                         </div>
                     </div>
                     <div class="row margin-top-10">
@@ -225,11 +225,12 @@
                     </div>
                     <div class="row margin-top-20">
                         <div class="col-md-12">
+                            <div class="table-responsive">
                             <table id="securityTable" class="table table-striped table-bordered">
                             <tbody id="housemodesTable">
                                 <tr>
                                     <th>
-                                        <p style="white-space:nowrap;">
+                                        <p class="nowrap">
                                             <i class="en-down-dir"></i><_span data-translateable="true">Housemodes\Zones</_span>
                                             <_span xml:lang="fr" data-translateable="true">Modes\Zones</_span><i class="en-right-dir"></i>
                                         </p>
@@ -288,6 +289,7 @@
                                 </tr>
                             </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -308,19 +310,19 @@
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-md-4 control-label" data-translateable="true">Alarm message to send when alarm is armed</_label>
-                            <div class="col-md-4 form-control-static">
+                            <div class="col-md-4">
                                 <input type="text" class="form-control" data-translateable="true" _placeholder="message" data-bind="value:armedMessage"/>
                             </div>
                         </div>
                         <div class="form-group">
                             <_label class="col-md-4 control-label" data-translateable="true">Alarm message to send when alarm is disarmed</_label>
-                            <div class="col-md-4 form-control-static">
+                            <div class="col-md-4">
                                 <input type="text" class="form-control" data-translateable="true" _placeholder="message" data-bind="value:disarmedMessage"/>
                             </div>
                         </div>
                         <div class="form-group">
                             <_label class="col-md-4 control-label" data-translateable="true">Default housemode (activated after valid pin is entered)</_label>
-                            <div class="col-md-4 form-control-static">
+                            <div class="col-md-4">
                                 <select data-bind="options:housemodes, optionsText:'name', optionsValue:'name', value:defaultHousemode" class="form-control"/>
                             </div>
                         </div>
