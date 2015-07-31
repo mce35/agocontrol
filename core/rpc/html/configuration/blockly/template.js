@@ -765,25 +765,31 @@ function init_template(path, params, agocontrol)
 
     ko.bindingHandlers.blockly = {
         update: function(element, viewmodel) {
+            var workspace = null;
+
+            //init blockly
             var interval = window.setInterval(function() {
                 if( typeof Blockly!='object' )
                 {
+                    //blockly not loaded yet
                     return;
                 }
                 var extra = model.getDefaultContacts();
                 if( extra && extra.updated===false )
                 {
+                    //default contacts not loaded yet
                     return;
                 }
                 if( !document.getElementById('blocklyDiv') )
                 {
+                    //blockly already loaded (should not happen now because blockly has dispose function)
                     return;
                 }
                 window.clearInterval(interval);
 
                 //inject blockly
                 element.innerHTML = "";
-                var workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
+                workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
                     path: "configuration/blockly/blockly/",
                     toolbox: document.getElementById('toolbox')
                 });
@@ -802,6 +808,14 @@ function init_template(path, params, agocontrol)
                 //init default blocks
                 viewmodel().addDefaultBlocks();
             }, 250);
+
+            //clean up
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                if( workspace!==null )
+                {
+                    workspace.dispose();
+                }
+            });
         }
     };
 
