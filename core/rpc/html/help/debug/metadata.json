@@ -1,7 +1,7 @@
 {
-    "name": "Debug",
+    "name": "Drain",
     "version": "1.0.0",
-    "description": "Useful tools to debug agocontrol",
-    "template": "html/debug",
+    "description": "Tool to drain agocontrol events",
+    "template": "html/drain",
     "listable": true
 }
