@@ -1,39 +1,35 @@
-<div class="container agocontainer" id="contentarea">
+<div>
 
     <!-- title -->
-    <_h2 data-translateable="true">Debug tools</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">Event draining</_h1>
+    </section>
 
-    <!-- tabs -->
-    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
-        <li role="presentation" class="active"><_a href="#drain" data-translateable="true">Events draining</_a></li>
-    </ul>
-    <div class="tab-content" style="padding-top:10px;">
-        <!-- drain tab -->
-        <div id="drain" class="tab-pane fade in active">
-            <div class="row">
-                <div class="col-sm-8">
-                    <div class="btn-group">
-                        <_button type="button" class="btn btn-primary" data-bind="event{'click':startDrain}" data-translateable="true">Start</_button>
-                        <_button type="button" class="btn btn-primary" data-bind="event{'click':stopDrain}" data-translateable="true">Stop</_button>
-                        <_button type="button" class="btn btn-primary" data-bind="event{'click':clear}" data-translateable="true">Clear</_button>
-                    </div>
-                </div>
-                <div class="col-sm-4 text-right">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" data-bind="checked: drainAutoscroll"/>
-                            <_span data-translateable="true">Autoscroll</_span>
-                        </label>
-                    </div>
+    <!-- content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="btn-group">
+                    <_button type="button" class="btn btn-primary" data-bind="event{'click':startDrain}" data-translateable="true">Start</_button>
+                    <_button type="button" class="btn btn-primary" data-bind="event{'click':stopDrain}" data-translateable="true">Stop</_button>
+                    <_button type="button" class="btn btn-primary" data-bind="event{'click':clear}" data-translateable="true">Clear</_button>
                 </div>
             </div>
-            <div class="col-sm-12">
-                <div class="row" id="drainContainer">
-                    <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
-                    </ul>
+            <div class="col-sm-4 text-right">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" data-bind="checked: drainAutoscroll"/>
+                        <_span data-translateable="true">Autoscroll</_span>
+                    </label>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="col-sm-12">
+            <div class="row" id="drainContainer">
+                <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
+                </ul>
+            </div>
+        </div>
+    </section>
                     
 </div>
