@@ -180,6 +180,15 @@
                 <!-- /ko -->
                 <!-- /ko -->
                 <!-- /ko -->
+                <li class="header">PROTOCOLS</li>
+                <!-- ko foreach:agocontrol.protocols -->
+                <!-- ko if:icon -->
+                <li><a href="#" data-bind="click:$root.gotoProtocol"><i data-bind="attr:{'class':'fa '+icon}"></i><span data-bind="text:name"/></a>
+                <!-- /ko -->
+                <!-- ko ifnot:icon -->
+                <li><a href="#" data-bind="click:$root.gotoProtocol"><i class="fa fa-circle-o"></i><span data-bind="text:name"/></a>
+                <!-- /ko -->
+                <!-- /ko -->
             </ul>
         </section>
     </aside>

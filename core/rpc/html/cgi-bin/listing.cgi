@@ -55,7 +55,7 @@ get = 'all'
 args = cgi.FieldStorage()
 for key in args.keys():
     if key=='get':
-        if args[key].value in ['all', 'applications', 'config', 'help', 'supported']:
+        if args[key].value in ['all', 'applications', 'protocols', 'config', 'help', 'supported']:
             get = args[key].value
             break
 
@@ -63,6 +63,7 @@ for key in args.keys():
 try:
     if get=='all':
         result['applications'] = loadMetadatasInDir('../applications/')
+        result['protocols'] = loadMetadatasInDir('../protocols/')
         result['config'] = loadMetadatasInDir('../configuration/')
         result['help'] = loadMetadatasInDir('../help/')
         result['supported'] = getSupportedDevices()
@@ -73,6 +74,8 @@ try:
         result = loadMetadatasInDir('../help/')
     elif get=='applications':
         result = loadMetadatasInDir('../applications/')
+    elif get=='protocols':
+        result = loadMetadatasInDir('../protocols/')
     elif get=='supported':
         result = getSupportedDevices()
     elif get=='time':

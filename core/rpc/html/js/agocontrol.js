@@ -13,7 +13,9 @@ Agocontrol.prototype = {
     refreshMultigraphThumbsInterval: null,
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
+    _allProtocols: ko.observableArray([]),
     _getApplications: Promise.pending(),
+    _getProtocols: Promise.pending(),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -27,6 +29,7 @@ Agocontrol.prototype = {
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
     applications: ko.observableArray([]),
+    protocols: ko.observableArray([]),
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
@@ -48,6 +51,7 @@ Agocontrol.prototype = {
          */
         ko.computed(function(){
             var allApplications = this._allApplications();
+            var allProtocols = this._allProtocols();
             var favorites = this._favorites();
             var processes = this.processes();
             // Hack to get around lack of process list on FreeBSD
@@ -73,6 +77,7 @@ Agocontrol.prototype = {
                 }
             }
 
+            //add all other applications
             for( var i=0; i<allApplications.length; i++ )
             {
                 var application = allApplications[i];
@@ -106,6 +111,37 @@ Agocontrol.prototype = {
 
             this.applications(applications);
             this._getApplications.fulfill();
+
+            //protocols
+            var protocols = [];
+            for( var i=0; i<allProtocols.length; i++ )
+            {
+                var protocol = allProtocols[i];
+                var append = false;
+
+                if( protocol.depends===undefined || (protocol.depends!==undefined && $.trim(protocol.depends).length==0) )
+                {
+                    append = true;
+                }
+                else
+                {
+                    //check if process is installed (and not if it's currently running!)
+                    var proc = this.findProcess(protocol.depends);
+                    if( proc )
+                    {
+                        append = true;
+                    }
+                }
+
+                if( append )
+                {
+                    protocols.push(protocol);
+                }
+            }
+
+            this.protocols(protocols);
+            this._getProtocols.fulfill();
+
         }, this);
     },
 
@@ -562,6 +598,22 @@ Agocontrol.prototype = {
             // Update internal observable
             self._allApplications(applications);
 
+            //PROTOCOLS
+            var protocols = [];
+            for( var i=0; i<result.protocols.length; i++ )
+            {
+                var protocol = result.protocols[i];
+                if( protocol.icon===undefined )
+                {
+                    protocol.icon = null;
+                }
+                protocol.ucName = ucFirst(protocol.name);
+                protocols.push(protocol);
+            }
+
+            //Update internal observable
+            self._allProtocols(protocols);
+
             //CONFIGURATION PAGES
             self.configurations.replaceAll(result.config);
 
@@ -599,6 +651,22 @@ Agocontrol.prototype = {
                     if(apps[i].name == appName)
                     {
                         return apps[i];
+                    }
+                }
+                return null;
+            });
+    },
+
+    getProtocol: function(protocolName) {
+        var self = this;
+        return this._getProtocols.promise
+            .then(function() {
+                var pros = self.protocols();
+                for( var i=0; i<pros.length; i++ )
+                {
+                    if( pros[i].name==protocolName )
+                    {
+                        return pros[i];
                     }
                 }
                 return null;

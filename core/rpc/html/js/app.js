@@ -232,6 +232,11 @@ function AgocontrolViewModel()
         location.hash = 'app/' + application.name;
     };
 
+    self.gotoProtocol = function(protocol)
+    {
+        location.hash = 'proto/' + protocol.name;
+    };
+
     self.gotoHelp = function(help)
     {
         location.hash = 'help/' + help.name;
@@ -426,8 +431,21 @@ function AgocontrolViewModel()
                         self.loadTemplate(new Template(basePath, application.resources, application.template, null));
                     })
                 .catch(function(err){
-                    // XXX: notif is not available here
                     notif.fatal('Specified application not found!');
+                });
+        });
+
+        //protocol loading
+        this.get('#proto/:name', function()
+        {
+            //Protocols may be loaded async; getProtocol returns a promise
+            self.agocontrol.getProtocol(this.params.name)
+                .then(function(protocol) {
+                        var basePath = "protocols/" + protocol.dir;
+                        self.loadTemplate(new Template(basePath, protocol.resources, protocol.template, null));
+                    })
+                .catch(function(err){
+                    notif.fatal('Specified protocol application not found!');
                 });
         });
 
