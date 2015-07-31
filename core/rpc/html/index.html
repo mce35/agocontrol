@@ -226,18 +226,24 @@
                 <h3 class="control-sidebar-heading">Help</h3>
                 <ul class="control-sidebar-menu" data-bind="foreach: agocontrol.helps">
                     <li>
+                        <!-- ko if:url===null -->
                         <a href="#" data-bind="click:$root.gotoHelp">
-                            <!-- ko if:url===null -->
                             <i class="menu-icon fa fa-question-circle bg-light-blue"></i>
-                            <!-- /ko -->
-                            <!-- ko ifnot:url===null -->
-                            <i class="menu-icon fa fa-link bg-light-blue"></i>
-                            <!-- /ko -->
                             <div class="menu-info">
                                 <h4 class="control-sidebar-subheading" data-bind="text:name"></h4>
                                 <p data-bind="text:description"></p>
                             </div>
                         </a>
+                        <!-- /ko -->
+                        <!-- ko ifnot:url===null -->
+                        <a target="_blank" data-bind="attr:{'href':url}">
+                            <i class="menu-icon fa fa-link bg-light-blue"></i>
+                            <div class="menu-info">
+                                <h4 class="control-sidebar-subheading" data-bind="text:name"></h4>
+                                <p data-bind="text:description"></p>
+                            </div>
+                        </a>
+                        <!-- /ko -->
                     </li>
                 </ul>
             </div>
