@@ -1,4 +1,4 @@
-<div class="container agocontainer" id="contentarea">
+<div>
 
     <!-- popup -->
     <div class="modal fade" id="confirmPopup">
@@ -16,49 +16,63 @@
     </div>
 
     <!-- title -->
-    <_h2 data-translateable="true">Room configuration</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">Room configuration</_h1>
+    </section>
 
+    <!-- content -->
+    <section class="content">
 
-    <!-- grid -->
-    <script id="rowTemplate" type="text/html">
-        <ko opts="if: uuid">
-            <ko opts="if: name">
-                <td class="edit_room" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-            </ko>
-            <ko opts="ifnot: name">
-                <_td data-translateable="true" class="edit_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-            </ko>
-                <td class="delete_room">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteRoom">
-                            <span class="en-cancel"></span>
-                        </button>
-                    </div>
-                </td>
-        </ko>
-    </script>
-    <div data-bind="agoGrid:grid"/>
-
-    <!-- new room -->
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <_h3 data-translateable="true" class="panel-title">Create new room</_h3>
+        <!-- grid -->
+        <div class="row">
+            <div class="col-xs-12">
+                <script id="rowTemplate" type="text/html">
+                <ko opts="if: uuid">
+                    <ko opts="if: name">
+                    <td class="edit_room" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+                    </ko>
+                    <ko opts="ifnot: name">
+                    <_td data-translateable="true" class="edit_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+                    </ko>
+                    <td class="delete_room">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteRoom">
+                                <span class="en-cancel"></span>
+                            </button>
+                        </div>
+                    </td>
+                </ko>
+                </script>
+                <div data-bind="agoGrid:grid"/>
+            </div>
         </div>
-        <div class="panel-body">
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <_label class="col-sm-3 control-label" data-translateable="true">New room name</_label>
-                    <div class="col-sm-5">
-                        <input type="email" class="form-control" data-bind="value: roomName" _placeholder="New room name" data-translateable="true" />
+
+        <!-- new room -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <_h3 data-translateable="true" class="box-title">Create new room</_h3>
+                    </div>
+                    <div class="box-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">New room name</_label>
+                                <div class="col-sm-5">
+                                    <input type="email" class="form-control" data-bind="value: roomName" _placeholder="New room name" data-translateable="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-5">
+                                    <_button type="submit" class="btn btn-primary" data-bind="click: createRoom" data-translateable="true">Create room</_button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-3 col-sm-5">
-                        <_button type="submit" class="btn btn-primary" data-bind="click: createRoom" data-translateable="true">Create room</_button>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+    </section>
 
 </div>
