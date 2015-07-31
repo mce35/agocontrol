@@ -1,6 +1,6 @@
-<div class="container agocontainer" id="contentarea">
+<div>
     
-    <!-- popup -->
+   <!-- popup -->
     <div class="modal fade" id="confirmPopup">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -56,67 +56,82 @@
     </div>
 
     <!-- title -->
-    <_h2 data-translateable="true">Event configuration</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">Event configuration</_h1>
+    </section>
 
-    <!-- grid -->
-    <script type="text/html" id="rowTemplate">
-    <ko opts="if: uuid != '0'">
-        <td class="edit_event" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-        <td>
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary btn-xs" _alt="Edit" _title="Edit" data-translateable="true" data-bind="click: $parent.editEvent">
-                    <span class="en-pencil"></span>
-                </button>
-                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteEvent">
-                    <span class="en-cancel"></span>
-                </button>
+    <!-- content -->
+    <section class="content">
+
+        <!-- grid -->
+        <div class="row">
+            <div class="col-xs-12">
+                <script type="text/html" id="rowTemplate">
+                    <ko opts="if: uuid != '0'">
+                    <td class="edit_event" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+                    <td>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Edit" _title="Edit" data-translateable="true" data-bind="click: $parent.editEvent">
+                                <span class="en-pencil"></span>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteEvent">
+                                <span class="en-cancel"></span>
+                            </button>
+                        </div>
+                    </td>
+                    </ko>
+                </script>
+                <div data-bind="agoGrid:grid"></div>
             </div>
-        </td>
-    </ko>
-    </script>
-    <div data-bind="agoGrid:grid"></div>
+        </div>
 
-    <!-- new event -->
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <_h3 data-translateable="true" class="panel-title">Create new event</_h3>
+        <!-- new event -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <_h3 data-translateable="true" class="box-title">Create new event</_h3>
+                    </div>
+                    <div class="box-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">Criteria</_label>
+                                <div class="col-sm-5">
+                                    <div id="eventSelectorBox"/>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div id="eventBuilder" class="eventBuilder panel-body"/>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">Action</_label>
+                                <div class="col-sm-9">
+                                    <div id="actionBox"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label data-translateable="true" class="col-sm-3 control-label"></label>
+                                <div class="col-sm-9">
+                                    <div id="parametersBox"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">New event name</_label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" data-bind="value:eventName" _placeholder="New event name" data-translateable="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-5">
+                                    <_button type="submit" class="btn btn-primary" data-bind="click: createEvent" data-translateable="true">Create event</_button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="panel-body">
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <_label class="col-sm-3 control-label" data-translateable="true">Criteria</_label>
-                    <div class="col-sm-5">
-                        <div id="eventSelectorBox"/>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div id="eventBuilder" class="eventBuilder panel-body"/>
-                </div>
-                <div class="form-group">
-                    <_label class="col-sm-3 control-label" data-translateable="true">Action</_label>
-                    <div class="col-sm-9">
-                        <div id="actionBox"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label data-translateable="true" class="col-sm-3 control-label"></label>
-                    <div class="col-sm-9">
-                        <div id="parametersBox"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <_label class="col-sm-3 control-label" data-translateable="true">New event name</_label>
-                    <div class="col-sm-5">
-                        <input type="text" class="form-control" data-bind="value:eventName" _placeholder="New event name" data-translateable="true" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-3 col-sm-5">
-                        <_button type="submit" class="btn btn-primary" data-bind="click: createEvent" data-translateable="true">Create event</_button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+
+    </section>
 
 </div>
