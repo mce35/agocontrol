@@ -1,60 +1,72 @@
-<div class="container agocontainer" id="contentarea">
+<div>
 
     <!-- title -->
-    <_h2 data-translateable="true">System configuration</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">System configuration</_h1>
+    </section>
 
     <!-- tabs -->
-    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{onChanged: onTabChanged}">
-        <li class="active"><_a href="#contact" data-translateable="true">Default contact</_a></li>
-        <li><_a href="#home" data-translateable="true">Home position</_a></li>
-    </ul>
-    <div class="tab-content" style="padding-top:10px;">
-        <!-- contact tab -->
-        <div id="contact" class="tab-pane fade in active">
-            <div class="bs-callout bs-callout-info">
-                <_span data-translateable="true">Configure your default contact informations. This allows you to not enter each time those informations.</_span>
+    <section class="content"> 
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{onChanged: onTabChanged}">
+                <li class="active"><_a href="#contact" data-translateable="true">Default contact</_a></li>
+                <li><_a href="#home" data-translateable="true">Home position</_a></li>
+            </ul>
+            <div class="tab-content" style="padding-top:10px;">
+            
+                <!-- contact tab -->
+                <div id="contact" class="tab-pane fade in active">
+                    <div class="callout callout-info">
+                        <_span data-translateable="true">Configure your default contact informations. This allows you to not enter each time those informations.</_span>
+                    </div>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label for="email" class="col-sm-2 control-label" data-translateable="true">Email address</_label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="email" placeholder="email@provider.com" data-bind="value: email"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <_label for="phone" class="col-sm-2 control-label" data-translateable="true">Phone number</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="phone" data-bind="value: phone"/>
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-exclamation-circle" data-toggle="tooltip" data-placement="top" data-translateable="true" title="international number is preferable"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: saveContact">Save changes</_button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- home position tab -->
+                <div id="home" class="tab-pane fade">
+                    <div class="callout callout-info">
+                        <_span data-translateable="true">Find and click on your home to find its position. Agocontrol needs this information to compute sunset/sunrise times.</_span>
+                    </div>
+                    <div class="col-sm-12">
+                        <div style="width: 100%; height: 380px; margin-bottom: 20px;" id="myhome" data-bind="openlayers:openlayersViewModel"/>
+                    </div>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <_label data-translateable="true" for="latitude">Latitude</_label>
+                            <input type="text" class="form-control" id="latitude" data-bind="value:latitude" />
+                        </div>
+                        <div class="form-group">
+                            <_label data-translateable="true" for="longitude">Longitude</_label>
+                            <input type="text" class="form-control" id="longitude" data-bind="value:longitude" />
+                        </div>
+                        <_button type="submit" class="btn btn-primary" data-bind="click:savePosition" data-translateable="true">Save changes</_button>
+                    </form>
+                </div>
             </div>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <_label for="email" class="col-sm-2 control-label" data-translateable="true">Email address</_label>
-                    <div class="col-sm-6">
-                        <input type="text" class="form-control" id="email" placeholder="email@provider.com" data-bind="value: email"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <_label for="phone" class="col-sm-2 control-label" data-translateable="true">Phone number</_label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="phone" data-bind="value: phone"/>
-                    </div>
-                    <p class="form-control-static" data-translateable="true">(international number is preferable)</p>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: saveContact">Save changes</_button>
-                    </div>
-                </div>
-            </form>
         </div>
-        <!-- home position tab -->
-        <div id="home" class="tab-pane fade">
-            <div class="bs-callout bs-callout-info">
-                <_span data-translateable="true">Find and click on your home to find its position. Agocontrol needs this information to compute sunset/sunrise times.</_span>
-            </div>
-            <div class="col-sm-12">
-                <div style="width: 100%; height: 380px; margin-bottom: 20px;" id="myhome" data-bind="openlayers:openlayersViewModel"/>
-            </div>
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="latitude">Latitude</label>
-                    <input type="text" class="form-control" id="latitude" data-bind="value:latitude" />
-                </div>
-                <div class="form-group">
-                    <label for="longitude">Longitude</label>
-                    <input type="text" class="form-control" id="longitude" data-bind="value:longitude" />
-                </div>
-                <button type="submit" class="btn btn-primary" data-bind="click:savePosition">Save changes</button>
-            </form>
-        </div>
-    </div>
-
+    </section>
+    
 </div>
