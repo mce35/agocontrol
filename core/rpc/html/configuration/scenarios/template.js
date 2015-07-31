@@ -85,7 +85,8 @@ function ScenarioConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate'
+        rowTemplate: 'rowTemplate',
+        boxStyle: 'box-primary'
     });
 
     //Creates a scenario map out of the form fields inside a container
