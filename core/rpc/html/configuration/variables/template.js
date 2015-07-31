@@ -42,7 +42,8 @@ function VariablesConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate'
+        rowTemplate: 'rowTemplate',
+        boxStyle: 'box-primary'
     });
 
     self.createVariable = function(data, event)

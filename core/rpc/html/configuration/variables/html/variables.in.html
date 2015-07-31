@@ -1,4 +1,4 @@
-<div class="container agocontainer" id="contentarea">
+<div>
 
     <!-- popup -->
     <div class="modal fade" id="confirmPopup">
@@ -16,42 +16,57 @@
     </div>
 
     <!-- title -->
-    <_h2 data-translateable="true">Variable configuration</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">Variable configuration</_h1>
+    </section>
 
-    <!-- grid -->
-    <script type="text/html" id="rowTemplate">
-        <td data-bind="text: variable"></td>
-        <td class="edit_var" data-bind="attr: {'data-variable': variable}, text: value"></td>
-        <td class="delete_var">
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteVariable">
-                    <span class="en-cancel"></span>
-                </button>
+    <!-- content -->
+    <section class="content">
+
+        <!-- grid -->
+        <div class="row">
+            <div class="col-xs-12">
+                <script type="text/html" id="rowTemplate">
+                    <td data-bind="text: variable"></td>
+                    <td class="edit_var" data-bind="attr: {'data-variable': variable}, text: value"></td>
+                    <td class="delete_var">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteVariable">
+                                <span class="en-cancel"></span>
+                            </button>
+                        </div>
+                    </td>
+                </script>
+                <div data-bind="agoGrid:grid"/>
             </div>
-        </td>
-    </script>
-    <div data-bind="agoGrid:grid"/>
+        </div>
 
-    <!-- new variable -->
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <_h3 data-translateable="true" class="panel-title">Create new variable</_h3>
-        </div>
-        <div class="panel-body">
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <_label class="col-sm-3 control-label" data-translateable="true">New variable name</_label>
-                    <div class="col-sm-5">
-                        <input type="email" class="form-control" data-bind="value: newVariable" _placeholder="New variable name" data-translateable="true" />
+        <!-- new variable -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-success">
+                    <div class="box-header">
+                        <_h3 data-translateable="true" class="box-title">Create new variable</_h3>
+                    </div>
+                    <div class="box-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">New variable name</_label>
+                                <div class="col-sm-5">
+                                    <input type="email" class="form-control" data-bind="value: newVariable" _placeholder="New variable name" data-translateable="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-5">
+                                    <_button type="submit" class="btn btn-primary" data-bind="click: createVariable" data-translateable="true">Create variable</_button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-3 col-sm-5">
-                        <_button type="submit" class="btn btn-primary" data-bind="click: createVariable" data-translateable="true">Create variable</_button>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+    </section>
 
 </div>
