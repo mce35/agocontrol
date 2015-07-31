@@ -628,8 +628,8 @@ Agocontrol.prototype = {
                 help.url = null;
                 helps.push(help);
             }
-            helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
-            helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
+            helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/', description:'Get support on agocontrol wiki'});
+            helps.push({name:'About', url:'http://www.agocontrol.com/about/', description:'All about agocontrol'});
             self.helps.replaceAll(helps);
 
             //SERVER TIME
