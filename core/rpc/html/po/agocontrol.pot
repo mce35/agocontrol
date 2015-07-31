@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-29 12:02+0200\n"
+"POT-Creation-Date: 2015-07-31 15:45+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,7 @@ msgstr ""
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:4
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
 msgid "Graph"
 msgstr ""
 
@@ -160,7 +160,7 @@ msgid "Command:"
 msgstr ""
 
 #: ../templates/details/default.xml.in.h:6
-#: ../configuration/scenarios/html/scenarios.xml.in.h:11
+#: ../configuration/scenarios/html/scenarios.xml.in.h:10
 msgid "Run"
 msgstr ""
 
@@ -172,14 +172,14 @@ msgstr ""
 #: ../templates/devices/dimmer.xml.in.h:2
 #: ../templates/devices/dimmerrgb.xml.in.h:2
 #: ../templates/devices/squeezebox.xml.in.h:1
-#: ../templates/devices/switch.xml.in.h:1
+#: ../templates/devices/switch.xml.in.h:2
 msgid "ON"
 msgstr ""
 
 #: ../templates/devices/dimmer.xml.in.h:1
 #: ../templates/devices/dimmerrgb.xml.in.h:1
 #: ../templates/devices/squeezebox.xml.in.h:2
-#: ../templates/devices/switch.xml.in.h:2
+#: ../templates/devices/switch.xml.in.h:1
 msgid "OFF"
 msgstr ""
 
@@ -327,9 +327,9 @@ msgstr ""
 #: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/security/html/security.xml.in.h:17
 #: ../applications/onvif/html/onvif.xml.in.h:14
-#: ../configuration/datalogger/html/datalogger.xml.in.h:9
-#: ../configuration/system/html/system.xml.in.h:8
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:7
+#: ../configuration/datalogger/html/datalogger.xml.in.h:8
+#: ../configuration/system/html/system.xml.in.h:7
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
 msgid "Save changes"
 msgstr ""
 
@@ -631,6 +631,10 @@ msgid "Reset all"
 msgstr ""
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:13
+msgid "Remove device"
+msgstr ""
+
+#: ../applications/mysensors/html/mysensors.xml.in.h:14
 #: ../applications/zwave/html/zwave.xml.in.h:45
 msgid "Remove"
 msgstr ""
@@ -649,7 +653,7 @@ msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:4
 #: ../applications/zwave/html/zwave.xml.in.h:63
-#: ../configuration/blockly/html/agoblockly.xml.in.h:32
+#: ../configuration/blockly/html/agoblockly.xml.in.h:10
 #: ../configuration/dashboards/html/dashboards.xml.in.h:2
 #: ../configuration/devices/html/devices.xml.in.h:2
 #: ../configuration/events/html/events.xml.in.h:2
@@ -702,7 +706,7 @@ msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:15
 #: ../applications/zwave/html/zwave.xml.in.h:69
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:9
 #: ../configuration/events/html/events.xml.in.h:7
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
 msgid "Save"
@@ -1008,7 +1012,7 @@ msgid "Save configuration"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:1
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+#: ../configuration/datalogger/html/datalogger.xml.in.h:2
 msgid "General"
 msgstr ""
 
@@ -1194,13 +1198,13 @@ msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:50
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
-#: ../configuration/events/html/events.xml.in.h:10
-#: ../configuration/scenarios/html/scenarios.xml.in.h:12
+#: ../configuration/events/html/events.xml.in.h:9
+#: ../configuration/scenarios/html/scenarios.xml.in.h:11
 msgid "Edit"
 msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:51
-#: ../configuration/blockly/html/agoblockly.xml.in.h:27
+#: ../configuration/blockly/html/agoblockly.xml.in.h:4
 #: ../configuration/dashboards/html/dashboards.xml.in.h:3
 #: ../configuration/devices/html/devices.xml.in.h:3
 #: ../configuration/events/html/events.xml.in.h:3
@@ -1239,138 +1243,142 @@ msgid "Recordings purge delay"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
-msgid "luacontroller is not responding. Unable to execute action."
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:2
-msgid "No block defined in workspace."
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:3
-msgid "Script saved successfully."
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:4
-msgid "Script loaded successfully."
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:5
-msgid "Please select a script"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:6
-msgid "Unable to load script, it seems to be corrupted!"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:7
-msgid "Script not saved"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:8
-msgid "Please specify a valid script name"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:9
-msgid "Delete selected script?"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:10
-msgid "Script deleted successfully"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:11
-msgid "Unable to delete script"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:12
-msgid "Script renamed successfully"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:13
-msgid "Script not renamed"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:14
-msgid "Event builder using blocks"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:15
-msgid "New"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
-msgid "Changed"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:18
-msgid "Toggle Dropdown"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:19
-msgid "Save as"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:20
-msgid "Load"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
-msgid "Import"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
-msgid "Check"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
-msgid "View"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
-msgid "Debug"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:25
 msgid "Lua script"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:26
+#: ../configuration/blockly/html/agoblockly.xml.in.h:2
 msgid "Load/delete script"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:28
+#: ../configuration/blockly/html/agoblockly.xml.in.h:3
+msgid "Load"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:5
 msgid "Export"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:29
+#: ../configuration/blockly/html/agoblockly.xml.in.h:6
 msgid "Import script"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:30
+#: ../configuration/blockly/html/agoblockly.xml.in.h:7
 msgid "Saveas"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:31
+#: ../configuration/blockly/html/agoblockly.xml.in.h:8
 msgid "Script name"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+#: ../configuration/blockly/html/agoblockly.xml.in.h:11
 msgid "Debug script"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:34
+#: ../configuration/blockly/html/agoblockly.xml.in.h:12
 #: ../help/debug/html/debug.xml.in.h:4
 msgid "Start"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:35
+#: ../configuration/blockly/html/agoblockly.xml.in.h:13
 #: ../help/debug/html/debug.xml.in.h:5
 msgid "Stop"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:36
+#: ../configuration/blockly/html/agoblockly.xml.in.h:14
 #: ../help/debug/html/debug.xml.in.h:6
 msgid "Clear"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:15
+msgid "luacontroller is not responding. Unable to execute action."
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+msgid "No block defined in workspace."
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
+msgid "Script saved successfully."
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:18
+msgid "Script loaded successfully."
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+msgid "Please select a script"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:20
+msgid "Unable to load script, it seems to be corrupted!"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+msgid "Script not saved"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+msgid "Please specify a valid script name"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
+msgid "Delete selected script?"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
+msgid "Script deleted successfully"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:25
+msgid "Unable to delete script"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:26
+msgid "Script renamed successfully"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:27
+msgid "Script not renamed"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:28
+msgid "Event configuration stacking blocks"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:29
+msgid "New"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:30
+msgid "Changed"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:31
+msgid "Toggle Dropdown"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
+msgid "Save as"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+msgid "Import"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:34
+msgid "Check"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:35
+msgid "View"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:36
+msgid "Debug"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:37
+msgid "Event editor is only available on large resolution devices."
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:1
@@ -1466,9 +1474,15 @@ msgstr ""
 msgid "Are you sure that you want to delete this dashboard?"
 msgstr ""
 
-#. title
-#: ../configuration/dashboards/html/dashboards.xml.in.h:5
+#: ../configuration/dashboards/html/dashboards.xml.in.h:4
 msgid "Dashboard configuration"
+msgstr ""
+
+#: ../configuration/dashboards/html/dashboards.xml.in.h:5
+#: ../configuration/devices/html/devices.xml.in.h:8
+#: ../configuration/rooms/html/rooms.xml.in.h:5
+#: ../configuration/scenarios/html/scenarios.xml.in.h:9
+msgid "unset"
 msgstr ""
 
 #: ../configuration/dashboards/html/dashboards.xml.in.h:7
@@ -1483,73 +1497,72 @@ msgstr ""
 msgid "Create dashboard"
 msgstr ""
 
-#. title
-#: ../configuration/datalogger/html/datalogger.xml.in.h:2
+#: ../configuration/datalogger/html/datalogger.xml.in.h:1
 msgid "Datalogger configuration"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:5
+#: ../configuration/datalogger/html/datalogger.xml.in.h:4
 msgid "Database"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:6
+#: ../configuration/datalogger/html/datalogger.xml.in.h:5
 msgid "Activate SQL logging for all sensors except GPS sensors (plots+list)"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:7
+#: ../configuration/datalogger/html/datalogger.xml.in.h:6
 msgid "Activate SQL logging for GPS sensors only (map)"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:8
+#: ../configuration/datalogger/html/datalogger.xml.in.h:7
 msgid "Activate RRDTool logging (graph)"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:10
+#: ../configuration/datalogger/html/datalogger.xml.in.h:9
 msgid "Add graph"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:11
+#: ../configuration/datalogger/html/datalogger.xml.in.h:10
 msgid "Select sensors to display on graph"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:12
+#: ../configuration/datalogger/html/datalogger.xml.in.h:11
 msgid "Number of hours to display on thumb"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:13
+#: ../configuration/datalogger/html/datalogger.xml.in.h:12
 msgid "Delete graph"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:14
+#: ../configuration/datalogger/html/datalogger.xml.in.h:13
 msgid "Graphs"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:15
+#: ../configuration/datalogger/html/datalogger.xml.in.h:14
 msgid "Database size"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:16
+#: ../configuration/datalogger/html/datalogger.xml.in.h:15
 msgid "Sensor values"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:17
+#: ../configuration/datalogger/html/datalogger.xml.in.h:16
 msgid "Purge all values"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:18
+#: ../configuration/datalogger/html/datalogger.xml.in.h:17
 msgid "GPS positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:19
+#: ../configuration/datalogger/html/datalogger.xml.in.h:18
 msgid "Purge all positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:20
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
 #: ../help/journal/html/journal.xml.in.h:1
 msgid "Journal"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:21
+#: ../configuration/datalogger/html/datalogger.xml.in.h:20
 msgid "Purge all messages"
 msgstr ""
 
@@ -1557,30 +1570,23 @@ msgstr ""
 msgid "Are you sure that you want to delete this device?"
 msgstr ""
 
-#. title
-#: ../configuration/devices/html/devices.xml.in.h:5
+#: ../configuration/devices/html/devices.xml.in.h:4
 msgid "Device configuration"
 msgstr ""
 
-#: ../configuration/devices/html/devices.xml.in.h:6
+#: ../configuration/devices/html/devices.xml.in.h:5
 msgid "Filter rooms:"
 msgstr ""
 
-#: ../configuration/devices/html/devices.xml.in.h:7
+#: ../configuration/devices/html/devices.xml.in.h:6
 msgid "Filter device types:"
 msgstr ""
 
-#: ../configuration/devices/html/devices.xml.in.h:8
+#: ../configuration/devices/html/devices.xml.in.h:7
 msgid "Filter handlers:"
 msgstr ""
 
 #: ../configuration/devices/html/devices.xml.in.h:9
-#: ../configuration/rooms/html/rooms.xml.in.h:6
-#: ../configuration/scenarios/html/scenarios.xml.in.h:10
-msgid "unset"
-msgstr ""
-
-#: ../configuration/devices/html/devices.xml.in.h:10
 msgid "Details"
 msgstr ""
 
@@ -1600,74 +1606,79 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-#. title
-#: ../configuration/events/html/events.xml.in.h:9
+#: ../configuration/events/html/events.xml.in.h:8
 msgid "Event configuration"
 msgstr ""
 
-#: ../configuration/events/html/events.xml.in.h:11
+#: ../configuration/events/html/events.xml.in.h:10
 msgid "Create new event"
 msgstr ""
 
-#: ../configuration/events/html/events.xml.in.h:12
+#: ../configuration/events/html/events.xml.in.h:11
 msgid "New event name"
 msgstr ""
 
-#: ../configuration/events/html/events.xml.in.h:13
+#: ../configuration/events/html/events.xml.in.h:12
 msgid "Create event"
 msgstr ""
 
-#. title
-#: ../configuration/system/html/system.xml.in.h:2
+#: ../configuration/system/html/system.xml.in.h:1
 msgid "System configuration"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:3
+#: ../configuration/system/html/system.xml.in.h:2
 msgid "Default contact"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:4
+#: ../configuration/system/html/system.xml.in.h:3
 msgid "Home position"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:5
+#: ../configuration/system/html/system.xml.in.h:4
 msgid ""
 "Configure your default contact informations. This allows you to not enter "
 "each time those informations."
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:6
+#: ../configuration/system/html/system.xml.in.h:5
 msgid "Email address"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:7
+#: ../configuration/system/html/system.xml.in.h:6
 msgid "Phone number"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:9
+#: ../configuration/system/html/system.xml.in.h:8
 msgid ""
 "Find and click on your home to find its position. Agocontrol needs this "
 "information to compute sunset/sunrise times."
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:9
+msgid "Latitude"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:10
+msgid "Longitude"
 msgstr ""
 
 #: ../configuration/rooms/html/rooms.xml.in.h:1
 msgid "Are you sure that you want to delete this room?"
 msgstr ""
 
-#. title
-#: ../configuration/rooms/html/rooms.xml.in.h:5
+#: ../configuration/rooms/html/rooms.xml.in.h:4
 msgid "Room configuration"
 msgstr ""
 
-#: ../configuration/rooms/html/rooms.xml.in.h:7
+#: ../configuration/rooms/html/rooms.xml.in.h:6
 msgid "Create new room"
 msgstr ""
 
-#: ../configuration/rooms/html/rooms.xml.in.h:8
+#: ../configuration/rooms/html/rooms.xml.in.h:7
 msgid "New room name"
 msgstr ""
 
-#: ../configuration/rooms/html/rooms.xml.in.h:9
+#: ../configuration/rooms/html/rooms.xml.in.h:8
 msgid "Create room"
 msgstr ""
 
@@ -1683,53 +1694,51 @@ msgstr ""
 msgid "Are you sure that you want to delete this scenario?"
 msgstr ""
 
-#. title
-#: ../configuration/scenarios/html/scenarios.xml.in.h:9
+#: ../configuration/scenarios/html/scenarios.xml.in.h:8
 msgid "Scenario configuration"
 msgstr ""
 
-#: ../configuration/scenarios/html/scenarios.xml.in.h:13
+#: ../configuration/scenarios/html/scenarios.xml.in.h:12
 msgid "Create new Scenario"
 msgstr ""
 
-#: ../configuration/scenarios/html/scenarios.xml.in.h:14
+#: ../configuration/scenarios/html/scenarios.xml.in.h:13
 msgid "New scenario name"
 msgstr ""
 
-#: ../configuration/scenarios/html/scenarios.xml.in.h:15
+#: ../configuration/scenarios/html/scenarios.xml.in.h:14
 msgid "Create scenario"
 msgstr ""
 
-#. title
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:2
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:1
 msgid "System monitoring configuration"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:3
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:2
 msgid "Process monitoring"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:4
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:3
 msgid "Memory monitoring"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:5
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:4
 msgid "Agocontrol can triggers an event when selected process is missing"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:5
 msgid "Selected processes"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:8
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:7
 msgid "Agocontrol can trigger an event when a process reach a memory threshold"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:9
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:8
 msgid "Memory threshold (mo)"
 msgstr ""
 
-#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:10
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:9
 msgid "Memory threshold"
 msgstr ""
 
@@ -1737,20 +1746,19 @@ msgstr ""
 msgid "Are you sure that you want to delete this variable?"
 msgstr ""
 
-#. title
-#: ../configuration/variables/html/variables.xml.in.h:5
+#: ../configuration/variables/html/variables.xml.in.h:4
 msgid "Variable configuration"
 msgstr ""
 
-#: ../configuration/variables/html/variables.xml.in.h:6
+#: ../configuration/variables/html/variables.xml.in.h:5
 msgid "Create new variable"
 msgstr ""
 
-#: ../configuration/variables/html/variables.xml.in.h:7
+#: ../configuration/variables/html/variables.xml.in.h:6
 msgid "New variable name"
 msgstr ""
 
-#: ../configuration/variables/html/variables.xml.in.h:8
+#: ../configuration/variables/html/variables.xml.in.h:7
 msgid "Create variable"
 msgstr ""
 
