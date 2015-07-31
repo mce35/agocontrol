@@ -1,4 +1,4 @@
-<div class="container agocontainer" id="contentarea">
+<div>
 
     <!-- popup -->
     <div class="modal fade" id="confirmPopup">
@@ -16,71 +16,85 @@
     </div> 
 
     <!-- title -->
-    <_h2 data-translateable="true">Device configuration</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">Device configuration</_h1>
+    </section>
 
-    <!-- filter -->
-    <div class="well well-sm">
-    	<div class="row">
-            <div class="col-sm-2">
-        		<_span data-translateable="true">Filter rooms:</_span>
-            </div>
-            <div class="col-sm-10">
-        		<ko opts="foreach: { data: roomFilters}">
-	        		<button data-bind="attr: {'class': className }, text: value, click: $parent.addFilter"></button>
-    		    </ko>
-            </div>
-        </div>
+    <!-- content -->
+    <section class="content">
+        
+        <!-- filter -->
         <div class="row">
-            <div class="col-sm-2">
-                <_span data-translateable="true">Filter device types:</_span>
-            </div>
-            <div class="col-sm-10">
-        		<ko opts="foreach: { data: deviceTypeFilters }">
-	        		<button data-bind="attr: {'class': className }, text: value, click: $parent.addFilter"></button>
-    		    </ko>
+            <div class="col-xs-12">
+                <div class="box box-primary">
+    	            <div class="row" style="padding:5px;">
+                        <div class="col-sm-2">
+                    		<_span data-translateable="true">Filter rooms:</_span>
+                        </div>
+                        <div class="col-sm-10">
+                    		<ko opts="foreach:{data:roomFilters}">
+                            <button data-bind="attr: {'class': className }, text: value, click: $parent.addFilter"></button>
+                  		    </ko>
+                        </div>
+                    </div>
+                    <div class="row" style="padding:5px;">
+                        <div class="col-sm-2">
+                            <_span data-translateable="true">Filter device types:</_span>
+                        </div>
+                        <div class="col-sm-10">
+                    		<ko opts="foreach: { data: deviceTypeFilters }">
+         	        		<button data-bind="attr: {'class': className }, text: value, click: $parent.addFilter"></button>
+                		    </ko>
+                        </div>
+                    </div>
+            	    <div class="row" style="padding:5px;">
+                        <div class="col-sm-2">
+                    		<_span data-translateable="true">Filter handlers:</_span>
+                        </div>
+                        <div class="col-sm-10">
+                		    <ko opts="foreach: { data: handlerFilters}">
+                    		<button data-bind="attr: {'class': className }, text: value, click: $parent.addFilter"></button>
+                		    </ko>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-	    <div class="row">
-            <div class="col-sm-2">
-        		<_span data-translateable="true">Filter handlers:</_span>
-            </div>
-            <div class="col-sm-10">
-    		    <ko opts="foreach: { data: handlerFilters}">
-	        		<button data-bind="attr: {'class': className }, text: value, click: $parent.addFilter"></button>
-    		    </ko>
-            </div>
-        </div>
-    </div>
 
-    <!-- grid -->
-    <script type="text/html" id="rowTemplate">
-    <ko opts="if: name">
-        <td class="edit_device" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-    </ko>
-    <ko opts="ifnot: name">
-        <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-    </ko>
-    <ko opts="if: room">
-        <td class="select_device_room" data-bind="attr: {'data-uuid': uuid}, text: room"></td>
-    </ko>
-    <ko opts="ifnot: room">
-        <_td data-translateable="true" class="select_device_room" data-bind="attr: {'data-uuid': uuid}" >unset</_td>
-    </ko>
-        <td data-bind="text: devicetype"></td>
-        <td data-bind="text: handledBy"></td>
-        <td data-bind="attr: {'title': internalid }, text: internalid"></td>
-        <td>
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary btn-xs" _alt="Details" _title="Details" data-translateable="true" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-                    <span class="en-popup"></span>
-                </button>
-                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
-                    <span class="en-cancel"></span>
-                </button>
+        <!-- grid -->
+        <div class="row">
+            <div class="col-xs-12">
+                <script type="text/html" id="rowTemplate">
+                    <ko opts="if: name">
+                    <td class="edit_device" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+                    </ko>
+                    <ko opts="ifnot: name">
+                    <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+                    </ko>
+                    <ko opts="if: room">
+                    <td class="select_device_room" data-bind="attr: {'data-uuid': uuid}, text: room"></td>
+                    </ko>
+                    <ko opts="ifnot: room">
+                    <_td data-translateable="true" class="select_device_room" data-bind="attr: {'data-uuid': uuid}" >unset</_td>
+                    </ko>
+                    <td data-bind="text: devicetype"></td>
+                    <td data-bind="text: handledBy"></td>
+                    <td data-bind="attr: {'title': internalid }, text: internalid"></td>
+                    <td>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Details" _title="Details" data-translateable="true" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+                                <span class="en-popup"></span>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
+                                <span class="en-cancel"></span>
+                            </button>
+                        </div>
+                    </td>
+                </script>
+                <div data-bind="agoGrid:grid"></div>
             </div>
-        </td>
-    </script>
-    <div data-bind="agoGrid:grid"></div>
+        </div>
+
+    </section>
 
 </div>
-
