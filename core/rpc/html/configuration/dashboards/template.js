@@ -58,7 +58,6 @@ function DashboardConfig(agocontrol)
         ],
         rowCallback: self.makeEditable,
         rowTemplate: 'rowTemplate',
-        boxTitle: 'Existing dashboards',
         boxStyle: 'box-primary'
     });
 
