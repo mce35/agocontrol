@@ -1,0 +1,7 @@
+{
+    "name": "Configuration",
+    "version": "1.0.0",
+    "description": "Configuration overview",
+    "template": "html/config",
+    "listable": true
+}

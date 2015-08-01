@@ -1,0 +1,29 @@
+<div>
+
+    <!-- title -->
+    <section class="content-header">
+        <h1 data-translateable="true">System informations</h1>
+    </section>
+    
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <script type="text/html" id="configTreeRowTemplate">
+                    <td><span data-bind="text:name"/></td>
+                    <td class="field">
+                        <input type="text" data-bind="textInput:value" class="form-control"/>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button type="button" data-translateable="true" data-bind="click:$parent.setConfig" class="btn btn-primary btn-xs">
+                                <span class="en-floppy"/>
+                            </button>
+                        </div>
+                    </td>
+                </script>
+                <div data-bind="agoGrid:configTreeGrid"/>
+            </div>
+        </div>
+    </section>
+
+</div>
