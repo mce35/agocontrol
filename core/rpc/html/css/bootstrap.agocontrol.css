@@ -236,7 +236,7 @@ div.dashboard-widget-draggable {
 .info-box-title > h4,
 .info-box-title > h5,
 .info-box-title > h6 {
-    margin-top: 10px !important;
+    margin-top: 6px !important;
 }
 
 .info-box-title {
@@ -263,7 +263,7 @@ div.dashboard-widget-draggable {
     border: none;
     -webkit-box-shadow: none;
     box-shadow: none;
-    /*padding: 19px 0px 19px 0px;*/
+    padding: 15px;
 }
 
 .control-sidebar-heading {
@@ -275,4 +275,20 @@ div.dashboard-widget-draggable {
     border: 1px solid #d2d6de;
     border-radius: 0;
     height: 100% !important;
+}
+
+/* if adminLTE is not fixed, body color is uggly */
+body {
+    background-color: #F9FAFC; /* light color */
+}
+
+/* reduce dashboard widget height */
+.dashboard-widget > .info-box {
+    min-height: 80px !important;
+}
+
+.dashboard-widget > .info-box > .info-box-icon {
+    width: 80px !important;
+    height: 80px !important;
+    line-height: 80px !important;
 }
