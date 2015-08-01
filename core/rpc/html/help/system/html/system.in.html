@@ -1,60 +1,51 @@
-<div class="container agocontainer" id="contentarea">
+<div>
 
     <!-- title -->
-    <_h2 data-translateable="true">System informations</_h2>
+    <section class="content-header">
+        <_h1 data-translateable="true">System informations</_h1>
+    </section>
 
-    <!-- tabs -->
-    <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
-        <li class="active"><_a href="#version" data-translateable="true">Version</_a></li>
-        <li><_a href="#process" data-translateable="true">Process list</_a></li>
-        <li><_a href="#inventory" data-translateable="true">Inventory</_a></li>
-        <li><_a href="#configuration" data-translateable="true">Configuration overview</_a></li>
-    </ul>
-    <div class="tab-content" style="padding-top:10px;">
-        <!-- version tab -->
-        <div id="version" class="tab-pane fade in active">
-            <p>
-                <_span data-translateable="true">You are running</_span> ago control GPL - build <span data-bind="text: agocontrol.system().version"/>.
-                <br/>
-                <_span data-translateable="true">System</_span> UUID: <span style="font-weight:bold;" data-bind="text: agocontrol.system().uuid"/>.
-            </p>
+    <!-- content -->
+    <section class="content">
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+                <li class="active"><_a href="#version" data-translateable="true">Version</_a></li>
+                <li><_a href="#process" data-translateable="true">Process list</_a></li>
+                <li><_a href="#inventory" data-translateable="true">Inventory</_a></li>
+            </ul>
+            <div class="tab-content">
+
+                <!-- version tab -->
+                <div id="version" class="tab-pane fade in active">
+                    <p>
+                        <_span data-translateable="true">You are running</_span> ago control GPL - build <span data-bind="text: agocontrol.system().version"/>.
+                        <br/>
+                        <_span data-translateable="true">System</_span> UUID: <span style="font-weight:bold;" data-bind="text: agocontrol.system().uuid"/>.
+                    </p>
+                </div>
+
+                <!-- process list tab -->
+                <div id="process" class="tab-pane fade">
+                    <script id="rowTemplate" type="text/html">
+                        <td data-bind="text: name"></td>
+                        <ko opts="if: running">
+                            <td><i style="color:green; font-weight:bold;" class="en-check"></i></td>
+                        </ko>
+                        <ko opts="ifnot: running">
+                            <td><i style="color:red; font-weight:bold;" class="en-cancel"></i></td>
+                        </ko>
+                        <td data-bind="text: cpu"></td>
+                        <td data-bind="text: sizeToHRSize(memRes)"></td>
+                    </script>
+                    <div data-bind="agoGrid:grid"/>
+                </div>
+
+                <!-- inventory tab -->
+                <div id="inventory" class="tab-pane fade">
+                    <pre style="padding:10px; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:smaller; border-radius:5px;" data-bind="text: inventory"/>
+                </div>
+            </div>
         </div>
-        <!-- process list tab -->
-        <div id="process" class="tab-pane fade">
-            <script id="rowTemplate" type="text/html">
-                <td data-bind="text: name"></td>
-                <ko opts="if: running">
-                    <td><i style="color:green; font-weight:bold;" class="en-check"></i></td>
-                </ko>
-                <ko opts="ifnot: running">
-                    <td><i style="color:red; font-weight:bold;" class="en-cancel"></i></td>
-                </ko>
-                <td data-bind="text: cpu"></td>
-                <td data-bind="text: sizeToHRSize(memRes)"></td>
-            </script>
-            <div data-bind="agoGrid:grid"/>
-        </div>
-        <!-- inventory tab -->
-        <div id="inventory" class="tab-pane fade">
-            <pre style="padding:10px; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:smaller; border-radius:5px;" data-bind="text: inventory"/>
-        </div>
-        <!-- configuration tab -->
-        <div id="configuration" class="tab-pane fade">
-            <script type="text/html" id="configTreeRowTemplate">
-                <td><span data-bind="text:name"/></td>
-                <td class="field">
-                    <input class="form-control" type="text" data-bind="textInput:value"/>
-                </td>
-                <td>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary btn-xs" data-translateable="true" data-bind="click:$parent.setConfig">
-                            <span class="en-install"></span>
-                        </button>
-                    </div>
-                </td>
-            </script>
-            <div data-bind="agoGrid:configTreeGrid"></div>
-        </div>
-    </div>
+    </section>
 
 </div>
