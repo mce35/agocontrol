@@ -43,12 +43,12 @@ templates/plugins/plugins.xml.in
 applications/alert/html/alert.xml.in
 applications/agoscheduler/html/agoscheduler.xml.in
 applications/applications/html/applications.xml.in
-applications/ipx800/html/ipx800.xml.in
-applications/mysensors/html/mysensors.xml.in
 applications/security/html/security.xml.in
-applications/zwave/html/zwave.xml.in
-applications/onvif/html/onvif.xml.in
 applications/journal/html/journal.xml.in
+protocols/ipx800/html/ipx800.xml.in
+protocols/zwave/html/zwave.xml.in
+protocols/onvif/html/onvif.xml.in
+protocols/mysensors/html/mysensors.xml.in
 configuration/blockly/html/agoblockly.xml.in
 configuration/cloud/html/cloud.xml.in
 configuration/dashboards/html/dashboards.xml.in
@@ -61,4 +61,5 @@ configuration/scenarios/html/scenarios.xml.in
 configuration/systemmonitoring/html/systemmonitoring.xml.in
 configuration/variables/html/variables.xml.in
 help/system/html/system.xml.in
-help/debug/html/debug.xml.in
+help/drain/html/drain.xml.in
+help/config/html/config.xml.in

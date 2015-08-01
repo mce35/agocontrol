@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-31 15:45+0200\n"
+"POT-Creation-Date: 2015-08-01 16:08+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -123,7 +123,7 @@ msgstr "Liste"
 #: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-#: ../help/journal/html/journal.xml.in.h:2
+#: ../applications/journal/html/journal.xml.in.h:2
 #, fuzzy
 msgid "From"
 msgstr "Von:"
@@ -138,7 +138,7 @@ msgstr "Von:"
 #: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:9
 #: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../help/journal/html/journal.xml.in.h:3
+#: ../applications/journal/html/journal.xml.in.h:3
 #, fuzzy
 msgid "To"
 msgstr "Bis:"
@@ -154,7 +154,7 @@ msgstr "Bis:"
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
-#: ../applications/zwave/html/zwave.xml.in.h:41
+#: ../protocols/zwave/html/zwave.xml.in.h:41
 msgid "Refresh"
 msgstr "Aktualisieren"
 
@@ -335,7 +335,7 @@ msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
 #: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/security/html/security.xml.in.h:17
-#: ../applications/onvif/html/onvif.xml.in.h:14
+#: ../protocols/onvif/html/onvif.xml.in.h:14
 #: ../configuration/datalogger/html/datalogger.xml.in.h:8
 #: ../configuration/system/html/system.xml.in.h:7
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
@@ -348,7 +348,7 @@ msgstr ""
 "Um einen Test Tweet auf den Twitter-Konto senden, klicke auf den Button"
 
 #: ../applications/alert/html/alert.xml.in.h:24
-#: ../applications/zwave/html/zwave.xml.in.h:43
+#: ../protocols/zwave/html/zwave.xml.in.h:43
 msgid "Test"
 msgstr "Test"
 
@@ -377,7 +377,7 @@ msgid "12voip username"
 msgstr "12voip Benutzername"
 
 #: ../applications/alert/html/alert.xml.in.h:31
-#: ../applications/onvif/html/onvif.xml.in.h:13
+#: ../protocols/onvif/html/onvif.xml.in.h:13
 msgid "Password"
 msgstr "Passwort"
 
@@ -434,7 +434,7 @@ msgid "email"
 msgstr "Email"
 
 #: ../applications/alert/html/alert.xml.in.h:43
-#: ../applications/onvif/html/onvif.xml.in.h:11
+#: ../protocols/onvif/html/onvif.xml.in.h:11
 msgid "Login"
 msgstr "Benutzer"
 
@@ -597,77 +597,6 @@ msgstr ""
 msgid "favorites applications max"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:1
-#, fuzzy
-msgid "mysensorscontroller is not responding. Unable to execute action."
-msgstr ""
-"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:2
-#, fuzzy
-msgid "Serial port configured successfully."
-msgstr "Script wurde erfolgreich geladen."
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:3
-#, fuzzy
-msgid "Counters resetted successfully."
-msgstr "Aufgabe wurde erfolgreich gelöscht."
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:4
-#, fuzzy
-msgid "Device removed successfully."
-msgstr "Verbindung wurde erfolgreich entfernt"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:5
-#: ../applications/zwave/html/zwave.xml.in.h:50
-msgid "Statistics"
-msgstr "Statistiken"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
-#: ../applications/zwave/html/zwave.xml.in.h:29
-msgid "Configuration"
-msgstr "Konfiguration"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
-#, fuzzy
-msgid "Configure serial port"
-msgstr "USB Port vom Controller"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
-#: ../applications/zwave/html/zwave.xml.in.h:37
-msgid "Set"
-msgstr "Setzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
-#, fuzzy
-msgid "Reset device counters"
-msgstr "Controller Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
-#: ../applications/zwave/html/zwave.xml.in.h:65
-msgid "Reset"
-msgstr "Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
-#, fuzzy
-msgid "Reset all counters"
-msgstr "Controller Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
-#, fuzzy
-msgid "Reset all"
-msgstr "Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:13
-#, fuzzy
-msgid "Remove device"
-msgstr "Entfernen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:14
-#: ../applications/zwave/html/zwave.xml.in.h:45
-msgid "Remove"
-msgstr "Entfernen"
-
 #: ../applications/security/html/security.xml.in.h:1
 #, fuzzy
 msgid "Enter zone name"
@@ -683,7 +612,7 @@ msgid "Ok"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:4
-#: ../applications/zwave/html/zwave.xml.in.h:63
+#: ../protocols/zwave/html/zwave.xml.in.h:63
 #: ../configuration/blockly/html/agoblockly.xml.in.h:10
 #: ../configuration/dashboards/html/dashboards.xml.in.h:2
 #: ../configuration/devices/html/devices.xml.in.h:2
@@ -719,7 +648,7 @@ msgid "Security"
 msgstr "Security"
 
 #: ../applications/security/html/security.xml.in.h:10
-#: ../applications/zwave/html/zwave.xml.in.h:27
+#: ../protocols/zwave/html/zwave.xml.in.h:27
 msgid "Status"
 msgstr "Status"
 
@@ -744,7 +673,7 @@ msgid "Change current housemode"
 msgstr "Aktiven Hausmodus setzen"
 
 #: ../applications/security/html/security.xml.in.h:15
-#: ../applications/zwave/html/zwave.xml.in.h:69
+#: ../protocols/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:9
 #: ../configuration/events/html/events.xml.in.h:7
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -817,470 +746,505 @@ msgstr ""
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:1
+#: ../applications/journal/html/journal.xml.in.h:1
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
+msgid "Journal"
+msgstr ""
+
+#: ../applications/journal/html/journal.xml.in.h:4
+#, fuzzy
+msgid "Get"
+msgstr "Setzen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
 msgstr ""
 "Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
 
-#: ../applications/zwave/html/zwave.xml.in.h:2
+#: ../protocols/zwave/html/zwave.xml.in.h:2
 msgid "Port configured"
 msgstr "Port ist konfiguriert"
 
-#: ../applications/zwave/html/zwave.xml.in.h:3
+#: ../protocols/zwave/html/zwave.xml.in.h:3
 msgid "Z-Wave controller resetted"
 msgstr "Z-Wave Controller zurückgesetzt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:4
+#: ../protocols/zwave/html/zwave.xml.in.h:4
 msgid "Add node command sent to controller"
 msgstr "Node hinzufügen Befehl wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:5
+#: ../protocols/zwave/html/zwave.xml.in.h:5
 msgid "Remove node command sent to controller"
 msgstr "Node entfernen Befehl wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:6
+#: ../protocols/zwave/html/zwave.xml.in.h:6
 msgid "Test network command launched"
 msgstr "Netzwerk Test Befehl gestartet"
 
-#: ../applications/zwave/html/zwave.xml.in.h:7
+#: ../protocols/zwave/html/zwave.xml.in.h:7
 msgid "Cancel command sent to controller"
 msgstr "Abbrechen Befehl wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:8
+#: ../protocols/zwave/html/zwave.xml.in.h:8
 msgid "Save configuration sent to controller"
 msgstr "Konfiguration sichern wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:9
+#: ../protocols/zwave/html/zwave.xml.in.h:9
 msgid "Download config sent to controller"
 msgstr "Konfiguration herunterladen wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:10
+#: ../protocols/zwave/html/zwave.xml.in.h:10
 msgid "Turn on all nodes command sent to controller"
 msgstr "Alle Nodes einschalten wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:11
+#: ../protocols/zwave/html/zwave.xml.in.h:11
 msgid "Turn off all nodes command sent to controller"
 msgstr "Alle Nodes ausschalten wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:12
+#: ../protocols/zwave/html/zwave.xml.in.h:12
 msgid "Test node command sent to controller"
 msgstr "Test Node Befehl wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:13
+#: ../protocols/zwave/html/zwave.xml.in.h:13
 msgid "Test node command failed"
 msgstr "Test Node Befehl fehlgeschalgen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:14
+#: ../protocols/zwave/html/zwave.xml.in.h:14
 msgid "Heal node command sent to controller"
 msgstr "Heile Node Befehl wurde an den Controller geschickt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:15
+#: ../protocols/zwave/html/zwave.xml.in.h:15
 msgid "Parameter updated successfully"
 msgstr "Parameter erfolgreich aktualisiert"
 
-#: ../applications/zwave/html/zwave.xml.in.h:16
+#: ../protocols/zwave/html/zwave.xml.in.h:16
 msgid "Unable to update parameter"
 msgstr "Kann Parameter nicht aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:17
+#: ../protocols/zwave/html/zwave.xml.in.h:17
 msgid "Association added successfully"
 msgstr "Verbindung wurde erfolgreich hinzugefügt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:18
+#: ../protocols/zwave/html/zwave.xml.in.h:18
 msgid "Association removed successfully"
 msgstr "Verbindung wurde erfolgreich entfernt"
 
-#: ../applications/zwave/html/zwave.xml.in.h:19
+#: ../protocols/zwave/html/zwave.xml.in.h:19
 msgid "Really remove this association?"
 msgstr "Diese Verbindung wirklich löschen?"
 
-#: ../applications/zwave/html/zwave.xml.in.h:20
+#: ../protocols/zwave/html/zwave.xml.in.h:20
 msgid "Really remove this node?"
 msgstr "Diesen Node wirklich löschen?"
 
-#: ../applications/zwave/html/zwave.xml.in.h:21
+#: ../protocols/zwave/html/zwave.xml.in.h:21
 msgid "Reset controller (everything will be lost!)"
 msgstr "Controller zurücksetzen (alle Konfigurationen gehen verloren!)"
 
-#: ../applications/zwave/html/zwave.xml.in.h:22
+#: ../protocols/zwave/html/zwave.xml.in.h:22
 #, fuzzy
 msgid "Refresh node infos command sent"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:23
+#: ../protocols/zwave/html/zwave.xml.in.h:23
 #, fuzzy
 msgid "Refresh node infos command failed"
 msgstr "Test Node Befehl fehlgeschalgen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:24
+#: ../protocols/zwave/html/zwave.xml.in.h:24
 #, fuzzy
 msgid "Request node parameters sent"
 msgstr "Setze Parameter"
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
+#: ../protocols/zwave/html/zwave.xml.in.h:25
 #, fuzzy
 msgid "Request node parameters failed"
 msgstr "Setze Parameter"
 
-#: ../applications/zwave/html/zwave.xml.in.h:26
+#: ../protocols/zwave/html/zwave.xml.in.h:26
 msgid "Infos"
 msgstr "Informationen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:28
+#: ../protocols/zwave/html/zwave.xml.in.h:28
 msgid "Associations"
 msgstr "Verbindungen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:30
+#: ../protocols/zwave/html/zwave.xml.in.h:29
+#: ../protocols/mysensors/html/mysensors.xml.in.h:6
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:30
 #, fuzzy
 msgid "Commands"
 msgstr "Befehl:"
 
-#: ../applications/zwave/html/zwave.xml.in.h:31
+#: ../protocols/zwave/html/zwave.xml.in.h:31
 msgid "Create new association with"
 msgstr "Erstelle neue Verbindung mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:32
+#: ../protocols/zwave/html/zwave.xml.in.h:32
 msgid "Create"
 msgstr "Erstellen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:33
+#: ../protocols/zwave/html/zwave.xml.in.h:33
 #, fuzzy
 msgid "Delete node association"
 msgstr "Keine Verbindung"
 
-#: ../applications/zwave/html/zwave.xml.in.h:34
+#: ../protocols/zwave/html/zwave.xml.in.h:34
 msgid "Add association with"
 msgstr "Verbindung hinzufügen mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:35
+#: ../protocols/zwave/html/zwave.xml.in.h:35
 #, fuzzy
 msgid "Add association"
 msgstr "Verbindung hinzufügen mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:36
+#: ../protocols/zwave/html/zwave.xml.in.h:36
 msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:38
+#: ../protocols/zwave/html/zwave.xml.in.h:37
+#: ../protocols/mysensors/html/mysensors.xml.in.h:8
+msgid "Set"
+msgstr "Setzen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:38
 msgid "Heal this node"
 msgstr "Diesen Node heilen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:39
+#: ../protocols/zwave/html/zwave.xml.in.h:39
 msgid "Heal"
 msgstr "Heilen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:40
+#: ../protocols/zwave/html/zwave.xml.in.h:40
 msgid "Refresh node informations"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:42
+#: ../protocols/zwave/html/zwave.xml.in.h:42
 msgid "Test this node"
 msgstr "Diesen Node testen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:44
+#: ../protocols/zwave/html/zwave.xml.in.h:44
 msgid "Remove this node from network"
 msgstr "Diesen Node vom Netzwerk entfernen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:46
+#: ../protocols/zwave/html/zwave.xml.in.h:45
+#: ../protocols/mysensors/html/mysensors.xml.in.h:14
+msgid "Remove"
+msgstr "Entfernen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:46
 #, fuzzy
 msgid "Request node configuration parameters"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:47
-#: ../applications/onvif/html/onvif.xml.in.h:42
+#: ../protocols/zwave/html/zwave.xml.in.h:47
+#: ../protocols/onvif/html/onvif.xml.in.h:42
 #, fuzzy
 msgid "Request parameters"
 msgstr "Setze Parameter"
 
-#: ../applications/zwave/html/zwave.xml.in.h:48
+#: ../protocols/zwave/html/zwave.xml.in.h:48
 msgid "Devices"
 msgstr "Geräte"
 
-#: ../applications/zwave/html/zwave.xml.in.h:49
+#: ../protocols/zwave/html/zwave.xml.in.h:49
 msgid "Dependencies"
 msgstr "Abhängigkeiten"
 
-#: ../applications/zwave/html/zwave.xml.in.h:51
+#: ../protocols/zwave/html/zwave.xml.in.h:50
+#: ../protocols/mysensors/html/mysensors.xml.in.h:5
+msgid "Statistics"
+msgstr "Statistiken"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:51
 #, fuzzy
 msgid "General commands"
 msgstr "Allgemein"
 
-#: ../applications/zwave/html/zwave.xml.in.h:52
+#: ../protocols/zwave/html/zwave.xml.in.h:52
 msgid "True"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:53
+#: ../protocols/zwave/html/zwave.xml.in.h:53
 msgid "False"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:54
+#: ../protocols/zwave/html/zwave.xml.in.h:54
 #, fuzzy
 msgid "Pair/unpair node to your network"
 msgstr "Node ins Netzwerk koppeln"
 
-#: ../applications/zwave/html/zwave.xml.in.h:55
+#: ../protocols/zwave/html/zwave.xml.in.h:55
 msgid "Pair"
 msgstr "Kopple"
 
-#: ../applications/zwave/html/zwave.xml.in.h:56
+#: ../protocols/zwave/html/zwave.xml.in.h:56
 msgid "Unpair"
 msgstr "Entkoppeln"
 
-#: ../applications/zwave/html/zwave.xml.in.h:57
+#: ../protocols/zwave/html/zwave.xml.in.h:57
 msgid "Turn on/off all devices"
 msgstr "Schalte alle Geräte ein/aus"
 
-#: ../applications/zwave/html/zwave.xml.in.h:58
+#: ../protocols/zwave/html/zwave.xml.in.h:58
 msgid "On"
 msgstr "Ein"
 
-#: ../applications/zwave/html/zwave.xml.in.h:59
+#: ../protocols/zwave/html/zwave.xml.in.h:59
 msgid "Off"
 msgstr "Aus"
 
-#: ../applications/zwave/html/zwave.xml.in.h:60
+#: ../protocols/zwave/html/zwave.xml.in.h:60
 msgid "Test network"
 msgstr "Teste Netzwerk"
 
-#: ../applications/zwave/html/zwave.xml.in.h:61
+#: ../protocols/zwave/html/zwave.xml.in.h:61
 #, fuzzy
 msgid "Heal network"
 msgstr "Teste Netzwerk"
 
-#: ../applications/zwave/html/zwave.xml.in.h:62
+#: ../protocols/zwave/html/zwave.xml.in.h:62
 msgid "Cancel running controller command"
 msgstr "Laufenden Controller Befehl abbrechen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:64
+#: ../protocols/zwave/html/zwave.xml.in.h:64
 msgid "Reset controller"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:66
+#: ../protocols/zwave/html/zwave.xml.in.h:65
+#: ../protocols/mysensors/html/mysensors.xml.in.h:10
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:66
 msgid "Download configuration"
 msgstr "Konfiguration herunterladen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:67
-#: ../applications/onvif/html/onvif.xml.in.h:52
+#: ../protocols/zwave/html/zwave.xml.in.h:67
+#: ../protocols/onvif/html/onvif.xml.in.h:52
 msgid "Download"
 msgstr "Herunterladen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:68
+#: ../protocols/zwave/html/zwave.xml.in.h:68
 msgid "Save configuration"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:1
+#: ../protocols/onvif/html/onvif.xml.in.h:1
 #: ../configuration/datalogger/html/datalogger.xml.in.h:2
 #, fuzzy
 msgid "General"
 msgstr "Allgemein"
 
-#: ../applications/onvif/html/onvif.xml.in.h:2
+#: ../protocols/onvif/html/onvif.xml.in.h:2
 #, fuzzy
 msgid "Config"
 msgstr "Konfiguration"
 
-#: ../applications/onvif/html/onvif.xml.in.h:3
+#: ../protocols/onvif/html/onvif.xml.in.h:3
 #, fuzzy
 msgid "Motion"
 msgstr "Aktion"
 
-#: ../applications/onvif/html/onvif.xml.in.h:4
+#: ../protocols/onvif/html/onvif.xml.in.h:4
 #, fuzzy
 msgid "Recording"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:5
+#: ../protocols/onvif/html/onvif.xml.in.h:5
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: ../applications/onvif/html/onvif.xml.in.h:6
+#: ../protocols/onvif/html/onvif.xml.in.h:6
 #, fuzzy
 msgid "Camera ip address"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:7
+#: ../protocols/onvif/html/onvif.xml.in.h:7
 msgid "Ip"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:8
+#: ../protocols/onvif/html/onvif.xml.in.h:8
 msgid "Camera port"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:9
+#: ../protocols/onvif/html/onvif.xml.in.h:9
 msgid "Port"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:10
+#: ../protocols/onvif/html/onvif.xml.in.h:10
 msgid "Camera login"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:12
+#: ../protocols/onvif/html/onvif.xml.in.h:12
 #, fuzzy
 msgid "Camera password"
 msgstr "Dein Passwort"
 
-#: ../applications/onvif/html/onvif.xml.in.h:15
+#: ../protocols/onvif/html/onvif.xml.in.h:15
 msgid "Camera URI"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:16
+#: ../protocols/onvif/html/onvif.xml.in.h:16
 msgid "URI"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:17
+#: ../protocols/onvif/html/onvif.xml.in.h:17
 #, fuzzy
 msgid "Get device infos"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/onvif/html/onvif.xml.in.h:18
+#: ../protocols/onvif/html/onvif.xml.in.h:18
 msgid ""
 "Update existing configuration. If you feel limited and need to add more "
 "infos, please use \"Advanced\" tab"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:19
+#: ../protocols/onvif/html/onvif.xml.in.h:19
 #, fuzzy
 msgid "Hostname"
 msgstr "Benutzername"
 
-#: ../applications/onvif/html/onvif.xml.in.h:20
+#: ../protocols/onvif/html/onvif.xml.in.h:20
 msgid "Date and time"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:21
+#: ../protocols/onvif/html/onvif.xml.in.h:21
 msgid "NTP"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:22
+#: ../protocols/onvif/html/onvif.xml.in.h:22
 msgid "Network interfaces"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:23
+#: ../protocols/onvif/html/onvif.xml.in.h:23
 msgid "OnVIF operations<i class=\"icon-link\"/>"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:24
+#: ../protocols/onvif/html/onvif.xml.in.h:24
 msgid ""
 "Enabling motion will create a new binary device that allows you to create "
 "events with it"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:25
+#: ../protocols/onvif/html/onvif.xml.in.h:25
 msgid "Enable motion"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:26
+#: ../protocols/onvif/html/onvif.xml.in.h:26
 #, fuzzy
 msgid "Camera profile"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:27
+#: ../protocols/onvif/html/onvif.xml.in.h:27
 msgid "Get all profiles"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:28
+#: ../protocols/onvif/html/onvif.xml.in.h:28
 msgid "Detection sensitivity"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:29
+#: ../protocols/onvif/html/onvif.xml.in.h:29
 #, fuzzy
 msgid "Detection deviation"
 msgstr "Keine Verbindung"
 
-#: ../applications/onvif/html/onvif.xml.in.h:30
+#: ../protocols/onvif/html/onvif.xml.in.h:30
 msgid "(the higher the value, the more motion is allowed)"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:31
+#: ../protocols/onvif/html/onvif.xml.in.h:31
 #, fuzzy
 msgid "On duration"
 msgstr "Konfiguration"
 
-#: ../applications/onvif/html/onvif.xml.in.h:32
+#: ../protocols/onvif/html/onvif.xml.in.h:32
 msgid "seconds"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:33
+#: ../protocols/onvif/html/onvif.xml.in.h:33
 msgid "Please note that recording will only work if motion is enabled"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:34
+#: ../protocols/onvif/html/onvif.xml.in.h:34
 #, fuzzy
 msgid "Enable recording"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:35
+#: ../protocols/onvif/html/onvif.xml.in.h:35
 #, fuzzy
 msgid "Recording profile"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:36
+#: ../protocols/onvif/html/onvif.xml.in.h:36
 msgid "Recording duration after last motion detected"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:37
+#: ../protocols/onvif/html/onvif.xml.in.h:37
 msgid "Draw detected area"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../protocols/onvif/html/onvif.xml.in.h:38
 msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../protocols/onvif/html/onvif.xml.in.h:39
 #, fuzzy
 msgid "Service name"
 msgstr "Gerätename"
 
-#: ../applications/onvif/html/onvif.xml.in.h:40
+#: ../protocols/onvif/html/onvif.xml.in.h:40
 #, fuzzy
 msgid "Operation name"
 msgstr "Namen der Zone eingeben"
 
-#: ../applications/onvif/html/onvif.xml.in.h:41
+#: ../protocols/onvif/html/onvif.xml.in.h:41
 #, fuzzy
 msgid "Operation"
 msgstr "Beschreibung"
 
-#: ../applications/onvif/html/onvif.xml.in.h:43
+#: ../protocols/onvif/html/onvif.xml.in.h:43
 msgid "Response"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:44
+#: ../protocols/onvif/html/onvif.xml.in.h:44
 msgid "Execute"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:45
+#: ../protocols/onvif/html/onvif.xml.in.h:45
 #, fuzzy
 msgid "Check parameters"
 msgstr "Setze Parameter"
 
-#: ../applications/onvif/html/onvif.xml.in.h:46
+#: ../protocols/onvif/html/onvif.xml.in.h:46
 msgid "My cameras"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:47
+#: ../protocols/onvif/html/onvif.xml.in.h:47
 #, fuzzy
 msgid "My recordings"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../protocols/onvif/html/onvif.xml.in.h:48
 msgid "Add camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../protocols/onvif/html/onvif.xml.in.h:49
 #, fuzzy
 msgid "Recordings config"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:50
+#: ../protocols/onvif/html/onvif.xml.in.h:50
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
 #: ../configuration/events/html/events.xml.in.h:9
 #: ../configuration/scenarios/html/scenarios.xml.in.h:11
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: ../applications/onvif/html/onvif.xml.in.h:51
+#: ../protocols/onvif/html/onvif.xml.in.h:51
 #: ../configuration/blockly/html/agoblockly.xml.in.h:4
 #: ../configuration/dashboards/html/dashboards.xml.in.h:3
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -1291,36 +1255,82 @@ msgstr "Bearbeiten"
 msgid "Delete"
 msgstr "Löschen"
 
-#: ../applications/onvif/html/onvif.xml.in.h:53
+#: ../protocols/onvif/html/onvif.xml.in.h:53
 #, fuzzy
 msgid "Ip address"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:54
+#: ../protocols/onvif/html/onvif.xml.in.h:54
 msgid "Get camera profiles"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:55
 msgid "Select camera profile"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:56
+#: ../protocols/onvif/html/onvif.xml.in.h:56
 msgid "Save camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:57
+#: ../protocols/onvif/html/onvif.xml.in.h:57
 #, fuzzy
 msgid "Recordings directory"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:58
+#: ../protocols/onvif/html/onvif.xml.in.h:58
 msgid "Directory"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:59
+#: ../protocols/onvif/html/onvif.xml.in.h:59
 #, fuzzy
 msgid "Recordings purge delay"
 msgstr "Konfiguration speichern"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:1
+#, fuzzy
+msgid "mysensorscontroller is not responding. Unable to execute action."
+msgstr ""
+"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:2
+#, fuzzy
+msgid "Serial port configured successfully."
+msgstr "Script wurde erfolgreich geladen."
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:3
+#, fuzzy
+msgid "Counters resetted successfully."
+msgstr "Aufgabe wurde erfolgreich gelöscht."
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:4
+#, fuzzy
+msgid "Device removed successfully."
+msgstr "Verbindung wurde erfolgreich entfernt"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:7
+#, fuzzy
+msgid "Configure serial port"
+msgstr "USB Port vom Controller"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:9
+#, fuzzy
+msgid "Reset device counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:11
+#, fuzzy
+msgid "Reset all counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:12
+#, fuzzy
+msgid "Reset all"
+msgstr "Zurücksetzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:13
+#, fuzzy
+msgid "Remove device"
+msgstr "Entfernen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
 #, fuzzy
@@ -1360,17 +1370,17 @@ msgid "Debug script"
 msgstr "Script"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:12
-#: ../help/debug/html/debug.xml.in.h:4
+#: ../help/drain/html/drain.xml.in.h:2
 msgid "Start"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:13
-#: ../help/debug/html/debug.xml.in.h:5
+#: ../help/drain/html/drain.xml.in.h:3
 msgid "Stop"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:14
-#: ../help/debug/html/debug.xml.in.h:6
+#: ../help/drain/html/drain.xml.in.h:4
 msgid "Clear"
 msgstr "Löschen"
 
@@ -1661,11 +1671,6 @@ msgstr ""
 msgid "Purge all positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:19
-#: ../help/journal/html/journal.xml.in.h:1
-msgid "Journal"
-msgstr ""
-
 #: ../configuration/datalogger/html/datalogger.xml.in.h:20
 msgid "Purge all messages"
 msgstr ""
@@ -1890,56 +1895,44 @@ msgstr "Namen für Variable eingeben"
 msgid "Create variable"
 msgstr "Variable erstellen"
 
-#. title
-#: ../help/system/html/system.xml.in.h:2
+#: ../help/system/html/system.xml.in.h:1
 #, fuzzy
 msgid "System informations"
 msgstr "Node Informationen aktualisieren"
 
-#: ../help/system/html/system.xml.in.h:3
+#: ../help/system/html/system.xml.in.h:2
 msgid "Version"
 msgstr "Version"
 
-#: ../help/system/html/system.xml.in.h:4
+#: ../help/system/html/system.xml.in.h:3
 #, fuzzy
 msgid "Process list"
 msgstr "Liste aktualisieren"
 
-#: ../help/system/html/system.xml.in.h:5
+#: ../help/system/html/system.xml.in.h:4
 msgid "Inventory"
 msgstr ""
 
-#: ../help/system/html/system.xml.in.h:6
-#, fuzzy
-msgid "Configuration overview"
-msgstr "Konfiguration"
-
-#: ../help/system/html/system.xml.in.h:7
+#: ../help/system/html/system.xml.in.h:5
 msgid "You are running"
 msgstr ""
 
-#: ../help/system/html/system.xml.in.h:8
+#: ../help/system/html/system.xml.in.h:6
 msgid "System"
 msgstr "System"
 
-#. title
-#: ../help/debug/html/debug.xml.in.h:2
-msgid "Debug tools"
-msgstr ""
-
-#: ../help/debug/html/debug.xml.in.h:3
+#: ../help/drain/html/drain.xml.in.h:1
 #, fuzzy
-msgid "Events draining"
+msgid "Event draining"
 msgstr "Ereignis Konfiguration"
 
-#: ../help/debug/html/debug.xml.in.h:7
+#: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr ""
 
-#: ../help/journal/html/journal.xml.in.h:4
 #, fuzzy
-msgid "Get"
-msgstr "Setzen"
+#~ msgid "Configuration overview"
+#~ msgstr "Konfiguration"
 
 #, fuzzy
 #~ msgid "Event builder using blocks"
