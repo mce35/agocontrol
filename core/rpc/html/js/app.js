@@ -73,11 +73,11 @@ function stringToDatetime(str)
 }
 
 /**
- * Convert datetime js object to string under format "d.m.y h:m"
+ * Convert datetime js object to string under format "d/m/y h:m"
  */
 function datetimeToString(dt)
 {
-    var str = $.datepicker.formatDate('dd.mm.yy', dt);
+    var str = $.datepicker.formatDate('dd\/mm\/yy', dt);
     str += ' ';
     str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
     str += ':';
