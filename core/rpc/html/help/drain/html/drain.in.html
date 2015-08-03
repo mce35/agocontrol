@@ -8,28 +8,36 @@
     <!-- content -->
     <section class="content">
         <div class="row">
-            <div class="col-sm-8">
-                <div class="btn-group">
-                    <_button type="button" class="btn btn-primary" data-bind="event{'click':startDrain}" data-translateable="true">Start</_button>
-                    <_button type="button" class="btn btn-primary" data-bind="event{'click':stopDrain}" data-translateable="true">Stop</_button>
-                    <_button type="button" class="btn btn-primary" data-bind="event{'click':clear}" data-translateable="true">Clear</_button>
+            <div class="col-xs-12">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="btn-group">
+                                    <_button type="button" class="btn btn-primary" data-bind="event{'click':startDrain}" data-translateable="true">Start</_button>
+                                    <_button type="button" class="btn btn-primary" data-bind="event{'click':stopDrain}" data-translateable="true">Stop</_button>
+                                    <_button type="button" class="btn btn-primary" data-bind="event{'click':clear}" data-translateable="true">Clear</_button>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 text-right">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" data-bind="checked: drainAutoscroll"/>
+                                        <_span data-translateable="true">Autoscroll</_span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="col-sm-12">
+                            <div class="row" id="drainContainer">
+                                <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-sm-4 text-right">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" data-bind="checked: drainAutoscroll"/>
-                        <_span data-translateable="true">Autoscroll</_span>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-12">
-            <div class="row" id="drainContainer">
-                <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
-                </ul>
             </div>
         </div>
     </section>
-                    
+ 
 </div>
