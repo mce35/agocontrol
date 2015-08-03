@@ -221,6 +221,14 @@ div.dashboard-widget-draggable {
 }
 
 /* adminLTE tweaks */
+.bg-white {
+    background-color: #FFFFFF !important;
+}
+
+.text-white {
+    color: #FFFFFF !important;
+}
+
 .content-header h1 {
     border-bottom: 1px solid #CCCCCC;
     padding-bottom: 10px;
@@ -278,8 +286,12 @@ div.dashboard-widget-draggable {
 }
 
 /* if adminLTE is not fixed, body color is uggly */
-body {
+.body-light {
     background-color: #F9FAFC; /* light color */
+}
+
+.body-dark {
+    background-color: #222D32; /* dark color */
 }
 
 /* reduce dashboard widget height */

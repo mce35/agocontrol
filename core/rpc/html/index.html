@@ -51,7 +51,8 @@
 <script src="js/libs/jquery.datetimepicker.min.js"></script>
 
 </head>
-<body class="skin-yellow-light sidebar-mini">
+
+<body class="sidebar-mini" data-bind="css:$root.agocontrol.skin">
 
 <div id="detailsModal" class="modal fade">
     <div class="modal-dialog modal-lg">
@@ -102,7 +103,6 @@
                             <span class="label label-success" data-bind="text:$root.agocontrol.journalEntries().length"></span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li class="header">Journal entries of day</li>
                             <li>
                                 <ul class="menu" data-bind="foreach: $root.agocontrol.journalEntries">
                                     <li>
@@ -222,6 +222,20 @@
             </div>
             <div class="tab-pane" id="control-sidebar-color-tab">
                 <h3 class="control-sidebar-heading">Color theme</h3>
+                <ul class="control-sidebar-menu">
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-blue-light')"><i class="menu-icon bg-light-blue"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Blue light</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-black-light')"><i class="menu-icon bg-white"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Black light</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-purple-light')"><i class="menu-icon bg-purple"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Purple light</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-green-light')"><i class="menu-icon bg-green"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Green light</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-red-light')"><i class="menu-icon bg-red"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Red light</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-yellow-light')"><i class="menu-icon bg-yellow"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Yellow light</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-blue')"><i class="menu-icon bg-black fa fa-circle text-light-blue" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Blue dark</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-black')"><i class="menu-icon bg-black fa fa-circle text-white" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Black dark</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-purple')"><i class="menu-icon bg-black fa fa-circle text-purple" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Purple dark</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-green')"><i class="menu-icon bg-black fa fa-circle text-green" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Green dark</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-red')"><i class="menu-icon bg-black fa fa-circle text-red" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Red dark</h4></div></a></li>
+                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-yellow')"><i class="menu-icon bg-black fa fa-circle text-yellow" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Yellow dark</h4></div></a></li>
+                </ul>
             </div>
             <div class="tab-pane" id="control-sidebar-help-tab">
                 <h3 class="control-sidebar-heading">Help</h3>
@@ -259,7 +273,7 @@
 
         <!-- CONTENT -->
         <div id="main" data-bind="with:currentView">
-            <div style="min-height:500px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}" >
+            <div style="min-height:650px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}" >
         </div>
     </div>
 

@@ -44,6 +44,9 @@ Agocontrol.prototype = {
     systemController: null,
     journal: null,
 
+    //ui config
+    skin: ko.observable('skin-yellow-light body-light'),
+
     _init : function(){
         /**
          * Update application list when we have raw list of application, favorites
@@ -143,6 +146,8 @@ Agocontrol.prototype = {
             this._getProtocols.fulfill();
 
         }, this);
+
+        
     },
 
     /**
@@ -154,6 +159,7 @@ Agocontrol.prototype = {
      * Application availability is NOT guaranteed to be loaded immediately.
      */
     initialize : function() {
+        var p0 = this.getUiConfig();
         var p1 = this.getInventory()
             .then(this.handleInventory.bind(this))
             .then(this.getJournalEntries.bind(this)); //need datalogger uuid
@@ -162,7 +168,7 @@ Agocontrol.prototype = {
         // Required but non-dependent
         this.updateFavorites();
 
-        return Promise.all([p1, p2]);
+        return Promise.all([p0, p1, p2]);
     },
     
     /**
@@ -960,5 +966,62 @@ Agocontrol.prototype = {
         }
     },
 
+    //get ui config
+    //this function uses cgi to be fast as possible (no need to wait inventory handling)
+    getUiConfig: function()
+    {
+        var self = this;
+        return $.ajax({
+            url : "cgi-bin/ui.cgi?param=theme",
+            method : "GET"
+        }).done(function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result==1 )
+            {
+                //apply skin if saved otherwise apply default one
+                if( res.content.skin )
+                {
+                    var skin = res.content.skin;
+                    self.skin(skin);
+                }
+            }
+            else
+            {
+                if( res.result.error )
+                {
+                    console.error('Unable to get theme: '+res.result.error);
+                }
+                else
+                {
+                    console.error('Unable to get theme');
+                }
+            }
+        });
+    },
+
+    //change ui skin
+    setSkin: function(skin)
+    {
+        var self = this;
+
+        //append general style light/dark
+        skin.indexOf('light')===-1 ? skin+=' body-dark' : skin+=' body-light';
+        self.skin(skin);
+
+        //save changes
+        $.ajax({
+            url : "cgi-bin/ui.cgi?key=skin&param=theme&value="+skin,
+            method : "GET",
+            async : true,
+        }).done(function(res) {
+            if( !res || !res.result || res.result===0 ) 
+            {
+                notif.error('Unable to save skin');
+            }
+            else
+            {
+                notif.success('Skin saved');
+            }
+        });
+    }
 };
 
