@@ -25,7 +25,6 @@ templates/devices/energymeter.xml.in
 templates/devices/energysensor.xml.in
 templates/devices/gpssensor.xml.in
 templates/devices/humiditysensor.xml.in
-templates/devices/ipx800v3board.xml.in
 templates/devices/multigraph.xml.in
 templates/devices/phone.xml.in
 templates/devices/powermeter.xml.in
