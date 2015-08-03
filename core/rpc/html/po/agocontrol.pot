@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-01 16:08+0200\n"
+"POT-Creation-Date: 2015-08-03 15:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1363,30 +1363,26 @@ msgid "Changed"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:31
-msgid "Toggle Dropdown"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 msgid "Save as"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 msgid "Import"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:34
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Check"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:35
+#: ../configuration/blockly/html/agoblockly.xml.in.h:34
 msgid "View"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:36
+#: ../configuration/blockly/html/agoblockly.xml.in.h:35
 msgid "Debug"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:37
+#: ../configuration/blockly/html/agoblockly.xml.in.h:36
 msgid "Event editor is only available on large resolution devices."
 msgstr ""
 
