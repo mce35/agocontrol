@@ -248,7 +248,63 @@ std::string prettyPrint(std::string message)
         //internalid
         internalid = items[0] + "/" + items[1];
         result << internalid << ";";
-        if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
+        if( boost::algorithm::starts_with(gateway_protocol_version, "1.5") )
+        {
+            //protocol v1.5
+
+            //message type
+            result << getMsgTypeNameV15((msgTypeV15)atoi(items[2].c_str())) << ";";
+            //ack
+            result << items[3] << ";";
+            //message subtype
+            switch (atoi(items[2].c_str())) {
+                case PRESENTATION_V15:
+                    //device type
+                    result << getDeviceTypeNameV15((deviceTypesV15)atoi(items[4].c_str())) << ";";
+                    //protocol version (payload)
+                    if( items.size()==6 )
+                        result << items[5] << endl;
+                    else
+                        result << endl;
+                    break;
+                case SET_V15:
+                case REQ_V15:
+                    //variable type
+                    result << getVariableTypeNameV15((varTypesV15)atoi(items[4].c_str())) << ";";
+                    //value (payload)
+                    if( items.size()==6 )
+                        result << items[5] << endl;
+                    else
+                        result << endl;
+                    break;
+                    break;
+                case INTERNAL_V15:
+                    //internal message type
+                    if( atoi(items[4].c_str())==I_LOG_MESSAGE_V15 && !DEBUG_GW )
+                    {
+                        //filter gateway log message
+                        result.str("");
+                    }
+                    else
+                    {
+                        result << getInternalTypeNameV15((internalTypesV15)atoi(items[4].c_str())) << ";";
+                        //value (payload)
+                        if( items.size()==6 )
+                            result << items[5] << endl;
+                        else
+                            result << endl;
+                    }
+                    break;
+                case STREAM_V15:
+                    //stream message
+                    //TODO when fully implemented in MySensors
+                    result << "STREAM (not implemented!)" << endl;
+                    break;
+                default:
+                    result << items[3] << endl;;
+            }
+        }
+        else if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
         {
             //protocol v1.4
 
@@ -507,6 +563,42 @@ void sendcommand(std::string command)
     }
     serialPort.WriteString(command.c_str());
 }
+
+void sendcommandV15(std::string internalid, int messageType, int ack, int subType, std::string payload)
+{
+    std::vector<std::string> items = split(internalid, '/');
+    stringstream command;
+    qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+
+    //prepare command
+    int nodeId = atoi(items[0].c_str());
+    int childId = atoi(items[1].c_str());
+    command << nodeId << ";" << childId << ";" << messageType << ";" << ack << ";" << subType << ";" << payload << "\n";
+
+    //save command if device is an actuator and message type is SET
+    if( resendEnabled && infos.size()>0 && infos["type"]=="switch" && messageType==SET_V15 )
+    {
+        //check if internalid has no command pending
+        pthread_mutex_lock(&resendMutex);
+        if( commandsmap.count(internalid)==0 )
+        {
+            T_COMMAND cmd;
+            cmd.command = command.str();
+            cmd.attempts = 0;
+            commandsmap[internalid] = cmd;
+        }
+        pthread_mutex_unlock(&resendMutex);
+    }
+
+    //send command
+    if( DEBUG )
+    {
+        time_t t = time(NULL);
+        cout << " => " << timestampToStr(&t) << " SENDING: " << command.str();
+    }
+    serialPort.WriteString(command.str().c_str());
+}
+
 void sendcommandV14(std::string internalid, int messageType, int ack, int subType, std::string payload)
 {
     std::vector<std::string> items = split(internalid, '/');
@@ -541,6 +633,7 @@ void sendcommandV14(std::string internalid, int messageType, int ack, int subTyp
     }
     serialPort.WriteString(command.str().c_str());
 }
+
 void sendcommandV13(std::string internalid, int messageType, int subType, std::string payload)
 {
     std::vector<std::string> items = split(internalid, '/');
@@ -810,19 +903,71 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                     }
                     else if( customvar=="VAR2" )
                     {
-                        sendcommandV14(internalid, SET_V14, 1, V_VAR2_V14, value);
+                        if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
+                        {
+                            sendcommandV15(internalid, SET_V15, 1, V_VAR2_V15, value);
+                        }
+                        else if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR2_V14, value);
+                        }
+                        else
+                        {
+                            cout << "Customvar is supported from protocol v1.4" << endl;
+                            returnval["error"] = 1;
+                            returnval["msg"] = "Customvar is supported from protocol v1.4";
+                        }
                     }
                     else if( customvar=="VAR3" )
                     {
-                        sendcommandV14(internalid, SET_V14, 1, V_VAR3_V14, value);
+                        if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
+                        {
+                            sendcommandV15(internalid, SET_V15, 1, V_VAR3_V15, value);
+                        }
+                        else if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR3_V14, value);
+                        }
+                        else
+                        {
+                            cout << "Customvar is supported from protocol v1.4" << endl;
+                            returnval["error"] = 1;
+                            returnval["msg"] = "Customvar is supported from protocol v1.4";
+                        }
                     }
                     else if( customvar=="VAR4" )
                     {
-                        sendcommandV14(internalid, SET_V14, 1, V_VAR4_V14, value);
+                        if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
+                        {
+                            sendcommandV15(internalid, SET_V15, 1, V_VAR4_V15, value);
+                        }
+                        else if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR4_V14, value);
+                        }
+                        else
+                        {
+                            cout << "Customvar is supported from protocol v1.4" << endl;
+                            returnval["error"] = 1;
+                            returnval["msg"] = "Customvar is supported from protocol v1.4";
+                        }
                     }
                     else if( customvar=="VAR5" )
                     {
-                        sendcommandV14(internalid, SET_V14, 1, V_VAR5_V14, value);
+                        if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
+                        {
+                            sendcommandV15(internalid, SET_V15, 1, V_VAR5_V15, value);
+                        }
+                        else if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                        {
+                            sendcommandV14(internalid, SET_V14, 1, V_VAR5_V14, value);
+                        }
+                        else
+                        {
+                            cout << "Customvar is supported from protocol v1.4" << endl;
+                            returnval["error"] = 1;
+                            returnval["msg"] = "Customvar is supported from protocol v1.4";
+                        }
                     }
                     else
                     {
@@ -858,7 +1003,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                     {
                         if( infos["value"].asString()=="1" )
                         {
-                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
+                            {
+                                sendcommandV15(internalid, SET_V15, 1, V_STATUS_V15, "0");
+                            }
+                            else if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
                             {
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "0");
                             }
@@ -876,7 +1025,11 @@ qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map command)
                     {
                         if( infos["value"].asString()=="0" )
                         {
-                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
+                            if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
+                            {
+                                sendcommandV15(internalid, SET_V15, 1, V_STATUS_V15, "1");
+                            }
+                            else if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.4") )
                             {
                                 sendcommandV14(internalid, SET_V14, 1, V_LIGHT_V14, "1");
                             }
@@ -1890,6 +2043,507 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
 }
 
 /**
+ * Process message v1.5
+ */
+void processMessageV15(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos)
+{
+    int valid = INVALID;
+    stringstream timestamp;
+    stringstream id;
+    int freeid;
+    std::map<std::string, T_COMMAND>::iterator cmd;
+
+    switch (messageType)
+    {
+        case INTERNAL_V15:
+            switch (subType)
+            {
+                case I_BATTERY_LEVEL_V15:
+                    if( infos.size()==0 )
+                    {
+                        //create device
+                        newDevice(internalid, "batterysensor");
+                    }
+
+                    //update counters
+                    if( infos.size()>0 )
+                    {
+                        if( infos["counter_received"].isVoid() )
+                        {
+                            infos["counter_received"] = 1;
+                        }
+                        else
+                        {
+                            infos["counter_received"] = infos["counter_received"].asUint64()+1;
+                        }
+                        infos["last_timestamp"] = (int)(time(NULL));
+                        setDeviceInfos(internalid, &infos);
+                    }
+
+                    //emit battery level
+                    agoConnection->emitEvent(internalid.c_str(), "event.device.batterylevelchanged", payload.c_str(), "percent");
+                    break;
+                case I_TIME_V15:
+                    timestamp << time(NULL);
+                    sendcommandV15(internalid, INTERNAL_V15, 0, I_TIME_V15, timestamp.str());
+                    break;
+                case I_ID_REQUEST_V15:
+                    //return radio id to sensor
+                    freeid = getFreeId();
+                    //@info nodeId - The unique id (1-254) for this sensor. Default 255 (auto mode).
+                    if( freeid>254 || freeid==0 )
+                    {
+                        cerr << "FATAL: no nodeId available!" << endl;
+                    }
+                    else
+                    {
+                        id << freeid;
+                        sendcommandV15(internalid, INTERNAL_V15, 0, I_ID_RESPONSE_V15, id.str());
+                    }
+                    break;
+                case I_LOG_MESSAGE_V15:
+                    //debug message from gateway. Already displayed with prettyPrint when debug activated
+                    break;
+                case I_CONFIG_V15:
+                    //return config
+                    sendcommandV15(internalid, INTERNAL_V15, 0, I_CONFIG_V15, units.c_str());
+                case I_SKETCH_NAME_V15:
+                    //handled by useless (just to remove some unsupported log messages)
+                    break;
+                case I_SKETCH_VERSION_V15:
+                    //only used to update timestamp. Useful if network relay support enabled
+                    infos["last_timestamp"] = (int)(time(NULL));
+                    setDeviceInfos(internalid, &infos);
+                    break;
+                case I_GATEWAY_READY_V15:
+                    cout << "Received GATEWAY_READY message" << endl;
+                    break;
+                default:
+                    cout << "INTERNAL subtype '" << subType << "' not supported (protocol v1.4)" << endl;
+            }
+            break;
+
+        case PRESENTATION_V15:
+            switch (subType)
+            {
+                case S_DOOR_V15:
+                case S_MOTION_V15:
+                    newDevice(internalid, "binarysensor");
+                    break;
+                case S_SMOKE_V15:
+                    newDevice(internalid, "smokedetector");
+                    break;
+                case S_BINARY_V15:
+                case S_HEATER_V15:
+                    newDevice(internalid, "switch");
+                    break;
+                case S_DIMMER_V15:
+                    newDevice(internalid, "dimmer");
+                    break;
+                case S_COVER_V15:
+                    newDevice(internalid, "drapes");
+                    break;
+                case S_TEMP_V15:
+                    newDevice(internalid, "temperaturesensor");
+                    break;
+                case S_HUM_V15:
+                    newDevice(internalid, "humiditysensor");
+                    break;
+                case S_BARO_V15:
+                    newDevice(internalid, "barometersensor");
+                    break;
+                case S_WIND_V15:
+                    newDevice(internalid, "windsensor");
+                    break;
+                case S_RAIN_V15:
+                    newDevice(internalid, "rainsensor");
+                    break;
+                case S_UV_V15:
+                    newDevice(internalid, "uvsensor");
+                    break;
+                case S_WEIGHT_V15:
+                    newDevice(internalid, "weightsensor");
+                    break;
+                case S_POWER_V15:
+                    newDevice(internalid, "powermeter");
+                    break;
+                case S_DISTANCE_V15:
+                    newDevice(internalid, "distancesensor");
+                    break;
+                case S_LIGHT_LEVEL_V15:
+                    newDevice(internalid, "brightnesssensor");
+                    break;
+                case S_ARDUINO_REPEATER_NODE_V15:
+                    if( handleNetworkRelay )
+                    {
+                        newDevice(internalid, "networkrelay");
+                    }
+                    break;
+                case S_LOCK_V15:
+                    newDevice(internalid, "lock");
+                    break;
+                case S_IR_V15:
+                    newDevice(internalid, "infraredblaster");
+                    break;
+                case S_AIR_QUALITY_V15:
+                    newDevice(internalid, "airsensor");
+                    break;
+                case S_CUSTOM_V15:
+                    cout << "Device type 'CUSTOM' cannot be implemented in agocontrol" << endl;
+                    break;
+                case S_DUST_V15:
+                    newDevice(internalid, "dustsensor");
+                    break;
+                case S_SCENE_CONTROLLER_V15:
+                    newDevice(internalid, "scenecontroller");
+                    break;
+                default:
+                    cout << "PRESENTATION subtype '" << subType << "' not supported (protocol v1.4)" << endl;
+            }
+            break;
+
+        case REQ_V15:
+            if( infos.size()>0 )
+            {
+                //update counters
+                if( infos["counter_sent"].isVoid() )
+                {
+                    infos["counter_sent"] = 1;
+                }
+                else
+                {
+                    infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
+                }
+                setDeviceInfos(internalid, &infos);
+
+                //agocontrol save device value in device map regardless the sensor type.
+                //here we handle specific custom vars, to make possible having multiple values for the same device
+                switch (subType)
+                {
+                    case V_VAR1_V15:
+                        //send var1 value (already reserved for pin code)
+                        if( !infos["pin"].isVoid() )
+                        {
+                            sendcommandV15(internalid, SET_V15, 0, subType, infos["pin"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'pin' value. Returned value [0] is not valid." << endl;
+                            sendcommandV15(internalid, SET_V15, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR2_V15:
+                        //send var2 value
+                        if( !infos["custom_var2"].isVoid() )
+                        {
+                            sendcommandV15(internalid, SET_V15, 0, subType, infos["custom_var2"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var2' value. Returned value [0] is not valid." << endl;
+                            sendcommandV15(internalid, SET_V15, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR3_V15:
+                        //send var3 value
+                        if( !infos["custom_var3"].isVoid() )
+                        {
+                            sendcommandV15(internalid, SET_V15, 0, subType, infos["custom_var3"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var3' value. Returned value [0] is not valid." << endl;
+                            sendcommandV15(internalid, SET_V15, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR4_V15:
+                        //send var4 value
+                        if( !infos["custom_var4"].isVoid() )
+                        {
+                            sendcommandV15(internalid, SET_V15, 0, subType, infos["custom_var4"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var4' value. Returned value [0] is not valid." << endl;
+                            sendcommandV15(internalid, SET_V15, 0, subType, "0");
+                        }
+                        break;
+                    case V_VAR5_V15:
+                        //send var5 value
+                        if( !infos["custom_var5"].isVoid() )
+                        {
+                            sendcommandV15(internalid, SET_V15, 0, subType, infos["custom_var5"]);
+                        }
+                        else
+                        {
+                            cout << "Device '" << internalid << "' has no 'custom_var5' value. Returned value [0] is not valid." << endl;
+                            sendcommandV15(internalid, SET_V15, 0, subType, "0");
+                        }
+                        break;
+                    default:
+                        //send default value
+                        sendcommandV15(internalid, SET_V15, 0, subType, infos["value"]);
+                }
+            }
+            else
+            {
+                //device not found
+                cerr  << "Device not found: unable to get its value" << endl;
+            }
+            break;
+
+        case SET_V15:
+            if( resendEnabled )
+            {
+                //remove command from map to avoid sending command again
+                pthread_mutex_lock(&resendMutex);
+                cmd = commandsmap.find(internalid);
+                if( cmd!=commandsmap.end() && ack==1 )
+                {
+                    //command exists in command list for this device and its an ack
+                    //remove command from list
+                    cout << "Ack received for command " << cmd->second.command;
+                    commandsmap.erase(cmd);
+                    ack = 0;
+                }
+                pthread_mutex_unlock(&resendMutex);
+            }
+
+            //update counters
+            if( infos.size()>0 )
+            {
+                if( infos["counter_received"].isVoid() )
+                {
+                    infos["counter_received"] = 1;
+                }
+                else
+                {
+                    infos["counter_received"] = infos["counter_received"].asUint64()+1;
+                }
+                infos["last_timestamp"] = (int)(time(NULL));
+                setDeviceInfos(internalid, &infos);
+            }
+
+            //do something on received event
+            switch (subType)
+            {
+                case V_TEMP_V15:
+                    valid = VALID_SAVE;
+                    if (units == "M")
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
+                    }
+                    else
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degF");
+                    }
+                    break;
+                case V_TRIPPED_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.security.sensortriggered", payload == "1" ? 255 : 0, "");
+                    break;
+                case V_HUM_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.humiditychanged", payload.c_str(), "percent");
+                    break;
+                case V_STATUS_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload=="1" ? 255 : 0, "");
+                    break;
+                case V_PERCENTAGE_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", payload.c_str(), "");
+                    break;
+                case V_PRESSURE_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.pressurechanged", payload.c_str(), "mBar");
+                    break;
+                case V_FORECAST_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
+                    break;
+                case V_RAIN_V15:
+                    break;
+                case V_RAINRATE_V15:
+                    break;
+                case V_WIND_V15:
+                    break;
+                case V_GUST_V15:
+                    break;
+                case V_DIRECTION_V15:
+                    break;
+                case V_UV_V15:
+                    break;
+                case V_WEIGHT_V15:
+                    break;
+                case V_DISTANCE_V15:
+                    valid = VALID_SAVE;
+                    if (units == "M")
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "cm");
+                    }
+                    else
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.distancechanged", payload.c_str(), "inch");
+                    }
+                    break;
+                case V_IMPEDANCE_V15:
+                    break;
+                case V_ARMED_V15:
+                    break;
+                case V_WATT_V15:
+                    break;
+                case V_KWH_V15:
+                    valid = 1;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.powerchanged", payload.c_str(), "kWh");
+                    break;
+                case V_SCENE_ON_V15:
+                    break;
+                case V_SCENE_OFF_V15:
+                    break;
+                case V_HVAC_FLOW_STATE_V15:
+                    break;
+                case V_HVAC_SPEED_V15:
+                    break;
+                case V_LIGHT_LEVEL_V15:
+                    valid = VALID_SAVE;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.brightnesschanged", payload.c_str(), "lux");
+                    break;
+                case V_VAR1_V15:
+                    //custom value 1 is reserved for pin code
+                    valid = VALID_DONT_SAVE;
+                    {
+                        qpid::types::Variant::Map payloadMap;
+                        payloadMap["pin"]=payload;
+                        agoConnection->emitEvent(internalid.c_str(), "event.security.pinentered", payloadMap);
+                    }
+                    break;
+                case V_VAR2_V15:
+                    //save custom value
+                    valid = VALID_VAR2;
+                    //but no event triggered
+                    break;
+                case V_VAR3_V15:
+                    //save custom value
+                    valid = VALID_VAR3;
+                    //but no event triggered
+                    break;
+                case V_VAR4_V15:
+                    //save custom value
+                    valid = VALID_VAR4;
+                    //but no event triggered
+                    break;
+                case V_VAR5_V15:
+                    //save custom value
+                    valid = VALID_VAR5;
+                    //but no event triggered
+                    break;
+                case V_UP_V15:
+                    break;
+                case V_DOWN_V15:
+                    break;
+                case V_STOP_V15:
+                    break;
+                case V_IR_SEND_V15:
+                    break;
+                case V_IR_RECEIVE_V15:
+                    break;
+                case V_FLOW_V15:
+                    break;
+                case V_VOLUME_V15:
+                    break;
+                case V_LOCK_STATUS_V15:
+                    break;
+                case V_LEVEL_V15:
+                    break;
+                case V_VOLTAGE_V15:
+                    break;
+                case V_CURRENT_V15:
+                    valid = 1;
+                    agoConnection->emitEvent(internalid.c_str(), "event.environment.powerchanged", payload.c_str(), "A");
+                    break;
+                case V_RGB_V15:
+                    break;
+                case V_RGBW_V15:
+                    break;
+                case V_ID_V15:
+                    break;
+                case V_UNIT_PREFIX_V15:
+                    break;
+                case V_HVAC_SETPOINT_COOL_V15:
+                    break;
+                case V_HVAC_SETPOINT_HEAT_V15:
+                    break;
+                case V_HVAC_FLOW_MODE_V15:
+                    break;
+                default:
+                    break;
+            }
+
+            if( valid==INVALID )
+            {
+                //unsupported sensor
+                cerr << "WARN: sensor with subType=" << subType << " not supported yet" << endl;
+            }
+            else if( valid==VALID_DONT_SAVE )
+            {
+                //don't save received value
+            }
+            else 
+            {
+                //save current device value
+                infos = getDeviceInfos(internalid);
+                if( infos.size()>0 )
+                {
+                    switch(valid)
+                    {
+                        case VALID_SAVE:
+                            //default value
+                            infos["value"] = payload;
+                            break;
+                        case VALID_VAR1:
+                            //custom var1 is reserved for pin code
+                            break;
+                        case VALID_VAR2:
+                            //save custom var2
+                            infos["custom_var2"] = payload;
+                            break;
+                        case VALID_VAR3:
+                            //save custom var3
+                            infos["custom_var3"] = payload;
+                            break;
+                        case VALID_VAR4:
+                            //save custom var4
+                            infos["custom_var4"] = payload;
+                            break;
+                        case VALID_VAR5:
+                            //save custom var5
+                            infos["custom_var5"] = payload;
+                            break;
+                        default:
+                            cerr << "Unhandled valid case [" << valid << "]. Please check code!" << endl;
+                    }
+                    setDeviceInfos(internalid, &infos);
+                }
+            }
+
+            //send ack if necessary
+            if( ack )
+            {
+                sendcommandV15(internalid, SET_V15, 0, subType, payload);
+            }
+            break;
+
+        case STREAM_V15:
+            //TODO nothing implemented in MySensor yet
+            cout << "STREAM" << endl;
+            break;
+        default:
+            break;
+    }
+}
+
+/**
  * Serial read function (threaded)
  */
 void *receiveFunction(void *param) {
@@ -1943,7 +2597,15 @@ void *receiveFunction(void *param) {
             infos = getDeviceInfos(internalid);
 
             //process message
-            if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
+            if( boost::algorithm::starts_with(gateway_protocol_version, "1.5") )
+            {
+                int ack = atoi(items[3].c_str());
+                subType = atoi(items[4].c_str());
+                if( items.size()==6 )
+                    payload = items[5];
+                processMessageV15(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
+            }
+            else if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
             {
                 int ack = atoi(items[3].c_str());
                 subType = atoi(items[4].c_str());
@@ -2170,14 +2832,14 @@ int main(int argc, char **argv)
             cout << "Read: " << line << endl << flush;
         if( boost::algorithm::starts_with(line, "0;0;3;0;2;") )
         {
-            //found protocol 1.4
-            if( DEBUG )
-                cout << "Found protocol 1.4" << endl;
+            //response to protocol >=1.4 request
             break;
         }
 
         if( error )
+        {
             break;
+        }
 
         //request v1.3
         serialPort.WriteString("0;0;4;4\n");
@@ -2186,9 +2848,7 @@ int main(int argc, char **argv)
             cout << "Read: " << line << endl << flush;
         if( boost::algorithm::starts_with(line, "0;0;4;4;") )
         {
-            //found protocol 1.3
-            if( DEBUG )
-                cout << "Found protocol 1.3" << endl;
+            //response to protocol 1.3 request
             break;
         }
 
@@ -2201,7 +2861,9 @@ int main(int argc, char **argv)
             //payload (last field, contains protocol version)
             gateway_protocol_version = items[items.size()-1].c_str();
             //check protocol version
-            if( !boost::algorithm::starts_with(gateway_protocol_version, "1.4") && !boost::algorithm::starts_with(gateway_protocol_version, "1.3") )
+            if( !boost::algorithm::starts_with(gateway_protocol_version, "1.4") &&
+                !boost::algorithm::starts_with(gateway_protocol_version, "1.3") && 
+                !boost::algorithm::starts_with(gateway_protocol_version, "1.5") )
             {
                 //unknown protocol version, exit now
                 cout << "Unknown gateway protocol version. Exit. (received \"" << line  << "\" from gateway)" << endl;
