@@ -19,6 +19,7 @@
 #define DEVICEMAPFILE "/maps/mysensors.json"
 #endif
 #define RESEND_MAX_ATTEMPTS 30
+#define DEFAULT_PROTOCOL "0.0"
 
 using namespace std;
 using namespace agocontrol;
@@ -53,6 +54,7 @@ typedef struct S_COMMAND
 
 int DEBUG = 0;
 int DEBUG_GW = 0;
+int STALE = 1;
 AgoConnection *agoConnection;
 pthread_mutex_t serialMutex;
 pthread_mutex_t resendMutex;
@@ -69,7 +71,7 @@ serialib serialPort;
 string device = "";
 int staleThreshold = 86400;
 int resendEnabled = 0;
-int handleNetworkRelay = 0;
+int NETWORKRELAY = 0;
 
 /**
  * Convert timestamp to Human Readable date time string (19 chars)
@@ -212,7 +214,7 @@ qpid::types::Variant::Map getDeviceInfos(std::string internalid)
             //check field existence
             if( out["protocol"].isVoid() ) 
             {
-                out["protocol"] = "0.0";
+                out["protocol"] = DEFAULT_PROTOCOL;
                 save = true;
             }
 
@@ -229,7 +231,7 @@ qpid::types::Variant::Map getDeviceInfos(std::string internalid)
 /**
  * Make readable received message from MySensor gateway
  */
-std::string prettyPrint(std::string message)
+std::string prettyPrint(std::string message, std::string protocol)
 {
     std::string payload = "";
     std::string ack = "";
@@ -248,7 +250,7 @@ std::string prettyPrint(std::string message)
         //internalid
         internalid = items[0] + "/" + items[1];
         result << internalid << ";";
-        if( boost::algorithm::starts_with(gateway_protocol_version, "1.5") )
+        if( boost::algorithm::starts_with(protocol, "1.5") )
         {
             //protocol v1.5
 
@@ -304,7 +306,7 @@ std::string prettyPrint(std::string message)
                     result << items[3] << endl;;
             }
         }
-        else if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
+        else if( boost::algorithm::starts_with(protocol, "1.4") )
         {
             //protocol v1.4
 
@@ -360,7 +362,7 @@ std::string prettyPrint(std::string message)
                     result << items[3] << endl;;
             }
         }
-        else if( boost::algorithm::starts_with(gateway_protocol_version, "1.3") )
+        else if( boost::algorithm::starts_with(protocol, "1.3") )
         {
             //protocol v1.3
 
@@ -391,7 +393,7 @@ std::string prettyPrint(std::string message)
         else
         {
             result.str("");
-            result << "ERROR, unsupported protocol version '" << gateway_protocol_version << "'" << endl;
+            result << "ERROR, unsupported protocol version '" << protocol << "'" << endl;
         }
     }
     return result.str();
@@ -446,7 +448,7 @@ bool deleteDevice(std::string internalid)
 /**
  * Save all necessary infos for new device and register it to agocontrol
  */
-void addDevice(std::string internalid, std::string devicetype, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos)
+void addDevice(std::string internalid, std::string devicetype, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos, std::string protocol)
 {
     pthread_mutex_lock(&devicemapMutex);
     infos["type"] = devicetype;
@@ -456,7 +458,7 @@ void addDevice(std::string internalid, std::string devicetype, qpid::types::Vari
     infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
     infos["last_timestamp"] = (int)(time(NULL));
-    infos["protocol"] = gateway_protocol_version;
+    infos["protocol"] = protocol;
     devices[internalid] = infos;
     devicemap["devices"] = devices;
     variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
@@ -1093,9 +1095,11 @@ std::string readLine(bool* error) {
 /**
  * Create new device (called during init or when PRESENTATION message is received from MySensors gateway)
  */
-void newDevice(std::string internalid, std::string devicetype)
+void newDevice(std::string internalid, std::string devicetype, std::string protocol)
 {
     //check internalid
+    if( DEBUG )
+        cout << "newdevice " << internalid << "-" << devicetype << endl;
     if( !checkInternalid(internalid) )
     {
         //internal id is not valid!
@@ -1111,8 +1115,26 @@ void newDevice(std::string internalid, std::string devicetype)
 
         if( infos.size()>0 )
         {
+            if( boost::algorithm::starts_with(protocol, "1.5") )
+            {
+                //no need to check protocol version for protocol version >= 1.5
+            }
+            else
+            {
+                //check protocol version
+                if( !infos["protocol"].isVoid() && protocol.size()>0 && protocol!=DEFAULT_PROTOCOL && infos["protocol"].asString()!=protocol )
+                {
+                    //sensors code was updated to different protocol
+                    cout << "Sensor protocol changed (" << infos["protocol"] << "=>" << protocol << ")" << endl;
+
+                    //refresh infos
+                    infos["protocol"] = protocol;
+                    setDeviceInfos(internalid, &infos);
+                }
+            }
+
             //internalid already referenced
-            if( infos["type"].asString()!=devicetype )
+            if( !infos["type"].isVoid() && infos["type"].asString()!=devicetype )
             {
                 //sensors is probably reconditioned, remove it before adding it
                 cout << "Reconditioned sensor detected (" << infos["type"] << "=>" << devicetype << ")" << endl;
@@ -1120,38 +1142,22 @@ void newDevice(std::string internalid, std::string devicetype)
                 //refresh infos
                 infos = getDeviceInfos(internalid);
                 //and add brand new device
-                if( !devicemap["devices"].isVoid() )
-                {
-                    devices = devicemap["devices"].asMap();
-                    addDevice(internalid, devicetype, devices, infos);
-                }
-                else
-                {
-                    cerr << "No device map available. Unable to add device!" << endl;
-                }
-            }
-            else if( infos["protocol"].asString()!=gateway_protocol_version )
-            {
-                //sensors code was updated to different protocol
-                cout << "Sensor protocol changed (" << infos["protocol"] << "=>" << gateway_protocol_version << ")" << endl;
-                //refresh infos
-                infos = getDeviceInfos(internalid);
-                if( infos.size()>0 )
-                {
-                    infos["protocol"] = gateway_protocol_version;
-                    setDeviceInfos(internalid, &infos);
-                }
+                addDevice(internalid, devicetype, devices, infos, protocol);
             }
             else
             {
                 //sensor has just rebooted
-                addDevice(internalid, devicetype, devices, infos);
+                if( DEBUG) 
+                    cout << "Sensor '" << internalid << "'[" << devicetype << "] just rebooted" << endl;
+                addDevice(internalid, devicetype, devices, infos, protocol);
             }
         }
         else
         {
             //add new device
-            addDevice(internalid, devicetype, devices, infos);
+            if( DEBUG )
+                cout << "Add new device '" << devicetype << "' with internalid '" << internalid << "'" << endl;
+            addDevice(internalid, devicetype, devices, infos, protocol);
         }
     }
 }
@@ -1246,7 +1252,7 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
                     if( infos.size()==0 )
                     {
                         //create device
-                        newDevice(internalid, "batterysensor");
+                        newDevice(internalid, "batterysensor", "1.3");
                     }
 
                     //update counters
@@ -1307,59 +1313,59 @@ void processMessageV13(int radioId, int childId, int messageType, int subType, s
             {
                 case S_DOOR_V13:
                 case S_MOTION_V13:
-                    newDevice(internalid, "binarysensor");
+                    newDevice(internalid, "binarysensor", payload);
                     break;
                 case S_SMOKE_V13:
-                    newDevice(internalid, "smokedetector");
+                    newDevice(internalid, "smokedetector", payload);
                     break;
                 case S_LIGHT_V13:
                 case S_HEATER_V13:
-                    newDevice(internalid, "switch");
+                    newDevice(internalid, "switch", payload);
                     break;
                 case S_DIMMER_V13:
-                    newDevice(internalid, "dimmer");
+                    newDevice(internalid, "dimmer", payload);
                     break;
                 case S_COVER_V13:
-                    newDevice(internalid, "drapes");
+                    newDevice(internalid, "drapes", payload);
                     break;
                 case S_TEMP_V13:
-                    newDevice(internalid, "temperaturesensor");
+                    newDevice(internalid, "temperaturesensor", payload);
                     break;
                 case S_HUM_V13:
-                    newDevice(internalid, "humiditysensor");
+                    newDevice(internalid, "humiditysensor", payload);
                     break;
                 case S_BARO_V13:
-                    newDevice(internalid, "barometersensor");
+                    newDevice(internalid, "barometersensor", payload);
                     break;
                 case S_WIND_V13:
-                    newDevice(internalid, "windsensor");
+                    newDevice(internalid, "windsensor", payload);
                     break;
                 case S_RAIN_V13:
-                    newDevice(internalid, "rainsensor");
+                    newDevice(internalid, "rainsensor", payload);
                     break;
                 case S_UV_V13:
-                    newDevice(internalid, "uvsensor");
+                    newDevice(internalid, "uvsensor", payload);
                     break;
                 case S_WEIGHT_V13:
-                    newDevice(internalid, "weightsensor");
+                    newDevice(internalid, "weightsensor", payload);
                     break;
                 case S_POWER_V13:
-                    newDevice(internalid, "powermeter");
+                    newDevice(internalid, "powermeter", payload);
                     break;
                 case S_DISTANCE_V13:
-                    newDevice(internalid, "distancesensor");
+                    newDevice(internalid, "distancesensor", payload);
                     break;
                 case S_LIGHT_LEVEL_V13:
-                    newDevice(internalid, "brightnesssensor");
+                    newDevice(internalid, "brightnesssensor", payload);
                     break;
                 case S_LOCK_V13:
-                    newDevice(internalid, "lock");
+                    newDevice(internalid, "lock", payload);
                     break;
                 case S_IR_V13:
-                    newDevice(internalid, "infraredblaster");
+                    newDevice(internalid, "infraredblaster", payload);
                     break;
                 case S_WATER_V13:
-                    newDevice(internalid, "watermeter");
+                    newDevice(internalid, "watermeter", payload);
                     break;
                 default:
                     cout << "PRESENTATION subtype '" << subType << "' not supported (protocol v1.3)" << endl;
@@ -1578,7 +1584,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
                     if( infos.size()==0 )
                     {
                         //create device
-                        newDevice(internalid, "batterysensor");
+                        newDevice(internalid, "batterysensor", "1.4");
                     }
 
                     //update counters
@@ -1641,74 +1647,74 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
             {
                 case S_DOOR_V14:
                 case S_MOTION_V14:
-                    newDevice(internalid, "binarysensor");
+                    newDevice(internalid, "binarysensor", payload);
                     break;
                 case S_SMOKE_V14:
-                    newDevice(internalid, "smokedetector");
+                    newDevice(internalid, "smokedetector", payload);
                     break;
                 case S_LIGHT_V14:
                 case S_HEATER_V14:
-                    newDevice(internalid, "switch");
+                    newDevice(internalid, "switch", payload);
                     break;
                 case S_DIMMER_V14:
-                    newDevice(internalid, "dimmer");
+                    newDevice(internalid, "dimmer", payload);
                     break;
                 case S_COVER_V14:
-                    newDevice(internalid, "drapes");
+                    newDevice(internalid, "drapes", payload);
                     break;
                 case S_TEMP_V14:
-                    newDevice(internalid, "temperaturesensor");
+                    newDevice(internalid, "temperaturesensor", payload);
                     break;
                 case S_HUM_V14:
-                    newDevice(internalid, "humiditysensor");
+                    newDevice(internalid, "humiditysensor", payload);
                     break;
                 case S_BARO_V14:
-                    newDevice(internalid, "barometersensor");
+                    newDevice(internalid, "barometersensor", payload);
                     break;
                 case S_WIND_V14:
-                    newDevice(internalid, "windsensor");
+                    newDevice(internalid, "windsensor", payload);
                     break;
                 case S_RAIN_V14:
-                    newDevice(internalid, "rainsensor");
+                    newDevice(internalid, "rainsensor", payload);
                     break;
                 case S_UV_V14:
-                    newDevice(internalid, "uvsensor");
+                    newDevice(internalid, "uvsensor", payload);
                     break;
                 case S_WEIGHT_V14:
-                    newDevice(internalid, "weightsensor");
+                    newDevice(internalid, "weightsensor", payload);
                     break;
                 case S_POWER_V14:
-                    newDevice(internalid, "powermeter");
+                    newDevice(internalid, "powermeter", payload);
                     break;
                 case S_DISTANCE_V14:
-                    newDevice(internalid, "distancesensor");
+                    newDevice(internalid, "distancesensor", payload);
                     break;
                 case S_LIGHT_LEVEL_V14:
-                    newDevice(internalid, "brightnesssensor");
+                    newDevice(internalid, "brightnesssensor", payload);
                     break;
                 case S_ARDUINO_RELAY_V14:
-                    if( handleNetworkRelay )
+                    if( NETWORKRELAY )
                     {
-                        newDevice(internalid, "networkrelay");
+                        newDevice(internalid, "networkrelay", payload);
                     }
                     break;
                 case S_LOCK_V14:
-                    newDevice(internalid, "lock");
+                    newDevice(internalid, "lock", payload);
                     break;
                 case S_IR_V14:
-                    newDevice(internalid, "infraredblaster");
+                    newDevice(internalid, "infraredblaster", payload);
                     break;
                 case S_AIR_QUALITY_V14:
-                    newDevice(internalid, "airsensor");
+                    newDevice(internalid, "airsensor", payload);
                     break;
                 case S_CUSTOM_V14:
                     cout << "Device type 'CUSTOM' cannot be implemented in agocontrol" << endl;
                     break;
                 case S_DUST_V14:
-                    newDevice(internalid, "dustsensor");
+                    newDevice(internalid, "dustsensor", payload);
                     break;
                 case S_SCENE_CONTROLLER_V14:
-                    newDevice(internalid, "scenecontroller");
+                    newDevice(internalid, "scenecontroller", payload);
                     break;
                 default:
                     cout << "PRESENTATION subtype '" << subType << "' not supported (protocol v1.4)" << endl;
@@ -1982,7 +1988,7 @@ void processMessageV14(int nodeId, int childId, int messageType, int ack, int su
             if( valid==INVALID )
             {
                 //unsupported sensor
-                cerr << "WARN: sensor with subType=" << subType << " not supported yet" << endl;
+                cerr << "WARN: sensor with subType=" << subType << " not supported yet (protocol v1.4)" << endl;
             }
             else if( valid==VALID_DONT_SAVE )
             {
@@ -2062,7 +2068,7 @@ void processMessageV15(int nodeId, int childId, int messageType, int ack, int su
                     if( infos.size()==0 )
                     {
                         //create device
-                        newDevice(internalid, "batterysensor");
+                        newDevice(internalid, "batterysensor", "1.5");
                     }
 
                     //update counters
@@ -2128,74 +2134,108 @@ void processMessageV15(int nodeId, int childId, int messageType, int ack, int su
             {
                 case S_DOOR_V15:
                 case S_MOTION_V15:
-                    newDevice(internalid, "binarysensor");
+                    newDevice(internalid, "binarysensor", payload);
                     break;
                 case S_SMOKE_V15:
-                    newDevice(internalid, "smokedetector");
+                    newDevice(internalid, "smokedetector", payload);
                     break;
                 case S_BINARY_V15:
                 case S_HEATER_V15:
-                    newDevice(internalid, "switch");
+                    newDevice(internalid, "switch", payload);
                     break;
                 case S_DIMMER_V15:
-                    newDevice(internalid, "dimmer");
+                    newDevice(internalid, "dimmer", payload);
                     break;
                 case S_COVER_V15:
-                    newDevice(internalid, "drapes");
+                    newDevice(internalid, "drapes", payload);
                     break;
                 case S_TEMP_V15:
-                    newDevice(internalid, "temperaturesensor");
+                    newDevice(internalid, "temperaturesensor", payload);
                     break;
                 case S_HUM_V15:
-                    newDevice(internalid, "humiditysensor");
+                    newDevice(internalid, "humiditysensor", payload);
                     break;
                 case S_BARO_V15:
-                    newDevice(internalid, "barometersensor");
+                    newDevice(internalid, "barometersensor", payload);
                     break;
                 case S_WIND_V15:
-                    newDevice(internalid, "windsensor");
+                    newDevice(internalid, "windsensor", payload);
                     break;
                 case S_RAIN_V15:
-                    newDevice(internalid, "rainsensor");
+                    newDevice(internalid, "rainsensor", payload);
                     break;
                 case S_UV_V15:
-                    newDevice(internalid, "uvsensor");
+                    newDevice(internalid, "uvsensor", payload);
                     break;
                 case S_WEIGHT_V15:
-                    newDevice(internalid, "weightsensor");
+                    newDevice(internalid, "weightsensor", payload);
                     break;
                 case S_POWER_V15:
-                    newDevice(internalid, "powermeter");
+                    newDevice(internalid, "powermeter", payload);
                     break;
                 case S_DISTANCE_V15:
-                    newDevice(internalid, "distancesensor");
+                    newDevice(internalid, "distancesensor", payload);
                     break;
                 case S_LIGHT_LEVEL_V15:
-                    newDevice(internalid, "brightnesssensor");
+                    newDevice(internalid, "brightnesssensor", payload);
                     break;
-                case S_ARDUINO_REPEATER_NODE_V15:
-                    if( handleNetworkRelay )
+                case S_ARDUINO_NODE_V15:
+                {
+                    //in v1.5 each device sends ARDUINO_NODE presentation that contains protocol version
+                    //while in v1.4.X and above each presentation messages contained protocol version
+                    //so we need to check protocol here
+                    
+                    //check and update if necessary protocol version of all sensors of current node
+                    string strNodeId = boost::lexical_cast<std::string>(nodeId);
+                    if( !devicemap["devices"].isVoid() )
                     {
-                        newDevice(internalid, "networkrelay");
+                        qpid::types::Variant::Map devices = devicemap["devices"].asMap();
+                        for( qpid::types::Variant::Map::const_iterator it=devices.begin(); it!=devices.end(); it++ )
+                        {
+                            if( !it->second.isVoid() && it->second.getType()==VAR_MAP )
+                            {
+                                qpid::types::Variant::Map infos = it->second.asMap();
+                                std::string tmpInternalid = (std::string)it->first;
+                                if( boost::algorithm::starts_with(tmpInternalid, strNodeId) )
+                                {
+                                    if( !infos["protocol"].isVoid() && payload.size()>0 && payload!=DEFAULT_PROTOCOL && infos["protocol"].asString()!=payload )
+                                    {
+                                        //sensors code was updated to different protocol
+                                        cout << "Sensor " << tmpInternalid << " protocol changed (" << infos["protocol"] << "=>" << payload << ")" << endl;
+
+                                        //refresh infos
+                                        infos["protocol"] = payload;
+                                        setDeviceInfos(tmpInternalid, &infos);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                case S_ARDUINO_REPEATER_NODE_V15:
+                    if( NETWORKRELAY )
+                    {
+                        newDevice(internalid, "networkrelay", payload);
                     }
                     break;
                 case S_LOCK_V15:
-                    newDevice(internalid, "lock");
+                    newDevice(internalid, "lock", payload);
                     break;
                 case S_IR_V15:
-                    newDevice(internalid, "infraredblaster");
+                    newDevice(internalid, "infraredblaster", payload);
                     break;
                 case S_AIR_QUALITY_V15:
-                    newDevice(internalid, "airsensor");
+                    newDevice(internalid, "airsensor", payload);
                     break;
                 case S_CUSTOM_V15:
                     cout << "Device type 'CUSTOM' cannot be implemented in agocontrol" << endl;
                     break;
                 case S_DUST_V15:
-                    newDevice(internalid, "dustsensor");
+                    newDevice(internalid, "dustsensor", payload);
                     break;
                 case S_SCENE_CONTROLLER_V15:
-                    newDevice(internalid, "scenecontroller");
+                    newDevice(internalid, "scenecontroller", payload);
                     break;
                 default:
                     cout << "PRESENTATION subtype '" << subType << "' not supported (protocol v1.4)" << endl;
@@ -2483,7 +2523,7 @@ void processMessageV15(int nodeId, int childId, int messageType, int ack, int su
             if( valid==INVALID )
             {
                 //unsupported sensor
-                cerr << "WARN: sensor with subType=" << subType << " not supported yet" << endl;
+                cerr << "WARN: sensor with subType=" << subType << " not supported yet (protocol v1.5)" << endl;
             }
             else if( valid==VALID_DONT_SAVE )
             {
@@ -2572,16 +2612,6 @@ void *receiveFunction(void *param) {
             continue;
         }
 
-        if( DEBUG )
-        {
-            log = prettyPrint(line);
-            if( log.size()>0 )
-            {
-                time_t t = time(NULL);
-                cout << " => " << timestampToStr(&t) << " RECEIVING: " << log;
-            }
-        }
-
         std::vector<std::string> items = split(line, ';');
         if ( items.size()>=4 && items.size()<=6 )
         {
@@ -2592,38 +2622,110 @@ void *receiveFunction(void *param) {
             int subType;
             qpid::types::Variant::Map infos;
             std::string payload = "";
+            int ack = 0;
+            std::string protocol = "";
 
-            //get device infos
-            infos = getDeviceInfos(internalid);
+            //first of all check if it's not a presentation message
+            //0 = PRESENTATION id for all protocol versions
+            if( messageType!=0 )
+            {
+                //not a presentation message, get device infos
+                infos = getDeviceInfos(internalid);
+            }
 
-            //process message
-            if( boost::algorithm::starts_with(gateway_protocol_version, "1.5") )
+            //get protocol version
+            if( infos.size()>0 )
             {
-                int ack = atoi(items[3].c_str());
-                subType = atoi(items[4].c_str());
-                if( items.size()==6 )
-                    payload = items[5];
-                processMessageV15(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
+                //get protocol version from device infos
+                if( !infos["protocol"].isVoid() && infos["protocol"].asString().size()>0 )
+                {
+                    protocol = infos["protocol"].asString();
+                }
             }
-            else if( boost::algorithm::starts_with(gateway_protocol_version, "1.4") )
+            else if( nodeId==0 && childId==0 )
             {
-                int ack = atoi(items[3].c_str());
-                subType = atoi(items[4].c_str());
-                if( items.size()==6 )
-                    payload = items[5];
-                processMessageV14(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
-            }
-            else if( boost::algorithm::starts_with(gateway_protocol_version, "1.3") )
-            {
-                subType = atoi(items[3].c_str());
-                if( items.size()==5 )
-                    payload = items[4];
-                processMessageV13(nodeId, childId, messageType, subType, payload, internalid, infos);
+                //message from gateway, set protocol version to gateway one
+                protocol = gateway_protocol_version;
             }
             else
             {
-                //protocol not supported
-                cout << "Error: protocol version '" << gateway_protocol_version << "' not supported" << endl;
+                //get protocol version from current message (payload)
+                
+                //try >= v1.4 first
+                if( items.size()==6 )
+                    payload = items[5];
+
+                if( boost::algorithm::starts_with(payload, "1.5") )
+                {
+                    //protocol v1.5 found
+                    protocol = "1.5";
+                }
+                else if( boost::algorithm::starts_with(payload, "1.4") )
+                {
+                    //protocol v1.4 found
+                    protocol = "1.4";
+                }
+                else
+                {
+                    //try protocol v1.3
+                    if( items.size()==5 )
+                        payload = items[4];
+
+                    if( boost::algorithm::starts_with(payload, "1.3") )
+                    {
+                        //protocol v1.3 found
+                        protocol = "1.3";
+                    }
+                }
+            }
+
+            //process message according to found protocol
+            if( protocol.size()>0 && protocol!=DEFAULT_PROTOCOL )
+            {
+                //pretty print message
+                if( DEBUG )
+                {
+                    log = prettyPrint(line, protocol);
+                    if( log.size()>0 )
+                    {
+                        time_t t = time(NULL);
+                        cout << " => " << timestampToStr(&t) << " RECEIVING: " << log;
+                    }
+                }
+
+                if( boost::algorithm::starts_with(protocol, "1.5") )
+                {
+                    ack = atoi(items[3].c_str());
+                    subType = atoi(items[4].c_str());
+                    if( items.size()==6 )
+                        payload = items[5];
+                    processMessageV15(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
+                }
+                else if( boost::algorithm::starts_with(protocol, "1.4") )
+                {
+                    ack = atoi(items[3].c_str());
+                    subType = atoi(items[4].c_str());
+                    if( items.size()==6 )
+                        payload = items[5];
+                    processMessageV14(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
+                }
+                else if( boost::algorithm::starts_with(protocol, "1.3") )
+                {
+                    subType = atoi(items[3].c_str());
+                    if( items.size()==5 )
+                        payload = items[4];
+                    processMessageV13(nodeId, childId, messageType, subType, payload, internalid, infos);
+                }
+                else
+                {
+                    //unsupported protocol version
+                    cout << "Error: device is based on unsupported protocol version '" << protocol << "'" << endl;
+                }
+            }
+            else
+            {
+                //no protocol version found for this message, drop it
+                cout << "Error: no protocol version found for this message, drop it" << endl;
             }
         }
 
@@ -2698,27 +2800,32 @@ int main(int argc, char **argv)
     device = getConfigSectionOption("mysensors", "device", "/dev/ttyACM0");
     staleThreshold = atoi(getConfigSectionOption("mysensors", "staleThreshold", "86400").c_str());
     resendEnabled = atoi(getConfigSectionOption("mysensors", "resend", "0").c_str());
-    handleNetworkRelay = atoi(getConfigSectionOption("mysensors", "networkrelay", "0").c_str());
-    if( handleNetworkRelay==1 )
+    NETWORKRELAY = atoi(getConfigSectionOption("mysensors", "networkrelay", "0").c_str());
+    if( NETWORKRELAY==1 )
     {
-        cout << "Network relay devices handling support enabled" << endl;
+        cout << "Network relay support enabled" << endl;
+    }
+    STALE = atoi(getConfigSectionOption("mysensors", "stale", "1").c_str());
+    if( STALE==0 )
+    {
+        cout << "Stale feature disabled" << endl;
     }
 
     //get command line parameters
     bool continu = true;
     do
     {
-        switch(getopt(argc,argv,"dgh"))
+        switch(getopt(argc,argv,"dghs"))
         {
             case 'd': 
                 //activate debug
                 DEBUG = 1;
-                cout << "DEBUG activated" << endl;
+                cout << "DEBUG enabled" << endl;
                 break;
             case 'g':
                 //activate gateway debug message
                 DEBUG_GW = 1;
-                cout << "DEBUG Gateway activated" << endl;
+                cout << "DEBUG Gateway enabled" << endl;
                 break;
             case 'h':
                 //usage
@@ -2860,6 +2967,7 @@ int main(int argc, char **argv)
         {
             //payload (last field, contains protocol version)
             gateway_protocol_version = items[items.size()-1].c_str();
+
             //check protocol version
             if( !boost::algorithm::starts_with(gateway_protocol_version, "1.4") &&
                 !boost::algorithm::starts_with(gateway_protocol_version, "1.3") && 
@@ -2958,8 +3066,11 @@ int main(int argc, char **argv)
     }
 
     //run check stale thread
-    static pthread_t checkStaleThread;
-    pthread_create(&checkStaleThread, NULL, checkStale, NULL);
+    if( STALE )
+    {
+        static pthread_t checkStaleThread;
+        pthread_create(&checkStaleThread, NULL, checkStale, NULL);
+    }
 
     //run client
     cout << "Running MySensors controller..." << endl;
