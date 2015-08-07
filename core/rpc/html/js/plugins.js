@@ -79,6 +79,47 @@ function SecurityPlugin(agocontrol)
 
     };
 
+    //Get alarm state at startup
+    //Needed to open pin panel to disable armed alarm
+    self.getAlarmState = function()
+    {
+        //get security controller uuid if necessary
+        if( !self.securityController )
+        {
+            self.getSecurityControllerUuid();
+        }
+
+        //clear interval if security is not running
+        if( !self.securityIsRunning )
+        {
+            clearInterval(self.alarmStateInterval);
+            return;
+        }
+
+        if( self.securityController )
+        {
+            //check only at startup (after event handler is handling it) so clear interval
+            clearInterval(self.alarmStateInterval);
+
+            var content = {};
+            content.uuid = self.securityController;
+            content.command = 'getalarmstate';
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    if( res.data.alarmactivated==1 )
+                    {
+                        //alarm is running, open pin panel right now
+                        self.openPanel();
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Unable to get alarm status:');
+                    console.error(err);
+                });
+        }
+    };
+    self.alarmStateInterval = setInterval(self.getAlarmState, 1000);
+
     //event handler, need to catch
     self.eventHandler = function(event)
     {
@@ -88,10 +129,14 @@ function SecurityPlugin(agocontrol)
             self.getSecurityControllerUuid();
         }
 
-        if( event.event=='event.security.countdown.started' || event.event=='event.security.countdown' )
+        if( event.event=='event.security.countdown.started' )
         {
             //open pin code panel
+            self.countdown(event.delay);
             self.openPanel();
+        }
+        else if( event.event=='event.security.countdown' )
+        {
             //handle countdown
             self.countdown(event.delay);
         }
@@ -125,31 +170,22 @@ function SecurityPlugin(agocontrol)
             content.uuid = self.securityController;
             content.command = 'cancelalarm';
             content.pin = self.currentPin();
-            self.agocontrol.sendCommand(content, function(res) {
-                //reset pin code
-                self.resetPin();
+            self.agocontrol.sendCommand(content)
+                .then(function(res) {
+                    self.closePanel();
 
-                //check result
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-                {
-                    if( res.result.result && res.result.result.code && res.result.result.code=="success" )
-                    {
-                        notif.success('Alarm disarmed');
-                        self.closePanel();
-                    }
-                    else
-                    {
-                        notif.error('Wrong pin code!');
-                    }
-                }
-                else
-                {
-                    notif.error('Unable to cancel alarm!');
-                }
+                    //reset pin code
+                    self.resetPin();
 
-                //unblock panel
-                self.agocontrol.unblock($('#securityPanel'));
-            });
+                })
+                .catch(function(err) {
+                    //reset pin code
+                    self.resetPin();
+                })
+                .finally(function() {
+                    //unblock panel
+                    self.agocontrol.unblock($('#securityPanel'));
+                });
         }
     };
 

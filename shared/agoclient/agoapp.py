@@ -240,7 +240,7 @@ class AgoApp:
 
     def _do_shutdown(self):
         if self.connection:
-            self.connection.shutdown()
+            self.connection.begin_shutdown()
 
     def setup_app(self):
         """This should be overriden by the application to setup app specifics"""
@@ -418,4 +418,46 @@ class AgoApp:
             section = self.app_short_name
 
         return config.set_config_option(section, option, value, app)
+
+    def check_command_param(self, content, param, type=None, empty=False):
+        """
+        Check if content is containing specified parameters
+        @param: parameter name
+        @type: if specified (!=None) check parameter type. Converted type is returned instead of raw parameter.
+        @empty: check if value is empty (only for string)
+        @return res,param: res=True if success/False if something failed. param=parameter or converted parameter
+        """
+        #check presence
+        if param not in content:
+            self.log.trace('Parameter "%s" not in %s' % (param, content))
+            return False, param
+
+        #check type
+        if type!=None:
+            try:
+                if type=='string':
+                    new_param = str(param)
+                    #check if str is empty
+                    if empty and isinstance(new_param, str) and len(new_param)==0:
+                        self.log.trace('Parameter "%s" is empty' % (new_param))
+                        return False, param
+                    else:
+                        return True, new_param
+                elif type=='int':
+                    return True, int(param)
+                elif type=='float':
+                    return True, float(param)
+                elif type=='bool':
+                    return True, bool(param)
+            except:
+                #conversion exception
+                self.log.trace('Conversion exception for "%s" [%s] to %s' % (param, type(param), type))
+                return False, param
+        else:
+            #check if str is empty
+            if empty and isinstance(param, str) and len(param)==0:
+                self.log.trace('Parameter "%s" is empty' % (param))
+                return False, param
+
+        return True, param
 

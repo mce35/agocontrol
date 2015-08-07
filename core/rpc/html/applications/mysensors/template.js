@@ -175,6 +175,7 @@ function MySensors(devices, agocontrol)
                         notif.success('#ds');
                         //refresh devices list
                         self.getDevices();
+                        self.getCounters();
                     }
                     else 
                     {

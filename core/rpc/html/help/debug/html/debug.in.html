@@ -8,9 +8,15 @@
 
         <div class="tab-content active">
             <div class="row">
-                <div data-bind="event{'click':startDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Start</_a></div>
-                <div data-bind="event{'click':stopDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Stop</_a></div>
-                <div data-bind="event{'click':clear}" class="medium primary btn"><_a data-translateable="true" href="#">Clear</_a></div>
+                <div class="ten columns text-left">
+                    <div data-bind="event{'click':startDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Start</_a></div>
+                    <div data-bind="event{'click':stopDrain}" class="medium primary btn"><_a data-translateable="true" href="#">Stop</_a></div>
+                    <div data-bind="event{'click':clear}" class="medium primary btn"><_a data-translateable="true" href="#">Clear</_a></div>
+                </div>
+                <div class="two columns text-right">
+                    <input type="checkbox" data-bind="checked: drainAutoscroll"></input>
+                    <span> </span><_span data-translateable="true">Autoscroll</_span>
+                </div>
             </div>
             <div>
                 <div id="drainContainer">

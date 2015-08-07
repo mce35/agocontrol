@@ -22,8 +22,12 @@ test -e /etc/opt/agocontrol/db/inventory.db || (
 	)
 )
 
-sasldblistusers2 -f /etc/qpid/qpidd.sasldb  | grep -q agocontrol || (
-	echo $PASSWD | saslpasswd2 -c -p -f /etc/qpid/qpidd.sasldb -u QPID agocontrol
+SASLDB=$(grep sasldb_path /etc/sasl2/qpidd.conf | cut -d ":" -f 2)
+
+sasldblistusers2 -f $SASLDB | grep -q agocontrol || (
+    SASLDBPATH=$(dirname $SASLDB)
+    mkdir -p $SASLDBPATH
+	echo $PASSWD | saslpasswd2 -c -p -f $SASLDB -u QPID agocontrol
 )
 
 grep -q agocontrol /etc/qpid/qpidd.acl || (

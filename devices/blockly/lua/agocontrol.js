@@ -181,3 +181,31 @@ Blockly.Lua['agocontrol_valueOptions'] = function(block) {
     var code = "'"+block.getSelectedOption()+"'";
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
+
+Blockly.Lua['agocontrol_defaultEmail'] = function(block) {
+    var code = "'"+block.getEmail()+"'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
+Blockly.Lua['agocontrol_defaultPhoneNumber'] = function(block) {
+    var code = "'"+block.getPhoneNumber()+"'";
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
+Blockly.Lua['agocontrol_journal'] = function(block) {
+    var msg = Blockly.Lua.valueToCode(block, 'MSG', Blockly.Lua.ORDER_ATOMIC) || '';
+    var type = block.getFieldValue('TYPE');
+    var uuid = block.getJournalUuid();
+    var code = "";
+    if( uuid!==null )
+    {
+        code = "sendMessage('command=addmessage', 'uuid="+uuid+"' , 'message=' .. "+msg+", 'type="+type+"')\n"
+    }
+    else
+    {
+        //no journal
+        code = "print('No journal available!')\n";
+    }
+    return code;
+};
+

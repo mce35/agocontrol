@@ -52,10 +52,12 @@ configuration/dashboards/html/dashboards.xml.in
 configuration/datalogger/html/datalogger.xml.in
 configuration/devices/html/devices.xml.in
 configuration/events/html/events.xml.in
+configuration/system/html/system.xml.in
 configuration/rooms/html/rooms.xml.in
 configuration/scenarios/html/scenarios.xml.in
 configuration/systemmonitoring/html/systemmonitoring.xml.in
 configuration/variables/html/variables.xml.in
 help/system/html/system.xml.in
 help/debug/html/debug.xml.in
+help/journal/html/journal.xml.in
 

@@ -8,11 +8,7 @@ function SecurityConfig(agocontrol)
     var self = this;
     self.agocontrol = agocontrol;
     self.securityController = null;
-    self.alertController = null;
-    self.alertEmailConfigured = ko.observable(false);
-    self.alertSmsConfigured = ko.observable(false);
-    self.alertTwitterConfigured = ko.observable(false);
-    self.alertPushConfigured = ko.observable(false);
+    self.alertControllers = [];
     self.currentPin = ko.observable('');
     self.housemodes = ko.observableArray([]);
     self.currentHousemode = ko.observable('');
@@ -29,6 +25,7 @@ function SecurityConfig(agocontrol)
     self.initialized = false;
     self.pinChecking = false;
     self.newPin = '';
+    self.housemodeZoneChanged = ko.observable(false);
     
     //==================
     //EDITOR
@@ -473,7 +470,12 @@ function SecurityConfig(agocontrol)
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             var device = self.agocontrol.devices()[i];
-            if( device.name && device.name.length>0 )
+            if( device.devicetype=='smsgateway' || device.devicetype=='smtpgateway' || device.devicetype=='twittergateway' || device.devicetype=='pushgateway' )
+            {
+                //name specified by user
+                output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+            }
+            else if( device.name && device.name.length>0 )
             {
                 //only keep switch (maybe scenarii too?)
                 if( device.devicetype=='switch' )
@@ -483,24 +485,6 @@ function SecurityConfig(agocontrol)
             }
         }
 
-        //append alert virtual devices
-        if( self.alertEmailConfigured() )
-        {
-            output.push({uuid:'email', name:'Email', devicetype:'alertemail'});
-        }
-        if( self.alertTwitterConfigured() )
-        {
-            output.push({uuid:'twitter', name:'Twitter', devicetype:'alerttwitter'});
-        }
-        if( self.alertSmsConfigured() )
-        {
-            output.push({uuid:'sms', name:'SMS', devicetype:'alertsms'});
-        }
-        if( self.alertPushConfigured() )
-        {
-            output.push({uuid:'push', name:'Push', devicetype:'alertpush'});
-        }
-        
         return output;
     });
 
@@ -511,20 +495,30 @@ function SecurityConfig(agocontrol)
     //init security application
     self.init = function()
     {
-        //get security controller uuid
+        //get alert controllers
+        var alertControllers = self.agocontrol.inventory.schema.categories.usernotification.devicetypes;
+
+        //get useful controller uuids
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             if( self.agocontrol.devices()[i].devicetype=="securitycontroller" )
             {
+                //save security controller
                 self.securityController = self.agocontrol.devices()[i].uuid;
                 self.loadSecurityConfig();
             }
-            else if( self.agocontrol.devices()[i].devicetype=="alertcontroller" )
+            else
             {
-                self.alertController = self.agocontrol.devices()[i].uuid;
-                self.loadAlertConfig();
+                for( var j=0; j<alertControllers.length; j++ )
+                {
+                    if( alertControllers[j]===self.agocontrol.devices()[i].devicetype )
+                    {
+                        self.alertControllers.push(self.agocontrol.devices()[i].uuid);
+                    }
+                }
             }
         }
+
         if( !self.securityController )
         {
             //no controller found
@@ -542,6 +536,19 @@ function SecurityConfig(agocontrol)
         self.possibleDelays.push({'value':120, 'label':'2 minutes'});
         self.possibleDelays.push({'value':300, 'label':'5 minutes'});
         self.possibleDelays.push({'value':600, 'label':'10 minutes'});
+
+        //add event handler
+        self.agocontrol.addEventHandler(self.eventHandler);
+    };
+
+    //agocontrol event handler
+    self.eventHandler = function(event)
+    {
+        //catch new housemode
+        if( event['event']=='event.security.housemodechanged' && event['housemode'] )
+        {
+            self.currentHousemode(event['housemode']);
+        }
     };
     
     //update zonemap (handle all security data)
@@ -634,15 +641,6 @@ function SecurityConfig(agocontrol)
     //get device according to specified uuid
     self.getDevice = function(uuid)
     {
-        //virtual alert device
-        if( uuid=='sms' || uuid=='email' || uuid=='push' || uuid=='twitter' )
-        {
-            //capitalize first letter
-            var name = uuid.charAt(0).toUpperCase()+uuid.slice(1);
-            return {'uuid':uuid, 'devicetype':'alert'+uuid, 'name':name};
-        }
-
-        //real device
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             var device = self.agocontrol.devices()[i];
@@ -675,21 +673,6 @@ function SecurityConfig(agocontrol)
                     self.defaultHousemode(res.data.defaultHousemode);
                     self.initialized = true;
                 }
-            });
-    };
-
-    //get alert config
-    this.loadAlertConfig = function()
-    {
-        var content = {};
-        content.command = "status";
-        content.uuid = self.alertController;
-        self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                self.alertEmailConfigured(res.data.mail.configured);
-                self.alertSmsConfigured(res.data.sms.configured);
-                self.alertTwitterConfigured(res.data.twitter.configured);
-                self.alertPushConfigured(res.data.push.configured);
             });
     };
 
@@ -773,9 +756,6 @@ function SecurityConfig(agocontrol)
         content.pin = self.currentPin();
         content.housemode = self.currentHousemode();
         self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                notif.success('Housemode changed successfully');
-            })
             .catch(function(err) {
                 //restore old housemode
                 if( err.data && err.data.housemode )
@@ -805,12 +785,12 @@ function SecurityConfig(agocontrol)
                 {
                     //pin checking
                     //close popup and launch callback
-                    self.closePinPanel();
                     if( self.pinCallback )
                     {
                         self.pinCallback();
                         self.pinCallback = null;
                     }
+                    self.closePinPanel();
 
                     //set flag
                     self.pinChecking = false;
@@ -852,6 +832,9 @@ function SecurityConfig(agocontrol)
     {
         //just hide modal
         $('#pinPanel').removeClass('active');
+
+        //and reset password
+        self.resetPin();
     };
 
     //check pin code and execute callback
@@ -909,7 +892,7 @@ function SecurityConfig(agocontrol)
     {
         if( self.editorOpened )
         {
-            notif.warning('Please stop edition before delete housemode');
+            notif.warning('Please stop edition before add housemode');
             return;
         }
 
@@ -961,6 +944,9 @@ function SecurityConfig(agocontrol)
 
         //reset housemode
         self.newHousemode('');
+
+        //set changes done
+        self.housemodeZoneChanged(true);
     };
 
     //delete house mode
@@ -980,6 +966,9 @@ function SecurityConfig(agocontrol)
                 break;
             }
         }
+
+        //set changes done
+        self.housemodeZoneChanged(true);
     };
 
     //start edit housemode
@@ -1048,6 +1037,14 @@ function SecurityConfig(agocontrol)
         }
     };
 
+    //save new housemode/zone added
+    self.saveNewHousemodeZone = function()
+    {
+        //save config
+        self.housemodeZoneChanged(false);
+        self.checkPin(self.saveConfig);
+    };
+
     //==================
     //ZONES
     //==================
@@ -1071,7 +1068,7 @@ function SecurityConfig(agocontrol)
     {
         if( self.editorOpened )
         {
-            notif.warning('Please stop edition before delete housemode');
+            notif.warning('Please stop edition before add zone');
             return;
         }
 
@@ -1129,6 +1126,9 @@ function SecurityConfig(agocontrol)
 
         //reset zone
         self.newZone('');
+
+        //set changes done
+        self.housemodeZoneChanged(true);
     };
 
     //delete zone
@@ -1136,7 +1136,7 @@ function SecurityConfig(agocontrol)
     {
         if( self.editorOpened )
         {
-            notif.warning('Please stop edition before delete housemode');
+            notif.warning('Please stop edition before delete zone');
             return;
         }
 
@@ -1164,6 +1164,9 @@ function SecurityConfig(agocontrol)
             self.housemodes([]);
             self.housemodes(housemodes);
         }
+
+        //set changes done
+        self.housemodeZoneChanged(true);
     };
     
     //init application
@@ -1183,10 +1186,6 @@ function init_template(path, params, agocontrol)
         {
             return 'templates/list/' + item.devicetype;
         }
-        else if( item.devicetype.indexOf('alert')===0 )
-        {
-            return 'templates/list/' + item.devicetype;
-        }
         return 'templates/list/empty';
     }.bind(model);
 
@@ -1195,5 +1194,16 @@ function init_template(path, params, agocontrol)
     }.bind(model);
 
     return model;
+}
+
+/**
+ * Reset template
+ */
+function reset_template(model)
+{
+    if( model )
+    {
+        model.agocontrol.removeEventHandler(model.eventHandler);
+    }
 }
 

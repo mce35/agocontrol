@@ -48,10 +48,15 @@
                 </div>
             </div>
             <div class="row">
-                <div class="twelve columns" style="text-align:center;">
+                <div class="six columns text-center">
                     <div class="append field">
                         <input class="narrow text input" type="password" placeholder="pin code" disabled="disabled" data-bind="value:currentPin"/>
                         <div class="medium primary btn"><a href="#" data-bind="click:resetPin">X</a></div>
+                    </div>
+                </div>
+                <div class="six columns text-center">
+                    <div class="medium primary btn icon-left entypo icon-cancel">
+                        <_a data-translateable="true" href="#" data-bind="click:closePinPanel">Cancel</_a>
                     </div>
                 </div>
             </div>
@@ -181,6 +186,19 @@
                 </div>
             </div>
 
+            <ko opts="if: housemodeZoneChanged">
+            <div class="row">
+                <div class="four columns text-right">
+                        <_span data-translateable="true" style="color:red;">Save changes</_span>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:saveNewHousemodeZone" href="#">Save</_a>
+                    </div>
+                </div>
+            </div>
+            </ko>
+
             <!-- table -->
             <table class="rounded striped" id="securityTable">
             <thead>
@@ -191,7 +209,7 @@
                     <ko opts="foreach: zones">
                     <th style="text-align:center;">
                         <span data-bind="text: name"></span>
-                        <div class="small primary btn" style="margin-bottom:0px;">
+                        <div class="normal default btn" style="margin-bottom:0px;">
                             <i data-translateable="true" data-bind="click:$parent.delZone.bind($data,name)" class="icon-cancel" _title="Delete zone" _alt="Delete zone"></i>
                         </div>
                     </th>
@@ -203,10 +221,10 @@
                     <td>
                         <span data-bind="text: name" class="housemode"></span>
                         <br/>
-                        <div class="small default btn">
+                        <div class="normal primary btn">
                             <i data-translateable="true" data-bind="click:$parent.delHousemode.bind($data,name)" class="icon-cancel" _title="Delete housemode" _alt="Delete housemode"></i>
                         </div>
-                        <div class="small default btn">
+                        <div class="normal primary btn">
                             <i data-translateable="true" data-bind="click:$parent.startEditHousemode.bind($data,name)" class="icon-pencil" _title="Edit" _alt="Edit"></i>
                         </div>
                     </td>
@@ -249,18 +267,38 @@
                 <div class="four columns text-right field">
                     <_span data-translateable="true">Add new housemode</_span>
                 </div>
-                <div class="four columns text-left append field">
-                    <input data-translateable="true" class="normal text input" type="text" _placeholder="New housemode name" data-bind="value:newHousemode "/>
-                    <div class="medium primary btn"><_a data-translateable="true" data-bind="click:addHousemode" href="#">Add housemode</_a></div>
+                <div class="four columns text-left field">
+                    <input data-translateable="true" class="xxwide text input" type="text" _placeholder="New housemode name" data-bind="value:newHousemode "/>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:addHousemode" href="#">Add housemode</_a>
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <div class="four columns text-right field">
                     <_span data-translateable="true">Add new zone</_span>
                 </div>
-                <div class="four columns text-left append field">
-                    <input data-translateable="true" class="normal text input" type="text" _placeholder="New zone name" data-bind="value:newZone "/>
-                    <div class="medium primary btn"><_a data-translateable="true" data-bind="click:addZone" href="#">Add zone</_a></div>
+                <div class="four columns text-left field">
+                    <input data-translateable="true" class="xxwide text input" type="text" _placeholder="New zone name" data-bind="value:newZone "/>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:addZone" href="#">Add zone</_a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <ko opts="if: housemodeZoneChanged">
+                        <_span data-translateable="true" style="color:red;">Save changes</_span>
+                    </ko>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn">
+                        <_a data-translateable="true" data-bind="click:saveNewHousemodeZone" href="#">Save</_a>
+                    </div>
                 </div>
             </div>
         </div>

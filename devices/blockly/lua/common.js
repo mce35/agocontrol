@@ -44,6 +44,6 @@ Blockly.Lua['common_type'] = function(block) {
 };
 
 Blockly.Lua['common_execute'] = function(block) {
-  var code = 'os.execute(' + Blockly.Lua.valueToCode(block, 'CMD', Blockly.Lua.ORDER_ATOMIC) + ')';
+  var code = 'os.execute(' + Blockly.Lua.valueToCode(block, 'CMD', Blockly.Lua.ORDER_ATOMIC) + ')\n';
   return code;
 };

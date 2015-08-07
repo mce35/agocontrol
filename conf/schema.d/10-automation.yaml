@@ -107,6 +107,10 @@ devicetypes:
     name: telephone
     description: a phone
     commands: [dial]
+  powermeter:
+    name: power meter
+    description: sensor for power utilisation
+    commands: []
   binarysensor:
     name: binary sensor
     description: sensor for on off values
@@ -115,6 +119,46 @@ devicetypes:
     name: multilevel sensor
     description: sensor for multilevel values
     commands: [reset]
+  temperaturesensor:
+    name: temperature sensor
+    description: sensor for temperature levels
+    commands: []
+  humiditysensor:
+    name: humidity sensor
+    description: sensor for humidity levels
+    commands: []
+  brightnesssensor:
+    name: brightness sensor
+    description: sensor for brightness levels
+    commands: []
+  batterysensor:
+    name: battery sensor
+    description: sensor for battery levels
+    commands: []
+  barometersensor:
+    name: barometric sensor
+    description: sensor for barometric levels
+    commands: []
+  windsensor:
+    name: windspeed sensor
+    description: sensor for wind speed
+    commands: []
+  rainsensor:
+    name: rain sensor
+    description: sensor for rain
+    commands: []
+  uvsensor:
+    name: UV sensor
+    description: sensor for UV radiation
+    commands: []
+  co2sensor:
+    name: CO2 sensor
+    description: sensor for CO2 levels
+    commands: []
+  airqualitysensor:
+    name: air quality sensor
+    description: sensor for air quality
+    commands: []
   smokedetector:
     name: smoke detector
     description: smoke detector
@@ -223,3 +267,15 @@ units:
   inch:
     label: "inches"
     description: distance in inches
+  A:
+    label: "A"
+    description: Intensity in Ampere
+  V:
+    label: "V"
+    description: Voltage in Volt
+  kWh:
+    label: "kWh"
+    description: Power in kilowatt hour
+  Wh:
+    label: "Wh"
+    description: Power in watt hour

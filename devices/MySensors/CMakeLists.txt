@@ -10,8 +10,8 @@ set(DEVICE_SOURCE_FILES
 
 set (DEVICE_EXTRA_LIBRARIES
     agoclient
-    pthread
     ${Boost_SYSTEM_LIBRARY}
+    pthread
 )
 
 set (DEVICE "agoMySensors")

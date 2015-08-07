@@ -4,6 +4,8 @@ import simplejson
 import errno
 from config import get_config_option, get_config_path
 
+from select import error as SelectError
+
 from qpid.messaging import *
 from qpid.util import URL
 from qpid.log import enable, DEBUG, WARN
@@ -101,14 +103,23 @@ class AgoConnection:
         self.shutdown()
 
     def shutdown(self):
+        self.begin_shutdown()
         if self.session:
+            self.log.trace("Shutting down QPid session")
             self.session.acknowledge()
             self.session.close()
             self.session = None
 
         if self.connection:
+            self.log.trace("Shutting down QPid connection")
             self.connection.close()
             self.connection = None
+
+    def begin_shutdown(self):
+        if self.receiver:
+            self.log.trace("Shutting down QPid receiver")
+            self.receiver.close()
+            self.receiver= None
 
     def add_handler(self, handler):
         """Add a command handler to be called when
@@ -527,10 +538,21 @@ class AgoConnection:
                 pass
 
             except ReceiverError, exception:
-                self.log.error("Error whlie receiving message: %s", exception)
+                self.log.error("Error while receiving message: %s", exception)
                 time.sleep(0.05)
+
+            except SelectError, e:
+                # Modern QPID guards against this itself, but older qpid does not.
+                # When SIGINT is used to shutdown, this bubbles up here on older qpid.
+                # See http://svn.apache.org/viewvc/qpid/trunk/qpid/python/qpid/compat.py?r1=926766&r2=1558503
+                if e[0] == errno.EINTR:
+                    self.log.trace("EINTR while waiting for message, ignoring")
+                    time.sleep(0.05)
+                else:
+                    raise e
 
             except LinkClosed:
                 # connection explicitly closed
+                self.log.debug("LinkClosed exception")
                 break
 

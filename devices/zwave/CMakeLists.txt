@@ -15,7 +15,7 @@ IF (FREEBSD)
 		list(APPEND DEVICE_EXTRA_LIBRARIES iconv)
 	ENDIF ()
 ELSE (FREEBSD)
-	list(APPEND DEVICE_EXTRA_LIBRARIES udev)
+# # # list(APPEND DEVICE_EXTRA_LIBRARIES udev)
 ENDIF (FREEBSD)
 
 include_directories("${LOCALDIR}/include/openzwave")

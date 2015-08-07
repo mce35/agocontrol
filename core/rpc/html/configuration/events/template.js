@@ -838,6 +838,7 @@ function EventsConfig(agocontrol)
         container.innerHTML = "";
 
         var params = null;
+        var variableValues = {};
 
         var baseType = document.createElement("select");
         baseType.options[0] = new Option("event", "event");
@@ -968,13 +969,15 @@ function EventsConfig(agocontrol)
             params = document.createElement("select");
             params.name = path + ".param";
             var i = 0;
-            for ( var k in variables)
+            for ( var j=0; j<self.agocontrol.variables().length; j++ )
             {
-                params.options[i] = new Option(k, k);
-                if (defaultValues && k == defaultValues.param.name)
+                var variable = self.agocontrol.variables()[j];
+                params.options[i] = new Option(variable.variable, variable.variable);
+                if (defaultValues && variable.variable == defaultValues.param.name)
                 {
                     params.options[i].selected = true;
                 }
+                variableValues[variable.variable] = variable.value;
                 i++;
             }
             container.appendChild(params);
@@ -983,7 +986,7 @@ function EventsConfig(agocontrol)
         var comp = document.createElement("select");
         comp.name = path + ".comp";
         comp.options[0] = new Option("=", "eq");
-        comp.options[1] = new Option("!=", "new");
+        comp.options[1] = new Option("!=", "neq");
         comp.options[2] = new Option(">", "gt");
         comp.options[3] = new Option("<", "lt");
         comp.options[4] = new Option(">=", "gte");
@@ -1011,10 +1014,10 @@ function EventsConfig(agocontrol)
         /* Show variable value placeholder */
         if (selectType == "variable")
         {
-            inputField.setAttribute("placeholder", variables[params.options[0].value]);
+            inputField.setAttribute("placeholder", variableValues[params.options[0].value]);
             params.onchange = function()
             {
-                inputField.setAttribute("placeholder", variables[params.options[params.selectedIndex].value]);
+                inputField.setAttribute("placeholder", variableValues[params.options[params.selectedIndex].value]);
             };
         }
 

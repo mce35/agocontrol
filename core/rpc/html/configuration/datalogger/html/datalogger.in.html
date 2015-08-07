@@ -1,122 +1,174 @@
 <div id="contentarea" class="container">
+
     <div style="display:none;">
         <span id="reallyreset" data-translateable="true">Reset controller (everything will be lost!)</span>
     </div>
 
-    <h3>Datalogger configuration</h3>
-    <br/>
+    <_h3 data-translateable="true">Datalogger configuration</_h3>
 
-    <div data-bind="jqTabs:{}">
-        <ul>
-            <li><a href="#tabs-general" data-translateable="true">General</a></li>
-            <li><a href="#tabs-graph" data-translateable="true">Graphs</a></li>
-            <li><a href="#tabs-database" data-translateable="true">SQL</a></li>
+    <section class="tabs" data-bind="gumbyTabs:$root">
+        <ul class="tab-nav">
+            <li class="active"><_a data-translateable="true" href="#">General</_a></li>
+            <li><_a data-translateable="true" href="#">Graph</_a></li>
+            <li><_a data-translateable="true" href="#">Database</_a></li>
         </ul>
 
-        <div id="tabs-general">
-            <ul style="list-style-type:none; padding-left:0px;">
-                <li>
-                    <input type="checkbox" data-bind="checked: dataLogging" />
-                    <span>Activate SQL logging for all sensors except GPS sensors (plots+list)</span>
-                </li>
-                <li>
-                    <input type="checkbox" data-bind="checked: gpsLogging" />
-                    <span>Activate SQL logging for GPS sensors only (map)</span>
-                </li>
-                <li>
-                    <input type="checkbox" data-bind="checked: rrdLogging" />
-                    <span>Activate RRDTool logging (graph)</span>
-                </li>
-                <li>
-                    <div class="medium primary pretty btn">
-                        <a data-bind="click: saveEnabledModules" href="#">Save changes</a>
+        <!-- general tab -->
+        <div class="tab-content active">
+            <div class="row" style="height: 35px;">
+                <div class="twelve columns">
+                    <label class="checkbox" for="checkData">
+                        <input id="checkData" type="checkbox" data-bind="checked: dataLogging" />
+                        <_span data-translateable="true"> Activate SQL logging for all sensors except GPS sensors (plots+list)</_span>
+                    </label>
+                </div>
+            </div>
+            <div class="row" style="height: 35px;">
+                <div class="twelve columns">
+                    <label class="checkbox" for="checkGps">
+                        <input id="checkGps" type="checkbox" data-bind="checked: gpsLogging" />
+                        <_span data-translateable="true"> Activate SQL logging for GPS sensors only (map)</_span>
+                    </label>
+                </div>
+            </div>
+            <div class="row" style="height: 35px;">
+                <div class="twelve columns">
+                    <label class="checkbox" for="checkRrd">
+                        <input id="checkRrd" type="checkbox" data-bind="checked: rrdLogging" />
+                        <_span data-translateable="true"> Activate RRDTool logging (graph)</_span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="ten columns field">
+                    <div class="medium primary btn icon-left entypo icon-floppy">
+                        <_a data-translateable="true" href="#" data-bind="click: saveEnabledModules">Save changes</_a>
                     </div>
-                </li>
-            </ul>
-        </div>
-
-        <div id="tabs-graph">
-            <fieldset>
-                <legend>Add graph on dashboard</legend>
-                <ul style="list-style-type:none;">
-                    <li>
-                        <span>Select sensors to display on graph</span>:
-                        <select data-bind="options:sensors, optionsText:'name', selectedOptions::selectedSensors" multiple="true" size="6"></select>
-                    </li>
-                    <li class="field">
-                        <span>Number of hours to display on thumb</span>:
-                        <input data-bind="value: multigraphPeriod" class="xnarrow text input" type="text" placeholder="12" />
-                    </li>
-                    <li>
-                        <div class="medium primary pretty btn">
-                            <a data-bind="click: addMultigraph" href="#">Add graph</a>
-                        </div>
-                    </li>
-                </ul>
-            </fieldset>
-
-            <fieldset>
-                <legend>Delete graph</legend>
-                <div class="picker" style="top:14px;">
-                    <select data-bind="options:multigraphs, optionsText:'name', value:selectedMultigraphToDel"></select>
                 </div>
-                <div class="medium primary pretty btn" style="margin-top:14px;">
-                    <a data-bind="click: deleteMultigraph" href="#">Delete graph</a>
+            </div>
+        </div>
+
+        <!-- graph tab -->
+        <div class="tab-content">
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Select sensors to display on graph</_span>
                 </div>
-                <br/>
-                <span>Displayed sensors on graph</span>:
-                <ul data-bind="foreach:selectedMultigraphSensors">
-                    <li><span data-bind="text:$data"></span></li>
-                </ul>
-            </fieldset>
+                <div class="six columns text-left field">
+                    <select size="6" multiple="true" data-bind="options:sensors, optionsText:'name', selectedOptions::selectedSensors"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Number of hours to display on thumb</_span>
+                </div>
+                <div class="four columns text-left field">
+                    <input data-translateable="true" class="narrow text input" type="text" placeholder="12" data-bind="value: multigraphPeriod"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-plus">
+                        <_a data-translateable="true" data-bind="click:addMultigraph" href="#">Add graph</_a>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Delete graph</_span>
+                </div>
+                <div class="four columns text-left field">
+                    <div class="picker">
+                        <select data-bind="options:multigraphs, optionsText:'name', value:selectedMultigraphToDel"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Displayed sensors on selected graph</_span>
+                </div>
+                <div class="six columns text-left field">
+                    <ul data-bind="foreach:selectedMultigraphSensors" style="list-style: disc inside;">
+                        <li><span data-bind="text:$data"/></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="six columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-trash">
+                        <_a href="#" data-bind="click: deleteMultigraph">Delete graph</_a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="tabs-database">
-            <fieldset>
-                <legend>Database infos</legend>
-                <ul style="list-style-type:none; padding-left:0px;">
-                    <li>
-                        <span>Database size</span> : <span data-bind="text:databaseSize"></span>
-                    </li>
-                </ul>
-            </fieldset>
-
-            <fieldset>
-                <legend>Data table infos</legend>
-                <ul style="list-style-type:none; padding-left:0px;">
-                    <li>
-                        <span>Number of records</span> : <span data-bind="text:dataCount"></span>
-                    </li>
-                    <li>
-                        <span>Records timerange</span> : <span data-bind="text:dataStart"></span> - <span data-bind="text:dataEnd"></span>
-                    </li>
-                    <li>
-                        <div class="medium primary pretty btn">
-                            <a data-bind="click: purgeDataTable" href="#">Purge all data</a>
-                        </div>
-                    </li>
-                </ul>
-            </fieldset>
-
-            <fieldset>
-                <legend>Position table infos</legend>
-                <ul style="list-style-type:none; padding-left:0px;">
-                    <li>
-                        <span>Number of records</span> : <span data-bind="text:positionCount"></span>
-                    </li>
-                    <li>
-                        <span>Records timerange</span> : <span data-bind="text:positionStart"></span> - <span data-bind="text:positionEnd"></span>
-                    </li>
-                    <li>
-                        <div class="medium primary pretty btn">
-                            <a data-bind="click: purgePositionTable" href="#">Purge all positions</a>
-                        </div>
-                    </li>
-                </ul>
-            </fieldset>
+        <!-- database tab -->
+        <div class="tab-content">
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Database size</_span>:
+                </div>
+                <div class="six columns text-left field">
+                    <span data-translateable="true" data-bind="text:databaseSize"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Sensor values</_span>:
+                </div>
+                <div class="six columns text-left field">
+                    <span data-translateable="true" data-bind="text:dataCount()+' records over '+dataStart()+' - '+dataEnd()"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-cancel">
+                        <_a href="#" data-bind="click: purgeDataTable">Purge all values</_a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">GPS positions</_span>:
+                </div>
+                <div class="six columns text-left field">
+                    <span data-translateable="true" data-bind="text: positionCount()+' records over '+positionStart()+' - '+positionEnd()"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-cancel">
+                        <_a href="#" data-bind="click: purgePositionTable">Purge all positions</_a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                    <_span data-translateable="true">Journal</_span>:
+                </div>
+                <div class="six columns text-left field">
+                    <span data-translateable="true" data-bind="text: journalCount()+' messages over '+journalStart()+' - '+journalEnd()"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="four columns text-right">
+                </div>
+                <div class="four columns text-left field">
+                    <div class="medium primary btn icon-left entypo icon-cancel">
+                        <_a href="#" data-bind="click: purgeJournalTable">Purge all messages</_a>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-    </div>
-
-    <br/>
 </div>

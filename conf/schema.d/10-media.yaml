@@ -27,6 +27,161 @@ commands:
     name: stop
   getepg:
     name: get electronic program guide
+  addcamera:
+    name: add a camera
+    parameters:
+      ip:
+        name: ip
+        type: string
+      port:
+        name: port
+        type: integer
+      login:
+        name: login
+        type: string
+      password:
+        name: password
+        type: string
+      uri_token:
+        name: uri token
+        type: string
+      uri_desc:
+        name: uri description
+        type: string
+  deletecamera:
+    name: delete a camera
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+  getprofiles:
+    name: get camera profiles
+    parameters:
+      ip:
+        name: ip
+        type: string
+      port:
+        name: port
+        type: integer
+      login:
+        name: login
+        type: string
+      password:
+        name: password
+        type: string
+  dooperation:
+    name: execute onvif operation
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+      service:
+        name: onvif service
+        type: string
+      operation:
+        name: onvif operation
+        type: string
+      params:
+        name: onvif operation parameters
+        type: string
+  getcameras:
+    name: get cameras
+  updatecredentials:
+    name: update camera credentials
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+      login:
+        name: login
+        type: string
+      password:
+        name: password
+        type: string
+  getdeviceinfos:
+    name: update camera credentials
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+  setcameraprofile:
+    name: set camera profile
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+      uri_token:
+        name: uri token
+        type: string
+  setmotion:
+    name: set motion configuration
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+      enable:
+        name: enable/disable motion
+        type: boolean
+      uri_desc:
+        name: uri description
+        type: string
+      uri_token:
+        name: uri_token
+        type: string
+      sensitivity:
+        name: motion sensitivity
+        type: integer
+      deviation:
+        name: motion deviation
+        type: integer
+      onduration:
+        name: on duration
+        type: integer
+  setrecording:
+    name: set recording configuration
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+      type:
+        name: recording type
+        type: integer
+      uri_desc:
+        name: uri description
+        type: string
+      uri_token:
+        name: uri_token
+        type: string
+      duration:
+        name: recording duration
+        type: integer
+      contour:
+        name: contour type
+        type: integer
+  setrecordingsconfig:
+    name: set recordings configuration
+    parameters:
+      dir:
+        name: recordings directory
+        type: string
+      delay:
+        name: recordings purge delay
+        type: integer
+  getrecordings:
+    name: get list of recordings
+  turnonrecording:
+    name: turn on recordings
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+  turnoffrecording:
+    name: turn off recordings
+    parameters:
+      internalid:
+        name: camera internalid
+        type: string
+values:
 devicetypes:
   camera:
     name: Camera
@@ -57,7 +212,7 @@ devicetypes:
   onvifcontroller:
     name: onvif controller
     description: Onvif controller
-    commands: ["addcamera", "deletecamera", "getprofiles", "dooperation", "getcameras", "getconfig", "updatecredentials", "getdeviceinfos", "setcameraprofile", "setmotion", "setrecording", "setrecordingsconfig", "getrecordings"]
+    commands: ["addcamera", "deletecamera", "getprofiles", "dooperation", "getcameras", "updatecredentials", "getdeviceinfos", "setcameraprofile", "setmotion", "setrecording", "setrecordingsconfig", "getrecordings", "turnonrecording", "turnoffrecording"]
 values:
   channel:
     name: channel

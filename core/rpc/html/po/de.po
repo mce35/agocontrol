@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-07 17:02+0200\n"
+"POT-Creation-Date: 2015-06-05 17:27+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -86,6 +86,7 @@ msgstr "Bis:"
 
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/multilevelsensor.xml.in.h:5
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
 msgid "Graph"
 msgstr "Graph"
 
@@ -237,10 +238,11 @@ msgid "Finally click on button to save access code"
 msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
 #: ../applications/agoalert/html/agoalert.xml.in.h:19
-#: ../applications/security/html/security.xml.in.h:8
+#: ../applications/security/html/security.xml.in.h:9
 #: ../applications/zwave/html/zwave.xml.in.h:69
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
 #: ../configuration/events/html/events.xml.in.h:13
+#: ../configuration/system/html/system.xml.in.h:8
 #: ../configuration/scenarios/html/scenarios.xml.in.h:15
 msgid "Save"
 msgstr "Speichern"
@@ -576,7 +578,7 @@ msgstr "USB Port vom Controller"
 
 #: ../applications/mysensors/html/mysensors.xml.in.h:8
 #: ../applications/zwave/html/zwave.xml.in.h:37
-#: ../help/debug/html/debug.xml.in.h:7
+#: ../help/debug/html/debug.xml.in.h:8
 msgid "Set"
 msgstr "Setzen"
 
@@ -610,70 +612,76 @@ msgstr "Entfernen"
 msgid "Remove"
 msgstr "Entfernen"
 
-#. security tabs
-#: ../applications/security/html/security.xml.in.h:2
-msgid "Security"
-msgstr "Security"
-
-#: ../applications/security/html/security.xml.in.h:3
-#: ../applications/zwave/html/zwave.xml.in.h:27
-msgid "Status"
-msgstr "Status"
-
-#: ../applications/security/html/security.xml.in.h:4
-#, fuzzy
-msgid "Pin configuration"
-msgstr "Push Konfiguration"
-
-#: ../applications/security/html/security.xml.in.h:5
-#, fuzzy
-msgid "Housemodes/zones Configuration"
-msgstr "Ereignis Konfiguration"
-
-#: ../applications/security/html/security.xml.in.h:6
-msgid "Security Configuration"
-msgstr "Security Konfiguration"
-
-#: ../applications/security/html/security.xml.in.h:7
-#, fuzzy
-msgid "Change current housemode"
-msgstr "Aktiven Hausmodus setzen"
-
-#: ../applications/security/html/security.xml.in.h:9
-#, fuzzy
-msgid "Change pin code"
-msgstr "Aktiven Hausmodus setzen"
-
-#: ../applications/security/html/security.xml.in.h:10
-#, fuzzy
-msgid "Security devices"
-msgstr "Security"
-
-#: ../applications/security/html/security.xml.in.h:11
-msgid "Alarms"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:12
+#: ../applications/security/html/security.xml.in.h:1
 #: ../applications/zwave/html/zwave.xml.in.h:63
 #: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Cancel"
 msgstr "Abbrechen"
 
+#. security tabs
+#: ../applications/security/html/security.xml.in.h:3
+msgid "Security"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:4
+#: ../applications/zwave/html/zwave.xml.in.h:27
+msgid "Status"
+msgstr "Status"
+
+#: ../applications/security/html/security.xml.in.h:5
+#, fuzzy
+msgid "Pin configuration"
+msgstr "Push Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:6
+#, fuzzy
+msgid "Housemodes/zones Configuration"
+msgstr "Ereignis Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:7
+msgid "Security Configuration"
+msgstr "Security Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:8
+#, fuzzy
+msgid "Change current housemode"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:10
+#, fuzzy
+msgid "Change pin code"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:11
+#, fuzzy
+msgid "Security devices"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:12
+msgid "Alarms"
+msgstr ""
+
 #: ../applications/security/html/security.xml.in.h:13
-msgid "Housemodes\\Zones"
+#: ../applications/onvif/html/onvif.xml.in.h:14
+#: ../configuration/datalogger/html/datalogger.xml.in.h:8
+msgid "Save changes"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:14
+msgid "Housemodes\\Zones"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:15
 #, fuzzy
 msgid "Delete zone"
 msgstr "Löschen"
 
-#: ../applications/security/html/security.xml.in.h:15
+#: ../applications/security/html/security.xml.in.h:16
 #, fuzzy
 msgid "Delete housemode"
 msgstr "Hausmodus hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:16
+#: ../applications/security/html/security.xml.in.h:17
 #: ../applications/onvif/html/onvif.xml.in.h:50
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #: ../configuration/events/html/events.xml.in.h:4
@@ -681,49 +689,49 @@ msgstr "Hausmodus hinzufügen"
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: ../applications/security/html/security.xml.in.h:17
+#: ../applications/security/html/security.xml.in.h:18
 msgid "Delay (s)"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:18
+#: ../applications/security/html/security.xml.in.h:19
 msgid "Add new housemode"
 msgstr "Neuen Hausmodus hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:19
+#: ../applications/security/html/security.xml.in.h:20
 #, fuzzy
 msgid "New housemode name"
 msgstr "Neuer Raumname"
 
-#: ../applications/security/html/security.xml.in.h:20
+#: ../applications/security/html/security.xml.in.h:21
 msgid "Add housemode"
 msgstr "Hausmodus hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:21
+#: ../applications/security/html/security.xml.in.h:22
 msgid "Add new zone"
 msgstr "Neue Zone hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:22
+#: ../applications/security/html/security.xml.in.h:23
 #, fuzzy
 msgid "New zone name"
 msgstr "Neuer Raumname"
 
-#: ../applications/security/html/security.xml.in.h:23
+#: ../applications/security/html/security.xml.in.h:24
 msgid "Add zone"
 msgstr "Neue Zone hinzufügen"
 
-#: ../applications/security/html/security.xml.in.h:24
+#: ../applications/security/html/security.xml.in.h:25
 msgid "Alarm message to send when alarm is armed"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:25
+#: ../applications/security/html/security.xml.in.h:26
 msgid "message"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:26
+#: ../applications/security/html/security.xml.in.h:27
 msgid "Alarm message to send when alarm is disarmed"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:27
+#: ../applications/security/html/security.xml.in.h:28
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
@@ -984,6 +992,7 @@ msgid "Save configuration"
 msgstr "Konfiguration speichern"
 
 #: ../applications/onvif/html/onvif.xml.in.h:1
+#: ../configuration/datalogger/html/datalogger.xml.in.h:2
 #, fuzzy
 msgid "General"
 msgstr "Allgemein"
@@ -1032,10 +1041,6 @@ msgstr ""
 #, fuzzy
 msgid "Camera password"
 msgstr "Dein Passwort"
-
-#: ../applications/onvif/html/onvif.xml.in.h:14
-msgid "Save changes"
-msgstr ""
 
 #: ../applications/onvif/html/onvif.xml.in.h:15
 msgid "Camera URI"
@@ -1292,43 +1297,42 @@ msgstr "Ereignis Konfiguration"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:15
 #, fuzzy
-msgid "Save your script"
-msgstr "Script importieren"
+msgid "New script"
+msgstr "Script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
-#, fuzzy
-msgid "Load existing scripts"
-msgstr "Vorhandenes Script"
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+msgid "New"
+msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:18
+#, fuzzy
+msgid "Save as"
+msgstr "Speichern"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#, fuzzy
+msgid "Load script"
+msgstr "Vorhandenes Script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:20
 msgid "Load"
 msgstr "Laden"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
 msgid "Check blocks"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:20
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
 msgid "Check"
 msgstr "Überprüfen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
 msgid "View your blocks under script format"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
 msgid "View"
 msgstr "Ansehen"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
-#, fuzzy
-msgid "Clear all blocks on workspace"
-msgstr "Kein Block im Arbeitsbereich definiert."
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
-#: ../help/debug/html/debug.xml.in.h:6
-msgid "Clear"
-msgstr "Löschen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:25
 msgid "saved"
@@ -1498,6 +1502,78 @@ msgstr "Neuer Raumname"
 msgid "Create dashboard"
 msgstr "Übersicht"
 
+#: ../configuration/datalogger/html/datalogger.xml.in.h:1
+#, fuzzy
+msgid "Datalogger configuration"
+msgstr "Konfiguration herunterladen"
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:4
+msgid "Database"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:5
+msgid "Activate SQL logging for all sensors except GPS sensors (plots+list)"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:6
+msgid "Activate SQL logging for GPS sensors only (map)"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:7
+msgid "Activate RRDTool logging (graph)"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:9
+msgid "Select sensors to display on graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:10
+msgid "Number of hours to display on thumb"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:11
+msgid "Add graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:12
+#, fuzzy
+msgid "Delete graph"
+msgstr "Löschen"
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:13
+msgid "Displayed sensors on selected graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:14
+msgid "Database size"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:15
+#, fuzzy
+msgid "Sensor values"
+msgstr "Setze Wert"
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:16
+msgid "Purge all values"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:17
+msgid "GPS positions"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:18
+msgid "Purge all positions"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
+#: ../help/journal/html/journal.xml.in.h:1
+msgid "Journal"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:20
+msgid "Purge all messages"
+msgstr ""
+
 #: ../configuration/devices/html/devices.xml.in.h:1
 #: ../configuration/rooms/html/rooms.xml.in.h:4
 #: ../configuration/scenarios/html/scenarios.xml.in.h:4
@@ -1562,6 +1638,53 @@ msgstr "Namen für Ereignis eingeben"
 #: ../configuration/events/html/events.xml.in.h:12
 msgid "Edit Event"
 msgstr "Ereignis bearbeiten"
+
+#: ../configuration/system/html/system.xml.in.h:1
+#: ../help/system/html/system.xml.in.h:1
+#, fuzzy
+msgid "System informations"
+msgstr "Node Informationen aktualisieren"
+
+#: ../configuration/system/html/system.xml.in.h:2
+msgid "Default contact"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:3
+msgid "Home position"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:4
+msgid ""
+"Configure your default contact informations. This allows you to not enter "
+"each time those informations."
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:5
+#, fuzzy
+msgid "Email address"
+msgstr "E-Mail Adresse"
+
+#: ../configuration/system/html/system.xml.in.h:6
+msgid "Phone number"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:7
+msgid "(international number is preferable)"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:9
+msgid ""
+"Find and click on your home to find its position. Agocontrol needs this "
+"information to compute sunset/sunrise times."
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:10
+msgid "Latitude"
+msgstr ""
+
+#: ../configuration/system/html/system.xml.in.h:11
+msgid "Longitude"
+msgstr ""
 
 #: ../configuration/rooms/html/rooms.xml.in.h:1
 msgid "Are you sure that you want to delete this room?"
@@ -1637,11 +1760,6 @@ msgstr "Namen für Variable eingeben"
 msgid "Create variable"
 msgstr "Variable erstellen"
 
-#: ../help/system/html/system.xml.in.h:1
-#, fuzzy
-msgid "System informations"
-msgstr "Node Informationen aktualisieren"
-
 #: ../help/system/html/system.xml.in.h:2
 #, fuzzy
 msgid "System version"
@@ -1686,6 +1804,42 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
+#: ../help/debug/html/debug.xml.in.h:6
+msgid "Clear"
+msgstr "Löschen"
+
+#: ../help/debug/html/debug.xml.in.h:7
+msgid "Autoscroll"
+msgstr ""
+
+#: ../help/journal/html/journal.xml.in.h:2
+#, fuzzy
+msgid "From"
+msgstr "Von:"
+
+#: ../help/journal/html/journal.xml.in.h:3
+#, fuzzy
+msgid "To"
+msgstr "Bis:"
+
+#: ../help/journal/html/journal.xml.in.h:4
+#, fuzzy
+msgid "Filter"
+msgstr "Filter Räume:"
+
+#: ../help/journal/html/journal.xml.in.h:5
+#, fuzzy
+msgid "Get"
+msgstr "Setzen"
+
+#, fuzzy
+#~ msgid "Save your script"
+#~ msgstr "Script importieren"
+
+#, fuzzy
+#~ msgid "Clear all blocks on workspace"
+#~ msgstr "Kein Block im Arbeitsbereich definiert."
+
 #, fuzzy
 #~ msgid "Recording duration"
 #~ msgstr "Konfiguration speichern"
@@ -1693,10 +1847,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Parameters"
 #~ msgstr "Setze Parameter"
-
-#, fuzzy
-#~ msgid "Get"
-#~ msgstr "Setzen"
 
 #~ msgid "Configure controller USB port"
 #~ msgstr "USB Port vom Controller"
@@ -2040,9 +2190,6 @@ msgstr ""
 
 #~ msgid "to"
 #~ msgstr "zu"
-
-#~ msgid "Set value"
-#~ msgstr "Setze Wert"
 
 #~ msgid "Force selected node parameter to specified value"
 #~ msgstr ""

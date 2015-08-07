@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <time.h>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include <tinyxml2.h>
@@ -41,11 +43,21 @@ private:
     Variant::Map deviceMap;
 
     std::string eibdurl;
+    std::string time_ga;
+    std::string date_ga;
+
     EIBConnection *eibcon;
     pthread_mutex_t mutexCon;
     boost::thread *listenerThread;
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
+    void eventHandler(std::string subject, qpid::types::Variant::Map content);
+    void sendDate();
+    void sendTime();
+    bool sendShortData(std::string dest, int data);
+    bool sendCharData(std::string dest, int data);
+    bool sendFloatData(std::string dest, float data);
+
     void setupApp();
     void cleanupApp();
 
@@ -226,13 +238,15 @@ void *AgoKnx::listener() {
                             agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", tl.getShortUserData()==1 ? 255 : 0, "");
                         } else if (type == "setlevel" || type == "levelstatus") {
                             int data = tl.getUIntData(); 
-                            agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", data, "");
+                            agoConnection->emitEvent(uuid.c_str(), "event.device.statechanged", data*100/255, "");
                         } else if (type == "temperature") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.temperaturechanged", tl.getFloatData(), "degC");
                         } else if (type == "brightness") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.brightnesschanged", tl.getFloatData(), "lux");
                         } else if (type == "energy") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "mA");
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "A");
+                        } else if (type == "power") {
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.powerchanged", tl.getFloatData(), "kW");
                         } else if (type == "energyusage") {
                             unsigned char buffer[4];
                             if (tl.getUserData(buffer,4) == 4) {
@@ -253,6 +267,86 @@ void *AgoKnx::listener() {
     return NULL;
 }
 
+void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content) {
+    if (subject == "event.environment.timechanged") {
+        // send time/date every hour
+        if (content["minute"].asInt32() == 0) {
+            sendDate();
+            sendTime();
+        }
+    }
+}
+
+void AgoKnx::sendDate() {
+    uint8_t datebytes[3];   
+    time_t now = time(NULL);
+    struct tm *lt = localtime(&now);
+    datebytes[0] = lt->tm_mday;
+    datebytes[1] = lt->tm_mon + 1;
+    datebytes[2] = lt->tm_year - 100;
+    Telegram *tg_date = new Telegram();
+    tg_date->setUserData(datebytes,3);
+    tg_date->setGroupAddress(Telegram::stringtogaddr(date_ga));
+    pthread_mutex_lock (&mutexCon);
+    AGO_TRACE() << "sending telegram";
+    tg_date->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+}
+
+
+void AgoKnx::sendTime() {
+    uint8_t timebytes[3];   
+    time_t now = time(NULL);
+    struct tm *lt = localtime(&now);
+    timebytes[0]=((lt->tm_wday?lt->tm_wday:7)<<5) + lt->tm_hour;
+    timebytes[1]= lt->tm_min;
+    timebytes[2] = lt->tm_sec;
+    Telegram *tg_time = new Telegram();
+    tg_time->setUserData(timebytes,3);
+    tg_time->setGroupAddress(Telegram::stringtogaddr(time_ga));
+    pthread_mutex_lock (&mutexCon);
+    AGO_TRACE() << "sending telegram";
+    tg_time->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+}
+
+bool AgoKnx::sendShortData(std::string dest, int data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setShortUserData(data > 0 ? 1 : 0);
+    AGO_TRACE() << "sending value " << data << " as short data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
+}
+
+bool AgoKnx::sendCharData(std::string dest, int data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setDataFromChar(data);
+    AGO_TRACE() << "sending value " << data << " as char data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
+}
+
+bool AgoKnx::sendFloatData(std::string dest, float data) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setDataFromFloat(data);
+    AGO_TRACE() << "sending value " << data << " as float data telegram to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
+}
+
+
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
     std::string internalid = content["internalid"].asString();
     AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
@@ -263,74 +357,41 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
     } else {
        return responseError(RESPONSE_ERR_INTERNAL, "Device not found in internal deviceMap");
     }
-    Telegram *tg = new Telegram();
-    eibaddr_t dest;
+    
+    bool result;
     if (content["command"] == "on") {
-        string destGA = device["onoff"];
-        dest = Telegram::stringtogaddr(destGA);
         if (device["devicetype"]=="drapes") {
-            tg->setShortUserData(0);
+            result = sendShortData(device["onoff"],0);
         } else {
-            tg->setShortUserData(1);
+            result = sendShortData(device["onoff"],1);
         }
     } else if (content["command"] == "off") {
-        string destGA = device["onoff"];
-        dest = Telegram::stringtogaddr(destGA);
         if (device["devicetype"]=="drapes") {
-            tg->setShortUserData(1);
+            result = sendShortData(device["onoff"],1);
         } else {
-            tg->setShortUserData(0);
+            result = sendShortData(device["onoff"],0);
         }
     } else if (content["command"] == "stop") {
-        string destGA = device["stop"];
-        dest = Telegram::stringtogaddr(destGA);
-        tg->setShortUserData(1);
+        result = sendShortData(device["stop"],1);
     } else if (content["command"] == "push") {
-        string destGA = device["push"];
-        dest = Telegram::stringtogaddr(destGA);
-        tg->setShortUserData(0);
+        result = sendShortData(device["push"],0);
     } else if (content["command"] == "setlevel") {
         checkMsgParameter(content, "level", VAR_INT32);
-        int level=0;
-        string destGA = device["setlevel"];
-        dest = Telegram::stringtogaddr(destGA);
-        level = atoi(content["level"].asString().c_str());
-        tg->setDataFromChar(level);
+        result = sendCharData(device["setlevel"],atoi(content["level"].asString().c_str())*255/100);
     } else if (content["command"] == "settemperature") {
         checkMsgParameter(content, "temperature");
-        float temp = content["temperature"];
-        string destGA = device["settemperature"];
-        dest = Telegram::stringtogaddr(destGA);
-        tg->setDataFromFloat(temp);
+        result = sendFloatData(device["settemperature"],content["temperature"]);
     } else if (content["command"] == "setcolor") {
         checkMsgParameter(content, "red");
         checkMsgParameter(content, "green");
         checkMsgParameter(content, "blue");
-        int level=0;
-        Telegram *tg2 = new Telegram();
-        Telegram *tg3 = new Telegram();
-        tg->setDataFromChar(atoi(content["red"].asString().c_str()));
-        dest = Telegram::stringtogaddr(device["red"].asString());
-        tg2->setDataFromChar(atoi(content["green"].asString().c_str()));
-        tg2->setGroupAddress(Telegram::stringtogaddr(device["green"].asString()));
-        tg3->setDataFromChar(atoi(content["blue"].asString().c_str()));
-        tg3->setGroupAddress(Telegram::stringtogaddr(device["blue"].asString()));
-        pthread_mutex_lock (&mutexCon);
-        AGO_TRACE() << "sending telegram";
-        tg2->sendTo(eibcon);
-        AGO_TRACE() << "sending telegram";
-        tg3->sendTo(eibcon);
-        pthread_mutex_unlock (&mutexCon);
+        result = sendCharData(device["red"],atoi(content["red"].asString().c_str()));
+        result &= sendCharData(device["green"],atoi(content["green"].asString().c_str()));
+        result &= sendCharData(device["blue"],atoi(content["blue"].asString().c_str()));
     } else {
         return responseUnknownCommand();
     }
 
-    tg->setGroupAddress(dest);
-    AGO_TRACE() << "sending telegram";
-    pthread_mutex_lock (&mutexCon);
-    bool result = tg->sendTo(eibcon);
-    pthread_mutex_unlock (&mutexCon);
-    AGO_DEBUG() << "Result: " << result;
     if (result)
     {
         return responseSuccess();
@@ -362,6 +423,11 @@ void AgoKnx::setupApp() {
     }
 
     addCommandHandler();
+    if (getConfigOption("sendtime", "0")!="0") {
+        time_ga = getConfigOption("timega", "3/3/3");
+        date_ga = getConfigOption("datega", "3/3/4");
+        addEventHandler();
+    }
 
     // load xml file into map
     if (!loadDevices(devicesFile, deviceMap)) {

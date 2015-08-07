@@ -26,7 +26,7 @@ commands:
   sethousemode:
     name: set the house mode
     parameters:
-      mode:
+      housemode:
         name: house mode
         type: string
       pin:
@@ -223,6 +223,28 @@ commands:
       floorplan:
         name: uuid of the floorplan
         type: string
+  addmessage:
+    name: add a message
+    parameters:
+      type:
+        name: message type
+        type: option
+        options: ["debug", "info", "warning", "error"]
+      message:
+        name: message
+        type: string
+  getmessages:
+    name: get messages
+    parameters:
+      start:
+        name: start timestamp
+        type: integer
+      end:
+        name: end timestamp
+        type: integer
+      filter:
+        name: filter
+        type: string
 devicetypes:
   dataloggercontroller:
     name: datalogger controller
@@ -245,7 +267,7 @@ devicetypes:
     name: security system
     description: ago control security system module
     commands: [gethousemode, sethousemode, triggerzone, setzones, cancel]
-    events: [event.security.housemodechanged, event.security.countdown.started, event.security.countdown, event.security.intruderalert, event.security.alarmcanceled]
+    events: [event.security.housemodechanged,event.security.countdown.started,event.security.countdown,event.security.intruderalert,event.security.alarmcanceled,event.security.alarmstopped]
   luacontroller:
     name: lua event scripting
     description: use lua scripts to act on events
@@ -259,6 +281,10 @@ devicetypes:
     name: event handler
     description: respond to events
     commands: []
+  journal:
+    name: journal
+    description: log event messages
+    commands: [addmessage, getmessages]
 values:
   devicetype:
     name: device type
@@ -325,17 +351,22 @@ events:
   event.environment.timechanged:
     description: time did advance
     parameters: [minute, hour, month, day, year, weekday, yday]
-  event.security.countdown:
-    description: intruder alarm countdown couting down
-    parameters: [zone, delay]
+  event.security.housemodechanged:
+    description: house security mode changed
+    parameters: [housemode]
   event.security.countdown.started:
     description: intruder alarm countdown started
     parameters: [zone, delay]
-  event.security.countdown.cancelled:
-    description: intruder alarm countdown cancelled
+  event.security.countdown:
+    description: intruder alarm countdown couting down
+    parameters: [zone, delay]
   event.security.intruderalert:
     description: intruder alarm
     parameters: [zone]
+  event.security.alarmcancelled:
+    description: intruder alarm countdown cancelled
+  event.security.alarmstopped:
+    description: intruder alarm stopped
   event.system.roomnamechanged: 
     description: a room name has been changed
     parameters: [name, uuid]

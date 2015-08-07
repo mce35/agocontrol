@@ -1,8 +1,11 @@
 #include "MySensors.h"
+#include <string>
+
+using namespace std;
 
 /**
  * PROTOCOL v1.3
- * http://www.mysensors.org/build/serial_api_13
+ * http://www.mysensors.org/download/serial_api_13
  */
 
 const char* getMsgTypeNameV13(enum msgTypeV13 type)
@@ -14,7 +17,11 @@ const char* getMsgTypeNameV13(enum msgTypeV13 type)
         case REQUEST_VARIABLE_V13: return "REQUEST_VARIABLE";
         case VARIABLE_ACK_V13: return "VARIABLE_ACK";
         case INTERNAL_V13: return "INTERNAL";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
 
@@ -44,10 +51,13 @@ const char* getDeviceTypeNameV13(enum deviceTypesV13 type)
         case S_LOCK_V13: return "S_LOCK";
         case S_IR_V13: return "S_IR";
         case S_WATER_V13: return "S_WATER";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
-
 
 const char* getVariableTypeNameV13(enum varTypesV13 type)
 {
@@ -90,7 +100,11 @@ const char* getVariableTypeNameV13(enum varTypesV13 type)
         case V_FLOW_V13: return "V_FLOW";
         case V_VOLUME_V13: return "V_VOLUME";
         case V_LOCK_STATUS_V13: return "V_LOCK_STATUS";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
 
@@ -111,13 +125,17 @@ const char* getInternalTypeNameV13(enum internalTypesV13 type)
         case I_UNIT_V13: return "I_UNIT";
         case I_SKETCH_NAME_V13: return "I_SKETCH_NAME";
         case I_SKETCH_VERSION_V13: return "I_SKETCH_VERSION";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
 
 /**
  * PROTOCOL v1.4
- * http://www.mysensors.org/build/serial_api
+ * http://www.mysensors.org/download/serial_api_14
  */
 
 const char* getMsgTypeNameV14(enum msgTypeV14 type)
@@ -129,7 +147,11 @@ const char* getMsgTypeNameV14(enum msgTypeV14 type)
         case REQ_V14: return "REQ";
         case INTERNAL_V14: return "INTERNAL";
         case STREAM_V14: return "STREAM";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
 
@@ -163,10 +185,13 @@ const char* getDeviceTypeNameV14(enum deviceTypesV14 type)
         case S_CUSTOM_V14: return "S_CUSTOM";
         case S_DUST_V14: return "S_DUST";
         case S_SCENE_CONTROLLER_V14: return "S_SCENE_CONTROLLER";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
-
 
 const char* getVariableTypeNameV14(enum varTypesV14 type)
 {
@@ -212,7 +237,11 @@ const char* getVariableTypeNameV14(enum varTypesV14 type)
         case V_DUST_LEVEL_V14: return "V_DUST_LEVEL";
         case V_VOLTAGE_V14: return "V_VOLTAGE";
         case V_CURRENT_V14: return "V_CURRENT";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }
 
@@ -235,6 +264,157 @@ const char* getInternalTypeNameV14(enum internalTypesV14 type)
         case I_SKETCH_VERSION_V14: return "I_SKETCH_VERSION";
         case I_REBOOT_V14: return "I_REBOOT";
         case I_GATEWAY_READY_V14: return "I_GATEWAY_READY";
-        default: return "UNKNOWN";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
+    }
+}
+
+/**
+ * PROTOCOL v1.5
+ * http://www.mysensors.org/download/serial_api_15
+ */
+
+const char* getMsgTypeNameV15(enum msgTypeV15 type)
+{
+    switch(type)
+    {
+        case PRESENTATION_V15: return "PRESENTATION";
+        case SET_V15: return "SET";
+        case REQ_V15: return "REQ";
+        case INTERNAL_V15: return "INTERNAL";
+        case STREAM_V15: return "STREAM";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
+    }
+}
+
+const char* getDeviceTypeNameV15(enum deviceTypesV15 type)
+{
+    switch(type)
+    {
+        case S_DOOR_V15: return "S_DOOR";
+        case S_MOTION_V15: return "S_MOTION";
+        case S_SMOKE_V15: return "S_SMOKE";
+        case S_BINARY_V15: return "S_BINARY";
+        case S_DIMMER_V15: return "S_DIMMER";
+        case S_COVER_V15: return "S_COVER";
+        case S_TEMP_V15: return "S_TEMP";
+        case S_HUM_V15: return "S_HUM";
+        case S_BARO_V15: return "S_BARO";
+        case S_WIND_V15: return "S_WIND";
+        case S_RAIN_V15: return "S_RAIN";
+        case S_UV_V15: return "S_UV";
+        case S_WEIGHT_V15: return "S_WEIGHT";
+        case S_POWER_V15: return "S_POWER";
+        case S_HEATER_V15: return "S_HEATER";
+        case S_DISTANCE_V15: return "S_DISTANCE";
+        case S_LIGHT_LEVEL_V15: return "S_LIGHT_LEVEL";
+        case S_ARDUINO_NODE_V15: return "S_ARDUINO_NODE";
+        case S_ARDUINO_REPEATER_NODE_V15: return "S_ARDUINO_REPEATER_NODE";
+        case S_LOCK_V15: return "S_LOCK";
+        case S_IR_V15: return "S_IR";
+        case S_WATER_V15: return "S_WATER";
+        case S_AIR_QUALITY_V15: return "S_AIR_QUALITY";
+        case S_CUSTOM_V15: return "S_CUSTOM";
+        case S_DUST_V15: return "S_DUST";
+        case S_SCENE_CONTROLLER_V15: return "S_SCENE_CONTROLLER";
+        case S_RGB_LIGHT_V15: return "S_RGB_LIGHT";
+        case S_RGBW_LIGHT_V15: return "S_RGBW_LIGHT";
+        case S_COLOR_SENSOR_V15: return "S_COLOR_SENSOR";
+        case S_HVAC_V15: return "S_HVAC";
+        case S_MULTIMETER_V15: return "S_MULTIMETER";
+        case S_SPRINKLER_V15: return "S_SPRINKLER";
+        case S_WATER_LEAK_V15: return "S_WATER_LEAK";
+        case S_SOUND_V15: return "S_SOUND";
+        case S_VIBRATION_V15: return "S_VIBRATION";
+        case S_MOISTURE_V15: return "S_MOISTURE";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
+    }
+}
+
+const char* getVariableTypeNameV15(enum varTypesV15 type)
+{
+    switch (type)
+    {
+        case V_TEMP_V15: return "V_TEMP";
+        case V_HUM_V15: return "V_HUM";
+        case V_STATUS_V15: return "V_STATUS";
+        case V_PERCENTAGE_V15: return "V_PERCENTAGE";
+        case V_PRESSURE_V15: return "V_PRESSURE";
+        case V_FORECAST_V15: return "V_FORECAST";
+        case V_RAIN_V15: return "V_RAIN";
+        case V_RAINRATE_V15: return "V_RAINRATE";
+        case V_WIND_V15: return "V_WIND";
+        case V_GUST_V15: return "V_GUST";
+        case V_DIRECTION_V15: return "V_DIRECTION";
+        case V_UV_V15: return "V_UV";
+        case V_WEIGHT_V15: return "V_WEIGHT";
+        case V_DISTANCE_V15: return "V_DISTANCE";
+        case V_IMPEDANCE_V15: return "V_IMPEDANCE";
+        case V_ARMED_V15: return "V_ARMED";
+        case V_TRIPPED_V15: return "V_TRIPPED";
+        case V_WATT_V15: return "V_WATT";
+        case V_KWH_V15: return "V_KWH";
+        case V_SCENE_ON_V15: return "V_SCENE_ON";
+        case V_SCENE_OFF_V15: return "V_SCENE_OFF";
+        case V_HVAC_FLOW_STATE_V15: return "V_HVAC_FLOW_STATE";
+        case V_HVAC_SPEED_V15: return "V_HVAC_SPEED";
+        case V_LIGHT_LEVEL_V15: return "V_LIGHT_LEVEL";
+        case V_VAR1_V15: return "V_VAR1";
+        case V_VAR2_V15: return "V_VAR2";
+        case V_VAR3_V15: return "V_VAR3";
+        case V_VAR4_V15: return "V_VAR4";
+        case V_VAR5_V15: return "V_VAR5";
+        case V_UP_V15: return "V_UP";
+        case V_DOWN_V15: return "V_DOWN";
+        case V_STOP_V15: return "V_STOP";
+        case V_IR_SEND_V15: return "V_IR_SEND";
+        case V_IR_RECEIVE_V15: return "V_IR_RECEIVE";
+        case V_FLOW_V15: return "V_FLOW";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
+    }
+}
+
+const char* getInternalTypeNameV15(enum internalTypesV15 type)
+{
+    switch (type)
+    {
+        case I_BATTERY_LEVEL_V15: return "I_BATTERY_LEVEL";
+        case I_TIME_V15: return "I_TIME";
+        case I_VERSION_V15: return "I_VERSION";
+        case I_ID_REQUEST_V15: return "I_ID_REQUEST";
+        case I_ID_RESPONSE_V15: return "I_ID_RESPONSE";
+        case I_INCLUSION_MODE_V15: return "I_INCLUSION_MODE";
+        case I_CONFIG_V15: return "I_CONFIG";
+        case I_FIND_PARENT_V15: return "I_FIND_PARENT";
+        case I_FIND_PARENT_RESPONSE_V15: return "I_FIND_PARENT_RESPONSE";
+        case I_LOG_MESSAGE_V15: return "I_LOG_MESSAGE";
+        case I_CHILDREN_V15: return "I_CHILDREN";
+        case I_SKETCH_NAME_V15: return "I_SKETCH_NAME";
+        case I_SKETCH_VERSION_V15: return "I_SKETCH_VERSION";
+        case I_REBOOT_V15: return "I_REBOOT";
+        case I_GATEWAY_READY_V15: return "I_GATEWAY_READY";
+        case I_REQUEST_SIGNING_V15: return "I_REQUEST_SIGNING";
+        case I_GET_NONCE_V15: return "I_GET_NONCE";
+        case I_GET_NONCE_RESPONSE_V15: return "I_GET_NONCE_RESPONSE";
+        default:
+            string out = "UNKNOWN[";
+            out += (int)type;
+            out += "]";
+            return out.c_str();
     }
 }

@@ -453,17 +453,18 @@ int serialib::Read (void *Buffer,unsigned int MaxNbBytes,unsigned int TimeOut_ms
 /*!
     \brief Tang: Add way to enable/disable DTR to reset arduino
     \return The result of ioctl function
+    \see http://www.linuxjournal.com/article/6226
 */
 int serialib::EnableDTR(bool enable)
 {
     int controlbits = (TIOCM_DTR | TIOCM_RTS);
     if( enable )
     {
-        return(ioctl(this->fd, TIOCMBIC, &controlbits));
+        return(ioctl(this->fd, TIOCMBIS, &controlbits));
     }
     else
     {
-        return(ioctl(this->fd, TIOCMBIS, &controlbits));
+        return(ioctl(this->fd, TIOCMBIC, &controlbits));
     }
 }
 

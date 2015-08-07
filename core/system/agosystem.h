@@ -19,6 +19,8 @@ private:
     void printProcess(qpid::types::Variant::Map process);
     void monitorProcesses();
     qpid::types::Variant::Map getProcessStructure();
+    bool isProcessBlackListed(const std::string processName);
+    void refreshAgoProcessList(qpid::types::Variant::Map& processes);
 
     void setupApp();
 

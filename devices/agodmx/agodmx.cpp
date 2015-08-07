@@ -40,6 +40,7 @@ private:
     ola::DmxBuffer buffer;
     ola::StreamingClient ola_client;
     AgoLogDestination *agoLogDestination;
+    int universe;
 
     void setupApp();
     void cleanupApp();
@@ -49,7 +50,7 @@ private:
     void ola_setChannel(int channel, int value);
     bool setDevice_color(Variant::Map device, int red, int green, int blue);
     bool setDevice_level(Variant::Map device, int level);
-    bool ola_send(int universe);
+    bool ola_send();
     void reportDevices(Variant::Map channelmap);
     bool loadChannels(string filename, Variant::Map& _channelMap);
 
@@ -122,7 +123,7 @@ void AgoDmx::ola_setChannel(int channel, int value) {
 /**
  * send buffer to ola
  */
-bool AgoDmx::ola_send(int universe = 0) {
+bool AgoDmx::ola_send() {
     if (!ola_client.SendDmx(universe, buffer)) {
         AGO_ERROR() << "Send to dmx failed for universe " << universe;
         return false;
@@ -236,7 +237,7 @@ void AgoDmx::setupApp() {
 
     channelsFile=getConfigOption("channelsfile", getConfigPath("/dmx/channels.xml"));
     ola_server=getConfigOption("url", "ip:127.0.0.1");
-
+    universe =  atoi(getConfigOption("universe","0").c_str());
     // load xml file into map
     if (!loadChannels(channelsFile.string(), channelMap)) {
         AGO_FATAL() << "Can't load channel xml";

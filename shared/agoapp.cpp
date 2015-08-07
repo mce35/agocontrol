@@ -152,6 +152,14 @@ void AgoApp::setup() {
     setupSignals();
     setupApp();
     setupIoThread();
+
+    //Send event app is started
+    //This is useful to monitor app (most of the time systemd restarts app before agosystem find it has crashed)
+    //And it fix enhancement #143
+    qpid::types::Variant::Map content;
+    content["process"] = appShortName;
+    //no internalid specified, processname is in event content
+    agoConnection->emitEvent("", "event.monitoring.processstarted", content);
 }
 
 void AgoApp::cleanup() {

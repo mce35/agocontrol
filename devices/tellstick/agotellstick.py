@@ -142,12 +142,12 @@ class AgoTellstick(agoclient.AgoApp):
             tempF = 9.0/5.0 * tempC + 32.0
             if tempF != float(self.sensors[devId]["lastTemp"]):
                 self.sensors[devId]["lastTemp"] = tempF
-                self.connection.emit_event(devId, "event.environment.temperaturechanged", str(tempF), "degF")
+                self.connection.emit_event(devId + "-temp", "event.environment.temperaturechanged", str(tempF), "degF")
         else:
             #print "devId=" + str(devId)
             if tempC != float(self.sensors[devId]["lastTemp"]):
                 self.sensors[devId]["lastTemp"] = tempC
-                self.connection.emit_event(devId, "event.environment.temperaturechanged", str(tempC), "degC")
+                self.connection.emit_event(devId + "-temp", "event.environment.temperaturechanged", str(tempC), "degC")
 
     def emitHumidityChanged(self, devId, humidity):
         #print "hum=" + str(humidity)
@@ -155,7 +155,7 @@ class AgoTellstick(agoclient.AgoApp):
 
         if humidity != float(self.sensors[devId]["lastHumidity"]):
             self.sensors[devId]["lastHumidity"] = humidity
-            self.connection.emit_event(devId, "event.environment.humiditychanged", str(humidity), "%")
+            self.connection.emit_event(devId + "-hum", "event.environment.humiditychanged", str(humidity), "%")
 
     def listNewSensors(self):
         self.sensors = self.tellstick.listSensors()
@@ -165,21 +165,12 @@ class AgoTellstick(agoclient.AgoApp):
 
             value["new"] = False
             devId = str(id)
-            if value["isMultiLevel"]:
-                self.connection.add_device (devId, "multilevelsensor")
-                if value["isTempSensor"]:
-                    self.emitTempChanged(devId, float(value["temp"]))
-                if value["isHumiditySensor"]:
-                    self.emitHumidityChanged(devId, float(value["humidity"]))
-
-            else:
-                if value["isTempSensor"]:
-                    self.connection.add_device(devId, "temperaturesensor")
-                    self.emitTempChanged(devId, float(value["temp"]))
-
-                if value["isHumiditySensor"]:
-                    self.connection.add_device (devId, "multilevelsensor")
-                    self.emitHumidityChanged(devId, float(value["humidity"]))
+            if value["isTempSensor"]:
+                self.connection.add_device (devId + "-temp", "temperaturesensor")
+                self.emitTempChanged(devId, float(value["temp"]))
+            if value["isHumiditySensor"]:
+                self.connection.add_device (devId + "-hum", "humiditysensor")
+                self.emitHumidityChanged(devId, float(value["humidity"]))
 
     def agoSensorEvent(self, protocol, model, id, dataType, value, timestamp, callbackId):
         self.log.trace("SensorEvent protocol: %s model: %s id: %s dataType: %d value: %s timestamp: %d",

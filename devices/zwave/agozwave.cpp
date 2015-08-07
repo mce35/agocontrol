@@ -1880,7 +1880,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 else if (content["command"] == "setlevel")
                 {
                     checkMsgParameter(content, "level", VAR_INT32);
-                    uint8 level = content["level"].asInt8();
+                    uint8 level = content["level"].asInt32();
                     if (level > 99) level=99;
                     if (Manager::Get()->SetValue(*tmpValueID, level)) return responseSuccess();
                     else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");

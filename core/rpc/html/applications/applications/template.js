@@ -73,7 +73,7 @@ function Applications(agocontrol)
         $.ajax({
             url : "cgi-bin/ui.cgi?key="+item.dir+"&param=favorites&value="+state,
             method : "GET",
-            async : false,
+            async : true,
         }).done(function(result) {
             if( !result || !result.result || result.result===0 )
             {

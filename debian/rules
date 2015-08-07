@@ -1,10 +1,18 @@
 #!/usr/bin/make -f
 export DH_VERBOSE=1
 
+distribution_codename := $(shell (lsb_release -cs))
+
 .PHONY: override_dh_strip
 override_dh_strip:
 	dh_strip --dbg-package=agocontrol-dbg
 
+override_dh_gen_control:
+ifeq ($(distribution_codename),jessie)
+	dh_gencontrol -- -Vdist:Depends="python-qpid-messaging, libyaml-cpp0.5, libboost-program-options1.55.0, libboost-filesystem1.55.0, libboost-system1.55.0, libboost-thread1.55.0, libboost-date-time1.55.0, libboost-program-options1.55.0"
+else
+	dh_gencontrol -- -Vdist:Depends="python-qpid, libyaml-cpp0.3, libboost-program-options1.49.0, libboost-filesystem1.49.0, libboost-system1.49.0, libboost-thread1.49.0, libboost-date-time1.49.0, libboost-program-options1.49.0"
+endif
 override_dh_auto_configure:
 	dh_auto_configure -- -DCMAKE_BUILD_TYPE=Debug
 
