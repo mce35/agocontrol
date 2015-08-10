@@ -205,7 +205,7 @@ function MySensors(devices, agocontrol)
             {
                 for( device in res.result.counters )
                 {
-                    self.counters.push(res.result.counters[device]);
+                    self.counters(res.result.counters[device]);
                 }
             }
             else
