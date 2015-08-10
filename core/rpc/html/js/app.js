@@ -202,6 +202,7 @@ function AgocontrolViewModel()
     self.plugins = {};
     self.scriptPromise = null;
     self.resourcePromise = null;
+    self.itemActivated = null;
 
     //disable click event
     self.noclick = function()
@@ -213,6 +214,20 @@ function AgocontrolViewModel()
     self.toggleControlSidebar = function()
     {
         $("[data-toggle='control-sidebar']").click();
+    };
+
+    //activate item on left bar
+    self.activate = function(id)
+    {
+        if( self.itemActivated!==null )
+        {
+            //disable current activated item
+            $(self.itemActivated).removeClass('active');
+        }
+        
+        //activate item
+        self.itemActivated = $('#menu_'+id.replace(' ','_'));
+        self.itemActivated.addClass('active');
     };
 
     //set ui skin
@@ -402,22 +417,27 @@ function AgocontrolViewModel()
         //load ui plugins
         self.plugins = self.agocontrol.initPlugins();
 
-        //dashboard loading
+        //dashboard
         this.get('#dashboard/:name', function()
         {
             if( this.params.name==='all' )
             {
                 //special case for main dashboard (all devices)
                 var basePath = 'dashboard/all';
+                self.activate('all');
                 self.loadTemplate(new Template(basePath, null, 'html/dashboard', null));
             }
             else
             {
                 var dashboard = self.agocontrol.getDashboard(this.params.name)
-                if(dashboard) {
+                if(dashboard)
+                {
                     var basePath = 'dashboard/custom';
+                    self.activate(dashboard.name);
                     self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:false}));
-                }else{
+                }
+                else
+                {
                     notif.fatal('Specified custom dashboard not found!');
                 }
             }
@@ -427,43 +447,49 @@ function AgocontrolViewModel()
         this.get('#dashboard/:name/edit', function()
         {
             var dashboard = self.agocontrol.getDashboard(this.params.name)
-            if(dashboard) {
+            if(dashboard)
+            {
                 var basePath = 'dashboard/custom';
+                self.activate(dashboard.name);
                 self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:true}));
-            }else{
+            }
+            else
+            {
                 notif.fatal('Specified custom dashboard not found!');
             }
         });
 
-        //application loading
+        //application
         this.get('#app/:name', function()
         {
             // Apps may be loaded async; getApplication returns a promise
             self.agocontrol.getApplication(this.params.name)
-                .then(function(application){
-                        var basePath = "applications/" + application.dir;
-                        self.loadTemplate(new Template(basePath, application.resources, application.template, null));
-                    })
-                .catch(function(err){
+                .then(function(application) {
+                    var basePath = "applications/" + application.dir;
+                    self.activate(application.name);
+                    self.loadTemplate(new Template(basePath, application.resources, application.template, null));
+                })
+                .catch(function(err) {
                     notif.fatal('Specified application not found!');
                 });
         });
 
-        //protocol loading
+        //protocol
         this.get('#proto/:name', function()
         {
             //Protocols may be loaded async; getProtocol returns a promise
             self.agocontrol.getProtocol(this.params.name)
                 .then(function(protocol) {
-                        var basePath = "protocols/" + protocol.dir;
-                        self.loadTemplate(new Template(basePath, protocol.resources, protocol.template, null));
-                    })
+                    var basePath = "protocols/" + protocol.dir;
+                    self.activate(protocol.name);
+                    self.loadTemplate(new Template(basePath, protocol.resources, protocol.template, null));
+                })
                 .catch(function(err){
                     notif.fatal('Specified protocol application not found!');
                 });
         });
 
-        //configuration loading
+        //configuration
         this.get('#config/:name', function()
         {
             //get config infos
