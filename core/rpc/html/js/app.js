@@ -209,6 +209,12 @@ function AgocontrolViewModel()
         return false;
     };
 
+    //hide control sidebar
+    self.toggleControlSidebar = function()
+    {
+        $("[data-toggle='control-sidebar']").click();
+    };
+
     //set ui skin
     self.setSkin = function(skin)
     {
@@ -231,6 +237,7 @@ function AgocontrolViewModel()
     self.gotoConfiguration = function(config)
     {
         location.hash = 'config/' + config.name;
+        self.toggleControlSidebar();
     };
 
     self.gotoApplication = function(application)
@@ -246,6 +253,7 @@ function AgocontrolViewModel()
     self.gotoHelp = function(help)
     {
         location.hash = 'help/' + help.name;
+        self.toggleControlSidebar();
     };
 
     //load template
