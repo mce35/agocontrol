@@ -6,6 +6,7 @@
 #include <boost/system/system_error.hpp> 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <execinfo.h>
 #include <signal.h>
 #include <time.h>
@@ -62,7 +63,6 @@ class AgoMySensors: public AgoApp
 {
     private:
         //members
-        //int serialFd = 0;
         boost::thread* readThread;
         boost::thread* resendThread;
         boost::thread* checkStaleThread;
@@ -76,6 +76,7 @@ class AgoMySensors: public AgoApp
         bool bResend;
         int bNetworkRelay;
         int bStale;
+        qpid::types::Variant::Map arduinoNodes;
 
         //functions
         void setupApp();
@@ -164,6 +165,7 @@ void AgoMySensors::printDeviceInfos(std::string internalid, qpid::types::Variant
 
 /**
  * Return free id according to current known valid sensors
+ * @return free id or 0 if nothing found
  */
 int AgoMySensors::getFreeId()
 {
@@ -195,12 +197,12 @@ int AgoMySensors::getFreeId()
 
         //search free id
         bool found = false;
-        for( freeId=1; freeId<255; freeId++ )
+        for( int i=1; i<255; i++ )
         {
             found = false;
             for( qpid::types::Variant::List::iterator it=existingIds.begin(); it!=existingIds.end(); it++ )
             {
-                if( it->asInt32()==freeId )
+                if( it->asInt32()==i )
                 {
                     found = true;
                     break;
@@ -209,16 +211,16 @@ int AgoMySensors::getFreeId()
 
             if( !found )
             {
-                //free id found, return it
-                AGO_TRACE() << "Free id found: " << freeId;
-                return freeId;
+                freeId = i;
+                break;
             }
         }
     }
     pthread_mutex_unlock(&devicemapMutex);
 
     //no id found
-    return 0;
+    AGO_DEBUG() << "Free id found: " << freeId;
+    return freeId;
 }
 
 /**
@@ -227,12 +229,20 @@ int AgoMySensors::getFreeId()
 void AgoMySensors::setDeviceInfos(std::string internalid, qpid::types::Variant::Map* infos)
 {
     pthread_mutex_lock(&devicemapMutex);
-    if( !devicemap["devices"].isVoid() )
+    if( infos!=NULL && infos->size()>0 )
     {
-        qpid::types::Variant::Map device = devicemap["devices"].asMap();
-        device[internalid] = (*infos);
-        devicemap["devices"] = device;
-        variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
+        if( !devicemap["devices"].isVoid() )
+        {
+            AGO_TRACE() << "Device [" << internalid << "] infos updated";
+            qpid::types::Variant::Map device = devicemap["devices"].asMap();
+            device[internalid] = (*infos);
+            devicemap["devices"] = device;
+            variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
+        }
+    }
+    else
+    {
+        AGO_TRACE() << "Device [" << internalid << "] not updated because devices specified infos is empty";
     }
     pthread_mutex_unlock(&devicemapMutex);
 }
@@ -479,6 +489,11 @@ bool AgoMySensors::deleteDevice(std::string internalid)
 void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpid::types::Variant::Map devices, qpid::types::Variant::Map infos, std::string protocol)
 {
     pthread_mutex_lock(&devicemapMutex);
+    string addStatus = "added";
+    if( infos.size()>0 )
+    {
+        addStatus = "updated";
+    }
     infos["type"] = devicetype;
     infos["value"] = "0";
     infos["counter_sent"] = 0;
@@ -491,6 +506,7 @@ void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpi
     devicemap["devices"] = devices;
     variantMapToJSONFile(devicemap, getConfigPath(DEVICEMAPFILE));
     agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
+    AGO_TRACE() << "Device [" << internalid << "] " << addStatus;
     pthread_mutex_unlock(&devicemapMutex);
 }
 
@@ -586,7 +602,10 @@ bool AgoMySensors::checkInternalid(std::string internalid)
  */
 void AgoMySensors::sendcommand(std::string command)
 {
-    AGO_DEBUG() << " => RE-SENDING: " << command;
+    string logCommand(command);
+    boost::replace_all(logCommand, "\n", "<NL>");
+    boost::replace_all(logCommand, "\r", "<CR>");
+    AGO_DEBUG() << " => RE-SENDING: " << logCommand;
     serialPort.WriteString(command.c_str());
 }
 
@@ -617,7 +636,10 @@ void AgoMySensors::sendcommandV15(std::string internalid, int messageType, int a
     }
 
     //send command
-    AGO_DEBUG() << " => SENDING: " << command.str();
+    string logCommand(command.str());
+    boost::replace_all(logCommand, "\n", "<NL>");
+    boost::replace_all(logCommand, "\r", "<CR>");
+    AGO_DEBUG() << " => SENDINGv15: " << logCommand;
     serialPort.WriteString(command.str().c_str());
 }
 
@@ -648,7 +670,10 @@ void AgoMySensors::sendcommandV14(std::string internalid, int messageType, int a
     }
 
     //send command
-    AGO_DEBUG() << " => SENDING: " << command.str();
+    string logCommand(command.str());
+    boost::replace_all(logCommand, "\n", "<NL>");
+    boost::replace_all(logCommand, "\r", "<CR>");
+    AGO_DEBUG() << " => SENDINGv14: " << logCommand;
     serialPort.WriteString(command.str().c_str());
 }
 
@@ -679,7 +704,10 @@ void AgoMySensors::sendcommandV13(std::string internalid, int messageType, int s
     }
 
     //send command
-    AGO_DEBUG() << " => SENDING: " << command.str();
+    string logCommand(command.str());
+    boost::replace_all(logCommand, "\n", "<NL>");
+    boost::replace_all(logCommand, "\r", "<CR>");
+    AGO_DEBUG() << " => SENDINGv13: " << logCommand;
     serialPort.WriteString(command.str().c_str());
 }
 
@@ -1014,8 +1042,6 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                 {
                     if( cmd=="off" )
                     {
-                        if( infos["value"].asString()=="1" )
-                        {
                             if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
                             {
                                 sendcommandV15(internalid, SET_V15, 1, V_STATUS_V15, "0");
@@ -1028,16 +1054,9 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                             {
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "0");
                             }
-                        }
-                        else
-                        {
-                            AGO_DEBUG() << " -> Command OFF dropped (value is the same [" << infos["value"].asString() << "])";
-                        }
                     }
                     else if( cmd=="on" )
                     {
-                        if( infos["value"].asString()=="0" )
-                        {
                             if( boost::algorithm::starts_with(infos["protocol"].asString(), "1.5") )
                             {
                                 sendcommandV15(internalid, SET_V15, 1, V_STATUS_V15, "1");
@@ -1050,11 +1069,6 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                             {
                                 sendcommandV13(internalid, SET_VARIABLE_V13, V_LIGHT_V13, "1");
                             }
-                        }
-                        else 
-                        {
-                            AGO_DEBUG() << " -> Command ON dropped (value is the same [" << infos["value"].asString() << "])";
-                        }
                     }
                 }
                 else
@@ -1109,12 +1123,22 @@ std::string AgoMySensors::readLine(bool* error)
  */
 void AgoMySensors::newDevice(std::string internalid, std::string devicetype, std::string protocol)
 {
-    //check internalid
+    //check some stuff
     AGO_TRACE() << "newdevice " << internalid << "-" << devicetype;
     if( !checkInternalid(internalid) )
     {
         //internal id is not valid!
-        AGO_ERROR() << "Unable to add device, internalid '" << internalid << "' is not valid";
+        AGO_ERROR() << "Unable to add device[" << internalid << "], internalid '" << internalid << "' is not valid";
+        return;
+    }
+    if( devicetype.length()==0 )
+    {
+        AGO_ERROR() << "Unable to add device[" << internalid << "], empty devicetype";
+        return;
+    }
+    if( protocol.length()==0 || protocol==DEFAULT_PROTOCOL )
+    {
+        AGO_ERROR() << "Unable to add device[" << internalid << "], protocol[" << protocol << "] is invalid";
         return;
     }
 
@@ -1641,9 +1665,16 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                     //handled by useless (just to remove some unsupported log messages)
                     break;
                 case I_SKETCH_VERSION_V14:
-                    //only used to update timestamp. Useful if network relay support enabled
-                    infos["last_timestamp"] = (int)(time(NULL));
-                    setDeviceInfos(internalid, &infos);
+                    //only used to update network relay timestamp to detect stale state
+                    if( bNetworkRelay )
+                    {
+                        qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+                        if( infos.size()>0 && infos["type"]=="networkrelay" )
+                        {
+                            infos["last_timestamp"] = (int)(time(NULL));
+                            setDeviceInfos(internalid, &infos);
+                        }
+                    }
                     break;
                 default:
                     AGO_WARNING() << "INTERNAL subtype '" << subType << "' not supported (protocol v1.4)";
@@ -2066,6 +2097,7 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
     stringstream id;
     int freeid;
     std::map<std::string, T_COMMAND>::iterator cmd;
+    string strNodeId = boost::lexical_cast<std::string>(nodeId);
 
     switch (messageType)
     {
@@ -2122,12 +2154,19 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                     //return config
                     sendcommandV15(internalid, INTERNAL_V15, 0, I_CONFIG_V15, units.c_str());
                 case I_SKETCH_NAME_V15:
-                    //handled by useless (just to remove some unsupported log messages)
+                    //handled but useless (just to remove some unsupported log messages)
                     break;
                 case I_SKETCH_VERSION_V15:
-                    //only used to update timestamp. Useful if network relay support enabled
-                    infos["last_timestamp"] = (int)(time(NULL));
-                    setDeviceInfos(internalid, &infos);
+                    //only used to update network relay timestamp to detect stale state
+                    if( bNetworkRelay )
+                    {
+                        qpid::types::Variant::Map infos = getDeviceInfos(internalid);
+                        if( infos.size()>0 && infos["type"]=="networkrelay" )
+                        {
+                            infos["last_timestamp"] = (int)(time(NULL));
+                            setDeviceInfos(internalid, &infos);
+                        }
+                    }
                     break;
                 case I_GATEWAY_READY_V15:
                     AGO_TRACE() << "Received GATEWAY_READY message";
@@ -2194,7 +2233,6 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                     //so we need to check protocol here
                     
                     //check and update if necessary protocol version of all sensors of current node
-                    string strNodeId = boost::lexical_cast<std::string>(nodeId);
                     if( !devicemap["devices"].isVoid() )
                     {
                         qpid::types::Variant::Map devices = devicemap["devices"].asMap();
@@ -2206,6 +2244,7 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                                 std::string tmpInternalid = (std::string)it->first;
                                 if( boost::algorithm::starts_with(tmpInternalid, strNodeId) )
                                 {
+                                    //sensor is found
                                     if( !infos["protocol"].isVoid() && payload.size()>0 && payload!=DEFAULT_PROTOCOL && infos["protocol"].asString()!=payload )
                                     {
                                         //sensors code was updated to different protocol
@@ -2219,12 +2258,26 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                             }
                         }
                     }
+
+                    //always keep track of arduino nodes and save associated protocol version
+                    AGO_TRACE() << "Arduino node received, save its infos nodeid[" << nodeId << "]==protocol[" << payload << "]";
+                    if( payload.length()>0 )
+                    {
+                        arduinoNodes[strNodeId] = payload;
+                    }
+
                     break;
                 }
                 case S_ARDUINO_REPEATER_NODE_V15:
                     if( bNetworkRelay )
                     {
                         newDevice(internalid, "networkrelay", payload);
+                    }
+
+                    //save protocol version for this node
+                    if( payload.length()>0 )
+                    {
+                        arduinoNodes[strNodeId] = payload;
                     }
                     break;
                 case S_LOCK_V15:
@@ -2624,7 +2677,9 @@ void AgoMySensors::receiveFunction()
         std::vector<std::string> items = split(line, ';');
         if ( items.size()>=4 && items.size()<=6 )
         {
+            AGO_TRACE() << "------------ NEW LINE RECEIVED ------------";
             int nodeId = atoi(items[0].c_str());
+            string strNodeId = items[0];
             int childId = atoi(items[1].c_str());
             string internalid = items[0] + "/" + items[1];
             int messageType = atoi(items[2].c_str());
@@ -2636,25 +2691,35 @@ void AgoMySensors::receiveFunction()
 
             //first of all check if it's not a presentation message
             //0 = PRESENTATION id for all protocol versions
-            if( messageType!=0 )
-            {
-                //not a presentation message, get device infos
+            //if( messageType!=0 )
+            //{
+            //    //not a presentation message, get device infos
+            
                 infos = getDeviceInfos(internalid);
-            }
+            //}
 
             //get protocol version
             if( infos.size()>0 )
             {
+                AGO_TRACE() << "infos found=" << infos;
                 //get protocol version from device infos
                 if( !infos["protocol"].isVoid() && infos["protocol"].asString().size()>0 )
                 {
+                    AGO_TRACE() << "Use protocol version from infos map";
                     protocol = infos["protocol"].asString();
                 }
             }
-            else if( nodeId==0 && childId==0 )
+            else if( (nodeId==0 && childId==0) || (nodeId==255 && childId==255) )
             {
-                //message from gateway, set protocol version to gateway one
+                //message from gateway or broadcast message, set protocol version to gateway one
+                AGO_TRACE() << "Use protocol version of gateway (gateway or broadcast message)";
                 protocol = gateway_protocol_version;
+            }
+            else if( !arduinoNodes[strNodeId].isVoid() )
+            {
+                //we have informations from previous arduino nodes request, use it
+                AGO_TRACE() << "Use protocol version found in arduinoNodes map";
+                protocol = arduinoNodes[strNodeId].asString();
             }
             else
             {
@@ -2667,75 +2732,111 @@ void AgoMySensors::receiveFunction()
                 if( boost::algorithm::starts_with(payload, "1.5") )
                 {
                     //protocol v1.5 found
-                    protocol = "1.5";
+                    AGO_TRACE() << "Use protocol version 1.5 found in current message";
+                    protocol = payload;
                 }
                 else if( boost::algorithm::starts_with(payload, "1.4") )
                 {
                     //protocol v1.4 found
-                    protocol = "1.4";
+                    AGO_TRACE() << "Use protocol version 1.4 found in current message";
+                    protocol = payload;
                 }
                 else
                 {
                     //try protocol v1.3
                     if( items.size()==5 )
                         payload = items[4];
-
                     if( boost::algorithm::starts_with(payload, "1.3") )
                     {
+                        AGO_TRACE() << "Use protocol version 1.3 found in current message";
                         //protocol v1.3 found
-                        protocol = "1.3";
+                        protocol = payload;
                     }
+                }
+            }
+            AGO_TRACE() << "protocol found: " << protocol;
+
+            //pretty print message
+            if( logLevel<=log::debug )
+            {
+                if( protocol.size()==0 || protocol==DEFAULT_PROTOCOL )
+                {
+                    log = prettyPrint(line, gateway_protocol_version);
+                }
+                else
+                {
+                    log = prettyPrint(line, protocol);
+                }
+                if( log.size()>0 )
+                {
+                    time_t t = time(NULL);
+                    AGO_DEBUG() << " => " << timestampToStr(&t) << " RECEIVING: " << log;
                 }
             }
 
             //process message according to found protocol
             if( protocol.size()>0 && protocol!=DEFAULT_PROTOCOL )
             {
-                //pretty print message
-                if( logLevel<=log::debug )
-                {
-                    log = prettyPrint(line, protocol);
-                    if( log.size()>0 )
-                    {
-                        time_t t = time(NULL);
-                        AGO_DEBUG() << " => " << timestampToStr(&t) << " RECEIVING: " << log;
-                    }
-                }
-
                 if( boost::algorithm::starts_with(protocol, "1.5") )
                 {
                     ack = atoi(items[3].c_str());
                     subType = atoi(items[4].c_str());
-                    if( items.size()==6 )
+                    if( messageType==0 )
+                    {
+                        //if PRESENTATION message, force payload to found protocol version
+                        payload = protocol;
+                    }
+                    else if( items.size()==6 )
+                    {
                         payload = items[5];
+                    }
                     processMessageV15(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
                 }
                 else if( boost::algorithm::starts_with(protocol, "1.4") )
                 {
                     ack = atoi(items[3].c_str());
                     subType = atoi(items[4].c_str());
-                    if( items.size()==6 )
+                    if( messageType==0 )
+                    {
+                        //if PRESENTATION message, force payload to found protocol version
+                        payload = protocol;
+                    }
+                    else if( items.size()==6 )
+                    {
                         payload = items[5];
+                    }
                     processMessageV14(nodeId, childId, messageType, ack, subType, payload, internalid, infos);
                 }
                 else if( boost::algorithm::starts_with(protocol, "1.3") )
                 {
                     subType = atoi(items[3].c_str());
-                    if( items.size()==5 )
+                    if( messageType==0 )
+                    {
+                        //if PRESENTATION message, force payload to found protocol version
+                        payload = protocol;
+                    }
+                    else if( items.size()==5 )
+                    {
                         payload = items[4];
+                    }
                     processMessageV13(nodeId, childId, messageType, subType, payload, internalid, infos);
                 }
                 else
                 {
                     //unsupported protocol version
-                    AGO_WARNING() << "Error: device is based on unsupported protocol version '" << protocol << "'";
+                    AGO_WARNING() << "Device is based on unsupported protocol version '" << protocol << "'";
                 }
             }
             else
             {
                 //no protocol version found for this message, drop it
-                AGO_WARNING() << "Error: no protocol version found for this message, drop it";
+                AGO_WARNING() << "No protocol version found for this message, drop it";
+                AGO_TRACE() << "line=" << line;
+                AGO_TRACE() << "nodeId=" << nodeId << " childId=" << childId;
+                AGO_TRACE() << "infos=" << infos;
             }
+
+            AGO_TRACE() << "------------ EOL ------------";
         }
 
         pthread_mutex_unlock (&serialMutex);
