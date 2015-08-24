@@ -1672,6 +1672,7 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                         if( infos.size()>0 && infos["type"]=="networkrelay" )
                         {
                             infos["last_timestamp"] = (int)(time(NULL));
+                            infos["counter_received"] = infos["counter_received"].asUint64()+1;
                             setDeviceInfos(internalid, &infos);
                         }
                     }
@@ -2164,6 +2165,7 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                         if( infos.size()>0 && infos["type"]=="networkrelay" )
                         {
                             infos["last_timestamp"] = (int)(time(NULL));
+                            infos["counter_received"] = infos["counter_received"].asUint64()+1;
                             setDeviceInfos(internalid, &infos);
                         }
                     }
