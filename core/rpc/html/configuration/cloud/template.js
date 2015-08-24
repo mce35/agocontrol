@@ -49,6 +49,7 @@ function CloudConfig(agocontrol)
                 if( result.rc===0 )
                 {
                     notif.success('#cloudActivationResult_0');
+                }
                 else
                 {
                     notif.error('#cloudActivationResult_'+result.rc);
