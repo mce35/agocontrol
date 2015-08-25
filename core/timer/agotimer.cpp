@@ -162,14 +162,20 @@ sunevent_t AgoTimer::next_sunevent() {
         << " SunsetT: "
         << TIME_T_SIMPLE_LOCAL_STRING(sunset_tomorrow);
 
-    if (now < (sunrise + sunriseoffset)) {
+    if (now < (sunrise + sunriseoffset))
+    {
         evt.next_state = SUNRISE;
         evt.next_at = sunrise + sunriseoffset;
-    } else if (now >= (sunset + sunsetoffset)) {
-        if (now < (sunrise_tomorrow+sunriseoffset)) {
+    }
+    else if (now >= (sunset + sunsetoffset))
+    {
+        if (now < (sunrise_tomorrow+sunriseoffset))
+        {
             evt.next_state = SUNRISE;
             evt.next_at = sunrise_tomorrow + sunriseoffset;
-        }else{
+        }
+        else
+        {
             AGO_ERROR() << "illegal sunrise_tomorrow, has already occured ("
                 << TIME_T_SIMPLE_LOCAL_STRING(sunrise_tomorrow) << "+"
                 << sunriseoffset << "s, now = "
@@ -177,7 +183,9 @@ sunevent_t AgoTimer::next_sunevent() {
 
             evt.next_state = UNKNOWN;
         }
-    } else {
+    }
+    else
+    {
         evt.next_state = SUNSET;
         evt.next_at = sunset - sunsetoffset;
     }
@@ -196,15 +204,23 @@ void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_s
         return;
     }
 
-    AGO_TRACE() << "suntimer triggered with new_state=" << new_state;
+    AGO_TRACE() << "suntimer triggered with new_state=" << sunstate_names[new_state];
 
     sunevent_t sun = next_sunevent();
-    if(sun.next_state == UNKNOWN)
+    if( sun.next_state == UNKNOWN )
     {
         // Retry in 60s
-        AGO_DEBUG() << "Retrying in 60s";
+        AGO_DEBUG() << "Next sun state is unknown, retrying in 60s";
         sunriseTimer.expires_from_now(pt::seconds(60));
         sunriseTimer.async_wait(boost::bind(&AgoTimer::suntimer, this, _1, UNKNOWN));
+        return;
+    }
+    else if( sun.next_state==new_state )
+    {
+        // Retry in 30s
+        AGO_DEBUG() << "Next sun state is the same (" << sunstate_names[new_state] << "), retrying in 30s";
+        sunriseTimer.expires_from_now(pt::seconds(30));
+        sunriseTimer.async_wait(boost::bind(&AgoTimer::suntimer, this, _1, sun.next_state));
         return;
     }
 
@@ -212,7 +228,7 @@ void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_s
 
     // first, update variable with current state
     // Boolean, isDaytime = true if sun is about to set
-    Variant isDaytime = (sun.next_state == SUNSET);
+    Variant isDaytime = (new_state == SUNSET);
 
     AGO_TRACE() << "Setting isDaytime = " << isDaytime;
     agoConnection->setGlobalVariable("isDaytime", isDaytime);
