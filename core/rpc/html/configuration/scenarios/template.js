@@ -403,6 +403,7 @@ function ScenarioConfig(agocontrol)
         self.agocontrol.sendCommand(content)
         .then(function(res) {
             // Build command list
+            $('#scenarioBuilderEdit').html('');
             for ( var idx in res.data.scenariomap)
             {
                 self.addCommand("scenarioBuilderEdit", res.data.scenariomap[idx]);
