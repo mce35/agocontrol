@@ -19,7 +19,7 @@ DEVICEMAPFILE = os.path.join(agoclient.CONFDIR, 'maps/ipx800.json')
 IPX_WEBSERVER_PORT = 8010
 STATE_ON = 255
 STATE_OFF = 0
-STATE_OPENED = 1
+STATE_OPENED = 255
 STATE_CLOSED = 0
 STATE_OPENING = 50
 STATE_CLOSING = 100
@@ -45,7 +45,7 @@ configLock = threading.Lock()
 devicesLock = threading.Lock()
 getBoardsStatusTask = None
 
-#logging.basicConfig(filename='agoipx800.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
+#logging.basicConfig(filename='/opt/agocontrol/bin/agoipx800.log', level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s : %(message)s")
 logger = logging.getLogger('agoipx800')
 
@@ -295,6 +295,7 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
             event = 'event.device.statechanged'
             unit = None
         devicesLock.acquire()
+        logger.info('device %s: change state from %s to %s' % (internalid, devices[ipxIp][internalid]['state'], value))
         devices[ipxIp][internalid]['state'] = value
         devicesLock.release()
         saveDevices()
@@ -323,6 +324,10 @@ def ipxCallback(ipxIp, content):
                 outputid = int(item.replace('out', ''))
                 (internalid, device) = getDeviceUsingOutput(ipxIp, outputid)
                 if device:
+                    logger.info("-------------");
+                    logger.info("internalid=%s" % str(internalid))
+                    logger.info("device=%s" % str(device))
+                    logger.info('item=%s outouputid=%s internalid=%s' % (str(item), str(outputid), str(internalid)))
                     if device['type']==DEVICE_OUTPUT_SWITCH:
                         if content[item]==0:
                             if device['state']==STATE_ON:
@@ -336,24 +341,27 @@ def ipxCallback(ipxIp, content):
                                 emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
                         else:
                             logger.warning('Unknown value received for switch action [%s]' % str(content[item]))
+
                     elif device['type']==DEVICE_OUTPUT_DRAPES:
                         if not durations.has_key(internalid):
                             durations[internalid] = {'start':0, 'stop':0}
 
                         if outputid==device['open']:
                             #open action
+                            logger.info(' -> open action (content[item]=%s)' % str(content[item]))
                             if content[item]==0:
+                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_OPENING)))
                                 if device['state']==STATE_OPENING:
-                                    #drapes opened
+                                    #drapes opened or partially opened
                                     durations[internalid]['stop'] = int(time.time())
-                                    logger.debug('duration[%s]: start=%d stop=%d' % (internalid, durations[internalid]['start'], durations[internalid]['stop']))
-                                    #check if fully opened
                                     if devices[ipxIp][internalid]['duration']:
                                         dur = durations[internalid]['stop'] - durations[internalid]['start']
-                                        if dur==devices[ipxIp][internalid]['duration']:
+                                        logger.info('dur[%d]>=%d and dur[%d]<=%d' % (dur, devices[ipxIp][internalid]['duration']-1, dur, devices[ipxIp][internalid]['duration']+1))
+                                        if dur>=devices[ipxIp][internalid]['duration']-1 and dur<=devices[ipxIp][internalid]['duration']+1:
                                             #fully opened
-                                            logger.info('Drapes "%s@%s" opened' % (ipxIp, internalid))
+                                            logger.info('Drapes "%s@%s" fully opened' % (ipxIp, internalid))
                                             emitDeviceValueChanged(ipxIp, internalid, STATE_OPENED)
+                                            updateDeviceDuration(ipxIp, internalid, durations[internalid])
                                         else:
                                             logger.info('Drapes "%s@%s" partially opened' % (ipxIp, internalid))
                                             emitDeviceValueChanged(ipxIp, internalid, STATE_PARTIAL)
@@ -362,7 +370,8 @@ def ipxCallback(ipxIp, content):
                                         updateDeviceDuration(ipxIp, internalid, durations[internalid])
 
                             elif content[item]==1:
-                                if device['state']==STATE_CLOSED:
+                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_CLOSED)))
+                                if device['state']==STATE_CLOSED or device['state']==STATE_PARTIAL:
                                     #drapes is opening
                                     logger.info('Drapes "%s@%s" is opening' % (ipxIp, internalid))
                                     emitDeviceValueChanged(ipxIp, internalid, STATE_OPENING)
@@ -374,18 +383,20 @@ def ipxCallback(ipxIp, content):
 
                         elif outputid==device['close']:
                             #close action
+                            logger.info(' -> close action (content[item]=%s)' % str(content[item]))
                             if content[item]==0:
+                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_CLOSING)))
                                 if device['state']==STATE_CLOSING:
-                                    #drapes closed
+                                    #drapes closed or partially closed
                                     durations[internalid]['stop'] = int(time.time())
-                                    logger.debug('duration[%s]: start=%d stop=%d' % (internalid, durations[internalid]['start'], durations[internalid]['stop']))
-                                    #check if fully closed
                                     if devices[ipxIp][internalid]['duration']:
                                         dur = durations[internalid]['stop'] - durations[internalid]['start']
-                                        if dur==devices[ipxIp][internalid]['duration']:
+                                        logger.info('dur[%d]>=%d and dur[%d]<=%d' % (dur, devices[ipxIp][internalid]['duration']-1, dur, devices[ipxIp][internalid]['duration']+1))
+                                        if dur>=devices[ipxIp][internalid]['duration']-1 and dur<=devices[ipxIp][internalid]['duration']+1:
                                             #fully closed
-                                            logger.info('Drapes "%s@%s" closed' % (ipxIp, internalid))
+                                            logger.info('Drapes "%s@%s" fully closed' % (ipxIp, internalid))
                                             emitDeviceValueChanged(ipxIp, internalid, STATE_CLOSED)
+                                            updateDeviceDuration(ipxIp, internalid, durations[internalid])
                                         else:
                                             #partially closed
                                             logger.info('Drapes "%s@%s" partially closed' % (ipxIp, internalid))
@@ -395,7 +406,8 @@ def ipxCallback(ipxIp, content):
                                         updateDeviceDuration(ipxIp, internalid, durations[internalid])
 
                             elif content[item]==1:
-                                if device['state']==STATE_OPENED:
+                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_OPENED)))
+                                if device['state']==STATE_OPENED or device['state']==STATE_PARTIAL:
                                     #Drapes is closing
                                     logger.info('Drapes "%s@%s" is closing' % (ipxIp, internalid))
                                     emitDeviceValueChanged(ipxIp, internalid, STATE_CLOSING)
@@ -407,6 +419,8 @@ def ipxCallback(ipxIp, content):
                     else:
                         #TODO manage new device using outputs here
                         pass
+
+                    logger.info("-------------");
             except:
                 logger.exception('Exception in ipxCallback (output):')
 
@@ -432,7 +446,7 @@ def ipxCallback(ipxIp, content):
                 (internalid, device) = getDeviceUsingAnalog(ipxIp, analogid)
                 if device:
                     if device['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_BINARY):
-                        logger.info('Update value of analog "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
+                        #logger.info('Update value of analog "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
                         emitDeviceValueChanged(ipxIp, internalid, content[item])
                     else:
                         #handle new device using analogs here
@@ -464,7 +478,7 @@ def getBoardsStatus():
     global devices
     if len(devices)==0:
         return
-    logger.info('Update values of analog and counter devices:')
+    logger.debug('Update values of analog and counter devices:')
     for ipxIp in devices:
         status = ipx800v3.getStatus(ipxIp)
         if status and len(status)>0:
@@ -472,7 +486,7 @@ def getBoardsStatus():
                 if devices[ipxIp][internalid]['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_BINARY):
                     if len(devices[ipxIp][internalid]['analogs'])==1 and status.has_key('an%d' % devices[ipxIp][internalid]['analogs'][0]):
                         value = status['an%d' % devices[ipxIp][internalid]['analogs'][0]]
-                        logger.info('  - value "%s" set to analog "%s@%s"' % (str(value), ipxIp, internalid))
+                        logger.debug('  - value "%s" set to analog "%s@%s"' % (str(value), ipxIp, internalid))
                         emitDeviceValueChanged(ipxIp, internalid, value)
                     else:
                         logger.warning('Unable to set current analog value to "%s@%s"' % (ipxIp, internalid))
@@ -482,7 +496,7 @@ def getBoardsStatus():
                 elif devices[ipxIp][internalid]['type']==DEVICE_COUNTER:
                     if len(devices[ipxIp][internalid]['counters'])==1 and status.has_key('cnt%d' % devices[ipxIp][internalid]['counters'][0]):
                         value = status['cnt%d' % devices[ipxIp][internalid]['counters'][0]]
-                        logger.info('  - value "%s" set to counter "%s@%s"' % (str(value), ipxIp, internalid))
+                        logger.debug('  - value "%s" set to counter "%s@%s"' % (str(value), ipxIp, internalid))
                         emitDeviceValueChanged(ipxIp, internalid, value)
                     else:
                         logger.warning('Unable to set current counter value to "%s@%s"' % (ipxIp, internalid))
@@ -492,7 +506,7 @@ def getBoardsStatus():
                 elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_BINARY:
                     if len(devices[ipxIp][internalid]['digitals'])==1 and status.has_key('in%d' % devices[ipxIp][internalid]['digitals'][0]):
                         value = status['in%d' % devices[ipxIp][internalid]['digitals'][0]]
-                        logger.info('  - value "%s" set to digital "%s@%s"' % (str(value), ipxIp, internalid))
+                        logger.debug('  - value "%s" set to digital "%s@%s"' % (str(value), ipxIp, internalid))
                         emitDeviceValueChanged(ipxIp, internalid, value)
                     else:
                         logger.warning('Unable to set current digital value to "%s@%s"' % (ipxIp, internalid))
@@ -863,7 +877,7 @@ def openDrapes(ipxIp, internalid):
             logger.info('openDrapes: drape %s is already opened' % str(internalid))
             return False
     else:
-        logger.error('closeDrapes: no device found for "%s@%s"' % (str(ipxIp), str(internalid)))
+        logger.error('openDrapes: no device found for "%s@%s"' % (str(ipxIp), str(internalid)))
         return False
     return True
 
@@ -878,7 +892,7 @@ def closeDrapes(ipxIp, internalid):
             #check link
             if checkLink(ipxIp, internalid):
                 outputId = dev['close']
-                logger.debug('closeDrapes: ipxIp=%s outputId=%d' % (ipxIp, outputId))
+                logger.info('closeDrapes: ipxIp=%s outputId=%d' % (ipxIp, outputId))
                 ipx800v3.setOutput(ipxIp, outputId, 1)
             else:
                 logger.info('closeDrapes: associated binary prevents from drapes to be closed')
@@ -896,15 +910,15 @@ def stopDrapes(ipxIp, internalid):
        @param internalid: internal id 
        @param ipxIp: ipx ip"""
     global ipx800v3
-    logger.debug('stopDrapes: ipxIp=%s' % (ipxIp))
+    logger.info('stopDrapes: ipxIp=%s internalid=%s' % (ipxIp, internalid))
     dev = getDevice(ipxIp, internalid)
     if dev:
         if dev['state']==STATE_OPENING:
             ipx800v3.setOutput(ipxIp, dev['open'], 0)
-            client.update_device_state(internalid, STATE_PARTIAL)
+            emitDeviceValueChanged(ipxIp, internalid, STATE_PARTIAL)
         elif dev['state']==STATE_CLOSING:
             ipx800v3.setOutput(ipxIp, dev['close'], 0)
-            client.update_device_state(internalid, STATE_PARTIAL)
+            emitDeviceValueChanged(ipxIp, internalid, STATE_PARTIAL)
     else:
         logger.error('stopDrapes: no device found for "%s@%s"' % (str(ipxIp), str(internalid)))
         return False
@@ -914,7 +928,7 @@ def setlevelDrapes(ipxIp, internalid):
     """setlevelDrapes is a callback of setlevel command Timer
        @param internalid: internal id 
        @param ipxIp: ipx ip"""
-    logger.info('setlevelDrapes: ipxIp=%s' % (ipxIp))
+    logger.info('setlevelDrapes: ipxIp=%s internalid=%s' % (ipxIp, internalid))
     stopDrapes(ipxIp, internalid)
     return False
 
@@ -1017,7 +1031,7 @@ def commandHandler(internalid, content):
                 logger.error('Missing "type" parameter')
                 return {'error':1, 'msg':'Internal error'}
 
-            logger.debug('Add device of type "%s"' % content['type'])
+            logger.info('Add device of type "%s"' % content['type'])
             if content['type']==DEVICE_OUTPUT_SWITCH:
                 if content.has_key('pin1'):
                     logger.info('Add switch on "%s" using Out%s' % (ipxIp, str(content['pin1'])))
@@ -1263,23 +1277,49 @@ def commandHandler(internalid, content):
                 logger.error('setlevel command: unable to convert level to int')
                 return {'error':1, 'msg':'Internal error'}
             device = getDevice(ipxIp, internalid)
+            logger.info("device=%s" % str(device))
             if device:
                 if device['type']==DEVICE_OUTPUT_DRAPES:
                     if device['duration']>0:
-                        interval = int(device['duration']*level/100)
+                        #compute interval to stop drape (reduced of small gap of 5% of duration)
+                        interval = int( (device['duration']*level/100) - (device['duration']*0.05) )
+                        logger.info('interval=%d' % interval)
                         if device['state']==STATE_CLOSED:
                             #open drapes until level
-                            threading.Timer(interval, setlevelDrapes, ipxIp, internalid)
+                            logger.info('setlevel command: launch setlevelDrapes on CLOSED drape')
+                            openDrapes(ipxIp, internalid)
+                            timer = threading.Timer(float(interval), setlevelDrapes, [ipxIp, internalid])
+                            timer.start()
                         elif device['state']==STATE_OPENED:
                             #close drapes until level
-                            threading.Timer(interval, setlevelDrapes, ipxIp, internalid)
+                            logger.info('setlevel command: launch setlevelDrapes on OPENED drape')
+                            closeDrapes(ipxIp, internalid)
+                            timer = threading.Timer(float(interval), setlevelDrapes, [ipxIp, internalid])
+                            timer.start()
+                        elif device['state']==STATE_PARTIAL:
+                            #drape position is partial
+                            logger.info('setlevel command: launch setlevelDrapes on PARTIAL drape')
+                            #need to fully open it first
+                            openDrapes(ipxIp, internalid)
+                            #then close it
+                            fullyOpenedInterval = device['duration'] + int(device['duration']*0.5)
+                            closeTimer = threading.Timer(float(fullyOpenedInterval), closeDrapes, [ipxIp, internalid])
+                            closeTimer.start()
+                            #until specified level
+                            stopInterval = fullyOpenedInterval + interval
+                            setLevelTimer = threading.Timer(float(stopInterval), setlevelDrapes, [ipxIp, internalid])
+                            setLevelTimer.start()
+                            logger.info('fullyOpenedInterval=%d stopInterval=%d' % (fullyOpenedInterval, stopInterval))
                         else:
-                            #impossible to setlevel of drapes that is moving
-                            logger.warning('Command can be launched only with unmoving drapes')
-                            return {'error':1, 'msg':'Command can be launched only with stopped drapes'}
+                            #unable to setlevel of operating drapes
+                            logger.warning('setlevel command: unable to set level on operating drape')
+                            return {'error':1, 'msg':'Set level can be done only non operating drape'}
                     else:
                         logger.warning('setlevel command: device duration is not setted. Unable to setlevel')
                         return {'error':1, 'msg':'Drapes must be initialized first (full open or close) before setting level'}
+                else:
+                    logger.error('setlevel command: specified device [%s] is not a drape' % internalid)
+                    return {'error':1, 'msg':'Device is not a drape. Unable to set level.'}
                 return {'error':0, 'msg':'Ok'}
             else:
                 logger.error('commandHandler: command setlevel: no device found "%s"' % internalid)
@@ -1297,6 +1337,9 @@ def commandHandler(internalid, content):
                     if state=='closed':
                         logger.info('Force drapes "%s@%s" state to CLOSED' % (ipxIp, internalid))
                         emitDeviceValueChanged(ipxIp, internalid, STATE_CLOSED)
+                    elif state=='partial':
+                        logger.info('Force drapes "%s@%s" state to PARTIAL' % (ipxIp, internalid))
+                        emitDeviceValueChanged(ipxIp, internalid, STATE_PARTIAL)
                     else:
                         logger.info('Force drapes "%s@%s" state to OPENED' % (ipxIp, internalid))
                         emitDeviceValueChanged(ipxIp, internalid, STATE_OPENED)
@@ -1322,6 +1365,12 @@ def commandHandler(internalid, content):
             else:
                 logger.error('commandHandler: command stop: no device found "%s"' % internalid)
                 return {'error':1, 'msg':'No device found'}
+
+        elif command=='saveconfig':
+            if saveDevices():
+                return {'error':0, 'msg':'Config saved'}
+            else:
+                return {'error':1, 'msg':'Failed to save config'}
 
         else:
             return {'error':1, 'msg':'Unknown command'}
