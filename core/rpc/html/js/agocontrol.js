@@ -796,6 +796,18 @@ Agocontrol.prototype = {
                 done = true;
             }
 
+            //update device name
+            if( !done && response.result.event=="event.system.devicenamechanged" )
+            {
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
+                {
+                    self.inventory.devices[response.result.uuid].name = response.result.name;
+                }
+
+                //nothing else to do
+                done = true;
+            }
+
             //update dashboard name
             if( !done && response.result.event=="event.system.floorplannamechanged" )
             {
