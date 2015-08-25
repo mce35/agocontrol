@@ -213,14 +213,15 @@ function ipxConfig(devices, agocontrol)
         return null;
     };
 
-    /*self.selectedBoard.subscribe(function(newVal) {
+    //used to refresh automatically device associated to selected board
+    self.selectedBoard.subscribe(function(newVal) {
         //update selected ipx board uuid
         self.selectedBoardUuid = self.getBoardUuid(newVal);
         if( self.selectedBoardUuid )
         {
             self.updateUi();
         }
-    });*/
+    });
 
     //add a device
     self.addDevice = function(content, callback)
@@ -644,6 +645,18 @@ function ipxConfig(devices, agocontrol)
                     notif.error('Internal error');
                 }
             });
+        }
+    };
+
+    //save config
+    self.saveConfig = function()
+    {
+        if( self.selectedBoardUuid )
+        {
+            var content = {};
+            content.uuid = self.selectedBoardUuid;
+            content.command = 'saveconfig';
+            self.agocontrol.sendCommand(content);
         }
     };
 
