@@ -20,6 +20,24 @@
                     <span data-bind="text:room"/>
                 </div>
                 </ko>
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
+                    <ko opts="if: state()==0">
+                    <_span data-translateable="true">closed</_span>
+                    </ko>
+                    <ko opts="if: state()==150">
+                    <_span data-translateable="true">partial</_span>
+                    </ko>
+                    <ko opts="if: state()==255">
+                    <_span data-translateable="true">opened</_span>
+                    </ko>
+                    <ko opts="if: state()==50">
+                    <_span data-translateable="true">opening</_span>
+                    </ko>
+                    <ko opts="if: state()==100">
+                    <_span data-translateable="true">closing</_span>
+                    </ko>
+                </div>
             </div>
         </div>
     </div>
@@ -29,10 +47,10 @@
             <div class="well">
                 <div class="btn-group btn-group-justified">
                     <div class="btn-group">
-                        <ko opts="if: state">
+                        <ko opts="if: state()==255">
                         <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-default">OPEN</_button>
                         </ko>
-                        <ko opts="ifnot: state">
+                        <ko opts="if: state()!=255">
                         <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-primary">OPEN</_button>
                         </ko>
                     </div>
@@ -40,10 +58,10 @@
                         <_button type="button" data-translateable="true" data-bind="click: turnStop" class="btn btn-primary">STOP</_button>
                     </div>
                     <div class="btn-group">
-                        <ko opts="if: state">
+                        <ko opts="if: state()==0">
                         <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-primary">CLOSE</_button>
                         </ko>
-                        <ko opts="ifnot: state">
+                        <ko opts="if: state()!=0">
                         <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-default">CLOSE</_button>
                         </ko>
                     </div>
