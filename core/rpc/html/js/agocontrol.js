@@ -516,13 +516,13 @@ Agocontrol.prototype = {
     // Handle dashboard-part of inventory
     handleDashboards : function(floorplans) {
         var dashboards = [];
-        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false, icon:'fa-th-large'});
+        dashboards.push({name:'all', ucName:ko.observable('All my devices'), action:'', editable:false, icon:'fa-th-large'});
         for( uuid in floorplans )
         {
             var dashboard = floorplans[uuid];
             dashboard.uuid = uuid;
             dashboard.action = '';
-            dashboard.ucName = dashboard.name;
+            dashboard.ucName = ko.observable(dashboard.name);
             dashboard.editable = true;
             if( dashboard.icon===undefined )
             {
@@ -772,7 +772,7 @@ Agocontrol.prototype = {
                 done = true;
             }
 
-            //add new device if necessary
+            //update device infos if necessary
             if( !done && response.result.event=="event.device.announce" )
             {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
@@ -787,7 +787,7 @@ Agocontrol.prototype = {
                             }
                             else
                             {
-                                console.warn('Unable to add new device because no infos about it in retrieved inventory');
+                                console.warn('Unable to update device because no infos about it in inventory');
                             }
                         });
                 }
@@ -795,7 +795,26 @@ Agocontrol.prototype = {
                 //nothing else to do
                 done = true;
             }
-    
+
+            //update dashboard name
+            if( !done && response.result.event=="event.system.floorplannamechanged" )
+            {
+                for( var i=0; i<self.dashboards().length; i++ )
+                {
+                    if( self.dashboards()[i].uuid && self.dashboards()[i].uuid===response.result.uuid )
+                    {
+                        self.dashboards()[i].name = response.result.name;
+                        self.dashboards()[i].ucName(response.result.name);
+                        //stop statement
+                        break;
+                    }
+                }
+
+                //nothing else to do
+                done = true;
+            }
+
+            //update device data (values)
             if( !done )
             {
                 for( var i=0; i<self.devices().length; i++ )
