@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-03 15:39+0200\n"
+"POT-Creation-Date: 2015-08-25 18:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -156,7 +156,7 @@ msgid "Refresh"
 msgstr ""
 
 #: ../templates/details/default.xml.in.h:5
-msgid "Command:"
+msgid "Command"
 msgstr ""
 
 #: ../templates/details/default.xml.in.h:6
@@ -188,23 +188,35 @@ msgid "COLOR"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:1
-msgid "OPEN"
+msgid "closed"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:2
-msgid "STOP"
+msgid "partial"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:3
+msgid "opened"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:4
+msgid "opening"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:5
+msgid "closing"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:6
+msgid "OPEN"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:7
+msgid "STOP"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:8
 msgid "CLOSE"
-msgstr ""
-
-#: ../templates/devices/ipx800v3board.xml.in.h:1
-msgid "ALL ON"
-msgstr ""
-
-#: ../templates/devices/ipx800v3board.xml.in.h:2
-msgid "ALL OFF"
 msgstr ""
 
 #: ../templates/devices/pushbutton.xml.in.h:1
@@ -359,6 +371,7 @@ msgid "SMS rates"
 msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:29
+#: ../configuration/cloud/html/cloud.xml.in.h:10
 msgid "Username"
 msgstr ""
 
@@ -368,6 +381,7 @@ msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:31
 #: ../protocols/onvif/html/onvif.xml.in.h:13
+#: ../configuration/cloud/html/cloud.xml.in.h:14
 msgid "Password"
 msgstr ""
 
@@ -644,6 +658,7 @@ msgid "Change current housemode"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:15
+#: ../protocols/ipx800/html/ipx800.xml.in.h:57
 #: ../protocols/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:9
 #: ../configuration/events/html/events.xml.in.h:7
@@ -718,6 +733,247 @@ msgstr ""
 
 #: ../applications/journal/html/journal.xml.in.h:4
 msgid "Get"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:1
+#: ../protocols/zwave/html/zwave.xml.in.h:21
+msgid "Reset controller (everything will be lost!)"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:2
+msgid "IPX configuration"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:3
+msgid "New board IP"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:4
+msgid "Board IP"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:5
+msgid "Add board"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:6
+msgid "Outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:7
+msgid "Digitals"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:8
+msgid "Analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:9
+msgid "Counters"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:10
+msgid "Links"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:11
+msgid "Board"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:12
+msgid "Add outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:13
+msgid "Used outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:14
+msgid "Output type"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:15
+msgid "Switch"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:16
+msgid "Drapes"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:17
+msgid "Relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:18
+msgid "Opening relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:19
+msgid "Closing relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:20
+msgid "Add device"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:21
+msgid "Actions"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:22
+msgid "Force output state of"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:23
+msgid "to"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:24
+msgid "Opened"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:25
+msgid "Partial"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:26
+msgid "Closed"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:27
+msgid "Force state"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:28
+msgid "Turn on/off all IPX800 outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:29
+#: ../protocols/zwave/html/zwave.xml.in.h:58
+msgid "On"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:30
+#: ../protocols/zwave/html/zwave.xml.in.h:59
+msgid "Off"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:31
+msgid "Used digitals"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:32
+msgid "Digital input"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:33
+msgid "Link binary device to output device"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:34
+msgid "Create link between"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:35
+msgid "and"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:36
+msgid "Add link"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:37
+msgid "Delete links"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:38
+msgid "Link"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:39
+msgid "Delete link"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:40
+msgid "Add analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:41
+msgid "Used analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:42
+msgid "Analog type"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:43
+msgid "Temperature"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:44
+msgid "Light"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:45
+msgid "Volt"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:46
+msgid "Humidity"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:47
+msgid "Binary"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:48
+msgid "Analog input"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:49
+msgid "Add counter"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:50
+msgid "Used counters"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:51
+msgid "Counter"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:52
+msgid "Reset counter"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:53
+#: ../protocols/zwave/html/zwave.xml.in.h:65
+#: ../protocols/mysensors/html/mysensors.xml.in.h:10
+msgid "Reset"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:54
+msgid "Delete device"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:51
+#: ../configuration/blockly/html/agoblockly.xml.in.h:4
+#: ../configuration/dashboards/html/dashboards.xml.in.h:3
+#: ../configuration/devices/html/devices.xml.in.h:3
+#: ../configuration/events/html/events.xml.in.h:3
+#: ../configuration/rooms/html/rooms.xml.in.h:3
+#: ../configuration/scenarios/html/scenarios.xml.in.h:3
+#: ../configuration/variables/html/variables.xml.in.h:3
+msgid "Delete"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:56
+msgid "Force saving board config"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:58
+msgid "Delete this board"
 msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:1
@@ -798,10 +1054,6 @@ msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:20
 msgid "Really remove this node?"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:21
-msgid "Reset controller (everything will be lost!)"
 msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:22
@@ -942,14 +1194,6 @@ msgstr ""
 msgid "Turn on/off all devices"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:58
-msgid "On"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:59
-msgid "Off"
-msgstr ""
-
 #: ../protocols/zwave/html/zwave.xml.in.h:60
 msgid "Test network"
 msgstr ""
@@ -964,11 +1208,6 @@ msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:64
 msgid "Reset controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:65
-#: ../protocols/mysensors/html/mysensors.xml.in.h:10
-msgid "Reset"
 msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:66
@@ -1176,17 +1415,6 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:51
-#: ../configuration/blockly/html/agoblockly.xml.in.h:4
-#: ../configuration/dashboards/html/dashboards.xml.in.h:3
-#: ../configuration/devices/html/devices.xml.in.h:3
-#: ../configuration/events/html/events.xml.in.h:3
-#: ../configuration/rooms/html/rooms.xml.in.h:3
-#: ../configuration/scenarios/html/scenarios.xml.in.h:3
-#: ../configuration/variables/html/variables.xml.in.h:3
-msgid "Delete"
-msgstr ""
-
 #: ../protocols/onvif/html/onvif.xml.in.h:53
 msgid "Ip address"
 msgstr ""
@@ -1387,14 +1615,34 @@ msgid "Event editor is only available on large resolution devices."
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:1
-msgid "ago control Cloud Registration"
+msgid "Passwords do not match!"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:2
-msgid "This service is currently under heavy development!"
+msgid "Success, activation successful!"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:3
+msgid "Certificate read error!"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:4
+msgid "Wrong username, password or activation PIN!"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:5
+msgid "ago control Cloud"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:6
+msgid "Cloud registration"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:7
+msgid "This service is currently under heavy development!"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:8
 msgid ""
 "Register a ago control Cloud account to remote control your installation via "
 "<a target=\"_blank\" href=\"https://cloud.agocontrol.com\">cloud.agocontrol."
@@ -1402,75 +1650,51 @@ msgid ""
 "registration<br/>This service is not free."
 msgstr ""
 
-#: ../configuration/cloud/html/cloud.xml.in.h:4
+#: ../configuration/cloud/html/cloud.xml.in.h:9
 msgid "Your username"
 msgstr ""
 
-#: ../configuration/cloud/html/cloud.xml.in.h:5
-msgid "Input your username"
-msgstr ""
-
-#: ../configuration/cloud/html/cloud.xml.in.h:6
+#: ../configuration/cloud/html/cloud.xml.in.h:11
 msgid "Your E-Mail address"
 msgstr ""
 
-#: ../configuration/cloud/html/cloud.xml.in.h:7
-msgid "Input your E-Mail address"
-msgstr ""
-
-#: ../configuration/cloud/html/cloud.xml.in.h:8
-msgid "Your new password"
-msgstr ""
-
-#: ../configuration/cloud/html/cloud.xml.in.h:9
-msgid "Input new password"
-msgstr ""
-
-#: ../configuration/cloud/html/cloud.xml.in.h:10
-msgid "Confirm new password"
-msgstr ""
-
-#: ../configuration/cloud/html/cloud.xml.in.h:11
-msgid "Register Cloud account"
-msgstr ""
-
 #: ../configuration/cloud/html/cloud.xml.in.h:12
-msgid "Cloud Activation"
+msgid "Email"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:13
-msgid "Success, activation successful!"
-msgstr ""
-
-#: ../configuration/cloud/html/cloud.xml.in.h:14
-msgid "Certificate read error!"
+msgid "Your new password"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:15
-msgid "Wrong username, password or activation PIN!"
+msgid "Confirm new password"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:16
-msgid "Close"
+msgid "Password confirmation"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:17
-msgid "Your password"
+msgid "Register Cloud account"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:18
-msgid "Input password"
+msgid "Cloud activation"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:19
-msgid "Your PIN"
+msgid "Your password"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:20
-msgid "Input PIN"
+msgid "Your PIN"
 msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:21
+msgid "PIN"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:22
 msgid "Activate Cloud"
 msgstr ""
 

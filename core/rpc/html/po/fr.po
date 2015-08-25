@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-03 15:39+0200\n"
+"POT-Creation-Date: 2015-08-25 18:09+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -156,7 +156,8 @@ msgid "Refresh"
 msgstr "Mettre à jour"
 
 #: ../templates/details/default.xml.in.h:5
-msgid "Command:"
+#, fuzzy
+msgid "Command"
 msgstr "Commande"
 
 #: ../templates/details/default.xml.in.h:6
@@ -188,24 +189,37 @@ msgid "COLOR"
 msgstr "COULEUR"
 
 #: ../templates/devices/drapes.xml.in.h:1
+#, fuzzy
+msgid "closed"
+msgstr "Fermer"
+
+#: ../templates/devices/drapes.xml.in.h:2
+msgid "partial"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:3
+msgid "opened"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:4
+msgid "opening"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:5
+msgid "closing"
+msgstr ""
+
+#: ../templates/devices/drapes.xml.in.h:6
 msgid "OPEN"
 msgstr "OUVRIR"
 
-#: ../templates/devices/drapes.xml.in.h:2
+#: ../templates/devices/drapes.xml.in.h:7
 msgid "STOP"
 msgstr "STOPPER"
 
-#: ../templates/devices/drapes.xml.in.h:3
+#: ../templates/devices/drapes.xml.in.h:8
 msgid "CLOSE"
 msgstr "FERMER"
-
-#: ../templates/devices/ipx800v3board.xml.in.h:1
-msgid "ALL ON"
-msgstr "OUVRIR TOUS"
-
-#: ../templates/devices/ipx800v3board.xml.in.h:2
-msgid "ALL OFF"
-msgstr "FERMER TOUS"
 
 #: ../templates/devices/pushbutton.xml.in.h:1
 msgid "PUSH"
@@ -360,6 +374,7 @@ msgid "SMS rates"
 msgstr "tarifs des SMS"
 
 #: ../applications/alert/html/alert.xml.in.h:29
+#: ../configuration/cloud/html/cloud.xml.in.h:10
 msgid "Username"
 msgstr "Identifiant"
 
@@ -369,6 +384,7 @@ msgstr "Identifiant 12voip"
 
 #: ../applications/alert/html/alert.xml.in.h:31
 #: ../protocols/onvif/html/onvif.xml.in.h:13
+#: ../configuration/cloud/html/cloud.xml.in.h:14
 msgid "Password"
 msgstr "Mot de passe"
 
@@ -654,6 +670,7 @@ msgid "Change current housemode"
 msgstr "Modifie le mode courant"
 
 #: ../applications/security/html/security.xml.in.h:15
+#: ../protocols/ipx800/html/ipx800.xml.in.h:57
 #: ../protocols/zwave/html/zwave.xml.in.h:69
 #: ../configuration/blockly/html/agoblockly.xml.in.h:9
 #: ../configuration/events/html/events.xml.in.h:7
@@ -729,6 +746,264 @@ msgstr "Journal"
 #: ../applications/journal/html/journal.xml.in.h:4
 msgid "Get"
 msgstr "Rechercher"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:1
+#: ../protocols/zwave/html/zwave.xml.in.h:21
+msgid "Reset controller (everything will be lost!)"
+msgstr "Confirmer la remise à zéro du contrôleur"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:2
+#, fuzzy
+msgid "IPX configuration"
+msgstr "Code pin"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:3
+#, fuzzy
+msgid "New board IP"
+msgstr "Nom du nouveau tableau de bord"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:4
+msgid "Board IP"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:5
+#, fuzzy
+msgid "Add board"
+msgstr "Ajouter commande"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:6
+msgid "Outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:7
+msgid "Digitals"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:8
+msgid "Analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:9
+msgid "Counters"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:10
+msgid "Links"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:11
+msgid "Board"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:12
+msgid "Add outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:13
+msgid "Used outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:14
+msgid "Output type"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:15
+msgid "Switch"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:16
+msgid "Drapes"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:17
+msgid "Relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:18
+msgid "Opening relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:19
+msgid "Closing relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:20
+#, fuzzy
+msgid "Add device"
+msgstr "Dispositif d'alarme"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:21
+#, fuzzy
+msgid "Actions"
+msgstr "Action"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:22
+msgid "Force output state of"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:23
+#, fuzzy
+msgid "to"
+msgstr "Arrêter"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:24
+msgid "Opened"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:25
+msgid "Partial"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:26
+#, fuzzy
+msgid "Closed"
+msgstr "Fermer"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:27
+msgid "Force state"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:28
+#, fuzzy
+msgid "Turn on/off all IPX800 outputs"
+msgstr "Allumer/éteindre tous les périphériques"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:29
+#: ../protocols/zwave/html/zwave.xml.in.h:58
+msgid "On"
+msgstr "On"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:30
+#: ../protocols/zwave/html/zwave.xml.in.h:59
+msgid "Off"
+msgstr "Off"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:31
+msgid "Used digitals"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:32
+msgid "Digital input"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:33
+msgid "Link binary device to output device"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:34
+#, fuzzy
+msgid "Create link between"
+msgstr "Créer évènement"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:35
+#, fuzzy
+msgid "and"
+msgstr "Ventilateur"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:36
+msgid "Add link"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:37
+#, fuzzy
+msgid "Delete links"
+msgstr "Supprimer la zone"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:38
+msgid "Link"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:39
+#, fuzzy
+msgid "Delete link"
+msgstr "Supprimer la zone"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:40
+msgid "Add analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:41
+msgid "Used analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:42
+msgid "Analog type"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:43
+msgid "Temperature"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:44
+msgid "Light"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:45
+msgid "Volt"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:46
+msgid "Humidity"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:47
+msgid "Binary"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:48
+msgid "Analog input"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:49
+#, fuzzy
+msgid "Add counter"
+msgstr "Ajouter une caméra"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:50
+#, fuzzy
+msgid "Used counters"
+msgstr "Effacer tous les compteurs"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:51
+msgid "Counter"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:52
+#, fuzzy
+msgid "Reset counter"
+msgstr "Effacer tous les compteurs"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:53
+#: ../protocols/zwave/html/zwave.xml.in.h:65
+#: ../protocols/mysensors/html/mysensors.xml.in.h:10
+msgid "Reset"
+msgstr "Effacer"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:54
+#, fuzzy
+msgid "Delete device"
+msgstr "Supprimer un périphérique"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:51
+#: ../configuration/blockly/html/agoblockly.xml.in.h:4
+#: ../configuration/dashboards/html/dashboards.xml.in.h:3
+#: ../configuration/devices/html/devices.xml.in.h:3
+#: ../configuration/events/html/events.xml.in.h:3
+#: ../configuration/rooms/html/rooms.xml.in.h:3
+#: ../configuration/scenarios/html/scenarios.xml.in.h:3
+#: ../configuration/variables/html/variables.xml.in.h:3
+msgid "Delete"
+msgstr "Supprimer"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:56
+msgid "Force saving board config"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:58
+#, fuzzy
+msgid "Delete this board"
+msgstr "Supprimer le mode"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:1
 msgid "zwavecontroller is not responding. Unable to execute action."
@@ -813,10 +1088,6 @@ msgstr "Confirmer la suppression de cette association?"
 #: ../protocols/zwave/html/zwave.xml.in.h:20
 msgid "Really remove this node?"
 msgstr "Confirmer la suppression de ce périphérique?"
-
-#: ../protocols/zwave/html/zwave.xml.in.h:21
-msgid "Reset controller (everything will be lost!)"
-msgstr "Confirmer la remise à zéro du contrôleur"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:22
 msgid "Refresh node infos command sent"
@@ -956,14 +1227,6 @@ msgstr "Dissocier"
 msgid "Turn on/off all devices"
 msgstr "Allumer/éteindre tous les périphériques"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:58
-msgid "On"
-msgstr "On"
-
-#: ../protocols/zwave/html/zwave.xml.in.h:59
-msgid "Off"
-msgstr "Off"
-
 #: ../protocols/zwave/html/zwave.xml.in.h:60
 msgid "Test network"
 msgstr "Tester le réseau"
@@ -979,11 +1242,6 @@ msgstr "Annuler la commande en cours"
 #: ../protocols/zwave/html/zwave.xml.in.h:64
 msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
-
-#: ../protocols/zwave/html/zwave.xml.in.h:65
-#: ../protocols/mysensors/html/mysensors.xml.in.h:10
-msgid "Reset"
-msgstr "Effacer"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:66
 msgid "Download configuration"
@@ -1197,17 +1455,6 @@ msgstr "Config des enreg."
 msgid "Edit"
 msgstr "Editer"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:51
-#: ../configuration/blockly/html/agoblockly.xml.in.h:4
-#: ../configuration/dashboards/html/dashboards.xml.in.h:3
-#: ../configuration/devices/html/devices.xml.in.h:3
-#: ../configuration/events/html/events.xml.in.h:3
-#: ../configuration/rooms/html/rooms.xml.in.h:3
-#: ../configuration/scenarios/html/scenarios.xml.in.h:3
-#: ../configuration/variables/html/variables.xml.in.h:3
-msgid "Delete"
-msgstr "Supprimer"
-
 #: ../protocols/onvif/html/onvif.xml.in.h:53
 msgid "Ip address"
 msgstr "Adresse ip"
@@ -1410,14 +1657,36 @@ msgstr ""
 "ordinateur de bureau."
 
 #: ../configuration/cloud/html/cloud.xml.in.h:1
-msgid "ago control Cloud Registration"
-msgstr "Créer un compte au cloud ago control"
+msgid "Passwords do not match!"
+msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:2
+msgid "Success, activation successful!"
+msgstr "Bravo, votre compte a été créé!"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:3
+msgid "Certificate read error!"
+msgstr "Impossible de lire le certificat!"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:4
+msgid "Wrong username, password or activation PIN!"
+msgstr "Mauvais identifiant, mot de passe ou code d'activation (PIN)!"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:5
+#, fuzzy
+msgid "ago control Cloud"
+msgstr "Créer un compte au cloud ago control"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:6
+#, fuzzy
+msgid "Cloud registration"
+msgstr "Créer un compte au cloud ago control"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:7
 msgid "This service is currently under heavy development!"
 msgstr "Ce service est encore au stade expérimental!"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:3
+#: ../configuration/cloud/html/cloud.xml.in.h:8
 msgid ""
 "Register a ago control Cloud account to remote control your installation via "
 "<a target=\"_blank\" href=\"https://cloud.agocontrol.com\">cloud.agocontrol."
@@ -1430,75 +1699,54 @@ msgstr ""
 "souscription au service après votre inscription<br />Ce service n'est pas "
 "gratuit."
 
-#: ../configuration/cloud/html/cloud.xml.in.h:4
+#: ../configuration/cloud/html/cloud.xml.in.h:9
 msgid "Your username"
 msgstr "Identifiant"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:5
-msgid "Input your username"
-msgstr "Votre identifiant"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:6
+#: ../configuration/cloud/html/cloud.xml.in.h:11
 msgid "Your E-Mail address"
 msgstr "Adresse email"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:7
-msgid "Input your E-Mail address"
-msgstr "Votre adresse email"
+#: ../configuration/cloud/html/cloud.xml.in.h:12
+#, fuzzy
+msgid "Email"
+msgstr "email"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:8
+#: ../configuration/cloud/html/cloud.xml.in.h:13
 msgid "Your new password"
 msgstr "Mot de passe"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:9
-msgid "Input new password"
-msgstr "Votre mot de passe"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:10
+#: ../configuration/cloud/html/cloud.xml.in.h:15
 msgid "Confirm new password"
 msgstr "Confirmer mot de passe"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:11
+#: ../configuration/cloud/html/cloud.xml.in.h:16
+#, fuzzy
+msgid "Password confirmation"
+msgstr "Configurer le tableau de bord"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:17
 msgid "Register Cloud account"
 msgstr "Créer un compte au cloud"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:12
-msgid "Cloud Activation"
+#: ../configuration/cloud/html/cloud.xml.in.h:18
+#, fuzzy
+msgid "Cloud activation"
 msgstr "Activation du cloud"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:13
-msgid "Success, activation successful!"
-msgstr "Bravo, votre compte a été créé!"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:14
-msgid "Certificate read error!"
-msgstr "Impossible de lire le certificat!"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:15
-msgid "Wrong username, password or activation PIN!"
-msgstr "Mauvais identifiant, mot de passe ou code d'activation (PIN)!"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:16
-msgid "Close"
-msgstr "Fermer"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:17
+#: ../configuration/cloud/html/cloud.xml.in.h:19
 msgid "Your password"
 msgstr "Votre mot de passe"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:18
-msgid "Input password"
-msgstr "Votre mot de passe"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:19
+#: ../configuration/cloud/html/cloud.xml.in.h:20
 msgid "Your PIN"
 msgstr "Code d'activation (PIN)"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:20
-msgid "Input PIN"
-msgstr "Code PIN"
-
 #: ../configuration/cloud/html/cloud.xml.in.h:21
+msgid "PIN"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:22
 msgid "Activate Cloud"
 msgstr "Activer le cloud"
 
@@ -1831,3 +2079,24 @@ msgstr "Debug des évènements Agocontrol"
 #: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr "Autoscroll"
+
+#~ msgid "ALL ON"
+#~ msgstr "OUVRIR TOUS"
+
+#~ msgid "ALL OFF"
+#~ msgstr "FERMER TOUS"
+
+#~ msgid "Input your username"
+#~ msgstr "Votre identifiant"
+
+#~ msgid "Input your E-Mail address"
+#~ msgstr "Votre adresse email"
+
+#~ msgid "Input new password"
+#~ msgstr "Votre mot de passe"
+
+#~ msgid "Input password"
+#~ msgstr "Votre mot de passe"
+
+#~ msgid "Input PIN"
+#~ msgstr "Code PIN"
