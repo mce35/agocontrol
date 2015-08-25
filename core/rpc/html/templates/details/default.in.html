@@ -14,8 +14,12 @@
         </dl>
     </div>
     <div class="row">
-        <_strong data-translateable="true">Command:</_strong>
-        <div style="display: inline" id="commandList"/>
-        <_button data-translateable="true" data-bind="click: execCommand">Run</_button>
+        <form class="form-inline">
+            <div class="form-group">
+                <_label data-translateable="true">Command</_label>
+            </div>
+            <div style="display: inline" id="commandList"/>
+            <_button type="button" data-translateable="true" data-bind="click: execCommand" class="btn btn-primary">Run</_button>
+        </form>
     </div>
 </div>

@@ -136,6 +136,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
     var commandSelect = document.createElement("select");
     var commandParams = document.createElement("span");
     commandSelect.id = "commandSelect";
+    commandSelect.className = "form-control";
     var type = device.devicetype;
     if( type && self.schema().devicetypes[type] )
     {
@@ -162,7 +163,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
                 {
                     var select = document.createElement("select");
                     select.name = param;
-                    select.className = "cmdParam";
+                    select.className = "cmdParam form-control";
                     for ( var i = 0; i < cmd.parameters[param].options.length; i++)
                     {
                         select.options[select.options.length] = new Option(cmd.parameters[param].options[i], cmd.parameters[param].options[i]);
@@ -173,7 +174,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
                 {
                     var input = document.createElement("input");
                     input.name = param;
-                    input.className = "cmdParam";
+                    input.className = "cmdParam form-control";
                     input.placeholder = cmd.parameters[param].name;
                     commandParams.appendChild(input);
                 }
@@ -186,7 +187,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
     };
 
     commandSelect.onchange();
-    
+   
     container.appendChild(commandSelect);
     container.appendChild(commandParams);
 };
