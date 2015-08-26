@@ -1,7 +1,7 @@
 {
-    "name": "Expert mode",
+    "name": "Events (expert mode)",
     "version": "1.0.0",
-    "description": "Events configuration",
+    "description": "Create events",
     "template": "html/events",
     "listable": true,
     "category": "events",
