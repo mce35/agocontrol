@@ -2771,8 +2771,7 @@ void AgoMySensors::receiveFunction()
                 }
                 if( log.size()>0 )
                 {
-                    time_t t = time(NULL);
-                    AGO_DEBUG() << " => " << timestampToStr(&t) << " RECEIVING: " << log;
+                    AGO_DEBUG() << " => RECEIVING: " << log;
                 }
             }
 
