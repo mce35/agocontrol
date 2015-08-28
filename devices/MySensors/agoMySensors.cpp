@@ -1524,6 +1524,58 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                     break;
                 case I_LOG_MESSAGE_V14:
                     //debug message from gateway. Already displayed with prettyPrint when debug activated
+                    //we use it here to count errors (only when gateway sends something to a sensor)
+                    //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
+                    // - <sender>-<last> is the message emitter
+                    // - <to> is the direct recipient (gateway, nodeid, repeater)
+                    // - <destination> is the final recipient (nodeid)
+                    // - <sensor> is the childid
+                    if( payload.find("st=fail")!=string::npos )
+                    {
+                        //sending has failed of destination sensor
+                        AGO_TRACE() << "Sending has failed. Increase counter";
+                        string destNodeId = "";
+                        string destChildId = "";
+                        std::vector<std::string> allItems = split(payload, ' ');
+                        if( allItems.size()==3 )
+                        {
+                            std::vector<std::string> routeItems = split(allItems[1], '-');
+                            if( routeItems.size()==4 )
+                            {
+                                //destination node is item #3 (<destination>)
+                                destNodeId = routeItems[3];
+                            }
+
+                            std::vector<std::string> infosItems = split(allItems[2], ',');
+                            if( infosItems.size()==7 )
+                            {
+                                //destination child is item #0 (s=<sensor>)
+                                string temp = infosItems[0];
+                                boost::replace_all(temp, "s=", "");
+                                destChildId = temp;
+                            }
+                        }
+
+                        if( destNodeId.length()>0 && destChildId.length()>0 )
+                        {
+                            //increase counter
+                            string destinationid = destNodeId+"/"+destChildId;
+                            AGO_TRACE() << "destinationid=" << destinationid;
+                            qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                            if( infos.size()>0 )
+                            {
+                                if( infos["counter_failed"].isVoid() )
+                                {
+                                    infos["counter_failed"] = 1;
+                                }
+                                else
+                                {
+                                    infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                }   
+                                setDeviceInfos(destinationid, &infos);
+                            }
+                        }
+                    }
                     break;
                 case I_CONFIG_V14:
                     //return config
@@ -2001,6 +2053,58 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                     break;
                 case I_LOG_MESSAGE_V15:
                     //debug message from gateway. Already displayed with prettyPrint when debug activated
+                    //we use it here to count errors (only when gateway sends something to a sensor)
+                    //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
+                    // - <sender>-<last> is the message emitter
+                    // - <to> is the direct recipient (gateway, nodeid, repeater)
+                    // - <destination> is the final recipient (nodeid)
+                    // - <sensor> is the childid
+                    if( payload.find("st=fail")!=string::npos )
+                    {
+                        //sending has failed of destination sensor
+                        AGO_TRACE() << "Sending has failed. Increase counter";
+                        string destNodeId = "";
+                        string destChildId = "";
+                        std::vector<std::string> allItems = split(payload, ' ');
+                        if( allItems.size()==3 )
+                        {
+                            std::vector<std::string> routeItems = split(allItems[1], '-');
+                            if( routeItems.size()==4 )
+                            {
+                                //destination node is item #3 (<destination>)
+                                destNodeId = routeItems[3];
+                            }
+
+                            std::vector<std::string> infosItems = split(allItems[2], ',');
+                            if( infosItems.size()==7 )
+                            {
+                                //destination child is item #0 (s=<sensor>)
+                                string temp = infosItems[0];
+                                boost::replace_all(temp, "s=", "");
+                                destChildId = temp;
+                            }
+                        }
+
+                        if( destNodeId.length()>0 && destChildId.length()>0 )
+                        {
+                            //increase counter
+                            string destinationid = destNodeId+"/"+destChildId;
+                            AGO_TRACE() << "destinationid=" << destinationid;
+                            qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                            if( infos.size()>0 )
+                            {
+                                if( infos["counter_failed"].isVoid() )
+                                {
+                                    infos["counter_failed"] = 1;
+                                }
+                                else
+                                {
+                                    infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                }   
+                                setDeviceInfos(destinationid, &infos);
+                            }
+                        }
+                    }
                     break;
                 case I_CONFIG_V15:
                     //return config
