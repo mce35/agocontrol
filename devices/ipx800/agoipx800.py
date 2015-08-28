@@ -294,6 +294,12 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
         else:
             event = 'event.device.statechanged'
             unit = None
+
+        #prevent from useless message
+        if devices[ipxIp][internalid]['state']==value:
+            #same value, drop it
+            return True
+
         devicesLock.acquire()
         logger.info('device %s: change state from %s to %s' % (internalid, devices[ipxIp][internalid]['state'], value))
         devices[ipxIp][internalid]['state'] = value
