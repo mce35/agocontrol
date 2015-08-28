@@ -99,6 +99,7 @@ class AgoMySensors: public AgoApp
         void processMessageV15(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
         void receiveFunction();
         void checkStaleFunction();
+        bool splitInternalLogMessage(string payload, qpid::types::Variant::Map& items);
 
     public:
         AGOAPP_CONSTRUCTOR_HEAD(AgoMySensors),
@@ -493,6 +494,7 @@ void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpi
     infos["counter_received"] = 0;
     infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
+    infos["last_route"] = "";
     infos["last_timestamp"] = (int)(time(NULL));
     infos["protocol"] = protocol;
     devices[internalid] = infos;
@@ -501,6 +503,158 @@ void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpi
     agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
     AGO_TRACE() << "Device [" << internalid << "] " << addStatus;
     pthread_mutex_unlock(&devicemapMutex);
+}
+
+/**
+ * Split I_LOG_MESSAGE payload
+ */
+bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant::Map& items)
+{
+    bool result = true;
+
+    if( payload.find("send: ")!=string::npos )
+    {
+        //split send message
+        //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
+        items["type"] = "send";
+        std::vector<std::string> allItems = split(payload, ' ');
+        if( allItems.size()==3 )
+        {
+            std::vector<std::string> routeItems = split(allItems[1], '-');
+            if( routeItems.size()==4 )
+            {
+                items["sender"] = routeItems[0];
+                items["last"] = routeItems[1];
+                items["to"] = routeItems[2];
+                items["destination"] = routeItems[3];
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE send payload: route string is not valid [" << allItems[1] << "]";
+                result = false;
+            }
+
+            std::vector<std::string> infosItems = split(allItems[2], ',');
+            if( infosItems.size()==7 )
+            {
+                //destination child is item #0 (s=<sensor>)
+                string temp = infosItems[0];
+                boost::replace_all(temp, "s=", "");
+                items["sensor"] = temp;
+                temp = infosItems[1];
+                boost::replace_all(temp, "c=", "");
+                items["command"] = temp;
+                temp = infosItems[2];
+                boost::replace_all(temp, "t=", "");
+                items["commandtype"] = temp;
+                temp = infosItems[3];
+                boost::replace_all(temp, "pt=", "");
+                items["payloadtype"] = temp;
+                temp = infosItems[4];
+                boost::replace_all(temp, "l=", "");
+                items["length"] = temp;
+                temp = infosItems[5];
+                boost::replace_all(temp, "sg=", "");
+                items["signed"] = temp;
+                temp = infosItems[6];
+                std::vector<std::string> temps = split(temp, ':');
+                if( temps.size()==2 )
+                {
+                    temp = temps[0];
+                    boost::replace_all(temp, "st=", "");
+                    items["status"] = temp;
+                }
+                else
+                {
+                    AGO_TRACE() << "I_LOG_MESSAGE send payload: no payload in message? [" << temp << "]";
+                    result = false;
+                }
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE send payload: infos string is not valid [" << allItems[2] << "]";
+                result = false;
+            }
+        }
+        else
+        {
+            AGO_TRACE() << "I_LOG_MESSAGE send payload is not valid";
+            result = false;
+        }
+    }
+    else if( payload.find("read: ")!=string::npos )
+    {
+        //split read message
+        //format: read: <sender>-<last>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>:<payload>
+        items["type"] = "read";
+        std::vector<std::string> allItems = split(payload, ' ');
+        if( allItems.size()==3 )
+        {
+            std::vector<std::string> routeItems = split(allItems[1], '-');
+            if( routeItems.size()==3 )
+            {
+                items["sender"] = routeItems[0];
+                items["last"] = routeItems[1];
+                items["destination"] = routeItems[2];
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE read payload: route string is not valid [" << allItems[1] << "]";
+                result = false;
+            }
+
+            std::vector<std::string> infosItems = split(allItems[2], ',');
+            if( infosItems.size()==6 )
+            {
+                //destination child is item #0 (s=<sensor>)
+                string temp = infosItems[0];
+                boost::replace_all(temp, "s=", "");
+                items["sensor"] = temp;
+                temp = infosItems[1];
+                boost::replace_all(temp, "c=", "");
+                items["command"] = temp;
+                temp = infosItems[2];
+                boost::replace_all(temp, "t=", "");
+                items["commandtype"] = temp;
+                temp = infosItems[3];
+                boost::replace_all(temp, "pt=", "");
+                items["payloadtype"] = temp;
+                temp = infosItems[4];
+                boost::replace_all(temp, "l=", "");
+                items["length"] = temp;
+                temp = infosItems[5];
+                std::vector<std::string> temps = split(temp, ':');
+                if( temps.size()==2 )
+                {
+                    temp = temps[0];
+                    boost::replace_all(temp, "sg=", "");
+                    items["signed"] = temp;
+                }
+                else
+                {
+                    AGO_TRACE() << "I_LOG_MESSAGE read payload: no payload in message? [" << temp << "]";
+                    result = false;
+                }
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE read payload: infos string is not valid [" << allItems[2] << "]";
+                result = false;
+            }
+        }
+        else
+        {
+            AGO_TRACE() << "I_LOG_MESSAGE read payload is not valid";
+            result = false;
+        }
+    }
+    else
+    {
+        AGO_TRACE() << "I_LOG_MESSAGE is neither send nor read message";
+        result = false;
+    }
+
+    return result;
 }
 
 /**
@@ -1523,58 +1677,64 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                     }
                     break;
                 case I_LOG_MESSAGE_V14:
-                    //debug message from gateway. Already displayed with prettyPrint when debug activated
-                    //we use it here to count errors (only when gateway sends something to a sensor)
-                    //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
-                    // - <sender>-<last> is the message emitter
-                    // - <to> is the direct recipient (gateway, nodeid, repeater)
-                    // - <destination> is the final recipient (nodeid)
-                    // - <sensor> is the childid
-                    if( payload.find("st=fail")!=string::npos )
                     {
-                        //sending has failed of destination sensor
-                        AGO_TRACE() << "Sending has failed. Increase counter";
-                        string destNodeId = "";
-                        string destChildId = "";
-                        std::vector<std::string> allItems = split(payload, ' ');
-                        if( allItems.size()==3 )
+                        //debug message from gateway. Already displayed with prettyPrint when debug activated
+                        //we use it here to count errors (only when gateway sends something to a sensor) and update last route
+                        
+                        //parse message
+                        qpid::types::Variant::Map items;
+                        if( splitInternalLogMessage(payload, items) )
                         {
-                            std::vector<std::string> routeItems = split(allItems[1], '-');
-                            if( routeItems.size()==4 )
+                            //handle send message
+                            if( items["type"].asString()=="send" && items["status"].asString()=="fail" )
                             {
-                                //destination node is item #3 (<destination>)
-                                destNodeId = routeItems[3];
-                            }
-
-                            std::vector<std::string> infosItems = split(allItems[2], ',');
-                            if( infosItems.size()==7 )
-                            {
-                                //destination child is item #0 (s=<sensor>)
-                                string temp = infosItems[0];
-                                boost::replace_all(temp, "s=", "");
-                                destChildId = temp;
-                            }
-                        }
-
-                        if( destNodeId.length()>0 && destChildId.length()>0 )
-                        {
-                            //increase counter
-                            string destinationid = destNodeId+"/"+destChildId;
-                            AGO_TRACE() << "destinationid=" << destinationid;
-                            qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
-                            if( infos.size()>0 )
-                            {
-                                if( infos["counter_failed"].isVoid() )
+                                //build destinationid
+                                string destinationid = items["destination"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                if( infos.size()>0 )
                                 {
-                                    infos["counter_failed"] = 1;
+                                    //increase counter
+                                    if( infos["counter_failed"].isVoid() )
+                                    {
+                                        infos["counter_failed"] = 1;
+                                    }
+                                    else
+                                    {
+                                        infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                    }   
+                                    setDeviceInfos(destinationid, &infos);
                                 }
-                                else
-                                {
-                                    infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
-                                }   
-                                setDeviceInfos(destinationid, &infos);
                             }
-                        }
+                            else if( items["type"]=="read" )
+                            {
+                                //handle read message
+                                string destinationid = items["sender"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                //build route
+                                string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
+
+                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                if( infos.size()>0 )
+                                {
+                                    //update last route
+                                    if( infos["last_route"].isVoid() )
+                                    {
+                                        AGO_TRACE() << destinationid << " route changed to " << route;
+                                        infos["last_route"] = route;
+                                        setDeviceInfos(destinationid, &infos);
+                                    }
+                                    else if( infos["last_route"].asString()!=route )
+                                    {
+                                        AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
+                                        infos["last_route"] = route;
+                                        setDeviceInfos(destinationid, &infos);
+                                    }
+                                }
+                            }
+                        }   
                     }
                     break;
                 case I_CONFIG_V14:
@@ -2052,58 +2212,64 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                     }
                     break;
                 case I_LOG_MESSAGE_V15:
-                    //debug message from gateway. Already displayed with prettyPrint when debug activated
-                    //we use it here to count errors (only when gateway sends something to a sensor)
-                    //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
-                    // - <sender>-<last> is the message emitter
-                    // - <to> is the direct recipient (gateway, nodeid, repeater)
-                    // - <destination> is the final recipient (nodeid)
-                    // - <sensor> is the childid
-                    if( payload.find("st=fail")!=string::npos )
                     {
-                        //sending has failed of destination sensor
-                        AGO_TRACE() << "Sending has failed. Increase counter";
-                        string destNodeId = "";
-                        string destChildId = "";
-                        std::vector<std::string> allItems = split(payload, ' ');
-                        if( allItems.size()==3 )
+                        //debug message from gateway. Already displayed with prettyPrint when debug activated
+                        //we use it here to count errors (only when gateway sends something to a sensor) and update last route
+                        
+                        //parse message
+                        qpid::types::Variant::Map items;
+                        if( splitInternalLogMessage(payload, items) )
                         {
-                            std::vector<std::string> routeItems = split(allItems[1], '-');
-                            if( routeItems.size()==4 )
+                            //handle send message
+                            if( items["type"].asString()=="send" && items["status"].asString()=="fail" )
                             {
-                                //destination node is item #3 (<destination>)
-                                destNodeId = routeItems[3];
-                            }
-
-                            std::vector<std::string> infosItems = split(allItems[2], ',');
-                            if( infosItems.size()==7 )
-                            {
-                                //destination child is item #0 (s=<sensor>)
-                                string temp = infosItems[0];
-                                boost::replace_all(temp, "s=", "");
-                                destChildId = temp;
-                            }
-                        }
-
-                        if( destNodeId.length()>0 && destChildId.length()>0 )
-                        {
-                            //increase counter
-                            string destinationid = destNodeId+"/"+destChildId;
-                            AGO_TRACE() << "destinationid=" << destinationid;
-                            qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
-                            if( infos.size()>0 )
-                            {
-                                if( infos["counter_failed"].isVoid() )
+                                //build destinationid
+                                string destinationid = items["destination"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                if( infos.size()>0 )
                                 {
-                                    infos["counter_failed"] = 1;
+                                    //increase counter
+                                    if( infos["counter_failed"].isVoid() )
+                                    {
+                                        infos["counter_failed"] = 1;
+                                    }
+                                    else
+                                    {
+                                        infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                    }   
+                                    setDeviceInfos(destinationid, &infos);
                                 }
-                                else
-                                {
-                                    infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
-                                }   
-                                setDeviceInfos(destinationid, &infos);
                             }
-                        }
+                            else if( items["type"]=="read" )
+                            {
+                                //handle read message
+                                string destinationid = items["sender"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                //build route
+                                string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
+
+                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                if( infos.size()>0 )
+                                {
+                                    //update last route
+                                    if( infos["last_route"].isVoid() )
+                                    {
+                                        AGO_TRACE() << destinationid << " route changed to " << route;
+                                        infos["last_route"] = route;
+                                        setDeviceInfos(destinationid, &infos);
+                                    }
+                                    else if( infos["last_route"].asString()!=route )
+                                    {
+                                        AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
+                                        infos["last_route"] = route;
+                                        setDeviceInfos(destinationid, &infos);
+                                    }
+                                }
+                            }
+                        }   
                     }
                     break;
                 case I_CONFIG_V15:
