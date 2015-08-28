@@ -21,7 +21,6 @@
 #ifndef DEVICEMAPFILE
 #define DEVICEMAPFILE "/maps/mysensors.json"
 #endif
-#define RESEND_MAX_ATTEMPTS 30
 #define DEFAULT_PROTOCOL "0.0"
 
 using namespace std;
@@ -56,7 +55,6 @@ typedef struct S_COMMAND
 } T_COMMAND;
 
 static pthread_mutex_t serialMutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t resendMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t devicemapMutex = PTHREAD_MUTEX_INITIALIZER;
 
 class AgoMySensors: public AgoApp
@@ -64,16 +62,13 @@ class AgoMySensors: public AgoApp
     private:
         //members
         boost::thread* readThread;
-        boost::thread* resendThread;
         boost::thread* checkStaleThread;
         string units;
         qpid::types::Variant::Map devicemap;
-        std::map<std::string, T_COMMAND> commandsmap;
         std::string gateway_protocol_version;
         serialib serialPort;
         string serialDevice;
         int staleThreshold;
-        bool bResend;
         int bNetworkRelay;
         int bStale;
         qpid::types::Variant::Map arduinoNodes;
@@ -102,7 +97,6 @@ class AgoMySensors: public AgoApp
         void processMessageV13(int radioId, int childId, int messageType, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
         void processMessageV14(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
         void processMessageV15(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
-        void resendFunction();
         void receiveFunction();
         void checkStaleFunction();
 
@@ -111,7 +105,6 @@ class AgoMySensors: public AgoApp
             units("M"),
             serialDevice(""),
             staleThreshold(86400),
-            bResend(false),
             bNetworkRelay(false),
             bStale(true)
             {}
@@ -620,21 +613,6 @@ void AgoMySensors::sendcommandV15(std::string internalid, int messageType, int a
     int childId = atoi(items[1].c_str());
     command << nodeId << ";" << childId << ";" << messageType << ";" << ack << ";" << subType << ";" << payload << "\n";
 
-    //save command if device is an actuator and message type is SET
-    if( bResend && infos.size()>0 && infos["type"]=="switch" && messageType==SET_V15 )
-    {
-        //check if internalid has no command pending
-        pthread_mutex_lock(&resendMutex);
-        if( commandsmap.count(internalid)==0 )
-        {
-            T_COMMAND cmd;
-            cmd.command = command.str();
-            cmd.attempts = 0;
-            commandsmap[internalid] = cmd;
-        }
-        pthread_mutex_unlock(&resendMutex);
-    }
-
     //send command
     string logCommand(command.str());
     boost::replace_all(logCommand, "\n", "<NL>");
@@ -654,21 +632,6 @@ void AgoMySensors::sendcommandV14(std::string internalid, int messageType, int a
     int childId = atoi(items[1].c_str());
     command << nodeId << ";" << childId << ";" << messageType << ";" << ack << ";" << subType << ";" << payload << "\n";
 
-    //save command if device is an actuator and message type is SET
-    if( bResend && infos.size()>0 && infos["type"]=="switch" && messageType==SET_V14 )
-    {
-        //check if internalid has no command pending
-        pthread_mutex_lock(&resendMutex);
-        if( commandsmap.count(internalid)==0 )
-        {
-            T_COMMAND cmd;
-            cmd.command = command.str();
-            cmd.attempts = 0;
-            commandsmap[internalid] = cmd;
-        }
-        pthread_mutex_unlock(&resendMutex);
-    }
-
     //send command
     string logCommand(command.str());
     boost::replace_all(logCommand, "\n", "<NL>");
@@ -687,21 +650,6 @@ void AgoMySensors::sendcommandV13(std::string internalid, int messageType, int s
     int nodeId = atoi(items[0].c_str());
     int childId = atoi(items[1].c_str());
     command << nodeId << ";" << childId << ";" << messageType << ";" << subType << ";" << payload << "\n";
-
-    //save command if device is an actuator and message type is SET_VARIABLE
-    if( bResend && infos.size()>0 && infos["type"]=="switch" && messageType==SET_VARIABLE_V13 )
-    {
-        //check if internalid has no command pending
-        pthread_mutex_lock(&resendMutex);
-        if( commandsmap.count(internalid)==0 )
-        {
-            T_COMMAND cmd;
-            cmd.command = command.str();
-            cmd.attempts = 0;
-            commandsmap[internalid] = cmd;
-        }
-        pthread_mutex_unlock(&resendMutex);
-    }
 
     //send command
     string logCommand(command.str());
@@ -1196,76 +1144,6 @@ void AgoMySensors::newDevice(std::string internalid, std::string devicetype, std
 }
 
 /**
- * Resend function (threaded)
- * Allow to send again a command until ack is received (only for certain device type)
- */
-void AgoMySensors::resendFunction()
-{
-    qpid::types::Variant::Map infos;
-    while(1)
-    {
-        pthread_mutex_lock(&resendMutex);
-        for( std::map<std::string,T_COMMAND>::iterator it=commandsmap.begin(); it!=commandsmap.end(); it++ )
-        {
-            if( it->second.attempts<RESEND_MAX_ATTEMPTS )
-            {
-                //resend command
-                sendcommand(it->second.command);
-                it->second.attempts++;
-                //update counter
-                infos = getDeviceInfos(it->first);
-                if( infos.size()>0 )
-                {
-                    if( infos["counter_retries"].isVoid() )
-                    {
-                        infos["counter_retries"] = 1;
-                    }
-                    else
-                    {
-                        infos["counter_retries"] = infos["counter_retries"].asUint64()+1;
-                    }
-                    setDeviceInfos(it->first, &infos);
-                }
-            }
-            else
-            {
-                //max attempts reached
-                AGO_ERROR() << "Too many attemps. Command failed: " << it->second.command;
-
-                //update counters
-                qpid::types::Variant::Map infos = getDeviceInfos(it->first);
-                if( infos.size()>0 )
-                {
-                    if( infos["counter_failed"].isVoid() )
-                    {
-                        infos["counter_failed"] = 1;
-                    }
-                    else
-                    {
-                        infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
-                    }
-                    setDeviceInfos(it->first, &infos);
-                }
-
-                //delete command from list
-                std::map<std::string, T_COMMAND>::iterator cmd = commandsmap.find(it->first);
-                if( cmd!=commandsmap.end() )
-                {
-                    commandsmap.erase(cmd);
-                }
-                else
-                {
-                    AGO_ERROR() << "Command not found in map!. Unable to delete.";
-                }
-
-            }
-        }
-        pthread_mutex_unlock(&resendMutex);
-        usleep(500000);
-    }
-}
-
-/**
  * Process message of protocol v1.3
  */
 void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos)
@@ -1428,17 +1306,6 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
             break;
 
         case SET_VARIABLE_V13:
-            if( bResend )
-            {
-                //remove command from map to avoid sending command again
-                pthread_mutex_lock(&resendMutex);
-                if( commandsmap.count(internalid)!=0 )
-                {
-                    commandsmap.erase(internalid);
-                }
-                pthread_mutex_unlock(&resendMutex);
-            }
-
             //update counters
             if( infos.size()>0 )
             {
@@ -1852,22 +1719,6 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
             break;
 
         case SET_V14:
-            if( bResend )
-            {
-                //remove command from map to avoid sending command again
-                pthread_mutex_lock(&resendMutex);
-                cmd = commandsmap.find(internalid);
-                if( cmd!=commandsmap.end() && ack==1 )
-                {
-                    //command exists in command list for this device and its an ack
-                    //remove command from list
-                    AGO_DEBUG() << "Ack received for command " << cmd->second.command;
-                    commandsmap.erase(cmd);
-                    ack = 0;
-                }
-                pthread_mutex_unlock(&resendMutex);
-            }
-
             //update counters
             if( infos.size()>0 )
             {
@@ -2396,22 +2247,6 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
             break;
 
         case SET_V15:
-            if( bResend )
-            {
-                //remove command from map to avoid sending command again
-                pthread_mutex_lock(&resendMutex);
-                cmd = commandsmap.find(internalid);
-                if( cmd!=commandsmap.end() && ack==1 )
-                {
-                    //command exists in command list for this device and its an ack
-                    //remove command from list
-                    AGO_DEBUG() << "Ack received for command " << cmd->second.command;
-                    commandsmap.erase(cmd);
-                    ack = 0;
-                }
-                pthread_mutex_unlock(&resendMutex);
-            }
-
             //update counters
             if( infos.size()>0 )
             {
@@ -2691,14 +2526,8 @@ void AgoMySensors::receiveFunction()
             int ack = 0;
             std::string protocol = "";
 
-            //first of all check if it's not a presentation message
-            //0 = PRESENTATION id for all protocol versions
-            //if( messageType!=0 )
-            //{
-            //    //not a presentation message, get device infos
-            
-                infos = getDeviceInfos(internalid);
-            //}
+            //try to get device infos
+            infos = getDeviceInfos(internalid);
 
             //get protocol version
             if( infos.size()>0 )
@@ -2904,11 +2733,6 @@ void AgoMySensors::setupApp()
     //get config
     serialDevice = getConfigSectionOption("mysensors", "device", "/dev/ttyACM0");
     staleThreshold = atoi(getConfigSectionOption("mysensors", "staleThreshold", "86400").c_str());
-    bResend = false;
-    if( atoi(getConfigSectionOption("mysensors", "resend", "0").c_str())==1 )
-    {
-        bResend = true;
-    }
     bNetworkRelay = false;
     if( atoi(getConfigSectionOption("mysensors", "networkrelay", "0").c_str())==1 )
     {
@@ -3069,16 +2893,6 @@ void AgoMySensors::setupApp()
     //init threads and mutexes
     pthread_mutex_init(&serialMutex, NULL);
     pthread_mutex_init(&devicemapMutex, NULL);
-    if( bResend )
-    {
-        AGO_INFO() << "Resend feature enabled";
-        pthread_mutex_init(&resendMutex, NULL);
-        resendThread = new boost::thread(boost::bind(&AgoMySensors::resendFunction, this));
-    }
-    else
-    {
-        AGO_INFO() << "Resend feature disabled";
-    }
     readThread = new boost::thread(boost::bind(&AgoMySensors::receiveFunction, this));
 
     //register existing devices
@@ -3154,10 +2968,6 @@ void AgoMySensors::cleanupApp()
     {
         readThread->join();
     }
-    if( resendThread )
-    {
-        resendThread->join();
-    }
     if( checkStaleThread )
     {
         checkStaleThread->join();
@@ -3165,12 +2975,10 @@ void AgoMySensors::cleanupApp()
 
     AGO_TRACE() << "All webserver threads returned";
     delete readThread;
-    delete resendThread;
     delete checkStaleThread;
 
     AGO_TRACE() << "Destroy mutexes";
     pthread_mutex_destroy( &serialMutex );
-    pthread_mutex_destroy( &resendMutex );
     pthread_mutex_destroy( &devicemapMutex );
 }
 
