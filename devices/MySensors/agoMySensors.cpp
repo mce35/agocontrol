@@ -146,8 +146,6 @@ void AgoMySensors::printDeviceInfos(std::string internalid, qpid::types::Variant
         result << " - value=" << infos["value"] << endl;
     if( !infos["counter_sent"].isVoid() )
         result << " - counter_sent=" << infos["counter_sent"] << endl;
-    if( !infos["counter_retries"].isVoid() )
-        result << " - counter_retries=" << infos["counter_retries"] << endl;
     if( !infos["counter_received"].isVoid() )
         result << " - counter_received=" << infos["counter_received"] << endl;
     if( !infos["counter_failed"].isVoid() )
@@ -492,7 +490,6 @@ void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpi
     infos["value"] = "0";
     infos["counter_sent"] = 0;
     infos["counter_received"] = 0;
-    infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
     infos["last_route"] = "";
     infos["last_timestamp"] = (int)(time(NULL));
@@ -885,7 +882,6 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                     {
                         infos["counter_received"] = 0;
                         infos["counter_sent"] = 0;
-                        infos["counter_retries"] = 0;
                         infos["counter_failed"] = 0;
                         setDeviceInfos(it->first, &infos);
                     }
@@ -908,7 +904,6 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                     {
                         infos["counter_received"] = 0;
                         infos["counter_sent"] = 0;
-                        infos["counter_retries"] = 0;
                         infos["counter_failed"] = 0;
                         setDeviceInfos(device["internalid"].asString(), &infos);
                     }
@@ -1440,7 +1435,8 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
             if( infos.size()>0 )
             {
                 //update counters
-                if( infos["counter_sent"].isVoid() ) {
+                if( infos["counter_sent"].isVoid() )
+                {
                     infos["counter_sent"] = 1;
                 }
                 else
@@ -1448,6 +1444,7 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
                     infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
                 }
                 setDeviceInfos(internalid, &infos);
+
                 //send value
                 sendcommandV13(internalid, SET_VARIABLE_V13, subType, infos["value"]);
             }
@@ -1686,7 +1683,7 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                         if( splitInternalLogMessage(payload, items) )
                         {
                             //handle send message
-                            if( items["type"].asString()=="send" && items["status"].asString()=="fail" )
+                            if( items["type"].asString()=="send" )
                             {
                                 //build destinationid
                                 string destinationid = items["destination"].asString() + "/" + items["sensor"].asString();
@@ -1695,15 +1692,28 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                                 qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
                                 if( infos.size()>0 )
                                 {
-                                    //increase counter
-                                    if( infos["counter_failed"].isVoid() )
+                                    //increase sent counter
+                                    if( infos["counter_sent"].isVoid() )
                                     {
-                                        infos["counter_failed"] = 1;
+                                        infos["counter_sent"] = 1;
                                     }
                                     else
                                     {
-                                        infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
-                                    }   
+                                        infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
+                                    }
+                                    
+                                    //increase failed counter
+                                    if( items["status"].asString()=="fail" )
+                                    {
+                                        if( infos["counter_failed"].isVoid() )
+                                        {
+                                            infos["counter_failed"] = 1;
+                                        }
+                                        else
+                                        {
+                                            infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                        }
+                                    }
                                     setDeviceInfos(destinationid, &infos);
                                 }
                             }
@@ -1843,17 +1853,6 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
         case REQ_V14:
             if( infos.size()>0 )
             {
-                //update counters
-                if( infos["counter_sent"].isVoid() )
-                {
-                    infos["counter_sent"] = 1;
-                }
-                else
-                {
-                    infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
-                }
-                setDeviceInfos(internalid, &infos);
-
                 //agocontrol save device value in device map regardless the sensor type.
                 //here we handle specific custom vars, to make possible having multiple values for the same device
                 switch (subType)
@@ -2221,7 +2220,7 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                         if( splitInternalLogMessage(payload, items) )
                         {
                             //handle send message
-                            if( items["type"].asString()=="send" && items["status"].asString()=="fail" )
+                            if( items["type"].asString()=="send" )
                             {
                                 //build destinationid
                                 string destinationid = items["destination"].asString() + "/" + items["sensor"].asString();
@@ -2230,15 +2229,28 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                                 qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
                                 if( infos.size()>0 )
                                 {
-                                    //increase counter
-                                    if( infos["counter_failed"].isVoid() )
+                                    //increase sent counter
+                                    if( infos["counter_sent"].isVoid() )
                                     {
-                                        infos["counter_failed"] = 1;
+                                        infos["counter_sent"] = 1;
                                     }
                                     else
                                     {
-                                        infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
-                                    }   
+                                        infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
+                                    }
+                                    
+                                    //increase failed counter
+                                    if( items["status"].asString()=="fail" )
+                                    {
+                                        if( infos["counter_failed"].isVoid() )
+                                        {
+                                            infos["counter_failed"] = 1;
+                                        }
+                                        else
+                                        {
+                                            infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                        }
+                                    }
                                     setDeviceInfos(destinationid, &infos);
                                 }
                             }
@@ -2429,17 +2441,6 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
         case REQ_V15:
             if( infos.size()>0 )
             {
-                //update counters
-                if( infos["counter_sent"].isVoid() )
-                {
-                    infos["counter_sent"] = 1;
-                }
-                else
-                {
-                    infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
-                }
-                setDeviceInfos(internalid, &infos);
-
                 //agocontrol save device value in device map regardless the sensor type.
                 //here we handle specific custom vars, to make possible having multiple values for the same device
                 switch (subType)
