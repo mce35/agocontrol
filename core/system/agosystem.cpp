@@ -274,7 +274,7 @@ qpid::types::Variant::Map AgoSystem::getAgoProcessList()
 {
     //init
     qpid::types::Variant::Map output;
-    AGO_INFO() << "Monitored processes:";
+    AGO_TRACE() << "Monitored processes:";
     if( fs::exists(BIN_DIR) )
     {
         fs::recursive_directory_iterator it(BIN_DIR);
