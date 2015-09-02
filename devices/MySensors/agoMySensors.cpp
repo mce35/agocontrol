@@ -1729,23 +1729,26 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                                 AGO_TRACE() << "destinationid=" << destinationid;
     
                                 //build route
-                                string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
-
-                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
-                                if( infos.size()>0 )
+                                if( items["sender"].asString()!="255" && items["last"].asString()!="255" && items["destination"].asString()!="255" )
                                 {
-                                    //update last route
-                                    if( infos["last_route"].isVoid() )
+                                    string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
+
+                                    qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                    if( infos.size()>0 )
                                     {
-                                        AGO_TRACE() << destinationid << " route changed to " << route;
-                                        infos["last_route"] = route;
-                                        setDeviceInfos(destinationid, &infos);
-                                    }
-                                    else if( infos["last_route"].asString()!=route )
-                                    {
-                                        AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
-                                        infos["last_route"] = route;
-                                        setDeviceInfos(destinationid, &infos);
+                                        //update last route
+                                        if( infos["last_route"].isVoid() )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
+                                        else if( infos["last_route"].asString()!=route )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
                                     }
                                 }
                             }
@@ -2266,23 +2269,26 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                                 AGO_TRACE() << "destinationid=" << destinationid;
     
                                 //build route
-                                string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
-
-                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
-                                if( infos.size()>0 )
+                                if( items["sender"].asString()!="255" && items["last"].asString()!="255" && items["destination"].asString()!="255" )
                                 {
-                                    //update last route
-                                    if( infos["last_route"].isVoid() )
+                                    string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
+    
+                                    qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                    if( infos.size()>0 )
                                     {
-                                        AGO_TRACE() << destinationid << " route changed to " << route;
-                                        infos["last_route"] = route;
-                                        setDeviceInfos(destinationid, &infos);
-                                    }
-                                    else if( infos["last_route"].asString()!=route )
-                                    {
-                                        AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
-                                        infos["last_route"] = route;
-                                        setDeviceInfos(destinationid, &infos);
+                                        //update last route
+                                        if( infos["last_route"].isVoid() )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
+                                        else if( infos["last_route"].asString()!=route )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
                                     }
                                 }
                             }
