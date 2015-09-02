@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <execinfo.h>
 #include <signal.h>
 #include <time.h>
@@ -509,15 +510,17 @@ bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant:
 {
     bool result = true;
 
-    if( payload.find("send: ")!=string::npos )
+    if( boost::algorithm::starts_with(payload, "send: ") )
     {
         //split send message
         //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
         items["type"] = "send";
-        std::vector<std::string> allItems = split(payload, ' ');
-        if( allItems.size()==3 )
+        std::vector<std::string> allItems = split(payload, ':');
+        if( allItems.size()>=3 )
         {
-            std::vector<std::string> routeItems = split(allItems[1], '-');
+            string temp = allItems[1];
+            boost::algorithm::trim(temp);
+            std::vector<std::string> routeItems = split(temp, '-');
             if( routeItems.size()==4 )
             {
                 items["sender"] = routeItems[0];
@@ -579,15 +582,17 @@ bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant:
             result = false;
         }
     }
-    else if( payload.find("read: ")!=string::npos )
+    else if( boost::algorithm::starts_with(payload, "read: ") )
     {
         //split read message
         //format: read: <sender>-<last>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>:<payload>
         items["type"] = "read";
-        std::vector<std::string> allItems = split(payload, ' ');
-        if( allItems.size()==3 )
+        std::vector<std::string> allItems = split(payload, ':');
+        if( allItems.size()>=3 )
         {
-            std::vector<std::string> routeItems = split(allItems[1], '-');
+            string temp = allItems[1];
+            boost::algorithm::trim(temp);
+            std::vector<std::string> routeItems = split(temp, '-');
             if( routeItems.size()==3 )
             {
                 items["sender"] = routeItems[0];
