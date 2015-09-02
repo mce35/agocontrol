@@ -25,12 +25,50 @@
                     <script type="text/html" id="countersRowTemplate">
                         <td data-bind="text:device"></td>
                         <td data-bind="text:counter_sent"></td>
-                        <td data-bind="text:counter_retries"></td>
                         <td data-bind="text:counter_failed"></td>
                         <td data-bind="text:counter_received"></td>
                         <td data-bind="text:timestampToString(last_timestamp)"/>
                     </script>
                     <div data-bind="agoGrid:countersGrid"></div>
+                </div>
+
+                <!-- network tab -->
+                <div id="graph" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-sm-12 text-right">
+                            <button class="btn btn-primary agorowbottom" type="button" data-toggle="collapse" data-target="#collapseHelp">Help</button>
+                        </div>
+                    </div>
+                    <div class="collapse" id="collapseHelp">
+                        <div class="well">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <button type="button" class="btn btn-primary" data-bind="click:redrawGraph">Redraw graph</button>
+                                </div>
+                                <div class="col-sm-4">
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                            <span class="badge node-gateway">-</span>
+                                            Gateway
+                                        </li>
+                                        <li class="list-group-item">
+                                            <span class="badge node-repeater">-</span>
+                                            Repeater
+                                        </li>
+                                        <li class="list-group-item">
+                                            <span class="badge node-notconnected">-</span>
+                                            Not connected sensor
+                                        </li>
+                                        <li class="list-group-item">
+                                            <span class="badge node-sensor">-</span>
+                                             Connected sensor
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="network"/>
                 </div>
 
                 <!-- configuration tab -->

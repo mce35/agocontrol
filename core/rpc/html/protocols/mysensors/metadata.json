@@ -5,5 +5,13 @@
     "description": "MySensors configuration",
     "template": "html/mysensors",
     "listable": true,
-    "depends": "agoMySensors"
+    "depends": "agoMySensors",
+    "resources": {
+        "js": [
+           "../../js/libs/d3.v3.min.js"
+        ],
+        "css": [
+            "graph.css"
+        ]
+    }
 }
