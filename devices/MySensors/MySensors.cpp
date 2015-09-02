@@ -381,6 +381,18 @@ const char* getVariableTypeNameV15(enum varTypesV15 type)
         case V_IR_SEND_V15: return "V_IR_SEND";
         case V_IR_RECEIVE_V15: return "V_IR_RECEIVE";
         case V_FLOW_V15: return "V_FLOW";
+        case V_VOLUME_V15: return "V_VOLUME";
+        case V_LOCK_STATUS_V15: return "V_LOCK_STATUS";
+        case V_LEVEL_V15: return "V_LEVEL";
+        case V_VOLTAGE_V15: return "V_VOLTAGE";
+        case V_CURRENT_V15: return "V_CURRENT";
+        case V_RGB_V15: return "V_RGB";
+        case V_RGBW_V15: return "V_RGBW";
+        case V_ID_V15: return "V_ID";
+        case V_UNIT_PREFIX_V15: return "V_UNIT_PREFIX";
+        case V_HVAC_SETPOINT_COOL_V15: return "V_HVAC_SETPOINT_COOL";
+        case V_HVAC_SETPOINT_HEAT_V15: return "V_HVAC_SETPOINT_HEAT";
+        case V_HVAC_FLOW_MODE_V15: return "V_HVAC_FLOW_MODE";
         default:
             string out = "UNKNOWN[";
             out += (int)type;

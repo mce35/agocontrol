@@ -60,6 +60,9 @@ namespace agocontrol {
          * Preferably, don't!*/
         std::string appConfigSection;
 
+        /* Application log level */
+        log::severity_level logLevel;
+
         /**
          * Any parsed command line parameters are placed in this map-like object
          */
