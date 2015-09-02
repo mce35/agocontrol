@@ -8,7 +8,7 @@
     "depends": "agozwave",
     "resources": {
         "js": [
-            "d3.v3.min.js"
+            "../../js/libs/d3.v3.min.js"
         ],
         "css": [
             "chord.css"
