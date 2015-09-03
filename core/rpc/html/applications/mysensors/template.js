@@ -17,7 +17,6 @@ function MySensors(devices, agocontrol)
         columns: [
             {headerText: 'Device', rowText:'device'},
             {headerText: 'Sent', rowText:'counter_sent'},
-            {headerText: 'Retries', rowText:'counter_retries'},
             {headerText: 'Failed', rowText:'counter_failed'},
             {headerText: 'Received', rowText:'counter_received'}
         ],

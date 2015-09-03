@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <execinfo.h>
 #include <signal.h>
 #include <time.h>
@@ -21,7 +22,6 @@
 #ifndef DEVICEMAPFILE
 #define DEVICEMAPFILE "/maps/mysensors.json"
 #endif
-#define RESEND_MAX_ATTEMPTS 30
 #define DEFAULT_PROTOCOL "0.0"
 
 using namespace std;
@@ -56,7 +56,6 @@ typedef struct S_COMMAND
 } T_COMMAND;
 
 static pthread_mutex_t serialMutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t resendMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t devicemapMutex = PTHREAD_MUTEX_INITIALIZER;
 
 class AgoMySensors: public AgoApp
@@ -64,16 +63,13 @@ class AgoMySensors: public AgoApp
     private:
         //members
         boost::thread* readThread;
-        boost::thread* resendThread;
         boost::thread* checkStaleThread;
         string units;
         qpid::types::Variant::Map devicemap;
-        std::map<std::string, T_COMMAND> commandsmap;
         std::string gateway_protocol_version;
         serialib serialPort;
         string serialDevice;
         int staleThreshold;
-        bool bResend;
         int bNetworkRelay;
         int bStale;
         qpid::types::Variant::Map arduinoNodes;
@@ -102,16 +98,15 @@ class AgoMySensors: public AgoApp
         void processMessageV13(int radioId, int childId, int messageType, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
         void processMessageV14(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
         void processMessageV15(int nodeId, int childId, int messageType, int ack, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos);
-        void resendFunction();
         void receiveFunction();
         void checkStaleFunction();
+        bool splitInternalLogMessage(string payload, qpid::types::Variant::Map& items);
 
     public:
         AGOAPP_CONSTRUCTOR_HEAD(AgoMySensors),
             units("M"),
             serialDevice(""),
             staleThreshold(86400),
-            bResend(false),
             bNetworkRelay(false),
             bStale(true)
             {}
@@ -152,8 +147,6 @@ void AgoMySensors::printDeviceInfos(std::string internalid, qpid::types::Variant
         result << " - value=" << infos["value"] << endl;
     if( !infos["counter_sent"].isVoid() )
         result << " - counter_sent=" << infos["counter_sent"] << endl;
-    if( !infos["counter_retries"].isVoid() )
-        result << " - counter_retries=" << infos["counter_retries"] << endl;
     if( !infos["counter_received"].isVoid() )
         result << " - counter_received=" << infos["counter_received"] << endl;
     if( !infos["counter_failed"].isVoid() )
@@ -498,8 +491,8 @@ void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpi
     infos["value"] = "0";
     infos["counter_sent"] = 0;
     infos["counter_received"] = 0;
-    infos["counter_retries"] = 0;
     infos["counter_failed"] = 0;
+    infos["last_route"] = "";
     infos["last_timestamp"] = (int)(time(NULL));
     infos["protocol"] = protocol;
     devices[internalid] = infos;
@@ -508,6 +501,162 @@ void AgoMySensors::addDevice(std::string internalid, std::string devicetype, qpi
     agoConnection->addDevice(internalid.c_str(), devicetype.c_str());
     AGO_TRACE() << "Device [" << internalid << "] " << addStatus;
     pthread_mutex_unlock(&devicemapMutex);
+}
+
+/**
+ * Split I_LOG_MESSAGE payload
+ */
+bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant::Map& items)
+{
+    bool result = true;
+
+    if( boost::algorithm::starts_with(payload, "send: ") )
+    {
+        //split send message
+        //format: send: <sender>-<last>-<to>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>,st=<status(fail|ok)>:<payload>
+        items["type"] = "send";
+        std::vector<std::string> allItems = split(payload, ':');
+        if( allItems.size()>=3 )
+        {
+            string temp = allItems[1];
+            boost::algorithm::trim(temp);
+            std::vector<std::string> routeItems = split(temp, '-');
+            if( routeItems.size()==4 )
+            {
+                items["sender"] = routeItems[0];
+                items["last"] = routeItems[1];
+                items["to"] = routeItems[2];
+                items["destination"] = routeItems[3];
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE send payload: route string is not valid [" << allItems[1] << "]";
+                result = false;
+            }
+
+            std::vector<std::string> infosItems = split(allItems[2], ',');
+            if( infosItems.size()==7 )
+            {
+                //destination child is item #0 (s=<sensor>)
+                string temp = infosItems[0];
+                boost::replace_all(temp, "s=", "");
+                items["sensor"] = temp;
+                temp = infosItems[1];
+                boost::replace_all(temp, "c=", "");
+                items["command"] = temp;
+                temp = infosItems[2];
+                boost::replace_all(temp, "t=", "");
+                items["commandtype"] = temp;
+                temp = infosItems[3];
+                boost::replace_all(temp, "pt=", "");
+                items["payloadtype"] = temp;
+                temp = infosItems[4];
+                boost::replace_all(temp, "l=", "");
+                items["length"] = temp;
+                temp = infosItems[5];
+                boost::replace_all(temp, "sg=", "");
+                items["signed"] = temp;
+                temp = infosItems[6];
+                std::vector<std::string> temps = split(temp, ':');
+                if( temps.size()==2 )
+                {
+                    temp = temps[0];
+                    boost::replace_all(temp, "st=", "");
+                    items["status"] = temp;
+                }
+                else
+                {
+                    AGO_TRACE() << "I_LOG_MESSAGE send payload: no payload in message? [" << temp << "]";
+                    result = false;
+                }
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE send payload: infos string is not valid [" << allItems[2] << "]";
+                result = false;
+            }
+        }
+        else
+        {
+            AGO_TRACE() << "I_LOG_MESSAGE send payload is not valid";
+            result = false;
+        }
+    }
+    else if( boost::algorithm::starts_with(payload, "read: ") )
+    {
+        //split read message
+        //format: read: <sender>-<last>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>:<payload>
+        items["type"] = "read";
+        std::vector<std::string> allItems = split(payload, ':');
+        if( allItems.size()>=3 )
+        {
+            string temp = allItems[1];
+            boost::algorithm::trim(temp);
+            std::vector<std::string> routeItems = split(temp, '-');
+            if( routeItems.size()==3 )
+            {
+                items["sender"] = routeItems[0];
+                items["last"] = routeItems[1];
+                items["destination"] = routeItems[2];
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE read payload: route string is not valid [" << allItems[1] << "]";
+                result = false;
+            }
+
+            std::vector<std::string> infosItems = split(allItems[2], ',');
+            if( infosItems.size()==6 )
+            {
+                //destination child is item #0 (s=<sensor>)
+                string temp = infosItems[0];
+                boost::replace_all(temp, "s=", "");
+                items["sensor"] = temp;
+                temp = infosItems[1];
+                boost::replace_all(temp, "c=", "");
+                items["command"] = temp;
+                temp = infosItems[2];
+                boost::replace_all(temp, "t=", "");
+                items["commandtype"] = temp;
+                temp = infosItems[3];
+                boost::replace_all(temp, "pt=", "");
+                items["payloadtype"] = temp;
+                temp = infosItems[4];
+                boost::replace_all(temp, "l=", "");
+                items["length"] = temp;
+                temp = infosItems[5];
+                std::vector<std::string> temps = split(temp, ':');
+                if( temps.size()==2 )
+                {
+                    temp = temps[0];
+                    boost::replace_all(temp, "sg=", "");
+                    items["signed"] = temp;
+                }
+                else
+                {
+                    AGO_TRACE() << "I_LOG_MESSAGE read payload: no payload in message? [" << temp << "]";
+                    result = false;
+                }
+            }
+            else
+            {
+                AGO_TRACE() << "I_LOG_MESSAGE read payload: infos string is not valid [" << allItems[2] << "]";
+                result = false;
+            }
+        }
+        else
+        {
+            AGO_TRACE() << "I_LOG_MESSAGE read payload is not valid";
+            result = false;
+        }
+    }
+    else
+    {
+        AGO_TRACE() << "I_LOG_MESSAGE is neither send nor read message";
+        result = false;
+    }
+
+    return result;
 }
 
 /**
@@ -620,21 +769,6 @@ void AgoMySensors::sendcommandV15(std::string internalid, int messageType, int a
     int childId = atoi(items[1].c_str());
     command << nodeId << ";" << childId << ";" << messageType << ";" << ack << ";" << subType << ";" << payload << "\n";
 
-    //save command if device is an actuator and message type is SET
-    if( bResend && infos.size()>0 && infos["type"]=="switch" && messageType==SET_V15 )
-    {
-        //check if internalid has no command pending
-        pthread_mutex_lock(&resendMutex);
-        if( commandsmap.count(internalid)==0 )
-        {
-            T_COMMAND cmd;
-            cmd.command = command.str();
-            cmd.attempts = 0;
-            commandsmap[internalid] = cmd;
-        }
-        pthread_mutex_unlock(&resendMutex);
-    }
-
     //send command
     string logCommand(command.str());
     boost::replace_all(logCommand, "\n", "<NL>");
@@ -654,21 +788,6 @@ void AgoMySensors::sendcommandV14(std::string internalid, int messageType, int a
     int childId = atoi(items[1].c_str());
     command << nodeId << ";" << childId << ";" << messageType << ";" << ack << ";" << subType << ";" << payload << "\n";
 
-    //save command if device is an actuator and message type is SET
-    if( bResend && infos.size()>0 && infos["type"]=="switch" && messageType==SET_V14 )
-    {
-        //check if internalid has no command pending
-        pthread_mutex_lock(&resendMutex);
-        if( commandsmap.count(internalid)==0 )
-        {
-            T_COMMAND cmd;
-            cmd.command = command.str();
-            cmd.attempts = 0;
-            commandsmap[internalid] = cmd;
-        }
-        pthread_mutex_unlock(&resendMutex);
-    }
-
     //send command
     string logCommand(command.str());
     boost::replace_all(logCommand, "\n", "<NL>");
@@ -687,21 +806,6 @@ void AgoMySensors::sendcommandV13(std::string internalid, int messageType, int s
     int nodeId = atoi(items[0].c_str());
     int childId = atoi(items[1].c_str());
     command << nodeId << ";" << childId << ";" << messageType << ";" << subType << ";" << payload << "\n";
-
-    //save command if device is an actuator and message type is SET_VARIABLE
-    if( bResend && infos.size()>0 && infos["type"]=="switch" && messageType==SET_VARIABLE_V13 )
-    {
-        //check if internalid has no command pending
-        pthread_mutex_lock(&resendMutex);
-        if( commandsmap.count(internalid)==0 )
-        {
-            T_COMMAND cmd;
-            cmd.command = command.str();
-            cmd.attempts = 0;
-            commandsmap[internalid] = cmd;
-        }
-        pthread_mutex_unlock(&resendMutex);
-    }
 
     //send command
     string logCommand(command.str());
@@ -783,7 +887,6 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                     {
                         infos["counter_received"] = 0;
                         infos["counter_sent"] = 0;
-                        infos["counter_retries"] = 0;
                         infos["counter_failed"] = 0;
                         setDeviceInfos(it->first, &infos);
                     }
@@ -806,7 +909,6 @@ qpid::types::Variant::Map AgoMySensors::commandHandler(qpid::types::Variant::Map
                     {
                         infos["counter_received"] = 0;
                         infos["counter_sent"] = 0;
-                        infos["counter_retries"] = 0;
                         infos["counter_failed"] = 0;
                         setDeviceInfos(device["internalid"].asString(), &infos);
                     }
@@ -1196,76 +1298,6 @@ void AgoMySensors::newDevice(std::string internalid, std::string devicetype, std
 }
 
 /**
- * Resend function (threaded)
- * Allow to send again a command until ack is received (only for certain device type)
- */
-void AgoMySensors::resendFunction()
-{
-    qpid::types::Variant::Map infos;
-    while(1)
-    {
-        pthread_mutex_lock(&resendMutex);
-        for( std::map<std::string,T_COMMAND>::iterator it=commandsmap.begin(); it!=commandsmap.end(); it++ )
-        {
-            if( it->second.attempts<RESEND_MAX_ATTEMPTS )
-            {
-                //resend command
-                sendcommand(it->second.command);
-                it->second.attempts++;
-                //update counter
-                infos = getDeviceInfos(it->first);
-                if( infos.size()>0 )
-                {
-                    if( infos["counter_retries"].isVoid() )
-                    {
-                        infos["counter_retries"] = 1;
-                    }
-                    else
-                    {
-                        infos["counter_retries"] = infos["counter_retries"].asUint64()+1;
-                    }
-                    setDeviceInfos(it->first, &infos);
-                }
-            }
-            else
-            {
-                //max attempts reached
-                AGO_ERROR() << "Too many attemps. Command failed: " << it->second.command;
-
-                //update counters
-                qpid::types::Variant::Map infos = getDeviceInfos(it->first);
-                if( infos.size()>0 )
-                {
-                    if( infos["counter_failed"].isVoid() )
-                    {
-                        infos["counter_failed"] = 1;
-                    }
-                    else
-                    {
-                        infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
-                    }
-                    setDeviceInfos(it->first, &infos);
-                }
-
-                //delete command from list
-                std::map<std::string, T_COMMAND>::iterator cmd = commandsmap.find(it->first);
-                if( cmd!=commandsmap.end() )
-                {
-                    commandsmap.erase(cmd);
-                }
-                else
-                {
-                    AGO_ERROR() << "Command not found in map!. Unable to delete.";
-                }
-
-            }
-        }
-        pthread_mutex_unlock(&resendMutex);
-        usleep(500000);
-    }
-}
-
-/**
  * Process message of protocol v1.3
  */
 void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, int subType, std::string payload, std::string internalid, qpid::types::Variant::Map infos)
@@ -1408,7 +1440,8 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
             if( infos.size()>0 )
             {
                 //update counters
-                if( infos["counter_sent"].isVoid() ) {
+                if( infos["counter_sent"].isVoid() )
+                {
                     infos["counter_sent"] = 1;
                 }
                 else
@@ -1416,6 +1449,7 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
                     infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
                 }
                 setDeviceInfos(internalid, &infos);
+
                 //send value
                 sendcommandV13(internalid, SET_VARIABLE_V13, subType, infos["value"]);
             }
@@ -1428,17 +1462,6 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
             break;
 
         case SET_VARIABLE_V13:
-            if( bResend )
-            {
-                //remove command from map to avoid sending command again
-                pthread_mutex_lock(&resendMutex);
-                if( commandsmap.count(internalid)!=0 )
-                {
-                    commandsmap.erase(internalid);
-                }
-                pthread_mutex_unlock(&resendMutex);
-            }
-
             //update counters
             if( infos.size()>0 )
             {
@@ -1656,7 +1679,81 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                     }
                     break;
                 case I_LOG_MESSAGE_V14:
-                    //debug message from gateway. Already displayed with prettyPrint when debug activated
+                    {
+                        //debug message from gateway. Already displayed with prettyPrint when debug activated
+                        //we use it here to count errors (only when gateway sends something to a sensor) and update last route
+                        
+                        //parse message
+                        qpid::types::Variant::Map items;
+                        if( splitInternalLogMessage(payload, items) )
+                        {
+                            //handle send message
+                            if( items["type"].asString()=="send" )
+                            {
+                                //build destinationid
+                                string destinationid = items["destination"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                if( infos.size()>0 )
+                                {
+                                    //increase sent counter
+                                    if( infos["counter_sent"].isVoid() )
+                                    {
+                                        infos["counter_sent"] = 1;
+                                    }
+                                    else
+                                    {
+                                        infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
+                                    }
+                                    
+                                    //increase failed counter
+                                    if( items["status"].asString()=="fail" )
+                                    {
+                                        if( infos["counter_failed"].isVoid() )
+                                        {
+                                            infos["counter_failed"] = 1;
+                                        }
+                                        else
+                                        {
+                                            infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                        }
+                                    }
+                                    setDeviceInfos(destinationid, &infos);
+                                }
+                            }
+                            else if( items["type"]=="read" )
+                            {
+                                //handle read message
+                                string destinationid = items["sender"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                //build route
+                                if( items["sender"].asString()!="255" && items["last"].asString()!="255" && items["destination"].asString()!="255" )
+                                {
+                                    string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
+
+                                    qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                    if( infos.size()>0 )
+                                    {
+                                        //update last route
+                                        if( infos["last_route"].isVoid() )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
+                                        else if( infos["last_route"].asString()!=route )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
+                                    }
+                                }
+                            }
+                        }   
+                    }
                     break;
                 case I_CONFIG_V14:
                     //return config
@@ -1764,17 +1861,6 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
         case REQ_V14:
             if( infos.size()>0 )
             {
-                //update counters
-                if( infos["counter_sent"].isVoid() )
-                {
-                    infos["counter_sent"] = 1;
-                }
-                else
-                {
-                    infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
-                }
-                setDeviceInfos(internalid, &infos);
-
                 //agocontrol save device value in device map regardless the sensor type.
                 //here we handle specific custom vars, to make possible having multiple values for the same device
                 switch (subType)
@@ -1852,22 +1938,6 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
             break;
 
         case SET_V14:
-            if( bResend )
-            {
-                //remove command from map to avoid sending command again
-                pthread_mutex_lock(&resendMutex);
-                cmd = commandsmap.find(internalid);
-                if( cmd!=commandsmap.end() && ack==1 )
-                {
-                    //command exists in command list for this device and its an ack
-                    //remove command from list
-                    AGO_DEBUG() << "Ack received for command " << cmd->second.command;
-                    commandsmap.erase(cmd);
-                    ack = 0;
-                }
-                pthread_mutex_unlock(&resendMutex);
-            }
-
             //update counters
             if( infos.size()>0 )
             {
@@ -2149,7 +2219,81 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                     }
                     break;
                 case I_LOG_MESSAGE_V15:
-                    //debug message from gateway. Already displayed with prettyPrint when debug activated
+                    {
+                        //debug message from gateway. Already displayed with prettyPrint when debug activated
+                        //we use it here to count errors (only when gateway sends something to a sensor) and update last route
+                        
+                        //parse message
+                        qpid::types::Variant::Map items;
+                        if( splitInternalLogMessage(payload, items) )
+                        {
+                            //handle send message
+                            if( items["type"].asString()=="send" )
+                            {
+                                //build destinationid
+                                string destinationid = items["destination"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                if( infos.size()>0 )
+                                {
+                                    //increase sent counter
+                                    if( infos["counter_sent"].isVoid() )
+                                    {
+                                        infos["counter_sent"] = 1;
+                                    }
+                                    else
+                                    {
+                                        infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
+                                    }
+                                    
+                                    //increase failed counter
+                                    if( items["status"].asString()=="fail" )
+                                    {
+                                        if( infos["counter_failed"].isVoid() )
+                                        {
+                                            infos["counter_failed"] = 1;
+                                        }
+                                        else
+                                        {
+                                            infos["counter_failed"] = infos["counter_failed"].asUint64()+1;
+                                        }
+                                    }
+                                    setDeviceInfos(destinationid, &infos);
+                                }
+                            }
+                            else if( items["type"]=="read" )
+                            {
+                                //handle read message
+                                string destinationid = items["sender"].asString() + "/" + items["sensor"].asString();
+                                AGO_TRACE() << "destinationid=" << destinationid;
+    
+                                //build route
+                                if( items["sender"].asString()!="255" && items["last"].asString()!="255" && items["destination"].asString()!="255" )
+                                {
+                                    string route = items["sender"].asString() + "->" + items["last"].asString() + "->" + items["destination"].asString();
+    
+                                    qpid::types::Variant::Map infos = getDeviceInfos(destinationid);
+                                    if( infos.size()>0 )
+                                    {
+                                        //update last route
+                                        if( infos["last_route"].isVoid() )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
+                                        else if( infos["last_route"].asString()!=route )
+                                        {
+                                            AGO_TRACE() << destinationid << " route changed from " << infos["last_route"].asString() << " to " << route;
+                                            infos["last_route"] = route;
+                                            setDeviceInfos(destinationid, &infos);
+                                        }
+                                    }
+                                }
+                            }
+                        }   
+                    }
                     break;
                 case I_CONFIG_V15:
                     //return config
@@ -2308,17 +2452,6 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
         case REQ_V15:
             if( infos.size()>0 )
             {
-                //update counters
-                if( infos["counter_sent"].isVoid() )
-                {
-                    infos["counter_sent"] = 1;
-                }
-                else
-                {
-                    infos["counter_sent"] = infos["counter_sent"].asUint64()+1;
-                }
-                setDeviceInfos(internalid, &infos);
-
                 //agocontrol save device value in device map regardless the sensor type.
                 //here we handle specific custom vars, to make possible having multiple values for the same device
                 switch (subType)
@@ -2396,22 +2529,6 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
             break;
 
         case SET_V15:
-            if( bResend )
-            {
-                //remove command from map to avoid sending command again
-                pthread_mutex_lock(&resendMutex);
-                cmd = commandsmap.find(internalid);
-                if( cmd!=commandsmap.end() && ack==1 )
-                {
-                    //command exists in command list for this device and its an ack
-                    //remove command from list
-                    AGO_DEBUG() << "Ack received for command " << cmd->second.command;
-                    commandsmap.erase(cmd);
-                    ack = 0;
-                }
-                pthread_mutex_unlock(&resendMutex);
-            }
-
             //update counters
             if( infos.size()>0 )
             {
@@ -2691,14 +2808,8 @@ void AgoMySensors::receiveFunction()
             int ack = 0;
             std::string protocol = "";
 
-            //first of all check if it's not a presentation message
-            //0 = PRESENTATION id for all protocol versions
-            //if( messageType!=0 )
-            //{
-            //    //not a presentation message, get device infos
-            
-                infos = getDeviceInfos(internalid);
-            //}
+            //try to get device infos
+            infos = getDeviceInfos(internalid);
 
             //get protocol version
             if( infos.size()>0 )
@@ -2904,11 +3015,6 @@ void AgoMySensors::setupApp()
     //get config
     serialDevice = getConfigSectionOption("mysensors", "device", "/dev/ttyACM0");
     staleThreshold = atoi(getConfigSectionOption("mysensors", "staleThreshold", "86400").c_str());
-    bResend = false;
-    if( atoi(getConfigSectionOption("mysensors", "resend", "0").c_str())==1 )
-    {
-        bResend = true;
-    }
     bNetworkRelay = false;
     if( atoi(getConfigSectionOption("mysensors", "networkrelay", "0").c_str())==1 )
     {
@@ -3069,16 +3175,6 @@ void AgoMySensors::setupApp()
     //init threads and mutexes
     pthread_mutex_init(&serialMutex, NULL);
     pthread_mutex_init(&devicemapMutex, NULL);
-    if( bResend )
-    {
-        AGO_INFO() << "Resend feature enabled";
-        pthread_mutex_init(&resendMutex, NULL);
-        resendThread = new boost::thread(boost::bind(&AgoMySensors::resendFunction, this));
-    }
-    else
-    {
-        AGO_INFO() << "Resend feature disabled";
-    }
     readThread = new boost::thread(boost::bind(&AgoMySensors::receiveFunction, this));
 
     //register existing devices
@@ -3154,10 +3250,6 @@ void AgoMySensors::cleanupApp()
     {
         readThread->join();
     }
-    if( resendThread )
-    {
-        resendThread->join();
-    }
     if( checkStaleThread )
     {
         checkStaleThread->join();
@@ -3165,12 +3257,10 @@ void AgoMySensors::cleanupApp()
 
     AGO_TRACE() << "All webserver threads returned";
     delete readThread;
-    delete resendThread;
     delete checkStaleThread;
 
     AGO_TRACE() << "Destroy mutexes";
     pthread_mutex_destroy( &serialMutex );
-    pthread_mutex_destroy( &resendMutex );
     pthread_mutex_destroy( &devicemapMutex );
 }
 
