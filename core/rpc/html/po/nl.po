@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-25 18:09+0200\n"
+"POT-Creation-Date: 2015-09-03 17:32+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -155,7 +155,7 @@ msgstr "Aan:"
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
-#: ../protocols/zwave/html/zwave.xml.in.h:41
+#: ../protocols/zwave/html/zwave.xml.in.h:14
 #, fuzzy
 msgid "Refresh"
 msgstr "Ververs lijst"
@@ -365,7 +365,7 @@ msgid "To send test tweet on your account, click on button"
 msgstr "Klik op de knop om een test bericht te tweeten:"
 
 #: ../applications/alert/html/alert.xml.in.h:24
-#: ../protocols/zwave/html/zwave.xml.in.h:43
+#: ../protocols/zwave/html/zwave.xml.in.h:16
 msgid "Test"
 msgstr "Test"
 
@@ -636,7 +636,7 @@ msgid "Ok"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:4
-#: ../protocols/zwave/html/zwave.xml.in.h:63
+#: ../protocols/zwave/html/zwave.xml.in.h:62
 #: ../configuration/blockly/html/agoblockly.xml.in.h:10
 #: ../configuration/dashboards/html/dashboards.xml.in.h:2
 #: ../configuration/devices/html/devices.xml.in.h:2
@@ -672,7 +672,7 @@ msgid "Security"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:10
-#: ../protocols/zwave/html/zwave.xml.in.h:27
+#: ../protocols/zwave/html/zwave.xml.in.h:2
 #, fuzzy
 msgid "Status"
 msgstr "Status:"
@@ -698,7 +698,7 @@ msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:15
 #: ../protocols/ipx800/html/ipx800.xml.in.h:57
-#: ../protocols/zwave/html/zwave.xml.in.h:69
+#: ../protocols/zwave/html/zwave.xml.in.h:67
 #: ../configuration/blockly/html/agoblockly.xml.in.h:9
 #: ../configuration/events/html/events.xml.in.h:7
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
@@ -779,7 +779,7 @@ msgid "Get"
 msgstr ""
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:1
-#: ../protocols/zwave/html/zwave.xml.in.h:21
+#: ../protocols/zwave/html/zwave.xml.in.h:41
 msgid "Reset controller (everything will be lost!)"
 msgstr ""
 
@@ -898,12 +898,12 @@ msgid "Turn on/off all IPX800 outputs"
 msgstr ""
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:29
-#: ../protocols/zwave/html/zwave.xml.in.h:58
+#: ../protocols/zwave/html/zwave.xml.in.h:57
 msgid "On"
 msgstr ""
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:30
-#: ../protocols/zwave/html/zwave.xml.in.h:59
+#: ../protocols/zwave/html/zwave.xml.in.h:58
 msgid "Off"
 msgstr ""
 
@@ -1004,7 +1004,7 @@ msgid "Reset counter"
 msgstr "Registreer een Cloud gebruiker"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:53
-#: ../protocols/zwave/html/zwave.xml.in.h:65
+#: ../protocols/zwave/html/zwave.xml.in.h:64
 #: ../protocols/mysensors/html/mysensors.xml.in.h:10
 msgid "Reset"
 msgstr ""
@@ -1036,264 +1036,255 @@ msgid "Delete this board"
 msgstr "Hoofdpagina"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:1
-#, fuzzy
-msgid "zwavecontroller is not responding. Unable to execute action."
-msgstr "luacontroller reageert niet. Handeling kan niet worden uitgevoerd."
-
-#: ../protocols/zwave/html/zwave.xml.in.h:2
-#, fuzzy
-msgid "Port configured"
-msgstr "Push is geconfigureerd"
-
-#: ../protocols/zwave/html/zwave.xml.in.h:3
-msgid "Z-Wave controller resetted"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:4
-msgid "Add node command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:5
-msgid "Remove node command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:6
-msgid "Test network command launched"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:7
-msgid "Cancel command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:8
-msgid "Save configuration sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:9
-msgid "Download config sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:10
-msgid "Turn on all nodes command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:11
-msgid "Turn off all nodes command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:12
-msgid "Test node command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:13
-msgid "Test node command failed"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:14
-msgid "Heal node command sent to controller"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:15
-#, fuzzy
-msgid "Parameter updated successfully"
-msgstr "Agenda item(s) bijgewerkt."
-
-#: ../protocols/zwave/html/zwave.xml.in.h:16
-#, fuzzy
-msgid "Unable to update parameter"
-msgstr "Bijwerken mislukt."
-
-#: ../protocols/zwave/html/zwave.xml.in.h:17
-#, fuzzy
-msgid "Association added successfully"
-msgstr "Script ingeladen."
-
-#: ../protocols/zwave/html/zwave.xml.in.h:18
-#, fuzzy
-msgid "Association removed successfully"
-msgstr "Script opgeslagen"
-
-#: ../protocols/zwave/html/zwave.xml.in.h:19
-msgid "Really remove this association?"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:20
-msgid "Really remove this node?"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:22
-msgid "Refresh node infos command sent"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:23
-msgid "Refresh node infos command failed"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:24
-msgid "Request node parameters sent"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:25
-msgid "Request node parameters failed"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:26
 msgid "Infos"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:28
+#: ../protocols/zwave/html/zwave.xml.in.h:3
 #, fuzzy
 msgid "Associations"
 msgstr "Actie"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:29
+#: ../protocols/zwave/html/zwave.xml.in.h:4
 #: ../protocols/mysensors/html/mysensors.xml.in.h:6
 msgid "Configuration"
 msgstr "Configuratie"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:30
+#: ../protocols/zwave/html/zwave.xml.in.h:5
 #, fuzzy
 msgid "Commands"
 msgstr "Commando:"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:31
+#: ../protocols/zwave/html/zwave.xml.in.h:6
 msgid "Create new association with"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:32
+#: ../protocols/zwave/html/zwave.xml.in.h:7
 #, fuzzy
 msgid "Create"
 msgstr "Maak Kamer"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:33
+#: ../protocols/zwave/html/zwave.xml.in.h:8
 #, fuzzy
 msgid "Delete node association"
 msgstr "Cloud Activering"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:34
-msgid "Add association with"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:35
+#: ../protocols/zwave/html/zwave.xml.in.h:9
 #, fuzzy
 msgid "Add association"
 msgstr "Cloud Activering"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:36
+#: ../protocols/zwave/html/zwave.xml.in.h:10
 msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:37
-#: ../protocols/mysensors/html/mysensors.xml.in.h:8
-msgid "Set"
-msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:38
+#: ../protocols/zwave/html/zwave.xml.in.h:11
 msgid "Heal this node"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:39
+#: ../protocols/zwave/html/zwave.xml.in.h:12
 msgid "Heal"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:40
+#: ../protocols/zwave/html/zwave.xml.in.h:13
 msgid "Refresh node informations"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:42
+#: ../protocols/zwave/html/zwave.xml.in.h:15
 msgid "Test this node"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:44
+#: ../protocols/zwave/html/zwave.xml.in.h:17
 msgid "Remove this node from network"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:45
+#: ../protocols/zwave/html/zwave.xml.in.h:18
 #: ../protocols/mysensors/html/mysensors.xml.in.h:14
 msgid "Remove"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:46
+#: ../protocols/zwave/html/zwave.xml.in.h:19
 msgid "Request node configuration parameters"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:47
+#: ../protocols/zwave/html/zwave.xml.in.h:20
 #: ../protocols/onvif/html/onvif.xml.in.h:42
 msgid "Request parameters"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:48
+#: ../protocols/zwave/html/zwave.xml.in.h:21
+#, fuzzy
+msgid "zwavecontroller is not responding. Unable to execute action."
+msgstr "luacontroller reageert niet. Handeling kan niet worden uitgevoerd."
+
+#: ../protocols/zwave/html/zwave.xml.in.h:22
+#, fuzzy
+msgid "Port configured"
+msgstr "Push is geconfigureerd"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:23
+msgid "Z-Wave controller resetted"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:24
+msgid "Add node command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:25
+msgid "Remove node command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:26
+msgid "Test network command launched"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:27
+msgid "Cancel command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:28
+msgid "Save configuration sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:29
+msgid "Download config sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:30
+msgid "Turn on all nodes command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:31
+msgid "Turn off all nodes command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:32
+msgid "Test node command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:33
+msgid "Test node command failed"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:34
+msgid "Heal node command sent to controller"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:35
+#, fuzzy
+msgid "Parameter updated successfully"
+msgstr "Agenda item(s) bijgewerkt."
+
+#: ../protocols/zwave/html/zwave.xml.in.h:36
+#, fuzzy
+msgid "Unable to update parameter"
+msgstr "Bijwerken mislukt."
+
+#: ../protocols/zwave/html/zwave.xml.in.h:37
+#, fuzzy
+msgid "Association added successfully"
+msgstr "Script ingeladen."
+
+#: ../protocols/zwave/html/zwave.xml.in.h:38
+#, fuzzy
+msgid "Association removed successfully"
+msgstr "Script opgeslagen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:39
+msgid "Really remove this association?"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:40
+msgid "Really remove this node?"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:42
+msgid "Refresh node infos command sent"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:43
+msgid "Refresh node infos command failed"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:44
+msgid "Request node parameters sent"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:45
+msgid "Request node parameters failed"
+msgstr ""
+
+#: ../protocols/zwave/html/zwave.xml.in.h:46
 msgid "Devices"
 msgstr "Apparaat"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:49
+#: ../protocols/zwave/html/zwave.xml.in.h:47
 msgid "Dependencies"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:50
+#: ../protocols/zwave/html/zwave.xml.in.h:48
 #: ../protocols/mysensors/html/mysensors.xml.in.h:5
 msgid "Statistics"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:51
+#: ../protocols/zwave/html/zwave.xml.in.h:49
 msgid "General commands"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:52
+#: ../protocols/zwave/html/zwave.xml.in.h:50
+#, fuzzy
+msgid "No name"
+msgstr "Nieuwe kamer naam"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:51
 msgid "True"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:53
+#: ../protocols/zwave/html/zwave.xml.in.h:52
 msgid "False"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:54
+#: ../protocols/zwave/html/zwave.xml.in.h:53
 msgid "Pair/unpair node to your network"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:55
+#: ../protocols/zwave/html/zwave.xml.in.h:54
 msgid "Pair"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:56
+#: ../protocols/zwave/html/zwave.xml.in.h:55
 msgid "Unpair"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:57
+#: ../protocols/zwave/html/zwave.xml.in.h:56
 msgid "Turn on/off all devices"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:60
+#: ../protocols/zwave/html/zwave.xml.in.h:59
 msgid "Test network"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:61
+#: ../protocols/zwave/html/zwave.xml.in.h:60
 msgid "Heal network"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:62
+#: ../protocols/zwave/html/zwave.xml.in.h:61
 msgid "Cancel running controller command"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:64
+#: ../protocols/zwave/html/zwave.xml.in.h:63
 msgid "Reset controller"
 msgstr ""
 
-#: ../protocols/zwave/html/zwave.xml.in.h:66
+#: ../protocols/zwave/html/zwave.xml.in.h:65
 #, fuzzy
-msgid "Download configuration"
-msgstr "Kamer Configuratie"
+msgid "Controller configuration"
+msgstr "ago control Configuratie"
 
-#: ../protocols/zwave/html/zwave.xml.in.h:67
+#: ../protocols/zwave/html/zwave.xml.in.h:66
 #: ../protocols/onvif/html/onvif.xml.in.h:52
 msgid "Download"
 msgstr ""
-
-#: ../protocols/zwave/html/zwave.xml.in.h:68
-#, fuzzy
-msgid "Save configuration"
-msgstr "SMS Configuratie"
 
 #: ../protocols/onvif/html/onvif.xml.in.h:1
 #: ../configuration/datalogger/html/datalogger.xml.in.h:2
@@ -1556,6 +1547,10 @@ msgstr "Script opgeslagen"
 
 #: ../protocols/mysensors/html/mysensors.xml.in.h:7
 msgid "Configure serial port"
+msgstr ""
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:8
+msgid "Set"
 msgstr ""
 
 #: ../protocols/mysensors/html/mysensors.xml.in.h:9
@@ -2168,6 +2163,14 @@ msgstr "Gebeurtenis Configuratie"
 msgid "Autoscroll"
 msgstr ""
 
+#, fuzzy
+#~ msgid "Download configuration"
+#~ msgstr "Kamer Configuratie"
+
+#, fuzzy
+#~ msgid "Save configuration"
+#~ msgstr "SMS Configuratie"
+
 #~ msgid "Input your username"
 #~ msgstr "Geef je gebruikersnaam"
 
@@ -2346,9 +2349,6 @@ msgstr ""
 
 #~ msgid "Agocontrol can send alert through push notifications."
 #~ msgstr "Agocontrol kan alarmen versturen via push notificaties."
-
-#~ msgid "ago control Configuration"
-#~ msgstr "ago control Configuratie"
 
 #~ msgid "Welcome"
 #~ msgstr "Welkom"
