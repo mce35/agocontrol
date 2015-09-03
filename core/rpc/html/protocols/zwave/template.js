@@ -561,7 +561,6 @@ function Zwave(devices, agocontrol)
             command: 'getnodes'
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -582,7 +581,6 @@ function Zwave(devices, agocontrol)
             command: 'getstatistics'
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -603,7 +601,6 @@ function Zwave(devices, agocontrol)
             command: 'reset'
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -624,7 +621,6 @@ function Zwave(devices, agocontrol)
             command: 'addnode'
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -647,7 +643,6 @@ function Zwave(devices, agocontrol)
         if( node )
             content.node = node;
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -669,7 +664,6 @@ function Zwave(devices, agocontrol)
             command: 'testnetwork',
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -690,7 +684,6 @@ function Zwave(devices, agocontrol)
             command: 'cancel',
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -711,7 +704,6 @@ function Zwave(devices, agocontrol)
             command: 'saveconfig',
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -732,7 +724,6 @@ function Zwave(devices, agocontrol)
             command: 'downloadconfig',
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -753,7 +744,6 @@ function Zwave(devices, agocontrol)
             command: 'allon',
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -774,7 +764,6 @@ function Zwave(devices, agocontrol)
             command: 'alloff',
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -820,7 +809,6 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -849,7 +837,6 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -878,7 +865,6 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -903,7 +889,6 @@ function Zwave(devices, agocontrol)
             value: value
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc" ,content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -969,7 +954,6 @@ function Zwave(devices, agocontrol)
             group: group
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -993,7 +977,6 @@ function Zwave(devices, agocontrol)
             target: target
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -1017,7 +1000,6 @@ function Zwave(devices, agocontrol)
             target: target
         };
 
-        //sendCommandUrl("http://192.168.1.82:8008/jsonrpc", content, function(res)
         self.agocontrol.sendCommand(content, function(res)
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
@@ -1126,16 +1108,6 @@ function zwaveConfig(zwave) {
     var zwaveControllerUuid = zwave.getControllerUuid();
     zwave.setControllerUuid(zwaveControllerUuid);
 
-    //open graph help
-    self.graphHelp = function() {
-        $('#help-graph').dialog({
-            title: 'Graph help',
-            width: 600,
-            height: 250,
-            modal: true
-        });
-    };
-    
     //open node details
     self.openNodeDetails = function(nodeId) {
         //init
@@ -1262,19 +1234,7 @@ function zwaveConfig(zwave) {
         
 
         //open modal
-        $('#nodeDetails').addClass('active');
-
-        //prepare popup tabs
-        /*$("#nodeDetails-tabs").tabs({
-            active: 0
-        });
-        //configure and open popup
-        $("#nodeDetails").dialog({
-            title: self.selectedNode.type,
-            width: 1024,
-            height: 700,
-            modal: true
-        });*/
+        $('#nodeDetails').modal('show');
     };
     
     //get nodes and build nodes graph
@@ -1311,14 +1271,22 @@ function zwaveConfig(zwave) {
 
     //add node
     self.addNode = function() {
+        zwave.addNode();
     };
 
     //remove node
     self.removeNode = function() {
-        var msg = $('#reallyremovenode').html();
-        if( confirm(msg) )
+        if( self.selectedNode.id )
         {
-            zwave.removeNode(self.selectedNode.id);
+            var msg = $('#reallyremovenode').html();
+            if( confirm(msg) )
+            {
+                zwave.removeNode(self.selectedNode.id);
+            }
+        }
+        else
+        {
+            zwave.removeNode();
         }
     };
 
