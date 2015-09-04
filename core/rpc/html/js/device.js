@@ -89,7 +89,7 @@ function device(agocontrol, obj, uuid) {
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
             {
-                if( !res.result.error )
+                if( !res.error )
                 {
                     deferred.observable('data:image/png;base64,' + res.result.data.graph);
                 }
