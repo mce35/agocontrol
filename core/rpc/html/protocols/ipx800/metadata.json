@@ -1,13 +1,11 @@
 {
         "name": "IPX800",
+        "icon": "fa-server",
         "version": "0.0.1",
         "description": "IPX800 relay board",
         "listable": true,
         "template": "html/ipx800",
         "depends": "agoipx800.py",
         "resources": {
-            "css": [
-                "ipx.css"
-            ]
         }
 }
