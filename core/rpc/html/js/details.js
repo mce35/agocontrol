@@ -148,16 +148,16 @@ Agocontrol.prototype.showCommandList = function(container, device)
 
     commandSelect.onchange = function()
     {
-        if (commandSelect.options.length == 0)
+        if( commandSelect.options.length===0 )
         {
            return 0;
         }
         var cmd = self.schema().commands[commandSelect.options[commandSelect.selectedIndex].value];
         commandParams.innerHTML = "";
-        if (cmd.parameters !== undefined)
+        if( cmd.parameters!==undefined )
         {
             commandParams.style.display = "";
-            for ( var param in cmd.parameters)
+            for( var param in cmd.parameters )
             {
                 if (cmd.parameters[param].type == 'option')
                 {
