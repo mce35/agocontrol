@@ -227,8 +227,8 @@ void AgoTimer::suntimer(const boost::system::error_code& error, sunstate_t new_s
     Variant::Map empty;
 
     // first, update variable with current state
-    // Boolean, isDaytime = true if sun is about to set
-    Variant isDaytime = (new_state == SUNSET);
+    // Boolean, isDaytime = true if upcoming state is Sunset
+    Variant isDaytime = (sun.next_state == SUNSET);
 
     AGO_TRACE() << "Setting isDaytime = " << isDaytime;
     agoConnection->setGlobalVariable("isDaytime", isDaytime);
