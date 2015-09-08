@@ -6,8 +6,7 @@ function dashBoard(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
-    self.itemsPerPage = 12;
-    self.itemsPerRow = 4;
+    self.itemsPerPage = 16;
     self.keyword = ko.observable("");
     self.currentPage = ko.observable(1);
     self.deviceList = ko.computed(function()
@@ -44,6 +43,17 @@ function dashBoard(agocontrol)
         return list;
     });
 
+    self.devicesPerPage = ko.computed(function()
+    {
+        var currentList = self.deviceList().chunk(self.itemsPerPage);
+        if (currentList.length < self.currentPage())
+        {
+            return [];
+        }
+        currentList = currentList[self.currentPage() - 1];
+        return currentList;
+    });
+
     self.pages = ko.computed(function()
     {
         var pages = [];
@@ -53,51 +63,6 @@ function dashBoard(agocontrol)
             pages.push({idx : i});
         }
         return pages;
-    });
-
-    self.firstRow = ko.computed(function()
-    {
-        var currentList = self.deviceList().chunk(self.itemsPerPage);
-        if (currentList.length < self.currentPage())
-        {
-            return [];
-        }
-        currentList = currentList[self.currentPage() - 1];
-        if (currentList.length >= 0)
-        {
-            return currentList.chunk(self.itemsPerRow)[0];
-        }
-        return [];
-    });
-
-    self.secondRow = ko.computed(function()
-    {
-        var currentList = self.deviceList().chunk(self.itemsPerPage);
-        if (currentList.length < self.currentPage())
-        {
-            return [];
-        }
-        currentList = currentList[self.currentPage() - 1];
-        if (currentList.length >= (self.itemsPerRow+1))
-        {
-            return currentList.chunk(self.itemsPerRow)[1];
-        }
-        return [];
-    });
-
-    self.thirdRow = ko.computed(function()
-    {
-        var currentList = self.deviceList().chunk(self.itemsPerPage);
-        if (currentList.length < self.currentPage())
-        {
-            return [];
-        }
-        currentList = currentList[self.currentPage() - 1];
-        if (currentList.length >= (self.itemsPerRow*2+1))
-        {
-            return currentList.chunk(self.itemsPerRow)[2];
-        }
-        return [];
     });
 
     //change page

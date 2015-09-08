@@ -1,36 +1,135 @@
-<div id="contentarea" class="container">
-    <!--notif messages-->
-    <div style="display:none;">
-        <_span data-translateable="true" id="nr">luacontroller is not responding. Unable to execute action.</_span>
-        <_span data-translateable="true" id="nb">No block defined in workspace.</_span>
-        <_span data-translateable="true" id="ss">Script saved successfully.</_span>
-        <_span data-translateable="true" id="sl">Script loaded successfully.</_span>
-        <_span data-translateable="true" id="pss">Please select a script</_span>
-        <_span data-translateable="true" id="sc">Unable to load script, it seems to be corrupted!</_span>
-        <_span data-translateable="true" id="ns">Script not saved</_span>
-        <_span data-translateable="true" id="sn">Please specify a valid script name</_span>
-        <_span data-translateable="true" id="cd">Delete selected script?</_span>
-        <_span data-translateable="true" id="sd">Script deleted successfully</_span>
-        <_span data-translateable="true" id="nd">Unable to delete script</_span>
-        <_span data-translateable="true" id="rss">Script renamed successfully</_span>
-        <_span data-translateable="true" id="rsf">Script not renamed</_span>
+<div>
+
+    <!-- lua dialog -->
+    <div class="modal fade" tabindex="-1" id="luaDialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span class="en-cancel"></span></button>
+                    <_h4 data-translateable="true" class="modal-title">Lua script</_h4>
+                </div>
+                <div class="modal-body">
+                    <div style="overflow: auto;">
+                         <pre style="width:100%; height:100%;" id="luaContent"/>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <_h3 data-translateable="true">Event builder using blocks</_h3>
+    <!-- load dialog -->
+    <div class="modal fade" tabindex="-1" id="loadDialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span class="en-cancel"></span></button>
+                    <_h4 data-translateable="true" class="modal-title">Load/delete script</_h4>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="agoGrid:grid"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/html" id="rowTemplate">
+        <td data-bind="attr: {'data-oldname': name}, text: name" class="rename_script"/>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiLoadScript.bind($data,name)" data-translateable="true" _alt="Load" _title="Load">
+                    <span class="en-doc-text"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiDeleteScript.bind($data,name)" data-translateable="true" _alt="Delete" _title="Delete">
+                    <span class="en-cancel"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiExportScript.bind($data,name)" data-translateable="true" _alt="Export" _title="Export">
+                    <span class="en-up"></span>
+                </button>
+            </div>
+        </td>
+    </script>
+
+    <!-- import dialog -->
+    <div class="modal fade" tabindex="-1" id="importDialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span class="en-cancel"></span></button>
+                    <_h4 data-translateable="true" class="modal-title">Import script</_h4>
+                </div>
+                <div class="modal-body">
+                    <input type="file" name="files" id="fileupload" data-url="/upload"/>
+                    <div class="progress agomargintop">
+                        <div class="progress-bar progress-bar-striped active" id="progress"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- saveas dialog -->
+    <div class="modal fade" tabindex="-1" id="saveasDialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <_h4 data-translateable="true" class="modal-title">Saveas</_h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <_label data-translateable="true" for="recipient-name" class="control-label">Script name</_label>
+                            <input type="text" class="form-control" data-bind="value:scriptName" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bind="click:saveOk">
+                        <_span data-translateable="true">Save</_span>
+                    </button>
+                    <button type="button" class="btn btn-default" data-bind="click:saveCancel">
+                        <_span data-translateable="true">Cancel</_span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- debug dialog -->
+    <div class="modal fade" tabindex="-1" id="debugDialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span class="en-cancel"></span></button>
+                    <_h4 data-translateable="true" class="modal-title">Debug script</_h4>
+                </div>
+                <div class="modal-body">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" data-bind="click:startDebug"><_span data-translateable="true">Start</_span></button>
+                        <button type="button" class="btn btn-primary" data-bind="click:stopDebug"><_span data-translateable="true">Stop</_span></button>
+                        <button type="button" class="btn btn-primary" data-bind="click:clearDebug"><_span data-translateable="true">Clear</_span></button>
+                    </div>
+                    <textarea class="form-control agorowbottom agomargintop" rows="2" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}" data-bind="value:debugData"></textarea>
+                    <div id="debugContainer">
+                        <ul class="list-group" style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- blockly configuration -->
-    <xml id="toolbox" style="display: none">
+    <xml style="display: none" id="toolbox">
         <category name="Logic">
-            <block type="controls_if"></block>
-            <block type="logic_compare"></block>
-            <block type="logic_operation"></block>
-            <block type="logic_negate"></block>
-            <block type="logic_boolean"></block>
-            <block type="logic_ternary"></block>
+            <block type="controls_if"/>
+            <block type="logic_compare"/>
+            <block type="logic_operation"/>
+            <block type="logic_negate"/>
+            <block type="logic_boolean"/>
+            <block type="logic_ternary"/>
         </category>
         <category name="Loops">
-            <block type="controls_repeat"></block>
-            <block type="controls_whileUntil"></block>
+            <block type="controls_repeat"/>
+            <block type="controls_whileUntil"/>
             <block type="controls_for">
                 <value name="FROM">
                     <block type="math_number">
@@ -48,12 +147,12 @@
                     </block>
                 </value>
             </block>
-            <block type="controls_forEach"></block>
-            <block type="controls_flow_statements"></block>
+            <block type="controls_forEach"/>
+            <block type="controls_flow_statements"/>
         </category>
         <category name="Math">
-            <block type="math_number"></block>
-            <block type="math_arithmetic"></block>
+            <block type="math_number"/>
+            <block type="math_arithmetic"/>
             <block type="agocontrol_range">
                 <value name="MIN">
                     <block type="math_number">
@@ -61,7 +160,7 @@
                     </block>
                 </value>
                 <value name="PROP">
-                    <block type="agocontrol_eventProperty"></block>
+                    <block type="agocontrol_eventProperty"/>
                 </value>
                 <value name="MAX">
                     <block type="math_number">
@@ -69,7 +168,7 @@
                     </block>
                 </value>
             </block>
-            <block type="math_number_property"></block>
+            <block type="math_number_property"/>
             <block type="math_change">
                 <value name="DELTA">
                     <block type="math_number">
@@ -77,8 +176,8 @@
                     </block>
                 </value>
             </block>
-            <block type="math_round"></block>
-            <block type="math_on_list"></block>
+            <block type="math_round"/>
+            <block type="math_on_list"/>
             <block type="math_constrain">
                 <value name="LOW">
                     <block type="math_number">
@@ -103,33 +202,33 @@
                     </block>
                 </value>
             </block>
-            <block type="math_random_float"></block>
-            <block type="math_modulo"></block>
+            <block type="math_random_float"/>
+            <block type="math_modulo"/>
         </category>
         <category name="Colour">
-            <block type="colour_picker"></block>
-            <block type="colour_rgb"></block>
+            <block type="colour_picker"/>
+            <block type="colour_rgb"/>
         </category>
         <category name="Text">
-            <block type="text"></block>
-            <block type="agocontrol_email"></block>
-            <block type="agocontrol_phoneNumber"></block>
-            <block type="agocontrol_valueOptions"></block>
-            <block type="text_join"></block>
+            <block type="text"/>
+            <block type="agocontrol_email"/>
+            <block type="agocontrol_phoneNumber"/>
+            <block type="agocontrol_valueOptions"/>
+            <block type="text_join"/>
             <block type="text_append">
                 <value name="TEXT">
-                    <block type="text"></block>
+                    <block type="text"/>
                 </value>
             </block>
-            <block type="text_length"></block>
-            <block type="text_isEmpty"></block>
-            <block type="text_changeCase"></block>
-            <block type="text_trim"></block>
-            <block type="text_format"></block>
+            <block type="text_length"/>
+            <block type="text_isEmpty"/>
+            <block type="text_changeCase"/>
+            <block type="text_trim"/>
+            <block type="text_format"/>
         </category>
         <category name="List">
-            <block type="lists_create_empty"></block>
-            <block type="lists_create_with"></block>
+            <block type="lists_create_empty"/>
+            <block type="lists_create_with"/>
             <block type="lists_repeat">
                 <value name="NUM">
                     <block type="math_number">
@@ -137,8 +236,8 @@
                     </block>
                 </value>
             </block>
-            <block type="lists_length"></block>
-            <block type="lists_isEmpty"></block>
+            <block type="lists_length"/>
+            <block type="lists_isEmpty"/>
             <block type="lists_indexOf">
                 <value name="VALUE">
                     <block type="variables_get">
@@ -169,17 +268,17 @@
             </block>
         </category>
         <category name="Datetime">
-            <block type="datetime_timestamp"></block>
-            <block type="datetime_totimestamp"></block>
-            <block type="datetime_currentdate"></block>
-            <block type="datetime_specificdate"></block>
+            <block type="datetime_timestamp"/>
+            <block type="datetime_totimestamp"/>
+            <block type="datetime_currentdate"/>
+            <block type="datetime_specificdate"/>
         </category>
         <category name="Common">
-            <block type="text_print"></block>
-            <block type="common_tonumber"></block>
-            <block type="common_tostring"></block>
-            <block type="common_type"></block>
-            <block type="common_execute"></block>
+            <block type="text_print"/>
+            <block type="common_tonumber"/>
+            <block type="common_tostring"/>
+            <block type="common_type"/>
+            <block type="common_execute"/>
         </category>
         <category name="Local variables" custom="VARIABLE">
         </category>
@@ -193,7 +292,7 @@
                         </block>
                     </value>
                 </block>
-                <block type="agocontrol_contentProperty"></block>
+                <block type="agocontrol_contentProperty"/>
                 <block type="logic_compare">
                     <value name="A">
                         <block type="agocontrol_contentProperty">
@@ -205,10 +304,10 @@
                         </block>
                     </value>
                 </block>
-                <block type="agocontrol_printContent"></block>
+                <block type="agocontrol_printContent"/>
             </category>
             <category name="Inventory">
-                <block type="agocontrol_deviceProperty"></block>
+                <block type="agocontrol_deviceProperty"/>
             </category>
             <category name="Device">
                 <block type="agocontrol_deviceUuid"/>
@@ -221,144 +320,111 @@
                 </block>
             </category>
             <category name="Event">
-                <block type="agocontrol_deviceEvent"></block>
-                <block type="agocontrol_eventAll"></block>
+                <block type="agocontrol_deviceEvent"/>
+                <block type="agocontrol_eventAll"/>
             </category>
             <category name="Actions">
-                <block type="agocontrol_sendMessage"></block>
-                <block type="agocontrol_sleep"></block>
-                <block type="agocontrol_journal"></block>
+                <block type="agocontrol_sendMessage"/>
+                <block type="agocontrol_sleep"/>
+                <block type="agocontrol_journal"/>
             </category>
             <category name="System variables">
-                <block type="agocontrol_getVariable"></block>
-                <block type="agocontrol_setVariable"></block>
+                <block type="agocontrol_getVariable"/>
+                <block type="agocontrol_setVariable"/>
                 <block type="agocontrol_defaultEmail"/>
                 <block type="agocontrol_defaultPhoneNumber"/>
             </category>
         </category>
     </xml>
+   
+    <!-- notification messages -->
+    <section class="content-notifs">
+        <_span data-translateable="true" id="nr">luacontroller is not responding. Unable to execute action.</_span>
+        <_span data-translateable="true" id="nb">No block defined in workspace.</_span>
+        <_span data-translateable="true" id="ss">Script saved successfully.</_span>
+        <_span data-translateable="true" id="sl">Script loaded successfully.</_span>
+        <_span data-translateable="true" id="pss">Please select a script</_span>
+        <_span data-translateable="true" id="sc">Unable to load script, it seems to be corrupted!</_span>
+        <_span data-translateable="true" id="ns">Script not saved</_span>
+        <_span data-translateable="true" id="sn">Please specify a valid script name</_span>
+        <_span data-translateable="true" id="cd">Delete selected script?</_span>
+        <_span data-translateable="true" id="sd">Script deleted successfully</_span>
+        <_span data-translateable="true" id="nd">Unable to delete script</_span>
+        <_span data-translateable="true" id="rss">Script renamed successfully</_span>
+        <_span data-translateable="true" id="rsf">Script not renamed</_span>
+    </section>
+
+    <!-- title -->
+    <section class="content-header">
+        <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
+    </section>
     
-    <!-- blockly -->
-    <div class="row" style="margin-bottom:0px">
-        <div class="medium primary btn icon-left icon-doc"><_a data-translateable="true" href="#" _title="New script" data-bind="click:clear">New</_a></div>
-        <div class="medium primary btn icon-left icon-install"><_a href="#" _title="Save" data-bind="click:save" data-translateable="true">Save</_a></div>
-        <div class="medium primary btn icon-left icon-install"><_a href="#" _title="Save as" data-bind="click:saveas" data-translateable="true">Save as</_a></div>
-        <div class="medium primary btn icon-left icon-up"><_a href="#" data-translateable="true" _title="Load script" data-bind="click:load">Load</_a></div>
-        <div class="medium primary btn icon-left icon-check" style="margin-left:20px;"><_a data-translateable="true" href="#" _title="Check blocks" data-bind="click:check">Check</_a></div>
-        <div class="medium primary btn icon-left icon-eye"><_a data-translateable="true" href="#" _title="View your blocks under script format" data-bind="click:viewlua">View</_a></div>
-        <div class="medium primary btn icon-left icon-flash" style="margin-left:20px;"><a href="#" data-bind="click:openDebug">Debug</a></div>
-        <div style="margin-left:20px; display: inline-block;">
-            <ko opts="if:scriptSaved">
-            <li class="default label">
-                <span data-bind="text:scriptName"></span> <_span data-translateable="true">saved</_span>
-            </li>
-            </ko>
-            <ko opts="ifnot:scriptSaved">
-            <li class="warning label">
-                <span data-bind="text:scriptName"></span> <_span data-translateable="true">modified</_span>
-            </li>
-            </ko>
-        </div>
-    </div>
-    <div data-bind="blockly:blocklyViewModel" id="blocklyDiv" style="height:700px; width:1200px;"></div>
+    <!-- content -->
+    <section class="content">
 
-    <!-- lua dialog -->
-    <div class="modal" id="luaDialog" data-bind="gumbyModal:$root">
-        <div class="content">
-            <a class="close switch"><i class="icon-cancel"></i></a>
-            <div class="overflow: auto;">
-                <pre id="luaContent" style="width:100%; height:100%;"></pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- load dialog -->
-    <div class="modal" id="loadDialog" data-bind="gumbyModal:$root">
-        <div class="content tabs" data-bind="gumbyTabs:$root">
-            <a class="close switch"><i class="icon-cancel"></i></a>
-            <ul class="tab-nav">
-                <li class="active"><_a href="#" data-translateable="true">My scripts</_a></li>
-                <li><_a href="#" data-translateable="true">Script import</_a></li>
-            </ul>
-            <div class="tab-content active">
-                <div data-bind="agoGrid:grid"></div>
-            </div>
-            <div class="tab-content">
-                <input id="fileupload" type="file" name="files" data-url="/upload"/>
-                <div id="progress" style="width:100%; border:1px solid #ddd; padding:1px; border-radius:3px; margin-top:10px;">
-                    <div class="bar" style="width:0%; height:10px; background:#72D940; border-radius:3px;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script id="rowTemplate" type="text/html">
-        <td class="rename_script" data-bind="attr: {'data-oldname': name}, text: name"></td>
-        <td>
-            <div data-bind="event:{mousedown: $parent.uiLoadScript.bind($data,name)}" class="small primary btn">
-                <_a data-translateable="true" href="#">Load</_a>
-            </div>
-            <div data-bind="event:{mousedown: $parent.uiDeleteScript.bind($data,name)}" class="small primary btn">
-                <_a data-translateable="true" href="#">Delete</_a>
-            </div>
-            <div data-bind="event:{mousedown: $parent.uiExportScript.bind($data,name)}" class="small primary btn">
-                <_a data-translateable="true" href="#">Export</_a>
-            </div>
-        </td>
-    </script>
-
-    <!-- saveas dialog -->
-    <div class="modal small-modal" id="saveasDialog" data-bind="gumbyModal:$root">
-        <div class="content">
-            <div class="row">
-                <div class="twelve columns centered text-center">
-                    <_h3 data-translateable="true">Enter script name</_h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="twelve columns centered text-center">
-                    <div class="row">
-                        <div class="six columns text-right">
-                            <_span data-translateable="true">Script name</_span>
+        <!-- toolbar -->
+        <div class="row margin-bottom">
+            <div class="col-xs-12 col-md-12">
+                <div class="btn-toolbar">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" data-bind="click:clear">
+                            <span class="en-doc"></span>
+                            <_span data-translateable="true">New</_span>
+                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary" data-bind="click:save">
+                                <span class="en-install"></span>
+                                <_span data-translateable="true">Save</_span>
+                                <ko opts="ifnot:scriptSaved">
+                                    <_span class="badge" data-translateable="true">Changed</_span>
+                                </ko>
+                            </button>
+                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><_a href="#" data-bind="click:saveas" data-translateable="true">Save as</_a></li>
+                            </ul>
                         </div>
-                        <div class="six columns text-left">
-                            <div class="field">
-                                <input class="input" data-bind="value:scriptName"></input>
-                            </div>
-                        </div>
+                        <button type="button" class="btn btn-primary" data-bind="click:load">
+                            <span class="en-doc-text"></span>
+                            <_span data-translateable="true">Load</_span>
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bind="click:importScript">
+                            <span class="en-down"></span>
+                            <_span data-translateable="true">Import</_span>
+                        </button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" data-bind="click:check">
+                            <span class="en-check"></span>
+                            <_span data-translateable="true">Check</_span>
+                        </button>
+                    <button type="button" class="btn btn-primary" data-bind="click:viewlua">
+                        <span class="en-eye"></span>
+                        <_span data-translateable="true">View</_span>
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bind="click:openDebug">
+                            <span class="en-flash"></span>
+                            <_span data-translateable="true">Debug</_span>
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="row text-center">
-                <div class="medium primary btn icon-left icon-check">
-                    <_a href="#" data-translateable="true" data-bind="click:saveOk">Save</_a>
-                </div>
-                <div class="medium primary btn icon-left icon-cancel">
-                    <_a href="#" data-translateable="true" data-bind="click:saveCancel">Cancel</_a>
-                </div>
-            </div>
         </div>
-    </div>
 
-    <!-- debug dialog -->
-    <div id="debugDialog" data-bind="gumbyModal:$root" class="modal">
-        <div class="content" style="top:10%; min-height:40%; max-height:80%; width:60%">
-            <a class="close switch"><i class="icon-cancel" ></i></a>
-            <div class="row">
-                <div class="medium primary btn"><a href="#" data-bind="click:startDebug">Start</a></div>
-                <div class="medium primary btn"><a href="#" data-bind="click:stopDebug">Stop</a></div>
-                <div class="medium primary btn"><a href="#" data-bind="click:clearDebug">Clear</a></div>
-            </div>
-            <div class="row field">
-                <textarea data-bind="value:debugData" class="input textarea" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}"></textarea>
-            </div>
-            <div class="row">
-                <div id="debugContainer">
-                    <ul style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
-                    </ul>
-                </div>
+        <!-- blockly -->
+        <div class="row hidden-xs hidden-sm">
+            <div class="col-xs-12 col-md-12">
+                <div id="blocklyDiv" style="height:800px; width:1100px;" data-bind="blockly:blocklyViewModel"/>
             </div>
         </div>
-    </div>
+        <div class="row hidden-md hidden-lg">
+            <div class="col-xs-12 col-md-12">
+                <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
+            </div>
+        </div>
+
+    </section>
 
 </div>
-

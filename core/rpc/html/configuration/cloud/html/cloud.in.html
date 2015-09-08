@@ -1,68 +1,109 @@
-<div class="container" id="contentarea">
-<span id="passwordError" style="display: none">Passwords do not match!</span>
-<div class="row ">
-	<div class="twelve columns">
-		<_h2 data-translateable="true">ago control Cloud Registration</_h2>
-		<ul>
-			<_li data-translateable="true" class="warning alert">This service is currently under heavy development!</_li>
-		</ul>
+<div>
 
-		<_p data-translateable="true">Register a ago control Cloud account to remote control your installation via <a href="https://cloud.agocontrol.com" target="_blank">cloud.agocontrol.com</a><br />
-		You will be taken to the order page after completing your registration<br />This service is not free.</_p>
-		<br />	
-		<div>
-			<form method="post" data-bind="attr: {'action': cloudURL }, submit: checkPassWords">
-				<ul>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Your username</_span>
-						<input class="normal input" data-bind="value: cloudUsername" type="text" required="required" data-translateable="true" _placeholder="Input your username" name="username" />
-					</li>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Your E-Mail address</_span>
-						<input class="normal email input" type="email" required="required" data-translateable="true" _placeholder="Input your E-Mail address" name="email" />
-					</li>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Your new password</_span>
-						<input class="normal input" data-bind="value: cloudPassword" type="password" required="required" data-translateable="true" _placeholder="Input new password" name="password" />
-					</li>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Confirm new password</_span>
-						<input class="normal input" data-bind="value: cloudPasswordConfirm" type="password" required="required" data-translateable="true" _placeholder="Confirm new password" name="password_confirm" />
-					</li>
-				</ul>
-				<div class="medium primary btn"><input type="submit" data-translateable="true" _value="Register Cloud account" /></div>
-			</form>
-		</div>
+    <section class="content-notifs">
+        <_span id="passwordError">Passwords do not match!</_span>
+        <_span id="cloudActivationResult_0" data-translateable="true">Success, activation successful!</_span>
+        <_span id="cloudActivationResult_1" data-translateable="true">Certificate read error!</_span>
+        <_span id="cloudActivationResult_2" data-translateable="true">Wrong username, password or activation PIN!</_span>
+    </section>
 
-	</div>
-</div>
-<div class="row ">
-	<_div id="cloudActivationResultTitle" data-translateable="true" style="display:none">Cloud Activation</_div>
-	<_div id="cloudActivationResult_0" data-translateable="true" style="display:none">Success, activation successful!</_div>
-	<_div id="cloudActivationResult_1" data-translateable="true" style="display:none">Certificate read error!</_div>
-	<_div id="cloudActivationResult_2" data-translateable="true" style="display:none">Wrong username, password or activation PIN!</_div>
-	<div class="twelve columns">
-		<_h2 data-translateable="true">Cloud Activation</_h2>
-		<_div data-translateable="true" id="closeButton" style="display:none" _data-close="Close" />
-		<div id="cloudActivation">
-			<form data-bind="submit: cloudActivate">
-				<ul>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Your username</_span>
-						<input class="normal input" data-bind="value: cloudUsername" type="text" required="required" data-translateable="true" _placeholder="Input your username" name="username" />
-					</li>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Your password</_span>
-						<input class="normal input" data-bind="value: cloudPassword" type="password" required="required" data-translateable="true" _placeholder="Input password" name="password" />
-					</li>
-					<li class="prepend field">
-						<_span data-translateable="true" class="adjoined narrow">Your PIN</_span>
-						<input class="normal input" data-bind="value: cloudPIN" required="required" data-translateable="true" _placeholder="Input PIN" name="pin" />
-					</li>
-				</ul>
-				<div class="medium primary btn"><input type="submit" data-translateable="true" _value="Activate Cloud" /></div>
-			</form>
-		</div>
-	</div>
-</div>
+    <section class="content-header">
+        <_h1 class="content-title" data-translateable="true">ago control Cloud</_h1>
+    </section>
+
+    <section class="content">
+    
+        <div class="box box-primary">
+            <div class="box-header">
+                <_h1 class="box-title" data-translateable="true">Cloud registration</_h1>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="callout callout-danger">
+                            <_span data-translateable="true">This service is currently under heavy development!</_span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <_p data-translateable="true">Register a ago control Cloud account to remote control your installation via <a target="_blank" href="https://cloud.agocontrol.com">cloud.agocontrol.com</a><br/> You will be taken to the order page after completing your registration<br/>This service is not free.</_p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+        			    <form method="post" data-bind="attr: {'action': cloudURL }, submit: checkPassWords" class="form-horizontal">
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Your username</_label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" _placeholder="Username" required="required" name="username" data-translateable="true" data-bind="value: cloudUsername"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Your E-Mail address</_label>
+                                <div class="col-sm-6">
+                                    <input type="email" class="form-control" _placeholder="Email" required="required" name="email" data-translateable="true"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Your new password</_label>
+                                <div class="col-sm-6">
+                                    <input type="password" class="form-control" _placeholder="Password" required="required" name="password" data-translateable="true" data-bind="value: cloudPassword"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Confirm new password</_label>
+                                <div class="col-sm-6">
+                                    <input type="password" class="form-control" _placeholder="Password confirmation" required="required" name="password_confirm" data-translateable="true" data-bind="value: cloudPasswordConfirm" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-4 col-sm-6">
+                                    <_button type="submit" class="btn btn-primary" data-translateable="true">Register Cloud account</_button>
+                                </div>
+                            </div>
+            			</form>
+                    </div>
+		        </div>
+            </div>
+        </div>
+
+        <div class="box box-success">
+            <div class="box-header">
+                <_h1 class="box-title" data-translateable="true">Cloud activation</_h1>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form class="form-horizontal" data-bind="submit: cloudActivate">
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Your username</_label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" _placeholder="Username" required="required" name="username" data-translateable="true" data-bind="value: cloudUsername"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Your password</_label>
+                                <div class="col-sm-6">
+                                    <input type="password" class="form-control" _placeholder="Password" required="required" name="password" data-translateable="true" data-bind="value: cloudPassword"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <_label class="col-sm-4 control-label" data-translateable="true">Your PIN</_label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" _placeholder="PIN" name="pin" data-translateable="true" data-bind="value: cloudPIN"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-4 col-sm-6">
+                                    <_button type="submit" class="btn btn-primary" data-translateable="true">Activate Cloud</_button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>      
+
 </div>

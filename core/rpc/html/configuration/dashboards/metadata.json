@@ -1,8 +1,8 @@
 {
-        "name": "Dashboards",
-        "version": "1.0.0",
-        "description": "Dashboards configuration",
-        "template": "html/dashboards",
-        "listable": true,
-        "category": "Dashboards"
+    "name": "Dashboards",
+    "version": "1.0.0",
+    "description": "Dashboards configuration",
+    "template": "html/dashboards",
+    "listable": true,
+    "category": "dashboards"
 }

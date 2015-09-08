@@ -3,9 +3,20 @@
  */
 
 //Opens details page for the given device
-Agocontrol.prototype.showDetails = function(device, environment)
+Agocontrol.prototype.showDetails = function(device)
 {
     var self = this;
+
+    //get environment
+    var environment = null;
+    if( device && device.valueList && device.valueList() )
+    {
+        for( var i=0; i<device.valueList().length; i++ )
+        {
+            environment = device.valueList()[i].name;
+            break;
+        }
+    }
 
     //Check if we have a template if yes use it otherwise fall back to default
     $.ajax({
@@ -17,7 +28,7 @@ Agocontrol.prototype.showDetails = function(device, environment)
         },
         error : function()
         {
-            self.doShowDetails(device, "default");
+            self.doShowDetails(device, "default", environment);
         }
     });
 };
@@ -31,34 +42,35 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
     {
         afterRender : function()
         {
-            var dialogWidth = 800;
-            var dialogHeight = 300;
+            $('input[type=radio][name=renderType]').on('change', function() {
+                self.render(device, environment, $(this).val());
+            });
 
-            if (document.getElementById('commandList'))
+            if( $('#commandList').length )
             {
-                self.showCommandList(document.getElementById('commandList'), device);
+                //empty template, fill command list
+                self.showCommandList($('#commandList')[0], device);
             }
-
-            if (device.devicetype == "camera")
+            else if( device.devicetype=='camera' )
             {
-                dialogHeight = 620;
+                //camera template, display video frame
                 device.getVideoFrame();
             }
-
-            if (document.getElementById('graph') && ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype=="multigraph"))
+            else if( ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype=="multigraph"))
             {
-                //refresh button
-                $('#get_graph').click(function()
-                {
-                    self.renderGraph(device, document.getElementById('graph')._environment);
+                //sensor template
+                    
+                //add refresh button action
+                $('#get_graph').click(function(e) {
+                    e.preventDefault();
+                    self.render(device, environment);
                 });
-    
-                //Setup start date
+
+                //set start date
                 var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
                 var startEl = $('#start_date');
                 startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
                 startEl.datetimepicker({
-                    //closeOnDateSelect: true,
                     format: 'd.m.Y H:i',
                     onChangeDateTime: function(dp,$input)
                     {
@@ -75,11 +87,10 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     }
                 });
 
-                //Setup end date
+                //set end date
                 var endEl = $('#end_date');
                 endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
                 endEl.datetimepicker({
-                    //closeOnDateSelect: true,
                     format:'d.m.Y H:i',
                     onChangeDateTime: function(dp,$input)
                     {
@@ -95,61 +106,27 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                         }
                     }
                 });
-    
-                if (device.devicetype == "binarysensor")
-                {
-                    environment = "device.state";
-                }
-                else if (device.devicetype == "multigraph")
+
+                if( device.devicetype=="binarysensor" || device.devicetype=="multigraph" )
                 {
                     environment = "device.state";
                 }
 
-                self.renderGraph(device, environment ? environment : device.valueList()[0].name);
-    
-                for( var i=0; i<document.getElementsByName("displayType").length; i++ )
+                //render default
+                if( device.devicetype=="gpssensor" )
                 {
-                    document.getElementsByName("displayType")[i].onchange = function() {
-                        self.renderGraph(device, environment ? environment : device.valueList()[0].name); 
-                    }
+                    self.render(device, environment ? environment : device.valueList()[0].name, "map");
                 }
-
-                var reset = function() {
-                    if (device !== undefined)
-                    {
-                        device.reset();
-                    }
-                };
-                  
-                dialogWidth = 1000;
-                dialogHeight = 720;
+                else
+                {
+                    self.render(device, environment ? environment : device.valueList()[0].name, "graph");
+                }
             }
-
-            if (document.getElementById("detailsTitle"))
-            {
-                $("#detailsPage").dialog({
-                    title : document.getElementById("detailsTitle").innerHTML,
-                    modal : true,
-                    width : Math.min(dialogWidth, Math.round(screen.width * 0.8)),
-                    height : Math.min(dialogHeight, Math.round(screen.height * 0.8)),
-                    close : function()
-                    {
-                        var graphContainer = document.getElementById('graph');
-                        if (graphContainer)
-                        {
-                            graphContainer.parentNode.removeChild(graphContainer);
-                        }
-                    },
-                    open : function()
-                    {
-                        $("#detailsPage").css("overflow", "visible");
-                        if (device.dialogopened !== undefined)
-                            device.dialogopened(this);
-                    }
-                });
-            }
+                
+            //show modal
+            $('#detailsModal').modal('show');
         }
-    }, document.getElementById("detailsPage"));
+    }, $('#detailsContent')[0]);
 };
 
 //Shows the command selector for the detail pages
@@ -159,6 +136,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
     var commandSelect = document.createElement("select");
     var commandParams = document.createElement("span");
     commandSelect.id = "commandSelect";
+    commandSelect.className = "form-control";
     var type = device.devicetype;
     if( type && self.schema().devicetypes[type] )
     {
@@ -170,22 +148,22 @@ Agocontrol.prototype.showCommandList = function(container, device)
 
     commandSelect.onchange = function()
     {
-        if (commandSelect.options.length == 0)
+        if( commandSelect.options.length===0 )
         {
            return 0;
         }
         var cmd = self.schema().commands[commandSelect.options[commandSelect.selectedIndex].value];
         commandParams.innerHTML = "";
-        if (cmd.parameters !== undefined)
+        if( cmd.parameters!==undefined )
         {
             commandParams.style.display = "";
-            for ( var param in cmd.parameters)
+            for( var param in cmd.parameters )
             {
                 if (cmd.parameters[param].type == 'option')
                 {
                     var select = document.createElement("select");
                     select.name = param;
-                    select.className = "cmdParam";
+                    select.className = "cmdParam form-control";
                     for ( var i = 0; i < cmd.parameters[param].options.length; i++)
                     {
                         select.options[select.options.length] = new Option(cmd.parameters[param].options[i], cmd.parameters[param].options[i]);
@@ -196,7 +174,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
                 {
                     var input = document.createElement("input");
                     input.name = param;
-                    input.className = "cmdParam";
+                    input.className = "cmdParam form-control";
                     input.placeholder = cmd.parameters[param].name;
                     commandParams.appendChild(input);
                 }
@@ -209,7 +187,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
     };
 
     commandSelect.onchange();
-    
+   
     container.appendChild(commandSelect);
     container.appendChild(commandParams);
 };
@@ -244,8 +222,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, val
     }
 
     //Render the graph
-    var container = document.getElementById('graph');
-    container._environment = environment;
+    var container = $('#graphContainer')[0];
     Flotr.draw(container, [ data ], {
         HtmlText : false,
         title : environment,
@@ -285,8 +262,6 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, val
         context.fillStyle = "red";
         context.fillText('No data found for given time frame!', x, y);
     }
-
-    self.unblock($("#graph"));
 };
 
 //Render data list
@@ -324,9 +299,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, data, valu
     ko.renderTemplate("templates/details/datalist", {
         data : values,
         environment : environment
-    }, {}, document.getElementById("dataList"));
-
-    self.unblock($("#dataList"));
+    }, {}, $('#graphContainer')[0]);
 };
 
 //Render map to display GPS positions
@@ -386,110 +359,111 @@ Agocontrol.prototype.renderMap = function(values)
         {
             notif.error('No data to display');
         }
-        //show container
-        self.unblock($("#graph"));
     });
 };
 
 //Render RRDtool graph
-Agocontrol.prototype.renderRRDgraph = function(device, startDate, endDate)
+Agocontrol.prototype.renderRRD = function(data)
+{
+    //prepare html elements
+    $('#graphContainer').empty();
+    var img = $('<img class="img-responsive" src="data:image/png;base64,'+data+'" id="graphRRD" />');
+    $('#graphContainer').append(img);
+};
+
+//render stuff
+Agocontrol.prototype.render = function(device, environment, type)
 {
     var self = this;
+    self.block($('#graphContainer'));
+
+    //get type
+    if( type===null || type===undefined )
+    {
+        type = type = self.lastRenderType;
+    }
+    self.lastRenderType = type;
+
+    var start = stringToDatetime($('#start_date').val());
+    var end = stringToDatetime($('#end_date').val());
 
     //fix end date
     now = new Date();
-    if( endDate.getTime()>now.getTime() )
+    if( end.getTime()>now.getTime() )
     {
-        endDate = now; 
+        end = now;
     }
 
-    //prepare content
-    $('#graph').empty();
-    var img = $('<img src="" id="graphRRD" style="display: none"/>');
-    $('#graph').append(img);
-
-    //get graph
-    device.getRrdGraph(device.uuid, Math.round(startDate.getTime()/1000), Math.round(endDate.getTime()/1000));
-    self.unblock($("#graph"));
-};
-
-//Renders the graph for the given device and environment
-Agocontrol.prototype.renderGraph = function(device, environment)
-{
-    var self = this;
-    var renderType = $($('input[name="displayType"]:checked')[0]).val();
-    var endDate = stringToDatetime($('#end_date').val());
-    var startDate = stringToDatetime($('#start_date').val());
-    var renderType = $($('input[name="displayType"]:checked')[0]).val();
-
-    self.block($("#graph"));
-
-    if( renderType=="graph" )
+    if( type=="graph" )
     {
-        //render rrdtool graph
-        $("#graph").show();
-        $("#dataList").hide();
-        self.renderRRDgraph(device, startDate, endDate);
+        //RRD graph, get image data
+        var content = {};
+        content.command = "getgraph";
+        content.uuid = self.dataLoggerController;
+        content.devices = [device.uuid];
+        content.start = Math.round(start.getTime()/1000);
+        content.end = Math.round(end.getTime()/1000);
+        self.sendCommand(content)
+            .then(function(res) {
+                self.renderRRD(res.data.graph);
+            })
+            .catch(function(err) {
+                notif.error("Unable to render values");
+                console.error(err);
+            })
+            .finally(function() {
+                self.unblock($('#graphContainer'));
+            });
     }
     else
     {
+        //other render needs values and unit
         var content = {};
         content.uuid = self.dataLoggerController;
         content.command = "getdata";
         content.replytimeout = 15;
         content.deviceid = device.uuid;
-        content.start = startDate.toISOString();
-        content.end = endDate.toISOString();
+        content.start = start.toISOString();
+        content.end = end.toISOString();
         content.env = environment.toLowerCase();
-
-        self.sendCommand(content, function(res) {
-            if (!res.result || !res.result.data || !res.result.data.values)
-            {
-                notif.fatal("Error while loading Graph!");
-                self.unblock($('#graph'));
-                return;
-            }
-
-            //Get the unit
-            var unit = "";
-            for ( var k = 0; k < device.valueList().length; k++)
-            {
-                if (device.valueList()[k].name == environment)
+        self.sendCommand(content)
+            .then(function(res) {
+                //get unit
+                var unit = "";
+                for ( var k = 0; k < device.valueList().length; k++)
                 {
-                    unit = device.valueList()[k].unit;
-                    break;
+                    if (device.valueList()[k].name == environment)
+                    {
+                        unit = device.valueList()[k].unit;
+                        break;
+                    }
                 }
-            }
 
-            //Prepare the data
-            var data = [];
-            var values = res.result.data.values;
+                //get data
+                var data = []; //XXX useful?
+                var values = res.data.values;
 
-            if (renderType == "list")
-            {
-                $("#graph").hide();
-                $("#dataList").show();
-                self.block($("#dataList"));
-                self.renderList(device, environment, unit, data, values, startDate, endDate);
-                self.unblock($("#dataList"));
-            }
-            else if( renderType=="map" )
-            {
-                $("#graph").show();
-                $("#dataList").hide();
-                self.block($("#graph"));
-                self.renderMap(valuest);
-                self.unblock($("#graph"));
-            }
-            else if( renderType=="plots" )
-            {
-                $("#graph").show();
-                $("#dataList").hide();
-                self.block($("#graph"));
-                self.renderPlots(device, environment, unit, data, values, startDate, endDate);
-                self.unblock($("#graph"));
-            }
-        }, 30);
+                //render
+                if( type=="plots" )
+                {
+                    self.renderPlots(device, environment, unit, data, values, start, end);
+                }
+                else if( type=="list" )
+                {
+                    self.renderList(device, environment, unit, data, values, start, end);
+                }
+                else if( type=="map" )
+                {
+                    self.renderMap(values);
+                }
+            })
+            .catch(function(err) {
+                notif.error("Unable to render values");
+                console.error(err);
+            })
+            .finally(function() {
+                self.unblock($('#graphContainer'));
+            });   
     }
 };
 

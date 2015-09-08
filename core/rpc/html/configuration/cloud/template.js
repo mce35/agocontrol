@@ -17,7 +17,7 @@ function CloudConfig(agocontrol)
     this.checkPassWords = function() {
         if (self.cloudPassword() != self.cloudPasswordConfirm())
         {
-            notif.error(document.getElementById("passwordError").innerHTML);
+            notif.error("#passwordError");
             return false;
         }
         return true;
@@ -46,16 +46,13 @@ function CloudConfig(agocontrol)
             url : url,
             success : function(res) {
                 var result = JSON.parse(res);
-                self.openDialog = "#cloudActivationResult_" + result.rc;
-                if (document.getElementById("cloudActivationResultTitle"))
+                if( result.rc===0 )
                 {
-                    $(self.openDialog).dialog({
-                        title : document.getElementById("cloudActivationResultTitle").innerHTML,
-                        modal : true,
-                        height : 180,
-                        width : 500,
-                        buttons : buttons
-                    });
+                    notif.success('#cloudActivationResult_0');
+                }
+                else
+                {
+                    notif.error('#cloudActivationResult_'+result.rc);
                 }
             },
             async : true

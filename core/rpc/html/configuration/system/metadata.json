@@ -1,17 +1,16 @@
 {
-        "name": "System",
-        "version": "1.0.0",
-        "description": "System configuration",
-        "template": "html/system",
-        "listable": true,
-        "category": "core",
-        "resources": {
-            "css": [
-                "../../js/libs/openlayers/ol.css"
-            ],
-            "js": [
-                "../../js/libs/openlayers/ol.js"
-            ]
-        }
-
+    "name": "System",
+    "version": "1.0.0",
+    "description": "System configuration",
+    "template": "html/system",
+    "listable": true,
+    "category": "core",
+    "resources": {
+        "css": [
+            "../../js/libs/openlayers/ol.css"
+        ],
+        "js": [
+            "../../js/libs/openlayers/ol.js"
+        ]
+    }
 }

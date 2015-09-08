@@ -1,9 +1,9 @@
 {
-        "name": "Datalogger",
-        "version": "0.0.2",
-        "description": "Datalogger configuration",
-        "listable": true,
-        "template": "html/datalogger",
-        "depends": "agodatalogger",
-        "category": "core"
+    "name": "Datalogger",
+    "version": "0.0.2",
+    "description": "Datalogger configuration",
+    "listable": true,
+    "template": "html/datalogger",
+    "depends": "agodatalogger",
+    "category": "core"
 }

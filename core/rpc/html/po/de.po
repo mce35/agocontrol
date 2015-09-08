@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-05 17:27+0200\n"
+"POT-Creation-Date: 2015-09-03 17:32+0200\n"
 "PO-Revision-Date: 2013-10-01 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -17,117 +17,199 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.5.4\n"
 
+#: ../templates/details/barometersensor.xml.in.h:1
+#: ../templates/details/batterysensor.xml.in.h:1
+#: ../templates/details/brightnesssensor.xml.in.h:1
 #: ../templates/details/camera.xml.in.h:1
 #: ../templates/details/default.xml.in.h:1
+#: ../templates/details/distancesensor.xml.in.h:1
+#: ../templates/details/energymeter.xml.in.h:1
 #: ../templates/details/gpssensor.xml.in.h:1
 #: ../templates/details/humiditysensor.xml.in.h:1
-#: ../templates/details/multilevelsensor.xml.in.h:1
-msgid "Room:"
-msgstr "Raum:"
+#: ../templates/details/multigraph.xml.in.h:1
+#: ../templates/details/powermeter.xml.in.h:1
+#: ../templates/details/temperaturesensor.xml.in.h:1
+msgid "Name"
+msgstr "Name"
 
+#: ../templates/details/barometersensor.xml.in.h:2
+#: ../templates/details/batterysensor.xml.in.h:2
+#: ../templates/details/brightnesssensor.xml.in.h:2
 #: ../templates/details/camera.xml.in.h:2
-#: ../templates/details/default.xml.in.h:3
+#: ../templates/details/default.xml.in.h:2
+#: ../templates/details/distancesensor.xml.in.h:2
+#: ../templates/details/energymeter.xml.in.h:2
 #: ../templates/details/gpssensor.xml.in.h:2
 #: ../templates/details/humiditysensor.xml.in.h:2
-#: ../templates/details/multilevelsensor.xml.in.h:2
-msgid "Type:"
-msgstr "Gerätetyp:"
+#: ../templates/details/multigraph.xml.in.h:2
+#: ../templates/details/powermeter.xml.in.h:2
+#: ../templates/details/temperaturesensor.xml.in.h:2
+#, fuzzy
+msgid "Device type"
+msgstr "Gerätetyp"
 
+#: ../templates/details/barometersensor.xml.in.h:3
+#: ../templates/details/batterysensor.xml.in.h:3
+#: ../templates/details/brightnesssensor.xml.in.h:3
 #: ../templates/details/camera.xml.in.h:3
-#: ../templates/details/default.xml.in.h:4
+#: ../templates/details/default.xml.in.h:3
+#: ../templates/details/distancesensor.xml.in.h:3
+#: ../templates/details/energymeter.xml.in.h:3
 #: ../templates/details/gpssensor.xml.in.h:3
 #: ../templates/details/humiditysensor.xml.in.h:3
-#: ../templates/details/multilevelsensor.xml.in.h:3
-msgid "Lastseen:"
-msgstr "Zuletzt gesehen:"
+#: ../templates/details/multigraph.xml.in.h:3
+#: ../templates/details/powermeter.xml.in.h:3
+#: ../templates/details/temperaturesensor.xml.in.h:3
+msgid "Room"
+msgstr "Raum"
 
+#: ../templates/details/barometersensor.xml.in.h:4
+#: ../templates/details/batterysensor.xml.in.h:4
+#: ../templates/details/brightnesssensor.xml.in.h:4
 #: ../templates/details/camera.xml.in.h:4
-#: ../templates/details/default.xml.in.h:5
-msgid "Command:"
-msgstr "Befehl:"
-
-#: ../templates/details/camera.xml.in.h:5
-#: ../templates/details/default.xml.in.h:6
-#: ../configuration/scenarios/html/scenarios.xml.in.h:5
-msgid "Run"
-msgstr "Ausführen"
-
-#: ../templates/details/default.xml.in.h:2
-msgid "State:"
-msgstr "Status:"
-
+#: ../templates/details/default.xml.in.h:4
+#: ../templates/details/distancesensor.xml.in.h:4
+#: ../templates/details/energymeter.xml.in.h:4
 #: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
-#: ../templates/details/multilevelsensor.xml.in.h:4
-msgid "Show as:"
-msgstr "Anzeigen als:"
+#: ../templates/details/multigraph.xml.in.h:4
+#: ../templates/details/powermeter.xml.in.h:4
+#: ../templates/details/temperaturesensor.xml.in.h:4
+msgid "Timestamp"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:5
+#: ../templates/details/batterysensor.xml.in.h:5
+#: ../templates/details/brightnesssensor.xml.in.h:5
+#: ../templates/details/distancesensor.xml.in.h:5
+#: ../templates/details/energymeter.xml.in.h:5
+#: ../templates/details/humiditysensor.xml.in.h:5
+#: ../templates/details/powermeter.xml.in.h:5
+#: ../templates/details/temperaturesensor.xml.in.h:5
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
+msgstr "Graph"
+
+#: ../templates/details/barometersensor.xml.in.h:6
+#: ../templates/details/batterysensor.xml.in.h:6
+#: ../templates/details/brightnesssensor.xml.in.h:6
+#: ../templates/details/distancesensor.xml.in.h:6
+#: ../templates/details/energymeter.xml.in.h:6
+#: ../templates/details/humiditysensor.xml.in.h:6
+#: ../templates/details/powermeter.xml.in.h:6
+#: ../templates/details/temperaturesensor.xml.in.h:6
+msgid "Plots"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:7
+#: ../templates/details/batterysensor.xml.in.h:7
+#: ../templates/details/brightnesssensor.xml.in.h:7
+#: ../templates/details/distancesensor.xml.in.h:7
+#: ../templates/details/energymeter.xml.in.h:7
+#: ../templates/details/gpssensor.xml.in.h:6
+#: ../templates/details/humiditysensor.xml.in.h:7
+#: ../templates/details/powermeter.xml.in.h:7
+#: ../templates/details/temperaturesensor.xml.in.h:7
+msgid "List"
+msgstr "Liste"
+
+#: ../templates/details/barometersensor.xml.in.h:8
+#: ../templates/details/batterysensor.xml.in.h:8
+#: ../templates/details/brightnesssensor.xml.in.h:8
+#: ../templates/details/distancesensor.xml.in.h:8
+#: ../templates/details/energymeter.xml.in.h:8
+#: ../templates/details/gpssensor.xml.in.h:7
+#: ../templates/details/humiditysensor.xml.in.h:8
+#: ../templates/details/multigraph.xml.in.h:5
+#: ../templates/details/powermeter.xml.in.h:8
+#: ../templates/details/temperaturesensor.xml.in.h:8
+#: ../applications/journal/html/journal.xml.in.h:2
+#, fuzzy
+msgid "From"
+msgstr "Von:"
+
+#: ../templates/details/barometersensor.xml.in.h:9
+#: ../templates/details/batterysensor.xml.in.h:9
+#: ../templates/details/brightnesssensor.xml.in.h:9
+#: ../templates/details/distancesensor.xml.in.h:9
+#: ../templates/details/energymeter.xml.in.h:9
+#: ../templates/details/gpssensor.xml.in.h:8
+#: ../templates/details/humiditysensor.xml.in.h:9
+#: ../templates/details/multigraph.xml.in.h:6
+#: ../templates/details/powermeter.xml.in.h:9
+#: ../templates/details/temperaturesensor.xml.in.h:9
+#: ../applications/journal/html/journal.xml.in.h:3
+#, fuzzy
+msgid "To"
+msgstr "Bis:"
+
+#: ../templates/details/barometersensor.xml.in.h:10
+#: ../templates/details/batterysensor.xml.in.h:10
+#: ../templates/details/brightnesssensor.xml.in.h:10
+#: ../templates/details/camera.xml.in.h:5
+#: ../templates/details/distancesensor.xml.in.h:10
+#: ../templates/details/energymeter.xml.in.h:10
+#: ../templates/details/gpssensor.xml.in.h:9
+#: ../templates/details/humiditysensor.xml.in.h:10
+#: ../templates/details/multigraph.xml.in.h:7
+#: ../templates/details/powermeter.xml.in.h:10
+#: ../templates/details/temperaturesensor.xml.in.h:10
+#: ../protocols/zwave/html/zwave.xml.in.h:14
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+#: ../templates/details/default.xml.in.h:5
+#, fuzzy
+msgid "Command"
+msgstr "Befehl:"
+
+#: ../templates/details/default.xml.in.h:6
+#: ../configuration/scenarios/html/scenarios.xml.in.h:10
+msgid "Run"
+msgstr "Ausführen"
 
 #: ../templates/details/gpssensor.xml.in.h:5
 msgid "Map"
 msgstr ""
 
-#: ../templates/details/gpssensor.xml.in.h:6
-#: ../templates/details/humiditysensor.xml.in.h:7
-#: ../templates/details/multilevelsensor.xml.in.h:7
-msgid "List"
-msgstr "Liste"
-
-#: ../templates/details/gpssensor.xml.in.h:7
-#: ../templates/details/humiditysensor.xml.in.h:8
-#: ../templates/details/multilevelsensor.xml.in.h:8
-msgid "From:"
-msgstr "Von:"
-
-#: ../templates/details/gpssensor.xml.in.h:8
-#: ../templates/details/humiditysensor.xml.in.h:9
-#: ../templates/details/multilevelsensor.xml.in.h:9
-msgid "To:"
-msgstr "Bis:"
-
-#: ../templates/details/humiditysensor.xml.in.h:5
-#: ../templates/details/multilevelsensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
-msgstr "Graph"
-
-#: ../templates/details/humiditysensor.xml.in.h:6
-msgid "Plots"
-msgstr ""
-
-#: ../templates/details/multilevelsensor.xml.in.h:6
-msgid "PLots"
-msgstr ""
-
 #: ../templates/devices/computer.xml.in.h:1
-#: ../templates/devices/dimmer.xml.in.h:1
-#: ../templates/devices/switch.xml.in.h:1
-msgid "OFF"
-msgstr "AUS"
-
-#: ../templates/devices/computer.xml.in.h:2
 #: ../templates/devices/dimmer.xml.in.h:2
+#: ../templates/devices/dimmerrgb.xml.in.h:2
+#: ../templates/devices/squeezebox.xml.in.h:1
 #: ../templates/devices/switch.xml.in.h:2
 msgid "ON"
 msgstr "EIN"
 
-#: ../templates/devices/drapes.xml.in.h:1
-msgid "CLOSED"
+#: ../templates/devices/dimmer.xml.in.h:1
+#: ../templates/devices/dimmerrgb.xml.in.h:1
+#: ../templates/devices/squeezebox.xml.in.h:2
+#: ../templates/devices/switch.xml.in.h:1
+msgid "OFF"
+msgstr "AUS"
+
+#: ../templates/devices/dimmerrgb.xml.in.h:3
+msgid "COLOR"
 msgstr ""
 
+#: ../templates/devices/drapes.xml.in.h:1
+#, fuzzy
+msgid "closed"
+msgstr "Schließen"
+
 #: ../templates/devices/drapes.xml.in.h:2
-msgid "OPENED"
+msgid "partial"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:3
-msgid "OPENING"
+msgid "opened"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:4
-msgid "CLOSING"
+msgid "opening"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:5
-msgid "PARTIAL"
+msgid "closing"
 msgstr ""
 
 #: ../templates/devices/drapes.xml.in.h:6
@@ -142,12 +224,20 @@ msgstr ""
 msgid "CLOSE"
 msgstr ""
 
-#: ../templates/devices/ipx800v3board.xml.in.h:1
-msgid "OPEN ALL"
+#: ../templates/devices/pushbutton.xml.in.h:1
+msgid "PUSH"
 msgstr ""
 
-#: ../templates/devices/ipx800v3board.xml.in.h:2
-msgid "CLOSE ALL"
+#: ../templates/devices/scenario.xml.in.h:1
+msgid "RUN SCENARIO"
+msgstr ""
+
+#: ../templates/devices/squeezebox.xml.in.h:3
+msgid "PLAY"
+msgstr ""
+
+#: ../templates/devices/squeezebox.xml.in.h:4
+msgid "PAUSE"
 msgstr ""
 
 #: ../templates/devices/thermostat.xml.in.h:1
@@ -158,147 +248,160 @@ msgstr "Modus"
 msgid "FanMode"
 msgstr "Ventilator"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:1
+#: ../templates/devices/thermostat.xml.in.h:3
+msgid "Heat"
+msgstr ""
+
+#: ../templates/devices/thermostat.xml.in.h:4
+msgid "Cool"
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:1
 msgid "Agoalert is not responding"
 msgstr "agoalert reagiert nicht"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:2
+#: ../applications/alert/html/alert.xml.in.h:2
 #: ../applications/agoscheduler/html/agoscheduler.xml.in.h:1
 msgid "Internal error"
 msgstr "Interner Fehler"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:3
+#: ../applications/alert/html/alert.xml.in.h:3
 msgid "Unable to refresh PushBullet devices"
 msgstr "Kann PushBullet Geräte nicht aktualisieren"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:4
+#: ../applications/alert/html/alert.xml.in.h:4
 msgid "PushBullet devices retrieved successfully"
 msgstr "PushBullet Geräte erfolgreich abgerufen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:5
+#: ../applications/alert/html/alert.xml.in.h:5
 msgid "generating url"
 msgstr "generiere URL"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:6
+#: ../applications/alert/html/alert.xml.in.h:6
 msgid "authorization url"
 msgstr "Genehmigungs-URL"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:7
+#: ../applications/alert/html/alert.xml.in.h:7
 #, fuzzy
 msgid "Configuration saved successfully"
 msgstr "Verbindung wurde erfolgreich hinzugefügt"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:8
+#: ../applications/alert/html/alert.xml.in.h:8
 #, fuzzy
 msgid "Failed to save configuration"
 msgstr "Konfiguration speichern"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:9
-msgid "Twitter is configured"
-msgstr "Twitter ist konfiguriert"
+#: ../applications/alert/html/alert.xml.in.h:9
+msgid "Alert"
+msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:10
-msgid "Twitter is not configured"
-msgstr "Twitter ist nicht konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:11
+#: ../applications/alert/html/alert.xml.in.h:10
 #, fuzzy
-msgid ""
-"Follow instructions above to authorize agocontrol to access your Twitter "
-"account"
-msgstr "Folgen Sie den Anweisungen oben, um diesen Zugriff zu genehmigen"
+msgid "Twitter"
+msgstr "Twitter Kode"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:12
-msgid "Click"
-msgstr "Klicke"
+#: ../applications/alert/html/alert.xml.in.h:11
+msgid "SMS"
+msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:13
+#: ../applications/alert/html/alert.xml.in.h:12
+msgid "Mail"
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:13
+msgid "Push"
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:14
+#, fuzzy
+msgid "Configured?"
+msgstr "Konfiguration"
+
+#: ../applications/alert/html/alert.xml.in.h:15
+#, fuzzy
+msgid "Click on link to generate an authorization url"
+msgstr "Genehmigungs-URL"
+
+#: ../applications/alert/html/alert.xml.in.h:16
 msgid "here"
 msgstr "hier"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:14
+#: ../applications/alert/html/alert.xml.in.h:17
 #, fuzzy
-msgid "to generate an authorization url"
-msgstr "Genehmigungs-URL"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:15
 msgid "Then click on generated link"
 msgstr "Dann klicke auf den generierten Link"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:16
+#: ../applications/alert/html/alert.xml.in.h:18
+msgid "Authorize access on Twitter"
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:19
 msgid "Type given access code here"
 msgstr "Gib den Zugangscode hier ein"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:17
+#: ../applications/alert/html/alert.xml.in.h:20
 msgid "Twitter code"
 msgstr "Twitter Kode"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:18
+#: ../applications/alert/html/alert.xml.in.h:21
 msgid "Finally click on button to save access code"
 msgstr "Klicke auf die Schaltfläche, um den Zugangscode zu speichern"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:19
-#: ../applications/security/html/security.xml.in.h:9
-#: ../applications/zwave/html/zwave.xml.in.h:69
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
-#: ../configuration/events/html/events.xml.in.h:13
-#: ../configuration/system/html/system.xml.in.h:8
-#: ../configuration/scenarios/html/scenarios.xml.in.h:15
-msgid "Save"
-msgstr "Speichern"
+#: ../applications/alert/html/alert.xml.in.h:22
+#: ../applications/security/html/security.xml.in.h:17
+#: ../protocols/onvif/html/onvif.xml.in.h:14
+#: ../configuration/datalogger/html/datalogger.xml.in.h:8
+#: ../configuration/system/html/system.xml.in.h:7
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
+msgid "Save changes"
+msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:20
+#: ../applications/alert/html/alert.xml.in.h:23
 msgid "To send test tweet on your account, click on button"
 msgstr ""
 "Um einen Test Tweet auf den Twitter-Konto senden, klicke auf den Button"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:21
-#: ../applications/zwave/html/zwave.xml.in.h:43
+#: ../applications/alert/html/alert.xml.in.h:24
+#: ../protocols/zwave/html/zwave.xml.in.h:16
 msgid "Test"
 msgstr "Test"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:22
-msgid "SMS is configured"
-msgstr "SMS ist konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:23
-msgid "SMS is not yet configured"
-msgstr "SMS ist nicht konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:24
+#: ../applications/alert/html/alert.xml.in.h:25
 msgid "Choose SMS provider in list"
 msgstr "Wähle einen SMS Anbieter aus der Liste"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:25
+#: ../applications/alert/html/alert.xml.in.h:26
 msgid "You need to create an account on"
 msgstr "Erstelle ein Konto erstellen bei"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:26
+#: ../applications/alert/html/alert.xml.in.h:27
 msgid "and add credits to send SMS"
 msgstr "und lade Guthaben auf um SMS senden zu können"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:27
+#: ../applications/alert/html/alert.xml.in.h:28
 msgid "SMS rates"
 msgstr "SMS Traife"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:28
+#: ../applications/alert/html/alert.xml.in.h:29
+#: ../configuration/cloud/html/cloud.xml.in.h:10
 msgid "Username"
 msgstr "Benutzername"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:29
+#: ../applications/alert/html/alert.xml.in.h:30
 msgid "12voip username"
 msgstr "12voip Benutzername"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:30
-#: ../applications/onvif/html/onvif.xml.in.h:13
+#: ../applications/alert/html/alert.xml.in.h:31
+#: ../protocols/onvif/html/onvif.xml.in.h:13
+#: ../configuration/cloud/html/cloud.xml.in.h:14
 msgid "Password"
 msgstr "Passwort"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:31
+#: ../applications/alert/html/alert.xml.in.h:32
 msgid "12voip password"
 msgstr "12voip Passwort"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:32
+#: ../applications/alert/html/alert.xml.in.h:33
 msgid ""
 "Free Mobile is a french internet/mobile provider. It offers for free to send "
 "SMS to mobile account owner and only for its number."
@@ -306,7 +409,7 @@ msgstr ""
 "Free Mobile ist ein französicher Internet- und Mobilfunkanbieter, der "
 "kostenlose SMS nachrichten zu Deiner Mobilnummer anbietet."
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:33
+#: ../applications/alert/html/alert.xml.in.h:34
 msgid ""
 "To use it in ago control, activate option in your free account and save "
 "provided apikey"
@@ -314,144 +417,114 @@ msgstr ""
 "Um es in ago control zu verwenden, aktiviere die Option in Deinem freien "
 "Account und speichere den den übermittelten apikey"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:34
+#: ../applications/alert/html/alert.xml.in.h:35
 msgid "User"
 msgstr "Benutzername"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:35
+#: ../applications/alert/html/alert.xml.in.h:36
 msgid "Free user"
 msgstr "Freier Benutzer"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:36
+#: ../applications/alert/html/alert.xml.in.h:37
 msgid "Apikey"
 msgstr "Apikey"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:37
+#: ../applications/alert/html/alert.xml.in.h:38
 msgid "To send you a test SMS, click on button"
 msgstr "Um ein Test-SMS zu senden, klicke den Knopf"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:38
-msgid "Mail is configured"
-msgstr "E-Mail ist konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:39
-msgid "Mail is not yet configured"
-msgstr "E-Mail ist noch nicht konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:40
-msgid ""
-"Specify your email SMTP server and a sender email address (* is mandatory)"
-msgstr ""
-"Definiere Deinen E-Mail SMTP Server und eine Absenderadresse (* "
-"Pflichtfelder)"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:41
+#: ../applications/alert/html/alert.xml.in.h:39
 msgid "SMTP server* (smtp:port)"
 msgstr "SMTP Server* (Server:Port)"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:42
+#: ../applications/alert/html/alert.xml.in.h:40
 msgid "smtp"
 msgstr "SMTP"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:43
+#: ../applications/alert/html/alert.xml.in.h:41
 msgid "Sender email*"
 msgstr "E-Mail Adresse des Absenders*"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:44
+#: ../applications/alert/html/alert.xml.in.h:42
 msgid "email"
 msgstr "Email"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:45
-#: ../applications/onvif/html/onvif.xml.in.h:11
+#: ../applications/alert/html/alert.xml.in.h:43
+#: ../protocols/onvif/html/onvif.xml.in.h:11
 msgid "Login"
 msgstr "Benutzer"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:46
+#: ../applications/alert/html/alert.xml.in.h:44
 msgid "login"
 msgstr "Benutzername"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:47
+#: ../applications/alert/html/alert.xml.in.h:45
 msgid "password"
 msgstr "Passwort"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:48
+#: ../applications/alert/html/alert.xml.in.h:46
 msgid "TLS"
 msgstr "TLS"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:49
+#: ../applications/alert/html/alert.xml.in.h:47
 msgid "To send you a test email, type your email address and click on button"
 msgstr ""
 "Um eine Testmail zu senden gib die E-Mail Adresse an und klicke auf den Knopf"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:50
-msgid "email address"
-msgstr "E-Mail Adresse"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:51
-msgid "Push is configured"
-msgstr "Push ist konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:52
-msgid "Push is not yet configured"
-msgstr "Push ist nicht konfiguriert"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:53
+#: ../applications/alert/html/alert.xml.in.h:48
 msgid "Choose push provider in list"
 msgstr "Wähle einen Push Anbieter aus der Liste"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:54
+#: ../applications/alert/html/alert.xml.in.h:49
 msgid "Enter your apikey"
 msgstr "Gib Deinen API Key ein"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:55
+#: ../applications/alert/html/alert.xml.in.h:50
 msgid "available here"
 msgstr "hier verfügbar"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:56
+#: ../applications/alert/html/alert.xml.in.h:51
 msgid "apikey"
 msgstr "API Key"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:57
+#: ../applications/alert/html/alert.xml.in.h:52
 msgid "Refresh your devices list clicking on the button"
 msgstr "Um die Geräteliste zu aktualisieren klicke auf den Knopf"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:58
+#: ../applications/alert/html/alert.xml.in.h:53
 msgid "Refresh list"
 msgstr "Liste aktualisieren"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:59
+#: ../applications/alert/html/alert.xml.in.h:54
 msgid "And choose your devices that will be notified"
 msgstr "Füge Geräte hinzu die Meldungen erhalten sollen"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:60
-msgid "Finally save your settings"
-msgstr "Deine Einstellungen speichern"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:61
+#: ../applications/alert/html/alert.xml.in.h:55
 msgid "Enter your userid"
 msgstr "Benutzername eingeben"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:62
+#: ../applications/alert/html/alert.xml.in.h:56
 msgid "userid"
 msgstr "Benutzer ID"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:63
+#: ../applications/alert/html/alert.xml.in.h:57
 msgid "Enter your registered application token"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:64
+#: ../applications/alert/html/alert.xml.in.h:58
 msgid "token"
 msgstr ""
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:65
-msgid "And save your settings"
-msgstr "Und speichere die Einstellungen"
-
-#: ../applications/agoalert/html/agoalert.xml.in.h:66
+#: ../applications/alert/html/alert.xml.in.h:59
 msgid "Enter your apikeys"
 msgstr "Gib Deine API-Keys ein"
 
-#: ../applications/agoalert/html/agoalert.xml.in.h:67
+#: ../applications/alert/html/alert.xml.in.h:60
+#, fuzzy
+msgid "Apikeys"
+msgstr "Apikey"
+
+#: ../applications/alert/html/alert.xml.in.h:61
 msgid "To push you test notification, click on button"
 msgstr "Um eine Push Test-Nachricht zu senden, klicke den Knopf"
 
@@ -540,171 +613,112 @@ msgstr ""
 msgid "favorites applications max"
 msgstr ""
 
-#: ../applications/mysensors/html/mysensors.xml.in.h:1
-#, fuzzy
-msgid "mysensorscontroller is not responding. Unable to execute action."
-msgstr ""
-"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:2
-#, fuzzy
-msgid "Serial port configured successfully."
-msgstr "Script wurde erfolgreich geladen."
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:3
-#, fuzzy
-msgid "Counters resetted successfully."
-msgstr "Aufgabe wurde erfolgreich gelöscht."
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:4
-#, fuzzy
-msgid "Device removed successfully."
-msgstr "Verbindung wurde erfolgreich entfernt"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:5
-#: ../applications/zwave/html/zwave.xml.in.h:50
-msgid "Statistics"
-msgstr "Statistiken"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:6
-#: ../applications/zwave/html/zwave.xml.in.h:29
-msgid "Configuration"
-msgstr "Konfiguration"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:7
-#, fuzzy
-msgid "Configure serial port"
-msgstr "USB Port vom Controller"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:8
-#: ../applications/zwave/html/zwave.xml.in.h:37
-#: ../help/debug/html/debug.xml.in.h:8
-msgid "Set"
-msgstr "Setzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:9
-#, fuzzy
-msgid "Reset device counters"
-msgstr "Controller Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:10
-#: ../applications/zwave/html/zwave.xml.in.h:65
-msgid "Reset"
-msgstr "Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:11
-#, fuzzy
-msgid "Reset all counters"
-msgstr "Controller Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:12
-#, fuzzy
-msgid "Reset all"
-msgstr "Zurücksetzen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:13
-#, fuzzy
-msgid "Remove device"
-msgstr "Entfernen"
-
-#: ../applications/mysensors/html/mysensors.xml.in.h:14
-#: ../applications/zwave/html/zwave.xml.in.h:45
-msgid "Remove"
-msgstr "Entfernen"
-
 #: ../applications/security/html/security.xml.in.h:1
-#: ../applications/zwave/html/zwave.xml.in.h:63
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+#, fuzzy
+msgid "Enter zone name"
+msgstr "Neuer Raumname"
+
+#: ../applications/security/html/security.xml.in.h:2
+#, fuzzy
+msgid "New zone name"
+msgstr "Neuer Raumname"
+
+#: ../applications/security/html/security.xml.in.h:3
+msgid "Ok"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:4
+#: ../protocols/zwave/html/zwave.xml.in.h:62
+#: ../configuration/blockly/html/agoblockly.xml.in.h:10
+#: ../configuration/dashboards/html/dashboards.xml.in.h:2
+#: ../configuration/devices/html/devices.xml.in.h:2
+#: ../configuration/events/html/events.xml.in.h:2
+#: ../configuration/rooms/html/rooms.xml.in.h:2
+#: ../configuration/scenarios/html/scenarios.xml.in.h:2
+#: ../configuration/variables/html/variables.xml.in.h:2
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#. security tabs
-#: ../applications/security/html/security.xml.in.h:3
-msgid "Security"
-msgstr "Security"
-
-#: ../applications/security/html/security.xml.in.h:4
-#: ../applications/zwave/html/zwave.xml.in.h:27
-msgid "Status"
-msgstr "Status"
-
 #: ../applications/security/html/security.xml.in.h:5
 #, fuzzy
-msgid "Pin configuration"
-msgstr "Push Konfiguration"
+msgid "Enter housemode name"
+msgstr "Neuer Raumname"
 
 #: ../applications/security/html/security.xml.in.h:6
-#, fuzzy
-msgid "Housemodes/zones Configuration"
-msgstr "Ereignis Konfiguration"
-
-#: ../applications/security/html/security.xml.in.h:7
-msgid "Security Configuration"
-msgstr "Security Konfiguration"
-
-#: ../applications/security/html/security.xml.in.h:8
-#, fuzzy
-msgid "Change current housemode"
-msgstr "Aktiven Hausmodus setzen"
-
-#: ../applications/security/html/security.xml.in.h:10
-#, fuzzy
-msgid "Change pin code"
-msgstr "Aktiven Hausmodus setzen"
-
-#: ../applications/security/html/security.xml.in.h:11
-#, fuzzy
-msgid "Security devices"
-msgstr "Security"
-
-#: ../applications/security/html/security.xml.in.h:12
-msgid "Alarms"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:13
-#: ../applications/onvif/html/onvif.xml.in.h:14
-#: ../configuration/datalogger/html/datalogger.xml.in.h:8
-msgid "Save changes"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:14
-msgid "Housemodes\\Zones"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:15
-#, fuzzy
-msgid "Delete zone"
-msgstr "Löschen"
-
-#: ../applications/security/html/security.xml.in.h:16
-#, fuzzy
-msgid "Delete housemode"
-msgstr "Hausmodus hinzufügen"
-
-#: ../applications/security/html/security.xml.in.h:17
-#: ../applications/onvif/html/onvif.xml.in.h:50
-#: ../configuration/dashboards/html/dashboards.xml.in.h:4
-#: ../configuration/events/html/events.xml.in.h:4
-#: ../configuration/scenarios/html/scenarios.xml.in.h:6
-msgid "Edit"
-msgstr "Bearbeiten"
-
-#: ../applications/security/html/security.xml.in.h:18
-msgid "Delay (s)"
-msgstr ""
-
-#: ../applications/security/html/security.xml.in.h:19
-msgid "Add new housemode"
-msgstr "Neuen Hausmodus hinzufügen"
-
-#: ../applications/security/html/security.xml.in.h:20
 #, fuzzy
 msgid "New housemode name"
 msgstr "Neuer Raumname"
 
+#: ../applications/security/html/security.xml.in.h:7
+#, fuzzy
+msgid "Enter Pin code"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:8
+#, fuzzy
+msgid "pin code"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:9
+msgid "Security"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:10
+#: ../protocols/zwave/html/zwave.xml.in.h:2
+msgid "Status"
+msgstr "Status"
+
+#: ../applications/security/html/security.xml.in.h:11
+#, fuzzy
+msgid "Pin configuration"
+msgstr "Push Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:12
+#, fuzzy
+msgid "Housemodes/zones configuration"
+msgstr "Ereignis Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:13
+#, fuzzy
+msgid "Security configguration"
+msgstr "Security Konfiguration"
+
+#: ../applications/security/html/security.xml.in.h:14
+#, fuzzy
+msgid "Change current housemode"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:15
+#: ../protocols/ipx800/html/ipx800.xml.in.h:57
+#: ../protocols/zwave/html/zwave.xml.in.h:67
+#: ../configuration/blockly/html/agoblockly.xml.in.h:9
+#: ../configuration/events/html/events.xml.in.h:7
+#: ../configuration/scenarios/html/scenarios.xml.in.h:6
+msgid "Save"
+msgstr "Speichern"
+
+#: ../applications/security/html/security.xml.in.h:16
+#, fuzzy
+msgid "Change pin code"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../applications/security/html/security.xml.in.h:18
+#, fuzzy
+msgid "Cancel changes"
+msgstr "Abbrechen"
+
+#: ../applications/security/html/security.xml.in.h:19
+msgid "Housemodes\\Zones"
+msgstr ""
+
+#: ../applications/security/html/security.xml.in.h:20
+msgid "Modes\\Zones"
+msgstr ""
+
 #: ../applications/security/html/security.xml.in.h:21
-msgid "Add housemode"
-msgstr "Hausmodus hinzufügen"
+#, fuzzy
+msgid "Delete zone"
+msgstr "Löschen"
 
 #: ../applications/security/html/security.xml.in.h:22
 msgid "Add new zone"
@@ -712,669 +726,1031 @@ msgstr "Neue Zone hinzufügen"
 
 #: ../applications/security/html/security.xml.in.h:23
 #, fuzzy
-msgid "New zone name"
-msgstr "Neuer Raumname"
+msgid "Delete housemode"
+msgstr "Hausmodus hinzufügen"
 
 #: ../applications/security/html/security.xml.in.h:24
-msgid "Add zone"
-msgstr "Neue Zone hinzufügen"
+msgid "Delay (s)"
+msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:25
+#, fuzzy
+msgid "Security devices"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:26
+#, fuzzy
+msgid "Alarm devices"
+msgstr "Security"
+
+#: ../applications/security/html/security.xml.in.h:27
+msgid "Add new housemode"
+msgstr "Neuen Hausmodus hinzufügen"
+
+#: ../applications/security/html/security.xml.in.h:28
 msgid "Alarm message to send when alarm is armed"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:26
+#: ../applications/security/html/security.xml.in.h:29
 msgid "message"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:27
+#: ../applications/security/html/security.xml.in.h:30
 msgid "Alarm message to send when alarm is disarmed"
 msgstr ""
 
-#: ../applications/security/html/security.xml.in.h:28
+#: ../applications/security/html/security.xml.in.h:31
 msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:1
-msgid "zwavecontroller is not responding. Unable to execute action."
+#: ../applications/journal/html/journal.xml.in.h:1
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
+msgid "Journal"
 msgstr ""
-"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
 
-#: ../applications/zwave/html/zwave.xml.in.h:2
-msgid "Port configured"
-msgstr "Port ist konfiguriert"
+#: ../applications/journal/html/journal.xml.in.h:4
+#, fuzzy
+msgid "Get"
+msgstr "Setzen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:3
-msgid "Z-Wave controller resetted"
-msgstr "Z-Wave Controller zurückgesetzt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:4
-msgid "Add node command sent to controller"
-msgstr "Node hinzufügen Befehl wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:5
-msgid "Remove node command sent to controller"
-msgstr "Node entfernen Befehl wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:6
-msgid "Test network command launched"
-msgstr "Netzwerk Test Befehl gestartet"
-
-#: ../applications/zwave/html/zwave.xml.in.h:7
-msgid "Cancel command sent to controller"
-msgstr "Abbrechen Befehl wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:8
-msgid "Save configuration sent to controller"
-msgstr "Konfiguration sichern wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:9
-msgid "Download config sent to controller"
-msgstr "Konfiguration herunterladen wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:10
-msgid "Turn on all nodes command sent to controller"
-msgstr "Alle Nodes einschalten wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:11
-msgid "Turn off all nodes command sent to controller"
-msgstr "Alle Nodes ausschalten wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:12
-msgid "Test node command sent to controller"
-msgstr "Test Node Befehl wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:13
-msgid "Test node command failed"
-msgstr "Test Node Befehl fehlgeschalgen"
-
-#: ../applications/zwave/html/zwave.xml.in.h:14
-msgid "Heal node command sent to controller"
-msgstr "Heile Node Befehl wurde an den Controller geschickt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:15
-msgid "Parameter updated successfully"
-msgstr "Parameter erfolgreich aktualisiert"
-
-#: ../applications/zwave/html/zwave.xml.in.h:16
-msgid "Unable to update parameter"
-msgstr "Kann Parameter nicht aktualisieren"
-
-#: ../applications/zwave/html/zwave.xml.in.h:17
-msgid "Association added successfully"
-msgstr "Verbindung wurde erfolgreich hinzugefügt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:18
-msgid "Association removed successfully"
-msgstr "Verbindung wurde erfolgreich entfernt"
-
-#: ../applications/zwave/html/zwave.xml.in.h:19
-msgid "Really remove this association?"
-msgstr "Diese Verbindung wirklich löschen?"
-
-#: ../applications/zwave/html/zwave.xml.in.h:20
-msgid "Really remove this node?"
-msgstr "Diesen Node wirklich löschen?"
-
-#: ../applications/zwave/html/zwave.xml.in.h:21
+#: ../protocols/ipx800/html/ipx800.xml.in.h:1
+#: ../protocols/zwave/html/zwave.xml.in.h:41
 msgid "Reset controller (everything will be lost!)"
 msgstr "Controller zurücksetzen (alle Konfigurationen gehen verloren!)"
 
-#: ../applications/zwave/html/zwave.xml.in.h:22
+#: ../protocols/ipx800/html/ipx800.xml.in.h:2
 #, fuzzy
-msgid "Refresh node infos command sent"
-msgstr "Node Informationen aktualisieren"
+msgid "IPX configuration"
+msgstr "Push Konfiguration"
 
-#: ../applications/zwave/html/zwave.xml.in.h:23
+#: ../protocols/ipx800/html/ipx800.xml.in.h:3
 #, fuzzy
-msgid "Refresh node infos command failed"
-msgstr "Test Node Befehl fehlgeschalgen"
+msgid "New board IP"
+msgstr "Neuer Raumname"
 
-#: ../applications/zwave/html/zwave.xml.in.h:24
+#: ../protocols/ipx800/html/ipx800.xml.in.h:4
+msgid "Board IP"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:5
 #, fuzzy
-msgid "Request node parameters sent"
-msgstr "Setze Parameter"
+msgid "Add board"
+msgstr "Befehl hinzufügen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:25
+#: ../protocols/ipx800/html/ipx800.xml.in.h:6
+msgid "Outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:7
+msgid "Digitals"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:8
+msgid "Analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:9
+msgid "Counters"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:10
+msgid "Links"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:11
+msgid "Board"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:12
+msgid "Add outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:13
+msgid "Used outputs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:14
+msgid "Output type"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:15
+msgid "Switch"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:16
+msgid "Drapes"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:17
+msgid "Relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:18
+msgid "Opening relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:19
+msgid "Closing relay"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:20
 #, fuzzy
-msgid "Request node parameters failed"
-msgstr "Setze Parameter"
+msgid "Add device"
+msgstr "Security"
 
-#: ../applications/zwave/html/zwave.xml.in.h:26
+#: ../protocols/ipx800/html/ipx800.xml.in.h:21
+msgid "Actions"
+msgstr "Befehle"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:22
+msgid "Force output state of"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:23
+msgid "to"
+msgstr "zu"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:24
+msgid "Opened"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:25
+msgid "Partial"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:26
+#, fuzzy
+msgid "Closed"
+msgstr "Schließen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:27
+msgid "Force state"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:28
+#, fuzzy
+msgid "Turn on/off all IPX800 outputs"
+msgstr "Schalte alle Geräte ein/aus"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:29
+#: ../protocols/zwave/html/zwave.xml.in.h:57
+msgid "On"
+msgstr "Ein"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:30
+#: ../protocols/zwave/html/zwave.xml.in.h:58
+msgid "Off"
+msgstr "Aus"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:31
+msgid "Used digitals"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:32
+msgid "Digital input"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:33
+msgid "Link binary device to output device"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:34
+#, fuzzy
+msgid "Create link between"
+msgstr "Ereignis erstellen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:35
+#, fuzzy
+msgid "and"
+msgstr "Ventilator"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:36
+#, fuzzy
+msgid "Add link"
+msgstr "Neue Zone hinzufügen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:37
+#, fuzzy
+msgid "Delete links"
+msgstr "Löschen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:38
+msgid "Link"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:39
+#, fuzzy
+msgid "Delete link"
+msgstr "Löschen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:40
+msgid "Add analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:41
+msgid "Used analogs"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:42
+msgid "Analog type"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:43
+msgid "Temperature"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:44
+msgid "Light"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:45
+msgid "Volt"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:46
+msgid "Humidity"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:47
+msgid "Binary"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:48
+msgid "Analog input"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:49
+#, fuzzy
+msgid "Add counter"
+msgstr "Neue Zone hinzufügen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:50
+#, fuzzy
+msgid "Used counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:51
+msgid "Counter"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:52
+#, fuzzy
+msgid "Reset counter"
+msgstr "Controller Zurücksetzen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:53
+#: ../protocols/zwave/html/zwave.xml.in.h:64
+#: ../protocols/mysensors/html/mysensors.xml.in.h:10
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:54
+#, fuzzy
+msgid "Delete device"
+msgstr "Entfernen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:51
+#: ../configuration/blockly/html/agoblockly.xml.in.h:4
+#: ../configuration/dashboards/html/dashboards.xml.in.h:3
+#: ../configuration/devices/html/devices.xml.in.h:3
+#: ../configuration/events/html/events.xml.in.h:3
+#: ../configuration/rooms/html/rooms.xml.in.h:3
+#: ../configuration/scenarios/html/scenarios.xml.in.h:3
+#: ../configuration/variables/html/variables.xml.in.h:3
+msgid "Delete"
+msgstr "Löschen"
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:56
+msgid "Force saving board config"
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:58
+#, fuzzy
+msgid "Delete this board"
+msgstr "Hausmodus hinzufügen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:1
 msgid "Infos"
 msgstr "Informationen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:28
+#: ../protocols/zwave/html/zwave.xml.in.h:3
 msgid "Associations"
 msgstr "Verbindungen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:30
+#: ../protocols/zwave/html/zwave.xml.in.h:4
+#: ../protocols/mysensors/html/mysensors.xml.in.h:6
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:5
 #, fuzzy
 msgid "Commands"
 msgstr "Befehl:"
 
-#: ../applications/zwave/html/zwave.xml.in.h:31
+#: ../protocols/zwave/html/zwave.xml.in.h:6
 msgid "Create new association with"
 msgstr "Erstelle neue Verbindung mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:32
+#: ../protocols/zwave/html/zwave.xml.in.h:7
 msgid "Create"
 msgstr "Erstellen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:33
+#: ../protocols/zwave/html/zwave.xml.in.h:8
 #, fuzzy
 msgid "Delete node association"
 msgstr "Keine Verbindung"
 
-#: ../applications/zwave/html/zwave.xml.in.h:34
-msgid "Add association with"
-msgstr "Verbindung hinzufügen mit"
-
-#: ../applications/zwave/html/zwave.xml.in.h:35
+#: ../protocols/zwave/html/zwave.xml.in.h:9
 #, fuzzy
 msgid "Add association"
 msgstr "Verbindung hinzufügen mit"
 
-#: ../applications/zwave/html/zwave.xml.in.h:36
+#: ../protocols/zwave/html/zwave.xml.in.h:10
 msgid ""
 "This parameter has something invalid. It is displayed only for information."
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:38
+#: ../protocols/zwave/html/zwave.xml.in.h:11
 msgid "Heal this node"
 msgstr "Diesen Node heilen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:39
+#: ../protocols/zwave/html/zwave.xml.in.h:12
 msgid "Heal"
 msgstr "Heilen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:40
+#: ../protocols/zwave/html/zwave.xml.in.h:13
 msgid "Refresh node informations"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:41
-msgid "Refresh"
-msgstr "Aktualisieren"
-
-#: ../applications/zwave/html/zwave.xml.in.h:42
+#: ../protocols/zwave/html/zwave.xml.in.h:15
 msgid "Test this node"
 msgstr "Diesen Node testen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:44
+#: ../protocols/zwave/html/zwave.xml.in.h:17
 msgid "Remove this node from network"
 msgstr "Diesen Node vom Netzwerk entfernen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:46
+#: ../protocols/zwave/html/zwave.xml.in.h:18
+#: ../protocols/mysensors/html/mysensors.xml.in.h:14
+msgid "Remove"
+msgstr "Entfernen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:19
 #, fuzzy
 msgid "Request node configuration parameters"
 msgstr "Node Informationen aktualisieren"
 
-#: ../applications/zwave/html/zwave.xml.in.h:47
-#: ../applications/onvif/html/onvif.xml.in.h:42
+#: ../protocols/zwave/html/zwave.xml.in.h:20
+#: ../protocols/onvif/html/onvif.xml.in.h:42
 #, fuzzy
 msgid "Request parameters"
 msgstr "Setze Parameter"
 
-#: ../applications/zwave/html/zwave.xml.in.h:48
+#: ../protocols/zwave/html/zwave.xml.in.h:21
+msgid "zwavecontroller is not responding. Unable to execute action."
+msgstr ""
+"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
+
+#: ../protocols/zwave/html/zwave.xml.in.h:22
+msgid "Port configured"
+msgstr "Port ist konfiguriert"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:23
+msgid "Z-Wave controller resetted"
+msgstr "Z-Wave Controller zurückgesetzt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:24
+msgid "Add node command sent to controller"
+msgstr "Node hinzufügen Befehl wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:25
+msgid "Remove node command sent to controller"
+msgstr "Node entfernen Befehl wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:26
+msgid "Test network command launched"
+msgstr "Netzwerk Test Befehl gestartet"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:27
+msgid "Cancel command sent to controller"
+msgstr "Abbrechen Befehl wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:28
+msgid "Save configuration sent to controller"
+msgstr "Konfiguration sichern wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:29
+msgid "Download config sent to controller"
+msgstr "Konfiguration herunterladen wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:30
+msgid "Turn on all nodes command sent to controller"
+msgstr "Alle Nodes einschalten wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:31
+msgid "Turn off all nodes command sent to controller"
+msgstr "Alle Nodes ausschalten wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:32
+msgid "Test node command sent to controller"
+msgstr "Test Node Befehl wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:33
+msgid "Test node command failed"
+msgstr "Test Node Befehl fehlgeschalgen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:34
+msgid "Heal node command sent to controller"
+msgstr "Heile Node Befehl wurde an den Controller geschickt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:35
+msgid "Parameter updated successfully"
+msgstr "Parameter erfolgreich aktualisiert"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:36
+msgid "Unable to update parameter"
+msgstr "Kann Parameter nicht aktualisieren"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:37
+msgid "Association added successfully"
+msgstr "Verbindung wurde erfolgreich hinzugefügt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:38
+msgid "Association removed successfully"
+msgstr "Verbindung wurde erfolgreich entfernt"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:39
+msgid "Really remove this association?"
+msgstr "Diese Verbindung wirklich löschen?"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:40
+msgid "Really remove this node?"
+msgstr "Diesen Node wirklich löschen?"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:42
+#, fuzzy
+msgid "Refresh node infos command sent"
+msgstr "Node Informationen aktualisieren"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:43
+#, fuzzy
+msgid "Refresh node infos command failed"
+msgstr "Test Node Befehl fehlgeschalgen"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:44
+#, fuzzy
+msgid "Request node parameters sent"
+msgstr "Setze Parameter"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:45
+#, fuzzy
+msgid "Request node parameters failed"
+msgstr "Setze Parameter"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:46
 msgid "Devices"
 msgstr "Geräte"
 
-#: ../applications/zwave/html/zwave.xml.in.h:49
+#: ../protocols/zwave/html/zwave.xml.in.h:47
 msgid "Dependencies"
 msgstr "Abhängigkeiten"
 
-#: ../applications/zwave/html/zwave.xml.in.h:51
+#: ../protocols/zwave/html/zwave.xml.in.h:48
+#: ../protocols/mysensors/html/mysensors.xml.in.h:5
+msgid "Statistics"
+msgstr "Statistiken"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:49
 #, fuzzy
 msgid "General commands"
 msgstr "Allgemein"
 
-#: ../applications/zwave/html/zwave.xml.in.h:52
+#: ../protocols/zwave/html/zwave.xml.in.h:50
+#, fuzzy
+msgid "No name"
+msgstr "Neuer Raumname"
+
+#: ../protocols/zwave/html/zwave.xml.in.h:51
 msgid "True"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:53
+#: ../protocols/zwave/html/zwave.xml.in.h:52
 msgid "False"
 msgstr ""
 
-#: ../applications/zwave/html/zwave.xml.in.h:54
+#: ../protocols/zwave/html/zwave.xml.in.h:53
 #, fuzzy
 msgid "Pair/unpair node to your network"
 msgstr "Node ins Netzwerk koppeln"
 
-#: ../applications/zwave/html/zwave.xml.in.h:55
+#: ../protocols/zwave/html/zwave.xml.in.h:54
 msgid "Pair"
 msgstr "Kopple"
 
-#: ../applications/zwave/html/zwave.xml.in.h:56
+#: ../protocols/zwave/html/zwave.xml.in.h:55
 msgid "Unpair"
 msgstr "Entkoppeln"
 
-#: ../applications/zwave/html/zwave.xml.in.h:57
+#: ../protocols/zwave/html/zwave.xml.in.h:56
 msgid "Turn on/off all devices"
 msgstr "Schalte alle Geräte ein/aus"
 
-#: ../applications/zwave/html/zwave.xml.in.h:58
-msgid "On"
-msgstr "Ein"
-
-#: ../applications/zwave/html/zwave.xml.in.h:59
-msgid "Off"
-msgstr "Aus"
-
-#: ../applications/zwave/html/zwave.xml.in.h:60
+#: ../protocols/zwave/html/zwave.xml.in.h:59
 msgid "Test network"
 msgstr "Teste Netzwerk"
 
-#: ../applications/zwave/html/zwave.xml.in.h:61
+#: ../protocols/zwave/html/zwave.xml.in.h:60
 #, fuzzy
 msgid "Heal network"
 msgstr "Teste Netzwerk"
 
-#: ../applications/zwave/html/zwave.xml.in.h:62
+#: ../protocols/zwave/html/zwave.xml.in.h:61
 msgid "Cancel running controller command"
 msgstr "Laufenden Controller Befehl abbrechen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:64
+#: ../protocols/zwave/html/zwave.xml.in.h:63
 msgid "Reset controller"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:66
-msgid "Download configuration"
-msgstr "Konfiguration herunterladen"
+#: ../protocols/zwave/html/zwave.xml.in.h:65
+#, fuzzy
+msgid "Controller configuration"
+msgstr "ago control Konfiguration"
 
-#: ../applications/zwave/html/zwave.xml.in.h:67
-#: ../applications/onvif/html/onvif.xml.in.h:52
+#: ../protocols/zwave/html/zwave.xml.in.h:66
+#: ../protocols/onvif/html/onvif.xml.in.h:52
 msgid "Download"
 msgstr "Herunterladen"
 
-#: ../applications/zwave/html/zwave.xml.in.h:68
-msgid "Save configuration"
-msgstr "Konfiguration speichern"
-
-#: ../applications/onvif/html/onvif.xml.in.h:1
+#: ../protocols/onvif/html/onvif.xml.in.h:1
 #: ../configuration/datalogger/html/datalogger.xml.in.h:2
 #, fuzzy
 msgid "General"
 msgstr "Allgemein"
 
-#: ../applications/onvif/html/onvif.xml.in.h:2
+#: ../protocols/onvif/html/onvif.xml.in.h:2
 #, fuzzy
 msgid "Config"
 msgstr "Konfiguration"
 
-#: ../applications/onvif/html/onvif.xml.in.h:3
+#: ../protocols/onvif/html/onvif.xml.in.h:3
 #, fuzzy
 msgid "Motion"
 msgstr "Aktion"
 
-#: ../applications/onvif/html/onvif.xml.in.h:4
+#: ../protocols/onvif/html/onvif.xml.in.h:4
 #, fuzzy
 msgid "Recording"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:5
+#: ../protocols/onvif/html/onvif.xml.in.h:5
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: ../applications/onvif/html/onvif.xml.in.h:6
+#: ../protocols/onvif/html/onvif.xml.in.h:6
 #, fuzzy
 msgid "Camera ip address"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:7
+#: ../protocols/onvif/html/onvif.xml.in.h:7
 msgid "Ip"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:8
+#: ../protocols/onvif/html/onvif.xml.in.h:8
 msgid "Camera port"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:9
+#: ../protocols/onvif/html/onvif.xml.in.h:9
 msgid "Port"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:10
+#: ../protocols/onvif/html/onvif.xml.in.h:10
 msgid "Camera login"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:12
+#: ../protocols/onvif/html/onvif.xml.in.h:12
 #, fuzzy
 msgid "Camera password"
 msgstr "Dein Passwort"
 
-#: ../applications/onvif/html/onvif.xml.in.h:15
+#: ../protocols/onvif/html/onvif.xml.in.h:15
 msgid "Camera URI"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:16
+#: ../protocols/onvif/html/onvif.xml.in.h:16
 msgid "URI"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:17
+#: ../protocols/onvif/html/onvif.xml.in.h:17
 #, fuzzy
 msgid "Get device infos"
 msgstr "Controller Zurücksetzen"
 
-#: ../applications/onvif/html/onvif.xml.in.h:18
+#: ../protocols/onvif/html/onvif.xml.in.h:18
 msgid ""
 "Update existing configuration. If you feel limited and need to add more "
 "infos, please use \"Advanced\" tab"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:19
+#: ../protocols/onvif/html/onvif.xml.in.h:19
 #, fuzzy
 msgid "Hostname"
 msgstr "Benutzername"
 
-#: ../applications/onvif/html/onvif.xml.in.h:20
+#: ../protocols/onvif/html/onvif.xml.in.h:20
 msgid "Date and time"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:21
+#: ../protocols/onvif/html/onvif.xml.in.h:21
 msgid "NTP"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:22
+#: ../protocols/onvif/html/onvif.xml.in.h:22
 msgid "Network interfaces"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:23
+#: ../protocols/onvif/html/onvif.xml.in.h:23
 msgid "OnVIF operations<i class=\"icon-link\"/>"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:24
+#: ../protocols/onvif/html/onvif.xml.in.h:24
 msgid ""
 "Enabling motion will create a new binary device that allows you to create "
 "events with it"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:25
+#: ../protocols/onvif/html/onvif.xml.in.h:25
 msgid "Enable motion"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:26
+#: ../protocols/onvif/html/onvif.xml.in.h:26
 #, fuzzy
 msgid "Camera profile"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:27
+#: ../protocols/onvif/html/onvif.xml.in.h:27
 msgid "Get all profiles"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:28
+#: ../protocols/onvif/html/onvif.xml.in.h:28
 msgid "Detection sensitivity"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:29
+#: ../protocols/onvif/html/onvif.xml.in.h:29
 #, fuzzy
 msgid "Detection deviation"
 msgstr "Keine Verbindung"
 
-#: ../applications/onvif/html/onvif.xml.in.h:30
+#: ../protocols/onvif/html/onvif.xml.in.h:30
 msgid "(the higher the value, the more motion is allowed)"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:31
+#: ../protocols/onvif/html/onvif.xml.in.h:31
 #, fuzzy
 msgid "On duration"
 msgstr "Konfiguration"
 
-#: ../applications/onvif/html/onvif.xml.in.h:32
+#: ../protocols/onvif/html/onvif.xml.in.h:32
 msgid "seconds"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:33
+#: ../protocols/onvif/html/onvif.xml.in.h:33
 msgid "Please note that recording will only work if motion is enabled"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:34
+#: ../protocols/onvif/html/onvif.xml.in.h:34
 #, fuzzy
 msgid "Enable recording"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:35
+#: ../protocols/onvif/html/onvif.xml.in.h:35
 #, fuzzy
 msgid "Recording profile"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:36
+#: ../protocols/onvif/html/onvif.xml.in.h:36
 msgid "Recording duration after last motion detected"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:37
+#: ../protocols/onvif/html/onvif.xml.in.h:37
 msgid "Draw detected area"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:38
+#: ../protocols/onvif/html/onvif.xml.in.h:38
 msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:39
+#: ../protocols/onvif/html/onvif.xml.in.h:39
 #, fuzzy
 msgid "Service name"
 msgstr "Gerätename"
 
-#: ../applications/onvif/html/onvif.xml.in.h:40
+#: ../protocols/onvif/html/onvif.xml.in.h:40
 #, fuzzy
 msgid "Operation name"
 msgstr "Namen der Zone eingeben"
 
-#: ../applications/onvif/html/onvif.xml.in.h:41
+#: ../protocols/onvif/html/onvif.xml.in.h:41
 #, fuzzy
 msgid "Operation"
 msgstr "Beschreibung"
 
-#: ../applications/onvif/html/onvif.xml.in.h:43
+#: ../protocols/onvif/html/onvif.xml.in.h:43
 msgid "Response"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:44
+#: ../protocols/onvif/html/onvif.xml.in.h:44
 msgid "Execute"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:45
+#: ../protocols/onvif/html/onvif.xml.in.h:45
 #, fuzzy
 msgid "Check parameters"
 msgstr "Setze Parameter"
 
-#: ../applications/onvif/html/onvif.xml.in.h:46
+#: ../protocols/onvif/html/onvif.xml.in.h:46
 msgid "My cameras"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:47
+#: ../protocols/onvif/html/onvif.xml.in.h:47
 #, fuzzy
 msgid "My recordings"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:48
+#: ../protocols/onvif/html/onvif.xml.in.h:48
 msgid "Add camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:49
+#: ../protocols/onvif/html/onvif.xml.in.h:49
 #, fuzzy
 msgid "Recordings config"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:51
-#: ../configuration/blockly/html/agoblockly.xml.in.h:29
-#: ../configuration/dashboards/html/dashboards.xml.in.h:5
-#: ../configuration/devices/html/devices.xml.in.h:3
-#: ../configuration/events/html/events.xml.in.h:5
-#: ../configuration/rooms/html/rooms.xml.in.h:5
-#: ../configuration/scenarios/html/scenarios.xml.in.h:7
-#: ../configuration/variables/html/variables.xml.in.h:4
-msgid "Delete"
-msgstr "Löschen"
+#: ../protocols/onvif/html/onvif.xml.in.h:50
+#: ../configuration/dashboards/html/dashboards.xml.in.h:6
+#: ../configuration/events/html/events.xml.in.h:9
+#: ../configuration/scenarios/html/scenarios.xml.in.h:11
+msgid "Edit"
+msgstr "Bearbeiten"
 
-#: ../applications/onvif/html/onvif.xml.in.h:53
+#: ../protocols/onvif/html/onvif.xml.in.h:53
 #, fuzzy
 msgid "Ip address"
 msgstr "E-Mail Adresse"
 
-#: ../applications/onvif/html/onvif.xml.in.h:54
+#: ../protocols/onvif/html/onvif.xml.in.h:54
 msgid "Get camera profiles"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:55
 msgid "Select camera profile"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:56
+#: ../protocols/onvif/html/onvif.xml.in.h:56
 msgid "Save camera"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:57
+#: ../protocols/onvif/html/onvif.xml.in.h:57
 #, fuzzy
 msgid "Recordings directory"
 msgstr "Konfiguration speichern"
 
-#: ../applications/onvif/html/onvif.xml.in.h:58
+#: ../protocols/onvif/html/onvif.xml.in.h:58
 msgid "Directory"
 msgstr ""
 
-#: ../applications/onvif/html/onvif.xml.in.h:59
+#: ../protocols/onvif/html/onvif.xml.in.h:59
 #, fuzzy
 msgid "Recordings purge delay"
 msgstr "Konfiguration speichern"
 
+#: ../protocols/mysensors/html/mysensors.xml.in.h:1
+#, fuzzy
+msgid "mysensorscontroller is not responding. Unable to execute action."
+msgstr ""
+"Der zwavecontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:2
+#, fuzzy
+msgid "Serial port configured successfully."
+msgstr "Script wurde erfolgreich geladen."
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:3
+#, fuzzy
+msgid "Counters resetted successfully."
+msgstr "Aufgabe wurde erfolgreich gelöscht."
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:4
+#, fuzzy
+msgid "Device removed successfully."
+msgstr "Verbindung wurde erfolgreich entfernt"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:7
+#, fuzzy
+msgid "Configure serial port"
+msgstr "USB Port vom Controller"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:8
+msgid "Set"
+msgstr "Setzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:9
+#, fuzzy
+msgid "Reset device counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:11
+#, fuzzy
+msgid "Reset all counters"
+msgstr "Controller Zurücksetzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:12
+#, fuzzy
+msgid "Reset all"
+msgstr "Zurücksetzen"
+
+#: ../protocols/mysensors/html/mysensors.xml.in.h:13
+#, fuzzy
+msgid "Remove device"
+msgstr "Entfernen"
+
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
+#, fuzzy
+msgid "Lua script"
+msgstr "Vorhandenes Script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:2
+#, fuzzy
+msgid "Load/delete script"
+msgstr "Vorhandenes Script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:3
+msgid "Load"
+msgstr "Laden"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:5
+msgid "Export"
+msgstr "Exportieren"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:6
+#, fuzzy
+msgid "Import script"
+msgstr "Vorhandenes Script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:7
+#, fuzzy
+msgid "Saveas"
+msgstr "Speichern"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:8
+msgid "Script name"
+msgstr "Script Name"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:11
+#, fuzzy
+msgid "Debug script"
+msgstr "Script"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:12
+#: ../help/drain/html/drain.xml.in.h:2
+msgid "Start"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:13
+#: ../help/drain/html/drain.xml.in.h:3
+msgid "Stop"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+#: ../help/drain/html/drain.xml.in.h:4
+msgid "Clear"
+msgstr "Löschen"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:15
 msgid "luacontroller is not responding. Unable to execute action."
 msgstr ""
 "luacontroller antwortet nicht. Der Befehl kann nicht ausgeführt werden."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:2
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
 msgid "No block defined in workspace."
 msgstr "Kein Block im Arbeitsbereich definiert."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:3
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
 msgid "Script saved successfully."
 msgstr "Script wurde erfolgreich gespeichert."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:4
+#: ../configuration/blockly/html/agoblockly.xml.in.h:18
 msgid "Script loaded successfully."
 msgstr "Script wurde erfolgreich geladen."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:5
+#: ../configuration/blockly/html/agoblockly.xml.in.h:19
 msgid "Please select a script"
 msgstr "Bitte wähle ein Script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:6
+#: ../configuration/blockly/html/agoblockly.xml.in.h:20
 msgid "Unable to load script, it seems to be corrupted!"
 msgstr "Skript kann nicht geladen werden, es scheint beschädigt zu sein!"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:7
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
 msgid "Script not saved"
 msgstr "Script wurde nicht gespeichert"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:8
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
 msgid "Please specify a valid script name"
 msgstr "Bitte gültigen Skriptnamen eingeben"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:9
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
 msgid "Delete selected script?"
 msgstr "Lösche ausgewähltes Script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:10
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
 msgid "Script deleted successfully"
 msgstr "Script wurde erfolgreich gelöscht."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:11
+#: ../configuration/blockly/html/agoblockly.xml.in.h:25
 msgid "Unable to delete script"
 msgstr "Kann Script nicht löschen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:12
+#: ../configuration/blockly/html/agoblockly.xml.in.h:26
 msgid "Script renamed successfully"
 msgstr "Script wurde erfolgreich umbenannt."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:13
+#: ../configuration/blockly/html/agoblockly.xml.in.h:27
 msgid "Script not renamed"
 msgstr "Script wurde nicht umbenannt"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+#: ../configuration/blockly/html/agoblockly.xml.in.h:28
 #, fuzzy
-msgid "Event builder using blocks"
+msgid "Event configuration stacking blocks"
 msgstr "Ereignis Konfiguration"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:15
-#, fuzzy
-msgid "New script"
-msgstr "Script"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:29
 msgid "New"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:18
+#: ../configuration/blockly/html/agoblockly.xml.in.h:30
+#, fuzzy
+msgid "Changed"
+msgstr "Aktiven Hausmodus setzen"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:31
 #, fuzzy
 msgid "Save as"
 msgstr "Speichern"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 #, fuzzy
-msgid "Load script"
-msgstr "Vorhandenes Script"
+msgid "Import"
+msgstr "Exportieren"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:20
-msgid "Load"
-msgstr "Laden"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
-msgid "Check blocks"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "Check"
 msgstr "Überprüfen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
-msgid "View your blocks under script format"
-msgstr ""
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
+#: ../configuration/blockly/html/agoblockly.xml.in.h:34
 msgid "View"
 msgstr "Ansehen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:25
-msgid "saved"
+#: ../configuration/blockly/html/agoblockly.xml.in.h:35
+msgid "Debug"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:26
-#, fuzzy
-msgid "modified"
-msgstr "Script geändert"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:27
-#, fuzzy
-msgid "My scripts"
-msgstr "Script"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:28
-#, fuzzy
-msgid "Script import"
-msgstr "Script Name"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:30
-msgid "Export"
-msgstr "Exportieren"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:31
-#, fuzzy
-msgid "Enter script name"
-msgstr "Script Name"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:32
-msgid "Script name"
-msgstr "Script Name"
+#: ../configuration/blockly/html/agoblockly.xml.in.h:36
+msgid "Event editor is only available on large resolution devices."
+msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:1
-msgid "ago control Cloud Registration"
-msgstr "ago control Cloud Registrierung"
+msgid "Passwords do not match!"
+msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:2
+msgid "Success, activation successful!"
+msgstr "Aktivierung erfolgreich abgeschlossen!"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:3
+msgid "Certificate read error!"
+msgstr "Fehler beim Lesen vom Zertifikat!"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:4
+msgid "Wrong username, password or activation PIN!"
+msgstr "Benutzername, Passwort oder Aktivierungsschlüssel(PIN) falsch!"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:5
+#, fuzzy
+msgid "ago control Cloud"
+msgstr "ago control Forum"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:6
+#, fuzzy
+msgid "Cloud registration"
+msgstr "ago control Cloud Registrierung"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:7
 msgid "This service is currently under heavy development!"
 msgstr "An diesem Dienst wird gerade schwer gearbeitet!"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:3
+#: ../configuration/cloud/html/cloud.xml.in.h:8
 msgid ""
 "Register a ago control Cloud account to remote control your installation via "
 "<a target=\"_blank\" href=\"https://cloud.agocontrol.com\">cloud.agocontrol."
@@ -1387,109 +1763,78 @@ msgstr ""
 "geleitet um die Registrierung abzuschliessen.<br />Dieses Service ist nicht "
 "kostenlos."
 
-#: ../configuration/cloud/html/cloud.xml.in.h:4
+#: ../configuration/cloud/html/cloud.xml.in.h:9
 msgid "Your username"
 msgstr "Dein Benutzername"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:5
-msgid "Input your username"
-msgstr "Benutzername eingeben"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:6
+#: ../configuration/cloud/html/cloud.xml.in.h:11
 msgid "Your E-Mail address"
 msgstr "Deine E-Mail Adresse"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:7
-msgid "Input your E-Mail address"
-msgstr "E-Mail Adresse eingeben"
+#: ../configuration/cloud/html/cloud.xml.in.h:12
+#, fuzzy
+msgid "Email"
+msgstr "Email"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:8
+#: ../configuration/cloud/html/cloud.xml.in.h:13
 msgid "Your new password"
 msgstr "Dein Passwort"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:9
-msgid "Input new password"
-msgstr "Passwort eingeben"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:10
+#: ../configuration/cloud/html/cloud.xml.in.h:15
 msgid "Confirm new password"
 msgstr "Passwort bestätigen"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:11
+#: ../configuration/cloud/html/cloud.xml.in.h:16
+#, fuzzy
+msgid "Password confirmation"
+msgstr "Konfiguration herunterladen"
+
+#: ../configuration/cloud/html/cloud.xml.in.h:17
 msgid "Register Cloud account"
 msgstr "Cloud Konto erstellen"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:12
-msgid "Cloud Activation"
+#: ../configuration/cloud/html/cloud.xml.in.h:18
+#, fuzzy
+msgid "Cloud activation"
 msgstr "Cloud Aktivierung"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:13
-msgid "Success, activation successful!"
-msgstr "Aktivierung erfolgreich abgeschlossen!"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:14
-msgid "Certificate read error!"
-msgstr "Fehler beim Lesen vom Zertifikat!"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:15
-msgid "Wrong username, password or activation PIN!"
-msgstr "Benutzername, Passwort oder Aktivierungsschlüssel(PIN) falsch!"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:16
-msgid "Close"
-msgstr "Schließen"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:17
+#: ../configuration/cloud/html/cloud.xml.in.h:19
 msgid "Your password"
 msgstr "Dein Passwort"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:18
-msgid "Input password"
-msgstr "Passwort eingeben"
-
-#: ../configuration/cloud/html/cloud.xml.in.h:19
+#: ../configuration/cloud/html/cloud.xml.in.h:20
 msgid "Your PIN"
 msgstr "Dein PIN"
 
-#: ../configuration/cloud/html/cloud.xml.in.h:20
-msgid "Input PIN"
-msgstr "PIN eingeben"
-
 #: ../configuration/cloud/html/cloud.xml.in.h:21
+msgid "PIN"
+msgstr ""
+
+#: ../configuration/cloud/html/cloud.xml.in.h:22
 msgid "Activate Cloud"
 msgstr "Cloud aktivieren"
 
 #: ../configuration/dashboards/html/dashboards.xml.in.h:1
+#: ../configuration/scenarios/html/scenarios.xml.in.h:1
 #, fuzzy
 msgid "Are you sure that you want to delete this dashboard?"
 msgstr "Sicher, dass dieses Scenario gelöscht werden soll?"
 
-#: ../configuration/dashboards/html/dashboards.xml.in.h:2
-#: ../configuration/devices/html/devices.xml.in.h:5
-#: ../configuration/events/html/events.xml.in.h:2
-#: ../configuration/rooms/html/rooms.xml.in.h:2
-#: ../configuration/scenarios/html/scenarios.xml.in.h:2
-#: ../configuration/variables/html/variables.xml.in.h:2
-msgid "Yes"
-msgstr "Ja"
-
-#: ../configuration/dashboards/html/dashboards.xml.in.h:3
-#: ../configuration/devices/html/devices.xml.in.h:6
-#: ../configuration/events/html/events.xml.in.h:3
-#: ../configuration/rooms/html/rooms.xml.in.h:3
-#: ../configuration/scenarios/html/scenarios.xml.in.h:3
-#: ../configuration/variables/html/variables.xml.in.h:3
-msgid "No"
-msgstr "Nein"
-
-#: ../configuration/dashboards/html/dashboards.xml.in.h:6
+#: ../configuration/dashboards/html/dashboards.xml.in.h:4
 #, fuzzy
 msgid "Dashboard configuration"
 msgstr "Konfiguration herunterladen"
 
+#: ../configuration/dashboards/html/dashboards.xml.in.h:5
+#: ../configuration/devices/html/devices.xml.in.h:8
+#: ../configuration/rooms/html/rooms.xml.in.h:5
+#: ../configuration/scenarios/html/scenarios.xml.in.h:9
+msgid "unset"
+msgstr "nicht gewählt"
+
 #: ../configuration/dashboards/html/dashboards.xml.in.h:7
 #, fuzzy
-msgid "Create a new dashboard"
+msgid "Create new dashboard"
 msgstr "Neuen Raum erstellen"
 
 #: ../configuration/dashboards/html/dashboards.xml.in.h:8
@@ -1524,15 +1869,15 @@ msgid "Activate RRDTool logging (graph)"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:9
-msgid "Select sensors to display on graph"
+msgid "Add graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:10
-msgid "Number of hours to display on thumb"
+msgid "Select sensors to display on graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:11
-msgid "Add graph"
+msgid "Number of hours to display on thumb"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:12
@@ -1541,8 +1886,9 @@ msgid "Delete graph"
 msgstr "Löschen"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:13
-msgid "Displayed sensors on selected graph"
-msgstr ""
+#, fuzzy
+msgid "Graphs"
+msgstr "Graph"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:14
 msgid "Database size"
@@ -1565,85 +1911,78 @@ msgstr ""
 msgid "Purge all positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:19
-#: ../help/journal/html/journal.xml.in.h:1
-msgid "Journal"
-msgstr ""
-
 #: ../configuration/datalogger/html/datalogger.xml.in.h:20
 msgid "Purge all messages"
 msgstr ""
 
 #: ../configuration/devices/html/devices.xml.in.h:1
-#: ../configuration/rooms/html/rooms.xml.in.h:4
-#: ../configuration/scenarios/html/scenarios.xml.in.h:4
-msgid "unset"
-msgstr "nicht gewählt"
-
-#: ../configuration/devices/html/devices.xml.in.h:2
-msgid "Details"
-msgstr "Details"
-
-#: ../configuration/devices/html/devices.xml.in.h:4
 msgid "Are you sure that you want to delete this device?"
 msgstr "Sicher, dass dieses Gerät entfernt werden soll?"
 
-#: ../configuration/devices/html/devices.xml.in.h:7
-msgid "Device Configuration"
+#: ../configuration/devices/html/devices.xml.in.h:4
+#, fuzzy
+msgid "Device configuration"
 msgstr "Geräte Konfiguration"
 
-#: ../configuration/devices/html/devices.xml.in.h:8
+#: ../configuration/devices/html/devices.xml.in.h:5
 msgid "Filter rooms:"
 msgstr "Filter Räume:"
 
-#: ../configuration/devices/html/devices.xml.in.h:9
+#: ../configuration/devices/html/devices.xml.in.h:6
 #, fuzzy
 msgid "Filter device types:"
 msgstr "Filter Gerätetypen:"
 
-#: ../configuration/devices/html/devices.xml.in.h:10
+#: ../configuration/devices/html/devices.xml.in.h:7
 #, fuzzy
 msgid "Filter handlers:"
 msgstr "Filter Räume:"
+
+#: ../configuration/devices/html/devices.xml.in.h:9
+msgid "Details"
+msgstr "Details"
 
 #: ../configuration/events/html/events.xml.in.h:1
 msgid "Are you sure that you want to delete this event?"
 msgstr "Sicher, dass dieses Ereignis gelöscht werden soll?"
 
-#: ../configuration/events/html/events.xml.in.h:6
-msgid "Event Configuration"
-msgstr "Ereignis Konfiguration"
+#: ../configuration/events/html/events.xml.in.h:4
+#, fuzzy
+msgid "Edit event"
+msgstr "Ereignis bearbeiten"
 
-#: ../configuration/events/html/events.xml.in.h:7
-msgid "Create Event"
-msgstr "Ereignis erstellen"
-
-#: ../configuration/events/html/events.xml.in.h:8
+#: ../configuration/events/html/events.xml.in.h:5
 msgid "Criteria"
 msgstr "Kriterium"
 
-#: ../configuration/events/html/events.xml.in.h:9
+#: ../configuration/events/html/events.xml.in.h:6
 msgid "Action"
 msgstr "Aktion"
 
+#: ../configuration/events/html/events.xml.in.h:8
+#, fuzzy
+msgid "Event configuration"
+msgstr "Ereignis Konfiguration"
+
 #: ../configuration/events/html/events.xml.in.h:10
-#: ../configuration/scenarios/html/scenarios.xml.in.h:12
-msgid "Name"
-msgstr "Name"
+#, fuzzy
+msgid "Create new event"
+msgstr "Ereignis erstellen"
 
 #: ../configuration/events/html/events.xml.in.h:11
-msgid "Input event name"
-msgstr "Namen für Ereignis eingeben"
+#, fuzzy
+msgid "New event name"
+msgstr "Neuer Raumname"
 
 #: ../configuration/events/html/events.xml.in.h:12
-msgid "Edit Event"
-msgstr "Ereignis bearbeiten"
+#, fuzzy
+msgid "Create event"
+msgstr "Ereignis erstellen"
 
 #: ../configuration/system/html/system.xml.in.h:1
-#: ../help/system/html/system.xml.in.h:1
 #, fuzzy
-msgid "System informations"
-msgstr "Node Informationen aktualisieren"
+msgid "System configuration"
+msgstr "Konfiguration speichern"
 
 #: ../configuration/system/html/system.xml.in.h:2
 msgid "Default contact"
@@ -1668,21 +2007,17 @@ msgstr "E-Mail Adresse"
 msgid "Phone number"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:7
-msgid "(international number is preferable)"
-msgstr ""
-
-#: ../configuration/system/html/system.xml.in.h:9
+#: ../configuration/system/html/system.xml.in.h:8
 msgid ""
 "Find and click on your home to find its position. Agocontrol needs this "
 "information to compute sunset/sunrise times."
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:10
+#: ../configuration/system/html/system.xml.in.h:9
 msgid "Latitude"
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:11
+#: ../configuration/system/html/system.xml.in.h:10
 msgid "Longitude"
 msgstr ""
 
@@ -1690,80 +2025,124 @@ msgstr ""
 msgid "Are you sure that you want to delete this room?"
 msgstr "Sicher, dass dieser Raum gelöscht werden soll?"
 
-#: ../configuration/rooms/html/rooms.xml.in.h:6
+#: ../configuration/rooms/html/rooms.xml.in.h:4
 #, fuzzy
 msgid "Room configuration"
 msgstr "Raum Konfiguration"
 
-#: ../configuration/rooms/html/rooms.xml.in.h:7
-msgid "Create a new room"
+#: ../configuration/rooms/html/rooms.xml.in.h:6
+#, fuzzy
+msgid "Create new room"
 msgstr "Neuen Raum erstellen"
 
-#: ../configuration/rooms/html/rooms.xml.in.h:8
+#: ../configuration/rooms/html/rooms.xml.in.h:7
 msgid "New room name"
 msgstr "Neuer Raumname"
 
-#: ../configuration/rooms/html/rooms.xml.in.h:9
-msgid "Create Room"
+#: ../configuration/rooms/html/rooms.xml.in.h:8
+#, fuzzy
+msgid "Create room"
 msgstr "Neuen Raum erstellen"
 
-#: ../configuration/scenarios/html/scenarios.xml.in.h:1
+#: ../configuration/scenarios/html/scenarios.xml.in.h:4
+#, fuzzy
+msgid "Edit scenario"
+msgstr "Szenario bearbeiten"
+
+#: ../configuration/scenarios/html/scenarios.xml.in.h:5
+#, fuzzy
+msgid "Add command"
+msgstr "Befehl hinzufügen"
+
+#: ../configuration/scenarios/html/scenarios.xml.in.h:7
 msgid "Are you sure that you want to delete this scenario?"
 msgstr "Sicher, dass dieses Scenario gelöscht werden soll?"
 
 #: ../configuration/scenarios/html/scenarios.xml.in.h:8
-msgid "Scenario Configuration"
+#, fuzzy
+msgid "Scenario configuration"
 msgstr "Szenario Konfiguration"
 
-#: ../configuration/scenarios/html/scenarios.xml.in.h:9
-msgid "Create Scenario"
+#: ../configuration/scenarios/html/scenarios.xml.in.h:12
+#, fuzzy
+msgid "Create new Scenario"
 msgstr "Szenario erstellen"
 
-#: ../configuration/scenarios/html/scenarios.xml.in.h:10
-msgid ""
-"To create a scenario press the \"Add Command\" button to add commands. After "
-"you need to give a name and press \"Create Scenario\"."
-msgstr ""
-"Um ein Szenario zu erstellen, bitte den \"Befehl hinzufügen\" Knopf nutzen. "
-"Danach einen Name vergeben und dann auf \"Szenario erstellen\" drücken."
-
-#: ../configuration/scenarios/html/scenarios.xml.in.h:11
-msgid "Add Command"
-msgstr "Befehl hinzufügen"
-
 #: ../configuration/scenarios/html/scenarios.xml.in.h:13
-msgid "Input scenario name"
+#, fuzzy
+msgid "New scenario name"
 msgstr "Namen für Szenario eingeben"
 
 #: ../configuration/scenarios/html/scenarios.xml.in.h:14
 #, fuzzy
-msgid "Edit scenario"
-msgstr "Szenario bearbeiten"
+msgid "Create scenario"
+msgstr "Szenario erstellen"
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:1
+#, fuzzy
+msgid "System monitoring configuration"
+msgstr "Konfiguration speichern"
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:2
+#, fuzzy
+msgid "Process monitoring"
+msgstr "Liste aktualisieren"
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:3
+msgid "Memory monitoring"
+msgstr ""
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:4
+msgid "Agocontrol can triggers an event when selected process is missing"
+msgstr ""
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:5
+msgid "Selected processes"
+msgstr ""
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:7
+msgid "Agocontrol can trigger an event when a process reach a memory threshold"
+msgstr ""
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:8
+msgid "Memory threshold (mo)"
+msgstr ""
+
+#: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:9
+msgid "Memory threshold"
+msgstr ""
 
 #: ../configuration/variables/html/variables.xml.in.h:1
 msgid "Are you sure that you want to delete this variable?"
 msgstr "Sicher, dass diese Variable gelöscht werden soll?"
 
-#: ../configuration/variables/html/variables.xml.in.h:5
-msgid "Variables Configuration"
+#: ../configuration/variables/html/variables.xml.in.h:4
+#, fuzzy
+msgid "Variable configuration"
 msgstr "Konfiguration der Variablen"
 
-#: ../configuration/variables/html/variables.xml.in.h:6
-msgid "Add new variable"
-msgstr "Neue Variable hinzufügen"
+#: ../configuration/variables/html/variables.xml.in.h:5
+#, fuzzy
+msgid "Create new variable"
+msgstr "Variable erstellen"
 
-#: ../configuration/variables/html/variables.xml.in.h:7
-msgid "Input variable name"
+#: ../configuration/variables/html/variables.xml.in.h:6
+#, fuzzy
+msgid "New variable name"
 msgstr "Namen für Variable eingeben"
 
-#: ../configuration/variables/html/variables.xml.in.h:8
+#: ../configuration/variables/html/variables.xml.in.h:7
 msgid "Create variable"
 msgstr "Variable erstellen"
 
-#: ../help/system/html/system.xml.in.h:2
+#: ../help/system/html/system.xml.in.h:1
 #, fuzzy
-msgid "System version"
-msgstr "System"
+msgid "System informations"
+msgstr "Node Informationen aktualisieren"
+
+#: ../help/system/html/system.xml.in.h:2
+msgid "Version"
+msgstr "Version"
 
 #: ../help/system/html/system.xml.in.h:3
 #, fuzzy
@@ -1782,55 +2161,169 @@ msgstr ""
 msgid "System"
 msgstr "System"
 
-#: ../help/debug/html/debug.xml.in.h:1
-msgid "Debug tools"
-msgstr ""
-
-#: ../help/debug/html/debug.xml.in.h:2
+#: ../help/drain/html/drain.xml.in.h:1
 #, fuzzy
-msgid "Events draining"
+msgid "Event draining"
 msgstr "Ereignis Konfiguration"
 
-#: ../help/debug/html/debug.xml.in.h:3
-#, fuzzy
-msgid "Configuration overview"
-msgstr "Konfiguration"
-
-#: ../help/debug/html/debug.xml.in.h:4
-msgid "Start"
-msgstr ""
-
-#: ../help/debug/html/debug.xml.in.h:5
-msgid "Stop"
-msgstr ""
-
-#: ../help/debug/html/debug.xml.in.h:6
-msgid "Clear"
-msgstr "Löschen"
-
-#: ../help/debug/html/debug.xml.in.h:7
+#: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr ""
 
-#: ../help/journal/html/journal.xml.in.h:2
-#, fuzzy
-msgid "From"
-msgstr "Von:"
+#~ msgid "Add association with"
+#~ msgstr "Verbindung hinzufügen mit"
 
-#: ../help/journal/html/journal.xml.in.h:3
-#, fuzzy
-msgid "To"
-msgstr "Bis:"
+#~ msgid "Download configuration"
+#~ msgstr "Konfiguration herunterladen"
 
-#: ../help/journal/html/journal.xml.in.h:4
-#, fuzzy
-msgid "Filter"
-msgstr "Filter Räume:"
+#~ msgid "Save configuration"
+#~ msgstr "Konfiguration speichern"
 
-#: ../help/journal/html/journal.xml.in.h:5
+#~ msgid "Input your username"
+#~ msgstr "Benutzername eingeben"
+
+#~ msgid "Input your E-Mail address"
+#~ msgstr "E-Mail Adresse eingeben"
+
+#~ msgid "Input new password"
+#~ msgstr "Passwort eingeben"
+
+#~ msgid "Input password"
+#~ msgstr "Passwort eingeben"
+
+#~ msgid "Input PIN"
+#~ msgstr "PIN eingeben"
+
 #, fuzzy
-msgid "Get"
-msgstr "Setzen"
+#~ msgid "Configuration overview"
+#~ msgstr "Konfiguration"
+
+#, fuzzy
+#~ msgid "Event builder using blocks"
+#~ msgstr "Ereignis Konfiguration"
+
+#~ msgid "Add housemode"
+#~ msgstr "Hausmodus hinzufügen"
+
+#, fuzzy
+#~ msgid "Current value"
+#~ msgstr "Setze Wert"
+
+#~ msgid "Twitter is configured"
+#~ msgstr "Twitter ist konfiguriert"
+
+#~ msgid "Twitter is not configured"
+#~ msgstr "Twitter ist nicht konfiguriert"
+
+#, fuzzy
+#~ msgid ""
+#~ "Follow instructions above to authorize agocontrol to access your Twitter "
+#~ "account"
+#~ msgstr "Folgen Sie den Anweisungen oben, um diesen Zugriff zu genehmigen"
+
+#~ msgid "SMS is configured"
+#~ msgstr "SMS ist konfiguriert"
+
+#, fuzzy
+#~ msgid "SMS is not configured"
+#~ msgstr "SMS ist nicht konfiguriert"
+
+#~ msgid "Mail is configured"
+#~ msgstr "E-Mail ist konfiguriert"
+
+#, fuzzy
+#~ msgid "Mail is not configured"
+#~ msgstr "E-Mail ist noch nicht konfiguriert"
+
+#~ msgid ""
+#~ "Specify your email SMTP server and a sender email address (* is mandatory)"
+#~ msgstr ""
+#~ "Definiere Deinen E-Mail SMTP Server und eine Absenderadresse (* "
+#~ "Pflichtfelder)"
+
+#~ msgid "email address"
+#~ msgstr "E-Mail Adresse"
+
+#~ msgid "Push is configured"
+#~ msgstr "Push ist konfiguriert"
+
+#, fuzzy
+#~ msgid "Push is not configured"
+#~ msgstr "Push ist nicht konfiguriert"
+
+#~ msgid "Click"
+#~ msgstr "Klicke"
+
+#~ msgid "Finally save your settings"
+#~ msgstr "Deine Einstellungen speichern"
+
+#~ msgid "And save your settings"
+#~ msgstr "Und speichere die Einstellungen"
+
+#~ msgid "Yes"
+#~ msgstr "Ja"
+
+#~ msgid "No"
+#~ msgstr "Nein"
+
+#~ msgid "Input event name"
+#~ msgstr "Namen für Ereignis eingeben"
+
+#, fuzzy
+#~ msgid "System version"
+#~ msgstr "System"
+
+#~ msgid ""
+#~ "To create a scenario press the \"Add Command\" button to add commands. "
+#~ "After you need to give a name and press \"Create Scenario\"."
+#~ msgstr ""
+#~ "Um ein Szenario zu erstellen, bitte den \"Befehl hinzufügen\" Knopf "
+#~ "nutzen. Danach einen Name vergeben und dann auf \"Szenario erstellen\" "
+#~ "drücken."
+
+#~ msgid "Add new variable"
+#~ msgstr "Neue Variable hinzufügen"
+
+#, fuzzy
+#~ msgid "modified"
+#~ msgstr "Script geändert"
+
+#, fuzzy
+#~ msgid "My scripts"
+#~ msgstr "Script"
+
+#, fuzzy
+#~ msgid "Script import"
+#~ msgstr "Script Name"
+
+#, fuzzy
+#~ msgid "Enter script name"
+#~ msgstr "Script Name"
+
+#~ msgid "Room:"
+#~ msgstr "Raum:"
+
+#~ msgid "Type:"
+#~ msgstr "Gerätetyp:"
+
+#~ msgid "Lastseen:"
+#~ msgstr "Zuletzt gesehen:"
+
+#~ msgid "State:"
+#~ msgstr "Status:"
+
+#~ msgid "Show as:"
+#~ msgstr "Anzeigen als:"
+
+#~ msgid "From:"
+#~ msgstr "Von:"
+
+#~ msgid "To:"
+#~ msgstr "Bis:"
+
+#, fuzzy
+#~ msgid "Filter"
+#~ msgstr "Filter Räume:"
 
 #, fuzzy
 #~ msgid "Save your script"
@@ -1881,9 +2374,6 @@ msgstr "Setzen"
 #~ msgid "Agocontrol can send alert through push notifications."
 #~ msgstr "ago control kann Alarme mit Push Meldungen verschicken"
 
-#~ msgid "ago control Configuration"
-#~ msgstr "ago control Konfiguration"
-
 #~ msgid "Welcome"
 #~ msgstr "Willkommen"
 
@@ -1915,9 +2405,6 @@ msgstr "Setzen"
 
 #~ msgid "ago control Documentation"
 #~ msgstr "ago control Dokumentation"
-
-#~ msgid "ago control Forum"
-#~ msgstr "ago control Forum"
 
 #~ msgid "Contribute"
 #~ msgstr "Mitarbeiten"
@@ -1958,9 +2445,6 @@ msgstr "Setzen"
 #, fuzzy
 #~ msgid "MySensors configuration"
 #~ msgstr "SMS Konfiguration"
-
-#~ msgid "Actions"
-#~ msgstr "Befehle"
 
 #~ msgid ""
 #~ "In this tab you can perform some basic actions on selected Z-Wave node"
@@ -2118,26 +2602,17 @@ msgstr "Setzen"
 #~ msgid "Create Floorplan"
 #~ msgstr "Raumplan erstellen"
 
-#~ msgid "Room"
-#~ msgstr "Raum"
-
 #~ msgid "Value"
 #~ msgstr "Wert"
 
 #~ msgid "Room Name"
 #~ msgstr "Raumname"
 
-#~ msgid "Device Type"
-#~ msgstr "Gerätetyp"
-
 #~ msgid "Handler"
 #~ msgstr "Handler"
 
 #~ msgid "IntID"
 #~ msgstr "Interne ID"
-
-#~ msgid "Version"
-#~ msgstr "Version"
 
 #~ msgid "Please enter a zone name."
 #~ msgstr "Bitte Zonen Namen eingeben"
@@ -2187,9 +2662,6 @@ msgstr "Setzen"
 
 #~ msgid "To send you a test message on GTalk, click on button"
 #~ msgstr "Um eine Testnachricht auf GTalk zu senden, klicke auf den Button"
-
-#~ msgid "to"
-#~ msgstr "zu"
 
 #~ msgid "Force selected node parameter to specified value"
 #~ msgstr ""

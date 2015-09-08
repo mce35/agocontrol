@@ -1,44 +1,49 @@
-<div>
-<span id="detailsTitle">Details</span>
-<strong>UUID: </strong><span style="color: darkorange" data-bind="text: uuid"></span><br />
-<ko opts="if: name ">
-<strong>Name:</strong><span style="color: darkorange" data-bind="text: name"></span><br />
-</ko>
-<strong>Type:</strong><span style="color: darkorange" data-bind="text: devicetype"></span><br />
-<ko opts="if: room ">
-<strong>Room:</strong><span style="color: darkorange" data-bind="text: room"></span><br />
-</ko>
-<strong>Lastseen:</strong><span style="color: darkorange" data-bind="text: timeStamp"></span><br />
-<br />
-<ko opts="foreach: valueList ">
-	<strong data-bind="text: name"></strong><strong>: </strong>
-	<span style="color: darkorange" data-bind="text: level"></span>
-	<span style="color: darkorange" data-bind="text: unit"></span>
-	<br />
-</ko>
-<br />
-<form>
-	<strong>Show as:</strong>
-	<label style="display: inline"><input type="radio" name="displayType" checked="checked" value="graph" /><span>Graph</span></label>
-	<label style="display: inline"><input type="radio" name="displayType" value="plots" /><span>Plots</span></label>
-	<label style="display: inline"><input type="radio" name="displayType" value="list" /><span>List</span></label>
-</form>
-<div style="width: 100%; height: 380px; margin-bottom: 20px;" id="graph"/>
-<div style="width: 100%;" id="dataList" />
-<div style="width: 50%; text-align: left; float: left;">
-	<form >
-		<label style="display: inline">
-			<strong>From:</strong>
-			<input type="text" id="dummyDate1" style="opacity: 0; position: absolute; top: 0; left: 0;" />
-			<input type="text" size="16" id="start_date" value="" style="display: inline" readonly="readonly" />
-		</label>
-		<label style="display: inline">
-			<strong>To:</strong>
-			<input type="text" size="16" id="end_date" value="" style="display: inline" readonly="readonly"/>
-		</label>
-        <label style="display: inline">
-            <input type="button" id="get_graph" value="Refresh" />
-        </label>
-	</form>
+<div class="container-fluid">
+    <div class="row">
+        <dl class="dl-horizontal">
+            <dt>UUID</dt>
+            <dd data-bind="text: uuid"></dd>
+            <_dt data-translateable="true">Name</_dt>
+            <dd data-bind="text: name"></dd>
+            <_dt data-translateable="true">Device type</_dt>
+            <dd data-bind="text: devicetype"></dd>
+            <_dt data-translateable="true">Room</_dt>
+            <dd data-bind="text: room"></dd>
+            <_dt data-translateable="true">Timestamp</_dt>
+            <dd data-bind="text: timeStamp"></dd>
+        </dl>
+    </div>
+    <div class="row agorowbottom">
+        <div class="btn-group btn-group-justified" data-toggle="buttons">
+            <label class="btn btn-default active">
+                <input type="radio" name="renderType" value="graph" autocomplete="off" checked="checked"/>
+                <_span data-translateable="true">Graph</_span>
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="renderType" value="plots" autocomplete="off"/>
+                <_span data-translateable="true">Plots</_span>
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="renderType" value="list" autocomplete="off"/>
+                <_span data-translateable="true">List</_span>
+            </label>
+        </div>
+    </div>
+    <div class="row agorowbottom">
+        <div id="graphContainer" style="width:100%; min-height:100px;"></div>
+    </div>
+    <div class="row">
+        <form class="form-inline">
+            <div class="form-group">
+                <_label data-translateable="true" for="start_date">From</_label>
+                <input type="text" class="form-control" id="start_date" readonly="readonly"/>
+            </div>
+            <div class="form-group">
+                <_label data-translateable="true" for="end_date">To</_label>
+                <input type="text" class="form-control" id="end_date" readonly="readonly"/>
+            </div>
+            <_button type="submit" class="btn btn-primary" id="get_graph" data-translateable="true">Refresh</_button>
+        </form>
+    </div>
 </div>
-</div>
+

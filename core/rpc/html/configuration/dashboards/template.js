@@ -57,50 +57,36 @@ function DashboardConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate'
+        rowTemplate: 'rowTemplate',
+        boxStyle: 'box-primary'
     });
 
-    self.deletePlan = function(item, event)
+    self.deleteDashboard = function(item, event)
     {
-        var button_yes = $("#confirmDeleteButtons").data("yes");
-        var button_no = $("#confirmDeleteButtons").data("no");
-        var buttons = {};
-        buttons[button_no] = function()
-        {
-            $("#confirmDelete").dialog("close");
-        };
-        buttons[button_yes] = function()
-        {
-            self.doDeletePlan(item, event);
-            $("#confirmDelete").dialog("close");
-        };
-        $("#confirmDelete").dialog({
-            modal : true,
-            height : 180,
-            width : 500,
-            buttons : buttons
-        });
+        $("#confirmPopup").data('item', item);
+        $("#confirmPopup").modal('show');
     };
 
-    self.doDeletePlan = function(item, event)
+    self.doDeleteDashboard = function()
     {
         self.agocontrol.block($('#agoGrid'));
+        $("#confirmPopup").modal('hide');
+
+        var item = $("#confirmPopup").data('item');
         var content = {};
         content.floorplan = item.uuid;
         content.uuid = self.agocontrol.agoController;
         content.command = 'deletefloorplan';
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if (res.result && res.result.returncode == 0)
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 self.agocontrol.refreshDashboards();
-            }
-            else
-            {
+            })
+            .catch(function(err) {
                 notif.error("Error while deleting dashboard!");
-            }
-            self.agocontrol.unblock($('#agoGrid'));
-        });
+            })
+            .finally(function() {
+                self.agocontrol.unblock($('#agoGrid'));
+            });
     };
 
     self.createDashboard = function()

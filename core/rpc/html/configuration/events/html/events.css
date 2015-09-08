@@ -1,0 +1,13 @@
+.eventBuilder dd dl {
+    margin-left: 20px;
+}
+
+.eventBuilder dl:before {
+    content: "{";
+    font-weight: bold;
+}
+
+.eventBuilder dl:after {
+    content: "}";
+    font-weight: bold;
+}

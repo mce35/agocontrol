@@ -1,35 +1,78 @@
-<div class="container" id="contentarea">
-    <_div data-translateable="true" id="confirmDelete" style="display:none">Are you sure that you want to delete this room?</_div>
-    <_div data-translateable="true" id="confirmDeleteButtons" style="display:none" _data-yes="Yes" _data-no="No" />
+<div>
 
-<script id="rowTemplate" type="text/html">
-<ko opts="if: uuid">
-    <ko opts="if: name">
-        <td class="edit_room" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-    </ko>
-    <ko opts="ifnot: name">
-        <_td data-translateable="true" class="edit_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-    </ko>
-        <td class="delete_room">
-            <div class="pretty medium default btn">
-                <i class="icon-cancel"  data-translateable="true" _alt="Delete" _title="Delete" data-bind="click: $parent.deleteRoom"></i>
-            </div>
-        </td>
-</ko>
-</script>
-
-    <_h3 data-translateable="true">Room configuration</_h3>
-    <div data-bind="agoGrid:grid"/>
-    <br />
-    <_h3 data-translateable="true">Create a new room</_h3>
-    <div class="row">
-        <ul class="ten columns">
-            <li class="append field"><input class="normal input" id="roomName" type="text" data-translateable="true" _placeholder="New room name" data-bind="value:roomName" />
-                <div class="medium primary btn">
-                    <_a data-translateable="true" href="#" data-bind="click: createRoom">Create Room</_a>
+    <!-- popup -->
+    <div class="modal fade" id="confirmPopup">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <_span data-translateable="true">Are you sure that you want to delete this room?</_span>
                 </div>
-            </li>
-        </ul>
+                <div class="modal-footer">
+                    <_button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</_button>
+                    <_button data-translateable="true" type="button" class="btn btn-danger" data-bind="click: doDeleteRoom">Delete</_button>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
+    <!-- title -->
+    <section class="content-header">
+        <_h1 data-translateable="true">Room configuration</_h1>
+    </section>
+
+    <!-- content -->
+    <section class="content">
+
+        <!-- grid -->
+        <div class="row">
+            <div class="col-xs-12">
+                <script id="rowTemplate" type="text/html">
+                <ko opts="if: uuid">
+                    <ko opts="if: name">
+                    <td class="edit_room" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+                    </ko>
+                    <ko opts="ifnot: name">
+                    <_td data-translateable="true" class="edit_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+                    </ko>
+                    <td class="delete_room">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteRoom">
+                                <span class="en-cancel"></span>
+                            </button>
+                        </div>
+                    </td>
+                </ko>
+                </script>
+                <div data-bind="agoGrid:grid"/>
+            </div>
+        </div>
+
+        <!-- new room -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <_h3 data-translateable="true" class="box-title">Create new room</_h3>
+                    </div>
+                    <div class="box-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">New room name</_label>
+                                <div class="col-sm-5">
+                                    <input type="email" class="form-control" data-bind="value: roomName" _placeholder="New room name" data-translateable="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-5">
+                                    <_button type="submit" class="btn btn-primary" data-bind="click: createRoom" data-translateable="true">Create room</_button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</div>

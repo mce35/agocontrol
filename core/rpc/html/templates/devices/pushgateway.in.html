@@ -1,37 +1,32 @@
-<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
-            <li class="dashboard-widget-header-icon">
-                <div class="pretty large primary btn handle">
-                    <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-direction"></i>
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-direction"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
+                </ko>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
+                </ko>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
                 </div>
-            </li>
-            <li class="dashboard-widget-header-infos">
-                <div class="row">
-                <ko opts="if: name ">
-                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
                 </ko>
-                <ko opts="ifnot: name ">
-                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
-                </ko>
-                <ko opts="if: room ">
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-location"/>
-                        <span data-bind="text: room"/>
-                    </div>
-                </ko>
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-info"/>
-                        <span data-bind="text: state"/>
-                    </div>
-                </div>
-            </li>
-        </ul>
+            </div>
+        </div>
     </div>
 
-    <div class="row dashboard-widget-content">
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
+        </div>
     </div>
 
 </div>
-

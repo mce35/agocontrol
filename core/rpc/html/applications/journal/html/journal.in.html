@@ -1,0 +1,79 @@
+<div>
+    <section class="content-header">
+        <_h1 data-translateable="true">Journal</_h1>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 data-translateable="true" class="box-title">Journal filter</h3>
+                    </div>
+                    <div class="box-body">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <_label for="start_date" data-translateable="true">From</_label>
+                                <input type="text" readonly="readonly" id="journal_start" data-bind="dateTimePicker:$root" class="form-control"/>
+                            </div>
+                            <div class="form-group">
+                                <_label for="end_date" data-translateable="true">To</_label>
+                                <input type="text" readonly="readonly" id="journal_end" data-bind="dateTimePicker:$root" class="form-control"/>
+                            </div>
+                            <select data-bind="options:types, value:type" class="form-control"/>
+                            <input type="text" placeholder="Filter" data-bind="value:filter" class="form-control"/>
+                            <_button type="submit" data-translateable="true" data-bind="click:getMessages" class="btn btn-primary">Get</_button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-success">
+                    <div class="box-body">
+                        <div class="col-md-12" id="messagesContainer" style="overflow:auto; max-height:700px; min-height:250px;">
+                            <ul class="timeline" data-bind="foreach: messages">
+                                <ko opts="if:kind=='label'">
+                                <li class="time-label">
+                                    <span class="bg-purple" data-bind="text:text"></span>
+                                </li>
+                                </ko>
+                                <ko opts="if:kind!='label' and kind!='end'">
+                                <li>
+                                    <ko opts="if:type=='error'">
+                                    <i class="fa en-alert bg-red"></i>
+                                    </ko>
+                                    <ko opts="if:type=='warning'">
+                                    <i class="fa en-attention bg-orange"></i>
+                                    </ko>
+                                    <ko opts="if:type=='info'">
+                                    <i class="fa en-info-circled bg-green"></i>
+                                    </ko>
+                                    <ko opts="if:type=='debug'">
+                                    <i class="fa en-flash bg-blue"></i>
+                                    </ko>
+                                    <div class="timeline-item">
+                                        <span class="time">
+                                            <i class="fa fa-clock-o"></i>
+                                            <span data-bind="text:time"></span>
+                                        </span>
+                                        <h3 class="timeline-header no-border" data-bind="text:text"></h3>
+                                    </div>
+                                </li>
+                                </ko>   
+                                <ko opts="if:kind=='end'">
+                                <li>
+                                    <i class="fa fa-clock-o bg-gray"></i>
+                                </li>
+                                </ko>
+                            </ul>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

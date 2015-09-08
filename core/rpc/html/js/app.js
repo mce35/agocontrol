@@ -73,11 +73,40 @@ function stringToDatetime(str)
 }
 
 /**
- * Convert datetime js object to string under format "d.m.y h:m"
+ * Convert datetime js object to string under format "d/m/y h:m"
  */
 function datetimeToString(dt)
 {
-    var str = $.datepicker.formatDate('dd.mm.yy', dt);
+    var str = $.datepicker.formatDate('dd\/mm\/yy', dt);
+    str += ' ';
+    str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
+    str += ':';
+    str += ( dt.getMinutes()<10 ? '0'+dt.getMinutes() : dt.getMinutes() );
+    return str;
+}
+
+/**
+ * Convert datetime js object to string under format "h:m"
+ */
+function timeToString(dt)
+{
+    var str = ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
+    str += ':';
+    str += ( dt.getMinutes()<10 ? '0'+dt.getMinutes() : dt.getMinutes() );
+    return str;
+}
+
+/**
+ * Convert timestamp to string under format "d.m.y h:m"
+ */
+function timestampToString(ts)
+{
+    var dt = new Date(ts*1000);
+    var str = dt.getDate();
+    str += '.';
+    str += dt.getMonth()+1;
+    str += '.';
+    str += dt.getFullYear();
     str += ' ';
     str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
     str += ':';
@@ -173,11 +202,38 @@ function AgocontrolViewModel()
     self.plugins = {};
     self.scriptPromise = null;
     self.resourcePromise = null;
+    self.itemActivated = null;
 
     //disable click event
     self.noclick = function()
     {
         return false;
+    };
+
+    //hide control sidebar
+    self.toggleControlSidebar = function()
+    {
+        $("[data-toggle='control-sidebar']").click();
+    };
+
+    //activate item on left bar
+    self.activate = function(id)
+    {
+        if( self.itemActivated!==null )
+        {
+            //disable current activated item
+            $(self.itemActivated).removeClass('active');
+        }
+        
+        //activate item
+        self.itemActivated = $('#menu_'+id.replace(' ','_'));
+        self.itemActivated.addClass('active');
+    };
+
+    //set ui skin
+    self.setSkin = function(skin)
+    {
+        self.agocontrol.setSkin(skin);
     };
 
     //route functions
@@ -196,6 +252,7 @@ function AgocontrolViewModel()
     self.gotoConfiguration = function(config)
     {
         location.hash = 'config/' + config.name;
+        self.toggleControlSidebar();
     };
 
     self.gotoApplication = function(application)
@@ -203,9 +260,15 @@ function AgocontrolViewModel()
         location.hash = 'app/' + application.name;
     };
 
+    self.gotoProtocol = function(protocol)
+    {
+        location.hash = 'proto/' + protocol.name;
+    };
+
     self.gotoHelp = function(help)
     {
         location.hash = 'help/' + help.name;
+        self.toggleControlSidebar();
     };
 
     //load template
@@ -343,6 +406,10 @@ function AgocontrolViewModel()
     self.agocontrol.initialize()
         .then(function() {
             sammyApp.run();
+        })
+        .then(function() {
+            //everything is loaded, init here all needed stuff
+            $.AdminLTE.tree('.sidebar');
         });
 
     /* While waiting, configure routes using sammy.js framework */
@@ -350,22 +417,27 @@ function AgocontrolViewModel()
         //load ui plugins
         self.plugins = self.agocontrol.initPlugins();
 
-        //dashboard loading
+        //dashboard
         this.get('#dashboard/:name', function()
         {
             if( this.params.name==='all' )
             {
                 //special case for main dashboard (all devices)
                 var basePath = 'dashboard/all';
+                self.activate('all');
                 self.loadTemplate(new Template(basePath, null, 'html/dashboard', null));
             }
             else
             {
                 var dashboard = self.agocontrol.getDashboard(this.params.name)
-                if(dashboard) {
+                if(dashboard)
+                {
                     var basePath = 'dashboard/custom';
+                    self.activate(dashboard.name);
                     self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:false}));
-                }else{
+                }
+                else
+                {
                     notif.fatal('Specified custom dashboard not found!');
                 }
             }
@@ -375,58 +447,59 @@ function AgocontrolViewModel()
         this.get('#dashboard/:name/edit', function()
         {
             var dashboard = self.agocontrol.getDashboard(this.params.name)
-            if(dashboard) {
+            if(dashboard)
+            {
                 var basePath = 'dashboard/custom';
+                self.activate(dashboard.name);
                 self.loadTemplate(new Template(basePath, null, 'html/dashboard', {dashboard:dashboard, edition:true}));
-            }else{
+            }
+            else
+            {
                 notif.fatal('Specified custom dashboard not found!');
             }
         });
 
-        //application loading
+        //application
         this.get('#app/:name', function()
         {
             // Apps may be loaded async; getApplication returns a promise
             self.agocontrol.getApplication(this.params.name)
-                .then(function(application){
-                        var basePath = "applications/" + application.dir;
-                        self.loadTemplate(new Template(basePath, application.resources, application.template, null));
-                    })
-                .catch(function(err){
-                    // XXX: notif is not available here
+                .then(function(application) {
+                    var basePath = "applications/" + application.dir;
+                    self.activate(application.name);
+                    self.loadTemplate(new Template(basePath, application.resources, application.template, null));
+                })
+                .catch(function(err) {
                     notif.fatal('Specified application not found!');
                 });
         });
 
-        //configuration loading
+        //protocol
+        this.get('#proto/:name', function()
+        {
+            //Protocols may be loaded async; getProtocol returns a promise
+            self.agocontrol.getProtocol(this.params.name)
+                .then(function(protocol) {
+                    var basePath = "protocols/" + protocol.dir;
+                    self.activate(protocol.name);
+                    self.loadTemplate(new Template(basePath, protocol.resources, protocol.template, null));
+                })
+                .catch(function(err){
+                    notif.fatal('Specified protocol application not found!');
+                });
+        });
+
+        //configuration
         this.get('#config/:name', function()
         {
             //get config infos
             var config = null;
-            for( var category in self.agocontrol.configurations() )
+            for( var i=0; i<self.agocontrol.configurations().length; i++ )
             {
-                if( self.agocontrol.configurations()[category].subMenus===null )
+                if( self.agocontrol.configurations()[i].name==this.params.name )
                 {
-                    if( self.agocontrol.configurations()[category].menu.name==this.params.name )
-                    {
-                        config = self.agocontrol.configurations()[category].menu;
-                        break;
-                    }
-                }
-                else
-                {
-                    for( var i=0; i<self.agocontrol.configurations()[category].subMenus.length; i++ )
-                    {
-                        if( self.agocontrol.configurations()[category].subMenus[i].name==this.params.name )
-                        {
-                            config = self.agocontrol.configurations()[category].subMenus[i];
-                            break;
-                        }
-                    }
-                    if( config!=null )
-                    {
-                        break;
-                    }
+                    config = self.agocontrol.configurations()[i];
+                    break;
                 }
             }
             if( config )

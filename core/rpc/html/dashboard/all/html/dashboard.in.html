@@ -1,54 +1,56 @@
-<div>
-
-    <div class="row">
-        <!-- EMPTY -->
-        <div class="three columns">
-        </div>
-        <!-- TOP PAGINATION -->
-    	<div id="pagination" data-bind="foreach: pages" class="six columns" style="text-align:center;">
-            <ko opts="if: idx==$parent.currentPage()">
-    		<div class="small oval btn primary">    
-    	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-	    	    </div>
-            </ko>
-            <ko opts="ifnot: idx==$parent.currentPage()">
-		        <div class="small oval btn info">
-        			<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-	        	</div>
-            </ko>
-	    </div>
-        <!-- SEARCH -->
-	    <div style="text-align:right;" class="three columns">
-            <ul>
-                <li class="prepend append field" style="margin-bottom:0px;">
-                    <div class="adjoined" style="padding-left:0px; padding-right: 0px;">
-                        <i class="icon-search"></i>
-                    </div>
-                    <input type="text" data-translateable="true" data-bind="textInput: keyword" class="wide text input" _placeholder="Search"></input>
-                    <div class="medium primary btn" style="height:34px; border-top-width:0px; color:white;" data-bind="click: clearSearch">
-                        <i class="icon-cancel" data-translateable="true" _title="Clear search"></i>
-                    </div>
-                </li>
+<div class="container-fluid">
+    <div class="row agorowtop" style="height:60px;">
+        <!-- pagination -->
+        <div class="col-xs-12 col-md-offset-4 col-md-4 text-center">
+            <ul class="pagination" data-bind="foreach:pages" style="margin:0px !important;">
+                <ko opts="if: idx==$parent.currentPage()">
+                    <li class="active">
+                        <a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+                    </li>
+                </ko>
+                <ko opts="ifnot: idx==$parent.currentPage()">
+                    <li>
+                        <a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+                    </li>
+                </ko>
             </ul>
-    	</div>
+        </div>
+
+        <!-- search -->
+        <div class="col-xs-12 col-md-4 text-right">
+            <form class="form-inline">
+                <div class="form-group">
+                    <span class="en-search hidden-xs"></span>
+                    <div class="input-group">
+                        <input type="text" class="form-control" data-bind="textInput:keyword"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" data-bind="click:clearSearch"><span class="en-cancel"/></button>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-	<div data-bind="template: {name: deviceTemplate, foreach: firstRow}" class="row grid"/>
-	<div data-bind="template: {name: deviceTemplate, foreach: secondRow}" class="row grid"/>
-	<div data-bind="template: {name: deviceTemplate, foreach: thirdRow}" class="row grid"/>
+    <!-- widgets -->
+	<div class="row" data-bind="template: {name: deviceTemplate, foreach:devicesPerPage }"></div>
 
-    <!-- BOTTOM PAGINATION -->
-	<div id="pagination" data-bind="foreach: pages" class="row" style="text-align:center; margin-top:10px;">
-        <ko opts="if: idx==$parent.currentPage()">
-    		<div class="small oval btn primary">
-	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-		    </div>
-        </ko>
-        <ko opts="ifnot: idx==$parent.currentPage()">
-    		<div class="small oval btn info">
-	    		<a href="#" data-bind="text: idx, click: $parent.switchPage"/>
-		    </div>
-        </ko>
-	</div>
-
+    <div class="row">
+        <!-- pagination -->
+        <div class="col-xs-12 col-md-offset-4 col-md-4 text-center">
+            <ul class="pagination" data-bind="foreach:pages" style="margin:0px !important;">
+                <ko opts="if: idx==$parent.currentPage()">
+                    <li class="active">
+                        <a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+                    </li>
+                </ko>
+                <ko opts="ifnot: idx==$parent.currentPage()">
+                    <li>
+                        <a href="#" data-bind="text: idx, click: $parent.switchPage"/>
+                    </li>
+                </ko>
+            </ul>
+        </div>
+    </div>
+    
 </div>

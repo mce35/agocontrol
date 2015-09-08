@@ -11,6 +11,12 @@ for i in `find . -name \*in.html`;
 done
 
 cd ..
+cd protocols
+for i in `find . -name \*in.html`;
+    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
+done
+
+cd ..
 cd configuration
 for i in `find . -name \*in.html`;
     do ln -s `basename "$i"` "${i%.*.*}.xml.in";

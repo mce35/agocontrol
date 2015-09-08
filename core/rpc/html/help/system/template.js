@@ -48,6 +48,7 @@ function SystemConfig(agocontrol)
     //launch autorefresh and get current status
     self.updateInterval = window.setInterval(self.getStatus, 10000);
     self.getStatus();
+
 }
 
 /**

@@ -58,7 +58,7 @@ def cast(in_, format_):
 #globals
 result = {'result':0, 'error':'', 'content':''}
 #allowed content: key=file, fields list with type (* means any field)
-allowedContent = {'favorites':{'*':'bool'}}
+allowedContent = {'favorites':{'*':'bool'}, 'theme':{'skin':'str'}}
 
 key = None
 param = None

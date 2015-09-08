@@ -1,0 +1,17 @@
+{
+    "name": "Z-Wave",
+    "icon": "fa-share-alt",
+    "version": "0.0.2",
+    "description": "Z-Wave configuration",
+    "listable": true,
+    "template": "html/zwave",
+    "depends": "agozwave",
+    "resources": {
+        "js": [
+            "../../js/libs/d3.v3.min.js"
+        ],
+        "css": [
+            "chord.css"
+        ]
+    }
+}

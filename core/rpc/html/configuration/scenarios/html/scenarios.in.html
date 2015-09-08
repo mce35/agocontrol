@@ -1,81 +1,123 @@
 <div>
-    <div class="container" id="contentarea">
-        <_div data-translateable="true" id="confirmDelete" style="display:none">Are you sure that you want to delete this scenario?</_div>
-        <_div data-translateable="true" id="confirmDeleteButtons" style="display:none" _data-yes="Yes" _data-no="No" />
 
-<script type="text/html" id="rowTemplate">
-    <ko opts="if: uuid != '0'">
-        <ko opts="if: name">
-            <td class="edit_scenario" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
-        </ko>
-        <ko opts="ifnot: name">
-            <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-        </ko>
-        <ko opts="if: room">
-            <td class="select_room" bind="attr: {'data-uuid': uuid}, text: room"></td>
-        </ko>
-        <ko opts="ifnot: room">
-            <_td data-translateable="true" class="select_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
-        </ko>
-            <td>
-                <div class="pretty medium default btn">
-                    <i class="icon-play" data-translateable="true" _alt="Run" _title="Run" data-bind="click: $parent.runScenario"></i>
+    <!-- popup -->
+    <div class="modal fade" id="confirmPopup">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <_span data-translateable="true">Are you sure that you want to delete this dashboard?</_span>
                 </div>
-                <div class="pretty medium default btn">
-                    <i class="icon-pencil" data-translateable="true" _alt="Edit" _title="Edit" data-bind="click: $parent.editScenario"></i>
+                <div class="modal-footer">
+                    <_button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</_button>
+                    <_button data-translateable="true" type="button" class="btn btn-danger" data-bind="click: doDeleteScenario">Delete</_button>
                 </div>
-                <div class="pretty medium default btn">
-                    <i class="icon-cancel" data-translateable="true" _alt="Delete" _title="Delete" data-bind="click: $parent.deleteScenario"></i>
-                </div>
-            </td>
-        </ko>
-</script>
-
-        <_h3 data-translateable="true">Scenario Configuration</_h3>
-        <div data-bind="agoGrid:grid"/>
-        <br/>
-        <div class="row">
-            <_h3 data-translateable="true">Create Scenario</_h3>
-            <_p data-translateable="true">To create a scenario press the
-                "Add Command" button to add commands. After you need to give a name
-                and press "Create Scenario".
-            </_p>
-            <div id="scenarioBuilder" class="scenarioBuilder"></div>
-            <br />
-            <div class="medium primary btn">
-                <_a data-translateable="true" href="#" data-bind="click: function() { addCommand('scenarioBuilder'); }">Add Command</_a>
             </div>
-            <br />
-            <form action="" method="post">
-                <_h4 data-translateable="true">Name</_h4>
-                <div class="row">
-                    <ul class="ten columns">
-                        <li class="append field"><input class="normal input" id="scenarioName" type="text" data-translateable="true" _placeholder="Input scenario name" data-bind="value:scenarioName" />
-                            <div class="medium primary btn">
-                                <_a data-translateable="true" href="#" data-bind="click: createScenario">Create Scenario</_a>
+        </div>
+    </div>
+
+    <!-- edit scenario popup -->
+    <div class="modal fade" id="editPopup">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <_span data-translateable="true">Edit scenario</_span>
+                </div>
+                <div class="modal-body">
+                    <div id="scenarioBuilderEdit" class="scenarioBuilder"></div>
+                    <br/>
+                    <_button type="submit" class="btn btn-primary" data-bind="click: function(){ addCommand('scenarioBuilderEdit'); }" data-translateable="true">Add command</_button>
+                </div>
+                <div class="modal-footer">
+                    <_button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</_button>
+                    <_button data-translateable="true" type="button" class="btn btn-success" data-bind="click: doEditScenario">Save</_button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- notifications -->
+    <section class="content-notifs">
+        <_div data-translateable="true" id="confirmDelete">Are you sure that you want to delete this scenario?</_div>
+    </section>
+
+    <!-- title -->
+    <section class="content-header">
+        <_h1 data-translateable="true">Scenario configuration</_h1>
+    </section>
+
+    <!-- content -->
+    <section class="content">
+
+        <!-- grid -->
+        <div class="row">
+            <div class="col-xs-12">
+                <script type="text/html" id="rowTemplate">
+                    <ko opts="if: uuid != '0'">
+                        <ko opts="if: name">
+                        <td class="edit_scenario" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+                        </ko>
+                        <ko opts="ifnot: name">
+                        <_td data-translateable="true" class="edit_device" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+                        </ko>
+                        <ko opts="if: room">
+                        <td class="select_room" bind="attr: {'data-uuid': uuid}, text: room"></td>
+                        </ko>
+                        <ko opts="ifnot: room">
+                        <_td data-translateable="true" class="select_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
+                        </ko>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-xs" _alt="Run" _title="Run" data-translateable="true" data-bind="click: $parent.runScenario">
+                                    <span class="en-play"></span>
+                                </button>
+                                <button type="button" class="btn btn-primary btn-xs" _alt="Edit" _title="Edit" data-translateable="true" data-bind="click: $parent.editScenario">
+                                    <span class="en-pencil"></span>
+                                </button>
+                                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteScenario">
+                                    <span class="en-cancel"></span>
+                                </button>
                             </div>
-                        </li>
-                    </ul>
-                </div>
-            </form>
-        </div>
-    </div>
-    <br />
-    <div class="row" id="editScenarioDialog" style="display: none">
-        <div class="row">
-            <_span data-translateable="true" id="editScenarioDialogTitle">Edit scenario</_span>
-            <div id="scenarioBuilderEdit" class="scenarioBuilder"></div>
-            <br />
-            <div class="medium primary btn">
-                <_a data-translateable="true" href="#" data-bind="click: function() { addCommand('scenarioBuilderEdit'); }" style="color: #FFF">Add Command</_a>
+                        </td>
+                    </ko>
+                </script>
+                <div data-bind="agoGrid:grid"/>
             </div>
-            <br />
-            <form action="" method="post">
-                <div class="medium primary btn">
-                    <_a data-translateable="true" href="#" data-bind="click: doEditScenario" style="color: #FFF">Save</_a>
-                </div>
-            </form>
         </div>
-    </div>
-</div>
 
+        <!-- new scenario -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <_h3 data-translateable="true" class="box-title">Create new Scenario</_h3>
+                    </div>
+                    <div class="box-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">New scenario name</_label>
+                                <div class="col-sm-5">
+                                    <_button type="submit" class="btn btn-primary" data-bind="click: function(){ addCommand('scenarioBuilder'); }" data-translateable="true">Add command</_button>
+                                </div>
+                            </div>
+                            <div id="scenarioBuilder" class="scenarioBuilder"></div>
+                            <br/>
+                            <div class="form-group">
+                                <_label class="col-sm-3 control-label" data-translateable="true">New scenario name</_label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" data-bind="value:scenarioName" _placeholder="New scenario name" data-translateable="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-5">
+                                    <_button type="submit" class="btn btn-primary" data-bind="click: createScenario" data-translateable="true">Create scenario</_button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+            
+</div>

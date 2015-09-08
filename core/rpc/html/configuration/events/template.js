@@ -35,15 +35,26 @@ function EventsConfig(agocontrol)
     self.initBuilder = function()
     {
         // Clean
-        document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
-        document.getElementById("actionBuilder").innerHTML = "";
+        $("#eventSelectorBox").empty();
+        $("#eventBuilder").empty();
+        $("#actionBox").empty();
+        $("#parametersBox").empty();
+
+        $("#eventSelectorBoxEdit").empty();
+        $("#eventBuilderEdit").empty();
+        $("#actionBoxEdit").empty();
+        $("#parametersBoxEdit").empty();
+
+        self.eventName("");
 
         // Build new
-        var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementsByClassName("eventBuilder")[0]);
-        eventSelector.id = "eventSelector";
-        document.getElementsByClassName("eventBuilder")[0].appendChild(eventSelector);
-        self.addNesting(document.getElementsByClassName("eventBuilder")[0], "and");
-        self.createActionBuilder(document.getElementById("actionBuilder"));
+        var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementById("eventSelectorBox"));
+        eventSelector.setAttribute("id", "eventSelector");
+        eventSelector.setAttribute("class", "form-control");
+        document.getElementById("eventSelectorBox").appendChild(eventSelector);
+
+        self.addNesting(document.getElementById("eventBuilder"), "and");
+        self.createActionBuilder(document.getElementById("actionBox"), document.getElementById("parametersBox"));
     };
 
     /**
@@ -81,7 +92,8 @@ function EventsConfig(agocontrol)
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.makeEditable,
-        rowTemplate: 'rowTemplate'
+        rowTemplate: 'rowTemplate',
+        boxStyle: 'box-primary'
     });
 
     //Used for parsing event into JSON structure
@@ -258,36 +270,24 @@ function EventsConfig(agocontrol)
         self.agocontrol.sendCommand(content)
             .then(function(res){
                 // Swap active selector
-                document.getElementById("eventBuilder").className = "";
-                document.getElementById("eventBuilderEdit").className = "eventBuilder";
+                $('#eventBuilder').removeClass('eventBuilder');
+                $('#eventBuilderEdit').addClass('eventBuilder');
 
                 // Disable main one to avoid id conflicts
-                document.getElementById("eventBuilder").innerHTML = "";
-                document.getElementById("actionBuilder").innerHTML = "";
+                $('#eventSelectorBox').empty();
+                $('#eventBuilder').empty();
+                $('#actionBox').empty();
+                $('#parametersBox').empty();
 
                 // Create prepopulated builders
                 self.buildListFromJSON(self.mapToJSON(res.data.eventmap), document.getElementById("eventBuilderEdit"));
-                self.createActionBuilder(document.getElementById("actionBuilderEdit"), res.data.eventmap.action);
+                self.createActionBuilder(document.getElementById("actionBoxEdit"), document.getElementById("parametersBoxEdit"), res.data.eventmap.action);
 
                 // Save the id (needed for the save command)
                 self.openEvent = item.uuid;
 
                 // Open the dialog
-                if (document.getElementById("editEventDialogTitle")) {
-                    $("#editEventDialog").dialog({
-                        title : document.getElementById("editEventDialogTitle").innerHTML,
-                        modal : true,
-                        width : 900,
-                        height : 600,
-                        close : function() {
-                            // Done, restore stuff
-                            document.getElementById("eventBuilderEdit").className = "";
-                            document.getElementById("eventBuilder").className = "eventBuilder";
-                            self.initBuilder();
-                            self.openEvent = null;
-                        }
-                    });
-                }
+                $('#editPopup').modal('show');
             })
             .catch(notifCommandError);
     };
@@ -305,9 +305,26 @@ function EventsConfig(agocontrol)
             .then(function(res) {
                 if (res.data.event)
                 {
-                    $("#editEventDialog").dialog("close");
+                    // Done, restore stuff
+                    $('#eventBuilder').addClass('eventBuilder');
+                    $('#eventBuilderEdit').removeClass('eventBuilder');
+                    self.initBuilder();
+                    self.openEvent = null;
+
+                    $('#editPopup').modal('hide');
                 }
             });
+    };
+
+    self.doCancelEvent = function()
+    {
+        // Done, restore stuff
+        $('#eventBuilder').addClass('eventBuilder');
+        $('#eventBuilderEdit').removeClass('eventBuilder');
+        self.initBuilder();
+        self.openEvent = null;
+
+        $('#editPopup').modal('hide');
     };
 
     //Sends the create event commands
@@ -348,30 +365,17 @@ function EventsConfig(agocontrol)
 
     self.deleteEvent = function(item, event)
     {
-        var button_yes = $("#confirmDeleteButtons").data("yes");
-        var button_no = $("#confirmDeleteButtons").data("no");
-        var buttons = {};
-        buttons[button_no] = function()
-        {
-            $("#confirmDelete").dialog("close");
-        };
-        buttons[button_yes] = function()
-        {
-            self.doDeleteEvent(item, event);
-            $("#confirmDelete").dialog("close");
-        };
-        $("#confirmDelete").dialog({
-            modal : true,
-            height : 180,
-            width : 500,
-            buttons : buttons
-        });
+        $("#confirmPopup").data('item', item);
+        $("#confirmPopup").modal('show');
     };
 
     //Sends the delete event command
-    self.doDeleteEvent = function(item, event)
+    self.doDeleteEvent = function()
     {
         self.agocontrol.block($('#agoGrid'));
+        $("#confirmPopup").modal('hide');
+
+        var item = $("#confirmPopup").data('item');
         var content = {};
         content.event = item.uuid;
         content.uuid = self.agocontrol.eventController;
@@ -494,59 +498,90 @@ function EventsConfig(agocontrol)
         subList.setAttribute("class", "subList");
 
         dl.appendChild(dd);
-        dd.appendChild(document.createTextNode("Operator: "));
 
-        var radio = document.createElement("input");
-        radio.name = "op_" + (self.current_id);
-        radio.id = radio.name + "_and";
-        radio.type = "radio";
-        radio.value = "and";
-        radio.checked = (type == "and");
-        var label = document.createElement("label");
-        label.appendChild(document.createTextNode("and"));
-        label.setAttribute("for", radio.id);
-        dd.appendChild(radio);
-        dd.appendChild(label);
+        //toolbar
+        var toolbar = document.createElement("div");
+        toolbar.setAttribute("class", "btn-toolbar");
+        dd.appendChild(toolbar);
 
+        var div = document.createElement("div");
+        div.setAttribute("class", "btn-group");
+        div.setAttribute("data-toggle", "buttons");
+        toolbar.appendChild(div);
+
+        var radioLabel = document.createElement("label");
+        if( type == "and" )
+        {
+            radioLabel.setAttribute("class", "btn btn-primary active");
+        }
+        else
+        {
+            radioLabel.setAttribute("class", "btn btn-primary");
+        }
+        div.appendChild(radioLabel);
         var radio = document.createElement("input");
-        radio.name = "op_" + (self.current_id);
-        radio.id = radio.name + "_or";
-        radio.type = "radio";
-        radio.value = "or";
-        radio.checked = (type == "or");
-        var label = document.createElement("label");
-        label.appendChild(document.createTextNode("or"));
-        label.setAttribute("for", radio.name);
-        dd.appendChild(radio);
-        dd.appendChild(label);
+        radio.setAttribute("name", "op_" + (self.current_id));
+        radio.setAttribute("id", radio.name + "_and");
+        radio.setAttribute("type", "radio");
+        radio.setAttribute("value", "and");
+        radio.setAttribute("checked", (type == "and"));
+        radioLabel.appendChild(radio);
+        radioLabel.appendChild(document.createTextNode("and"));
+
+        var radioLabel = document.createElement("label");
+        if( type == "or" )
+        {
+            radioLabel.setAttribute("class", "btn btn-primary active");
+        }
+        else
+        {
+            radioLabel.setAttribute("class", "btn btn-primary");
+        }
+        div.appendChild(radioLabel);
+        var radio = document.createElement("input");
+        radio.setAttribute("name", "op_" + (self.current_id));
+        radio.setAttribute("id", radio.name + "_or");
+        radio.setAttribute("type", "radio");
+        radio.setAttribute("value", "or");
+        radio.setAttribute("checked", (type == "or"));
+        radioLabel.appendChild(radio);
+        radioLabel.appendChild(document.createTextNode("or"));
 
         self.current_id++;
 
+        var div = document.createElement("div");
+        div.setAttribute("class", "btn-group");
+        toolbar.appendChild(div);
+
         var adSbutton = document.createElement("button");
+        adSbutton.setAttribute("class", "btn btn-primary");
         adSbutton.appendChild(document.createTextNode("Add criteria"));
         adSbutton._list = subList;
-        adSbutton.onclick = function()
+        adSbutton.onclick = function(e)
         {
+            e.preventDefault();
             self.addSegment(this._list);
         };
-
-        dd.appendChild(adSbutton);
+        div.appendChild(adSbutton);
 
         var adNbutton = document.createElement("button");
+        adNbutton.setAttribute("class", "btn btn-primary");
         adNbutton.appendChild(document.createTextNode("Add nesting"));
         adNbutton._list = dl;
-        adNbutton.onclick = function()
+        adNbutton.onclick = function(e)
         {
+            e.preventDefault();
             self.addNesting(this._list.lastChild, "and");
         };
-
-        dd.appendChild(adNbutton);
+        div.appendChild(adNbutton);
 
         var button = document.createElement("button");
+        button.setAttribute("class", "btn btn-primary");
         button.appendChild(document.createTextNode("delete"));
         button._list = dl;
-        button.onclick = function()
+        button.onclick = function(e)
         {
+            e.preventDefault();
             if (this._list.parentNode == document.getElementsByClassName("eventBuilder")[0] && document.getElementsByClassName("operator").length == 1)
             {
                 notif.warning("Last element cannot be deleted!");
@@ -554,14 +589,15 @@ function EventsConfig(agocontrol)
             }
             this._list.parentNode.removeChild(this._list);
         };
-
-        dd.appendChild(button);
+        div.appendChild(button);
 
         var button = document.createElement("button");
+        button.setAttribute("class", "btn btn-primary");
         button.appendChild(document.createTextNode("<"));
         button._list = dl;
-        button.onclick = function()
+        button.onclick = function(e)
         {
+            e.preventDefault();
             if (this._list.parentNode == document.getElementsByClassName("eventBuilder")[0])
             {
                 notif.warning("This is already a top level element!");
@@ -579,14 +615,15 @@ function EventsConfig(agocontrol)
                 newParent.appendChild(dl);
             }
         };
-
-        dd.appendChild(button);
+        div.appendChild(button);
     
         var button = document.createElement("button");
+        button.setAttribute("class", "btn btn-primary");
         button.appendChild(document.createTextNode(">"));
         button._list = dl;
-        button.onclick = function()
+        button.onclick = function(e)
         {
+            e.preventDefault();
             var ops = document.getElementsByClassName("operator");
             if (ops.length == 1)
             {
@@ -605,7 +642,7 @@ function EventsConfig(agocontrol)
                     }
                 }
 
-                if (newParent.className != "operator")
+                if (newParent.getAttribute("class") != "operator")
                 {
                     notif.warning("Item is already at the maximum indent level!");
                     return;
@@ -614,8 +651,7 @@ function EventsConfig(agocontrol)
                 newParent.lastChild.appendChild(dl);
             }
         };
-
-        dd.appendChild(button);
+        div.appendChild(button);
 
         var tmp = document.createElement("dd");
         tmp.appendChild(subList);
@@ -647,6 +683,7 @@ function EventsConfig(agocontrol)
         }
 
         var button = document.createElement("button");
+        button.setAttribute("class", "btn btn-primary");
         button.appendChild(document.createTextNode("delete"));
         button._listItem = dd;
         button.onclick = function()
@@ -720,7 +757,7 @@ function EventsConfig(agocontrol)
             var subOps = subList.parentNode.childNodes;
             for ( var j = 0; j < subOps.length; j++)
             {
-                if (subOps[j].className == "operator")
+                if (subOps[j].getAttribute("class") == "operator")
                 {
                     op.sub.push(self.operationToJSON(subOps[j]));
                 }
@@ -780,10 +817,15 @@ function EventsConfig(agocontrol)
     //(re) Builds the list from JSON
     self.buildListFromJSON = function(input, container)
     {
-        document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
+        /*document.getElementsByClassName("eventBuilder")[0].innerHTML = "";
         var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementsByClassName("eventBuilder")[0]);
         eventSelector.id = "eventSelector";
-        document.getElementsByClassName("eventBuilder")[0].appendChild(eventSelector);
+        document.getElementsByClassName("eventBuilder")[0].appendChild(eventSelector);*/
+
+        var eventSelector = self.getEventSelector(self.agocontrol.schema().events, document.getElementById("eventSelectorBoxEdit"));
+        eventSelector.setAttribute("id", "eventSelector");
+        eventSelector.setAttribute("class", "form-control");
+        document.getElementById("eventSelectorBoxEdit").appendChild(eventSelector);
 
         var inputList = input.elements;
         inputList.reverse();
@@ -793,7 +835,7 @@ function EventsConfig(agocontrol)
             self.createOperation(op.sub, document.getElementsByClassName("eventBuilder")[0], op.type);
         }
 
-        var eventSelector = document.getElementById("eventSelector");
+        //var eventSelector = document.getElementById("eventSelector");
         for ( var i = 0; i < eventSelector.options.length; i++)
         {
             if (eventSelector.options[i].value == input.path)
@@ -841,6 +883,8 @@ function EventsConfig(agocontrol)
         var variableValues = {};
 
         var baseType = document.createElement("select");
+        baseType.setAttribute("class", "form-control");
+        baseType.setAttribute("style", "width:100px; display:inline;");
         baseType.options[0] = new Option("event", "event");
         baseType.options[1] = new Option("device", "device");
         baseType.options[2] = new Option("variable", "variable");
@@ -868,6 +912,8 @@ function EventsConfig(agocontrol)
         if (selectType == "event")
         {
             params = document.createElement("select");
+            params.setAttribute("class", "form-control");
+            params.setAttribute("style", "width:150px; display:inline;");
             params.name = path + ".param";
             if (event.parameters !== undefined)
             {
@@ -895,6 +941,8 @@ function EventsConfig(agocontrol)
         else if (selectType == "device")
         {
             var deviceSelect = document.createElement("select");
+            deviceSelect.setAttribute("class", "form-control");
+            deviceSelect.setAttribute("style", "width:200px; display:inline;");
             deviceSelect.name = path + ".device";
             /*self.agocontrol.devices().sort(function(a, b)
             {
@@ -922,6 +970,8 @@ function EventsConfig(agocontrol)
             }
 
             params = document.createElement("select");
+            params.setAttribute("class", "form-control");
+            params.setAttribute("style", "width:150px; display:inline;");
             params.name = path + ".param";
 
             var _buildParamList = function(dev)
@@ -966,7 +1016,10 @@ function EventsConfig(agocontrol)
         }
         else if (selectType == "variable")
         {
+            variableValues = {};
             params = document.createElement("select");
+            params.setAttribute("class", "form-control");
+            params.setAttribute("style", "width:150px; display:inline;");
             params.name = path + ".param";
             var i = 0;
             for ( var j=0; j<self.agocontrol.variables().length; j++ )
@@ -984,6 +1037,8 @@ function EventsConfig(agocontrol)
         }
 
         var comp = document.createElement("select");
+        comp.setAttribute("class", "form-control");
+        comp.setAttribute("style", "width:75px; display:inline;");
         comp.name = path + ".comp";
         comp.options[0] = new Option("=", "eq");
         comp.options[1] = new Option("!=", "neq");
@@ -1005,6 +1060,8 @@ function EventsConfig(agocontrol)
         }
 
         var inputField = document.createElement("input");
+        inputField.setAttribute("class", "form-control");
+        inputField.setAttribute("style", "width:200px; display:inline;");
         inputField.name = path + ".value";
         if (defaultValues)
         {
@@ -1028,6 +1085,8 @@ function EventsConfig(agocontrol)
         if (selectType == "event")
         {
             var deviceSelect = document.createElement("select");
+            deviceSelect.setAttribute("class", "form-control");
+            deviceSelect.setAttribute("style", "width:200px; display:inline;");
             deviceSelect.name = path + ".device";
             for ( var i = 0; i < self.agocontrol.devices().length; i++)
             {
@@ -1059,13 +1118,13 @@ function EventsConfig(agocontrol)
             {
                 if (params.options[params.selectedIndex].value == "uuid")
                 {
-                    deviceSelect.style.display = "";
+                    deviceSelect.style.display = "inline";
                     inputField.style.display = "none";
                 }
                 else
                 {
                     deviceSelect.style.display = "none";
-                    inputField.style.display = "";
+                    inputField.style.display = "inline";
                     inputField.value = "";
                 }
             };
@@ -1077,14 +1136,17 @@ function EventsConfig(agocontrol)
     };
 
     //Creates the action builder
-    self.createActionBuilder = function(container, defaults)
+    self.createActionBuilder = function(container, containerParameters, defaults)
     {
         container.innerHTML = "";
         var deviceListSelect = document.createElement("select");
-        deviceListSelect.id = "deviceListSelect";
+        deviceListSelect.setAttribute("id", "deviceListSelect");
+        deviceListSelect.setAttribute("class", "form-control");
+        deviceListSelect.setAttribute("style", "width:300px; display:inline;");
         var commandSelect = document.createElement("select");
-        commandSelect.id = "commandSelect";
-        var commandParams = document.createElement("fieldset");
+        commandSelect.setAttribute("id", "commandSelect");
+        commandSelect.setAttribute("class", "form-control");
+        commandSelect.setAttribute("style", "width:300px; display:inline;");
         var j = 0;
         for ( var i = 0; i < self.agocontrol.devices().length; i++)
         {
@@ -1115,7 +1177,7 @@ function EventsConfig(agocontrol)
 
         container.appendChild(deviceListSelect);
         container.appendChild(commandSelect);
-        container.appendChild(commandParams);
+        commandParams = containerParameters;
     
         deviceListSelect.onchange = function()
         {
@@ -1157,44 +1219,51 @@ function EventsConfig(agocontrol)
             if (cmd.parameters !== undefined)
             {
                 commandParams.style.display = "";
-                var legend = document.createElement("legend");
-                legend.style.fontWeight = 700;
-                legend.appendChild(document.createTextNode("Parameters"));
-                commandParams.appendChild(legend);
+                //var legend = document.createElement("legend");
+                //legend.style.fontWeight = 700;
+                //legend.appendChild(document.createTextNode("Parameters"));
+                //commandParams.appendChild(legend);
                 for ( var param in cmd.parameters)
                 {
+                    var div = document.createElement("div");
+                    div.setAttribute("class", "form-group");
+
                     var label = document.createElement("label");
+                    label.setAttribute("class", "col-sm-2 control-label");
                     label.appendChild(document.createTextNode(cmd.parameters[param].name + ": "));
                     label.setAttribute("for", cmd.parameters[param].name);
-                    commandParams.appendChild(label);
+                    div.appendChild(label);
+
+                    var div2 = document.createElement("div");
+                    div2.setAttribute("class", "col-sm-8");
+                    div.appendChild(div2);
 
                     if (cmd.parameters[param].type == 'option')
                     {
                         var select = document.createElement("select");
-                        select.name = param;
-                        select.className = "cmdParam";
-                        select.id = cmd.parameters[param].name;
+                        select.setAttribute("name", param);
+                        select.setAttribute("class", "cmdParam form-control");
+                        select.setAttribute("id", cmd.parameters[param].name);
                         for ( var i = 0; i < cmd.parameters[param].options.length; i++)
                         {
                             select.options[select.options.length] = new Option(cmd.parameters[param].options[i], cmd.parameters[param].options[i]);
                         }
-                    commandParams.appendChild(select);
+                        div2.appendChild(select);
                     }
                     else
                     {
                         var input = document.createElement("input");
-                        input.name = param;
-                        input.id = cmd.parameters[param].name;
-                        input.className = "cmdParam";
+                        input.setAttribute("name", param);
+                        input.setAttribute("id", cmd.parameters[param].name);
+                        input.setAttribute("class", "cmdParam form-control");
                         if (defaults && defaults[param])
                         {
                             input.value = defaults[param];
                         }
-                        commandParams.appendChild(input);
+                        div2.appendChild(input);
                     }
 
-                    var br = document.createElement("br");
-                    commandParams.appendChild(br);
+                    commandParams.appendChild(div);
                 }
             }
             else
