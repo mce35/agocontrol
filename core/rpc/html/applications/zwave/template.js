@@ -1311,12 +1311,20 @@ function zwaveConfig(zwave) {
 
     //add node
     self.addNode = function() {
+        zwave.addNode();
     };
 
     //remove node
     self.removeNode = function() {
-        var msg = $('#reallyremovenode').html();
-        if( confirm(msg) )
+        if( self.selectedNode.id )
+        {
+            var msg = $('#reallyremovenode').html();
+            if( confirm(msg) )
+            {
+                zwave.removeNode(self.selectedNode.id);
+            }
+        }
+        else
         {
             zwave.removeNode(self.selectedNode.id);
         }
