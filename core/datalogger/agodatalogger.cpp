@@ -519,22 +519,22 @@ void AgoDataLogger::addSingleGraphParameters(qpid::types::Variant::Map& data, ch
     addGraphParam(string_format("LINE1:levelmin%s::dashes", data["colorMin"].asString().c_str()), params, index);
 
     //MIN GPRINT
-    addGraphParam(string_format("GPRINT:levelmin:   Min %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmin:\"   Min %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
 
     //MAX LINE
     addGraphParam(string_format("LINE1:levelmax%s::dashes", data["colorMax"].asString().c_str()), params, index);
 
     //MAX GPRINT
-    addGraphParam(string_format("GPRINT:levelmax:   Max %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmax:\"   Max %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
 
     //AVG LINE
     addGraphParam(string_format("LINE1:levelavg%s::dashes", data["colorAvg"].asString().c_str()), params, index);
 
     //AVG GPRINT
-    addGraphParam(string_format("GPRINT:levelavg:   Avg %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelavg:\"   Avg %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
 
     //LAST GPRINT
-    addGraphParam(string_format("GPRINT:levellast:   Last %%6.2lf%s", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levellast:\"   Last %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
 }
 
 /**
@@ -565,16 +565,16 @@ void AgoDataLogger::addMultiGraphParameters(qpid::types::Variant::Map& data, cha
     addGraphParam(string_format("LINE1:level%d%s:%s", id, data["colorL"].asString().c_str(), data["kind"].asString().c_str()), params, index);
 
     //MIN GPRINT
-    addGraphParam(string_format("GPRINT:levelmin%d:     Min %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmin%d:\"     Min %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
 
     //MAX GPRINT
-    addGraphParam(string_format("GPRINT:levelmax%d:     Max %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmax%d:\"     Max %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
 
-    //AVG GRPINT
-    addGraphParam(string_format("GPRINT:levelavg%d:     Avg %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+    //AVG GPRINT
+    addGraphParam(string_format("GPRINT:levelavg%d:\"     Avg %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
 
     //LAST GPRINT
-    addGraphParam(string_format("GPRINT:levellast%d:     Last %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levellast%d:\"     Last %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
 
     //new line
     addGraphParam("COMMENT:\\n", params, index);
@@ -736,6 +736,7 @@ bool AgoDataLogger::generateGraph(qpid::types::Variant::List uuids, int start, i
 
     //build graph
     bool found = false;
+    rrd_clear_error();
     rrd_info_t* grinfo = rrd_graph_v(num_params, (char**)params);
     rrd_info_t* walker;
     if( grinfo!=NULL )
@@ -743,6 +744,7 @@ bool AgoDataLogger::generateGraph(qpid::types::Variant::List uuids, int start, i
         walker = grinfo;
         while (walker)
         {
+            AGO_TRACE() << "RRD walker key = " << walker->key;
             if (strcmp(walker->key, "image") == 0)
             {
                 *img = walker->value.u_blo.ptr;
@@ -756,7 +758,6 @@ bool AgoDataLogger::generateGraph(qpid::types::Variant::List uuids, int start, i
     else
     {
         AGO_ERROR() << "agodatalogger-RRDtool: unable to generate graph [" << rrd_get_error() << "]";
-        rrd_clear_error();
         return false;
     }
 
@@ -795,11 +796,11 @@ void AgoDataLogger::eventHandlerRRDtool(std::string subject, std::string uuid, q
             AGO_INFO() << "New device detected, create rrdfile " << rrdfile.string();
             const char *params[] = {"DS:level:GAUGE:21600:U:U", "RRA:AVERAGE:0.5:1:1440", "RRA:AVERAGE:0.5:5:2016", "RRA:AVERAGE:0.5:30:1488", "RRA:AVERAGE:0.5:60:8760", "RRA:AVERAGE:0.5:360:2920", "RRA:MIN:0.5:1:1440", "RRA:MIN:0.5:5:2016", "RRA:MIN:0.5:30:1488", "RRA:MIN:0.5:60:8760", "RRA:MIN:0.5:360:2920", "RRA:MAX:0.5:1:1440", "RRA:MAX:0.5:5:2016", "RRA:MAX:0.5:30:1488", "RRA:MAX:0.5:60:8760", "RRA:MAX:0.5:360:2920"};
 
+            rrd_clear_error();
             int res = rrd_create_r(rrdfile.string().c_str(), 60, 0, 16, params);
             if( res<0 )
             {
                 AGO_ERROR() << "agodatalogger-RRDtool: unable to create rrdfile [" << rrd_get_error() << "]";
-                rrd_clear_error();
             }
         }  
 
@@ -810,11 +811,11 @@ void AgoDataLogger::eventHandlerRRDtool(std::string subject, std::string uuid, q
             snprintf(param, 50, "N:%s", content["level"].asString().c_str());
             const char* params[] = {param};
 
+            rrd_clear_error();
             int res = rrd_update_r(rrdfile.string().c_str(), "level", 1, params);
             if( res<0 )
             {
                 AGO_ERROR() << "agodatalogger-RRDtool: unable to update data [" << rrd_get_error() << "] with param [" << param << "]";
-                rrd_clear_error();
             }
         }
     }
