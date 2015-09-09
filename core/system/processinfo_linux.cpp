@@ -61,11 +61,10 @@ static void getCpuPercentage(qpid::types::Variant::Map& current, qpid::types::Va
 void AgoSystem::getProcessInfo()
 {
     PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS);
-    proc_t proc_info;
-    memset(&proc_info, 0, sizeof(proc_info));
-    while (readproc(proc, &proc_info) != NULL)
+    proc_t* proc_info = NULL;
+    while( (proc_info=readproc(proc, NULL)) != NULL )
     {
-        std::string procName = std::string(proc_info.cmd);
+        std::string procName = std::string(proc_info->cmd);
         if( processes.find(procName)!=processes.end()  )
         {
             qpid::types::Variant::Map stats = processes[procName].asMap();
@@ -73,12 +72,12 @@ void AgoSystem::getProcessInfo()
             qpid::types::Variant::Map ls = stats["lastStats"].asMap();
 
             //update current stats
-            cs["utime"] = (uint64_t)proc_info.utime;
-            cs["stime"] = (uint64_t)proc_info.stime;
-            cs["cutime"] = (uint64_t)proc_info.cutime;
-            cs["cstime"] = (uint64_t)proc_info.cstime;
-            cs["vsize"] = (uint64_t)proc_info.vm_size * 1024;
-            cs["rss"] = (uint64_t)proc_info.vm_rss * 1024;
+            cs["utime"] = (uint64_t)proc_info->utime;
+            cs["stime"] = (uint64_t)proc_info->stime;
+            cs["cutime"] = (uint64_t)proc_info->cutime;
+            cs["cstime"] = (uint64_t)proc_info->cstime;
+            cs["vsize"] = (uint64_t)proc_info->vm_size * 1024;
+            cs["rss"] = (uint64_t)proc_info->vm_rss * 1024;
             cs["cpuTotalTime"] = (uint32_t)getCpuTotalTime();
             double ucpu=0, scpu=0;
             if( ls["utime"].asUint64()!=0 )
@@ -96,6 +95,9 @@ void AgoSystem::getProcessInfo()
             stats["running"] = true;
             processes[procName] = stats;
         }
+
+        //free memory
+        freeproc(proc_info);
     }
     closeproc(proc);
 }
