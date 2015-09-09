@@ -436,7 +436,7 @@ function agoBlocklyPlugin(devices, agocontrol)
         //request script filename if necessary
         if( self.scriptName()==='untitled' )
         {
-            $("#saveasDialog").addClass('active');
+            $("#saveasDialog").modal('show');
         }
         else
         {
@@ -456,7 +456,7 @@ function agoBlocklyPlugin(devices, agocontrol)
         }
 
         //request script filename if necessary
-        $("#saveasDialog").addClass('active');
+        $("#saveasDialog").modal('show');
     };
 
     //save dialog ok button
@@ -474,14 +474,14 @@ function agoBlocklyPlugin(devices, agocontrol)
             //save script
             self.saveScript();
         }
-        $("#saveasDialog").removeClass('active');
+        $("#saveasDialog").modal('hide');
     };
 
     //save dialog cancel button
     self.saveCancel = function()
     {
         notif.info('#ns');
-        $("#saveasDialog").removeClass('active');
+        $("#saveasDialog").modal('hide');
     };
 
     //delete script
@@ -503,8 +503,8 @@ function agoBlocklyPlugin(devices, agocontrol)
             });
     };
 
-    //load code
-    self.load = function()
+    //import script
+    self.importScript = function()
     {
         //init upload
         $('#fileupload').fileupload({
@@ -543,15 +543,20 @@ function agoBlocklyPlugin(devices, agocontrol)
             },
             progressall: function (e, data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
-                $('#progress .bar').css('width', progress+'%');
+                $('#progress').css('width', progress+'%');
             }
         });
 
-        //load scripts
+        $("#importDialog").modal('show');
+    };
+
+    //load script
+    self.load = function()
+    {
         self.loadScripts(function()
         {
             //open script dialog
-            $("#loadDialog").addClass('active');
+            $("#loadDialog").modal('show');
         });
     };
 
@@ -564,26 +569,25 @@ function agoBlocklyPlugin(devices, agocontrol)
             if( event.type===0 )
             {
                 //start message
-                $('#debugContainer > ul').append('<li style="font-size:small;" class="primary alert">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+JSON.stringify(event.msg)+'</i>');
             }
             else if( event.type===1 )
             {
                 //end message
-                $('#debugContainer > ul').append('<li style="font-size:small;" class="primary alert">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+JSON.stringify(event.msg)+'</i>');
                 //stop debugging
                 self.stopDebug();
             }
             else if( event.type===2 )
             {
                 //error message
-                $('#debugContainer > ul').append('<li style="font-size:small;" class="danger alert">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-danger">'+JSON.stringify(event.msg)+'</i>');
             }
             else if( event.type===3 )
             {
                 //default message
-                $('#debugContainer > ul').append('<li style="font-size:small;" class="default alert">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item">'+JSON.stringify(event.msg)+'</i>');
             }
-
         }
     };
 
@@ -650,7 +654,7 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.openDebug = function()
     {
         //open dialog
-        $("#debugDialog").addClass('active');
+        $("#debugDialog").modal('show');
     };
 
     //view lua source code
@@ -671,7 +675,7 @@ function agoBlocklyPlugin(devices, agocontrol)
             content.innerHTML = code;
         }
         //open dialog
-        $("#luaDialog").addClass('active');
+        $('#luaDialog').modal('show')
     };
 
     //load script
@@ -687,8 +691,7 @@ function agoBlocklyPlugin(devices, agocontrol)
                 self.loadScript(res.data.name, res.data.script);
             });
 
-        //$("#loadDialog").dialog("close");
-        $("#loadDialog").removeClass('active');
+        $("#loadDialog").modal('hide');
     };
 
     //rename script
@@ -762,21 +765,31 @@ function init_template(path, params, agocontrol)
 
     ko.bindingHandlers.blockly = {
         update: function(element, viewmodel) {
+            var workspace = null;
+
+            //init blockly
             var interval = window.setInterval(function() {
                 if( typeof Blockly!='object' )
                 {
+                    //blockly not loaded yet
                     return;
                 }
                 var extra = model.getDefaultContacts();
                 if( extra && extra.updated===false )
                 {
+                    //default contacts not loaded yet
+                    return;
+                }
+                if( !document.getElementById('blocklyDiv') )
+                {
+                    //blockly already loaded (should not happen now because blockly has dispose function)
                     return;
                 }
                 window.clearInterval(interval);
 
                 //inject blockly
                 element.innerHTML = "";
-                var workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
+                workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
                     path: "configuration/blockly/blockly/",
                     toolbox: document.getElementById('toolbox')
                 });
@@ -795,6 +808,14 @@ function init_template(path, params, agocontrol)
                 //init default blocks
                 viewmodel().addDefaultBlocks();
             }, 250);
+
+            //clean up
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                if( workspace!==null )
+                {
+                    workspace.dispose();
+                }
+            });
         }
     };
 

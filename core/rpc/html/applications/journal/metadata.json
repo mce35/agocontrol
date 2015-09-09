@@ -1,0 +1,8 @@
+{
+    "name": "Journal",
+    "icon": "fa-book",
+    "version": "1.0.0",
+    "description": "Journal logs your messages",
+    "template": "html/journal",
+    "listable": true
+}

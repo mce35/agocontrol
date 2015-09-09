@@ -1,5 +1,6 @@
 {
     "name": "Security",
+    "icon": "fa-lock",
     "version": "1.0.0",
     "description": "Security",
     "template": "html/security",

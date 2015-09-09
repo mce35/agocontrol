@@ -1,8 +1,8 @@
 {
-        "name": "Cloud",
-        "version": "1.0.0",
-        "description": "Cloud activation",
-        "template": "html/cloud",
-        "listable": true,
-        "category": "Cloud"
+    "name": "Cloud",
+    "version": "1.0.0",
+    "description": "Cloud activation",
+    "template": "html/cloud",
+    "listable": true,
+    "category": "cloud"
 }

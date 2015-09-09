@@ -1,8 +1,0 @@
-{
-    "name": "OnVIF",
-    "version": "0.0.1",
-    "description": "Configure OnVIF cameras",
-    "template": "html/onvif",
-    "listable": true,
-    "depends": "agoonvif.py"
-}

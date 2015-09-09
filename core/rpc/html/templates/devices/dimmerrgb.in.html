@@ -1,66 +1,71 @@
-<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
-            <li class="dashboard-widget-header-icon">
-                <ko opts="if: stale">
-                    <div class="pretty large danger btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-adjust"></i>
-                    </div>
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-adjust"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
                 </ko>
-                <ko opts="ifnot: stale">
-                    <div class="pretty large primary btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-adjust"></i>
-                    </div>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
                 </ko>
-            </li>
-            <li class="dashboard-widget-header-infos">
-                <div class="row">
-                <ko opts="if: name ">
-                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
-                </ko>
-                <ko opts="ifnot: name ">
-                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
-                </ko>
-                <ko opts="if: room ">
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-location"/>
-                        <span data-bind="text: room"/>
-                    </div>
-                </ko>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
                 </div>
-            </li>
-        </ul>
+                </ko>
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
+                    <ko opts="ifnot:state">
+                    <_span data-translateable="true">OFF</_span>
+                    </ko>
+                    <ko opts="if:state">
+                    <_span data-translateable="true">ON</_span>
+                    </ko>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
-        <ul class="two_up tiles" style="margin-bottom:0px;">
-            <li class="dashboard-widget-content-button">
-            <ko opts="if: state ">
-                <div class="pretty default btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
-                </ko>
-                <ko opts="ifnot: state">
-                <div class="pretty primary btn btn-full" data-bind="click: turnOn" data-value="on">ON</div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-content-button">
-                <ko opts="if: state">
-                    <div class="pretty primary btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
-                </ko>
-                <ko opts="ifnot: state">
-                    <div class="pretty default btn btn-full" data-bind="click: turnOff" data-value="off">OFF</div>
-                </ko> 
-            </li>
-        </ul>
-        <ul class="two_up tiles">
-            <li class="dashboard-widget-content-button">
-                <div class="pretty primary btn btn-full" data-bind="attr { 'id':'color-'+uuid, 'uuid':uuid }, click:openColorPicker">SETCOLOR</div>
-            </li>
-            <li class="dashboard-widget-content-button" style="padding-top:6px;">
-                <div class="slider" data-bind="slider: level, sliderOptions: {min: 0, max: 100, range: 'min', step: 1, dev: $data}" ></div>
-            </li>
-        </ul>
+    <div class="info-box">
+        <div class="info-box-content no-margin-left" style="padding-top:2px; padding-bottom:2px;">
+            <div class="well no-padding">
+                <div class="row margin">
+                    <div class="btn-group btn-group-justified">
+                        <div class="btn-group">
+                            <ko opts="if: state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-default">ON</_button>
+                            </ko>
+                            <ko opts="ifnot: state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-primary">ON</_button>
+                            </ko>
+                        </div>
+                        <div class="btn-group">
+                            <ko opts="if: state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-primary">OFF</_button>
+                            </ko>
+                            <ko opts="ifnot: state">
+                            <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-default">OFF</_button>
+                            </ko>
+                        </div>
+                        <div class="btn-group">
+                            <_button type="button" data-translateable="true" data-bind="colorpicker:{color:$data.color, device:$data}" class="btn btn-primary">COLOR</_button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row margin">
+                    <div class="col-xs-12 col-md-12">
+                        <input data-bind="sliderValue:{value:level, min:0, max:100, step:1, ticks:[0,25,50,75,100], ticks_snap_bounds:5, orientation:'horizontal', id:'slider-'+$data.uuid, device:$data}" type="text" class="slider form-control"/>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-</div>
-
+</div>                   

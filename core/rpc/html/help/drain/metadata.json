@@ -1,0 +1,7 @@
+{
+    "name": "Drain",
+    "version": "1.0.0",
+    "description": "Tool to drain agocontrol events",
+    "template": "html/drain",
+    "listable": true
+}

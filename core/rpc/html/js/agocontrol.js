@@ -13,7 +13,9 @@ Agocontrol.prototype = {
     refreshMultigraphThumbsInterval: null,
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
+    _allProtocols: ko.observableArray([]),
     _getApplications: Promise.pending(),
+    _getProtocols: Promise.pending(),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -27,9 +29,12 @@ Agocontrol.prototype = {
     supported_devices: ko.observableArray([]),
     processes: ko.observableArray([]),
     applications: ko.observableArray([]),
+    protocols: ko.observableArray([]),
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
+    serverTime: ko.observable(''),
+    journalEntries: ko.observableArray([]),
 
     agoController: null,
     scenarioController: null,
@@ -37,6 +42,10 @@ Agocontrol.prototype = {
     inventory: null,
     dataLoggerController: null,
     systemController: null,
+    journal: null,
+
+    //ui config
+    skin: ko.observable('skin-yellow-light body-light'),
 
     _init : function(){
         /**
@@ -45,6 +54,7 @@ Agocontrol.prototype = {
          */
         ko.computed(function(){
             var allApplications = this._allApplications();
+            var allProtocols = this._allProtocols();
             var favorites = this._favorites();
             var processes = this.processes();
             // Hack to get around lack of process list on FreeBSD
@@ -70,6 +80,7 @@ Agocontrol.prototype = {
                 }
             }
 
+            //add all other applications
             for( var i=0; i<allApplications.length; i++ )
             {
                 var application = allApplications[i];
@@ -103,7 +114,40 @@ Agocontrol.prototype = {
 
             this.applications(applications);
             this._getApplications.fulfill();
+
+            //protocols
+            var protocols = [];
+            for( var i=0; i<allProtocols.length; i++ )
+            {
+                var protocol = allProtocols[i];
+                var append = false;
+
+                if( protocol.depends===undefined || (protocol.depends!==undefined && $.trim(protocol.depends).length==0) )
+                {
+                    append = true;
+                }
+                else
+                {
+                    //check if process is installed (and not if it's currently running!)
+                    var proc = this.findProcess(protocol.depends);
+                    if( proc )
+                    {
+                        append = true;
+                    }
+                }
+
+                if( append )
+                {
+                    protocols.push(protocol);
+                }
+            }
+
+            this.protocols(protocols);
+            this._getProtocols.fulfill();
+
         }, this);
+
+        
     },
 
     /**
@@ -115,17 +159,18 @@ Agocontrol.prototype = {
      * Application availability is NOT guaranteed to be loaded immediately.
      */
     initialize : function() {
+        var p0 = this.getUiConfig();
         var p1 = this.getInventory()
-            .then(this.handleInventory.bind(this));
+            .then(this.handleInventory.bind(this))
+            .then(this.getJournalEntries.bind(this)); //need datalogger uuid
         var p2 = this.updateListing();
 
         // Required but non-dependent
         this.updateFavorites();
 
-        return Promise.all([p1, p2]);
+        return Promise.all([p0, p1, p2]);
     },
-
-
+    
     /**
      * Send a command to an arbitrary Ago component.
      *
@@ -374,6 +419,29 @@ Agocontrol.prototype = {
         return self.sendCommand(content);
     },
 
+    //get journal entries for today
+    getJournalEntries: function()
+    {
+        var self = this;
+        if( self.dataLoggerController )
+        {
+            var content = {};
+            content.uuid = self.journal;
+            content.command = 'today';
+            self.sendCommand(content)
+                .then(function(res) {
+                    self.journalEntries(res.data.messages);
+                })
+                .catch(function(err) {
+                    console.error(err);
+                });
+        }
+        else
+        {
+            console.warn('No datalogger found!');
+        }
+    },
+
     //handle inventory
     handleInventory: function(result)
     {
@@ -448,14 +516,18 @@ Agocontrol.prototype = {
     // Handle dashboard-part of inventory
     handleDashboards : function(floorplans) {
         var dashboards = [];
-        dashboards.push({name:'all', ucName:'All my devices', action:'', editable:false});
+        dashboards.push({name:'all', ucName:ko.observable('All my devices'), action:'', editable:false, icon:'fa-th-large'});
         for( uuid in floorplans )
         {
             var dashboard = floorplans[uuid];
             dashboard.uuid = uuid;
             dashboard.action = '';
-            dashboard.ucName = dashboard.name;
+            dashboard.ucName = ko.observable(dashboard.name);
             dashboard.editable = true;
+            if( dashboard.icon===undefined )
+            {
+                dashboard.icon = null;
+            }
             dashboards.push(dashboard);
         }
         this.dashboards.replaceAll(dashboards);
@@ -467,7 +539,7 @@ Agocontrol.prototype = {
         var content = {};
         content.command = "getprocesslist";
         content.uuid = self.systemController;
-        self.sendCommand(content, 1)
+        self.sendCommand(content)
             .then(function(res) {
                 var values = [];
                 for( var procName in res.data )
@@ -476,11 +548,10 @@ Agocontrol.prototype = {
                     proc.name = procName;
                     values.push(proc);
                 }
-
                 self.processes.pushAll(values);
             })
             .catch(function(err){
-                notif.warn('Unable to get processes list, Applications will not be available: '+getErrorMessage(err));
+                notif.warning('Unable to get processes list, Applications will not be available: '+getErrorMessage(err));
                 self._noProcesses(true);
             });
     },
@@ -522,6 +593,10 @@ Agocontrol.prototype = {
             for( var i=0; i<result.applications.length; i++ )
             {
                 var application = result.applications[i];
+                if( application.icon===undefined )
+                {
+                    application.icon = null;
+                }
                 application.ucName = ucFirst(application.name);
                 applications.push(application);
             }
@@ -529,45 +604,24 @@ Agocontrol.prototype = {
             // Update internal observable
             self._allApplications(applications);
 
-            //CONFIGURATION PAGES
-            var categories = {};
-            for( var i=0; i<result.config.length; i++ )
+            //PROTOCOLS
+            var protocols = [];
+            for( var i=0; i<result.protocols.length; i++ )
             {
-                //check missing category
-                if( result.config[i].category===undefined )
+                var protocol = result.protocols[i];
+                if( protocol.icon===undefined )
                 {
-                    result.config[i].category = 'Uncategorized';
+                    protocol.icon = null;
                 }
-                //add new category if necessary
-                var category = ucFirst(result.config[i].category);
-                if( categories[category]===undefined )
-                {
-                    categories[category] = [];
-                }
-                //append page to its category
-                categories[category].push(result.config[i]);
+                protocol.ucName = ucFirst(protocol.name);
+                protocols.push(protocol);
             }
 
-            var configurations = [];
-            for( var category in categories )
-            {
-                var subMenus = [];
-                for( var i=0; i<categories[category].length; i++ )
-                {
-                    subMenus.push(categories[category][i]);
-                }
-                if( subMenus.length==1 )
-                {
-                    //no submenu
-                    configurations.push({'menu':subMenus[0], 'subMenus':null});
-                }
-                else
-                {
-                    //submenus
-                    configurations.push({'menu':category, 'subMenus':subMenus});
-                }
-            }
-            self.configurations.replaceAll(configurations);
+            //Update internal observable
+            self._allProtocols(protocols);
+
+            //CONFIGURATION PAGES
+            self.configurations.replaceAll(result.config);
 
             //SUPPORTED DEVICES
             self.supported_devices(result.supported)
@@ -580,9 +634,17 @@ Agocontrol.prototype = {
                 help.url = null;
                 helps.push(help);
             }
-            helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/'});
-            helps.push({name:'About', url:'http://www.agocontrol.com/about/'});
+            helps.push({name:'Wiki', url:'http://wiki.agocontrol.com/', description:'Get support on agocontrol wiki'});
+            helps.push({name:'About', url:'http://www.agocontrol.com/about/', description:'All about agocontrol'});
             self.helps.replaceAll(helps);
+
+            //SERVER TIME
+            var serverTime = result.server_time;
+            self.serverTime( timestampToString(serverTime) );
+            window.setInterval(function() {
+                serverTime += 60;
+                self.serverTime( timestampToString(serverTime) );
+            }, 60000);
         });
     },
 
@@ -600,6 +662,23 @@ Agocontrol.prototype = {
                 return null;
             });
     },
+
+    getProtocol: function(protocolName) {
+        var self = this;
+        return this._getProtocols.promise
+            .then(function() {
+                var pros = self.protocols();
+                for( var i=0; i<pros.length; i++ )
+                {
+                    if( pros[i].name==protocolName )
+                    {
+                        return pros[i];
+                    }
+                }
+                return null;
+            });
+    },
+
     getDashboard:function(name){
         var dashboards = this.dashboards();
         for( var i=0; i < dashboards.length; i++ )
@@ -693,7 +772,7 @@ Agocontrol.prototype = {
                 done = true;
             }
 
-            //add new device if necessary
+            //update device infos if necessary
             if( !done && response.result.event=="event.device.announce" )
             {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
@@ -708,7 +787,7 @@ Agocontrol.prototype = {
                             }
                             else
                             {
-                                console.warn('Unable to add new device because no infos about it in retrieved inventory');
+                                console.warn('Unable to update device because no infos about it in inventory');
                             }
                         });
                 }
@@ -716,7 +795,38 @@ Agocontrol.prototype = {
                 //nothing else to do
                 done = true;
             }
-    
+
+            //update device name
+            if( !done && response.result.event=="event.system.devicenamechanged" )
+            {
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
+                {
+                    self.inventory.devices[response.result.uuid].name = response.result.name;
+                }
+
+                //nothing else to do
+                done = true;
+            }
+
+            //update dashboard name
+            if( !done && response.result.event=="event.system.floorplannamechanged" )
+            {
+                for( var i=0; i<self.dashboards().length; i++ )
+                {
+                    if( self.dashboards()[i].uuid && self.dashboards()[i].uuid===response.result.uuid )
+                    {
+                        self.dashboards()[i].name = response.result.name;
+                        self.dashboards()[i].ucName(response.result.name);
+                        //stop statement
+                        break;
+                    }
+                }
+
+                //nothing else to do
+                done = true;
+            }
+
+            //update device data (values)
             if( !done )
             {
                 for( var i=0; i<self.devices().length; i++ )
@@ -887,5 +997,62 @@ Agocontrol.prototype = {
         }
     },
 
+    //get ui config
+    //this function uses cgi to be fast as possible (no need to wait inventory handling)
+    getUiConfig: function()
+    {
+        var self = this;
+        return $.ajax({
+            url : "cgi-bin/ui.cgi?param=theme",
+            method : "GET"
+        }).done(function(res) {
+            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result==1 )
+            {
+                //apply skin if saved otherwise apply default one
+                if( res.content.skin )
+                {
+                    var skin = res.content.skin;
+                    self.skin(skin);
+                }
+            }
+            else
+            {
+                if( res.result.error )
+                {
+                    console.error('Unable to get theme: '+res.result.error);
+                }
+                else
+                {
+                    console.error('Unable to get theme');
+                }
+            }
+        });
+    },
+
+    //change ui skin
+    setSkin: function(skin)
+    {
+        var self = this;
+
+        //append general style light/dark
+        skin.indexOf('light')===-1 ? skin+=' body-dark' : skin+=' body-light';
+        self.skin(skin);
+
+        //save changes
+        $.ajax({
+            url : "cgi-bin/ui.cgi?key=skin&param=theme&value="+skin,
+            method : "GET",
+            async : true,
+        }).done(function(res) {
+            if( !res || !res.result || res.result===0 ) 
+            {
+                notif.error('Unable to save skin');
+            }
+            else
+            {
+                notif.success('Skin saved');
+            }
+        });
+    }
 };
 

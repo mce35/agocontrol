@@ -1,79 +1,73 @@
-<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
-            <li class="dashboard-widget-header-icon">
-                <ko opts="if: stale">
-                    <div class="pretty large danger btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-arrow-combo"></i>
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-arrow-combo"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
+                </ko>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
+                </ko>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
+                    <ko opts="if: state()==0">
+                    <_span data-translateable="true">closed</_span>
+                    </ko>
+                    <ko opts="if: state()==150">
+                    <_span data-translateable="true">partial</_span>
+                    </ko>
+                    <ko opts="if: state()==255">
+                    <_span data-translateable="true">opened</_span>
+                    </ko>
+                    <ko opts="if: state()==50">
+                    <_span data-translateable="true">opening</_span>
+                    </ko>
+                    <ko opts="if: state()==100">
+                    <_span data-translateable="true">closing</_span>
+                    </ko>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
+            <div class="well">
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <ko opts="if: state()==255">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-default">OPEN</_button>
+                        </ko>
+                        <ko opts="if: state()!=255">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-primary">OPEN</_button>
+                        </ko>
                     </div>
-                </ko>
-                <ko opts="ifnot: stale">
-                    <div class="pretty large primary btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-arrow-combo"></i>
+                    <div class="btn-group">
+                        <_button type="button" data-translateable="true" data-bind="click: turnStop" class="btn btn-primary">STOP</_button>
                     </div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-header-infos">
-                <div class="row">
-                <ko opts="if: name ">
-                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
-                </ko>
-                <ko opts="ifnot: name ">
-                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
-                </ko>
-                <ko opts="if: room ">
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-location"/>
-                        <span data-bind="text: room"/>
-                    </div>
-                </ko>
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-info"/>
+                    <div class="btn-group">
                         <ko opts="if: state()==0">
-                        <_span data-translateable="true">CLOSED</_span>
+                        <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-primary">CLOSE</_button>
                         </ko>
-                        <ko opts="if: (state()!=0 and state()!=50 and state()!=100 and state()!=150)">
-                        <_span data-translateable="true">OPENED</_span>
-                        </ko>
-                        <ko opts="if: state()==50">
-                        <_span data-translateable="true">OPENING</_span>
-                        </ko>
-                        <ko opts="if: state()==100">
-                        <_span data-translateable="true">CLOSING</_span>
-                        </ko>
-                        <ko opts="if: state()==150">
-                        <_span data-translateable="true">PARTIAL</_span>
+                        <ko opts="if: state()!=0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-default">CLOSE</_button>
                         </ko>
                     </div>
                 </div>
-            </li>
-        </ul>
-    </div>
-
-    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
-        <ul class="three_up tiles">
-            <li class="dashboard-widget-content-button">
-                <ko opts="if: state">
-                <_div data-translateable="true" class="pretty medium default btn btn-full" data-bind="click: turnOn" data-value="on">OPEN</_div>
-                </ko>
-                <ko opts="ifnot: state">
-                <_div data-translateable="true" class="pretty medium primary btn btn-full" data-bind="click: turnOn" data-value="on">OPEN</_div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-content-button">
-                <_div data-translateable="true" class="pretty medium primary btn btn-full" data-bind="click: turnStop" data-value="stop">STOP</_div>
-            </li>
-            <li class="dashboard-widget-content-button">
-                <ko opts="if: state">
-                <_div data-translateable="true" class="pretty medium primary btn btn-full" data-bind="click: turnOff" data-value="off">CLOSE</_div>
-                </ko>
-                <ko opts="ifnot: state">
-                <_div data-translateable="true" class="pretty medium default btn btn-full" data-bind="click: turnOff" data-value="off">CLOSE</_div>
-                </ko>
-            </li>
-        </ul>
+            </div>
+        </div>
     </div>
 
 </div>
-

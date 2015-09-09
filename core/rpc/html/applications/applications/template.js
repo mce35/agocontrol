@@ -8,8 +8,7 @@ function Applications(agocontrol)
     self.favoritesMax = ko.observable(10); //11 items max on gumby menu
     self.favoritesCount = ko.observable(0);
     
-    //filter dashboard that don't need to be displayed
-    //need to do that because datatable odd is broken when filtering items using knockout
+    //filter applications that don't need to be displayed
     self.applications = ko.computed(function() {
         var applications = [];
         var raw = self.agocontrol.applications();
@@ -50,10 +49,8 @@ function Applications(agocontrol)
         displayRowCount: false
     });
 
-    self.favoriteClick = function(item)
+    self.favoriteClick = function(event, state, item, el)
     {
-        var state = !item.fav();
-
         //check favorites count
         if( state && self.favoritesCount()>=self.favoritesMax() )
         {
@@ -78,6 +75,7 @@ function Applications(agocontrol)
             if( !result || !result.result || result.result===0 )
             {
                 //revert changes
+                $(el).bootstrapSwitch('toggleState', true);
                 item.fav(!state);
                 item.favorite = !state;
                 if( item.fav() )

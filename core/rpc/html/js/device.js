@@ -23,14 +23,17 @@ function device(agocontrol, obj, uuid) {
     this.stale = ko.observable(this.stale);
     this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
 
-    if (this.devicetype == "dimmer" || this.devicetype == "dimmerrgb")
+    self.staleStyle = ko.pureComputed(function() {
+        return self.stale ? 'bg-light-blue' : 'bg-red';
+    });
+
+    if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" )
     {
         this.level = ko.observable(currentState);
         this.state.subscribe(function(v){
             this.level(v);
         }, this);
-        this.syncLevel = function()
-        {
+        this.syncLevel = function() {
             var content = {};
             content.uuid = uuid;
             content.command = "setlevel";
@@ -43,40 +46,35 @@ function device(agocontrol, obj, uuid) {
     {
         self.agocontrol.agoController = uuid;
     }
-
-    if (this.devicetype == "eventcontroller")
+    else if (this.devicetype == "eventcontroller")
     {
         self.agocontrol.eventController = uuid;
     }
-
-    if (this.devicetype == "scenariocontroller")
+    else if (this.devicetype == "scenariocontroller")
     {
         self.agocontrol.scenarioController = uuid;
     }
-
-    if (this.devicetype == "systemcontroller")
+    else if (this.devicetype == "systemcontroller")
     {
         self.agocontrol.systemController = uuid;
     }
-
-    if (this.devicetype == "dimmerrgb")
+    else if( this.devicetype=="journal" )
     {
-        this.openColorPicker = function() {
-            var picker = $('#color-'+uuid).colpick({
-                layout:'hex',
-                onSubmit: function(hsb,hex,rgb,el) {
-                    var content = {};
-                    content.uuid = $(el).attr('uuid');
-                    content.command = "setcolor";
-                    content.red = rgb.r;
-                    content.green = rgb.g;
-                    content.blue = rgb.b;
-                    self.agocontrol.sendCommand(content);
-  
-                    $(el).colpickHide();
-                },
-            });
-            picker.colpickShow();
+        self.agocontrol.journal = uuid;
+    }
+
+    if( this.devicetype=="dimmerrgb" )
+    {
+        self.color = ko.observableArray([255,0,0]);
+
+        self.syncColor = function() {
+            var content = {};
+            content.uuid = uuid;
+            content.command = "setcolor";
+            content.red = self.color()[0];
+            content.green = self.color()[1];
+            content.blue = self.color()[2];
+            self.agocontrol.sendCommand(content);
         };
     }
 
@@ -91,7 +89,7 @@ function device(agocontrol, obj, uuid) {
         {
             if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
             {
-                if( !res.result.error )
+                if( !res.error )
                 {
                     deferred.observable('data:image/png;base64,' + res.result.data.graph);
                 }

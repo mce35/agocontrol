@@ -1,27 +1,27 @@
 {
-        "name": "Blocks mode",
-        "version": "0.0.1",
-        "description": "Create events easily using blocks",
-        "listable": true,
-        "template": "html/agoblockly",
-        "depends": "agolua",
-        "category": "events",
-        "resources": {
-            "css": [
-                "prettify/prettify.css"
-            ],
-            "js": [
-                "prettify/prettify.js",
-                "blockly/libphonenumber.js",
-                "blockly/blockly_compressed.js",
-                "blockly/blocks_compressed.js",
-                "blockly/lua_compressed.js",
-                "blockly/msg/js/en.js",
-                "prettify/lang-lua.js",
-                "base64v1_0.js",
-                "jQuery-File-Upload/js/vendor/jquery.ui.widget.js",
-                "jQuery-File-Upload/js/jquery.iframe-transport.js",
-                "jQuery-File-Upload/js/jquery.fileupload.js"
-            ]
-        }
+    "name": "Events (blocks)",
+    "version": "0.0.1",
+    "description": "Create events stacking blocks",
+    "listable": true,
+    "template": "html/agoblockly",
+    "depends": "agolua",
+    "category": "events",
+    "resources": {
+        "css": [
+            "prettify/prettify.css"
+        ],
+        "js": [
+            "prettify/prettify.js",
+            "blockly/libphonenumber.js",
+            "blockly/blockly_compressed.js",
+            "blockly/blocks_compressed.js",
+            "blockly/lua_compressed.js",
+            "blockly/msg/js/en.js",
+            "prettify/lang-lua.js",
+            "base64v1_0.js",
+            "jQuery-File-Upload/js/vendor/jquery.ui.widget.js",
+            "jQuery-File-Upload/js/jquery.iframe-transport.js",
+            "jQuery-File-Upload/js/jquery.fileupload.js"
+        ]
+    }
 }

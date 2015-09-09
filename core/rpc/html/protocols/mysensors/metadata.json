@@ -1,0 +1,17 @@
+{
+    "name": "MySensors",
+    "icon": "fa-rocket",
+    "version": "0.0.1",
+    "description": "MySensors configuration",
+    "template": "html/mysensors",
+    "listable": true,
+    "depends": "agoMySensors",
+    "resources": {
+        "js": [
+           "../../js/libs/d3.v3.min.js"
+        ],
+        "css": [
+            "graph.css"
+        ]
+    }
+}

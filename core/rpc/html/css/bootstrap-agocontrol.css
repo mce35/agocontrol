@@ -1,0 +1,306 @@
+/* Bootstrap customization for agocontrol */
+
+/* extra large button */
+.btn-xl {
+    padding: 18px 28px;
+    font-size: 22px;
+    border-radius: 8px;
+}
+
+/* pin button */
+.btn-pin {
+    width: 100%;
+    height: 100%;
+    font-size: 24px;
+}
+
+/* body background */
+body {
+    background-color: #C8C8C8;
+}
+
+/* notifications */
+.content-notifs,
+.agonotif-box {
+    display:none;
+}
+
+.agonotif {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: #FFFFFF;
+    -moz-box-shadow: 0 0 12px #999999;
+    -webkit-box-shadow: 0 0 12px #999999;
+    box-shadow: 0 0 12px #999999;
+}
+
+.agonotif-success {
+    background-color: #5CB85C;
+}
+
+.agonotif-info {
+    background-color: #337AB7;
+}
+
+.agonotif-warning {
+    background-color: #F0AD4E;
+}
+
+.agonotif-error {
+    background-color: #D9534F;
+}
+
+.agonotif-fatal {
+    background-color: #000000;
+}
+
+
+/* ago container */
+.agocontainer {
+    background-color: #FFFFFF;
+    padding-left: 30px;
+    padding-right: 30px;
+    border: 1px solid #A0A0A0;
+    border-radius: 5px;
+    padding-bottom: 10px;
+    min-height: 350px;
+}
+
+.agorowbottom {
+    margin-bottom: 20px;
+}
+
+.agorowtop {
+    margin-top: 20px;
+}
+
+/* dashboard widget device icon */
+.dashboard-widget .small-box {
+    border-radius:5px !important;
+}
+
+.dashboard-widget .small-box .inner {
+    height:80px;
+    cursor:pointer;
+}
+
+.dashboard-widget .small-box .inner h3 {
+    margin:0px !important;
+    overflow:hidden;
+}
+
+.dashboard-widget .small-box .inner p {
+    margin:0px !important;
+    overflow:hidden;
+}
+
+.dashboard-widget .small-box .icon {
+    font-size: 75px;
+}
+
+.dashboard-widget .small-box-footer {
+    height:80px;
+    overflow:hidden;
+    padding:10px !important;
+    background:transparent !important;
+}
+
+.dashboard-widget .small-box-footer:hover {
+    background: transparent;
+}
+
+.dashboard-widget .small-box-footer .btn-group-justified {
+    margin-top: 15px;
+}
+
+.dashboard-widget .small-box-footer .well {
+    color:#000000;
+    padding:7px;
+    margin-top:15px;
+}
+
+div.dashboard-widget-draggable {
+    cursor:move;
+}
+
+.dashboard-widget-active {
+    border: 2px solid #3085D6;
+}
+
+.dashboard-widget-hover {
+    background-color: #3085D6;
+}
+
+.border-t-r-l {
+    border-top: 2px solid #307197;
+    border-right: 2px solid #307197;
+    border-left: 2px solid #307197;
+}
+
+.border-r-b-l {
+    border-right: 2px solid #307197;
+    border-bottom: 2px solid #307197;
+    border-left: 2px solid #307197;
+}
+
+/* custom dashboard editor */
+.dashboard-editor {
+    display:none;
+    height:160px;
+    width:100%;
+    background-color:#DFDFDF;
+    border-radius:5px;
+    margin-bottom:10px;
+}
+
+/* device list */
+.device-list {
+    background-color:#EEEEEE;
+    border:1px solid #D8D8D8;
+    padding:2px;
+    height:135px;
+    overflow:scroll;
+    overflow-x:hidden;
+}
+
+.device-list-active {
+    border: 2px solid #307197;
+    overflow: hidden;
+    background-image: url('../img/icon_trash.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.device-list-hover {
+    background-color:#3085D6;
+}
+
+.device-list-item {
+    width:200px;
+    height:30px;
+    border:1px solid #A0A0A0;
+    margin:2px;
+    border-radius:5px;
+    float:left;
+    overflow:hidden;
+    text-overflow:clip;
+    white-space:nowrap;
+    background-color:#FFFFFF;
+    padding:4px 0px 0px 4px;
+}
+
+.device-list-item-draggable {
+    cursor:move;
+}
+
+.device-list-item i {
+    margin-right:0px;
+    color:#3085D6;
+}
+
+/* css helpers */
+.nowrap {
+    white-space: nowrap;
+}
+
+.no-margin-bottom {
+    margin-bottom: 0px !important;
+}
+
+.no-margin-left {
+    margin-left: 0px !important;
+}
+
+.margin-top-10 {
+    margin-top: 10px !important;
+}
+
+.margin-top-20 {
+    margin-top: 20px !important;
+}
+
+/* adminLTE tweaks */
+.bg-white {
+    background-color: #FFFFFF !important;
+}
+
+.text-white {
+    color: #FFFFFF !important;
+}
+
+.content-header h1 {
+    border-bottom: 1px solid #CCCCCC;
+    padding-bottom: 10px;
+}
+
+.dashboard-widget .info-box-icon {
+    cursor: pointer;
+}
+
+.info-box-title > h1,
+.info-box-title > h2,
+.info-box-title > h3,
+.info-box-title > h4,
+.info-box-title > h5,
+.info-box-title > h6 {
+    margin-top: 6px !important;
+}
+
+.info-box-title {
+    display: block;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /*text-transform: uppercase;*/
+}
+
+.info-box-detail {
+    width:100%;
+}
+
+.info-box-location, .info-box-state {
+    padding-right: 10px;
+    float: left;
+}
+
+.dashboard-widget .info-box-content .well {
+    margin-bottom: 0px !important;
+    background-color: transparent;
+    border: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    padding: 14px;
+}
+
+.control-sidebar-heading {
+    margin-top: 0px !important;
+}
+
+/* Fix bug in adminLTE: select2 with many items are badly displayed */
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid #d2d6de;
+    border-radius: 0;
+    height: 100% !important;
+}
+
+/* if adminLTE is not fixed, body color is uggly */
+.body-light {
+    background-color: #F9FAFC; /* light color */
+}
+
+.body-dark {
+    background-color: #222D32; /* dark color */
+}
+
+/* reduce dashboard widget height */
+.dashboard-widget > .info-box {
+    min-height: 80px !important;
+}
+
+.dashboard-widget > .info-box > .info-box-icon {
+    width: 80px !important;
+    height: 80px !important;
+    line-height: 80px !important;
+}

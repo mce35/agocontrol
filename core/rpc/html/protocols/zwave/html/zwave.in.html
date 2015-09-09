@@ -1,0 +1,373 @@
+<div>
+
+    <!-- node details popup -->
+    <div class="modal fade" id="nodeDetails">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body">
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+                            <li class="active"><_a href="#infos" class="en-info" data-translateable="true">Infos</_a></li>
+                            <li><_a href="#status" class="en-doc" data-translateable="true">Status</_a></li>
+                            <li><_a href="#associations" class="en-share" data-translateable="true">Associations</_a></li>
+                            <li><_a href="#configuration" class="en-tools" data-translateable="true">Configuration</_a></li>
+                            <li><_a href="#commands" class="en-cog" data-translateable="true">Commands</_a></li>
+                        </ul>
+                        <div class="tab-content">
+            		    <!-- infos tab -->
+                            <div id="infos" class="tab-pane fade in active">
+                                <script type="text/html" id="nodeInfosRowTemplate">
+                                    <td><span data-bind="text: info"/></td>
+                                    <td><span data-bind="text: value"/></td>
+                                </script>
+                                <div data-bind="agoGrid:nodeInfosGrid"/>
+                            </div>
+                            <!-- status tab -->
+                            <div id="status" class="tab-pane fade">
+                                <script type="text/html" id="nodeStatusRowTemplate">
+                                    <td><span data-bind="text: status"/></td>
+                                    <td><span data-bind="text: value"/></td>
+                                </script>
+                                <div data-bind="agoGrid:nodeStatusGrid"/>
+                            </div>
+                            <!-- associations tab -->
+                            <div id="associations" class="tab-pane fade">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <_label class="col-sm-4 control-label" data-translateable="true">Create new association with</_label>
+                                        <div class="col-sm-4">
+                                            <div class="input-group">
+                                                <select class="form-control" data-bind="options:nodesForAssociation, optionsText:'value', value:selectedNodeForAssociation"/>
+                                                <span class="input-group-button">
+                                                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:createAssociation">Create</_button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <script type="text/html" id="nodeAssociationsRowTemplate">
+                                    <td><span data-bind="text: label"/></td>
+                                    <td>
+                                        <table style="width:550px; margin:0px;" class="agoTable">
+                                        <tbody data-bind="foreach: assos">
+                                            <tr data-bind="ifnot: add">
+                                                <td>
+                                                    <span data-bind="text:asso"/>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary" _title="Delete node association" _alt="Delete node association" data-translateable="true" data-bind="click:$parent.removeAssociation"><i class="en-cancel"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr data-bind="if: add">
+                                                <td>
+                                                    <span data-translateable="true">Add association with</span>
+                                                    <select class="form-control" data-bind="options:targets, optionsText:'value', value:target"/>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary" _title="Add association" _alt="Add association" data-translateable="true" data-bind="click:$parent.addAssociation"><i class="en-plus"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        </table>
+                                    </td>
+                                </script>
+                                <div data-bind="agoGrid:nodeAssociationsGrid"/>
+                            </div>
+                            <!-- configuration tab -->
+                            <div id="configuration" class="tab-pane fade">
+                                <script type="text/html" id="nodeParametersRowTemplate">
+                                    <td>
+                                        <ko opts="if: help.length>0">
+                                        <span class="en-help-circled" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':help}" />
+                                        </ko>
+                                    </td>
+                                    <td>
+                                        <ko opts="if: invalid==1">
+                                        <div data-toggle="tooltip" data-translateable="true" data-placement="right" _title="This parameter has something invalid. It is displayed only for information."><i style="color:red" class="icon-alert"/></div>
+                                        </ko>
+                                        <ko opts="if: type!='button'">
+                                            <ko opts="if: units.length==0">
+                                            <span data-bind="text:label"/>
+                                            </ko>
+                                            <ko opts="if: units.length>0">
+                                            <span data-bind="text:label+' ('+units+')'"/>
+                                            </ko>
+                                        </ko>
+                                    </td>
+                                    <td>
+                                        <ko opts="if: readonly==1">
+                                        <span data-bind="text:currentvalue"/>
+                                        </ko>
+                                        <ko opts="if: readonly==0">
+                                            <ko opts="if: type=='list'">
+                                            <select class="form-control" data-bind="options:items, value:currentvalue"/>
+                                            </ko>
+                                            <ko opts="if: type=='int' || type=='float' || type=='byte' || type=='short' || type=='string'">
+                                            <input type="text" style="width:100px;" class="form-control" data-bind="value:currentvalue"/>
+                                            </ko>
+                                            <ko opts="if: type=='bool'">
+                                            <input type="checkbox" class="form-control" data-bind="checked:currentvalue"/>
+                                            </ko>
+                                            <ko opts="if: type=='button'">
+                                            <button type="button" class="btn btn-sm btn-primary" data-bind="text:label, click:function(data, event){ alert('TODO'); }"/>
+                                            </ko>
+                                        </ko>
+                                    </td>
+                                    <td>
+                                        <ko opts="if: invalid==0">
+                                        <div class="small primary btn">
+                                            <a href="#" data-translateable="true" data-bind="click:$parent.setParameter">Set</a>
+                                        </div>
+                                        </ko>
+                                    </td>
+                                </script>
+                                <div data-bind="agoGrid:nodeParametersGrid"/>
+                            </div>
+                            <!-- commands tab -->
+                            <div id="commands" class="tab-pane fade">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <_label class="col-sm-4 control-label" data-translateable="true">Heal this node</_label>
+                                        <div class="col-sm-4">
+                                            <div class="input-group">
+                                                <_button type="button" data-translateable="true" data-bind="click:healNode" class="btn btn-primary">Heal</_button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <_label class="col-sm-4 control-label" data-translateable="true">Refresh node informations</_label>
+                                        <div class="col-sm-4">
+                                            <div class="input-group">
+                                                <_button type="button" data-translateable="true" data-bind="click:refreshNode" class="btn btn-primary">Refresh</_button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <_label class="col-sm-4 control-label" data-translateable="true">Test this node</_label>
+                                        <div class="col-sm-4">
+                                            <div class="input-group">
+                                                <_button type="button" data-translateable="true" data-bind="click:testNode" class="btn btn-primary">Test</_button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <_label class="col-sm-4 control-label" data-translateable="true">Remove this node from network</_label>
+                                        <div class="col-sm-4">
+                                            <div class="input-group">
+                                                <_button type="button" data-translateable="true" data-bind="click:removeNode" class="btn btn-primary">Remove</_button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <_label class="col-sm-4 control-label" data-translateable="true">Request node configuration parameters</_label>
+                                        <div class="col-sm-4">
+                                            <div class="input-group">
+                                                <_button type="button" data-translateable="true" data-bind="click:requestAllConfigParams" class="btn btn-primary">Request parameters</_button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- notifications -->
+    <section class="content-notifs">
+        <_span id="nr" data-translateable="true">zwavecontroller is not responding. Unable to execute action.</_span>
+        <_span id="setportok" data-translateable="true">Port configured</_span>
+        <_span id="resetok" data-translateable="true">Z-Wave controller resetted</_span>
+        <_span id="addnodeok" data-translateable="true">Add node command sent to controller</_span>
+        <_span id="removenodeok" data-translateable="true">Remove node command sent to controller</_span>
+        <_span id="testnetworkok" data-translateable="true">Test network command launched</_span>
+        <_span id="cancelok" data-translateable="true">Cancel command sent to controller</_span>
+        <_span id="saveconfigok" data-translateable="true">Save configuration sent to controller</_span>
+        <_span id="downloadconfigok" data-translateable="true">Download config sent to controller</_span>
+        <_span id="allonok" data-translateable="true">Turn on all nodes command sent to controller</_span>
+        <_span id="alloffok" data-translateable="true">Turn off all nodes command sent to controller</_span>
+        <_span id="testnodeok" data-translateable="true">Test node command sent to controller</_span>
+        <_span id="testnodeko" data-translateable="true">Test node command failed</_span>
+        <_span id="healnodeok" data-translateable="true">Heal node command sent to controller</_span>
+        <_span id="setconfigparamok" data-translateable="true">Parameter updated successfully</_span>
+        <_span id="setconfigparamko" data-translateable="true">Unable to update parameter</_span>
+        <_span id="addassociationok" data-translateable="true">Association added successfully</_span>
+        <_span id="removeassociationok" data-translateable="true">Association removed successfully</_span>
+        <_span id="reallyremoveassociation" data-translateable="true">Really remove this association?</_span>
+        <_span id="reallyremovenode" data-translateable="true">Really remove this node?</_span>
+        <_span id="reallyreset" data-translateable="true">Reset controller (everything will be lost!)</_span>
+        <_span id="refreshnodeok" data-translateable="true">Refresh node infos command sent</_span>
+        <_span id="refreshnodeko" data-translateable="true">Refresh node infos command failed</_span>
+        <_span id="requestparamsok" data-translateable="true">Request node parameters sent</_span>
+        <_span id="requestparamsko" data-translateable="true">Request node parameters failed</_span>
+    </section>
+
+    <!-- title -->
+    <section class="content-header">
+        <h1>Z-Wave</h1>
+    </section>
+
+    <!-- content -->
+    <section class="content">
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+                <li class="active"><_a href="#devices" class="en-doc" data-translateable="true">Devices</_a></li>
+                <li><_a href="#dependencies" class="en-share" data-translateable="true">Dependencies</_a></li>
+                <li><_a href="#statistics" class="en-chart-area" data-translateable="true">Statistics</_a></li>
+                <li><_a href="#commands" class="en-cog" data-translateable="true">General commands</_a></li>
+            </ul>
+            <div class="tab-content">
+
+                <div id="devices" class="tab-pane fade in active">
+                    <script type="text/html" id="nodesRowTemplate">
+                        <td data-bind="text: id"/>
+                        <td>
+                            <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetails($index()); }">
+                                <ko opts="if: product.length>0">
+                                <span data-bind="text: manufacturer+' ('+product+')'"/>
+                                </ko>
+                                <ko opts="if: product.length==0 and manufacturer.length>0">
+                                <span data-bind="text: manufacturer"/>
+                                </ko>
+                                <ko opts="if: product.length==0 and manufacturer.length==0">
+                                <_span style="font-style:italic;" data-translateable="true">No name</_span>
+                                </ko>
+                            </a>
+                        </td>
+                        <td data-bind="text: type"/>
+                        <ko opts="if: status.awake==1">
+                        <td>
+                            <_span data-translateable="true">True</_span>
+                        </td>
+                        </ko>
+                        <ko opts="if: status.awake==0">
+                        <td>
+                            <_span data-translateable="true">False</_span>
+                        </td>
+                        </ko>
+                        <ko opts="if: status.failed==1">
+                        <td>
+                            <_span style="color:red;" data-translateable="true">True</_span>
+                        </td>
+                        </ko>
+                        <ko opts="if: status.failed==0">
+                        <td>
+                            <_span data-translateable="true">False</_span>
+                        </td>
+                        </ko>
+                    </script>
+                    <div data-bind="agoGrid:nodesGrid"/>
+                </div>
+
+                <div id="dependencies" class="tab-pane fade">
+                    <div style="width:1100px; height:1100px;" id="nodesDependency"/>
+                </div>
+
+                <div id="statistics" class="tab-pane fade">
+                    <script type="text/html" id="statsRowTemplate">
+                        <td data-bind="text: stat"/>
+                        <td data-bind="text: value"/>
+                    </script>
+                    <div data-bind="agoGrid:statsGrid"/>
+                </div>
+
+                <div id="commands" class="tab-pane fade">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Pair/unpair node to your network</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <div class="btn-group">
+                                        <_button type="button" data-translateable="true" data-bind="click:addNode" class="btn btn-primary">Pair</_button>
+                                        <_button type="button" data-translateable="true" data-bind="click:removeNode" class="btn btn-primary">Unpair</_button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Turn on/off all devices</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <div class="btn-group">
+                                        <_button type="button" data-translateable="true" data-bind="click:allOn" class="btn btn-primary">On</_button>
+                                        <_button type="button" data-translateable="true" data-bind="click:allOff" class="btn btn-primary">Off</_button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Test network</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <_button type="button" data-translateable="true" data-bind="click:testNetwork" class="btn btn-primary">Test network</_button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Heal network</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <_button type="button" data-translateable="true" data-bind="click:healNetwork" class="btn btn-primary">Heal network</_button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Cancel running controller command</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <_button type="button" data-translateable="true" data-bind="click:cancel" class="btn btn-primary">Cancel</_button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Reset controller</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <_button type="button" data-translateable="true" data-bind="click:reset" class="btn btn-primary">Reset</_button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <_label class="col-sm-4 control-label" data-translateable="true">Controller configuration</_label>
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <div class="btn-group">
+                                        <_button type="button" data-translateable="true" data-bind="click:downloadConfig" class="btn btn-primary">Download</_button>
+                                        <_button type="button" data-translateable="true" data-bind="click:saveConfig" class="btn btn-primary">Save</_button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</div>
+

@@ -1,8 +1,0 @@
-{
-    "name": "Alert",
-    "version": "0.0.2",
-    "description": "Configure agocontrol alerts",
-    "template": "html/agoalert",
-    "listable": true,
-    "depends": "agoalert.py"
-}

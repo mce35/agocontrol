@@ -1,0 +1,32 @@
+.node {
+    fill: #ccc;
+    stroke: #fff;
+    stroke-width: 2px;
+}
+
+.node-gateway {
+    fill: #FF7F0E;
+    background-color: #FF7F0E;
+}
+
+.node-repeater {
+    fill: #1F77B4;
+    background-color: #1F77B4;
+}
+
+.node-sensor {
+    fill: #2CA02C;
+    background-color: #2CA02C;
+}
+
+.node-notconnected {
+    fill: #DD4B39;
+    background-color: #DD4B39;
+}
+
+.link {
+    stroke: #777;
+    stroke-width: 2px;
+}
+
+    

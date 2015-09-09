@@ -1,94 +1,85 @@
-<div class="three columns dashboard-widget" data-bind="attr: {'data-uuid': uuid}">
+<div data-bind="attr: {'data-uuid': uuid}" class="col-md-3 col-sm-6 col-xs-12 dashboard-widget">
 
-    <div class="row dashboard-widget-header">
-        <ul class="two_up tiles" >
-            <li class="dashboard-widget-header-icon">
-                <ko opts="if: stale">
-                    <div class="pretty large danger btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-note-beamed"></i>
-                    </div>
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-note-beamed"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
                 </ko>
-                <ko opts="ifnot: stale">
-                    <div class="pretty large primary btn handle">
-                        <i data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="icon-note-beamed"></i>
-                    </div>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
                 </ko>
-            </li>
-            <li class="dashboard-widget-header-infos">
-                <div class="row">
-                <ko opts="if: name ">
-                    <div class="twelve columns"><h3 data-bind="text: name"/></div>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
                 </ko>
-                <ko opts="ifnot: name ">
-                    <div class="twelve columns"><h3 data-bind="text: devicetype"/></div>
-                </ko>
-                <ko opts="if: room ">
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-location"/>
-                        <span data-bind="text: room"/>
-                    </div>
-                </ko>
-                    <div class="twelve columns dashboard-widget-header-info">
-                        <i class="icon-info"/>
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
+                    <ko opts="if: state()==0">
+                    <span>off</span>
+                    </ko>
+                    <ko opts="if: state()==50">
+                    <span>streaming</span>
+                    </ko>
+                    <ko opts="if: state()==100">
+                    <span>playing</span>
+                    </ko>
+                    <ko opts="if: state()==200">
+                    <span>pause</span>
+                    </ko>
+                </div>
+            </div>
+        </div>
+    </div>            
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
+            <div class="well">
+                <ko opts="if: state()!=50">
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
                         <ko opts="if: state()==0">
-                        <span>OFF</span>
+                        <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-primary">ON</_button>
                         </ko>
-                        <ko opts="if: state()==50">
-                        <span>STREAMING</span>
+        		        <ko opts="ifnot: state()==0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOn" class="btn btn-default">ON</_button>
                         </ko>
-                        <ko opts="if: state()==100">
-                        <span>PLAYING</span>
+                    </div>
+                    <div class="btn-group">
+                        <ko opts="if: state()!=0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-primary">OFF</_button>
                         </ko>
-                        <ko opts="if: state()==150">
-                        <span>STOPPED</span>
+                        <ko opts="ifnot: state()!=0">
+                        <_button type="button" data-translateable="true" data-bind="click: turnOff" class="btn btn-default">OFF</_button>
                         </ko>
-                        <ko opts="if: state()==200">
-                        <span>PAUSED</span>
+                    </div>
+                    <div class="btn-group">
+                        <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: play" class="btn btn-primary">PLAY</_button>
+                        </ko>
+                        <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: play" class="btn btn-default">PLAY</_button>
+                        </ko>
+                    </div>
+                    <div class="btn-group">
+                        <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: pause" class="btn btn-primary">PAUSE</_button>
+                        </ko>
+                        <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
+                        <_button type="button" data-translateable="true" data-bind="click: pause" class="btn btn-default">PAUSE</_button>
                         </ko>
                     </div>
                 </div>
-            </li>
-        </ul>
-    </div>
-
-    <div class="row dashboard-widget-content dashboard-widget-content-buttons">
-        <ko opts="if: state()!=25">
-        <ul class="four_up tiles">
-            <li class="dashboard-widget-content-button">
-		        <ko opts="ifnot: state()!=0">
-                <div data-value="on" data-bind="click: turnOn" class="pretty medium primary btn btn-full">ON</div>
                 </ko>
-                <ko opts="if: state()!=0">
-                <div data-value="on" data-bind="click: turnOn" class="pretty medium default btn btn-full">ON</div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-content-button">
-		        <ko opts="if: (state()==0 || state()==50)">
-                <div data-value="off" data-bind="click: turnOff" class="pretty medium default btn btn-full">OFF</div>
-                </ko>
-                <ko opts="ifnot: (state()==0 || state()==50)">
-                <div data-value="off" data-bind="click: turnOff" class="pretty medium primary btn btn-full">OFF</div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-content-button">
-		        <ko opts="if: (state()!=0 and state()!=100 and state()!=50)">
-                <div data-value="play" data-bind="click: play" class="pretty medium primary btn btn-full">PLAY</div>
-                </ko>
-                <ko opts="ifnot: (state()!=0 and state()!=100 and state()!=50)">
-                <div data-value="play" data-bind="click: play" class="pretty medium default btn btn-full">PLAY</div>
-                </ko>
-            </li>
-            <li class="dashboard-widget-content-button">
-		        <ko opts="if: (state()!=0 and state()==100 and state()!=50)">
-                <div data-value="pause" data-bind="click: pause" class="pretty medium primary btn btn-full">PAUSE</div>
-                </ko>
-                <ko opts="ifnot: (state()!=0 and state()==100 and state()!=50)">
-                <div data-value="pause" data-bind="click: pause" class="pretty medium default btn btn-full">PAUSE</div>
-                </ko>
-            </li>
-        </ul>
-        </ko>
+            </div>
+        </div>
     </div>
 
 </div>
-
