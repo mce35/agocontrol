@@ -432,7 +432,7 @@ void AgoDataLogger::addDefaultParameters(int start, int end, string vertical_uni
 {
     //first params
     addGraphParam("dummy", params, index);
-    addGraphParam("", params, index);
+    addGraphParam("-", params, index);
 
     addGraphParam("--slope-mode", params, index);
 
@@ -465,7 +465,7 @@ void AgoDataLogger::addDefaultThumbParameters(int duration, int width, int heigh
 {
     //first params
     addGraphParam("dummy", params, index);
-    addGraphParam("", params, index);
+    addGraphParam("-", params, index);
 
     //start
     addGraphParam("--start", params, index);
