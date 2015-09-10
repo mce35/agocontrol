@@ -759,6 +759,16 @@ Agocontrol.prototype = {
             //remove device from inventory
             if( response.result.event=="event.device.remove" )
             {
+                //remove thumb request if device is multigraph
+                for( var i=0; i<self.multigraphThumbs.length; i++ )
+                {
+                    if( self.multigraphThumbs[i].uuid===response.result.uuid )
+                    {
+                        self.multigraphThumbs[i].removed = true;
+                    }
+                }
+
+                //then remove device from inventory
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
                 {
                     delete self.inventory.devices[response.result.uuid];
@@ -778,7 +788,8 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
                 {
                     //brand new device, get inventory and fill local one with new infos
-                    self.getInventory()
+                    //TODO add other event than announce because it is used for refreshing device timestamp
+                    /*self.getInventory()
                         .then(function(result) {
                             var tmpDevices = self.cleanInventory(result.data.devices);
                             if( tmpDevices && tmpDevices[response.result.uuid] )
@@ -789,7 +800,7 @@ Agocontrol.prototype = {
                             {
                                 console.warn('Unable to update device because no infos about it in inventory');
                             }
-                        });
+                        });*/
                 }
 
                 //nothing else to do
@@ -799,7 +810,7 @@ Agocontrol.prototype = {
             //update device name
             if( !done && response.result.event=="event.system.devicenamechanged" )
             {
-                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
                 {
                     self.inventory.devices[response.result.uuid].name = response.result.name;
                 }

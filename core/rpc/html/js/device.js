@@ -118,7 +118,10 @@ function device(agocontrol, obj, uuid) {
 
         for( var i=0; i<self.agocontrol.multigraphThumbs.length; i++ )
         {
-            self.getMultigraphThumb(self.agocontrol.multigraphThumbs[i]);
+            if( !self.agocontrol.multigraphThumbs[i].removed )
+            {
+                self.getMultigraphThumb(self.agocontrol.multigraphThumbs[i]);
+            }
         }
     };
 
@@ -137,7 +140,7 @@ function device(agocontrol, obj, uuid) {
 
     if( self.devicetype=="multigraph" && $.trim(self.name).length>0 )
     {
-        var def = {'internalid':obj.internalid, 'observable':self.multigraphThumb};
+        var def = {'uuid': uuid, 'internalid':obj.internalid, 'observable':self.multigraphThumb, 'removed':false};
         if( self.agocontrol.dataLoggerController )
         {
             //get thumb right now
