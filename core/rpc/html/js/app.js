@@ -275,7 +275,13 @@ function AgocontrolViewModel()
     self.loadTemplate = function(template)
     {
         //block ui
-        $.blockUI({ message: '<img src="img/loading.gif" />  Loading...' });
+        $.blockUI({
+            message: '<i class="fa fa-circle-o-notch fa-4x fa-spin" style="color:white;"/><br/><span style="color:white;">please wait...</span>',
+            css : {
+                background: 'none',
+                border: 'none'
+            }
+        });
 
         //reset current template
         if( typeof reset_template == 'function' )

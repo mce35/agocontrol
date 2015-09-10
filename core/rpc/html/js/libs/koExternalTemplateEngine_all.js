@@ -145,7 +145,7 @@
 		return "#" + templateId
 	    }, // DEFAULT MAPPING
 	    loadingTemplate : {
-        content : '<div style="width:100%; height:100%; text-align:center; vertical-align:middle;">Loading...</div>',
+        content : '<i class="fa fa-circle-o-notch fa-2x fa-spin"/>',
 		transitionIn : function(target, content) {
 		    var tgt = $(target);
 		    tgt.hide();
