@@ -972,6 +972,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     sqlite3_stmt *stmt;
     int rc;
     qpid::types::Variant::List values;
+    std::stringstream query;
 
     // Parse the timestrings
     string startDate = content["start"].asString();
@@ -994,12 +995,15 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     //prepare specific query string
     if( environment=="position" )
     {
+        query << "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN " << (int)start.total_seconds() << " AND " << (int)end.total_seconds() << " AND uuid = \"" << content["deviceid"].asString() << "\" ORDER BY timestamp";
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
     else
     {
+        query << "SELECT timestamp, level FROM data WHERE timestamp BETWEEN " << (int)start.total_seconds() << " AND " << (int)end.total_seconds() << " AND environment = \"" << environment << "\" AND uuid = \"" << content["deviceid"].asString() << "\" ORDER BY timestamp";
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ? AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
+    AGO_TRACE() << "GetGraphData query: " << query.str();
 
     //check query
     if(rc != SQLITE_OK)
@@ -1011,6 +1015,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     //add specific fields
     if( environment=="position" )
     {
+        AGO_TRACE() << "Execute query on position table";
         //fill query
         sqlite3_bind_int(stmt, 1, start.total_seconds());
         sqlite3_bind_int(stmt, 2, end.total_seconds());
@@ -1037,6 +1042,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     }
     else
     {
+        AGO_TRACE() << "Execute query on data table";
         //fill query
         sqlite3_bind_int(stmt, 1, start.total_seconds());
         sqlite3_bind_int(stmt, 2, end.total_seconds());
@@ -1063,6 +1069,8 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     }
 
     sqlite3_finalize(stmt);
+
+    AGO_TRACE() << "Query returns " << values.size() << " values";
 
     result["values"] = values;
 }
