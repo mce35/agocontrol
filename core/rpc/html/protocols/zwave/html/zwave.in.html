@@ -223,14 +223,15 @@
     <section class="content">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
-                <li class="active"><_a href="#devices" class="en-doc" data-translateable="true">Devices</_a></li>
-                <li><_a href="#dependencies" class="en-share" data-translateable="true">Dependencies</_a></li>
-                <li><_a href="#statistics" class="en-chart-area" data-translateable="true">Statistics</_a></li>
-                <li><_a href="#commands" class="en-cog" data-translateable="true">General commands</_a></li>
+                <li class="active"><_a href="#devices-tab" class="en-doc" data-translateable="true">Devices</_a></li>
+                <li><_a href="#dependencies-tab" class="en-share" data-translateable="true">Dependencies</_a></li>
+                <li><_a href="#statistics-tab" class="en-chart-area" data-translateable="true">Statistics</_a></li>
+                <li><_a href="#commands-tab" class="en-cog" data-translateable="true">General commands</_a></li>
             </ul>
             <div class="tab-content">
 
-                <div id="devices" class="tab-pane fade in active">
+                <!-- devices tab -->
+                <div id="devices-tab" class="tab-pane fade in active">
                     <script type="text/html" id="nodesRowTemplate">
                         <td data-bind="text: id"/>
                         <td>
@@ -271,11 +272,13 @@
                     <div data-bind="agoGrid:nodesGrid"/>
                 </div>
 
-                <div id="dependencies" class="tab-pane fade">
+                <!-- dependencies tab -->
+                <div id="dependencies-tab" class="tab-pane fade">
                     <div style="width:1100px; height:1100px;" id="nodesDependency"/>
                 </div>
 
-                <div id="statistics" class="tab-pane fade">
+                <!-- statistics tab -->
+                <div id="statistics-tab" class="tab-pane fade">
                     <script type="text/html" id="statsRowTemplate">
                         <td data-bind="text: stat"/>
                         <td data-bind="text: value"/>
@@ -283,7 +286,8 @@
                     <div data-bind="agoGrid:statsGrid"/>
                 </div>
 
-                <div id="commands" class="tab-pane fade">
+                <!-- commands tab -->
+                <div id="commands-tab" class="tab-pane fade">
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Pair/unpair node to your network</_label>
