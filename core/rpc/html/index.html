@@ -119,7 +119,7 @@
                                             <!-- ko if:type=='debug' -->
                                             <i class="en-flash text-aqua"></i>
                                             <!-- /ko -->
-                                            <span data-bind="text:message"></span>
+                                            <span data-bind="text:message, attr:{'title':timestampToHRstring(time)}"></span>
                                         </a>
                                     </li>
                                 </ul>
