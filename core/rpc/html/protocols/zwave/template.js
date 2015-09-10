@@ -71,7 +71,7 @@ function Zwave(devices, agocontrol)
                     .outerRadius(outerRadius);
 
         var layout = d3.layout.chord()
-                       .padding(.04)
+                       .padding(0.04)
                        .sortSubgroups(d3.descending)
                        .sortChords(d3.ascending);
 
@@ -561,17 +561,10 @@ function Zwave(devices, agocontrol)
             command: 'getnodes'
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                callback(res.result.data.nodelist);
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                callback(res.data.nodelist);
+            });
     };
 
     //Get statistics
@@ -581,17 +574,10 @@ function Zwave(devices, agocontrol)
             command: 'getstatistics'
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                callback(res.result.data.statistics);
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                callback(res.data.statistics);
+            });
     };
 
     //Reset controller
@@ -601,17 +587,10 @@ function Zwave(devices, agocontrol)
             command: 'reset'
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#resetok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Add node
@@ -621,17 +600,10 @@ function Zwave(devices, agocontrol)
             command: 'addnode'
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#addnodeok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Remove specified node
@@ -643,17 +615,10 @@ function Zwave(devices, agocontrol)
         if( node )
             content.node = node;
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#removenodeok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
 
     };
 
@@ -664,17 +629,10 @@ function Zwave(devices, agocontrol)
             command: 'testnetwork',
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#testnetworkok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Cancel last command
@@ -684,17 +642,10 @@ function Zwave(devices, agocontrol)
             command: 'cancel',
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#cancelok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Save config
@@ -704,17 +655,10 @@ function Zwave(devices, agocontrol)
             command: 'saveconfig',
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#saveconfigok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Download config
@@ -724,17 +668,10 @@ function Zwave(devices, agocontrol)
             command: 'downloadconfig',
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#downloadconfigok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Turn on all nodes
@@ -744,17 +681,10 @@ function Zwave(devices, agocontrol)
             command: 'allon',
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#allonok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Turn off all ndoes
@@ -764,17 +694,10 @@ function Zwave(devices, agocontrol)
             command: 'alloff',
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#alloffok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Heal entire network
@@ -784,17 +707,10 @@ function Zwave(devices, agocontrol)
             command: 'healnetwork'
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('Heal network ok');
-            }
-            else
-            {
-                notif.error('Heal network KO');
-            }
-        });
+            });
     };
 
     /***************
@@ -809,24 +725,10 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result )
-                {
-                    notif.success('#testnodeok');
-                }
-                else
-                {
-                    notif.error('#testnodeko');
-                }
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('#testnodeok');
+            });
     };
 
     //Refresh node
@@ -837,24 +739,10 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result!==undefined && res.result.result!==-1 )
-                {
-                    notif.success('#refreshnodeko');
-                }
-                else
-                {
-                    notif.error('#refreshnodeko');
-                }
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('#refreshnodeok');
+            });
     };
 
     //Heal node
@@ -865,17 +753,10 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#healnodeok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Set parameter
@@ -889,25 +770,10 @@ function Zwave(devices, agocontrol)
             value: value
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result!==undefined && res.result.result!==-1 )
-                {
-                    notif.success('#setconfigparamok');
-                }
-                else 
-                {
-                    //error occured
-                    notif.error('#setconfigparamko');
-                }
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('#setconfigparamok');
+            });
     };
 
     //Request all configuration parameters
@@ -919,27 +785,12 @@ function Zwave(devices, agocontrol)
             node: node
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                if( res.result.result!==undefined && res.result.result!==-1)
-                {
-                    notif.success('#requestparamsok');
-                }
-                else 
-                {
-                    //error occured
-                    notif.error('#requestparamsko');
-                }
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('#requestparamsok');
+            });
 
-    }
+    };
 
     /***********************
      * ASSOCIATIONS COMMANDS
@@ -954,17 +805,10 @@ function Zwave(devices, agocontrol)
             group: group
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
-                callback(res.result.data.associations, res.result.data.label, node, group);
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                callback(res.data.associations, res.data.label, node, group);
+            });
     };
 
     //Add association
@@ -977,17 +821,10 @@ function Zwave(devices, agocontrol)
             target: target
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('#addassociationok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 
     //Remove association
@@ -1000,17 +837,10 @@ function Zwave(devices, agocontrol)
             target: target
         };
 
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
                 notif.success('removeassociationok');
-            }
-            else
-            {
-                notif.fatal('#nr', 0);
-            }
-        });
+            });
     };
 }
  
@@ -1247,12 +1077,17 @@ function zwaveConfig(zwave) {
                 self.nodes.push(newNode);
             }
             self.nodesCount(self.nodes().length);
-            if( self.nodes().length>0 )
-            {
-                zwave.buildChordGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
-                //zwave.buildDirectedGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
-            }
         });
+    };
+
+    //tab changed
+    self.onTabChanged = function(index, name)
+    {
+        if( index==1 && self.nodes().length>0 )
+        {
+            zwave.buildChordGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
+            //zwave.buildDirectedGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
+        }
     };
 
     //reset controller

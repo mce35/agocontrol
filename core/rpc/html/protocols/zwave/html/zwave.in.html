@@ -5,6 +5,8 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">x</span></button>
+                    <_h4 data-translateable="true" class="modal-title">Node details</_h4>
                 </div>
                 <div class="modal-body">
                     <div class="nav-tabs-custom">
@@ -222,7 +224,7 @@
     <!-- content -->
     <section class="content">
         <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{onChanged: onTabChanged}">
                 <li class="active"><_a href="#devices-tab" class="en-doc" data-translateable="true">Devices</_a></li>
                 <li><_a href="#dependencies-tab" class="en-share" data-translateable="true">Dependencies</_a></li>
                 <li><_a href="#statistics-tab" class="en-chart-area" data-translateable="true">Statistics</_a></li>
