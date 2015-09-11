@@ -61,7 +61,6 @@ static void getCpuPercentage(qpid::types::Variant::Map& current, qpid::types::Va
 void AgoSystem::getProcessInfo()
 {
     PROCTAB* proc = openproc(PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS);
-#define FREEPROC_EXISTS
 #ifdef FREEPROC_EXISTS
     proc_t* proc_info;
     while( (proc_info=readproc(proc, NULL)) != NULL )
