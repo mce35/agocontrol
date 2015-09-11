@@ -148,6 +148,12 @@ function prepareTemplate(doc)
         }
     }
 
+    //handle last elem
+    if( defaultElem && elemAdded )
+    {
+        killList.push(defaultElem);
+    }
+
     //drop selected elems from DOM
     for ( var i = 0; i < killList.length; i++)
     {
