@@ -108,16 +108,16 @@
                                     <li>
                                         <a href="#" data-bind="click:$root.noclick" style="cursor:default">
                                             <!-- ko if:type=='warning' -->
-                                            <i class="en-attention text-orange"></i>
+                                            <i class="en-attention text-orange" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <!-- ko if:type=='error' -->
-                                            <i class="en-alert text-red"></i>
+                                            <i class="en-alert text-red" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <!-- ko if:type=='info' -->
-                                            <i class="en-info-circled text-green"></i>
+                                            <i class="en-info-circled text-green" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <!-- ko if:type=='debug' -->
-                                            <i class="en-flash text-aqua"></i>
+                                            <i class="en-flash text-aqua" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <span data-bind="text:message, attr:{'title':timestampToHRstring(time)}"></span>
                                         </a>
