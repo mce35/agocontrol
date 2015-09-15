@@ -48,9 +48,11 @@ function Journal(agocontrol)
                     //add new time label
                     if( prevDay!=d.getDate() )
                     {
+                        var month = d.getMonth()+1;
+                        var day = d.getDate()
                         messages.push({
                             'kind': 'label',
-                            'text': d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate()
+                            'text': d.getFullYear()+'/'+(month<10 ? '0'+month : month)+'/'+(day<10 ? '0'+day : day)
                         });
                         prevDay = d.getDate();
                     }
