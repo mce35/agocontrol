@@ -33,7 +33,8 @@ Agocontrol.prototype = {
     dashboards: ko.observableArray([]),
     configurations: ko.observableArray([]),
     helps: ko.observableArray([]),
-    serverTime: ko.observable(''),
+    serverTime: 0,
+    serverTimeUi: ko.observable(''),
     journalEntries: ko.observableArray([]),
     intervalJournal: null,
 
@@ -646,11 +647,11 @@ Agocontrol.prototype = {
             self.helps.replaceAll(helps);
 
             //SERVER TIME
-            var serverTime = result.server_time;
-            self.serverTime( timestampToString(serverTime) );
+            self.serverTime = result.server_time;
+            self.serverTimeUi( timestampToString(self.serverTime) );
             window.setInterval(function() {
-                serverTime += 60;
-                self.serverTime( timestampToString(serverTime) );
+                self.serverTime += 60;
+                self.serverTimeUi( timestampToString(self.serverTime) );
             }, 60000);
         });
     },
