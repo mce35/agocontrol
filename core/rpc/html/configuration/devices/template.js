@@ -341,6 +341,7 @@ function DeviceConfig(agocontrol)
 
     self.grid = new ko.agoGrid.viewModel({
         data: self.agocontrol.devices,
+        pageSize: 25,
         columns: [
             {headerText:'Name', rowText:'name'},
             {headerText:'Room', rowText:'room'},
