@@ -102,11 +102,13 @@ function timeToString(dt)
 function timestampToString(ts)
 {
     var dt = new Date(ts*1000);
-    var str = dt.getDate();
-    str += '.';
-    str += dt.getMonth()+1;
-    str += '.';
-    str += dt.getFullYear();
+    var month = dt.getMonth()+1;
+    var day = dt.getDate();
+    var str = dt.getFullYear();
+    str += '/';
+    str += (month<10 ? '0'+month : month);
+    str += '/';
+    str += (day<10 ? '0'+day : day);
     str += ' ';
     str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
     str += ':';
