@@ -225,9 +225,12 @@ function AgocontrolViewModel()
             $(self.itemActivated).removeClass('active');
         }
         
-        //activate item
-        self.itemActivated = $('#menu_'+id.replace(' ','_'));
-        self.itemActivated.addClass('active');
+        if( id!==null )
+        {
+            //activate item
+            self.itemActivated = $('#menu_'+id.replace(' ','_'));
+            self.itemActivated.addClass('active');
+        }
     };
 
     //set ui skin
@@ -511,6 +514,7 @@ function AgocontrolViewModel()
             if( config )
             {
                 var basePath = "configuration/" + config.dir;
+                self.activate(null);
                 self.loadTemplate(new Template(basePath, config.resources, config.template, null));
             }
             else
@@ -535,6 +539,7 @@ function AgocontrolViewModel()
             if( help )
             {
                 var basePath = "help/" + help.dir;
+                self.activate(null);
                 self.loadTemplate(new Template(basePath, help.resources, help.template, null));
             }
             else
