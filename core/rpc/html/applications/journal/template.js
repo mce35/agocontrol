@@ -70,9 +70,6 @@ function Journal(agocontrol)
 
             })
             .finally(function() {
-                //scroll to end of container
-                $('#messagesContainer').scrollTop($('#messagesContainer')[0].scrollHeight);
-
                 self.agocontrol.unblock($('#messagesContainer'));
             });
     }

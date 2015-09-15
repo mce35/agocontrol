@@ -1109,7 +1109,7 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
     }
 
     //prepare query
-    rc = sqlite3_prepare_v2(db, "SELECT timestamp, message, type FROM journal WHERE timestamp BETWEEN ? AND ? AND message LIKE ? AND type LIKE ? ORDER BY timestamp", -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(db, "SELECT timestamp, message, type FROM journal WHERE timestamp BETWEEN ? AND ? AND message LIKE ? AND type LIKE ? ORDER BY timestamp DESC", -1, &stmt, NULL);
 
     //parse the timestrings
     string startDate = content["start"].asString();
