@@ -35,6 +35,7 @@ Agocontrol.prototype = {
     helps: ko.observableArray([]),
     serverTime: ko.observable(''),
     journalEntries: ko.observableArray([]),
+    intervalJournal: null,
 
     agoController: null,
     scenarioController: null,
@@ -431,6 +432,12 @@ Agocontrol.prototype = {
             self.sendCommand(content)
                 .then(function(res) {
                     self.journalEntries(res.data.messages);
+
+                    //add journal entries auto refresh
+                    if( !self.intervalJournal  )
+                    {
+                        self.intervalJournal = window.setInterval(self.getJournalEntries.bind(self), 300000);
+                    }
                 })
                 .catch(function(err) {
                     console.error(err);

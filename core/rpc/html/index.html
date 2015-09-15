@@ -103,6 +103,7 @@
                             <span class="label label-success" data-bind="text:$root.agocontrol.journalEntries().length"></span>
                         </a>
                         <ul class="dropdown-menu">
+                            <li class="header"><span data-translateable="true" _data-bind="text:'You have '+$root.agocontrol.journalEntries().length+' messages for today'"></li>
                             <li>
                                 <ul class="menu" data-bind="foreach: $root.agocontrol.journalEntries">
                                     <li>
@@ -124,7 +125,9 @@
                                     </li>
                                 </ul>
                             </li>
-                            <li class="footer"><a href="#app/Journal">See journal</a></li>
+                            <li class="footer">
+                                <button type="button" data-bind="click:function() { window.location.href='#app/Journal'; }" class="btn btn-default btn-xs">Go to journal application</button>
+                            </li>
                         </ul>
                     </li>
                     <li class="dropdown messages-menu">
