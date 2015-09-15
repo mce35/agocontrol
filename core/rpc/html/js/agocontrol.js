@@ -160,7 +160,21 @@ Agocontrol.prototype = {
      *
      * Application availability is NOT guaranteed to be loaded immediately.
      */
-    initialize : function() {
+    initialize : function()
+    {
+        var self = this;
+
+        //get ui config (localstorage)
+        //this is used to avoid skin refresh at startup
+        if( typeof(Storage)!=="undefined" )
+        {
+            var skin = localStorage.getItem("skin");
+            if( skin )
+            {
+                self.skin(skin);
+            }
+        }
+
         var p0 = this.getUiConfig();
         var p1 = this.getInventory()
             .then(this.handleInventory.bind(this))
@@ -1032,6 +1046,12 @@ Agocontrol.prototype = {
                 {
                     var skin = res.content.skin;
                     self.skin(skin);
+
+                    //save config to local storage
+                    if( typeof(Storage)!=='undefined' && localStorage.getItem('skin')===null )
+                    {
+                        localStorage.setItem('skin', skin);
+                    }
                 }
             }
             else
