@@ -295,10 +295,10 @@ function MySensors(devices, agocontrol)
             .nodes(nodes)
             .links(links)
             .charge(function(d) {
-                var charge = -250;
+                var charge = -200;
                 if( d.type==='Gateway' || d.type==='Repeater' )
                 {
-                    return 10*charge;
+                    return 6*charge;
                 }
                 else if( d.links===0 )
                 {
@@ -306,7 +306,7 @@ function MySensors(devices, agocontrol)
                 }
                 else
                 {
-                    return 5*charge;
+                    return 3*charge;
                 }
             });
 
