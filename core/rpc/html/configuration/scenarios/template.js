@@ -341,7 +341,6 @@ function ScenarioConfig(agocontrol)
                     field.setAttribute("name", "delay");
                     field.setAttribute("class", "form-control input-sm");
                     field.setAttribute("style", "display:inline; width:150px;");
-                    field.setAttribute("placeholder", cmd.parameters[key].name);
                     field.setAttribute("placeholder", "Delay in seconds");
                     if (defaultValues && defaultValues["delay"])
                     {
