@@ -1,0 +1,29 @@
+{
+    "devices": 
+        {
+        "100" : 
+            {
+                "url": "48/10241/0/0/12197",
+                "description": "Temperatur aussen",
+                "devicetype": "temperaturesensor"
+            },
+        "110" : 
+            {
+                "url": "120/10101/0/0/12634",
+                "description": "Temperatur innen",
+                "devicetype": "temperaturesensor"
+            },
+        "120" : 
+            {
+                "url": "120/10251/0/0/12528",
+                "description": "Puffer Ladezustand",
+                "devicetype": "multilevelsensor"
+            },
+        "130" : 
+            {
+                "url": "48/10391/0/0/12164",
+                "description": "Abgas Restsauerstoff",
+                "devicetype": "multilevelsensor"
+            }
+        }
+}
