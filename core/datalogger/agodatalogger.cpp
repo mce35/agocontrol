@@ -57,6 +57,7 @@ private:
     std::string string_format(const std::string fmt, ...);
     int string_real_length(const std::string str);
     std::string string_prepend_spaces(std::string source, size_t newSize);
+    static void debugSqlite(void* foo, const char* msg);
 
     //database
     bool createTableIfNotExist(string tablename, list<string> createqueries);
@@ -968,6 +969,11 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     }
 }
 
+void AgoDataLogger::debugSqlite(void* foo, const char* msg)
+{
+    AGO_TRACE() << "SQLITE: " << msg;
+}
+
 void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
 {
     sqlite3_stmt *stmt;
@@ -984,6 +990,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     replaceString(endDate, "-", "");
     replaceString(endDate, ":", "");
     replaceString(endDate, "Z", "");
+    string uuid = content["deviceid"].asString();
 
     //get environment
     string environment = content["env"].asString();
@@ -996,15 +1003,12 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     //prepare specific query string
     if( environment=="position" )
     {
-        query << "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN " << (int)start.total_seconds() << " AND " << (int)end.total_seconds() << " AND uuid = \"" << content["deviceid"].asString() << "\" ORDER BY timestamp";
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
     else
     {
-        query << "SELECT timestamp, level FROM data WHERE timestamp BETWEEN " << (int)start.total_seconds() << " AND " << (int)end.total_seconds() << " AND environment = \"" << environment << "\" AND uuid = \"" << content["deviceid"].asString() << "\" ORDER BY timestamp";
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ? AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
-    AGO_TRACE() << "GetGraphData query: " << query.str();
 
     //check query
     if(rc != SQLITE_OK)
@@ -1017,10 +1021,12 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     if( environment=="position" )
     {
         AGO_TRACE() << "Execute query on position table";
+
+
         //fill query
         sqlite3_bind_int(stmt, 1, start.total_seconds());
         sqlite3_bind_int(stmt, 2, end.total_seconds());
-        sqlite3_bind_text(stmt, 3, content["deviceid"].asString().c_str(), -1, NULL);
+        sqlite3_bind_text(stmt, 3, uuid.c_str(), -1, NULL);
 
         do
         {
@@ -1044,11 +1050,12 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     else
     {
         AGO_TRACE() << "Execute query on data table";
+
         //fill query
         sqlite3_bind_int(stmt, 1, start.total_seconds());
         sqlite3_bind_int(stmt, 2, end.total_seconds());
         sqlite3_bind_text(stmt, 3, environment.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 4, content["deviceid"].asString().c_str(), -1, NULL);
+        sqlite3_bind_text(stmt, 4, uuid.c_str(), -1, NULL);
 
         do
         {
@@ -1159,6 +1166,10 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
         }
     }
     while (rc == SQLITE_ROW);
+
+    sqlite3_finalize(stmt);
+
+    AGO_TRACE() << "Query returns " << messages.size() << " messages";
 
     //prepare result
     result["messages"] = messages;
@@ -1756,6 +1767,7 @@ void AgoDataLogger::setupApp()
     //init database
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     int rc = sqlite3_open(dbpath.c_str(), &db);
+    sqlite3_trace(db, debugSqlite, NULL);
     if( rc != SQLITE_OK){
         AGO_ERROR() << "Can't open database " << dbpath.string() << ": " << sqlite3_errmsg(db);
         sqlite3_close(db);
