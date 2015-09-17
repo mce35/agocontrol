@@ -5,6 +5,10 @@ IF (FREEBSD)
     list(APPEND AGOSYSTEM_SOURCE_FILES processinfo_freebsd.cpp)
 ELSE()
     list(APPEND AGOSYSTEM_SOURCE_FILES processinfo_linux.cpp)
+
+    INCLUDE (CheckLibraryExists)
+    CHECK_LIBRARY_EXISTS(procps freeproc "" FREEPROC_EXISTS)
+
 ENDIF()
 
 set (SYSTEM_LIBRARIES
