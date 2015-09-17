@@ -1093,5 +1093,36 @@ Agocontrol.prototype = {
             }
         });
     }
+
+    //collapse/expand menu
+    collapseMenu: function(VM, ev)
+    {
+        var self = VM.agocontrol;
+        var collapsed = $('body').hasClass('sidebar-collapse');
+
+        var skin = self.skin();
+        skin = skin.replace('sidebar-collapse', '');
+        if( !collapsed )
+        {
+            skin = skin + ' sidebar-collapse';
+        }
+        self.skin(skin);
+
+        //save changes
+        $.ajax({
+            url : "cgi-bin/ui.cgi?key=skin&param=theme&value="+skin,
+            method : "GET",
+            async : true,
+        }).done(function(res) {
+            if( !res || !res.result || res.result===0 )
+            {
+                notif.error('Unable to save collapse state');
+            }
+            else
+            {
+                localStorage.setItem('skin', skin);
+            }
+        });
+    }
 };
 
