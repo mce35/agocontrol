@@ -102,11 +102,13 @@ function timeToString(dt)
 function timestampToString(ts)
 {
     var dt = new Date(ts*1000);
-    var str = dt.getDate();
-    str += '.';
-    str += dt.getMonth()+1;
-    str += '.';
-    str += dt.getFullYear();
+    var month = dt.getMonth()+1;
+    var day = dt.getDate();
+    var str = dt.getFullYear();
+    str += '/';
+    str += (month<10 ? '0'+month : month);
+    str += '/';
+    str += (day<10 ? '0'+day : day);
     str += ' ';
     str += ( dt.getHours()<10 ? '0'+dt.getHours() : dt.getHours() );
     str += ':';
@@ -225,9 +227,12 @@ function AgocontrolViewModel()
             $(self.itemActivated).removeClass('active');
         }
         
-        //activate item
-        self.itemActivated = $('#menu_'+id.replace(' ','_'));
-        self.itemActivated.addClass('active');
+        if( id!==null )
+        {
+            //activate item
+            self.itemActivated = $('#menu_'+id.replace(' ','_'));
+            self.itemActivated.addClass('active');
+        }
     };
 
     //set ui skin
@@ -275,7 +280,13 @@ function AgocontrolViewModel()
     self.loadTemplate = function(template)
     {
         //block ui
-        $.blockUI({ message: '<img src="img/loading.gif" />  Loading...' });
+        $.blockUI({
+            message: '<i class="fa fa-circle-o-notch fa-4x fa-spin" style="color:white;"/><br/><span style="color:white;">please wait...</span>',
+            css : {
+                background: 'none',
+                border: 'none'
+            }
+        });
 
         //reset current template
         if( typeof reset_template == 'function' )
@@ -505,6 +516,7 @@ function AgocontrolViewModel()
             if( config )
             {
                 var basePath = "configuration/" + config.dir;
+                self.activate(null);
                 self.loadTemplate(new Template(basePath, config.resources, config.template, null));
             }
             else
@@ -529,6 +541,7 @@ function AgocontrolViewModel()
             if( help )
             {
                 var basePath = "help/" + help.dir;
+                self.activate(null);
                 self.loadTemplate(new Template(basePath, help.resources, help.template, null));
             }
             else

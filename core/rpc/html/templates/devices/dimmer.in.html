@@ -36,7 +36,7 @@
     <div class="info-box">
         <div class="info-box-content no-margin-left" style="padding-top:2px; padding-bottom:2px;">
             <div class="well no-padding">
-                <div class="row margin">
+                <div class="row" style="margin:5px;">
                     <div class="btn-group btn-group-justified">
                         <div class="btn-group">
                             <ko opts="if:state">
@@ -56,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row margin">
+                <div class="row" style="margin:5px;">
                     <div class="col-xs-12 col-md-12">
                         <input data-bind="sliderValue:{value:level, min:0, max:100, step:1, ticks:[0,25,50,75,100], ticks_snap_bounds:5, orientation:'horizontal', id:'slider-'+$data.uuid, device:$data}" type="text" class="slider form-control"/>
                     </div>

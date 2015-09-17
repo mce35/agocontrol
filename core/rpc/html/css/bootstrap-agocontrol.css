@@ -19,6 +19,19 @@ body {
     background-color: #C8C8C8;
 }
 
+/* main header items */
+.navbar-nav>.notifications-menu>.dropdown-menu>.footer,
+.navbar-nav>.messages-menu>.dropdown-menu>.footer,
+.navbar-nav>.tasks-menu>.dropdown-menu>.footer {
+    padding: 2px;
+}
+
+.navbar-nav>.notifications-menu>.dropdown-menu>li.footer>button,
+.navbar-nav>.messages-menu>.dropdown-menu>li.footer>button,
+.navbar-nav>.tasks-menu>.dropdown-menu>li.footer>button {
+    width: 100%;
+}
+
 /* notifications */
 .content-notifs,
 .agonotif-box {

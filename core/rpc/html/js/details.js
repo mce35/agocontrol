@@ -426,7 +426,7 @@ Agocontrol.prototype.render = function(device, environment, type)
         content.start = start.toISOString();
         content.end = end.toISOString();
         content.env = environment.toLowerCase();
-        self.sendCommand(content)
+        self.sendCommand(content, null, 30)
             .then(function(res) {
                 //get unit
                 var unit = "";

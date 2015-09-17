@@ -22,17 +22,7 @@ function Dashboard(dashboard, edition, agocontrol)
     self.editorOpened = false;
     self.lineNumber = 4;
     self.itemsPerLine = 4;
-
-    //after render
-    self.afterRender = function()
-    {
-        if( edition )
-        {
-            //edition mode, show editor
-            self.showEditor(0);
-        }
-    };
-
+    self.openEditor = edition;
 
 
     //====================================================
@@ -578,3 +568,10 @@ function init_template(path, params, agocontrol)
     return model;
 }
 
+function afterrender_template(model)
+{
+    if( model && model.showEditor && model.openEditor )
+    {
+        model.showEditor(0);
+    }
+}

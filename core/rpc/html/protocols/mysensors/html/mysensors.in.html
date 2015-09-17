@@ -15,8 +15,9 @@
     <!-- content -->
     <section class="content">
         <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{}">
+            <ul class="nav nav-tabs" data-bind="bootstrapTabs:{onChanged:onTabChanged}">
                 <li class="active"><_a href="#stats" class="en-chart-area" data-translateable="true">Statistics</_a></li>
+                <li><_a href="#graph" class="en-flow-tree" data-translateable="true">Network</_a></li>
                 <li><_a href="#config" class="en-cog" data-translateable="true">Configuration</_a></li>
             </ul>
             <div class="tab-content">
@@ -43,6 +44,10 @@
                         <div class="well">
                             <div class="row">
                                 <div class="col-sm-4">
+                                    <_div class="callout callout-info" data-translateable="true">
+                                        The displayed network graph is the network at gateway point of view. As MySensors protocol doesn't give full node routes, the graph displays routes until one repeater depth.
+                                    </_div>
+                                    <br/>
                                     <button type="button" class="btn btn-primary" data-bind="click:redrawGraph">Redraw graph</button>
                                 </div>
                                 <div class="col-sm-4">

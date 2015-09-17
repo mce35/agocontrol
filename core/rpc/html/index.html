@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>ago control - Administration</title>
+<title>ago control</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 
@@ -94,7 +94,7 @@
                     <li class="hidden-xs">
                         <a href="#" data-bind="click:$root.noclick" style="cursor:default">
                             <i class="en-clock"></i>
-                            <span data-bind="text:$root.agocontrol.serverTime"></span>
+                            <span data-bind="text:$root.agocontrol.serverTimeUi"></span>
                         </a>
                     </li>
                     <li class="dropdown notifications-menu">
@@ -103,28 +103,31 @@
                             <span class="label label-success" data-bind="text:$root.agocontrol.journalEntries().length"></span>
                         </a>
                         <ul class="dropdown-menu">
+                            <li class="header"><span data-translateable="true" _data-bind="text:'You have '+$root.agocontrol.journalEntries().length+' messages for today'"></li>
                             <li>
                                 <ul class="menu" data-bind="foreach: $root.agocontrol.journalEntries">
                                     <li>
                                         <a href="#" data-bind="click:$root.noclick" style="cursor:default">
                                             <!-- ko if:type=='warning' -->
-                                            <i class="en-attention text-orange"></i>
+                                            <i class="en-attention text-orange" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <!-- ko if:type=='error' -->
-                                            <i class="en-alert text-red"></i>
+                                            <i class="en-alert text-red" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <!-- ko if:type=='info' -->
-                                            <i class="en-info-circled text-green"></i>
+                                            <i class="en-info-circled text-green" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
                                             <!-- ko if:type=='debug' -->
-                                            <i class="en-flash text-aqua"></i>
+                                            <i class="en-flash text-aqua" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToHRstring(time)}"></i>
                                             <!-- /ko -->
-                                            <span data-bind="text:message"></span>
+                                            <span data-bind="text:message, attr:{'title':timestampToHRstring(time)}"></span>
                                         </a>
                                     </li>
                                 </ul>
                             </li>
-                            <li class="footer"><a href="#app/Journal">See journal</a></li>
+                            <li class="footer">
+                                <button type="button" data-bind="click:function() { window.location.href='#app/Journal'; }" class="btn btn-default btn-xs">Go to journal application</button>
+                            </li>
                         </ul>
                     </li>
                     <li class="dropdown messages-menu">

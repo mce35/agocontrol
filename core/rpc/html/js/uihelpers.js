@@ -5,7 +5,10 @@
 //Block specified DOM element
 Agocontrol.prototype.block = function(el)
 {
-    $(el).block({ message: '<img src="img/loading.gif" />' });
+    $.blockUI.defaults.css = {};
+    $(el).block({
+        message: '<i class="fa fa-cog fa-3x fa-spin" style="color:white;"/>'
+    });
 };
 
 //Unblock specified DOM element
