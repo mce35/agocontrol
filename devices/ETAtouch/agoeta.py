@@ -21,7 +21,11 @@ class AgoEta(agoclient.AgoApp):
     def setup_app(self):
         # read IP from config file
         eta_ip = self.get_config_option("IP", "127.0.0.1")
+        poll_delay = self.get_config_option("poll_delay", "60")
         self.log.info("ETA IP-Address is: %s", eta_ip)
+        self.log.info("ETA poll delay is: %s", poll_delay)
+        global my_poll_delay
+        my_poll_delay = float(poll_delay)
 
         # define Base URL
         global base_url
@@ -99,7 +103,7 @@ class AgoEtaEvent(threading.Thread):
             except urllib2.URLError, e:
                 print 'We failed with error - %s.' % e.reason
 
-            time.sleep(10)
+            time.sleep(my_poll_delay)
 
 if __name__ == "__main__":
     AgoEta().main()
