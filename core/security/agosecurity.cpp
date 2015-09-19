@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
-
 #include <syslog.h>
-
 #include <cstdlib>
 #include <iostream>
-
 #include <sstream>
 #include <algorithm>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/local_time/local_time.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include "agoapp.h"
 
@@ -17,11 +17,17 @@
 #define SECURITYMAPFILE "maps/securitymap.json"
 #endif
 
+#ifndef RECORDINGSDIR
+#define RECORDINGSDIR "recordings/"
+#endif
+
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace agocontrol;
 using namespace std;
+using namespace cv;
 namespace pt = boost::posix_time;
+namespace fs = boost::filesystem;
 
 enum TriggerStatus {
     Ok,
@@ -56,9 +62,14 @@ private:
     qpid::types::Variant::Map alertGateways;
     pthread_mutex_t alertGatewaysMutex;
     pthread_mutex_t contactsMutex;
+    pthread_mutex_t securitymapMutex;
     std::string email;
     std::string phone;
+    bool stopProcess;
+    void setupApp();
+    void cleanupApp();
 
+    //security
     bool checkPin(std::string _pin);
     bool setPin(std::string _pin);
     void enableAlarm(std::string zone, std::string housemode, int16_t delay);
@@ -73,7 +84,14 @@ private:
     void refreshDefaultContact();
     void sendAlarm(std::string zone, std::string uuid, std::string message, qpid::types::Variant::Map* content);
 
-    void setupApp() ;
+    //timelapse
+    bool stopTimelapses;
+    std::map<std::string, boost::thread*> timelapseThreads;
+    void getEmptyTimelapse(qpid::types::Variant::Map* timelapse);
+    void timelapseFunction(qpid::types::Variant::Map timelapse);
+    void restartTimelapses();
+    void launchTimelapses();
+    void launchTimelapse(qpid::types::Variant::Map& timelapse);
 
 public:
 
@@ -82,7 +100,9 @@ public:
         , wantSecurityThreadRunning(false)
         , isAlarmActivated(false)
         , email("")
-        , phone("") {}
+        , phone("")
+        , stopProcess(false)
+        , stopTimelapses(false) {}
 };
 
 /**
@@ -179,6 +199,7 @@ bool AgoSecurity::changeHousemode(std::string housemode)
 {
     //update security map
     AGO_INFO() << "Setting housemode: " << housemode;
+    pthread_mutex_lock(&securitymapMutex);
     securitymap["housemode"] = housemode;
     agoConnection->setGlobalVariable("housemode", housemode);
 
@@ -186,6 +207,7 @@ bool AgoSecurity::changeHousemode(std::string housemode)
     Variant::Map eventcontent;
     eventcontent["housemode"]= housemode;
     agoConnection->emitEvent("securitycontroller", "event.security.housemodechanged", eventcontent);
+    pthread_mutex_unlock(&securitymapMutex);
 
     //finally save changes to config file
     return variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE));
@@ -592,6 +614,172 @@ void AgoSecurity::refreshAlertGateways()
 }
 
 /**
+ * Timelapse function (threaded)
+ */
+void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
+{
+    AGO_DEBUG() << "Timelapse started";
+
+    //init video reader
+    //VideoCapture capture("rtsp://admin:plijygr@192.168.1.12:554/user=admin_password=S4YCHRMx_channel=1_stream=0.sdp?real_stream");
+    AGO_DEBUG() << timelapse;
+    VideoCapture capture(timelapse["uri"].asString());
+    if( !capture.isOpened() )
+    {
+        AGO_ERROR() << "Timelapse: unable to capture uri";
+        return;
+    }
+
+    //init video writer
+    bool fileOk = false;
+    int inc = 0;
+    fs::path filepath;
+    while( !fileOk )
+    {
+        std::string name = timelapse["name"].asString();
+        stringstream filename;
+        filename << RECORDINGSDIR;
+        filename << "timelapse_";
+        if( name.length()==0 )
+        {
+            filename << "noname_";
+        }
+        else
+        {
+            filename << name << "_";
+        }
+        filename << pt::second_clock::local_time().date().year() << pt::second_clock::local_time().date().month() << pt::second_clock::local_time().date().day();
+        if( inc>0 )
+        {
+            filename << "_" << inc;
+        }
+        filename << ".avi";
+        filepath = ensureParentDirExists(getLocalStatePath(filename.str()));
+        if( fs::exists(filepath) )
+        {
+            //file already exists
+            inc++;
+        }
+        else
+        {
+            fileOk = true;
+        }
+    }
+    AGO_DEBUG() << "Record into '" << filepath.c_str() << "'";
+    string codec = timelapse["outputCodec"].asString();
+    int fourcc = CV_FOURCC('F', 'M', 'P', '4');
+    if( codec.length()==4 )
+    {
+        fourcc = CV_FOURCC(codec[0], codec[1], codec[2], codec[3]);
+    }
+    int fps = 24;
+    Size resolution(timelapse["inputWidth"].asInt32(), timelapse["inputHeight"].asInt32());
+    VideoWriter recorder(filepath.c_str(), fourcc, fps, resolution);
+    if( !recorder.isOpened() )
+    {
+        AGO_ERROR() << "Timelapse: unable to open recorder";
+        return;
+    }
+
+    try
+    {
+        Mat edges;
+        int now = (int)(time(NULL));
+        int last = 0;
+        while( !stopProcess && !stopTimelapses )
+        {
+            //capture frame
+            Mat frame;
+            capture >> frame;
+
+            //add current time
+            stringstream stream;
+            stream << pt::second_clock::local_time().date().year() << "/" << (int)pt::second_clock::local_time().date().month() << "/" << pt::second_clock::local_time().date().day();
+            stream << " " << pt::second_clock::local_time().time_of_day();
+            stream << " - " << timelapse["name"].asString();
+            string text = stream.str();
+            putText(frame, text.c_str(), Point(20,20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0), 4, CV_AA);
+            putText(frame, text.c_str(), Point(20,20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255,255,255), 1, CV_AA);
+    
+            if( now!=last )
+            {
+                //TODO handle recording fps. For now it records at 1 fps
+                recorder << frame;
+                last = now;
+            }
+    
+            now = (int)(time(NULL));
+        }
+    }
+    catch(boost::thread_interrupted &e)
+    {
+        AGO_DEBUG() << "Timelapse thread interrupted";
+    }
+    
+    //close all
+    capture.release();
+    recorder.release();
+    
+    AGO_DEBUG() << "Timelapse stopped";
+}
+
+/**
+ * Get empty timelapse map
+ */
+void AgoSecurity::getEmptyTimelapse(qpid::types::Variant::Map* timelapse)
+{
+    (*timelapse)["name"] = "";
+    (*timelapse)["uri"] = "";
+    (*timelapse)["inputWidth"] = 0;
+    (*timelapse)["inputHeight"] = 0;
+    (*timelapse)["outputFps"] = 0;
+    (*timelapse)["outputCodec"] = "";
+}
+
+/**
+ * Restart timelapses
+ */
+void AgoSecurity::restartTimelapses()
+{
+    //stop current timelapses
+    stopTimelapses = true;
+
+    //wait for threads stop
+    for( std::map<std::string, boost::thread*>::iterator it=timelapseThreads.begin(); it!=timelapseThreads.end(); it++ )
+    {
+        (it->second)->join();
+    }
+
+    //then restart them all
+    stopTimelapses = false;
+    launchTimelapses();
+}
+
+/**
+ * Launch all timelapses
+ */
+void AgoSecurity::launchTimelapses()
+{
+    qpid::types::Variant::List timelapses = securitymap["timelapses"].asList();
+    for( qpid::types::Variant::List::iterator it=timelapses.begin(); it!=timelapses.end(); it++ )
+    {
+        qpid::types::Variant::Map timelapse = it->asMap();
+        launchTimelapse(timelapse);
+    }
+}
+
+/**
+ * Launch specified timelapse
+ */
+void AgoSecurity::launchTimelapse(qpid::types::Variant::Map& timelapse)
+{
+    AGO_DEBUG() << "Launch timelapse: " << timelapse;
+    boost::thread* thread = new boost::thread(boost::bind(&AgoSecurity::timelapseFunction, this, timelapse));
+    string uri = timelapse["uri"].asString();
+    timelapseThreads[uri] = thread;
+}
+
+/**
  * Event handler
  */
 void AgoSecurity::eventHandler(std::string subject, qpid::types::Variant::Map content)
@@ -690,12 +878,21 @@ void AgoSecurity::eventHandler(std::string subject, qpid::types::Variant::Map co
             AGO_DEBUG() << "No uuid for event.device.statechanged " << content;
         }
     }
-    else if( subject=="event.environment.timechanged" && !content["minute"].isVoid() && content["minute"].asInt8()%1==0 )
+    else if( subject=="event.environment.timechanged" && !content["minute"].isVoid() && !content["hour"].isVoid() )
     {
-        //refresh gateway list
-        AGO_DEBUG() << "Timechanged: get inventory";
-        refreshAlertGateways();
-        refreshDefaultContact();
+        //refresh gateway list every 5 minutes
+        if( content["minute"].asInt8()%5==0 )
+        {
+            AGO_DEBUG() << "Timechanged: get inventory";
+            refreshAlertGateways();
+            refreshDefaultContact();
+        }
+
+        //midnight, create new timelapse for new day
+        if( content["hour"].asInt8()==0 && content["minute"].asInt8()==0 )
+        {
+            restartTimelapses();
+        }
     }
 }
 
@@ -871,11 +1068,14 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
 
             if( checkPin(content["pin"].asString()) )
             {
+                pthread_mutex_lock(&securitymapMutex);
                 qpid::types::Variant::Map newconfig = content["config"].asMap();
                 securitymap["config"] = newconfig;
                 securitymap["armedMessage"] = content["armedMessage"].asString();
                 securitymap["disarmedMessage"] = content["disarmedMessage"].asString();
                 securitymap["defaultHousemode"] = content["defaultHousemode"].asString();
+                pthread_mutex_unlock(&securitymapMutex);
+
                 if (variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE)))
                 {
                     return responseSuccess();
@@ -935,6 +1135,143 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
             returnData["alarmactivated"] = isAlarmActivated;
             return responseSuccess(returnData);
         }
+        else if( content["command"]=="addtimelapse" )
+        {
+            AGO_DEBUG() << content;
+            checkMsgParameter(content, "uri", VAR_STRING);
+            checkMsgParameter(content, "name", VAR_STRING);
+            checkMsgParameter(content, "inwidth", VAR_INT32);
+            checkMsgParameter(content, "inheight", VAR_INT32);
+            checkMsgParameter(content, "outfps", VAR_INT32);
+            checkMsgParameter(content, "outcodec", VAR_STRING);
+
+            //check if timelapse already exists or not
+            pthread_mutex_lock(&securitymapMutex);
+            string uri = content["uri"].asString();
+            qpid::types::Variant::List timelapses = securitymap["timelapses"].asList();
+            for( qpid::types::Variant::List::iterator it=timelapses.begin(); it!=timelapses.end(); it++ )
+            {
+                qpid::types::Variant::Map timelapse = it->asMap();
+                if( !timelapse["uri"].isVoid() )
+                {
+                    string timelapseUri = timelapse["uri"].asString();
+                    if( timelapseUri==uri )
+                    {
+                        //uri already exists, stop here
+                        pthread_mutex_unlock(&securitymapMutex);
+                        return responseSuccess("Timelapse already exists");
+                    }
+                }
+            }
+
+            //fill new timelapse
+            qpid::types::Variant::Map timelapse;
+            getEmptyTimelapse(&timelapse);
+            timelapse["uri"] = content["uri"].asString();
+            timelapse["name"] = content["name"].asString();
+            timelapse["inputWidth"] = content["inwidth"].asInt32();
+            timelapse["inputHeight"] = content["inheight"].asInt32();
+            timelapse["outputCodec"] = content["outcodec"].asString();
+            timelapse["outputFps"] = content["outfps"].asInt32();
+
+            //and save it
+            timelapses.push_back(timelapse);
+            securitymap["timelapses"] = timelapses;
+            pthread_mutex_unlock(&securitymapMutex);
+            if( variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE)) )
+            {
+                AGO_DEBUG() << "Command 'addtimelapse': timelapse added " << timelapse;
+
+                //and finally launch timelapse thread
+                launchTimelapse(timelapse);
+
+                return responseSuccess("Timelapse added");
+            }
+            else
+            {
+                AGO_ERROR() << "Command 'addtimelapse': cannot save securitymap";
+                return responseError("error.security.addtimelapse", "Cannot save config");
+            }
+        }
+        else if( content["command"]=="removetimelapse" )
+        {
+            bool found = false;
+
+            checkMsgParameter(content, "uri", VAR_STRING);
+            
+            //search and destroy specified timelapse
+            pthread_mutex_lock(&securitymapMutex);
+            string uri = content["uri"].asString();
+            qpid::types::Variant::List timelapses = securitymap["timelapses"].asList();
+            for( qpid::types::Variant::List::iterator it=timelapses.begin(); it!=timelapses.end(); it++ )
+            {
+                qpid::types::Variant::Map timelapse = it->asMap();
+                if( !timelapse["uri"].isVoid() )
+                {
+                    string timelapseUri = timelapse["uri"].asString();
+                    if( timelapseUri==uri )
+                    {
+                        //timelapse found
+                        found = true;
+                        
+                        //stop running timelapse thread
+                        timelapseThreads[uri]->interrupt();
+
+                        //and remove it from config
+                        timelapses.erase(it);
+                        securitymap["timelapses"] = timelapses;
+                        break;
+                    }
+                }
+            }
+            pthread_mutex_unlock(&securitymapMutex);
+
+            if( found )
+            {
+                if( variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE)) )
+                {
+                    AGO_DEBUG() << "Command 'removetimelapse': timelapse remove";
+                    return responseSuccess("Timelapse removed");
+                }
+                else
+                {
+                    AGO_ERROR() << "Command 'removetimelapse': cannot save securitymap";
+                    return responseError("error.security.removetimelapse", "Cannot save config");
+                }
+            }
+            else
+            {
+                return responseError("error.security.removetimelapse", "Specified timelapse was not found");
+            }
+        }
+        else if( content["command"]=="gettimelapses" )
+        {
+            //TODO
+        }
+        else if( content["command"]=="addmotion" )
+        {
+            //TODO
+        }
+        else if( content["command"]=="removemotion" )
+        {
+            //TODO
+        }
+        else if( content["command"]=="getmotions" )
+        {
+            //TODO
+        }
+        else if( content["command"]=="getrecordingsconfig" )
+        {
+            //TODO
+        }
+        else if( content["command"]=="setrecordingsconfig" )
+        {
+            //TODO
+        }
+        else if( content["command"]=="getrecordings" )
+        {
+            //TODO
+        }
 
         return responseUnknownCommand();
     }
@@ -948,11 +1285,18 @@ void AgoSecurity::setupApp()
     //init
     pthread_mutex_init(&alertGatewaysMutex, NULL);
     pthread_mutex_init(&contactsMutex, NULL);
+    pthread_mutex_init(&securitymapMutex, NULL);
 
     //load config
     securitymap = jsonFileToVariantMap(getConfigPath(SECURITYMAPFILE));
-
-    AGO_TRACE() << "Loaded securitymap: " << securitymap;
+    //add missing sections if necessary
+    if( securitymap["timelapses"].isVoid() )
+    {
+        qpid::types::Variant::List timelapses;
+        securitymap["timelapses"] = timelapses;
+        variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE));
+    }
+    AGO_DEBUG() << "Loaded securitymap: " << securitymap;
     std::string housemode = securitymap["housemode"];
     AGO_DEBUG() << "Current house mode: " << housemode;
     agoConnection->setGlobalVariable("housemode", housemode);
@@ -965,6 +1309,21 @@ void AgoSecurity::setupApp()
     agoConnection->addDevice("securitycontroller", "securitycontroller");
     addCommandHandler();
     addEventHandler();
+
+    //launch timelapse threads
+    launchTimelapses();
+}
+
+void AgoSecurity::cleanupApp()
+{
+    //stop processes
+    stopProcess = true;
+
+    //wait for timelapse threads stop
+    for( std::map<std::string, boost::thread*>::iterator it=timelapseThreads.begin(); it!=timelapseThreads.end(); it++ )
+    {
+        (it->second)->join();
+    }
 }
 
 AGOAPP_ENTRY_POINT(AgoSecurity);

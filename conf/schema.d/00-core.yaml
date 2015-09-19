@@ -245,6 +245,33 @@ commands:
       filter:
         name: filter
         type: string
+  addtimelapse:
+    name: add timelapse
+    parameters:
+      uri:
+        name: video uri
+        type: string
+      name:
+        name: timelapse name
+        type: string
+      inwidth:
+        name: input resolution (width)
+        type: integer
+      inheight:
+        name: input resolution (height)
+        type: integer
+      outcodec:
+        name: record video codec
+        type: string
+      outfps:
+        name: record fps
+        type: integer
+  removetimelapse:
+    name: remove timelapse
+    parameters:
+      uri:
+        name: video uri
+        type: string
 devicetypes:
   dataloggercontroller:
     name: datalogger controller
@@ -266,7 +293,7 @@ devicetypes:
   securitycontroller:
     name: security system
     description: ago control security system module
-    commands: [gethousemode, sethousemode, triggerzone, setzones, cancel]
+    commands: [gethousemode, sethousemode, triggerzone, setzones, cancel, addtimelapse, removetimelapse]
     events: [event.security.housemodechanged,event.security.countdown.started,event.security.countdown,event.security.intruderalert,event.security.alarmcanceled,event.security.alarmstopped]
   luacontroller:
     name: lua event scripting
