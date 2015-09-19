@@ -254,17 +254,11 @@ commands:
       name:
         name: timelapse name
         type: string
-      inwidth:
-        name: input resolution (width)
-        type: integer
-      inheight:
-        name: input resolution (height)
-        type: integer
-      outcodec:
-        name: record video codec
+      codec:
+        name: recording video codec
         type: string
-      outfps:
-        name: record fps
+      fps:
+        name: recording fps
         type: integer
   removetimelapse:
     name: remove timelapse

@@ -628,6 +628,8 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
         AGO_ERROR() << "Timelapse: unable to capture uri";
         return;
     }
+    double srcWidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    double srcHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 
     //init video writer
     bool fileOk = false;
@@ -665,14 +667,14 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
         }
     }
     AGO_DEBUG() << "Record into '" << filepath.c_str() << "'";
-    string codec = timelapse["outputCodec"].asString();
+    string codec = timelapse["codec"].asString();
     int fourcc = CV_FOURCC('F', 'M', 'P', '4');
     if( codec.length()==4 )
     {
         fourcc = CV_FOURCC(codec[0], codec[1], codec[2], codec[3]);
     }
     int fps = 24;
-    Size resolution(timelapse["inputWidth"].asInt32(), timelapse["inputHeight"].asInt32());
+    Size resolution(srcWidth, srcHeight);
     VideoWriter recorder(filepath.c_str(), fourcc, fps, resolution);
     if( !recorder.isOpened() )
     {
@@ -703,7 +705,7 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
     
             if( now!=last )
             {
-                //TODO handle recording fps. For now it records at 1 fps
+                //TODO handle recording fps using timelapse["fps"] param. For now it records at 1 fps
                 recorder << frame;
                 last = now;
             }
@@ -730,8 +732,6 @@ void AgoSecurity::getEmptyTimelapse(qpid::types::Variant::Map* timelapse)
 {
     (*timelapse)["name"] = "";
     (*timelapse)["uri"] = "";
-    (*timelapse)["inputWidth"] = 0;
-    (*timelapse)["inputHeight"] = 0;
     (*timelapse)["outputFps"] = 0;
     (*timelapse)["outputCodec"] = "";
 }
@@ -1137,13 +1137,10 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         }
         else if( content["command"]=="addtimelapse" )
         {
-            AGO_DEBUG() << content;
             checkMsgParameter(content, "uri", VAR_STRING);
             checkMsgParameter(content, "name", VAR_STRING);
-            checkMsgParameter(content, "inwidth", VAR_INT32);
-            checkMsgParameter(content, "inheight", VAR_INT32);
-            checkMsgParameter(content, "outfps", VAR_INT32);
-            checkMsgParameter(content, "outcodec", VAR_STRING);
+            checkMsgParameter(content, "fps", VAR_INT32);
+            checkMsgParameter(content, "codec", VAR_STRING);
 
             //check if timelapse already exists or not
             pthread_mutex_lock(&securitymapMutex);
@@ -1169,10 +1166,8 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
             getEmptyTimelapse(&timelapse);
             timelapse["uri"] = content["uri"].asString();
             timelapse["name"] = content["name"].asString();
-            timelapse["inputWidth"] = content["inwidth"].asInt32();
-            timelapse["inputHeight"] = content["inheight"].asInt32();
-            timelapse["outputCodec"] = content["outcodec"].asString();
-            timelapse["outputFps"] = content["outfps"].asInt32();
+            timelapse["codec"] = content["codec"].asString();
+            timelapse["fps"] = content["fps"].asInt32();
 
             //and save it
             timelapses.push_back(timelapse);
@@ -1250,7 +1245,56 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         }
         else if( content["command"]=="addmotion" )
         {
-            //TODO
+            checkMsgParameter(content, "uri", VAR_STRING);
+            checkMsgParameter(content, "name", VAR_STRING);
+            checkMsgParameter(content, "fps", VAR_INT32);
+            checkMsgParameter(content, "codec", VAR_STRING);
+
+            //check if timelapse already exists or not
+            pthread_mutex_lock(&securitymapMutex);
+            string uri = content["uri"].asString();
+            qpid::types::Variant::List timelapses = securitymap["timelapses"].asList();
+            for( qpid::types::Variant::List::iterator it=timelapses.begin(); it!=timelapses.end(); it++ )
+            {
+                qpid::types::Variant::Map timelapse = it->asMap();
+                if( !timelapse["uri"].isVoid() )
+                {
+                    string timelapseUri = timelapse["uri"].asString();
+                    if( timelapseUri==uri )
+                    {
+                        //uri already exists, stop here
+                        pthread_mutex_unlock(&securitymapMutex);
+                        return responseSuccess("Timelapse already exists");
+                    }
+                }
+            }
+
+            //fill new timelapse
+            qpid::types::Variant::Map timelapse;
+            getEmptyTimelapse(&timelapse);
+            timelapse["uri"] = content["uri"].asString();
+            timelapse["name"] = content["name"].asString();
+            timelapse["codec"] = content["codec"].asString();
+            timelapse["fps"] = content["fps"].asInt32();
+
+            //and save it
+            timelapses.push_back(timelapse);
+            securitymap["timelapses"] = timelapses;
+            pthread_mutex_unlock(&securitymapMutex);
+            if( variantMapToJSONFile(securitymap, getConfigPath(SECURITYMAPFILE)) )
+            {
+                AGO_DEBUG() << "Command 'addtimelapse': timelapse added " << timelapse;
+
+                //and finally launch timelapse thread
+                launchTimelapse(timelapse);
+
+                return responseSuccess("Timelapse added");
+            }
+            else
+            {
+                AGO_ERROR() << "Command 'addtimelapse': cannot save securitymap";
+                return responseError("error.security.addtimelapse", "Cannot save config");
+            }
         }
         else if( content["command"]=="removemotion" )
         {
