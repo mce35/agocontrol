@@ -618,14 +618,13 @@ void AgoSecurity::refreshAlertGateways()
  */
 void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
 {
-    AGO_DEBUG() << "Timelapse started";
+    AGO_DEBUG() << "Timelapse started: " << timelapse;
 
     //init video reader
-    //VideoCapture capture("rtsp://admin:plijygr@192.168.1.12:554/user=admin_password=S4YCHRMx_channel=1_stream=0.sdp?real_stream");
-    AGO_DEBUG() << timelapse;
     VideoCapture capture(timelapse["uri"].asString());
     if( !capture.isOpened() )
     {
+        //TODO send error?
         AGO_ERROR() << "Timelapse: unable to capture uri";
         return;
     }
@@ -677,6 +676,7 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
     VideoWriter recorder(filepath.c_str(), fourcc, fps, resolution);
     if( !recorder.isOpened() )
     {
+        //TODO send error?
         AGO_ERROR() << "Timelapse: unable to open recorder";
         return;
     }
@@ -720,7 +720,7 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
     capture.release();
     recorder.release();
     
-    AGO_DEBUG() << "Timelapse stopped";
+    AGO_DEBUG() << "Timelapse stopped: " << timelapse;
 }
 
 /**
