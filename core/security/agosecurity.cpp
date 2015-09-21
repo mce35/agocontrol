@@ -79,6 +79,7 @@ private:
     void setupApp();
     void cleanupApp();
     void getRecordings(std::string type, qpid::types::Variant::List& list);
+    std::string getDateTimeString(bool date, bool time, bool withSeparator=true, std::string fieldSeparator="_");
 
     //security
     bool checkPin(std::string _pin);
@@ -660,7 +661,7 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
         filename << RECORDINGSDIR;
         filename << "timelapse_";
         filename << timelapseInternalid << "_";
-        filename << pt::second_clock::local_time().date().year() << pt::second_clock::local_time().date().month() << pt::second_clock::local_time().date().day();
+        filename << getDateTimeString(true, false, false);
         if( inc>0 )
         {
             filename << "_" << inc;
@@ -706,8 +707,7 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
 
             //add text
             stringstream stream;
-            stream << pt::second_clock::local_time().date().year() << "/" << (int)pt::second_clock::local_time().date().month() << "/" << pt::second_clock::local_time().date().day();
-            stream << " " << pt::second_clock::local_time().time_of_day();
+            stream << getDateTimeString(true, true, true, " ");
             stream << " - " << timelapse["name"].asString();
             string text = stream.str();
             putText(frame, text.c_str(), Point(20,20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0), 4, CV_AA);
@@ -968,8 +968,7 @@ void AgoSecurity::motionFunction(qpid::types::Variant::Map motion)
 
             //add text to frame (current time and motion name)
             stringstream stream;
-            stream << pt::second_clock::local_time().date().year() << "/" << (int)pt::second_clock::local_time().date().month() << "/" << pt::second_clock::local_time().date().day();
-            stream << " " << pt::second_clock::local_time().time_of_day();
+            stream << getDateTimeString(true, true, true, " ");
             if( name.length()>0 )
             {
                 stream << " - " << name;
@@ -1038,8 +1037,7 @@ void AgoSecurity::motionFunction(qpid::types::Variant::Map motion)
                     filename << RECORDINGSDIR;
                     filename << "motion_";
                     filename << motionInternalid << "_";
-                    filename << pt::second_clock::local_time().date().year() << (int)pt::second_clock::local_time().date().month() << pt::second_clock::local_time().date().day() << "_";
-                    filename << pt::second_clock::local_time().time_of_day().hours() << pt::second_clock::local_time().time_of_day().minutes() << pt::second_clock::local_time().time_of_day().seconds();
+                    filename << getDateTimeString(true, true, false, "_");
                     filename << ".avi";
                     recordPath = ensureParentDirExists(getLocalStatePath(filename.str()));
                     AGO_DEBUG() << "Motion records into " << recordPath.c_str();
@@ -1253,6 +1251,62 @@ void AgoSecurity::getRecordings(std::string type, qpid::types::Variant::List& li
             ++it;
         }
     }
+}
+
+/**
+ * Return current date and time
+ */
+std::string AgoSecurity::getDateTimeString(bool date, bool time, bool withSeparator/*=true*/, std::string fieldSeparator/*="_"*/)
+{
+    stringstream out;
+    if( date )
+    {
+        out << pt::second_clock::local_time().date().year();
+        if( withSeparator )
+            out << "/";
+        int month = (int)pt::second_clock::local_time().date().month();
+        if( month<10 )
+            out << "0" << month;
+        else
+            out << month;
+        if( withSeparator )
+            out << "/";
+        int day = (int)pt::second_clock::local_time().date().day();
+        if( day<10 )
+            out << "0" << day;
+        else
+            out << day;
+    }
+
+    if( date && time )
+    {
+        out << fieldSeparator;
+    }
+
+    if( time )
+    {
+        int hours = (int)pt::second_clock::local_time().time_of_day().hours();
+        if( hours<10 )
+            out << "0" << hours;
+        else
+            out << hours;
+        if( withSeparator )
+            out << ":";
+        int minutes = (int)pt::second_clock::local_time().time_of_day().minutes();
+        if( minutes<10 )
+            out << "0" << minutes;
+        else
+            out << minutes;
+        if( withSeparator )
+            out << ":";
+        int seconds = (int)pt::second_clock::local_time().time_of_day().seconds();
+        if( seconds<10 )
+            out << "0" << seconds;
+        else
+            out << seconds;
+    }
+
+    return out.str();
 }
 
 /**
