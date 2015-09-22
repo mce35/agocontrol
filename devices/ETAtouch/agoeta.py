@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET
 
 eta_result = {}
 eta_result_report = {}
+eta_result_timer = {}
 devices = {}
 
 class AgoEta(agoclient.AgoApp):
@@ -22,10 +23,14 @@ class AgoEta(agoclient.AgoApp):
         # read IP from config file
         eta_ip = self.get_config_option("IP", "127.0.0.1")
         poll_delay = self.get_config_option("poll_delay", "60")
-        self.log.info("ETA IP-Address is: %s", eta_ip)
-        self.log.info("ETA poll delay is: %s", poll_delay)
+        result_delay = self.get_config_option("result_delay", "3600")
+        self.log.debug("ETA IP-Address is: %s", eta_ip)
+        self.log.debug("ETA poll delay is: %s", poll_delay)
+        self.log.debug("ETA min. report result delay is: %s", result_delay)
         global my_poll_delay
         my_poll_delay = float(poll_delay)
+        global my_result_delay
+        my_result_delay = float(result_delay)
 
         # define Base URL
         global base_url
@@ -85,16 +90,28 @@ class AgoEtaEvent(threading.Thread):
                         except:
                             eta_result[device] = result.attrib['strValue']
 
+                    # check result timer
+                    if device not in eta_result_timer:
+                        eta_result_timer[device] = my_poll_delay
+                    elif eta_result_timer[device] > my_result_delay:
+                        eta_result_timer[device] = my_poll_delay 
+                        emit_result(self, device)
+                    elif eta_result_timer[device] >= my_poll_delay:
+                        eta_result_timer[device] = eta_result_timer[device] + my_poll_delay 
+
+
                     # check when we get a new value and announce it
                     for a_key in eta_result:
                         # check if key from a exists in b
                         if a_key not in eta_result_report:
                             eta_result_report[a_key] = eta_result[a_key]
                             emit_result(self, a_key)
+                            eta_result_timer[device] = my_poll_delay 
 
                         elif eta_result[a_key] != eta_result_report[a_key]:
                             eta_result_report[a_key] = eta_result[a_key]
                             emit_result(self, a_key)
+                            eta_result_timer[device] = my_poll_delay 
 
 
             except urllib2.HTTPError, e:
