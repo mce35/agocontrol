@@ -111,6 +111,7 @@ private:
     void motionFunction(qpid::types::Variant::Map timelapse);
     void launchMotions();
     void launchMotion(qpid::types::Variant::Map& motion);
+    void stopMotion(qpid::types::Variant::Map& motion);
 
 public:
 
@@ -388,16 +389,16 @@ TriggerStatus AgoSecurity::triggerZone(std::string zone, std::string housemode)
     if( !securitymap["config"].isVoid() )
     {
         qpid::types::Variant::Map config = securitymap["config"].asMap();
-        //AGO_DEBUG() << " -> config=" << config;
+        AGO_TRACE() << " -> config=" << config;
         for( qpid::types::Variant::Map::iterator it1=config.begin(); it1!=config.end(); it1++ )
         {
             //check housemode
-            //AGO_DEBUG() << " -> check housemode: " << it1->first << "==" << housemode;
+            AGO_TRACE() << " -> check housemode: " << it1->first << "==" << housemode;
             if( it1->first==housemode )
             {
                 //specified housemode found
                 qpid::types::Variant::List zones = it1->second.asList();
-                //AGO_DEBUG() << " -> zones: " << zones;
+                AGO_TRACE() << " -> zones: " << zones;
                 for( qpid::types::Variant::List::iterator it2=zones.begin(); it2!=zones.end(); it2++ )
                 {
                     //check zone
@@ -405,7 +406,7 @@ TriggerStatus AgoSecurity::triggerZone(std::string zone, std::string housemode)
                     std::string zoneName = zoneMap["zone"].asString();
                     int16_t delay = zoneMap["delay"].asInt16();
                     //check delay (if <0 it means inactive) and if it's current zone
-                    //AGO_DEBUG() << " -> check zone: " << zoneName << "==" << zone << " delay=" << delay;
+                    AGO_TRACE() << " -> check zone: " << zoneName << "==" << zone << " delay=" << delay;
                     if( zoneName==zone )
                     {
                         //specified zone found
@@ -472,7 +473,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
 {
     bool found = false;
     bool send = true;
-    AGO_DEBUG() << "sendAlarm() BEGIN";
+    AGO_TRACE() << "sendAlarm() BEGIN";
 
     pthread_mutex_lock(&alertGatewaysMutex);
     for( qpid::types::Variant::Map::iterator it=alertGateways.begin(); it!=alertGateways.end(); it++ )
@@ -544,7 +545,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
     {
         agoConnection->sendMessageReply("", *content);
     }
-    AGO_DEBUG() << "sendAlarm() END";
+    AGO_TRACE() << "sendAlarm() END";
 }
 
 /**
@@ -720,7 +721,11 @@ void AgoSecurity::timelapseFunction(qpid::types::Variant::Map timelapse)
                 last = now;
             }
     
+            //update current time
             now = (int)(time(NULL));
+
+            //check if thread has been interrupted
+            boost::this_thread::interruption_point();
         }
     }
     catch(boost::thread_interrupted &e)
@@ -957,7 +962,7 @@ void AgoSecurity::motionFunction(qpid::types::Variant::Map motion)
 
     try
     {
-        while( !stopProcess )
+        while( !stopProcess /*|| !boost::this_thread::interruption_requested()*/ )
         {
             //get new frame
             prevFrame = currentFrame;
@@ -1099,7 +1104,11 @@ void AgoSecurity::motionFunction(qpid::types::Variant::Map motion)
                 }
             }
 
-            waitKey(5);
+            //debug purpose: display frame in window
+            //waitKey(5);
+            
+            //check if thread has been interrupted
+            boost::this_thread::interruption_point();
         }
     }
     catch(boost::thread_interrupted &e)
@@ -1169,7 +1178,7 @@ void AgoSecurity::fillMotion(qpid::types::Variant::Map* motion, qpid::types::Var
         if( !(*content)["bufferduration"].isVoid() )
             (*motion)["bufferduration"] = (*content)["bufferduration"].asInt32();
         else
-            (*motion)["bufferduration"] = 2;
+            (*motion)["bufferduration"] = 1;
 
         if( !(*content)["onduration"].isVoid() )
             (*motion)["onduration"] = (*content)["onduration"].asInt32();
@@ -1222,6 +1231,20 @@ void AgoSecurity::launchMotion(qpid::types::Variant::Map& motion)
     {
         AGO_DEBUG() << " -> not launch because motion is disabled";
     }
+}
+
+/**
+ * Stop motion thread
+ */
+void AgoSecurity::stopMotion(qpid::types::Variant::Map& motion)
+{
+    //stop thread
+    string uri = motion["uri"].asString();
+    motionThreads[uri]->interrupt();
+    motionThreads[uri]->join();
+
+    //remove thread from list
+    motionThreads.erase(uri);
 }
 
 /**
@@ -1440,16 +1463,19 @@ void AgoSecurity::eventHandler(std::string subject, qpid::types::Variant::Map co
             if( !motion["internalid"].isVoid() )
             {
                 string motionInternalid = motion["internalid"].asString();
-                string motionUri = motion["uri"].asString();
                 if( motionInternalid==deviceInternalid )
                 {
                     //motion found
                     found = true;
                     motion["name"] = name;
+                    motions.erase(it);
+                    motions.push_back(motion);
                     securitymap["motions"] = motions;
 
                     //restart motion thread
-                    motionThreads[motionUri]->interrupt();
+                    AGO_DEBUG() << " ==> stopMotion";
+                    stopMotion(motion);
+                    AGO_DEBUG() << " ==> launchMotion";
                     launchMotion(motion);
 
                     break;
@@ -1714,9 +1740,10 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         else if( content["command"]=="addtimelapse" )
         {
             checkMsgParameter(content, "uri", VAR_STRING);
-            checkMsgParameter(content, "fps", VAR_INT32);
-            checkMsgParameter(content, "codec", VAR_STRING);
-            checkMsgParameter(content, "enabled", VAR_BOOL);
+            //Not mandatory parameters
+            //checkMsgParameter(content, "fps", VAR_INT32);
+            //checkMsgParameter(content, "codec", VAR_STRING);
+            //checkMsgParameter(content, "enabled", VAR_BOOL);
 
             //check if timelapse already exists or not
             pthread_mutex_lock(&securitymapMutex);
@@ -1824,12 +1851,13 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
         else if( content["command"]=="addmotion" )
         {
             checkMsgParameter(content, "uri", VAR_STRING);
-            checkMsgParameter(content, "sensitivity", VAR_INT32);
-            checkMsgParameter(content, "deviation", VAR_INT32);
-            checkMsgParameter(content, "bufferduration", VAR_INT32);
-            checkMsgParameter(content, "onduration", VAR_INT32);
-            checkMsgParameter(content, "recordduration", VAR_INT32);
-            checkMsgParameter(content, "enabled", VAR_BOOL);
+            //Not mandatory parameters
+            //checkMsgParameter(content, "sensitivity", VAR_INT32);
+            //checkMsgParameter(content, "deviation", VAR_INT32);
+            //checkMsgParameter(content, "bufferduration", VAR_INT32);
+            //checkMsgParameter(content, "onduration", VAR_INT32);
+            //checkMsgParameter(content, "recordduration", VAR_INT32);
+            //checkMsgParameter(content, "enabled", VAR_BOOL);
 
             //check values
             if( content["recordduration"].asInt32()>=content["onduration"].asInt32() )
@@ -1905,7 +1933,7 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                         found = true;
                         
                         //stop running motion thread
-                        motionThreads[uri]->interrupt();
+                        stopMotion(motion);
 
                         //and remove it from config
                         motions.erase(it);
@@ -2002,7 +2030,7 @@ qpid::types::Variant::Map AgoSecurity::commandHandler(qpid::types::Variant::Map 
                         if( !enabled )
                         {
                             //stop running motion thread
-                            motionThreads[motionUri]->interrupt();
+                            stopMotion(motion);
                         }
                         else
                         {
@@ -2176,12 +2204,14 @@ void AgoSecurity::cleanupApp()
     //wait for timelapse threads stop
     for( std::map<std::string, boost::thread*>::iterator it=timelapseThreads.begin(); it!=timelapseThreads.end(); it++ )
     {
+        (it->second)->interrupt();
         (it->second)->join();
     }
 
     //wait for motion threads stop
     for( std::map<std::string, boost::thread*>::iterator it=motionThreads.begin(); it!=motionThreads.end(); it++ )
     {
+        (it->second)->interrupt();
         (it->second)->join();
     }
 }
