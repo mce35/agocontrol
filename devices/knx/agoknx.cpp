@@ -354,6 +354,76 @@ bool AgoKnx::sendFloatData(std::string dest, float data) {
 qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map content) {
     std::string internalid = content["internalid"].asString();
     AGO_TRACE() << "received command " << content["command"] << " for device " << internalid;
+
+    if (internalid == "knxcontroller")
+    {
+        qpid::types::Variant::Map returnData;
+
+        if (content["command"] == "adddevice")
+        {
+            checkMsgParameter(content, "devicemap", VAR_MAP);
+            // checkMsgParameter(content, "devicetype", VAR_STRING);
+
+            qpid::types::Variant::Map newdevice = content["devicemap"].asMap();
+            AGO_TRACE() << "adding knx device: " << newdevice;
+
+            std::string deviceuuid;
+            if(content.count("uuid"))
+                deviceuuid = content["uuid"].asString();
+            else
+                deviceuuid = generateUuid();
+
+            deviceMap[deviceuuid] = newdevice;
+            agoConnection->addDevice(deviceuuid.c_str(), newdevice["devicetype"].asString().c_str(), true);
+            if (variantMapToJSONFile(deviceMap, getConfigPath(KNXDEVICEMAPFILE)))
+            {
+                returnData["device"] = deviceuuid;
+                return responseSuccess(returnData);
+            }
+            return responseFailed("Failed to write knx device map file");
+        }
+        else if (content["command"] == "getdevice")
+        {
+            checkMsgParameter(content, "device", VAR_STRING);
+            std::string device = content["device"].asString();
+
+            AGO_TRACE() << "getdevice request: " << device;
+            if (!deviceMap.count(device)) 
+                return responseError(RESPONSE_ERR_NOT_FOUND, "Device not found");
+
+            returnData["devicemap"] = deviceMap[device].asMap();
+            returnData["device"] = device;
+
+            return responseSuccess(returnData);
+        }
+        else if (content["command"] == "deldevice")
+        {
+            checkMsgParameter(content, "device", VAR_STRING);
+            
+            std::string device = content["device"].asString();
+            AGO_TRACE() << "deldevice request:" << device;
+            qpid::types::Variant::Map::iterator it = deviceMap.find(device);
+            if (it != deviceMap.end())
+            {
+                AGO_DEBUG() << "removing ago device" << device;
+                agoConnection->removeDevice(it->first.c_str());
+                deviceMap.erase(it);
+                if (!variantMapToJSONFile(deviceMap, getConfigPath(KNXDEVICEMAPFILE)))
+                {
+                    return responseFailed("Failed to write knx device map file");
+                }
+            }
+            return responseSuccess();
+
+        } 
+        else if (content["command"] == "parseetsexport")
+        {
+
+
+        }
+        return responseUnknownCommand();
+    }
+
     qpid::types::Variant::Map::const_iterator it = deviceMap.find(internalid);
     qpid::types::Variant::Map device;
     if (it != deviceMap.end()) {
@@ -432,6 +502,8 @@ void AgoKnx::setupApp() {
         date_ga = getConfigOption("datega", "3/3/4");
         addEventHandler();
     }
+
+    agoConnection->addDevice("knxcontroller", "knxcontroller");
 
     // check if old XML file exists and convert it to a json map
     if (fs::exists(devicesFile)) {
