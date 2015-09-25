@@ -28,6 +28,10 @@
 
 #include "agoapp.h"
 
+#ifndef KNXDEVICEMAPFILE
+#define KNXDEVICEMAPFILE "maps/knx.json"
+#endif
+
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace tinyxml2;
@@ -61,7 +65,7 @@ private:
     void setupApp();
     void cleanupApp();
 
-    bool loadDevices(fs::path &filename, Variant::Map& _deviceMap);
+    bool loadDevicesXML(fs::path &filename, Variant::Map& _deviceMap);
     void reportDevices(Variant::Map devicemap);
     string uuidFromGA(Variant::Map devicemap, string ga);
     string typeFromGA(Variant::Map device, string ga);
@@ -76,7 +80,7 @@ public:
 /**
  * parses the device XML file and creates a qpid::types::Variant::Map with the data
  */
-bool AgoKnx::loadDevices(fs::path &filename, Variant::Map& _deviceMap) {
+bool AgoKnx::loadDevicesXML(fs::path &filename, Variant::Map& _deviceMap) {
     XMLDocument devicesFile;
     int returncode;
 
@@ -429,11 +433,24 @@ void AgoKnx::setupApp() {
         addEventHandler();
     }
 
-    // load xml file into map
-    if (!loadDevices(devicesFile, deviceMap)) {
-        AGO_FATAL() << "can't load device xml";
-        throw StartupError();
+    // check if old XML file exists and convert it to a json map
+    if (fs::exists(devicesFile)) {
+        AGO_DEBUG() << "Found XML config file, converting to json map";
+        // load xml file into map
+        if (!loadDevicesXML(devicesFile, deviceMap)) {
+            AGO_FATAL() << "can't load device xml";
+            throw StartupError();
+        }
+        // write json map
+        AGO_DEBUG() << "Writing json map into " << getConfigPath(KNXDEVICEMAPFILE);
+        variantMapToJSONFile(deviceMap, getConfigPath(KNXDEVICEMAPFILE));
+        AGO_INFO() << "XML devices file has been converted to a json map. Renaming old file.";
+        fs::rename(devicesFile, fs::path(devicesFile.string() + ".converted"));
+    } else {
+        AGO_DEBUG() << "Loading json device map";
+        deviceMap = jsonFileToVariantMap(getConfigPath(KNXDEVICEMAPFILE));
     }
+
     // announce devices to resolver
     reportDevices(deviceMap);
 
