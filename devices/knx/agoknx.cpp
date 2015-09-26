@@ -418,7 +418,54 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         } 
         else if (content["command"] == "parseetsexport")
         {
+            checkMsgParameter(content, "etsdata", VAR_STRING);
+            XMLDocument etsExport;
+            std::string etsdata = content["etsdata"].asString();
+            AGO_TRACE() << "parse ets export request:" << etsdata;
+            if (etsExport.Parse(etsdata.c_str()) != XML_NO_ERROR)
+                return responseFailed("Failed to parse XML input data");
 
+            XMLHandle docHandle(&etsExport);
+            XMLElement* groupRange = docHandle.FirstChildElement("GroupAddress-Export").FirstChild().ToElement();
+            if (groupRange) {
+                XMLElement *nextRange = groupRange;
+                qpid::types::Variant::Map rangeMap;
+                while (nextRange != NULL) {
+                    AGO_TRACE() << "node: " << nextRange->Attribute("Name");
+                    XMLElement *middleRange = nextRange->FirstChildElement( "GroupRange" );
+                    if (middleRange)
+                    {
+                        XMLElement *nextMiddleRange = middleRange;
+                        qpid::types::Variant::Map middleMap;
+                        while (nextMiddleRange != NULL)
+                        {
+                            AGO_TRACE() << "middle: " << nextMiddleRange->Attribute("Name");
+                            XMLElement *groupAddress = nextMiddleRange->FirstChildElement("GroupAddress");
+                            if (groupAddress)
+                            {
+                                XMLElement *nextGroupAddress = groupAddress;
+                                qpid::types::Variant::Map groupMap;
+                                while (nextGroupAddress != NULL)
+                                {
+                                    AGO_TRACE() << "Group: " << nextGroupAddress->Attribute("Name") << " Address: " << nextGroupAddress->Attribute("Address");
+                                    groupMap[nextGroupAddress->Attribute("Name")]=nextGroupAddress->Attribute("Address");
+                                    nextGroupAddress = nextGroupAddress->NextSiblingElement();
+                                }
+                                middleMap[nextMiddleRange->Attribute("Name")]=groupMap;
+
+                            }
+                            nextMiddleRange = nextMiddleRange->NextSiblingElement();
+
+                        }
+                        rangeMap[nextRange->Attribute("Name")]=middleMap;
+                    }
+                    nextRange = nextRange->NextSiblingElement();
+                }
+                returnData["groupmap"]=rangeMap;
+            } else 
+                return responseFailed("No 'GroupAddress-Export' tag found");
+
+            return responseSuccess(returnData);
 
         }
         return responseUnknownCommand();
