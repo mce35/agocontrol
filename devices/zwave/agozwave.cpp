@@ -1839,6 +1839,23 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             Manager::Get()->ResetController(g_homeId);
             return responseSuccess();
         }
+        else if (content["command"] == "enablepolling")
+        {
+            checkMsgParameter(content, "internalid", VAR_STRING);
+            checkMsgParameter(content, "value", VAR_STRING);
+            checkMsgParameter(content, "intensity", VAR_INT32);
+
+            ZWaveNode *device = devices.findId(content["internalid"]);
+            if (device != NULL)
+            {
+                ValueID *tmpValueID = NULL;
+                tmpValueID = device->getValueID(content["value"]);
+                if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Value label not found for device " + content["internalid"]);
+                Manager::Get()->EnablePoll(*tmpValueID,content["intensity"].asInt32());
+                return responseSuccess();
+            } else
+                return responseError(RESPONSE_ERR_INTERNAL, "Cannot find device" + content["internalid"]);
+        }
         else
         {
             return responseUnknownCommand();
