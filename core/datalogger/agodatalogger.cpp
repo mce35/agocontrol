@@ -858,6 +858,7 @@ void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qp
         replaceString(subject, "event.device.", "");
         replaceString(subject, "changed", "");
         replaceString(subject, "event.", "");
+        replaceString(subject, "security.sensortriggered", "state"); // convert security sensortriggered event to state
 
         string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
         rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
