@@ -46,6 +46,7 @@ set (AGODEVICES
   axisaudiotransmit
   weatherreporter
   MQTT
+  NVR
 )
 
 IF (FREEBSD)
