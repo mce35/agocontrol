@@ -426,16 +426,30 @@ function Dashboard(dashboard, edition, agocontrol)
     {
         //save update
         var content = {};
-        content.command = "setdevicefloorplan";
+        if( x===-1 && y===-1 )
+        {
+            content.command = "deldevicefloorplan";
+        }
+        else
+        {
+            content.command = "setdevicefloorplan";
+            content.x = x;
+            content.y = y;
+        }
         content.floorplan = self.currentDashboard.uuid;
         content.device = uuid;
         content.uuid = self.agocontrol.agoController;
-        content.x = x;
-        content.y = y;
         self.agocontrol.sendCommand(content);
 
         //update dashboard object
-        self.currentDashboard[uuid] = {x:x, y:y};
+        if( x===-1 && y===-1 )
+        {
+            delete self.currentDashboard[uuid];
+        }
+        else
+        {
+            self.currentDashboard[uuid] = {x:x, y:y};
+        }
 
         //and render dashboard
         self.renderDashboard();

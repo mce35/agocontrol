@@ -255,6 +255,16 @@ int Inventory::setdevicefloorplan(std::string deviceuuid, std::string floorplanu
     return 0;
 }
 
+/**
+ * Delete device from floorplan
+ */
+int Inventory::deldevicefloorplan(std::string deviceuuid, std::string floorplanuuid)
+{
+    string query = "delete from devicesfloorplan where floorplan = ? and device = ?";
+    getfirst(query.c_str(), 2, floorplanuuid.c_str(), deviceuuid.c_str());
+    return 1;
+}
+
 int Inventory::deletefloorplan(std::string uuid) {
     getfirst("BEGIN");
     string query = "delete from devicesfloorplan where floorplan = ?";
