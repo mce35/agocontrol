@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 file (GLOB_RECURSE DEVICE_SOURCE_FILES *.cpp)
 set(DEVICE_SOURCE_FILES
-    agovideo.cpp
+    nvr.cpp
     frameprovider.cpp
 )
 
@@ -16,7 +16,7 @@ set (VIDEO_LIBRARIES
 )
 
 # add the executable
-add_executable (agovideo ${DEVICE_SOURCE_FILES})
-target_link_libraries (agovideo ${VIDEO_LIBRARIES})
+add_executable (agonvr ${DEVICE_SOURCE_FILES})
+target_link_libraries (agonvr ${VIDEO_LIBRARIES})
 
-install (TARGETS agovideo RUNTIME DESTINATION ${BINDIR})
+install (TARGETS agonvr RUNTIME DESTINATION ${BINDIR})
