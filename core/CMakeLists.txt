@@ -72,3 +72,8 @@ OPTION(BUILD_CORE_system "Build agosystem" ON)
 if (BUILD_CORE_system)
   add_subdirectory (system)
 endif()
+
+OPTION(BUILD_CORE_video "Build agovideo" ON)
+if (BUILD_CORE_video)
+  add_subdirectory (video)
+endif()
