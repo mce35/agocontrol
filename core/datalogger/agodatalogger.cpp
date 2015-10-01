@@ -62,7 +62,7 @@ private:
     //database
     bool createTableIfNotExist(string tablename, list<string> createqueries);
     qpid::types::Variant::Map getDatabaseInfos();
-    bool purgeTable(std::string table);
+    bool purgeTable(std::string table, int timestamp);
     bool isTablePurgeAllowed(std::string table);
     void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
 
@@ -87,6 +87,7 @@ private:
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
     void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content);
     void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content);
+    void dailyPurge();
     void setupApp();
 public:
     AGOAPP_CONSTRUCTOR(AgoDataLogger);
@@ -98,6 +99,7 @@ qpid::types::Variant::Map units;
 bool dataLogging = 1;
 bool gpsLogging = 1;
 bool rrdLogging = 1;
+int purgeDelay = 0; //in months
 const char* colors[] = {"#800080", "#0000FF", "#008000", "#FF00FF", "#000080", "#FF0000", "#00FF00", "#00FFFF", "#800000", "#808000", "#008080", "#C0C0C0", "#808080", "#000000", "#FFFF00"};
 qpid::types::Variant::Map devicemap;
 qpid::types::Variant::List allowedPurgeTables;
@@ -966,6 +968,12 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     else if( subject=="event.environment.timechanged" )
     {
         updateInventory();
+
+        if( !content["hour"].isVoid() && !content["minute"].isVoid() && content["hour"].asInt8()==0 && content["minute"].asInt8()==0 )
+        {
+            //midnight launch daily purge
+            dailyPurge();
+        }
     }
 }
 
@@ -1132,7 +1140,7 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
     boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
     boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
 
-    AGO_DEBUG() << "start=" << start.total_seconds() << " end=" << end.total_seconds() << " filter=" << filter << " type=" << type;
+    AGO_TRACE() << "getMessagesFromJournal: start=" << start.total_seconds() << " end=" << end.total_seconds() << " filter=" << filter << " type=" << type;
 
     //check query
     if(rc != SQLITE_OK)
@@ -1352,16 +1360,25 @@ qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
 }
 
 /**
- * Purge specified table
+ * Purge specified table before specified timestamp.
+ * If timestamp=0 all table content is purged
  */
-bool AgoDataLogger::purgeTable(std::string table)
+bool AgoDataLogger::purgeTable(std::string table, int timestamp=0)
 {
     int rc;
     char *zErrMsg = 0;
-    std::string query = "DELETE FROM ";
-    query += table;
+    stringstream query;
+    query << "DELETE FROM " << table;
 
-    rc = sqlite3_exec(db, query.c_str(), NULL, NULL, &zErrMsg);
+    if( timestamp!=0 )
+    {
+        query << " WHERE timestamp<" << timestamp;
+    }
+
+    string str = query.str();
+    AGO_TRACE() << "purgeTable query: " << str;
+
+    rc = sqlite3_exec(db, str.c_str(), NULL, NULL, &zErrMsg);
     if(rc != SQLITE_OK)
     {
         AGO_ERROR() << "Sql error #" << rc << ": " << zErrMsg;
@@ -1373,6 +1390,7 @@ bool AgoDataLogger::purgeTable(std::string table)
         rc = sqlite3_exec(db, "VACUUM", NULL, NULL, &zErrMsg);
         return true;
     }
+    return true;
 }
 
 /**
@@ -1406,6 +1424,44 @@ bool AgoDataLogger::isTablePurgeAllowed(std::string table)
         }
     }
     return false;
+}
+
+/**
+ * Execute daily purge on tables
+ */
+void AgoDataLogger::dailyPurge()
+{
+    if( purgeDelay>0 )
+    {
+        //get current timestamp
+        int timestamp = time(NULL);
+
+        //decrease current timestamp with number of configured months
+        timestamp -= purgeDelay * 2628000;
+
+        //get infos before purge
+        qpid::types::Variant::Map before = getDatabaseInfos();
+
+        //purge tables
+        for( qpid::types::Variant::List::iterator it=allowedPurgeTables.begin(); it!=allowedPurgeTables.end(); it++ )
+        {
+            purgeTable((*it), timestamp);
+        }
+
+        //get infos after purge
+        qpid::types::Variant::Map after = getDatabaseInfos();
+
+        //log infos
+        int dataCount = before["data_count"].asInt32() - after["data_count"].asInt32();
+        int journalCount = before["journal_count"].asInt32() - after["journal_count"].asInt32();
+        int positionCount = before["position_count"].asInt32() - after["position_count"].asInt32();
+        AGO_INFO() << "Daily purge removed " << dataCount << " from data table, " << positionCount << " from position table, " << journalCount << " from journal table";
+    }
+    else
+    {
+        //purge disabled
+        AGO_DEBUG() << "Daily database purge disabled";
+    }
 }
 
 /**
@@ -1484,7 +1540,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 return responseFailed("Failed to generate graph");
             }
         }
-        else if( content["command"]=="getstatus" )
+        else if( content["command"]=="getconfig" )
         {
             //add multigrahs
             qpid::types::Variant::List multis;
@@ -1516,6 +1572,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             returnData["dataLogging"] = dataLogging ? 1 : 0;
             returnData["gpsLogging"] = gpsLogging ? 1 : 0;
             returnData["rrdLogging"] = rrdLogging ? 1 : 0;
+            returnData["purgeDelay"] = purgeDelay;
             returnData["database"] = db;
             return responseSuccess(returnData);
         }
@@ -1598,11 +1655,12 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 return responseFailed("Unknown multigraph");
             }
         }
-        else if( content["command"]=="setenabledmodules" )
+        else if( content["command"]=="setconfig" )
         {
             checkMsgParameter(content, "dataLogging", VAR_BOOL);
             checkMsgParameter(content, "rrdLogging", VAR_BOOL);
             checkMsgParameter(content, "gpsLogging", VAR_BOOL);
+            checkMsgParameter(content, "purgeDelay", VAR_INT32);
 
             bool error = false;
             if( content["dataLogging"].asBool() )
@@ -1615,47 +1673,60 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 dataLogging = false;
                 AGO_INFO() << "Data logging disabled";
             }
-
-
             if( !setConfigOption("dataLogging", dataLogging) )
             {
                 AGO_ERROR() << "Unable to save dataLogging status to config file";
                 error = true;
             }
 
-            if( content["gpsLogging"].asBool() )
+            if( !error )
             {
-                gpsLogging = true;
-                AGO_INFO() << "GPS logging enabled";
+                if( content["gpsLogging"].asBool() )
+                {
+                    gpsLogging = true;
+                    AGO_INFO() << "GPS logging enabled";
+                }
+                else
+                {
+                    gpsLogging = false;
+                    AGO_INFO() << "GPS logging disabled";
+                }
+                if( !setConfigOption("gpsLogging", gpsLogging) )
+                {
+                    AGO_ERROR() << "Unable to save gpsLogging status to config file";
+                    error = true;
+                }
             }
-            else
+    
+            if( !error )
             {
-                gpsLogging = false;
-                AGO_INFO() << "GPS logging disabled";
-            }
-            if( !setConfigOption("gpsLogging", gpsLogging) )
-            {
-                AGO_ERROR() << "Unable to save gpsLogging status to config file";
-                error = true;
+                if( content["rrdLogging"].asBool() )
+                {
+                    rrdLogging = true;
+                    AGO_INFO() << "RRD logging enabled";
+                }
+                else
+                {
+                    rrdLogging = false;
+                    AGO_INFO() << "RRD logging disabled";
+                }
+                if( !setConfigOption("rrdLogging", rrdLogging) )
+                {
+                    AGO_ERROR() << "Unable to save rrdLogging status to config file";
+                    error = true;
+                }
             }
 
-            if( content["rrdLogging"].asBool() )
+            if( !error )
             {
-                rrdLogging = true;
-                AGO_INFO() << "RRD logging enabled";
+                purgeDelay = content["purgeDelay"].asInt32();
+                if( !setConfigOption("purgeDelay", purgeDelay) )
+                {
+                    AGO_ERROR() << "Unable to save purge delay to config file";
+                    error = true;
+                }
             }
-            else
-            {
-                rrdLogging = false;
-                AGO_INFO() << "RRD logging disabled";
-            }
-
-            if( !setConfigOption("rrdLogging", rrdLogging) )
-            {
-                AGO_ERROR() << "Unable to save rrdLogging status to config file";
-                error = true;
-            }
-
+    
             if( error )
             {
                 return responseFailed("Failed to save one or more options");
@@ -1821,6 +1892,12 @@ void AgoDataLogger::setupApp()
         AGO_INFO() << "RRD logging enabled";
     else
         AGO_INFO() << "RRD logging disabled";
+    optString = getConfigOption("purgeDelay", "0");
+    if(sscanf(optString.c_str(), "%d", &r) == 1)
+    {
+        purgeDelay = r;
+    }
+    AGO_INFO() << "Purge delay = " << purgeDelay << " months";
 
     // load map, create sections if empty
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
