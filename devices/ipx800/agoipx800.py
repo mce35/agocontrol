@@ -19,6 +19,8 @@ DEVICEMAPFILE = os.path.join(agoclient.CONFDIR, 'maps/ipx800.json')
 IPX_WEBSERVER_PORT = 8010
 STATE_ON = 255
 STATE_OFF = 0
+STATE_LONG_PRESS = 200
+STATE_VERY_LONG_PRESS = 150
 STATE_OPENED = 255
 STATE_CLOSED = 0
 STATE_OPENING = 50
@@ -39,6 +41,7 @@ GET_STATUS_FREQUENCY = 60 #in seconds
 client = None
 devices = {}
 durations = {}
+longpresses = {}
 ipx800v3 = None
 units = 'SI'
 configLock = threading.Lock()
@@ -288,7 +291,6 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
             event = 'event.device.statechanged'
             unit = '-'
         elif device['type']==DEVICE_DIGITAL_BINARY:
-            #TODO fix value?
             event = 'event.device.statechanged'
             unit = '-'
         else:
@@ -310,6 +312,38 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
     else:
         logger.error('emitDeviceValueChanged: no device found for internalid "%s"' % internalid)
         return False
+
+#function launch in timer for binary devices
+def updateBinaryDeviceValue(ipxIp, internalid, caller):
+    global longpresses
+    logger.info('updateBinaryDeviceValue called for "%s@%s" by %s' % (ipxIp, internalid, caller))
+    if longpresses.has_key(internalid):
+        #get infos and remove it from dict
+        logger.info('infos before for "%s@%s": %s' % (ipxIp, internalid, str(longpresses)))
+        infos = longpresses.pop(internalid)
+        logger.info('infos after for "%s@%s": %s' % (ipxIp, internalid, str(longpresses)))
+
+        if infos['end']!=None:
+            diff = infos['end'] - infos['start']
+            logger.info('diff=%s' % (str(diff)))
+            if diff<3.5:
+                #short press
+                logger.info('short press of digital "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
+            elif diff<7.0:
+                logger.info('long press of digital "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_LONG_PRESS)
+            elif diff<12.0:    
+                logger.info('very long press of digital "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_VERY_LONG_PRESS)
+            else:
+                logger.info('normal press of digital "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
+        else:
+            logger.info('normal state of digital "%s@%s"' % (ipxIp, internalid))
+            emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
+    else:
+        logger.error('updateBinaryDeviceValue: no pulses infos for internalid "%s" [%s]' % (internalid, str(pulses)))
         
 
         
@@ -423,7 +457,7 @@ def ipxCallback(ipxIp, content):
                                 #unknown value
                                 logger.warning('Unknown value received for drapes close action [%s]' % str(content[item]))
                     else:
-                        #TODO manage new device using outputs here
+                        #XXX manage new device using outputs here
                         pass
 
                     logger.info("-------------");
@@ -437,10 +471,31 @@ def ipxCallback(ipxIp, content):
                 (internalid, device) = getDeviceUsingDigital(ipxIp, digitalid)
                 if device:
                     if device['type']==DEVICE_DIGITAL_BINARY:
-                        logger.info('Update value of digital "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
-                        emitDeviceValueChanged(ipxIp, internalid, content[item])
+                        if content[item]==1:
+                            if not longpresses.has_key(internalid):
+                                longpresses[internalid] = {}
+                                longpresses[internalid]['start'] = time.time()
+                                longpresses[internalid]['end'] = None
+                                longpresses[internalid]['timer'] = threading.Timer(float(13.0), updateBinaryDeviceValue, [ipxIp, internalid, 'timer'])
+                                longpresses[internalid]['timer'].start()
+                            else:
+                                #impossible case
+                                pass
+                        else:
+                            if longpresses.has_key(internalid):
+                                #cancel timer
+                                longpresses[internalid]['timer'].cancel()
+                                #and update binary value
+                                longpresses[internalid]['end'] = time.time()
+                                updateBinaryDeviceValue(ipxIp, internalid, 'manual')
+                                time.sleep(0.5)
+                                emitDeviceValueChanged(ipxIp, internalid, STATE_OFF)
+                            else:
+                                #no timer running, just emit event
+                                logger.info('Update value of digital "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
+                                emitDeviceValueChanged(ipxIp, internalid, STATE_OFF)
                     else:
-                        #handle new device using digitals here
+                        #XXX handle new device using digitals here
                         pass
             except:
                 logger.exception('Exception in ipxCallback (digital):')
@@ -455,7 +510,7 @@ def ipxCallback(ipxIp, content):
                         #logger.info('Update value of analog "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
                         emitDeviceValueChanged(ipxIp, internalid, content[item])
                     else:
-                        #handle new device using analogs here
+                        #XXX handle new device using analogs here
                         pass
             except:
                 logger.exception('Exception in ipxCallback (analog):')
@@ -470,7 +525,7 @@ def ipxCallback(ipxIp, content):
                         logger.info('Update value of counter device "%s@%s" with "%s"' % (ipxIp, internalid, str(content[item])))
                         emitDeviceValueChanged(ipxIp, internalid, content[item])
                     else:
-                        #TODO manage new device using counters here
+                        #XXX manage new device using counters here
                         pass
             except:
                 logger.exception('Exception in ipxCallback (counter):')
