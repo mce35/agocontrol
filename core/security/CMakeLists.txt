@@ -3,10 +3,6 @@ cmake_minimum_required (VERSION 2.6)
 set (SECURITY_LIBRARIES
     agoclient
     pthread
-    opencv_core
-    opencv_imgproc
-    opencv_objdetect
-    opencv_highgui
 )
 
 # add the executable
