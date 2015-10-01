@@ -245,72 +245,6 @@ commands:
       filter:
         name: filter
         type: string
-  addtimelapse:
-    name: add timelapse
-    parameters:
-      uri:
-        name: video uri
-        type: string
-      codec:
-        name: recording video codec
-        type: string
-      fps:
-        name: recording fps
-        type: integer
-      enabled:
-        name: enable timelapse
-        type: bool
-  removetimelapse:
-    name: remove timelapse
-    parameters:
-      uri:
-        name: video uri
-        type: string
-  gettimelapses:
-    name: get timelapses videos
-  addmotion:
-    name: add motion
-    parameters:
-      uri:
-        name: video uri
-        type: string
-      deviation:
-        name: deviation
-        type: integer
-      sensitivity:
-        name: sensitivity
-        type: integer
-      bufferduration:
-        name: buffer duration
-        type: integer
-      onduration:
-        name: sensor on duration
-        type: integer
-      recordduration:
-        name: record duration
-        type: integer
-      enabled:
-        name: enable motion
-        type: bool
-  removemotion:
-    name: remove motion
-    parameters:
-      uri:
-        name: video uri
-        type: string
-  getmotions:
-    name: get motion videos
-  getrecordingsconfig:
-    name: return recordings config
-  setrecordingsconfig:
-    name: configure recordings
-    parameters:
-      timelapseslifetime:
-        name: timelapses lifetime
-        type: integer
-      motionslifetime:
-        name: motions lifetime
-        type: integer
 devicetypes:
   dataloggercontroller:
     name: datalogger controller
@@ -332,7 +266,7 @@ devicetypes:
   securitycontroller:
     name: security system
     description: ago control security system module
-    commands: [gethousemode, sethousemode, triggerzone, setzones, cancel, addtimelapse, removetimelapse, gettimelapses, addmotion, removemotion, getmotions, getrecordingsconfig, setrecordingsconfig]
+    commands: [gethousemode, sethousemode, triggerzone, setzones, cancel]
     events: [event.security.housemodechanged,event.security.countdown.started,event.security.countdown,event.security.intruderalert,event.security.alarmcanceled,event.security.alarmstopped]
   luacontroller:
     name: lua event scripting
