@@ -193,81 +193,166 @@ Agocontrol.prototype.showCommandList = function(container, device)
 };
 
 //Render plots graph
-Agocontrol.prototype.renderPlots = function(device, environment, unit, data, values, startDate, endDate)
+//Based on D3 sample http://bl.ocks.org/mbostock/4015254
+Agocontrol.prototype.renderPlots = function(device, environment, unit, data, startDate, endDate)
 {
-    var self = this;
+    //clear container
+    $('#graphContainer').empty();
 
-    //need data to render something else
-    var max_ticks = 25; // User option?
-
-    //Split the values into buckets
-    var num_buckets = Math.max(1, Math.floor(values.length / max_ticks));
-    var buckets = values.chunk(num_buckets);
-    var labels = [];
-    var i = 0;
-
-    //Compute average for each bucket and pick a representative time to display
-    for ( var j = 0; j < buckets.length; j++)
+    //check if we have data
+    if( data.length==0 )
     {
-        var bucket = buckets[j];
-        var ts = bucket[0].time + (bucket[bucket.length - 1].time - bucket[0].time) / 2;
-        labels.push(new Date(Math.floor(ts) * 1000));
-        var value = 0;
-        for ( var k = 0; k < bucket.length; k++)
-        {
-            value += bucket[k].level;
-        }
-        data.push([ i, value / k ]);
-        i++;
+        notif.warning('No data to display');
+        return;
     }
 
-    //Render the graph
-    var container = $('#graphContainer')[0];
-    Flotr.draw(container, [ data ], {
-        HtmlText : false,
-        title : environment,
-        mode : "time",
-        yaxis : {
-            tickFormatter : function(x) {
-                return x + " " + unit;
-            },
-        },
-        mouse : {
-            track : true,
-            relative : true,
-            trackFormatter : function(o) {
-                return formatDate(labels[Math.round(o.x)]) + " - " + o.y + " " + unit;
-            }
-        },
-        xaxis : {
-            noTicks : i,
-            labelsAngle : 90,
-            tickDecimals : 0,
-            tickFormatter : function(x) {
-                return formatDate(labels[x]);
-            }
-        }
+    //prepare y label
+    var yLabel = environment;
+    if( unit.length>0 )
+    {
+        yLabel += ' (' + unit + ')';
+    }
+
+    //prepare fill color
+    var colorL = '#000000';
+    var colorA = '#A0A0A0';
+    if( device.devicetype=='humiditysensor' )
+    {
+        colorL = '#0000FF';
+        colorA = '#7777FF';
+    }
+    else if( device.devicetype=='temperaturesensor' )
+    {
+        colorL = '#FF0000';
+        colorA = '#FF8787';
+    }
+    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype=='' ||device.devicetype=='batterysensor' )
+    {
+        colorL = '#007A00';
+        colorA = '#00BB00';
+        
+    }
+    else if( device.devicetype=='brightnesssensor' )
+    {
+        colorL = '#CCAA00';
+        colorA = '#FFD400';
+    }
+
+    //graph parameters
+    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+        width = 870 - margin.left - margin.right,
+        height = 325 - margin.top - margin.bottom;
+    var x = d3.time.scale()
+        .range([0, width]);
+    var y = d3.scale.linear()
+        .range([height, 0]);
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .tickSize(-height, 0)
+        .tickPadding(6);
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .tickSize(-width)
+        .tickPadding(6);
+
+    //area generator
+    var area = d3.svg.area()
+        .interpolate("step-after")
+        .x(function(d) { return x(d.date); })
+        .y0(y(0))
+        .y1(function(d) { return y(d.value); });
+
+    //line generator
+    var line = d3.svg.line()
+        .interpolate("step-after")
+        .x(function(d) { return x(d.date); })
+        .y(function(d) { return y(d.value); });
+
+    //create graph canvas
+    var svg = d3.select("#graphContainer").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .style("font-size", "10px")
+        .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    function draw()
+    {
+        svg.select("g.x.axis").call(xAxis);
+        svg.select("g.y.axis").call(yAxis);
+        svg.select("path.area").attr("d", area);
+        svg.select("path.line").attr("d", line);
+    }
+
+    //define zoom
+    var zoom = d3.behavior.zoom()
+        .on("zoom", draw);
+
+    //configure graph
+    svg.append("clipPath")
+            .attr("id", "clip")
+        .append("rect")
+            .attr("x", x(0))
+            .attr("y", y(1))
+            .attr("width", x(1) - x(0))
+            .attr("height", y(0) - y(1));
+    svg.append("g")
+            .attr("class", "y axis")
+        .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".8em")
+            .style("text-anchor", "end")
+            .text(yLabel);
+    svg.append("path")
+        .attr("class", "area")
+        .attr("clip-path", "url(#clip)")
+        .style("fill", colorA);
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")");
+    svg.append("path")
+        .attr("class", "line")
+        .attr("clip-path", "url(#clip)")
+        .style("stroke", colorL)
+        .style("fill", "none")
+        .style("stroke-width", "1.5px");
+    svg.append("rect")
+        .attr("class", "pane")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("cursor", "move")
+        .style("pointer-events", "all")
+        .call(zoom);
+
+    //prepare data
+    data.forEach(function(d) {
+        d.date = d.time*1000;
+        d.value = +d.level;
     });
 
-    //We have no data ...
-    if (data.length == 0)
-    {
-        var canvas = document.getElementsByClassName("flotr-overlay")[0];
-        var context = canvas.getContext("2d");
-        var x = canvas.width / 2;
-        var y = canvas.height / 2;
+    //compute boundaries
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
-        context.font = "30pt Arial";
-        context.textAlign = "center";
-        context.fillStyle = "red";
-        context.fillText('No data found for given time frame!', x, y);
-    }
+    zoom.x(x);
+
+    //bind the data to our path elements.
+    svg.select("path.area").data([data]);
+    svg.select("path.line").data([data]);
+
+    //finaly draw graph
+    draw();
 };
 
 //Render data list
-Agocontrol.prototype.renderList = function(device, environment, unit, data, values, startDate, endDate)
+Agocontrol.prototype.renderList = function(device, environment, unit, values, startDate, endDate)
 {
     var self = this;
+    var data = []
 
     values.sort(function(a, b) {
         return b.time - a.time;
@@ -357,7 +442,7 @@ Agocontrol.prototype.renderMap = function(values)
         }
         else
         {
-            notif.error('No data to display');
+            notif.warning('No data to display');
         }
     });
 };
@@ -440,17 +525,16 @@ Agocontrol.prototype.render = function(device, environment, type)
                 }
 
                 //get data
-                var data = []; //XXX useful?
                 var values = res.data.values;
 
                 //render
                 if( type=="plots" )
                 {
-                    self.renderPlots(device, environment, unit, data, values, start, end);
+                    self.renderPlots(device, environment, unit, values, start, end);
                 }
                 else if( type=="list" )
                 {
-                    self.renderList(device, environment, unit, data, values, start, end);
+                    self.renderList(device, environment, unit, values, start, end);
                 }
                 else if( type=="map" )
                 {

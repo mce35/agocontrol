@@ -1,5 +1,28 @@
 /* Bootstrap customization for agocontrol */
 
+/* D3 device graph style */
+.axis {
+      shape-rendering: crispEdges;
+}
+
+.axis path, .axis line {
+    fill: none;
+    stroke-width: 1px;
+}
+
+.x.axis path {
+    stroke: #000;
+}
+
+.x.axis line {
+    stroke: #fff;
+    stroke-opacity: .5;
+}
+
+.y.axis line {
+    stroke: #ddd;
+}
+
 /* extra large button */
 .btn-xl {
     padding: 18px 28px;

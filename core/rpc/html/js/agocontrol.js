@@ -36,6 +36,7 @@ Agocontrol.prototype = {
     serverTime: 0,
     serverTimeUi: ko.observable(''),
     journalEntries: ko.observableArray([]),
+    journalStatus: ko.observable('label label-success'),
     intervalJournal: null,
 
     agoController: null,
@@ -446,7 +447,27 @@ Agocontrol.prototype = {
             content.command = 'today';
             self.sendCommand(content)
                 .then(function(res) {
+                    //save entries
                     self.journalEntries(res.data.messages);
+
+                    //get journal status
+                    var jStatus = 1; //0=debug 1=info 2=warning 3=error
+                    for( var i=0; i<res.data.messages.length; i++ )
+                    {
+                        if( res.data.messages[i].type==="error" )
+                        {
+                            //max status, stop statement
+                            jStatus = 3;
+                            break;
+                        }
+                        else if( res.data.messages[i].type==="warning" )
+                        {
+                            jStatus = 2;
+                        }
+                    }
+                    if( jStatus===1 ) self.journalStatus('label label-info');
+                    else if( jStatus===2 ) self.journalStatus('label label-warning');
+                    else if( jStatus===3 ) self.journalStatus('label label-danger');
 
                     //add journal entries auto refresh
                     if( !self.intervalJournal  )
@@ -1089,10 +1110,11 @@ Agocontrol.prototype = {
             }
             else
             {
+                localStorage.setItem('skin', skin);
                 notif.success('Skin saved');
             }
         });
-    }
+    },
 
     //collapse/expand menu
     collapseMenu: function(VM, ev)
@@ -1114,9 +1136,9 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 )
+            if( !res || !res.result || res.result===0 ) 
             {
-                notif.error('Unable to save collapse state');
+                notif.error('Unable to save skin');
             }
             else
             {

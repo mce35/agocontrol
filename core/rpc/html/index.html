@@ -28,7 +28,7 @@
 <script type="text/javascript" src="js/libs/jquery.blockUI.min.js"></script>
 <script type="text/javascript" src="js/libs/jquery.jeditable.min.js"></script>
 
-<script type="text/javascript" src="js/libs/flotr2.min.js"></script>
+<script type="text/javascript" src="js/libs/d3.v3.min.js"></script>
 
 <script type="text/javascript" src="js/libs/agonotifications.js"></script>
 
@@ -100,7 +100,7 @@
                     <li class="dropdown notifications-menu">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="en-bell"></i>
-                            <span class="label label-success" data-bind="text:$root.agocontrol.journalEntries().length"></span>
+                            <span class="label label-success" data-bind="text:$root.agocontrol.journalEntries().length, css:$root.agocontrol.journalStatus()"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li class="header"><span data-translateable="true" _data-bind="text:'You have '+$root.agocontrol.journalEntries().length+' messages for today'"></li>
@@ -126,7 +126,7 @@
                                 </ul>
                             </li>
                             <li class="footer">
-                                <button type="button" data-bind="click:function() { window.location.href='#app/Journal'; }" class="btn btn-default btn-xs">Go to journal application</button>
+                                <button type="button" data-bind="click:function() { window.location.href='#app/Journal'; }" class="btn btn-default btn-xs">Go to journal</button>
                             </li>
                         </ul>
                     </li>
