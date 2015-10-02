@@ -1851,7 +1851,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 ValueID *tmpValueID = NULL;
                 tmpValueID = device->getValueID(content["value"]);
                 if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Value label not found for device " + content["internalid"]);
-                Manager::Get()->EnablePoll(*tmpValueID,content["intensity"].asInt32());
+                Manager::Get()->EnablePoll(*tmpValueID,atoi(content["intensity"].asString().c_str()));
                 return responseSuccess();
             } else
                 return responseError(RESPONSE_ERR_INTERNAL, "Cannot find device" + content["internalid"]);
