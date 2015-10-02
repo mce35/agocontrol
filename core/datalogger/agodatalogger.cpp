@@ -47,6 +47,12 @@ namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
 
+typedef enum GRAPH_DATA_SOURCE {
+    NONE,
+    RRD,
+    SQLITE
+} GraphDataSource;
+
 class AgoDataLogger: public AgoApp {
 private:
     //inventory
@@ -65,6 +71,8 @@ private:
     bool purgeTable(std::string table, int timestamp);
     bool isTablePurgeAllowed(std::string table);
     void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
+    bool GetGraphDataFromSqlite(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
+    bool GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
 
     //rrd
     bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data);
@@ -100,6 +108,7 @@ bool dataLogging = 1;
 bool gpsLogging = 1;
 bool rrdLogging = 1;
 int purgeDelay = 0; //in months
+GraphDataSource graphDataSource = SQLITE;
 const char* colors[] = {"#800080", "#0000FF", "#008000", "#FF00FF", "#000080", "#FF0000", "#00FF00", "#00FFFF", "#800000", "#808000", "#008080", "#C0C0C0", "#808080", "#000000", "#FFFF00"};
 qpid::types::Variant::Map devicemap;
 qpid::types::Variant::List allowedPurgeTables;
@@ -982,7 +991,73 @@ void AgoDataLogger::debugSqlite(void* foo, const char* msg)
     AGO_TRACE() << "SQLITE: " << msg;
 }
 
-void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+/**
+ * Return graph data from rrd file
+ */
+bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+{
+    qpid::types::Variant::List values;
+    bool error = false;
+
+    //generate rrd filename
+    string uuid = content["deviceid"].asString();
+    stringstream filename;
+    filename << uuid << ".rrd";
+    fs::path rrdfile = getLocalStatePath(filename.str());
+
+    // Parse the timestrings
+    string startDate = content["start"].asString();
+    string endDate = content["end"].asString();
+    replaceString(startDate, "-", "");
+    replaceString(startDate, ":", "");
+    replaceString(startDate, "Z", "");
+    replaceString(endDate, "-", "");
+    replaceString(endDate, ":", "");
+    replaceString(endDate, "Z", "");
+    boost::posix_time::ptime base(boost::gregorian::date(1970, 1, 1));
+    boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
+    boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
+ 
+    string filenamestr = rrdfile.string();
+    time_t startTimet = start.total_seconds();
+    time_t endTimet = end.total_seconds();
+    AGO_DEBUG() << "start=" << startTimet << " end=" << endTimet;
+
+    unsigned long step = 0;
+    unsigned long ds_cnt;
+    char** ds_namv;
+    rrd_value_t *data, *dP;
+    rrd_clear_error();
+    int res = rrd_fetch_r(filenamestr.c_str(), "AVERAGE", &startTimet, &endTimet, &step, &ds_cnt, &ds_namv, &data);
+    if( res==0 )
+    {
+        AGO_DEBUG() << "Fetch ok step=" << step;
+        for( dP=data; *dP; dP++ )
+        {
+            //AGO_TRACE() << startTimet << " => " << (double)(*dP);
+            qpid::types::Variant::Map value;
+            value["time"] = startTimet;
+            value["level"] = (double)(*dP);
+            startTimet += step;
+            values.push_back(value);
+        }
+    }
+    else
+    {
+        AGO_DEBUG() << "Fetch failed: " << rrd_get_error();
+        error = true;
+    }
+
+    AGO_TRACE() << "RRD query returns " << values.size() << " values";
+
+    result["values"] = values;
+    return !error;
+}
+
+/**
+ * Return graph data from sqlite
+ */
+bool AgoDataLogger::GetGraphDataFromSqlite(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
 {
     sqlite3_stmt *stmt;
     int rc;
@@ -1022,7 +1097,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     if(rc != SQLITE_OK)
     {
         AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-        return;
+        return false;
     }
 
     //add specific fields
@@ -1083,12 +1158,27 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
         }
         while (rc == SQLITE_ROW);
     }
-
     sqlite3_finalize(stmt);
 
-    AGO_TRACE() << "Query returns " << values.size() << " values";
+    AGO_TRACE() << "Sqlite query returns " << values.size() << " values";
 
     result["values"] = values;
+    return true;
+}
+
+/**
+ * Return data for graph generation
+ */
+void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+{
+    if( graphDataSource==SQLITE )
+    {
+        GetGraphDataFromSqlite(content, result);
+    }
+    else if( graphDataSource==RRD )
+    {
+        GetGraphDataFromRrd(content, result);
+    }
 }
 
 /**
@@ -1731,6 +1821,26 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             {
                 return responseFailed("Failed to save one or more options");
             }
+
+            //handle graph data source
+            if( dataLogging )
+            {
+                //default is to display data from sqlite
+                graphDataSource = SQLITE;
+                AGO_DEBUG() << "data source from sqlite";
+            }
+            else if( rrdLogging )
+            {
+                graphDataSource = RRD;
+                AGO_DEBUG() << "data source from rrd";
+            }
+            else
+            {
+                //no data logging
+                graphDataSource = NONE;
+                AGO_DEBUG() << "data source is disabled";
+            }
+
             return responseSuccess();
         }
         else if( content["command"]=="purgetable" )
@@ -1898,6 +2008,25 @@ void AgoDataLogger::setupApp()
         purgeDelay = r;
     }
     AGO_INFO() << "Purge delay = " << purgeDelay << " months";
+
+    //handle graph data source
+    if( dataLogging )
+    {
+        //default is to display data from sqlite
+        graphDataSource = SQLITE;
+        AGO_DEBUG() << "data source from sqlite";
+    }
+    else if( rrdLogging )
+    {
+        graphDataSource = RRD;
+        AGO_DEBUG() << "data source from rrd";
+    }
+    else
+    {
+        //no data logging
+        graphDataSource = NONE;
+        AGO_DEBUG() << "data source is disabled";
+    }
 
     // load map, create sections if empty
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
