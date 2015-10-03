@@ -839,7 +839,7 @@ void AgoVideo::getRecordings(std::string type, qpid::types::Variant::List& list)
                 props["filename"] = it->path().filename().string();
                 props["path"] = it->path().string();
                 props["size"] = fs::file_size(it->path());
-                props["date"] = fs::last_write_time(it->path());
+                props["date"] =(uint64_t) fs::last_write_time(it->path());
                 vector<string> splits;
                 split(splits, it->path().filename().string(), boost::is_any_of("_"));
                 props["internalid"] = string(splits[1]);
