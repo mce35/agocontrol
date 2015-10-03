@@ -1036,7 +1036,7 @@ bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid:
         {
             //AGO_TRACE() << startTimet << " => " << (double)(*dP);
             qpid::types::Variant::Map value;
-            value["time"] = (long int)startTimet;
+            value["time"] = (uint64_t)startTimet;
             value["level"] = (double)(*dP);
             startTimet += step;
             values.push_back(value);
