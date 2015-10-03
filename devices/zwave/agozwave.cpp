@@ -1854,6 +1854,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Value label not found for device " + content["internalid"]);
                 AGO_DEBUG() << "Enable polling for " << content["nodeid"] << " Value " << content["value"] << " with intensity " << content["intensity"];
                 Manager::Get()->EnablePoll(*tmpValueID,atoi(content["intensity"].asString().c_str()));
+                Manager::Get()->WriteConfig( g_homeId );
                 return responseSuccess();
             } else 
             {
@@ -1873,6 +1874,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Value label not found for device " + content["internalid"]);
                 AGO_DEBUG() << "Disable polling for " << content["nodeid"] << " Value " << content["value"];
                 Manager::Get()->DisablePoll(*tmpValueID);
+                Manager::Get()->WriteConfig( g_homeId );
                 return responseSuccess();
             } else 
             {
