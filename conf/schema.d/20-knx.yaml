@@ -1,0 +1,40 @@
+commands:
+  parseetsexport:
+    name: parse ETS XML export
+    parameters:
+      etsdata:
+        name: ETS XML group export file content
+        type: string
+devicetypes:
+  knxcontroller:
+    name: KNX controller
+    description: internal device to manage the KNX configuration
+    commands: [adddevice, getdevice, deldevice, parseetsexport]
+    internal:
+      groupaddresstypes:
+        onoff:
+          name: 1 bit on/off
+        onoffstatus:
+          name: 1 bit status
+        binary:
+          name: binary
+        levelstatus:
+          name: level status
+        setlevel:
+          name: set level
+        stop:
+          name: stop
+        temperature:
+          name: temperature
+        brightness:
+          name: brightness
+        energy:
+          name: energy
+      childdevices:
+        switch: [onoff, onoffstatus]
+        dimmer: [onoff, onoffstatus, setlevel, levelstatus]
+        drapes: [onoff, onoffstatus, setlevel, levelstatus, stop]
+        binarysensor: [binary]
+        brightnesssensor: [brightness]
+        temperaturesensor: [temperature]
+        powermeter: [energy]
