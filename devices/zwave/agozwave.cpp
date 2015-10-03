@@ -55,7 +55,6 @@ static pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
 class AgoZwave: public AgoApp {
 private:
-    bool polling;
     int unitsystem;
     uint32 g_homeId;
     bool g_initFailed;
@@ -87,7 +86,6 @@ private:
     string getHRNotification(Notification::NotificationType notificationType);
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
-        , polling(false)
         , unitsystem(0)
         , g_homeId(0)
         , g_initFailed(false)
@@ -1190,10 +1188,6 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             //}
                             break;
                         case COMMAND_CLASS_THERMOSTAT_SETPOINT:
-                            if (polling)
-                            {
-                                Manager::Get()->EnablePoll(id,1);
-                            }
                         case COMMAND_CLASS_THERMOSTAT_MODE:
                         case COMMAND_CLASS_THERMOSTAT_FAN_MODE:
                         case COMMAND_CLASS_THERMOSTAT_FAN_STATE:
@@ -2149,8 +2143,7 @@ void AgoZwave::setupApp()
 
     Manager::Create();
     Manager::Get()->AddWatcher( on_notification, this );
-    // Manager::Get()->SetPollInterval(atoi(getConfigOption("pollinterval", "300000").c_str()),true);
-    if (getConfigOption("polling", "0") == "1") polling=true;
+    Manager::Get()->SetPollInterval(atoi(getConfigOption("pollinterval", "300000").c_str()),true);
     Manager::Get()->AddDriver(device);
 
     // Now we just wait for the driver to become ready
