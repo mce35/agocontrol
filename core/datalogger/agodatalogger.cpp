@@ -1036,10 +1036,13 @@ bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid:
         {
             //AGO_TRACE() << startTimet << " => " << (double)(*dP);
             qpid::types::Variant::Map value;
-            value["time"] = (uint64_t)startTimet;
-            value["level"] = (double)(*dP);
+            if( !isnan((double)(*dP)) )
+            {
+                value["time"] = (uint64_t)startTimet;
+                value["level"] = (double)(*dP);
+                values.push_back(value);
+            }
             startTimet += step;
-            values.push_back(value);
         }
     }
     else
@@ -1178,6 +1181,11 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     else if( graphDataSource==RRD )
     {
         GetGraphDataFromRrd(content, result);
+    }
+    else
+    {
+        qpid::types::Variant::List empty;
+        result["values"] = empty;
     }
 }
 
