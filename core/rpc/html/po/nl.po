@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-15 12:26+0200\n"
+"POT-Creation-Date: 2015-10-01 16:19+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -353,7 +353,7 @@ msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 #: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/security/html/security.xml.in.h:17
 #: ../protocols/onvif/html/onvif.xml.in.h:14
-#: ../configuration/datalogger/html/datalogger.xml.in.h:8
+#: ../configuration/datalogger/html/datalogger.xml.in.h:10
 #: ../configuration/system/html/system.xml.in.h:7
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
 msgid "Save changes"
@@ -770,7 +770,7 @@ msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
 #: ../applications/journal/html/journal.xml.in.h:1
-#: ../configuration/datalogger/html/datalogger.xml.in.h:19
+#: ../configuration/datalogger/html/datalogger.xml.in.h:22
 msgid "Journal"
 msgstr ""
 
@@ -1878,49 +1878,62 @@ msgstr ""
 msgid "Activate RRDTool logging (graph)"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:9
-msgid "Add graph"
+#: ../configuration/datalogger/html/datalogger.xml.in.h:8
+msgid "Keep data X months (0=no purge)"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:10
-msgid "Select sensors to display on graph"
+#: ../configuration/datalogger/html/datalogger.xml.in.h:9
+msgid "number of months"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:11
-msgid "Number of hours to display on thumb"
+msgid "Add graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:12
+msgid "Select sensors to display on graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:13
+msgid "Number of hours to display on thumb"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:14
 #, fuzzy
 msgid "Delete graph"
 msgstr "Verwijderen"
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:13
+#: ../configuration/datalogger/html/datalogger.xml.in.h:15
 #, fuzzy
 msgid "Graphs"
 msgstr "Grafiek"
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:14
+#: ../configuration/datalogger/html/datalogger.xml.in.h:16
+#, fuzzy
+msgid "Associated sensors"
+msgstr "Actie"
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:17
 msgid "Database size"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:15
+#: ../configuration/datalogger/html/datalogger.xml.in.h:18
 msgid "Sensor values"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:16
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
 msgid "Purge all values"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:17
+#: ../configuration/datalogger/html/datalogger.xml.in.h:20
 msgid "GPS positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:18
+#: ../configuration/datalogger/html/datalogger.xml.in.h:21
 msgid "Purge all positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:20
+#: ../configuration/datalogger/html/datalogger.xml.in.h:23
 msgid "Purge all messages"
 msgstr ""
 

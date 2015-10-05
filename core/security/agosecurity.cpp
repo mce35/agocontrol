@@ -347,16 +347,16 @@ TriggerStatus AgoSecurity::triggerZone(std::string zone, std::string housemode)
     if( !securitymap["config"].isVoid() )
     {
         qpid::types::Variant::Map config = securitymap["config"].asMap();
-        //AGO_DEBUG() << " -> config=" << config;
+        AGO_TRACE() << " -> config=" << config;
         for( qpid::types::Variant::Map::iterator it1=config.begin(); it1!=config.end(); it1++ )
         {
             //check housemode
-            //AGO_DEBUG() << " -> check housemode: " << it1->first << "==" << housemode;
+            AGO_TRACE() << " -> check housemode: " << it1->first << "==" << housemode;
             if( it1->first==housemode )
             {
                 //specified housemode found
                 qpid::types::Variant::List zones = it1->second.asList();
-                //AGO_DEBUG() << " -> zones: " << zones;
+                AGO_TRACE() << " -> zones: " << zones;
                 for( qpid::types::Variant::List::iterator it2=zones.begin(); it2!=zones.end(); it2++ )
                 {
                     //check zone
@@ -364,7 +364,7 @@ TriggerStatus AgoSecurity::triggerZone(std::string zone, std::string housemode)
                     std::string zoneName = zoneMap["zone"].asString();
                     int16_t delay = zoneMap["delay"].asInt16();
                     //check delay (if <0 it means inactive) and if it's current zone
-                    //AGO_DEBUG() << " -> check zone: " << zoneName << "==" << zone << " delay=" << delay;
+                    AGO_TRACE() << " -> check zone: " << zoneName << "==" << zone << " delay=" << delay;
                     if( zoneName==zone )
                     {
                         //specified zone found
@@ -431,7 +431,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
 {
     bool found = false;
     bool send = true;
-    AGO_DEBUG() << "sendAlarm() BEGIN";
+    AGO_TRACE() << "sendAlarm() BEGIN";
 
     pthread_mutex_lock(&alertGatewaysMutex);
     for( qpid::types::Variant::Map::iterator it=alertGateways.begin(); it!=alertGateways.end(); it++ )
@@ -503,7 +503,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
     {
         agoConnection->sendMessageReply("", *content);
     }
-    AGO_DEBUG() << "sendAlarm() END";
+    AGO_TRACE() << "sendAlarm() END";
 }
 
 /**
@@ -690,12 +690,15 @@ void AgoSecurity::eventHandler(std::string subject, qpid::types::Variant::Map co
             AGO_DEBUG() << "No uuid for event.device.statechanged " << content;
         }
     }
-    else if( subject=="event.environment.timechanged" && !content["minute"].isVoid() && content["minute"].asInt8()%1==0 )
+    else if( subject=="event.environment.timechanged" && !content["minute"].isVoid() && !content["hour"].isVoid() )
     {
-        //refresh gateway list
-        AGO_DEBUG() << "Timechanged: get inventory";
-        refreshAlertGateways();
-        refreshDefaultContact();
+        //refresh gateway list every 5 minutes
+        if( content["minute"].asInt8()%5==0 )
+        {
+            AGO_DEBUG() << "Timechanged: get inventory";
+            refreshAlertGateways();
+            refreshDefaultContact();
+        }
     }
 }
 

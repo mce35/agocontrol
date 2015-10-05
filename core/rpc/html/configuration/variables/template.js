@@ -37,7 +37,7 @@ function VariablesConfig(agocontrol)
     self.grid = new ko.agoGrid.viewModel({
         data: self.agocontrol.variables,
         columns: [
-            {headerText:'Name', rowText:'name'},
+            {headerText:'Name', rowText:'variable'},
             {headerText:'Value', rowText:'value'},
             {headerText:'Actions', rowText:''}
         ],

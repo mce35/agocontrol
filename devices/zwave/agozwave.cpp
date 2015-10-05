@@ -55,7 +55,6 @@ static pthread_mutex_t initMutex = PTHREAD_MUTEX_INITIALIZER;
 
 class AgoZwave: public AgoApp {
 private:
-    bool polling;
     int unitsystem;
     uint32 g_homeId;
     bool g_initFailed;
@@ -87,7 +86,6 @@ private:
     string getHRNotification(Notification::NotificationType notificationType);
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
-        , polling(false)
         , unitsystem(0)
         , g_homeId(0)
         , g_initFailed(false)
@@ -1190,10 +1188,6 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                             //}
                             break;
                         case COMMAND_CLASS_THERMOSTAT_SETPOINT:
-                            if (polling)
-                            {
-                                Manager::Get()->EnablePoll(id,1);
-                            }
                         case COMMAND_CLASS_THERMOSTAT_MODE:
                         case COMMAND_CLASS_THERMOSTAT_FAN_MODE:
                         case COMMAND_CLASS_THERMOSTAT_FAN_STATE:
@@ -1839,6 +1833,48 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             Manager::Get()->ResetController(g_homeId);
             return responseSuccess();
         }
+        else if (content["command"] == "enablepolling")
+        {
+            checkMsgParameter(content, "nodeid", VAR_STRING);
+            checkMsgParameter(content, "value", VAR_STRING);
+            checkMsgParameter(content, "intensity", VAR_INT32);
+
+            AGO_DEBUG() << "Enable polling for " << content["nodeid"] << " Value " << content["value"] << " with intensity " << content["intensity"];
+            ZWaveNode *device = devices.findId(content["nodeid"]);
+            if (device != NULL)
+            {
+                ValueID *tmpValueID = NULL;
+                tmpValueID = device->getValueID(content["value"]);
+                if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Value label not found for device " + content["internalid"]);
+                AGO_DEBUG() << "Enable polling for " << content["nodeid"] << " Value " << content["value"] << " with intensity " << content["intensity"];
+                Manager::Get()->EnablePoll(*tmpValueID,atoi(content["intensity"].asString().c_str()));
+                Manager::Get()->WriteConfig( g_homeId );
+                return responseSuccess();
+            } else 
+            {
+                return responseError(RESPONSE_ERR_INTERNAL, "Cannot find device");
+            }
+        }
+        else if (content["command"] == "disablepolling")
+        {
+            checkMsgParameter(content, "nodeid", VAR_STRING);
+            checkMsgParameter(content, "value", VAR_STRING);
+
+            ZWaveNode *device = devices.findId(content["nodeid"]);
+            if (device != NULL)
+            {
+                ValueID *tmpValueID = NULL;
+                tmpValueID = device->getValueID(content["value"]);
+                if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Value label not found for device " + content["internalid"]);
+                AGO_DEBUG() << "Disable polling for " << content["nodeid"] << " Value " << content["value"];
+                Manager::Get()->DisablePoll(*tmpValueID);
+                Manager::Get()->WriteConfig( g_homeId );
+                return responseSuccess();
+            } else 
+            {
+                return responseError(RESPONSE_ERR_INTERNAL, "Cannot find device");
+            }
+        }
         else
         {
             return responseUnknownCommand();
@@ -2107,8 +2143,7 @@ void AgoZwave::setupApp()
 
     Manager::Create();
     Manager::Get()->AddWatcher( on_notification, this );
-    // Manager::Get()->SetPollInterval(atoi(getConfigOption("pollinterval", "300000").c_str()),true);
-    if (getConfigOption("polling", "0") == "1") polling=true;
+    Manager::Get()->SetPollInterval(atoi(getConfigOption("pollinterval", "300000").c_str()),true);
     Manager::Get()->AddDriver(device);
 
     // Now we just wait for the driver to become ready

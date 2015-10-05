@@ -47,6 +47,12 @@ namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
 
+typedef enum GRAPH_DATA_SOURCE {
+    NONE,
+    RRD,
+    SQLITE
+} GraphDataSource;
+
 class AgoDataLogger: public AgoApp {
 private:
     //inventory
@@ -57,13 +63,16 @@ private:
     std::string string_format(const std::string fmt, ...);
     int string_real_length(const std::string str);
     std::string string_prepend_spaces(std::string source, size_t newSize);
+    static void debugSqlite(void* foo, const char* msg);
 
     //database
     bool createTableIfNotExist(string tablename, list<string> createqueries);
     qpid::types::Variant::Map getDatabaseInfos();
-    bool purgeTable(std::string table);
+    bool purgeTable(std::string table, int timestamp);
     bool isTablePurgeAllowed(std::string table);
     void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
+    bool GetGraphDataFromSqlite(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
+    bool GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
 
     //rrd
     bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data);
@@ -86,6 +95,7 @@ private:
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
     void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content);
     void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content);
+    void dailyPurge();
     void setupApp();
 public:
     AGOAPP_CONSTRUCTOR(AgoDataLogger);
@@ -97,6 +107,8 @@ qpid::types::Variant::Map units;
 bool dataLogging = 1;
 bool gpsLogging = 1;
 bool rrdLogging = 1;
+int purgeDelay = 0; //in months
+GraphDataSource graphDataSource = SQLITE;
 const char* colors[] = {"#800080", "#0000FF", "#008000", "#FF00FF", "#000080", "#FF0000", "#00FF00", "#00FFFF", "#800000", "#808000", "#008080", "#C0C0C0", "#808080", "#000000", "#FFFF00"};
 qpid::types::Variant::Map devicemap;
 qpid::types::Variant::List allowedPurgeTables;
@@ -858,6 +870,7 @@ void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qp
         replaceString(subject, "event.device.", "");
         replaceString(subject, "changed", "");
         replaceString(subject, "event.", "");
+        replaceString(subject, "security.sensortriggered", "state"); // convert security sensortriggered event to state
 
         string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
         rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
@@ -964,10 +977,87 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     else if( subject=="event.environment.timechanged" )
     {
         updateInventory();
+
+        if( !content["hour"].isVoid() && !content["minute"].isVoid() && content["hour"].asInt8()==0 && content["minute"].asInt8()==0 )
+        {
+            //midnight launch daily purge
+            dailyPurge();
+        }
     }
 }
 
-void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+void AgoDataLogger::debugSqlite(void* foo, const char* msg)
+{
+    AGO_TRACE() << "SQLITE: " << msg;
+}
+
+/**
+ * Return graph data from rrd file
+ */
+bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+{
+    qpid::types::Variant::List values;
+    bool error = false;
+
+    //generate rrd filename
+    string uuid = content["deviceid"].asString();
+    stringstream filename;
+    filename << uuid << ".rrd";
+    fs::path rrdfile = getLocalStatePath(filename.str());
+
+    // Parse the timestrings
+    string startDate = content["start"].asString();
+    string endDate = content["end"].asString();
+    replaceString(startDate, "-", "");
+    replaceString(startDate, ":", "");
+    replaceString(startDate, "Z", "");
+    replaceString(endDate, "-", "");
+    replaceString(endDate, ":", "");
+    replaceString(endDate, "Z", "");
+    boost::posix_time::ptime base(boost::gregorian::date(1970, 1, 1));
+    boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
+    boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
+ 
+    string filenamestr = rrdfile.string();
+    time_t startTimet = start.total_seconds();
+    time_t endTimet = end.total_seconds();
+    AGO_DEBUG() << "start=" << startTimet << " end=" << endTimet;
+
+    unsigned long step = 0;
+    unsigned long ds_cnt;
+    char** ds_namv;
+    rrd_value_t *data, *dP;
+    rrd_clear_error();
+    int res = rrd_fetch_r(filenamestr.c_str(), "AVERAGE", &startTimet, &endTimet, &step, &ds_cnt, &ds_namv, &data);
+    if( res==0 )
+    {
+        AGO_DEBUG() << "Fetch ok step=" << step;
+        for( dP=data; *dP; dP++ )
+        {
+            //AGO_TRACE() << startTimet << " => " << (double)(*dP);
+            qpid::types::Variant::Map value;
+            value["time"] = (uint64_t)startTimet;
+            value["level"] = (double)(*dP);
+            startTimet += step;
+            values.push_back(value);
+        }
+    }
+    else
+    {
+        AGO_DEBUG() << "Fetch failed: " << rrd_get_error();
+        error = true;
+    }
+
+    AGO_TRACE() << "RRD query returns " << values.size() << " values";
+
+    result["values"] = values;
+    return !error;
+}
+
+/**
+ * Return graph data from sqlite
+ */
+bool AgoDataLogger::GetGraphDataFromSqlite(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
 {
     sqlite3_stmt *stmt;
     int rc;
@@ -983,6 +1073,7 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     replaceString(endDate, "-", "");
     replaceString(endDate, ":", "");
     replaceString(endDate, "Z", "");
+    string uuid = content["deviceid"].asString();
 
     //get environment
     string environment = content["env"].asString();
@@ -995,31 +1086,30 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     //prepare specific query string
     if( environment=="position" )
     {
-        query << "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN " << (int)start.total_seconds() << " AND " << (int)end.total_seconds() << " AND uuid = \"" << content["deviceid"].asString() << "\" ORDER BY timestamp";
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
     else
     {
-        query << "SELECT timestamp, level FROM data WHERE timestamp BETWEEN " << (int)start.total_seconds() << " AND " << (int)end.total_seconds() << " AND environment = \"" << environment << "\" AND uuid = \"" << content["deviceid"].asString() << "\" ORDER BY timestamp";
         rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ? AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
     }
-    AGO_TRACE() << "GetGraphData query: " << query.str();
 
     //check query
     if(rc != SQLITE_OK)
     {
         AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-        return;
+        return false;
     }
 
     //add specific fields
     if( environment=="position" )
     {
         AGO_TRACE() << "Execute query on position table";
+
+
         //fill query
         sqlite3_bind_int(stmt, 1, start.total_seconds());
         sqlite3_bind_int(stmt, 2, end.total_seconds());
-        sqlite3_bind_text(stmt, 3, content["deviceid"].asString().c_str(), -1, NULL);
+        sqlite3_bind_text(stmt, 3, uuid.c_str(), -1, NULL);
 
         do
         {
@@ -1043,11 +1133,12 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
     else
     {
         AGO_TRACE() << "Execute query on data table";
+
         //fill query
         sqlite3_bind_int(stmt, 1, start.total_seconds());
         sqlite3_bind_int(stmt, 2, end.total_seconds());
         sqlite3_bind_text(stmt, 3, environment.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 4, content["deviceid"].asString().c_str(), -1, NULL);
+        sqlite3_bind_text(stmt, 4, uuid.c_str(), -1, NULL);
 
         do
         {
@@ -1067,12 +1158,27 @@ void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types:
         }
         while (rc == SQLITE_ROW);
     }
-
     sqlite3_finalize(stmt);
 
-    AGO_TRACE() << "Query returns " << values.size() << " values";
+    AGO_TRACE() << "Sqlite query returns " << values.size() << " values";
 
     result["values"] = values;
+    return true;
+}
+
+/**
+ * Return data for graph generation
+ */
+void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+{
+    if( graphDataSource==SQLITE )
+    {
+        GetGraphDataFromSqlite(content, result);
+    }
+    else if( graphDataSource==RRD )
+    {
+        GetGraphDataFromRrd(content, result);
+    }
 }
 
 /**
@@ -1124,7 +1230,7 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
     boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
     boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
 
-    AGO_DEBUG() << "start=" << start.total_seconds() << " end=" << end.total_seconds() << " filter=" << filter << " type=" << type;
+    AGO_TRACE() << "getMessagesFromJournal: start=" << start.total_seconds() << " end=" << end.total_seconds() << " filter=" << filter << " type=" << type;
 
     //check query
     if(rc != SQLITE_OK)
@@ -1158,6 +1264,10 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
         }
     }
     while (rc == SQLITE_ROW);
+
+    sqlite3_finalize(stmt);
+
+    AGO_TRACE() << "Query returns " << messages.size() << " messages";
 
     //prepare result
     result["messages"] = messages;
@@ -1340,16 +1450,25 @@ qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
 }
 
 /**
- * Purge specified table
+ * Purge specified table before specified timestamp.
+ * If timestamp=0 all table content is purged
  */
-bool AgoDataLogger::purgeTable(std::string table)
+bool AgoDataLogger::purgeTable(std::string table, int timestamp=0)
 {
     int rc;
     char *zErrMsg = 0;
-    std::string query = "DELETE FROM ";
-    query += table;
+    stringstream query;
+    query << "DELETE FROM " << table;
 
-    rc = sqlite3_exec(db, query.c_str(), NULL, NULL, &zErrMsg);
+    if( timestamp!=0 )
+    {
+        query << " WHERE timestamp<" << timestamp;
+    }
+
+    string str = query.str();
+    AGO_TRACE() << "purgeTable query: " << str;
+
+    rc = sqlite3_exec(db, str.c_str(), NULL, NULL, &zErrMsg);
     if(rc != SQLITE_OK)
     {
         AGO_ERROR() << "Sql error #" << rc << ": " << zErrMsg;
@@ -1361,6 +1480,7 @@ bool AgoDataLogger::purgeTable(std::string table)
         rc = sqlite3_exec(db, "VACUUM", NULL, NULL, &zErrMsg);
         return true;
     }
+    return true;
 }
 
 /**
@@ -1394,6 +1514,44 @@ bool AgoDataLogger::isTablePurgeAllowed(std::string table)
         }
     }
     return false;
+}
+
+/**
+ * Execute daily purge on tables
+ */
+void AgoDataLogger::dailyPurge()
+{
+    if( purgeDelay>0 )
+    {
+        //get current timestamp
+        int timestamp = time(NULL);
+
+        //decrease current timestamp with number of configured months
+        timestamp -= purgeDelay * 2628000;
+
+        //get infos before purge
+        qpid::types::Variant::Map before = getDatabaseInfos();
+
+        //purge tables
+        for( qpid::types::Variant::List::iterator it=allowedPurgeTables.begin(); it!=allowedPurgeTables.end(); it++ )
+        {
+            purgeTable((*it), timestamp);
+        }
+
+        //get infos after purge
+        qpid::types::Variant::Map after = getDatabaseInfos();
+
+        //log infos
+        int dataCount = before["data_count"].asInt32() - after["data_count"].asInt32();
+        int journalCount = before["journal_count"].asInt32() - after["journal_count"].asInt32();
+        int positionCount = before["position_count"].asInt32() - after["position_count"].asInt32();
+        AGO_INFO() << "Daily purge removed " << dataCount << " from data table, " << positionCount << " from position table, " << journalCount << " from journal table";
+    }
+    else
+    {
+        //purge disabled
+        AGO_DEBUG() << "Daily database purge disabled";
+    }
 }
 
 /**
@@ -1472,7 +1630,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 return responseFailed("Failed to generate graph");
             }
         }
-        else if( content["command"]=="getstatus" )
+        else if( content["command"]=="getconfig" )
         {
             //add multigrahs
             qpid::types::Variant::List multis;
@@ -1504,6 +1662,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             returnData["dataLogging"] = dataLogging ? 1 : 0;
             returnData["gpsLogging"] = gpsLogging ? 1 : 0;
             returnData["rrdLogging"] = rrdLogging ? 1 : 0;
+            returnData["purgeDelay"] = purgeDelay;
             returnData["database"] = db;
             return responseSuccess(returnData);
         }
@@ -1586,11 +1745,12 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 return responseFailed("Unknown multigraph");
             }
         }
-        else if( content["command"]=="setenabledmodules" )
+        else if( content["command"]=="setconfig" )
         {
             checkMsgParameter(content, "dataLogging", VAR_BOOL);
             checkMsgParameter(content, "rrdLogging", VAR_BOOL);
             checkMsgParameter(content, "gpsLogging", VAR_BOOL);
+            checkMsgParameter(content, "purgeDelay", VAR_INT32);
 
             bool error = false;
             if( content["dataLogging"].asBool() )
@@ -1603,51 +1763,84 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 dataLogging = false;
                 AGO_INFO() << "Data logging disabled";
             }
-
-
             if( !setConfigOption("dataLogging", dataLogging) )
             {
                 AGO_ERROR() << "Unable to save dataLogging status to config file";
                 error = true;
             }
 
-            if( content["gpsLogging"].asBool() )
+            if( !error )
             {
-                gpsLogging = true;
-                AGO_INFO() << "GPS logging enabled";
+                if( content["gpsLogging"].asBool() )
+                {
+                    gpsLogging = true;
+                    AGO_INFO() << "GPS logging enabled";
+                }
+                else
+                {
+                    gpsLogging = false;
+                    AGO_INFO() << "GPS logging disabled";
+                }
+                if( !setConfigOption("gpsLogging", gpsLogging) )
+                {
+                    AGO_ERROR() << "Unable to save gpsLogging status to config file";
+                    error = true;
+                }
             }
-            else
+    
+            if( !error )
             {
-                gpsLogging = false;
-                AGO_INFO() << "GPS logging disabled";
-            }
-            if( !setConfigOption("gpsLogging", gpsLogging) )
-            {
-                AGO_ERROR() << "Unable to save gpsLogging status to config file";
-                error = true;
+                if( content["rrdLogging"].asBool() )
+                {
+                    rrdLogging = true;
+                    AGO_INFO() << "RRD logging enabled";
+                }
+                else
+                {
+                    rrdLogging = false;
+                    AGO_INFO() << "RRD logging disabled";
+                }
+                if( !setConfigOption("rrdLogging", rrdLogging) )
+                {
+                    AGO_ERROR() << "Unable to save rrdLogging status to config file";
+                    error = true;
+                }
             }
 
-            if( content["rrdLogging"].asBool() )
+            if( !error )
             {
-                rrdLogging = true;
-                AGO_INFO() << "RRD logging enabled";
+                purgeDelay = content["purgeDelay"].asInt32();
+                if( !setConfigOption("purgeDelay", purgeDelay) )
+                {
+                    AGO_ERROR() << "Unable to save purge delay to config file";
+                    error = true;
+                }
             }
-            else
-            {
-                rrdLogging = false;
-                AGO_INFO() << "RRD logging disabled";
-            }
-
-            if( !setConfigOption("rrdLogging", rrdLogging) )
-            {
-                AGO_ERROR() << "Unable to save rrdLogging status to config file";
-                error = true;
-            }
-
+    
             if( error )
             {
                 return responseFailed("Failed to save one or more options");
             }
+
+            //handle graph data source
+            if( dataLogging )
+            {
+                //default is to display data from sqlite
+                graphDataSource = SQLITE;
+                AGO_DEBUG() << "data source from sqlite";
+            }
+            else if( rrdLogging )
+            {
+                graphDataSource = RRD;
+                AGO_DEBUG() << "data source from rrd";
+            }
+            else
+            {
+                //no data logging
+                graphDataSource = NONE;
+                AGO_DEBUG() << "data source is disabled";
+            }
+
             return responseSuccess();
         }
         else if( content["command"]=="purgetable" )
@@ -1755,6 +1948,7 @@ void AgoDataLogger::setupApp()
     //init database
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     int rc = sqlite3_open(dbpath.c_str(), &db);
+    sqlite3_trace(db, debugSqlite, NULL);
     if( rc != SQLITE_OK){
         AGO_ERROR() << "Can't open database " << dbpath.string() << ": " << sqlite3_errmsg(db);
         sqlite3_close(db);
@@ -1808,6 +2002,31 @@ void AgoDataLogger::setupApp()
         AGO_INFO() << "RRD logging enabled";
     else
         AGO_INFO() << "RRD logging disabled";
+    optString = getConfigOption("purgeDelay", "0");
+    if(sscanf(optString.c_str(), "%d", &r) == 1)
+    {
+        purgeDelay = r;
+    }
+    AGO_INFO() << "Purge delay = " << purgeDelay << " months";
+
+    //handle graph data source
+    if( dataLogging )
+    {
+        //default is to display data from sqlite
+        graphDataSource = SQLITE;
+        AGO_DEBUG() << "data source from sqlite";
+    }
+    else if( rrdLogging )
+    {
+        graphDataSource = RRD;
+        AGO_DEBUG() << "data source from rrd";
+    }
+    else
+    {
+        //no data logging
+        graphDataSource = NONE;
+        AGO_DEBUG() << "data source is disabled";
+    }
 
     // load map, create sections if empty
     fs::path dmf = getConfigPath(DEVICEMAPFILE);

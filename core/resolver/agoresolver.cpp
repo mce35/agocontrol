@@ -305,27 +305,41 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             } else {
                 return responseFailed("Failed to store change");
             }
-        } else if (content["command"] == "setdevicefloorplan") {
+        } else if (content["command"] == "setdevicefloorplan")
+        {
             checkMsgParameter(content, "device", VAR_STRING);
             checkMsgParameter(content, "floorplan", VAR_STRING);
             checkMsgParameter(content, "x", VAR_INT32);
             checkMsgParameter(content, "y", VAR_INT32);
 
-            if (inv->setdevicefloorplan(content["device"],
-                        content["floorplan"],
-                        content["x"],
-                        content["y"]) == 0) {
+            if (inv->setdevicefloorplan(content["device"], content["floorplan"], content["x"], content["y"]) == 0)
+            {
                 emitFloorplanEvent(content["device"].asString().c_str(),
                         "event.system.floorplandevicechanged",
                         content["floorplan"].asString().c_str(),
                         content["x"],
                         content["y"]);
                 return responseSuccess();
-            } else {
-                return responseFailed("Failed to store change");
             }
-
-        } else if (content["command"] == "deletefloorplan") {
+            else
+            {
+                return responseFailed("Failed to store floorplan changes");
+            }
+        }
+        else if( content["command"]=="deldevicefloorplan" )
+        {
+            checkMsgParameter(content, "device", VAR_STRING);
+            checkMsgParameter(content, "floorplan", VAR_STRING);
+            if( inv->deldevicefloorplan(content["device"], content["floorplan"])==1 )
+            {
+                return responseSuccess();
+            }
+            else
+            {
+                return responseFailed("Failed to store floorplan changes");
+            }
+        }
+        else if (content["command"] == "deletefloorplan") {
             checkMsgParameter(content, "floorplan", VAR_STRING);
 
             if (inv->deletefloorplan(content["floorplan"]) == 0) {

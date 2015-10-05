@@ -40,6 +40,7 @@ public:
     string getfloorplanname (string uuid);
     int setfloorplanname(string uuid, string name);
     int setdevicefloorplan(string deviceuuid, string floorplanuuid, int x, int y);
+    int deldevicefloorplan(string deviceuuid, string floorplanuuid);
     int deletefloorplan(string uuid);
     Variant::Map getfloorplans();
 
