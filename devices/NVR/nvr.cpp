@@ -49,18 +49,19 @@ private:
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     bool stopProcess;
+    bool stopTimelapses;
+    int restartDelay;
     void setupApp();
     void cleanupApp();
 
     //video
-    void getRecordings(std::string type, qpid::types::Variant::List& list);
+    void getRecordings(std::string type, qpid::types::Variant::List& list, string process);
     std::string getDateTimeString(bool date, bool time, bool withSeparator=true, std::string fieldSeparator="_");
     map<string, AgoFrameProvider*> frameProviders;
     AgoFrameProvider* getFrameProvider(string uri);
     pthread_mutex_t frameProvidersMutex;
 
     //timelapse
-    bool stopTimelapses;
     std::map<std::string, boost::thread*> timelapseThreads;
     void fillTimelapse(qpid::types::Variant::Map* timelapse, qpid::types::Variant::Map* content);
     void timelapseFunction(string internalid, qpid::types::Variant::Map timelapse);
@@ -81,7 +82,8 @@ public:
 
     AGOAPP_CONSTRUCTOR_HEAD(AgoVideo)
         , stopProcess(false)
-        , stopTimelapses(false) {}
+        , stopTimelapses(false)
+        , restartDelay(12) {}
 };
 
 
@@ -245,10 +247,6 @@ void AgoVideo::timelapseFunction(string internalid, qpid::types::Variant::Map ti
         recorder.release();
     }
     
-    //remove timelapse device
-    //AGO_DEBUG() << "Timelapse '" << internalid << "': remove device";
-    //agoConnection->removeDevice(internalid.c_str());
-
     //unsubscribe from provider
     AGO_DEBUG() << "Timelapse '" << internalid << "': unsubscribe from frame provider";
     provider->unsubscribe(&consumer);
@@ -266,6 +264,7 @@ void AgoVideo::fillTimelapse(qpid::types::Variant::Map* timelapse, qpid::types::
     if( content==NULL )
     {
         //fill with default values
+        (*timelapse)["process"] = "";
         (*timelapse)["name"] = "noname";
         (*timelapse)["uri"] = "";
         (*timelapse)["fps"] = 1;
@@ -275,6 +274,11 @@ void AgoVideo::fillTimelapse(qpid::types::Variant::Map* timelapse, qpid::types::
     else
     {
         //fill with specified content
+        if( !(*content)["process"].isVoid() )
+            (*timelapse)["process"] = (*content)["process"].asString();
+        else
+            (*timelapse)["process"] = "";
+
         if( !(*content)["name"].isVoid() )
             (*timelapse)["name"] = (*content)["name"].asString();
         else
@@ -452,29 +456,17 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
     std::queue<Mat> buffer;
 
     //get frames and convert to gray
-    //AgoFrame* frame = NULL;
     Mat prevFrame, currentFrame, nextFrame, result, tempFrame;
     if( provider->isRunning() )
     {
-        //frame = consumer.popFrame(&boost::this_thread::sleep_for);
         tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-        //prevFrame = temp.clone();
         cvtColor(tempFrame, prevFrame, CV_RGB2GRAY);
-        //frame->done();
 
-        //frame = consumer.popFrame(&boost::this_thread::sleep_for);
-        //currentFrame = frame->frame.clone();
         tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-        //currentFrame = temp.clone();
         cvtColor(tempFrame, currentFrame, CV_RGB2GRAY);
-        //frame->done();
 
-        //frame = consumer.popFrame(&boost::this_thread::sleep_for);
-        //nextFrame = frame->frame.clone();
         tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-        //nextFrame = temp.clone();
         cvtColor(tempFrame, nextFrame, CV_RGB2GRAY);
-        //frame->done();
     }
 
     //other declarations
@@ -485,6 +477,7 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
     int startup = now;
     int onDuration = motion["onduration"].asInt32() - motion["bufferduration"].asInt32();
     int recordDuration = motion["recordduration"].asInt32();
+    bool recordEnabled = motion["recordenabled"].asBool();
     bool isRecording, isTriggered = false;
     int triggerStart = 0;
     Mat d1, d2, _motion;
@@ -510,11 +503,7 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                 //get new frame
                 prevFrame = currentFrame;
                 currentFrame = nextFrame;
-                //frame = consumer.popFrame(&boost::this_thread::sleep_for);
-                //nextFrame = frame->frame; //copy frame to alter it (add text)
                 tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-                //nextFrame = temp.clone();
-                //frame->done();
                 result = tempFrame; //keep color copy
                 cvtColor(tempFrame, nextFrame, CV_RGB2GRAY);
 
@@ -610,42 +599,45 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                         }
                 
                         //prepare recorder
-                        filename.str("");
-                        filename << RECORDINGSDIR;
-                        filename << "motion_";
-                        filename << internalid << "_";
-                        filename << getDateTimeString(true, true, false, "_");
-                        filename << ".avi";
-                        recordPath = ensureParentDirExists(getLocalStatePath(filename.str()));
-                        AGO_DEBUG() << "Motion '" << internalid << "': record to " << recordPath.c_str();
+                        if( recordEnabled )
+                        {
+                            filename.str("");
+                            filename << RECORDINGSDIR;
+                            filename << "motion_";
+                            filename << internalid << "_";
+                            filename << getDateTimeString(true, true, false, "_");
+                            filename << ".avi";
+                            recordPath = ensureParentDirExists(getLocalStatePath(filename.str()));
+                            AGO_DEBUG() << "Motion '" << internalid << "': record to " << recordPath.c_str();
 
-                        try
-                        {
-                            recorder.open(recordPath.c_str(), fourcc, fps, resolution);
-                            if( !recorder.isOpened() )
+                            try
                             {
-                                //XXX emit error?
-                                AGO_ERROR() << "Motion '" << internalid << "': unable to open recorder";
-                            }
-                            triggerStart = (int)time(NULL);
-                            AGO_DEBUG() << "Motion '" << internalid << "': enable motion trigger and start motion recording";
-                            isRecording = true;
-                            isTriggered = true;
+                                recorder.open(recordPath.c_str(), fourcc, fps, resolution);
+                                if( !recorder.isOpened() )
+                                {
+                                    //XXX emit error?
+                                    AGO_ERROR() << "Motion '" << internalid << "': unable to open recorder";
+                                }
+                                triggerStart = (int)time(NULL);
+                                AGO_DEBUG() << "Motion '" << internalid << "': enable motion trigger and start motion recording";
+                                isRecording = true;
     
-                            //and empty buffer into recorder
-                            while( buffer.size()>0 )
-                            {
-                                recorder << buffer.front();
-                                buffer.pop();
+                                //and empty buffer into recorder
+                                while( buffer.size()>0 )
+                                {
+                                    recorder << buffer.front();
+                                    buffer.pop();
+                                }
                             }
-                        }
-                        catch(cv::Exception& e)
-                        {
-                            AGO_ERROR() << "Motion '" << internalid << "': opencv exception #4 occured " << e.what();
+                            catch(cv::Exception& e)
+                            {
+                                AGO_ERROR() << "Motion '" << internalid << "': opencv exception #4 occured " << e.what();
+                            }
                         }
 
                         //emit security event (enable motion sensor)
                         agoConnection->emitEvent(internalid.c_str(), "event.device.statechanged", 255, "");
+                        isTriggered = true;
                     }
                 }
                 else
@@ -704,9 +696,6 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
         recorder.release();
     }
 
-    //remove motion device
-    //agoConnection->removeDevice(internalid.c_str());
-
     AGO_DEBUG() << "Motion '" << internalid << "': stopped";
 }
 
@@ -720,6 +709,7 @@ void AgoVideo::fillMotion(qpid::types::Variant::Map* motion, qpid::types::Varian
     if( content==NULL )
     {
         //fill with default parameters
+        (*motion)["process"] = "";
         (*motion)["name"] = "noname";
         (*motion)["uri"] = "";
         (*motion)["deviation"] = 20;
@@ -728,10 +718,16 @@ void AgoVideo::fillMotion(qpid::types::Variant::Map* motion, qpid::types::Varian
         (*motion)["onduration"] = 300;
         (*motion)["recordduration"] = 30;
         (*motion)["enabled"] = true;
+        (*motion)["recordenabled"] = true;
     }
     else
     {
         //fill with content
+        if( !(*content)["process"].isVoid() )
+            (*motion)["process"] = (*content)["process"].asString();
+        else
+            (*motion)["process"] = "";
+
         if( !(*content)["name"].isVoid() )
             (*motion)["name"] = (*content)["name"].asString();
         else
@@ -771,6 +767,11 @@ void AgoVideo::fillMotion(qpid::types::Variant::Map* motion, qpid::types::Varian
             (*motion)["enabled"] = (*content)["enabled"].asBool();
         else
             (*motion)["enabled"] = true;
+
+        if( !(*content)["recordenabled"].isVoid() )
+            (*motion)["recordenabled"] = (*content)["recordenabled"].asBool();
+        else
+            (*motion)["recordenabled"] = true;
     }
 }
 
@@ -824,8 +825,10 @@ void AgoVideo::stopMotion(string internalid)
 /**
  * Get recordings of specified type
  */
-void AgoVideo::getRecordings(std::string type, qpid::types::Variant::List& list)
+void AgoVideo::getRecordings(std::string type, qpid::types::Variant::List& list, string process)
 {
+    qpid::types::Variant::Map motions = videomap["motions"].asMap();
+    qpid::types::Variant::Map timelapses = videomap["timelapses"].asMap();
     fs::path recordingsPath = getLocalStatePath(RECORDINGSDIR);
     if( fs::exists(recordingsPath) )
     {
@@ -842,8 +845,35 @@ void AgoVideo::getRecordings(std::string type, qpid::types::Variant::List& list)
                 props["date"] =(uint64_t) fs::last_write_time(it->path());
                 vector<string> splits;
                 split(splits, it->path().filename().string(), boost::is_any_of("_"));
-                props["internalid"] = string(splits[1]);
-                list.push_back( props );
+                string internalid = string(splits[1]);
+                props["internalid"] = internalid;
+
+                //check if file is for specified process
+                if( process.length()>0 )
+                {
+                    if( !motions[internalid].isVoid() )
+                    {
+                        qpid::types::Variant::Map motion = motions[internalid].asMap();
+                        string p = motion["process"].asString();
+                        if( p==process )
+                        {
+                            list.push_back( props );
+                        }
+                    }
+                    else if( !timelapses[internalid].isVoid() )
+                    {
+                        qpid::types::Variant::Map timelapse = timelapses[internalid].asMap();
+                        string p = timelapse["process"].asString();
+                        if( p==process )
+                        {
+                            list.push_back( props );
+                        }
+                    }
+                }
+                else
+                {
+                    list.push_back( props );
+                }
             }
             ++it;
         }
@@ -920,16 +950,67 @@ void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map conte
 
     if( subject=="event.environment.timechanged" && !content["minute"].isVoid() && !content["hour"].isVoid() )
     {
+        //XXX: workaround to avoid process to crash because of opencv::VideoWriter memory leak
+        if( content["hour"].asInt8()%restartDelay==0 )
+        {
+            qpid::types::Variant::Map timelapses = videomap["timelapses"].asMap();
+            if( timelapses.size()>0 )
+            {
+                signalExit();
+            }
+        }
+
         //midnight, create new timelapse for new day
-        //if( content["hour"].asInt8()==0 && content["minute"].asInt8()==0 )
-        if( content["minute"].asInt8()%2==0 )
+        if( content["hour"].asInt8()==0 && content["minute"].asInt8()==0 )
         {
             restartTimelapses();
         }
     }
+    else if( subject=="event.device.remove" )
+    {
+        //handle device deletion
+        string internalid = agoConnection->uuidToInternalId(content["uuid"].asString());
+        bool found = false;
+
+        pthread_mutex_lock(&videomapMutex);
+
+        //search if device is handled by nvr controller
+        qpid::types::Variant::Map motions = videomap["motions"].asMap();
+        if( !motions[internalid].isVoid() )
+        {
+            //its a motion device
+            found = true;
+            motions.erase(internalid);
+        }
+        
+        if( !found )
+        {
+            qpid::types::Variant::Map timelapses = videomap["timelapses"].asMap();
+            if( !timelapses[internalid].isVoid() )
+            {
+                //its a timelapse device
+                found = true;
+                timelapses.erase(internalid);
+            }
+        }
+
+        pthread_mutex_unlock(&videomapMutex);
+
+        if( found )
+        {
+            if( variantMapToJSONFile(videomap, getConfigPath(VIDEOMAPFILE)) )
+            {
+                AGO_DEBUG() << "Event 'device.remove': device deleted";
+            }
+            else
+            {
+                AGO_ERROR() << "Event 'device.remove': cannot save videomap";
+            }
+        }
+    }
     else if( subject=="event.system.devicenamechanged" )
     {
-        //handle motion name changed
+        //handle device name changed
         bool found = false;
         string name = content["name"].asString();
         string internalid = agoConnection->uuidToInternalId(content["uuid"].asString());
@@ -950,9 +1031,7 @@ void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map conte
                 videomap["motions"] = motions;
 
                 //restart motion
-                AGO_DEBUG() << " ==> stopMotion";
                 stopMotion(internalid);
-                AGO_DEBUG() << " ==> launchMotion";
                 launchMotion(internalid, motion);
             }
         }
@@ -973,9 +1052,7 @@ void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map conte
                     videomap["timelapses"] = timelapses;
 
                     //restart timelapse
-                    AGO_DEBUG() << " ==> stopTimelapse";
                     stopTimelapse(internalid);
-                    AGO_DEBUG() << " ==> launchTimelapse";
                     launchTimelapse(internalid, timelapse);
                 }
             }
@@ -994,11 +1071,6 @@ void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map conte
                 AGO_ERROR() << "Event 'devicenamechanged': cannot save videomap";
             }
         }
-        else
-        {
-            //just log an error
-            AGO_ERROR() << "devicenamechanged event: no device '" << internalid << "' found in AgoVideo. Unable to rename device";
-        }
     }
 }
 
@@ -1009,12 +1081,14 @@ qpid::types::Variant::Map AgoVideo::commandHandler(qpid::types::Variant::Map con
 {
     AGO_TRACE() << "handling command: " << content;
     qpid::types::Variant::Map returnData;
+    string command = content["command"].asString();
 
     std::string internalid = content["internalid"].asString();
     if (internalid == "videocontroller")
     {
-        if( content["command"]=="addtimelapse" )
+        if( command=="addtimelapse" )
         {
+            checkMsgParameter(content, "process", VAR_STRING);
             checkMsgParameter(content, "uri", VAR_STRING);
             checkMsgParameter(content, "fps", VAR_INT32);
             checkMsgParameter(content, "codec", VAR_STRING);
@@ -1065,66 +1139,19 @@ qpid::types::Variant::Map AgoVideo::commandHandler(qpid::types::Variant::Map con
                 return responseError("error.security.addtimelapse", "Cannot save config");
             }
         }
-        /*else if( content["command"]=="removetimelapse" )
+        else if( command=="gettimelapses" )
         {
-            bool found = false;
+            checkMsgParameter(content, "process", VAR_STRING);
+            string process = content["process"].asString();
 
-            checkMsgParameter(content, "uri", VAR_STRING);
-            
-            //search and destroy specified timelapse
-            pthread_mutex_lock(&videomapMutex);
-            string uri = content["uri"].asString();
-            qpid::types::Variant::List timelapses = videomap["timelapses"].asList();
-            for( qpid::types::Variant::List::iterator it=timelapses.begin(); it!=timelapses.end(); it++ )
-            {
-                qpid::types::Variant::Map timelapse = it->asMap();
-                if( !timelapse["uri"].isVoid() )
-                {
-                    string timelapseUri = timelapse["uri"].asString();
-                    if( timelapseUri==uri )
-                    {
-                        //timelapse found
-                        found = true;
-                        
-                        //stop running timelapse thread
-                        timelapseThreads[uri]->interrupt();
-
-                        //and remove it from config
-                        timelapses.erase(it);
-                        videomap["timelapses"] = timelapses;
-                        break;
-                    }
-                }
-            }
-            pthread_mutex_unlock(&videomapMutex);
-
-            if( found )
-            {
-                if( variantMapToJSONFile(videomap, getConfigPath(VIDEOMAPFILE)) )
-                {
-                    AGO_DEBUG() << "Command 'removetimelapse': timelapse remove";
-                    return responseSuccess("Timelapse removed");
-                }
-                else
-                {
-                    AGO_ERROR() << "Command 'removetimelapse': cannot save videomap";
-                    return responseError("error.security.removetimelapse", "Cannot save config");
-                }
-            }
-            else
-            {
-                return responseError("error.security.removetimelapse", "Specified timelapse was not found");
-            }
-        }*/
-        else if( content["command"]=="gettimelapses" )
-        {
             qpid::types::Variant::List timelapses;
-            getRecordings("timelapse_", timelapses);
+            getRecordings("timelapse_", timelapses, process);
             returnData["timelapses"] = timelapses;
             return responseSuccess(returnData);
         }
-        else if( content["command"]=="addmotion" )
+        else if( command=="addmotion" )
         {
+            checkMsgParameter(content, "process", VAR_STRING);
             checkMsgParameter(content, "uri", VAR_STRING);
             checkMsgParameter(content, "sensitivity", VAR_INT32);
             checkMsgParameter(content, "deviation", VAR_INT32);
@@ -1190,71 +1217,23 @@ qpid::types::Variant::Map AgoVideo::commandHandler(qpid::types::Variant::Map con
                 return responseError("error.security.addmotion", "Cannot save config");
             }
         }
-        /*else if( content["command"]=="removemotion" )
+        else if( command=="getmotions" )
         {
-            bool found = false;
+            checkMsgParameter(content, "process", VAR_STRING);
+            string process = content["process"].asString();
 
-            checkMsgParameter(content, "uri", VAR_STRING);
-            
-            //search and destroy specified motion
-            pthread_mutex_lock(&videomapMutex);
-            string uri = content["uri"].asString();
-            qpid::types::Variant::Map motions = videomap["motions"].asMap();
-            for( qpid::types::Variant::List::iterator it=motions.begin(); it!=motions.end(); it++ )
-            {
-                qpid::types::Variant::Map motion = it->asMap();
-                if( !motion["uri"].isVoid() )
-                {
-                    string motionUri = motion["uri"].asString();
-                    if( motionUri==uri )
-                    {
-                        //motion found
-                        found = true;
-                        
-                        //stop running motion thread
-                        stopMotion(motion);
-
-                        //and remove it from config
-                        motions.erase(it);
-                        videomap["motions"] = motions;
-                        break;
-                    }
-                }
-            }
-            pthread_mutex_unlock(&videomapMutex);
-
-            if( found )
-            {
-                if( variantMapToJSONFile(videomap, getConfigPath(VIDEOMAPFILE)) )
-                {
-                    AGO_DEBUG() << "Command 'removemotion': motion removed";
-                    return responseSuccess("Motion removed");
-                }
-                else
-                {
-                    AGO_ERROR() << "Command 'removemotion': cannot save videomap";
-                    return responseError("error.security.removemotion", "Cannot save config");
-                }
-            }
-            else
-            {
-                return responseError("error.security.removemotion", "Specified motion was not found");
-            }
-        }*/
-        else if( content["command"]=="getmotions" )
-        {
             qpid::types::Variant::List motions;
-            getRecordings("motion_", motions);
+            getRecordings("motion_", motions, process);
             returnData["motions"] = motions;
             return responseSuccess(returnData);
         }
-        else if( content["command"]=="getrecordingsconfig" )
+        else if( command=="getrecordingsconfig" )
         {
             qpid::types::Variant::Map config = videomap["recordings"].asMap();
             returnData["config"] = config;
             return responseSuccess(returnData);
         }
-        else if( content["command"]=="setrecordingsconfig" )
+        else if( command=="setrecordingsconfig" )
         {
             checkMsgParameter(content, "timelapseslifetime", VAR_INT32);
             checkMsgParameter(content, "motionslifetime", VAR_INT32);
@@ -1281,42 +1260,132 @@ qpid::types::Variant::Map AgoVideo::commandHandler(qpid::types::Variant::Map con
     }
     else
     {
-        //handle motion/timelapse devices
-        if( content["command"]=="enable" )
+        if( command=="on" || command=="off" )
         {
-            /*bool found = false;
+            //handle on/off command on timelapse/motion devices
+            bool found = false;
+            string internalid = agoConnection->uuidToInternalId(content["uuid"].asString());
 
-            checkMsgParameter(content, "enabled", VAR_BOOL);
-            bool enabled = content["enabled"].asBool();
+            pthread_mutex_lock(&videomapMutex);
+
+            qpid::types::Variant::Map timelapses = videomap["timelapses"].asMap();
+            if( !timelapses[internalid].isVoid() )
+            {
+                found = true;
+                qpid::types::Variant::Map timelapse = timelapses[internalid].asMap();
+                if( !timelapse["enabled"].isVoid() )
+                {
+                    if( command=="start" )
+                    {
+                        timelapse["enabled"] = true;
+                        timelapses[internalid] = timelapse;
+                        videomap["timelapses"] = timelapses;
+
+                        //start timelapse
+                        launchTimelapse(internalid, timelapse);
+                    }
+                    else
+                    {
+                        timelapse["enabled"] = false;
+                        timelapses[internalid] = timelapse;
+                        videomap["timelapses"] = timelapses;
+
+                        //start timelapse
+                        stopTimelapse(internalid);
+                    }
+                }
+            }
+
+            if( !found )
+            {
+                qpid::types::Variant::Map motions = videomap["motions"].asMap();
+                if( !motions[internalid].isVoid() )
+                {
+                    found = true;
+                    qpid::types::Variant::Map motion = motions[internalid].asMap();
+                    if( !motion["enabled"].isVoid() )
+                    {
+                        if( command=="start" )
+                        {
+                            motion["enabled"] = true;
+                            motions[internalid] = motion;
+                            videomap["motions"] = motions;
+
+                            //start motion
+                            launchMotion(internalid, motion);
+                        }
+                        else
+                        {
+                            motion["enabled"] = false;
+                            motions[internalid] = motion;
+                            videomap["motions"] = motions;
+
+                            //stop motion
+                            stopMotion(internalid);
+                        }
+                    }
+                }
+            }
+
+            pthread_mutex_unlock(&videomapMutex);
 
             if( found )
             {
                 if( variantMapToJSONFile(videomap, getConfigPath(VIDEOMAPFILE)) )
                 {
-                    if( enabled )
-                    {
-                        AGO_DEBUG() << "Command 'enablemotion': motion enabled";
-                        return responseSuccess("Motion enabled");
-                    }
-                    else
-                    {
-                        AGO_DEBUG() << "Command 'enablemotion': motion disabled";
-                        return responseSuccess("Motion disabled");
-                    }
+                    AGO_DEBUG() << "Command " << command << ": timelapse " << internalid << " started";
                 }
                 else
                 {
-                    AGO_ERROR() << "Command 'enablemotion': cannot save videomap";
-                    return responseError("error.security.enablemotion", "Cannot save config");
+                    AGO_ERROR() << "Command " << command << ": cannot save videomap";
                 }
             }
-            else
-            {
-                return responseError("error.security.enablemotion", "Specified motion was not found");
-            }*/
         }
-        else if( content["command"]=="enablerecording" )
+        else if( command=="recordon" || command=="recordoff" )
         {
+            //handle record on/off command on motion devices
+            bool found = false;
+            string internalid = agoConnection->uuidToInternalId(content["uuid"].asString());
+
+            pthread_mutex_lock(&videomapMutex);
+
+            qpid::types::Variant::Map motions = videomap["motions"].asMap();
+            if( !motions[internalid].isVoid() )
+            {
+                found = true;
+                qpid::types::Variant::Map motion = motions[internalid].asMap();
+                if( !motion["enabled"].isVoid() )
+                {
+                    if( command=="recordon" )
+                    {
+                        motion["recordenabled"] = true;
+                    }
+                    else
+                    {
+                        motion["recordenabled"] = false;
+                    }
+                    motions[internalid] = motion;
+                    videomap["motions"] = motions;
+
+                    //restart motion
+                    stopMotion(internalid);
+                    launchMotion(internalid, motion);
+                }
+            }
+
+            pthread_mutex_unlock(&videomapMutex);
+
+            if( found )
+            {
+                if( variantMapToJSONFile(videomap, getConfigPath(VIDEOMAPFILE)) )
+                {
+                    AGO_DEBUG() << "Command " << command << ": timelapse " << internalid << " started";
+                }
+                else
+                {
+                    AGO_ERROR() << "Command " << command << ": cannot save videomap";
+                }
+            }
         }
 
         return responseUnknownCommand();
@@ -1331,6 +1400,10 @@ void AgoVideo::setupApp()
     //init
     pthread_mutex_init(&videomapMutex, NULL);
     pthread_mutex_init(&frameProvidersMutex, NULL);
+
+    //config
+    string optString = getConfigOption("restartDelay", "12");
+    sscanf(optString.c_str(), "%d", &restartDelay);
 
     //load config
     videomap = jsonFileToVariantMap(getConfigPath(VIDEOMAPFILE));
@@ -1378,16 +1451,12 @@ void AgoVideo::cleanupApp()
     for( std::map<std::string, boost::thread*>::iterator it=timelapseThreads.begin(); it!=timelapseThreads.end(); it++ )
     {
         stopTimelapse(it->first);
-        /*(it->second)->interrupt();
-        (it->second)->join();*/
     }
 
     //wait for motion threads stop
     for( std::map<std::string, boost::thread*>::iterator it=motionThreads.begin(); it!=motionThreads.end(); it++ )
     {
         stopMotion(it->first);
-        /*(it->second)->interrupt();
-        (it->second)->join();*/
     }
 
     //close frame providers
