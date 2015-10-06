@@ -281,6 +281,7 @@ div.dashboard-widget-draggable {
 .info-box-title > h5,
 .info-box-title > h6 {
     margin-top: 6px !important;
+    margin-bottom: 6px !important;
 }
 
 .info-box-title {
@@ -293,12 +294,15 @@ div.dashboard-widget-draggable {
 }
 
 .info-box-detail {
-    width:100%;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .info-box-location, .info-box-state {
     padding-right: 10px;
-    float: left;
+    display: inline-block;
 }
 
 .dashboard-widget .info-box-content .well {

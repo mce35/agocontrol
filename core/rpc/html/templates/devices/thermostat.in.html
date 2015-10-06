@@ -14,30 +14,30 @@
                 </ko>
             </div>
             <div class="info-box-detail">
-                <ko opts="if:room">
-                <div class="info-box-location">
-                    <i class="en-location"/>
-                    <span data-bind="text:room"/>
-                </div>
-                </ko>
                 <div class="info-box-state" data-bind="foreach:valueList">
-                    <i class="en-volume"/>
                     <ko opts="if: name=='Mode'">
+                    <i class="en-volume"/>
                     <_span data-translateable="true">Mode</_span>:<span data-bind="text:level"></span>
                     </ko>
                     <ko opts="if:name=='Operatingstate'">
                     (<span data-bind="text:level"/>)
                     </ko>
                 </div>
-                <div class="info-box-state">
-                    <i class="en-shuffle"/>
+                <div class="info-box-state" data-bind="foreach:valueList">
                     <ko opts="if:name=='Fanmode'">
+                    <i class="en-shuffle"/>
                     <_span data-translateable="true">FanMode</_span>:<span data-bind="text:level"></span>
                     </ko>
                     <ko opts="if:name=='Fanstate'">
                     (<span data-bind="text:level"/>)
                     </ko>
                 </div>
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
             </div>
         </div>
     </div>
