@@ -594,6 +594,7 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
     char posted_var[1024] = "";
     std::string uuid = "";
     string uploadError = "";
+    qpid::types::Variant::Map uploadResult;
 
     //upload files
     while ((ofs = mg_parse_multipart(conn->content + ofs, conn->content_len - ofs, var_name, sizeof(var_name),
@@ -648,10 +649,14 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
                 {
                     //command failed, drop file
                     fs::remove(tempfile);
-                    AGO_ERROR() << "Uploaded file \"" << tempfile.string()
-                        << "\" dropped because command failed" << r.getMessage();
+                    AGO_ERROR() << "Uploaded file \"" << tempfile.string() << "\" dropped because command failed" << r.getMessage();
                     uploadError = r.getMessage();
                     continue;
+                }
+                else if( r.isOk() )
+                {
+                    //command succeed and has results to return
+                    uploadResult = r.getData();
                 }
 
                 // add file to output
@@ -661,9 +666,11 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
                 files.push_back(file);
 
                 //delete file (it should be processed by sendcommand)
-                //TODO: maybe a purge process could be interesting to implement
+                //XXX: maybe a purge process could be interesting to implement
                 fs::remove(tempfile);
-            }else{
+            }
+            else
+            {
                 AGO_ERROR() << "Failed to open file " << tempfile.string() << " for writing: " << strerror(errno);
             }
         }
@@ -683,6 +690,8 @@ void AgoRpc::uploadFiles(struct mg_connection *conn)
     mg_printf_data(conn, "{\"jsonrpc\": \"2.0\", \"result\": {\"files\": ");
     mg_printlist(conn, files);
     mg_printf_data(conn, ", \"count\": %d", files.size());
+    mg_printf_data(conn, ", \"result\": ");
+    mg_printmap(conn, uploadResult);
     mg_printf_data(conn, ", \"error\": \"%s\" } }", uploadError.c_str());
 }
 
