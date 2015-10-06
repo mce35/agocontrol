@@ -14,12 +14,6 @@
                 </ko>
             </div>
             <div class="info-box-detail">
-                <ko opts="if:room">
-                <div class="info-box-location">
-                    <i class="en-location"/>
-                    <span data-bind="text:room"/>
-                </div>
-                </ko>
                 <div class="info-box-state">
                     <i class="en-info-circled"/>
                     <ko opts="ifnot:state">
@@ -29,6 +23,12 @@
                     <_span data-translateable="true">ON</_span>
                     </ko>
                 </div>
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
             </div>
         </div>
     </div>

@@ -14,16 +14,16 @@
                 </ko>
             </div>
             <div class="info-box-detail">
+                <div class="info-box-state">
+                    <i class="en-info-circled"/>
+                    <span data-bind="text:state"/>
+                </div>
                 <ko opts="if:room">
                 <div class="info-box-location">
                     <i class="en-location"/>
                     <span data-bind="text:room"/>
                 </div>
                 </ko>
-                <div class="info-box-state">
-                    <i class="en-info-circled"/>
-                    <span data-bind="text:state"/>
-                </div>
             </div>
         </div>
     </div>
