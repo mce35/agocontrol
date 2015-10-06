@@ -422,8 +422,15 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
             XMLDocument etsExport;
             std::string etsdata = content["etsdata"].asString();
             AGO_TRACE() << "parse ets export request:" << etsdata;
+            /*
             if (etsExport.Parse(etsdata.c_str()) != XML_NO_ERROR)
                 return responseFailed("Failed to parse XML input data");
+            */
+            int returncode = etsExport.LoadFile(etsdata.c_str());
+            if (returncode != XML_NO_ERROR) {
+                AGO_ERROR() << "error loading XML file '" << etsdata << "', code: " << returncode;
+                return responseFailed("Failed to parse XML input data");
+            }
 
             XMLHandle docHandle(&etsExport);
             XMLElement* groupRange = docHandle.FirstChildElement("GroupAddress-Export").FirstChild().ToElement();
