@@ -32,6 +32,10 @@
 #define KNXDEVICEMAPFILE "maps/knx.json"
 #endif
 
+#ifndef ETSGAEXPORTMAPFILE
+#define ETSGAEXPORTMAPFILE "maps/knx_etsgaexport.json"
+#endif
+
 using namespace qpid::messaging;
 using namespace qpid::types;
 using namespace tinyxml2;
@@ -416,11 +420,13 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
             return responseSuccess();
 
         } 
-        else if (content["command"] == "parseetsexport")
+        else if (content["command"] == "uploadfile")
         {
-            checkMsgParameter(content, "etsdata", VAR_STRING);
+            checkMsgParameter(content, "filepath", VAR_STRING);
+            checkMsgParameter(content, "filename", VAR_STRING);
+
             XMLDocument etsExport;
-            std::string etsdata = content["etsdata"].asString();
+            std::string etsdata = content["filepath"].asString();
             AGO_TRACE() << "parse ets export request:" << etsdata;
             /*
             if (etsExport.Parse(etsdata.c_str()) != XML_NO_ERROR)
@@ -469,11 +475,16 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
                     nextRange = nextRange->NextSiblingElement();
                 }
                 returnData["groupmap"]=rangeMap;
+                variantMapToJSONFile(rangeMap, getConfigPath(ETSGAEXPORTMAPFILE));
             } else 
                 return responseFailed("No 'GroupAddress-Export' tag found");
 
             return responseSuccess(returnData);
 
+        }
+        else if (content["command"] == "getgacontent")
+        {
+            returnData["groupmap"] = jsonFileToVariantMap(getConfigPath(ETSGAEXPORTMAPFILE));
         }
         return responseUnknownCommand();
     }
