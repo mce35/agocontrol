@@ -69,6 +69,9 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
                     //return selected tab index (first tab index is 0) and selected tab text (usually tab title)
                     accessor.onChanged($(e.target).closest('li').index(), $(e.target).text());
                 });
+
+                //launch callback on tab 0
+                accessor.onChanged(0, $($(element).find('a')[0]).text());
             }
         }
     };
