@@ -423,7 +423,6 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         else if (content["command"] == "uploadfile")
         {
             checkMsgParameter(content, "filepath", VAR_STRING);
-            checkMsgParameter(content, "filename", VAR_STRING);
 
             XMLDocument etsExport;
             std::string etsdata = content["filepath"].asString();
@@ -485,6 +484,7 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         else if (content["command"] == "getgacontent")
         {
             returnData["groupmap"] = jsonFileToVariantMap(getConfigPath(ETSGAEXPORTMAPFILE));
+            return responseSuccess(returnData);
         }
         return responseUnknownCommand();
     }
