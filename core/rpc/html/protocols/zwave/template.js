@@ -939,7 +939,8 @@ function zwaveConfig(zwave) {
     zwave.setControllerUuid(zwaveControllerUuid);
 
     //open node details
-    self.openNodeDetails = function(nodeId) {
+    self.openNodeDetails = function(nodeId)
+    {
         //init
         var i;
 
@@ -955,8 +956,23 @@ function zwaveConfig(zwave) {
         while( self.nodesForAssociation().length>0 )
             self.nodesForAssociation.pop();
 
+        //search selected node
+        self.selectedNode = null;
+        for( i=0; self.nodes().length; i++ )
+        {
+            if( self.nodes()[i].id===nodeId )
+            {
+                self.selectedNode = self.nodes()[i];
+                break;
+            }
+        }
+        if( self.selectedNode===null )
+        {
+            notif.error('Node id #'+nodeId+' not found');
+            return;
+        }
+
         //fill node infos array
-        self.selectedNode = self.nodes()[nodeId];
         self.nodeInfos.push({info:'Device id', value:self.selectedNode.id});
         self.nodeInfos.push({info:'Manufacturer', value:self.selectedNode.manufacturer});
         self.nodeInfos.push({info:'Device type', value:self.selectedNode.type});
