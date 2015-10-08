@@ -400,6 +400,17 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
 
             return responseSuccess(returnData);
         }
+        else if (content["command"] == "getdevices")
+        {
+            /*qpid::types::Variant::Map devicelist;
+            for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
+                Variant::Map device;
+                device = it->second.asMap();
+                devicelist.push_back(device);
+            }*/
+            returnData["devices"] = deviceMap;
+            return responseSuccess(returnData);
+        }
         else if (content["command"] == "deldevice")
         {
             checkMsgParameter(content, "device", VAR_STRING);
