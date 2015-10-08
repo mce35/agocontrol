@@ -248,6 +248,24 @@ events:
   event.device.batterylevelchanged:
     description: battery level has changed
     parameters: [level, unit, uuid]
+  event.environment.coolsetpointchanged:
+    description: cool set point has changed
+    parameters: [level, unit, uuid]
+  event.environment.heatsetpointchanged:
+    description: heat set point has changed
+    parameters: [level, unit, uuid]
+  event.environment.powerchanged:
+    description: power usage has changed
+    parameters: [level, unit, uuid]
+  event.environment.fanmodechanged:
+    description: fan mode has changed
+    parameters: [level, unit, uuid]
+  event.environment.modechanged:
+    description: thermostat mode has changed
+    parameters: [level, unit, uuid]
+  event.environment.fanstatechanged:
+    description: fan state has changed
+    parameters: [level, unit, uuid]
 units:
   degC:
     label: "°C"
