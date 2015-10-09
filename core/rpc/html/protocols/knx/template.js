@@ -32,16 +32,6 @@ function KNX(agocontrol)
     self.selectedDeviceTypeParam = null;
     self.gaIdValue = {};
     self.devices = ko.observableArray([]);
-    self.devicesGrid = new ko.agoGrid.viewModel({
-        data: self.devices,
-        columns: [
-            {headerText: 'Name', rowText:'uuid'},
-            {headerText: 'Type', rowText:'devicetype'},
-            {headerText: 'Associations', rowText:''},
-            {headerText: 'Actions', rowText:''}
-        ],
-        rowTemplate: 'deviceRowTemplate'
-    });
     self.selectedDevice = ko.observable(undefined);
     self.selectedDeviceTypeEdit = ko.observable(null);
     self.selectedDevice.subscribe(function() {
@@ -129,23 +119,17 @@ function KNX(agocontrol)
         self.deviceTypes(deviceTypes.sort());
     };
 
-    //get device name
-    self.getDeviceName = function(uuid)
+    //get device infos from inventory
+    self.getDeviceInfos = function(uuid)
     {
         if( self.agocontrol.inventory.devices[uuid]!==undefined )
         {
-            if( self.agocontrol.inventory.devices[uuid]['name'].length>0 )
-            {
-                return self.agocontrol.inventory.devices[uuid]['name'];
-            }
-            else
-            {
-                return 'noname ['+uuid+']';
-            }
+            return self.agocontrol.inventory.devices[uuid];
         }
         else
         {
-            return uuid;
+            console.error('No infos found in inventory for device ' + uuid);
+            return {};
         }
     };
 
@@ -234,7 +218,7 @@ function KNX(agocontrol)
             tree.push(elem);
         }
         //console.log('TREE');
-        //console.log(tree);
+        console.log(tree);
         //console.log('GAIDVALUE');
         //console.log(self.gaIdValue);
 
@@ -302,8 +286,10 @@ function KNX(agocontrol)
                 for( var uuid in res.data.devices )
                 {
                     var device = {};
+                    var infos = self.getDeviceInfos(uuid);
                     device['uuid'] = uuid;
-                    device['name'] = self.getDeviceName(uuid);
+                    device['name'] = infos['name'];
+                    device['room'] = infos['room'];
                     device['params'] = [];
                     for( var item in res.data.devices[uuid] )
                     {
@@ -392,7 +378,7 @@ function KNX(agocontrol)
         content.uuid = self.controllerUuid;
         content.command = 'adddevice';
         content.devicemap = {};
-        var uuid = self.selectedDevice()['device'];
+        var uuid = self.selectedDevice()['uuid'];
         content.devicemap[uuid] = {};
         content.devicemap[uuid].devicetype = self.selectedDeviceTypeEdit();
         for( var i=0; i<self.deviceTypeParametersEdit().length; i++ )
@@ -470,6 +456,135 @@ function KNX(agocontrol)
         //hide modal
         $('#treeviewModal').modal('hide');
     }
+
+    self.findDevice = function(uuid) {
+        var l = self.agocontrol.devices().filter(function(d) {
+            return d.uuid==uuid;
+        });
+        if(l.length == 1)
+            return l[0];
+        return null;
+    };
+
+    //edit row
+    self.makeEditable = function(item, td, tr)
+    {
+        if( $(td).hasClass('change_name') )
+        {
+            $(td).editable(function(value, settings) {
+                var content = {};
+                content.device = item.uuid;
+                content.uuid = self.agocontrol.agoController;
+                content.command = "setdevicename";
+                content.name = value;
+                self.agocontrol.sendCommand(content, function(res) {
+                    if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
+                    {
+                        var d = self.findDevice(item.uuid);
+                        d.name = value;
+                    }
+                    else
+                    {
+                        notif.error('Error updating device name');
+                    }
+                });
+                return value;
+            },
+            {
+                data : function(value, settings) { return value; },
+                onblur : "cancel"
+            }).click();
+        }
+            
+        if( $(td).hasClass('change_room') )
+        {
+            var d = self.findDevice(item.uuid);
+            if( d && d.name && d.name.length>0 )
+            {
+                $(td).editable(function(value, settings) {
+                    var content = {};
+                    content.device = item.uuid;
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setdeviceroom";
+                    value = value == "unset" ? "" : value;
+                    content.room = value;
+                    self.agocontrol.sendCommand(content, function(res) {
+                        if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
+                        {
+                            //update inventory
+                            var d = self.findDevice(item.uuid);
+                            if(value === "")
+                            {
+                                d.room = d.roomUID = "";
+                            }
+                            else
+                            {
+                                var room = self.findRoom(value);
+                                if(room)
+                                {
+                                    d.room = room.name;
+                                }
+                                d.roomUID = value;
+                            }
+
+                            //update room filters
+                            self.updateRoomFilters();
+                        }
+                        else
+                        {
+                            notif.error('Error updating room');
+                        }
+                    });
+                    if( value==="" )
+                    {
+                        return "unset";
+                    }
+                    else
+                    {
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                        {
+                            if( self.agocontrol.rooms()[i].uuid==value )
+                            {
+                                return self.agocontrol.rooms()[i].name;
+                            }
+                        }
+                    }
+                },
+                {
+                    data : function(value, settings)
+                    {
+                        var list = {};
+                        list["unset"] = "--";
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                        {
+                            list[self.agocontrol.rooms()[i].uuid] = self.agocontrol.rooms()[i].name;
+                        }
+                        return JSON.stringify(list);
+                    },
+                    type : "select",
+                    onblur : "submit"
+                }).click();
+            }
+            else
+            {
+                notif.warning('Please specify device name first');
+            }
+        }
+    };
+
+    self.devicesGrid = new ko.agoGrid.viewModel({
+        data: self.devices,
+        columns: [
+            {headerText: 'Name', rowText:'name'},
+            {headerText: 'Uuid', rowText:'uuid'},
+            {headerText: 'Type', rowText:'devicetype'},
+            {headerText: 'Room', rowText:'room'},
+            {headerText: 'Associations', rowText:''},
+            {headerText: 'Actions', rowText:''}
+        ],
+        rowTemplate: 'deviceRowTemplate',
+        rowCallback: self.makeEditable
+    });
 
     //init
     self.getControllerUuid();

@@ -34,8 +34,20 @@
                 
                 <div id="devices-tab" class="tab-pane fade in active">
                     <script type="text/html" id="deviceRowTemplate">
-                        <td data-bind="text: name"></td>
+                        <ko opts="if: name">
+                        <td class="change_name" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
+                        </ko>
+                        <ko opts="ifnot: name">
+                        <td data-translateable="true" class="change_name" data-bind="attr: {'data-uuid': uuid}">unset</td>
+                        </ko>
+                        <td data-bind="text: uuid"></td>
                         <td data-bind="text: devicetype"></td>
+                        <ko opts="if: room">
+                        <td data-translateable="true" class="change_room" data-bind="attr: {'data-uuid': uuid}, text:room"></td>
+                        </ko>
+                        <ko opts="ifnot: room">
+                        <td data-translateable="true" class="change_room" data-bind="attr: {'data-uuid': uuid}">unset</td>
+                        </ko>
                         <td>
                             <dl class="dl-horizontal" data-bind="foreach: params" style="margin-bottom:0px;">
                                 <dt data-bind="text: type"></dt>
