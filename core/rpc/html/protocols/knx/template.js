@@ -392,7 +392,9 @@ function KNX(agocontrol)
         content.uuid = self.controllerUuid;
         content.command = 'adddevice';
         content.devicemap = {};
-        content.devicemap.devicetype = self.selectedDeviceTypeEdit();
+        var uuid = self.selectedDevice()['uuid'];
+        content.devicemap[uuid] = {};
+        content.devicemap[uuid].devicetype = self.selectedDeviceTypeEdit();
         for( var i=0; i<self.deviceTypeParametersEdit().length; i++ )
         {
             if( self.deviceTypeParametersEdit()[i]['id']===null )
@@ -401,9 +403,8 @@ function KNX(agocontrol)
                 notif.warning('Please fill all ???');
                 return;
             }
-            content.devicemap[self.deviceTypeParametersEdit()[i]['key']] = self.deviceTypeParametersEdit()[i]['id'];
+            content.devicemap[uuid][self.deviceTypeParametersEdit()[i]['key']] = self.deviceTypeParametersEdit()[i]['id'];
         }
-        //console.log(content);
 
         self.agocontrol.sendCommand(content)
             .then(function(res) {
