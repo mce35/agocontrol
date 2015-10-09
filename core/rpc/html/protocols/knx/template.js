@@ -392,7 +392,7 @@ function KNX(agocontrol)
         content.uuid = self.controllerUuid;
         content.command = 'adddevice';
         content.devicemap = {};
-        var uuid = self.selectedDevice()['uuid'];
+        var uuid = self.selectedDevice()['device'];
         content.devicemap[uuid] = {};
         content.devicemap[uuid].devicetype = self.selectedDeviceTypeEdit();
         for( var i=0; i<self.deviceTypeParametersEdit().length; i++ )
