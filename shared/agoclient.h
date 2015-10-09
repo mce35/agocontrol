@@ -127,7 +127,7 @@ namespace agocontrol {
         qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content);
 
         bool emitEvent(const char *internalId, const char *eventType, const char *level, const char *units);
-        bool emitEvent(const char *internalId, const char *eventType, float level, const char *units);
+        bool emitEvent(const char *internalId, const char *eventType, double level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, int level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, qpid::types::Variant::Map content);
         qpid::types::Variant::Map getInventory();
