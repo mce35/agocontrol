@@ -79,6 +79,12 @@ std::string agocontrol::float2str(float f) {
     return sstream.str();
 }
 
+std::string agocontrol::double2str(double f) {
+    stringstream sstream;
+    sstream << f;
+    return sstream.str();
+}
+
 bool agocontrol::variantMapToJSONFile(qpid::types::Variant::Map map, const fs::path &filename) {
     ofstream mapfile;
     try {
@@ -134,6 +140,12 @@ std::string agocontrol::variantMapToJSONString(qpid::types::Variant::Map map) {
                 replaceString(tmpstring, "\\", "\\\\");
                 replaceString(tmpstring, "\"", "\\\"");
                 result += "\"" +  tmpstring + "\"";
+                break;
+            case VAR_FLOAT:
+                result += float2str(it->second);
+                break;
+            case VAR_DOUBLE:
+                result += double2str(it->second);
                 break;
             default:
                 if (it->second.asString().size() != 0) {

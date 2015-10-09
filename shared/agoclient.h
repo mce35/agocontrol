@@ -70,6 +70,7 @@ namespace agocontrol {
 
     /// convert float to std::string.
     std::string float2str(float f);
+    std::string double2str(double f);
 
     /// ago control client connection class.
     class AgoConnection {
