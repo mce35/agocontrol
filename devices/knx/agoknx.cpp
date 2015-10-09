@@ -372,8 +372,8 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
             AGO_TRACE() << "adding knx device: " << newdevice;
 
             std::string deviceuuid;
-            if(content.count("uuid"))
-                deviceuuid = content["uuid"].asString();
+            if(content.count("device"))
+                deviceuuid = content["device"].asString();
             else
                 deviceuuid = generateUuid();
 
