@@ -195,7 +195,7 @@ function KNX(agocontrol)
                 else
                 {
                     //leaf
-                    elem['text'] = el;
+                    elem['text'] = el + ' (' + item[el] + ')';
                     elem['selectable'] = true;
                     elem['value'] = item[el];
                     self.gaIdValue[item[el]] = el;
@@ -226,7 +226,7 @@ function KNX(agocontrol)
             else
             {
                 //leaf
-                elem['text'] = el;
+                elem['text'] = el + ' (' + item[el] + ')';
                 elem['selectable'] = true;
                 elem['value'] = item[el];
                 self.gaIdValue[item[el]] = el;
@@ -313,7 +313,7 @@ function KNX(agocontrol)
                             var param = {};
                             param['type'] = item;
                             param['id'] = res.data.devices[uuid][item];
-                            param['label'] = self.gaIdValue[res.data.devices[uuid][item]];
+                            param['label'] = self.gaIdValue[res.data.devices[uuid][item]] + ' (' + param['id'] + ')';
                             device['params'].push(param);
                         }
                         else
