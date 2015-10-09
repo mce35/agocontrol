@@ -1,2 +1,3 @@
 lib/systemd/system/agoknx.service
 opt/agocontrol/bin/agoknx
+etc/opt/agocontrol/schema.d/20-knx.yaml
