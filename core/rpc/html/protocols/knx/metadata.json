@@ -5,6 +5,7 @@
     "description": "KNX configuration",
     "listable": true,
     "template": "html/knx",
+    "depends": "agoknx",
     "resources": {
         "css": [
             "bootstrap-treeview/bootstrap-treeview.min.js"
