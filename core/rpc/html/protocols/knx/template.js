@@ -355,11 +355,24 @@ function KNX(agocontrol)
     };
 
     //del device
-    self.delDevice = function()
+    self.delDevice = function(item, event)
     {
+        $("#confirmPopup").data('item', item);
+        $("#confirmPopup").modal('show');
+    }
+
+    //execute device deletion
+    self.doDelDevice = function()
+    {
+        self.agocontrol.block($('#agoGrid'));
+        $("#confirmPopup").modal('hide');
+
+        var item = $("#confirmPopup").data('item');
+
         var content = {};
         content.uuid = self.controllerUuid;
         content.command = 'deldevice';
+        content.device = item.uuid;
 
         self.agocontrol.sendCommand(content)
             .then(function(res) {
@@ -368,6 +381,9 @@ function KNX(agocontrol)
                 
                 //notify user
                 notif.success('Device deleted succesfully');
+            })
+            .finally(function() {
+                self.agocontrol.unblock($('#agoGrid'));
             });
     };
 

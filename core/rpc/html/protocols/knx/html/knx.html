@@ -1,5 +1,19 @@
 <div>
 
+    <div class="modal fade" id="confirmPopup">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <span data-translateable="true">Are you sure that you want to delete this device?</span>
+                </div>
+                <div class="modal-footer">
+                    <button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button data-translateable="true" type="button" class="btn btn-danger" data-bind="click: doDelDevice">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
     <div class="modal fade" id="treeviewModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
