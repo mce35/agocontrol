@@ -37,8 +37,6 @@ function KNX(agocontrol)
     self.selectedDevice.subscribe(function() {
         if( self.selectedDevice() )
         {
-            //console.log('selecteddevice');
-            //console.log(self.selectedDevice());
             self.selectedDeviceTypeEdit(self.selectedDevice().devicetype);
         }
         else
@@ -50,10 +48,7 @@ function KNX(agocontrol)
     self.selectedDeviceTypeEdit.subscribe(function() {
         if( self.selectedDeviceTypeEdit() )
         {
-            //console.log(JSON.stringify(self.selectedDevice()));
             var params = self.selectedDevice().params;
-            //console.log('PARAMS');
-            //console.log(params);
             var out = [];
             for( var i=0; i<self.agocontrol.schema()['devicetypes']['knxcontroller']['internal']['childdevices'][self.selectedDeviceTypeEdit()].length; i++ )
             {
@@ -95,7 +90,6 @@ function KNX(agocontrol)
         {
             if( self.agocontrol.devices()[i].devicetype=='knxcontroller' )
             {
-                //console.log(self.agocontrol.devices()[i]);
                 self.controllerUuid = self.agocontrol.devices()[i].uuid;
             }
         }
@@ -105,7 +99,6 @@ function KNX(agocontrol)
         {
             try
             {
-                //console.log(self.agocontrol.schema()['devicetypes']['knxcontroller']['internal']);
                 for( var type in self.agocontrol.schema()['devicetypes']['knxcontroller']['internal']['childdevices'] )
                 {
                     deviceTypes.push(type);
@@ -167,7 +160,6 @@ function KNX(agocontrol)
             var branch = [];
             for( var el in item )
             {
-                //console.log(''+el+' ('+toType(item[el])+')');
                 var elem = {};
                 if( toType(item[el])=='object' )
                 {
@@ -193,12 +185,9 @@ function KNX(agocontrol)
         self.gaIdValue = {};
 
         //create treeview
-        //console.log('GA');
-        //console.log(self.ga);
         var tree = [];
         for( var el in self.ga )
         {
-            //console.log(''+el+' ('+toType(self.ga[el])+')');
             var elem = {};
             if( toType(self.ga[el])=='object' )
             {
@@ -217,18 +206,19 @@ function KNX(agocontrol)
             }
             tree.push(elem);
         }
-        //console.log('TREE');
-        console.log(tree);
-        //console.log('GAIDVALUE');
-        //console.log(self.gaIdValue);
 
-        $('#tree').treeview({data: tree});
+        $('#tree').treeview({data:tree, highlightSearchResults:false});
         $('#tree').on('nodeSelected', function(event, data) {
-            //console.log(data);
             self.selectedNode = data;
         });
         $('#tree').on('nodeUnselected', function(event, data) {
             self.selectedNode = null;
+        });
+        $('#tree').on('searchComplete', function(event, results) {
+            if( results[0] )
+            {
+                $('#tree').treeview('selectNode', [ results[0].nodeId, { silent: true } ]);
+            }
         });
     };
 
@@ -259,7 +249,6 @@ function KNX(agocontrol)
                 self.ga = null;
             })
             .finally(function() {
-                //console.log(self.ga);
                 if( self.ga===null )
                 {
                     self.gaLoaded(false);
@@ -280,8 +269,6 @@ function KNX(agocontrol)
 
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                //console.log('DEVICES');
-                //console.log(res);
                 var devices = [];
                 for( var uuid in res.data.devices )
                 {
@@ -309,7 +296,6 @@ function KNX(agocontrol)
                     }
                     devices.push(device);
                 }
-                //console.log(devices);
                 self.devices(devices);
 
                 //force selectedDevice to first device
@@ -461,6 +447,14 @@ function KNX(agocontrol)
         //show modal
         $('#treeviewModal').modal('show');
         self.treeviewDisplayed = true;
+
+        //and highlight item
+        if( param && param['id'] )
+        {
+            var pattern = self.gaIdValue[param['id']];
+            pattern += ' \\('+param['id']+'\\)';
+            $('#tree').treeview('search', [ pattern, {ignoreCase:true, exactMatch:true, revealResults:true}]);
+        }
     };
 
     //select choosen device
