@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-01 16:19+0200\n"
+"POT-Creation-Date: 2015-10-12 13:18+0200\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -44,6 +44,7 @@ msgstr "Nom"
 #: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
+#: ../protocols/knx/html/knx.xml.in.h:20
 msgid "Device type"
 msgstr "Type de périphérique"
 
@@ -156,7 +157,6 @@ msgid "Refresh"
 msgstr "Mettre à jour"
 
 #: ../templates/details/default.xml.in.h:5
-#, fuzzy
 msgid "Command"
 msgstr "Commande"
 
@@ -189,25 +189,24 @@ msgid "COLOR"
 msgstr "COULEUR"
 
 #: ../templates/devices/drapes.xml.in.h:1
-#, fuzzy
 msgid "closed"
-msgstr "Fermer"
+msgstr "fermé"
 
 #: ../templates/devices/drapes.xml.in.h:2
 msgid "partial"
-msgstr ""
+msgstr "partiel"
 
 #: ../templates/devices/drapes.xml.in.h:3
 msgid "opened"
-msgstr ""
+msgstr "ouvert"
 
 #: ../templates/devices/drapes.xml.in.h:4
 msgid "opening"
-msgstr ""
+msgstr "ouverture"
 
 #: ../templates/devices/drapes.xml.in.h:5
 msgid "closing"
-msgstr ""
+msgstr "fermeture"
 
 #: ../templates/devices/drapes.xml.in.h:6
 msgid "OPEN"
@@ -342,6 +341,7 @@ msgstr "Pour finir cliquer sur le bouton pour sauvegarder le code d'accès"
 #: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/security/html/security.xml.in.h:17
 #: ../protocols/onvif/html/onvif.xml.in.h:14
+#: ../protocols/knx/html/knx.xml.in.h:21
 #: ../configuration/datalogger/html/datalogger.xml.in.h:10
 #: ../configuration/system/html/system.xml.in.h:7
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
@@ -618,6 +618,7 @@ msgstr "Ok"
 
 #: ../applications/security/html/security.xml.in.h:4
 #: ../protocols/zwave/html/zwave.xml.in.h:63
+#: ../protocols/knx/html/knx.xml.in.h:2
 #: ../configuration/blockly/html/agoblockly.xml.in.h:10
 #: ../configuration/dashboards/html/dashboards.xml.in.h:2
 #: ../configuration/devices/html/devices.xml.in.h:2
@@ -753,120 +754,113 @@ msgid "Reset controller (everything will be lost!)"
 msgstr "Confirmer la remise à zéro du contrôleur"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:2
-#, fuzzy
 msgid "IPX configuration"
-msgstr "Code pin"
+msgstr "IPX configuration"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:3
-#, fuzzy
 msgid "New board IP"
-msgstr "Nom du nouveau tableau de bord"
+msgstr "Ip du nouveau IPX"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:4
 msgid "Board IP"
-msgstr ""
+msgstr "IP de l'IPX"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:5
-#, fuzzy
 msgid "Add board"
-msgstr "Ajouter commande"
+msgstr "Ajouter IPX"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:6
 msgid "Outputs"
-msgstr ""
+msgstr "Sorties"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:7
 msgid "Digitals"
-msgstr ""
+msgstr "Digitales"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:8
 msgid "Analogs"
-msgstr ""
+msgstr "Analogiques"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:9
 msgid "Counters"
-msgstr ""
+msgstr "Compteurs"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:10
 msgid "Links"
-msgstr ""
+msgstr "Liens"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:11
 msgid "Board"
-msgstr ""
+msgstr "IPX"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:12
 msgid "Add outputs"
-msgstr ""
+msgstr "Ajouter sorties"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:13
 msgid "Used outputs"
-msgstr ""
+msgstr "Sorties utilisées"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:14
 msgid "Output type"
-msgstr ""
+msgstr "Type de sortie"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:15
 msgid "Switch"
-msgstr ""
+msgstr "Interrupteur"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:16
 msgid "Drapes"
-msgstr ""
+msgstr "Volets roulants"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:17
 msgid "Relay"
-msgstr ""
+msgstr "Relais"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:18
 msgid "Opening relay"
-msgstr ""
+msgstr "Relais d'ouverture"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:19
 msgid "Closing relay"
-msgstr ""
+msgstr "Relais de fermeture"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:20
-#, fuzzy
+#: ../protocols/knx/html/knx.xml.in.h:9
 msgid "Add device"
-msgstr "Dispositif d'alarme"
+msgstr "Ajouter périphérique"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:21
-#, fuzzy
 msgid "Actions"
-msgstr "Action"
+msgstr "Actions"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:22
 msgid "Force output state of"
-msgstr ""
+msgstr "Forcer l'état de la sortie à"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:23
-#, fuzzy
 msgid "to"
-msgstr "Arrêter"
+msgstr "à"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:24
 msgid "Opened"
-msgstr ""
+msgstr "Ouvert"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:25
 msgid "Partial"
-msgstr ""
+msgstr "Partiel"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:26
-#, fuzzy
 msgid "Closed"
-msgstr "Fermer"
+msgstr "Fermé"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:27
 msgid "Force state"
-msgstr ""
+msgstr "forcer l'état"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:28
-#, fuzzy
 msgid "Turn on/off all IPX800 outputs"
-msgstr "Allumer/éteindre tous les périphériques"
+msgstr "Allumer/éteindre toutes les sorties de l'IPX"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:29
 #: ../protocols/zwave/html/zwave.xml.in.h:58
@@ -880,98 +874,91 @@ msgstr "Off"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:31
 msgid "Used digitals"
-msgstr ""
+msgstr "Digitales utilisées"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:32
 msgid "Digital input"
-msgstr ""
+msgstr "Entrée digitale"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:33
 msgid "Link binary device to output device"
-msgstr ""
+msgstr "Lier une device binaire à une device de sortie"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:34
-#, fuzzy
 msgid "Create link between"
-msgstr "Créer évènement"
+msgstr "Créer lien entre"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:35
-#, fuzzy
 msgid "and"
-msgstr "Ventilateur"
+msgstr "et"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:36
 msgid "Add link"
-msgstr ""
+msgstr "Ajouter lien"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:37
-#, fuzzy
 msgid "Delete links"
-msgstr "Supprimer la zone"
+msgstr "Supprimer les liens"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:38
 msgid "Link"
-msgstr ""
+msgstr "Lien"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:39
-#, fuzzy
 msgid "Delete link"
-msgstr "Supprimer la zone"
+msgstr "Supprimer le lien"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:40
 msgid "Add analogs"
-msgstr ""
+msgstr "ajouter un analogique"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:41
 msgid "Used analogs"
-msgstr ""
+msgstr "Analogiques utilisées"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:42
 msgid "Analog type"
-msgstr ""
+msgstr "Type d'analogique"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:43
 msgid "Temperature"
-msgstr ""
+msgstr "Température"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:44
 msgid "Light"
-msgstr ""
+msgstr "Lumière"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:45
 msgid "Volt"
-msgstr ""
+msgstr "Volt"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:46
 msgid "Humidity"
-msgstr ""
+msgstr "Humidité"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:47
 msgid "Binary"
-msgstr ""
+msgstr "Binaire"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:48
 msgid "Analog input"
-msgstr ""
+msgstr "Entrée analogique"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:49
-#, fuzzy
 msgid "Add counter"
-msgstr "Ajouter une caméra"
+msgstr "Ajouter un compteur"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:50
-#, fuzzy
 msgid "Used counters"
-msgstr "Effacer tous les compteurs"
+msgstr "Compteurs utilisés"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:51
 msgid "Counter"
-msgstr ""
+msgstr "Compteur"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:52
-#, fuzzy
 msgid "Reset counter"
-msgstr "Effacer tous les compteurs"
+msgstr "Effacer compteur"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:53
 #: ../protocols/zwave/html/zwave.xml.in.h:65
@@ -980,12 +967,12 @@ msgid "Reset"
 msgstr "Effacer"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:54
-#, fuzzy
 msgid "Delete device"
 msgstr "Supprimer un périphérique"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:55
 #: ../protocols/onvif/html/onvif.xml.in.h:51
+#: ../protocols/knx/html/knx.xml.in.h:3
 #: ../configuration/blockly/html/agoblockly.xml.in.h:4
 #: ../configuration/dashboards/html/dashboards.xml.in.h:3
 #: ../configuration/devices/html/devices.xml.in.h:3
@@ -998,15 +985,13 @@ msgstr "Supprimer"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:56
 msgid "Force saving board config"
-msgstr ""
+msgstr "Forcer la sauvegarde de la configuration"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:58
-#, fuzzy
 msgid "Delete this board"
-msgstr "Supprimer le mode"
+msgstr "Supprimer cet IPX"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:1
-#, fuzzy
 msgid "Node details"
 msgstr "Détails"
 
@@ -1183,6 +1168,7 @@ msgid "Request node parameters failed"
 msgstr "Echec de la demander de mise à jour des paramètres"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:47
+#: ../protocols/knx/html/knx.xml.in.h:7
 msgid "Devices"
 msgstr "Périphériques"
 
@@ -1200,9 +1186,8 @@ msgid "General commands"
 msgstr "Commandes générales"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:51
-#, fuzzy
 msgid "No name"
-msgstr "Nouveau nom de la zone"
+msgstr "Aucun nom"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:52
 msgid "True"
@@ -1245,9 +1230,8 @@ msgid "Reset controller"
 msgstr "Remettre à zéro le contrôleur"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:66
-#, fuzzy
 msgid "Controller configuration"
-msgstr "Configuration de la pièce"
+msgstr "Configuration du controleur"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:67
 #: ../protocols/onvif/html/onvif.xml.in.h:52
@@ -1447,6 +1431,7 @@ msgid "Recordings config"
 msgstr "Config des enreg."
 
 #: ../protocols/onvif/html/onvif.xml.in.h:50
+#: ../protocols/knx/html/knx.xml.in.h:12
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
 #: ../configuration/events/html/events.xml.in.h:9
 #: ../configuration/scenarios/html/scenarios.xml.in.h:11
@@ -1498,9 +1483,8 @@ msgid "Device removed successfully."
 msgstr "Le périphérique a été supprimé"
 
 #: ../protocols/mysensors/html/mysensors.xml.in.h:6
-#, fuzzy
 msgid "Network"
-msgstr "Tester le réseau"
+msgstr "Réseau"
 
 #: ../protocols/mysensors/html/mysensors.xml.in.h:8
 msgid ""
@@ -1508,6 +1492,9 @@ msgid ""
 "MySensors protocol doesn't give full node routes, the graph displays routes "
 "until one repeater depth."
 msgstr ""
+"Le graphe affiché est le réseau du point de vue de la passerelle.Comme le "
+"protocol MySensors ne donne pas toutes les routes entre tous les noeuds, le "
+"graphe n'affiche que les liens directs vers la passerelle."
 
 #: ../protocols/mysensors/html/mysensors.xml.in.h:9
 msgid "Configure serial port"
@@ -1532,6 +1519,67 @@ msgstr "Tout effacer"
 #: ../protocols/mysensors/html/mysensors.xml.in.h:15
 msgid "Remove device"
 msgstr "Supprimer un périphérique"
+
+#: ../protocols/knx/html/knx.xml.in.h:1
+#: ../configuration/devices/html/devices.xml.in.h:1
+msgid "Are you sure that you want to delete this device?"
+msgstr "Voulez vous supprimer ce périphérique?"
+
+#: ../protocols/knx/html/knx.xml.in.h:4
+msgid "Choose group address"
+msgstr "Choisir le group address"
+
+#: ../protocols/knx/html/knx.xml.in.h:5
+msgid "Close"
+msgstr "Ferme"
+
+#: ../protocols/knx/html/knx.xml.in.h:6
+msgid "Select"
+msgstr "Selectionner"
+
+#: ../protocols/knx/html/knx.xml.in.h:8
+msgid "Import ETS GA file"
+msgstr "Importer le fichier ETS GA"
+
+#: ../protocols/knx/html/knx.xml.in.h:10
+msgid "Edit device"
+msgstr "Editer le périphérique"
+
+#: ../protocols/knx/html/knx.xml.in.h:11
+#: ../configuration/dashboards/html/dashboards.xml.in.h:5
+#: ../configuration/devices/html/devices.xml.in.h:8
+#: ../configuration/rooms/html/rooms.xml.in.h:5
+#: ../configuration/scenarios/html/scenarios.xml.in.h:9
+msgid "unset"
+msgstr "non défini"
+
+#: ../protocols/knx/html/knx.xml.in.h:13
+msgid "File already imported?"
+msgstr "Fichier déjà importé?"
+
+#: ../protocols/knx/html/knx.xml.in.h:14
+msgid "Yes"
+msgstr "Oui"
+
+#: ../protocols/knx/html/knx.xml.in.h:15
+msgid "No"
+msgstr "Non"
+
+#: ../protocols/knx/html/knx.xml.in.h:16
+msgid "Import new GA file"
+msgstr "Importer un nouveau fichier GA"
+
+#: ../protocols/knx/html/knx.xml.in.h:17
+msgid "New device type"
+msgstr "Type du nouveau périphérique"
+
+#: ../protocols/knx/html/knx.xml.in.h:18
+msgid "Please import ETS GA file first"
+msgstr "Importer un fichier ETS GA d'abord s'il vous plait"
+
+#: ../protocols/knx/html/knx.xml.in.h:19
+msgid "Device to edit"
+msgstr "Périphérique à éditer"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:1
 msgid "Lua script"
@@ -1672,7 +1720,7 @@ msgstr ""
 
 #: ../configuration/cloud/html/cloud.xml.in.h:1
 msgid "Passwords do not match!"
-msgstr ""
+msgstr "Le mot de passe ne correspond pas!"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:2
 msgid "Success, activation successful!"
@@ -1687,14 +1735,12 @@ msgid "Wrong username, password or activation PIN!"
 msgstr "Mauvais identifiant, mot de passe ou code d'activation (PIN)!"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:5
-#, fuzzy
 msgid "ago control Cloud"
-msgstr "Créer un compte au cloud ago control"
+msgstr "ago control Cloud"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:6
-#, fuzzy
 msgid "Cloud registration"
-msgstr "Créer un compte au cloud ago control"
+msgstr "Enregistrement au Cloud"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:7
 msgid "This service is currently under heavy development!"
@@ -1722,9 +1768,8 @@ msgid "Your E-Mail address"
 msgstr "Adresse email"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:12
-#, fuzzy
 msgid "Email"
-msgstr "email"
+msgstr "Email"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:13
 msgid "Your new password"
@@ -1735,16 +1780,14 @@ msgid "Confirm new password"
 msgstr "Confirmer mot de passe"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:16
-#, fuzzy
 msgid "Password confirmation"
-msgstr "Configurer le tableau de bord"
+msgstr "Confirmation du mot de passe"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:17
 msgid "Register Cloud account"
 msgstr "Créer un compte au cloud"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:18
-#, fuzzy
 msgid "Cloud activation"
 msgstr "Activation du cloud"
 
@@ -1758,7 +1801,7 @@ msgstr "Code d'activation (PIN)"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:21
 msgid "PIN"
-msgstr ""
+msgstr "PIN"
 
 #: ../configuration/cloud/html/cloud.xml.in.h:22
 msgid "Activate Cloud"
@@ -1772,13 +1815,6 @@ msgstr "Voulez vous supprimer ce tableau de bord?"
 #: ../configuration/dashboards/html/dashboards.xml.in.h:4
 msgid "Dashboard configuration"
 msgstr "Configurer le tableau de bord"
-
-#: ../configuration/dashboards/html/dashboards.xml.in.h:5
-#: ../configuration/devices/html/devices.xml.in.h:8
-#: ../configuration/rooms/html/rooms.xml.in.h:5
-#: ../configuration/scenarios/html/scenarios.xml.in.h:9
-msgid "unset"
-msgstr "non défini"
 
 #: ../configuration/dashboards/html/dashboards.xml.in.h:7
 msgid "Create new dashboard"
@@ -1816,11 +1852,11 @@ msgstr "Activer la sauvegarde en base de données RRD (graphique)"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:8
 msgid "Keep data X months (0=no purge)"
-msgstr ""
+msgstr "Garder les données pendant X mois (0=pas de purge)"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:9
 msgid "number of months"
-msgstr ""
+msgstr "nombre de mois"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:11
 msgid "Add graph"
@@ -1843,9 +1879,8 @@ msgid "Graphs"
 msgstr "Graphiques"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:16
-#, fuzzy
 msgid "Associated sensors"
-msgstr "Associations"
+msgstr "Capteurs associés"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:17
 msgid "Database size"
@@ -1870,10 +1905,6 @@ msgstr "Supprimer toutes les positions"
 #: ../configuration/datalogger/html/datalogger.xml.in.h:23
 msgid "Purge all messages"
 msgstr "Supprimer tous les messages"
-
-#: ../configuration/devices/html/devices.xml.in.h:1
-msgid "Are you sure that you want to delete this device?"
-msgstr "Voulez vous supprimer ce périphérique?"
 
 #: ../configuration/devices/html/devices.xml.in.h:4
 msgid "Device configuration"
@@ -2013,9 +2044,8 @@ msgid "Create new Scenario"
 msgstr "Créer nouveau scénario"
 
 #: ../configuration/scenarios/html/scenarios.xml.in.h:13
-#, fuzzy
 msgid "Scenario commands"
-msgstr "Commandes générales"
+msgstr "Commandes du scénario"
 
 #: ../configuration/scenarios/html/scenarios.xml.in.h:14
 msgid "New scenario name"
@@ -2111,33 +2141,3 @@ msgstr "Debug des évènements Agocontrol"
 #: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr "Autoscroll"
-
-#~ msgid "Add association with"
-#~ msgstr "Ajouter une association avec"
-
-#~ msgid "Download configuration"
-#~ msgstr "Télécharger la configuration"
-
-#~ msgid "Save configuration"
-#~ msgstr "Sauvegarder la configuration"
-
-#~ msgid "ALL ON"
-#~ msgstr "OUVRIR TOUS"
-
-#~ msgid "ALL OFF"
-#~ msgstr "FERMER TOUS"
-
-#~ msgid "Input your username"
-#~ msgstr "Votre identifiant"
-
-#~ msgid "Input your E-Mail address"
-#~ msgstr "Votre adresse email"
-
-#~ msgid "Input new password"
-#~ msgstr "Votre mot de passe"
-
-#~ msgid "Input password"
-#~ msgstr "Votre mot de passe"
-
-#~ msgid "Input PIN"
-#~ msgstr "Code PIN"

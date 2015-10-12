@@ -1,66 +1,71 @@
 <div>
 
+    <!-- delete popup -->
     <div class="modal fade" id="confirmPopup">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-body">
-                    <span data-translateable="true">Are you sure that you want to delete this device?</span>
+                    <_span data-translateable="true">Are you sure that you want to delete this device?</_span>
                 </div>
                 <div class="modal-footer">
-                    <button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button data-translateable="true" type="button" class="btn btn-danger" data-bind="click: doDelDevice">Delete</button>
+                    <_button data-translateable="true" type="button" class="btn btn-default" data-dismiss="modal">Cancel</_button>
+                    <_button data-translateable="true" type="button" class="btn btn-danger" data-bind="click: doDelDevice">Delete</_button>
                 </div>
             </div>
         </div>
     </div> 
 
+    <!-- treeview popup -->
     <div class="modal fade" id="treeviewModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span>x</span></button>
-                    <h4 data-translateable="true" class="modal-title">Choose group address</h4>
+                    <_h4 data-translateable="true" class="modal-title">Choose group address</_h4>
                 </div>
                 <div class="modal-body">
                     <div id="tree"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" data-bind="click: selectDevice">Select</button>
+                    <_button type="button" class="btn btn-default" data-dismiss="modal" data-translateable="true">Close</_button>
+                    <_button type="button" class="btn btn-primary" data-bind="click: selectDevice" data-translateable="true">Select</_button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- titlte -->
     <section class="content-header">
         <h1>KNX</h1>
     </section>
 
+    <!-- content -->
     <section class="content">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs" data-bind="bootstrapTabs:{onChanged: onTabChanged}">
-                <li class="active"><a href="#devices-tab" class="en-doc" data-translateable="true">Devices</a></li>
-                <li><a href="#gaexport-tab" class="en-download" data-translateable="true">Import ETS GA file</a></li>
-                <li><a href="#adddevices-tab" class="en-plus-circled" data-translateable="true">Add device</a></li>
-                <li><a href="#editdevice-tab" id="editdevice-href" class="en-pencil" data-translateable="true">Edit device</a></li>
+                <li class="active"><_a href="#devices-tab" class="en-doc" data-translateable="true">Devices</_a></li>
+                <li><_a href="#gaexport-tab" class="en-download" data-translateable="true">Import ETS GA file</_a></li>
+                <li><_a href="#adddevices-tab" class="en-plus-circled" data-translateable="true">Add device</_a></li>
+                <li><_a href="#editdevice-tab" id="editdevice-href" class="en-pencil" data-translateable="true">Edit device</_a></li>
             </ul>
             <div class="tab-content">
                 
+                <!-- devices tab -->
                 <div id="devices-tab" class="tab-pane fade in active">
                     <script type="text/html" id="deviceRowTemplate">
                         <ko opts="if: name">
                         <td class="change_name" data-bind="attr: {'data-uuid': uuid}, text: name"></td>
                         </ko>
                         <ko opts="ifnot: name">
-                        <td data-translateable="true" class="change_name" data-bind="attr: {'data-uuid': uuid}">unset</td>
+                        <_td data-translateable="true" class="change_name" data-bind="attr: {'data-uuid': uuid}">unset</_td>
                         </ko>
                         <td data-bind="text: uuid"></td>
                         <td data-bind="text: devicetype"></td>
                         <ko opts="if: room">
-                        <td data-translateable="true" class="change_room" data-bind="attr: {'data-uuid': uuid}, text:room"></td>
+                        <td class="change_room" data-bind="attr: {'data-uuid': uuid}, text:room"></td>
                         </ko>
                         <ko opts="ifnot: room">
-                        <td data-translateable="true" class="change_room" data-bind="attr: {'data-uuid': uuid}">unset</td>
+                        <_td data-translateable="true" class="change_room" data-bind="attr: {'data-uuid': uuid}">unset</_td>
                         </ko>
                         <td>
                             <dl class="dl-horizontal" data-bind="foreach: params" style="margin-bottom:0px;">
@@ -70,10 +75,10 @@
                         </td>
                         <td>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-primary btn-xs" alt="Edit" title="Edit" data-translateable="true" data-bind="click: $parent.editDevice">
+                                <button type="button" class="btn btn-primary btn-xs" _alt="Edit" _title="Edit" data-translateable="true" data-bind="click: $parent.editDevice">
                                     <span class="en-pencil"></span>
                                 </button>
-                                <button type="button" class="btn btn-primary btn-xs" alt="Delete" title="Delete" data-translateable="true" data-bind="click: $parent.delDevice">
+                                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.delDevice">
                                     <span class="en-cancel"></span>
                                 </button>
                             </div>
@@ -82,21 +87,22 @@
                     <div data-bind="agoGrid:devicesGrid"/>
                 </div>
 
+                <!-- GA export file tab -->
                 <div id="gaexport-tab" class="tab-pane fade">
                     <form class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true">File already imported?</label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">File already imported?</_label>
                             <div class="col-sm-6">
                                 <ko opts="if: gaLoaded">
-                                <p class="form-control-static" data-translateable="true">Yes</p>
+                                <_p class="form-control-static" data-translateable="true">Yes</_p>
                                 </ko>
                                 <ko opts="ifnot: gaLoaded">
-                                <p class="form-control-static" data-translateable="true">No</p>
+                                <_p class="form-control-static" data-translateable="true">No</_p>
                                 </ko>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true">Import new GA file</label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Import new GA file</_label>
                             <div class="col-sm-6">
                                 <input class="form-control-static" type="file" name="files" id="fileupload" data-url="/upload"/>
                             </div>
@@ -107,66 +113,68 @@
                     </div>
                 </div>
 
+                <!-- add tab -->
                 <div id="adddevices-tab" class="tab-pane fade">
                     <ko opts="if: gaLoaded">
                     <form class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true">New device type</label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">New device type</_label>
                             <div class="col-sm-6">
                                 <select class="form-control" data-bind="options:deviceTypes, value:selectedDeviceType"></select>
                             </div>
                         </div>
                         <ko opts="foreach: deviceTypeParameters">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true" data-bind="text:value"></label>
+                            <label class="col-sm-4 control-label" data-bind="text:value"></label>
                             <div class="col-sm-4">
                                 <span data-bind="text:label()"></span>
-                                <button type="button" data-translateable="true" data-bind="click:$parent.openTreeview.bind($data)" class="btn btn-primary btn-sm fa fa-search"></button>
+                                <button type="button" data-bind="click:$parent.openTreeview.bind($data)" class="btn btn-primary btn-sm fa fa-search"></button>
                             </div>
                         </div>
                         </ko>
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-4">
-                                <button type="button" data-translateable="true" data-bind="click:addDevice" class="btn btn-primary">Add device</button>
+                                <_button type="button" data-translateable="true" data-bind="click:addDevice" class="btn btn-primary">Add device</_button>
                             </div>
                         </div>
                     </form>
                     </ko>
                     <ko opts="ifnot: gaLoaded">
                         <div class="callout callout-warning">
-                            <span data-translateable="true">Please import ETS GA file first</span>
+                            <_span data-translateable="true">Please import ETS GA file first</_span>
                         </div>
                     </ko>
                 </div>
 
+                <!-- edit tab -->
                 <div id="editdevice-tab" class="tab-pane fade">
                     <form class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true">Device to edit</label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Device to edit</_label>
                             <div class="col-sm-6">
                                 <select class="form-control" data-bind="options:devices, optionsText:function(item){if(item.name.length>0){return name;}else{return item.uuid}}, value:selectedDevice, optionsCaption:'Select a device...'"></select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true">Device type</label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Device type</_label>
                             <div class="col-sm-6">
                                 <select class="form-control" data-bind="options:deviceTypes, value:selectedDeviceTypeEdit, optionsCaption:'Select a device type...'"></select>
                             </div>
                         </div>
                         <ko opts="foreach: deviceTypeParametersEdit">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" data-translateable="true" data-bind="text:value"></label>
+                            <label class="col-sm-4 control-label" data-bind="text:value"></label>
                             <div class="col-sm-4">
                                 <span data-bind="text:label()"></span>
-                                <button type="button" data-translateable="true" data-bind="click:$parent.openTreeview.bind($data)" class="btn btn-primary btn-sm fa fa-search"></button>
+                                <button type="button" data-bind="click:$parent.openTreeview.bind($data)" class="btn btn-primary btn-sm fa fa-search"></button>
                             </div>
                         </div>
                         </ko>
                         <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-4">
-                                <button type="button" data-translateable="true" data-bind="click:saveDevice" class="btn btn-primary">Save changes</button>
+                                <_button type="button" data-translateable="true" data-bind="click:saveDevice" class="btn btn-primary">Save changes</_button>
                             </div>
                         </div>
                     </form>
