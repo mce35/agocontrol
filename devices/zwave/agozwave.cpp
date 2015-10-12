@@ -1082,6 +1082,14 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 AGO_DEBUG() << "Sensor multilevel: add new brightnesssensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
+                            else if (label == "Ultraviolet")
+                            {
+                                device = new ZWaveNode(tempstring, "uvsensor");
+                                device->addValue(label, id);
+                                devices.add(device);
+                                AGO_DEBUG() << "Sensor multilevel: add new uvsensor [" << device->getId() << ", " << device->getDevicetype() << "]";
+                                agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                            }
                             else if (label == "Temperature")
                             {
                                 if (generic == GENERIC_TYPE_THERMOSTAT)
@@ -1294,6 +1302,10 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     else if (label == "Luminance")
                     {
                         eventtype="event.environment.brightnesschanged";
+                    }
+                    else if (label == "Ultraviolet")
+                    {
+                        eventtype="event.environment.ultravioletchanged";
                     }
                     else if (label == "Temperature")
                     {
