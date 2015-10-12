@@ -145,7 +145,7 @@
                         <div class="form-group">
                             <label class="col-sm-4 control-label" data-translateable="true">Device to edit</label>
                             <div class="col-sm-6">
-                                <select class="form-control" data-bind="options:devices, optionsText:'name', value:selectedDevice, optionsCaption:'Select a device...'"></select>
+                                <select class="form-control" data-bind="options:devices, optionsText:function(item){if(item.name.length>0){return name;}else{return item.uuid}}, value:selectedDevice, optionsCaption:'Select a device...'"></select>
                             </div>
                         </div>
                         <div class="form-group">
