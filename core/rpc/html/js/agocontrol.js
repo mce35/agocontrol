@@ -49,6 +49,8 @@ Agocontrol.prototype = {
 
     //ui config
     skin: ko.observable('skin-yellow-light body-light'),
+    colorStyle: null,
+    darkStyle: ko.observable(false),
 
     _init : function(){
         /**
@@ -165,6 +167,14 @@ Agocontrol.prototype = {
     {
         var self = this;
 
+        //handle dark/light style changes
+        self.darkStyle.subscribe(function(value) {
+            if( self.colorStyle )
+            {
+                self.setSkin(self.colorStyle);
+            }
+        });
+
         //get ui config (localstorage)
         //this is used to avoid skin refresh at startup
         if( typeof(Storage)!=="undefined" )
@@ -172,6 +182,15 @@ Agocontrol.prototype = {
             var skin = localStorage.getItem("skin");
             if( skin )
             {
+                self.colorStyle = skin.replace('-light', '');
+                if( skin.indexOf('light')===-1 )
+                {
+                    self.darkStyle(true);
+                }
+                else
+                {
+                    self.darkStyle(false);
+                }
                 self.skin(skin);
             }
         }
@@ -1093,9 +1112,17 @@ Agocontrol.prototype = {
     setSkin: function(skin)
     {
         var self = this;
+        self.colorStyle = skin;
 
         //append general style light/dark
-        skin.indexOf('light')===-1 ? skin+=' body-dark' : skin+=' body-light';
+        if( self.darkStyle() )
+        {
+            skin = skin.replace('-light','')+' body-dark';
+        }
+        else
+        {
+            skin = skin.replace('-light','')+'-light body-light';
+        }
         self.skin(skin);
 
         //save changes
@@ -1112,6 +1139,43 @@ Agocontrol.prototype = {
             {
                 localStorage.setItem('skin', skin);
                 notif.success('Skin saved');
+            }
+        });
+    },
+
+    //set dashboard size
+    setDashboardSize: function(size)
+    {
+        var self = this;
+
+        //save changes
+        $.ajax({
+            url : "cgi-bin/ui.cgi?key=size&param=theme&value="+size,
+            method : "GET",
+            async : true,
+        }).done(function(res) {
+            if( !res || !res.result || res.result===0 ) 
+            {
+                notif.error('Unable to save dashboard size');
+            }
+            else
+            {
+                if( size=='3x3' )
+                {
+                    localStorage.setItem('dashboardColSize', 3);
+                    localStorage.setItem('dashboardRowSize', 3);
+                }
+                else if( size=='4x3' )
+                {
+                    localStorage.setItem('dashboardColSize', 4);
+                    localStorage.setItem('dashboardRowSize', 3);
+                }
+                else if( size=='4x4' )
+                {
+                    localStorage.setItem('dashboardColSize', 4);
+                    localStorage.setItem('dashboardRowSize', 4);
+                }
+                notif.success('Dashboard size saved. Please refresh page.', 0);
             }
         });
     },

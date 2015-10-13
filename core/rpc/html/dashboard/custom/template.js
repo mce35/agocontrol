@@ -10,7 +10,6 @@ function Dashboard(dashboard, edition, agocontrol)
     //members
     var self = this;
     self.agocontrol = agocontrol;
-    self.itemsPerRow = 4;
     self.currentDashboard = dashboard;
     self.dashboardName = ko.observable(ucFirst(self.currentDashboard.name));
     self.editLabel = ko.observable('Edit');
@@ -20,10 +19,51 @@ function Dashboard(dashboard, edition, agocontrol)
     self.selectedSubFilter = ko.observable('');
     self.placedDevices = ko.observable([]);
     self.editorOpened = false;
-    self.lineNumber = 4;
-    self.itemsPerLine = 4;
+    self.defaultRow = 4;
+    self.defaultcol = 4;
+    self.dummy = ko.observable();
     self.openEditor = edition;
 
+    self.colNumber = ko.pureComputed(function() {
+        if( typeof(Storage)!=='undefined' )
+        {
+            out  = localStorage.getItem('dashboardColSize');
+            if( !out )
+            {
+                localStorage.setItem('dashboardColSize', self.defaultCol);
+                out = self.defaultCol;
+            }
+        }
+        else
+        {
+            out = self.defaultCol;
+        }
+        console.log('col='+out);
+        return out;
+    });
+
+    self.rowNumber = ko.computed(function()
+    {
+        if( typeof(Storage)!=='undefined' )
+        {
+            out  = localStorage.getItem('dashboardRowSize');
+            if( !out )
+            {
+                localStorage.setItem('dashboardRowSize', self.defaultCol);
+                out = self.defaultRow;
+            }
+        }
+        else
+        {
+            out = self.defaultRow;
+        }
+        console.log('row='+out);
+        return out;
+    });
+
+    self.devicesPerPage = ko.computed(function() {
+        var out = self.colNumber() * self.rowNumber();
+    });
 
     //====================================================
     //EDITOR
@@ -354,7 +394,6 @@ function Dashboard(dashboard, edition, agocontrol)
         return output;
     });
 
-
     //search device in inventory
     self.findDevice = function(uuid)
     {
@@ -368,58 +407,54 @@ function Dashboard(dashboard, edition, agocontrol)
         return null;
     };
 
-    //render dashboard
-    self.renderDashboard = function()
-    {
-        //init
+    //return list of devices on page
+    self.devicesOnPage = ko.computed(function() {
         var content = [];
-        for( var i=0; i<self.lineNumber; i++ )
+        self.dummy(); //trick to force computed re-calculation
+
+        //create array with placeholder
+        for( var i=0; i<self.rowNumber(); i++ )
         {
             var line = [];
-            for( var j=0; j<self.itemsPerLine; j++ )
+            for( var j=0; j<self.colNumber(); j++ )
             {
-                line.push(null);
+                line.push({devicetype:"placeholder", x:i, y:j});
             }
             content.push(line);
         }
-	    self.placedDevices(content);
 
-        if (self.agocontrol.devices().length===0)
+        //fill with custom dashboard devices
+        for( var k in self.currentDashboard )
         {
-            return;
-        }
-
-        for ( var k in self.currentDashboard )
-        {
+            //drop device not initialized
             if( self.currentDashboard[k]===null || self.currentDashboard[k].x===undefined || self.currentDashboard[k].y===undefined )
             {
-                //skip uneeded items
                 continue;
             }
 
+            //drop device with bad coordinates
             var x = self.currentDashboard[k].x;
             var y = self.currentDashboard[k].y;
-            if (x < 0 || y < 0)
+            if( x<0 || y<0 || x>=self.rowNumber() || y>=self.colNumber() )
             {
-               continue;
+                continue;
             }
 
+            //store device at its position
             content[x][y] = self.findDevice(k);
         }
 
-        self.placedDevices([]);
-        self.placedDevices(content);
-
-        if( self.editorOpened )
+        //re-enable drag and drop
+        setTimeout(function()
         {
-            //re-enable drag and drop (dashboard widgets are regenerated)
-            setTimeout(function()
-            {
-                self.enableDragAndDrop();
-            }, 250);
-        }
+            self.enableDragAndDrop();
+        }, 250);
 
-    };
+        console.log(content);
+
+        //return flattened array
+        return [].concat.apply([], content);
+    });
 
     //update dashboard
     self.updateDashboard = function(uuid, x, y)
@@ -451,108 +486,9 @@ function Dashboard(dashboard, edition, agocontrol)
             self.currentDashboard[uuid] = {x:x, y:y};
         }
 
-        //and render dashboard
-        self.renderDashboard();
+        //and update dashboard
+        self.dummy.notifySubscribers();
     };
-
-    //first row content
-    this.firstRow = ko.computed(function()
-    {
-        var result = [];
-        var x = 0;
-        for ( var y=0; y<self.itemsPerRow; y++ )
-        {
-            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
-            {
-                result.push(self.placedDevices()[x][y]);
-            }
-            else
-            {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
-            }
-        }
-
-        return result;
-    });
-
-    //second row content
-    this.secondRow = ko.computed(function()
-    {
-        var result = [];
-        var x = 1;
-        for ( var y=0; y<self.itemsPerRow; y++ )
-        {
-            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
-            {
-                result.push(self.placedDevices()[x][y]);
-            }
-            else
-            {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
-            }
-        }
-
-        return result;
-    });
-
-    //third row content
-    this.thirdRow = ko.computed(function()
-    {
-        var result = [];
-        var x = 2;
-        for ( var y=0; y<self.itemsPerRow; y++ )
-        {
-            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
-            {
-                result.push(self.placedDevices()[x][y]);
-            }
-            else
-            {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
-            }
-        }
-
-        return result;
-    });
-
-    //fourth row content
-    this.fourthRow = ko.computed(function()
-    {
-        var result = [];
-        var x = 3;
-        for ( var y=0; y<self.itemsPerRow; y++ )
-        {
-            if( self.placedDevices()[x] && self.placedDevices()[x][y] )
-            {
-                result.push(self.placedDevices()[x][y]);
-            }
-            else
-            {
-                result.push({
-                    devicetype : "placeholder",
-                    x : x,
-                    y : y
-                });
-            }
-        }
-
-        return result;
-    });
-
-    //render dashboard
-    self.renderDashboard();
 }
 
 /**
@@ -564,7 +500,7 @@ function init_template(path, params, agocontrol)
     var model = new Dashboard(params.dashboard, params.edition, agocontrol);
 
     model.deviceTemplate = function(item) {
-        if( agocontrol.supported_devices().indexOf(item.devicetype)!=-1 )
+        if( item!==null && agocontrol.supported_devices().indexOf(item.devicetype)!=-1 )
         {
             return 'templates/devices/' + item.devicetype;
         }
@@ -572,7 +508,7 @@ function init_template(path, params, agocontrol)
     }.bind(model);
 
     model.listDeviceTemplate = function(item) {
-        if (agocontrol.supported_devices().indexOf(item.devicetype) != -1)
+        if( agocontrol.supported_devices().indexOf(item.devicetype)!=-1 )
         {
             return 'templates/list/' + item.devicetype;
         }

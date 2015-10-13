@@ -6,7 +6,8 @@ function dashBoard(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
-    self.itemsPerPage = 16;
+    self.defaultRow = 4;
+    self.defaultCol = 4;
     self.keyword = ko.observable("");
     self.currentPage = ko.observable(1);
     self.deviceList = ko.computed(function()
@@ -43,9 +44,50 @@ function dashBoard(agocontrol)
         return list;
     });
 
+    self.itemsPerPage = ko.pureComputed(function() {
+        if( typeof(Storage)!=='undefined' )
+        {
+            var row  = localStorage.getItem('dashboardRowSize');
+            if( !row )
+            {
+                localStorage.setItem('dashboardRowSize', _default);
+                row = self.defaultRow;
+            }
+            var col  = localStorage.getItem('dashboardColSize');
+            if( !col )
+            {
+                localStorage.setItem('dashboardColSize', _default);
+                col = self.defaultCol;
+            }
+            out = row * col;
+        }
+        else
+        {
+            out = self.defaultRow * self.defaultCol;
+        }
+        return out;
+    });
+
+    self.devicesPerLine = ko.pureComputed(function() {
+        if( typeof(Storage)!=='undefined' )
+        {
+            out  = localStorage.getItem('dashboardColSize');
+            if( !out )
+            {
+                localStorage.setItem('dashboardColSize', _default);
+                out = self.defaultCol;
+            }
+        }
+        else
+        {
+            out = self.defaultCol;
+        }
+        return out;
+    });
+
     self.devicesPerPage = ko.computed(function()
     {
-        var currentList = self.deviceList().chunk(self.itemsPerPage);
+        var currentList = self.deviceList().chunk(self.itemsPerPage());
         if (currentList.length < self.currentPage())
         {
             return [];
@@ -57,7 +99,7 @@ function dashBoard(agocontrol)
     self.pages = ko.computed(function()
     {
         var pages = [];
-        var max = Math.ceil(self.deviceList().length / self.itemsPerPage);
+        var max = Math.ceil(self.deviceList().length / self.itemsPerPage());
         for ( var i = 1; i <= max; i++)
         {
             pages.push({idx : i});

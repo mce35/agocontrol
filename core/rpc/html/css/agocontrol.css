@@ -30,6 +30,11 @@
     border-radius: 8px;
 }
 
+/* adminLTE menu */
+.control-sidebar-heading {
+    border-bottom: 1px solid #CCCCCC;
+}
+
 /* pin button */
 .btn-pin {
     width: 100%;

@@ -235,12 +235,6 @@ function AgocontrolViewModel()
         }
     };
 
-    //set ui skin
-    self.setSkin = function(skin)
-    {
-        self.agocontrol.setSkin(skin);
-    };
-
     //route functions
     self.gotoDashboard = function(dashboard, edit)
     {
