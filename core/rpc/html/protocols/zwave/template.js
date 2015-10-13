@@ -937,12 +937,43 @@ function zwaveConfig(zwave) {
     //get and set zwave controller uuid
     var zwaveControllerUuid = zwave.getControllerUuid();
     zwave.setControllerUuid(zwaveControllerUuid);
-
-    //open node details
-    self.openNodeDetails = function(nodeId)
+    
+    //open node details from chord graph
+    self.openNodeDetailsFromGraph = function(id)
     {
-        //init
-        var i;
+        self.openNodeDetails(self.nodes()[id]);
+    };
+    
+    //open node details from devices list
+    self.openNodeDetailsFromList = function(id)
+    {
+        var i = 0;
+        var node = null;
+
+        for( i=0; self.nodes().length; i++ )
+        {
+            if( self.nodes()[i].id===id )
+            {
+                node = self.nodes()[i];
+                break;
+            }
+        }
+
+        if( node===null )
+        {
+            notif.error('Node id #'+id+' not found');
+            return;
+        }
+        else
+        {
+            self.openNodeDetails(node);
+        }
+    };
+    
+    //open node details
+    self.openNodeDetails = function(node)
+    {
+        var i = 0;
 
         //clear existing infos
         while( self.nodeInfos().length>0 )
@@ -956,23 +987,8 @@ function zwaveConfig(zwave) {
         while( self.nodesForAssociation().length>0 )
             self.nodesForAssociation.pop();
 
-        //search selected node
-        self.selectedNode = null;
-        for( i=0; self.nodes().length; i++ )
-        {
-            if( self.nodes()[i].id===nodeId )
-            {
-                self.selectedNode = self.nodes()[i];
-                break;
-            }
-        }
-        if( self.selectedNode===null )
-        {
-            notif.error('Node id #'+nodeId+' not found');
-            return;
-        }
-
         //fill node infos array
+        self.selectedNode = node;
         self.nodeInfos.push({info:'Device id', value:self.selectedNode.id});
         self.nodeInfos.push({info:'Manufacturer', value:self.selectedNode.manufacturer});
         self.nodeInfos.push({info:'Device type', value:self.selectedNode.type});
@@ -1101,7 +1117,7 @@ function zwaveConfig(zwave) {
     {
         if( index==1 && self.nodes().length>0 )
         {
-            zwave.buildChordGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
+            zwave.buildChordGraph('#nodesDependency', self.nodes(), self.openNodeDetailsFromGraph);
             //zwave.buildDirectedGraph('#nodesDependency', self.nodes(), self.openNodeDetails);
         }
     };

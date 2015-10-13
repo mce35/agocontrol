@@ -42,7 +42,7 @@
                                         <div class="col-sm-4">
                                             <div class="input-group">
                                                 <select class="form-control" data-bind="options:nodesForAssociation, optionsText:'value', value:selectedNodeForAssociation"/>
-                                                <span class="input-group-button">
+                                                <span class="input-group-btn">
                                                     <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:createAssociation">Create</_button>
                                                 </span>
                                             </div>
@@ -59,7 +59,7 @@
                                                     <span data-bind="text:asso"/>
                                                 </td>
                                                 <td>
-                                                    <button type="button" class="btn btn-primary" _title="Delete node association" _alt="Delete node association" data-translateable="true" data-bind="click:$parent.removeAssociation"><i class="en-cancel"></i></button>
+                                                    <button type="button" class="btn btn-primary btn-sm" _title="Delete node association" _alt="Delete node association" data-translateable="true" data-bind="click:$parent.removeAssociation"><i class="en-cancel"></i></button>
                                                 </td>
                                             </tr>
                                             <tr data-bind="if: add">
@@ -68,7 +68,7 @@
                                                     <select class="form-control" data-bind="options:targets, optionsText:'value', value:target"/>
                                                 </td>
                                                 <td>
-                                                    <button type="button" class="btn btn-primary" _title="Add association" _alt="Add association" data-translateable="true" data-bind="click:$parent.addAssociation"><i class="en-plus"></i></button>
+                                                    <button type="button" class="btn btn-primary btn-sm" _title="Add association" _alt="Add association" data-translateable="true" data-bind="click:$parent.addAssociation"><i class="en-plus"></i></button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -119,9 +119,7 @@
                                     </td>
                                     <td>
                                         <ko opts="if: invalid==0">
-                                        <div class="small primary btn">
-                                            <a href="#" data-translateable="true" data-bind="click:$parent.setParameter">Set</a>
-                                        </div>
+                                        <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click:$parent.setParameter">Set</_button>
                                         </ko>
                                     </td>
                                 </script>
@@ -237,7 +235,7 @@
                     <script type="text/html" id="nodesRowTemplate">
                         <td data-bind="text: id"/>
                         <td>
-                            <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetails(id); }">
+                            <a href="#" data-bind="click: function(data,event) { $parent.openNodeDetailsFromList(id); }">
                                 <ko opts="if: product.length>0">
                                 <span data-bind="text: manufacturer+' ('+product+')'"/>
                                 </ko>
