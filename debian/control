@@ -3,6 +3,7 @@ Maintainer: Harald Klein <hari@vt100.at>
 Section: misc
 Priority: optional
 Build-Depends: debhelper (>= 8), libola-dev (>= 0.9.1) | ola-dev, libprocps3-dev (>= 2:3.3.9) | libprocps0-dev (>= 1:3.1.11), libyaml-cpp0.3-dev (<< 0.4) | libyaml-cpp-dev (<< 0.5), python, libqpidmessaging2-dev, libqpidtypes1-dev, libqpidcommon2-dev, libudev-dev, libqpidclient2-dev, uuid-dev, libopenzwave1.3-dev, libjsoncpp-dev, libtinyxml2-dev, libsqlite3-dev, libi2c-dev, libssl-dev, libboost-dev, intltool, libboost-date-time-dev,realpath,libcurl4-openssl-dev,libhdate-dev,liblua5.2-dev,libeibclient-dev, libboost-regex-dev, libaugeas-dev, librrd-dev, cmake, libboost-filesystem-dev, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, lsb-release, libopencv-dev, libopencv-core-dev, libopencv-imgproc-dev, libopencv-objdetect-dev, libopencv-highgui-dev
+Build-Conflicts: libopenzwave1.0-dev
 Standards-Version: 3.9.2
 
 Package: agocontrol
@@ -63,6 +64,7 @@ Description: meloware lightswitch app gateway
 Package: agocontrol-zwave
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libopenzwave1.3, libagoclient1.0
+Conflicts: libopenzwave1.0
 Description: ZWave interface driver
 
 Package: agocontrol-knx
