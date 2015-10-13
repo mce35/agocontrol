@@ -20,7 +20,7 @@ function Dashboard(dashboard, edition, agocontrol)
     self.placedDevices = ko.observable([]);
     self.editorOpened = false;
     self.defaultRow = 4;
-    self.defaultcol = 4;
+    self.defaultCol = 4;
     self.dummy = ko.observable();
     self.openEditor = edition;
 
@@ -42,7 +42,6 @@ function Dashboard(dashboard, edition, agocontrol)
         {
             out = self.defaultCol;
         }
-        console.log('col='+out);
         return out;
     });
 
@@ -65,7 +64,6 @@ function Dashboard(dashboard, edition, agocontrol)
         {
             out = self.defaultRow;
         }
-        console.log('row='+out);
         return out;
     });
 
@@ -457,8 +455,6 @@ function Dashboard(dashboard, edition, agocontrol)
         {
             self.enableDragAndDrop();
         }, 250);
-
-        console.log(content);
 
         //return flattened array
         return [].concat.apply([], content);
