@@ -33,6 +33,10 @@ function Dashboard(dashboard, edition, agocontrol)
                 localStorage.setItem('dashboardColSize', self.defaultCol);
                 out = self.defaultCol;
             }
+            else
+            {
+                out = self.defaultCol;
+            }
         }
         else
         {
@@ -50,6 +54,10 @@ function Dashboard(dashboard, edition, agocontrol)
             if( !out )
             {
                 localStorage.setItem('dashboardRowSize', self.defaultCol);
+                out = self.defaultRow;
+            }
+            else
+            {
                 out = self.defaultRow;
             }
         }
