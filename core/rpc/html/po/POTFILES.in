@@ -48,6 +48,7 @@ protocols/ipx800/html/ipx800.xml.in
 protocols/zwave/html/zwave.xml.in
 protocols/onvif/html/onvif.xml.in
 protocols/mysensors/html/mysensors.xml.in
+protocols/knx/html/knx.xml.in
 configuration/blockly/html/agoblockly.xml.in
 configuration/cloud/html/cloud.xml.in
 configuration/dashboards/html/dashboards.xml.in

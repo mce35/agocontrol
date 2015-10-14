@@ -1082,6 +1082,14 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 AGO_DEBUG() << "Sensor multilevel: add new brightnesssensor [" << device->getId() << ", " << device->getDevicetype() << "]";
                                 agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                             }
+                            else if (label == "Ultraviolet")
+                            {
+                                device = new ZWaveNode(tempstring, "uvsensor");
+                                device->addValue(label, id);
+                                devices.add(device);
+                                AGO_DEBUG() << "Sensor multilevel: add new uvsensor [" << device->getId() << ", " << device->getDevicetype() << "]";
+                                agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                            }
                             else if (label == "Temperature")
                             {
                                 if (generic == GENERIC_TYPE_THERMOSTAT)
@@ -1294,6 +1302,10 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     else if (label == "Luminance")
                     {
                         eventtype="event.environment.brightnesschanged";
+                    }
+                    else if (label == "Ultraviolet")
+                    {
+                        eventtype="event.environment.ultravioletchanged";
                     }
                     else if (label == "Temperature")
                     {
@@ -1784,14 +1796,30 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
         {
             checkMsgParameter(content, "node", VAR_INT32);
             checkMsgParameter(content, "index", VAR_INT32);
-            checkMsgParameter(content, "value", VAR_STRING);
-            int nodeId = content["node"];
-            int commandClassId = content["commandclassid"];
+            int nodeId = atoi(content["node"].asString().c_str());
             int index = content["index"];
-            string value = string(content["value"]);
-            AGO_DEBUG() << "setting config param: nodeId=" << nodeId << " commandClassId=" << commandClassId << " index=" << index << " value=" << value;
-            if (setCommandClassParameter(g_homeId, nodeId, commandClassId, index, value)) return responseSuccess();
-            else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set command class parameter");
+            if (content["commandclassid"].isVoid())
+            {
+                // old-fashioned direct setconfigparam
+                checkMsgParameter(content, "value", VAR_INT32);
+                checkMsgParameter(content, "size", VAR_INT32);
+                int size = content["size"];
+                int value = content["value"];
+
+                AGO_DEBUG() << "setting config param: nodeId=" << nodeId << " size=" << size << " index=" << index << " value=" << value;
+                Manager::Get()->SetConfigParam(g_homeId, nodeId, index, value, size);
+                return responseSuccess();
+            }
+            else
+            {
+                // new style used by the GUI
+                checkMsgParameter(content, "value", VAR_STRING);
+                string value = string(content["value"]);
+                int commandClassId = content["commandclassid"];
+                AGO_DEBUG() << "setting config param: nodeId=" << nodeId << " commandClassId=" << commandClassId << " index=" << index << " value=" << value;
+                if (setCommandClassParameter(g_homeId, nodeId, commandClassId, index, value)) return responseSuccess();
+                else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set command class parameter");
+            }
         }
         else if( content["command"]=="requestallconfigparams" )
         {

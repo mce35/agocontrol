@@ -70,6 +70,7 @@ namespace agocontrol {
 
     /// convert float to std::string.
     std::string float2str(float f);
+    std::string double2str(double f);
 
     /// ago control client connection class.
     class AgoConnection {
@@ -127,7 +128,7 @@ namespace agocontrol {
         qpid::types::Variant::Map sendMessageReply(const char *subject, const qpid::types::Variant::Map& content);
 
         bool emitEvent(const char *internalId, const char *eventType, const char *level, const char *units);
-        bool emitEvent(const char *internalId, const char *eventType, float level, const char *units);
+        bool emitEvent(const char *internalId, const char *eventType, double level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, int level, const char *units);
         bool emitEvent(const char *internalId, const char *eventType, qpid::types::Variant::Map content);
         qpid::types::Variant::Map getInventory();

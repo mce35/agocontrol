@@ -49,11 +49,25 @@
             </div>
         </div>
     
-        <!-- DASHBOARD -->
-        <div data-bind="template: {name: deviceTemplate, foreach: firstRow}" class="row grid"/>
-        <div data-bind="template: {name: deviceTemplate, foreach: secondRow}" class="row grid"/>
-        <div data-bind="template: {name: deviceTemplate, foreach: thirdRow}" class="row grid"/>
-        <div data-bind="template: {name: deviceTemplate, foreach: fourthRow}" class="row grid"/>
+        <div data-bind="foreach:devicesOnPage" class="row">
+            <ko opts="if: $parent.colNumber()==3">
+                <ko opts="if: $data.devicetype=='placeholder'">
+                <div class="col-md-4 col-sm-6 col-xs-12 dashboard-widget placeholder hidden-xs" data-bind="template:{name:$parent.deviceTemplate, data:$data}, attr:{'data-x':$data.x, 'data-y':$data.y}" />
+                </ko>
+                <ko opts="ifnot: $data.devicetype=='placeholder'">
+                <div class="col-md-4 col-sm-6 col-xs-12 dashboard-widget" data-bind="template:{name:$parent.deviceTemplate, data:$data}, attr:{'data-uuid':uuid}" />
+                </ko>
+            </ko>
+            <ko opts="if: $parent.colNumber()==4">
+                <ko opts="if: $data.devicetype=='placeholder'">
+                <div class="col-md-3 col-sm-6 col-xs-12 dashboard-widget placeholder hidden-xs" data-bind="template:{name:$parent.deviceTemplate, data:$data}, attr:{'data-x':$data.x, 'data-y':$data.y}" />
+                </ko>
+                <ko opts="ifnot: $data.devicetype=='placeholder'">
+                <div class="col-md-3 col-sm-6 col-xs-12 dashboard-widget" data-bind="template:{name:$parent.deviceTemplate, data:$data}, attr:{'data-uuid':uuid}" />
+                </ko>
+            </ko>
+        </div>
+
     </section>
 
 </div>

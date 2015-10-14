@@ -19,9 +19,9 @@
             "blockly/msg/js/en.js",
             "prettify/lang-lua.js",
             "base64v1_0.js",
-            "jQuery-File-Upload/js/vendor/jquery.ui.widget.js",
-            "jQuery-File-Upload/js/jquery.iframe-transport.js",
-            "jQuery-File-Upload/js/jquery.fileupload.js"
+            "../../js/libs/jquery-file-upload/js/vendor/jquery.ui.widget.js",
+            "../../js/libs/jquery-file-upload/js/jquery.iframe-transport.js",
+            "../../js/libs/jquery-file-upload/js/jquery.fileupload.js"
         ]
     }
 }

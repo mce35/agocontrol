@@ -1,0 +1,20 @@
+{
+    "name": "KNX",
+    "icon": "fa-envelope-square",
+    "version": "0.0.1",
+    "description": "KNX configuration",
+    "listable": true,
+    "template": "html/knx",
+    "depends": "agoknx",
+    "resources": {
+        "css": [
+            "bootstrap-treeview/bootstrap-treeview.min.js"
+        ],
+        "js": [
+            "../../js/libs/jquery-file-upload/js/vendor/jquery.ui.widget.js",
+            "../../js/libs/jquery-file-upload/js/jquery.iframe-transport.js",
+            "../../js/libs/jquery-file-upload/js/jquery.fileupload.js",
+            "bootstrap-treeview/bootstrap-treeview.min.css"
+        ]
+    }
+}

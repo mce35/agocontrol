@@ -33,7 +33,14 @@
     </div>
 
     <!-- widgets -->
-	<div class="row" data-bind="template: {name: deviceTemplate, foreach:devicesPerPage }"></div>
+	<div class="row" data-bind="foreach:devicesPerPage">
+        <ko opts="if: $parent.devicesPerLine()==3">
+            <div class="col-md-4 col-sm-6 col-xs-12 dashboard-widget" data-bind="template:{name:$parent.deviceTemplate, data:$data}" />
+        </ko>
+        <ko opts="if: $parent.devicesPerLine()==4">
+            <div class="col-md-3 col-sm-6 col-xs-12 dashboard-widget" data-bind="template:{name:$parent.deviceTemplate, data:$data}" />
+        </ko>
+    </div>
 
     <div class="row">
         <!-- pagination -->

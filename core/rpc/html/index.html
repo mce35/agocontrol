@@ -12,7 +12,7 @@
 
 <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
 <link rel="stylesheet" href="css/bootstrap.min.css">
-<link rel="stylesheet" href="css/bootstrap-agocontrol.css">
+<link rel="stylesheet" href="css/agocontrol.css">
 <link rel="stylesheet" href="css/bootstrap-switch.min.css">
 <link rel="stylesheet" href="css/bootstrap-slider.min.css">
 <link rel="stylesheet" href="css/bootstrap-colorpicker.min.css">
@@ -103,7 +103,7 @@
                             <span class="label label-success" data-bind="text:$root.agocontrol.journalEntries().length, css:$root.agocontrol.journalStatus()"></span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li class="header"><span data-translateable="true" _data-bind="text:'You have '+$root.agocontrol.journalEntries().length+' messages for today'"></li>
+                            <li class="header"><span data-bind="text:'You have '+$root.agocontrol.journalEntries().length+' messages today'"></li>
                             <li>
                                 <ul class="menu" data-bind="foreach: $root.agocontrol.journalEntries">
                                     <li>
@@ -226,18 +226,22 @@
             <div class="tab-pane" id="control-sidebar-color-tab">
                 <h3 class="control-sidebar-heading">Color theme</h3>
                 <ul class="control-sidebar-menu">
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-blue-light')"><i class="menu-icon bg-light-blue"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Blue light</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-black-light')"><i class="menu-icon bg-white"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Black light</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-purple-light')"><i class="menu-icon bg-purple"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Purple light</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-green-light')"><i class="menu-icon bg-green"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Green light</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-red-light')"><i class="menu-icon bg-red"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Red light</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-yellow-light')"><i class="menu-icon bg-yellow"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Yellow light</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-blue')"><i class="menu-icon bg-black fa fa-circle text-light-blue" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Blue dark</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-black')"><i class="menu-icon bg-black fa fa-circle text-white" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Black dark</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-purple')"><i class="menu-icon bg-black fa fa-circle text-purple" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Purple dark</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-green')"><i class="menu-icon bg-black fa fa-circle text-green" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Green dark</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-red')"><i class="menu-icon bg-black fa fa-circle text-red" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Red dark</h4></div></a></li>
-                <li><a href="#" data-bind="click:setSkin.bind($data,'skin-yellow')"><i class="menu-icon bg-black fa fa-circle text-yellow" style="font-size:30px;"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Yellow dark</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-blue');}"><i class="menu-icon bg-light-blue"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Blue</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-black');}"><i class="menu-icon bg-white"></i><div class="menu-info"><h4 class="control-sidebar-subheading">White</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-purple');}"><i class="menu-icon bg-purple"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Purple</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-green');}"><i class="menu-icon bg-green"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Green</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-red');}"><i class="menu-icon bg-red"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Red</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-yellow');}"><i class="menu-icon bg-yellow"></i><div class="menu-info"><h4 class="control-sidebar-subheading">Yellow</h4></div></a></li>
+                </ul>
+                <h3 class="control-sidebar-heading">Color style</h3>
+                <div class="form-group">
+                    <label class="control-sidebar-subheading">Toggle dark/light style <input type="checkbox" class="pull-right" data-bind="checked:agocontrol.darkStyle"></label>
+                </div>
+                <h3 class="control-sidebar-heading">Dashboard size</h3>
+                <ul class="control-sidebar-menu">
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setDashboardSize('3x3');}"><i class="menu-icon bg-black fa fa-th"></i><div class="menu-info"><h4 class="control-sidebar-subheading">3x3</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setDashboardSize('4x3');}"><i class="menu-icon bg-black fa fa-th"></i><div class="menu-info"><h4 class="control-sidebar-subheading">4x3</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setDashboardSize('4x4');}"><i class="menu-icon bg-black fa fa-th"></i><div class="menu-info"><h4 class="control-sidebar-subheading">4x4</h4></div></a></li>
                 </ul>
             </div>
             <div class="tab-pane" id="control-sidebar-help-tab">

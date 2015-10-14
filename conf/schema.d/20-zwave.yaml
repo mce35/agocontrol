@@ -51,7 +51,7 @@ commands:
       node:
         name: node
         type: integer
-      param:
+      index:
         name: parameter number
         type: integer
       value:

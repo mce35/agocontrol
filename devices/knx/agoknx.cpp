@@ -372,8 +372,8 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
             AGO_TRACE() << "adding knx device: " << newdevice;
 
             std::string deviceuuid;
-            if(content.count("uuid"))
-                deviceuuid = content["uuid"].asString();
+            if(content.count("device"))
+                deviceuuid = content["device"].asString();
             else
                 deviceuuid = generateUuid();
 
@@ -398,6 +398,17 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
             returnData["devicemap"] = deviceMap[device].asMap();
             returnData["device"] = device;
 
+            return responseSuccess(returnData);
+        }
+        else if (content["command"] == "getdevices")
+        {
+            /*qpid::types::Variant::Map devicelist;
+            for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
+                Variant::Map device;
+                device = it->second.asMap();
+                devicelist.push_back(device);
+            }*/
+            returnData["devices"] = deviceMap;
             return responseSuccess(returnData);
         }
         else if (content["command"] == "deldevice")
