@@ -28,13 +28,9 @@ function Dashboard(dashboard, edition, agocontrol)
         if( typeof(Storage)!=='undefined' )
         {
             out  = localStorage.getItem('dashboardColSize');
-            if( !out )
+            if( out===null )
             {
                 localStorage.setItem('dashboardColSize', self.defaultCol);
-                out = self.defaultCol;
-            }
-            else
-            {
                 out = self.defaultCol;
             }
         }
@@ -50,13 +46,9 @@ function Dashboard(dashboard, edition, agocontrol)
         if( typeof(Storage)!=='undefined' )
         {
             out  = localStorage.getItem('dashboardRowSize');
-            if( !out )
+            if( out===null )
             {
                 localStorage.setItem('dashboardRowSize', self.defaultCol);
-                out = self.defaultRow;
-            }
-            else
-            {
                 out = self.defaultRow;
             }
         }
