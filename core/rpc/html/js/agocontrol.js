@@ -1123,6 +1123,14 @@ Agocontrol.prototype = {
         {
             skin = skin.replace('-light','')+'-light body-light';
         }
+        
+        //check if same skin already applied
+        if( skin==self.skin() )
+        {
+            return;
+        }
+
+        //save new skin
         self.skin(skin);
 
         //save changes
