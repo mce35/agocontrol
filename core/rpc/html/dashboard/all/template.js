@@ -48,23 +48,15 @@ function dashBoard(agocontrol)
         if( typeof(Storage)!=='undefined' )
         {
             var row  = localStorage.getItem('dashboardRowSize');
-            if( !row )
+            if( row===null )
             {
                 localStorage.setItem('dashboardRowSize', self.defaultRow);
                 row = self.defaultRow;
             }
-            else
-            {
-                row = self.defaultRow;
-            }
             var col  = localStorage.getItem('dashboardColSize');
-            if( !col )
+            if( col===null )
             {
                 localStorage.setItem('dashboardColSize', self.defaultCol);
-                col = self.defaultCol;
-            }
-            else
-            {
                 col = self.defaultCol;
             }
             out = row * col;
@@ -80,13 +72,9 @@ function dashBoard(agocontrol)
         if( typeof(Storage)!=='undefined' )
         {
             out  = localStorage.getItem('dashboardColSize');
-            if( !out )
+            if( out===null )
             {
                 localStorage.setItem('dashboardColSize', self.defaultCol);
-                out = self.defaultCol;
-            }
-            else
-            {
                 out = self.defaultCol;
             }
         }
