@@ -59,10 +59,12 @@
                             <div class="form-group">
                                 <_label class="col-sm-3 control-label" data-translateable="true">New room name</_label>
                                 <div class="col-sm-4">
-                                    <input type="email" class="form-control" data-bind="value: roomName" _placeholder="New room name" data-translateable="true" />
-                                    <span class="input-group-btn">
-                                        <_button type="submit" class="btn btn-primary" data-bind="click: createRoom" data-translateable="true">Create room</_button>
-                                    </span>
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" data-bind="value: roomName" _placeholder="New room name" data-translateable="true" />
+                                        <span class="input-group-btn">
+                                            <_button type="submit" class="btn btn-primary" data-bind="click: createRoom" data-translateable="true">Create room</_button>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </form>
