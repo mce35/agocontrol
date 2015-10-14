@@ -93,12 +93,7 @@
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">File already imported?</_label>
                             <div class="col-sm-6">
-                                <ko opts="if: gaLoaded">
-                                <_p class="form-control-static" data-translateable="true">Yes</_p>
-                                </ko>
-                                <ko opts="ifnot: gaLoaded">
-                                <_p class="form-control-static" data-translateable="true">No</_p>
-                                </ko>
+                                <input type="checkbox" data-bind="toggleSwitch:{size:'small', onText:'yes', offText:'no', onColor:'success', offColor:'danger', readonly:true, state:gaLoaded}"/>
                             </div>
                         </div>
                         <div class="form-group">
