@@ -439,7 +439,12 @@ function Dashboard(dashboard, edition, agocontrol)
             }
 
             //store device at its position
-            content[x][y] = self.findDevice(k);
+            var device = self.findDevice(k);
+            if( device!==null )
+            {
+                //device still exists in inventory
+                content[x][y] = device;
+            }
         }
 
         //re-enable drag and drop
