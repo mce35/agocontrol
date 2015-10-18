@@ -47,6 +47,7 @@ set (AGODEVICES
   weatherreporter
   MQTT
   NVR
+  harmonyhub
 )
 
 FIND_PACKAGE(OpenCV)
