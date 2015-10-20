@@ -368,6 +368,20 @@ Agocontrol.prototype = {
         return null;
     },
 
+    //find device
+    findDevice: function(uuid)
+    {
+        var self = this;
+        for ( var i=0; i<self.devices().length; i++)
+        {
+            if( self.devices()[i].uuid===uuid )
+            {
+                return self.devices()[i];
+            }
+        }
+        return null;
+    },
+
     //return specified process or null if not found
     findProcess: function(proc)
     {
@@ -834,6 +848,9 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
                 {
                     delete self.inventory.devices[response.result.uuid];
+                    self.devices.remove(function(item) {
+                        return item.uuid===response.result.uuid;
+                    });
                 }
                 else
                 {
@@ -850,8 +867,7 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
                 {
                     //brand new device, get inventory and fill local one with new infos
-                    //TODO add other event than announce because it is used for refreshing device timestamp
-                    /*self.getInventory()
+                    self.getInventory()
                         .then(function(result) {
                             var tmpDevices = self.cleanInventory(result.data.devices);
                             if( tmpDevices && tmpDevices[response.result.uuid] )
@@ -862,7 +878,7 @@ Agocontrol.prototype = {
                             {
                                 console.warn('Unable to update device because no infos about it in inventory');
                             }
-                        });*/
+                        });
                 }
 
                 //nothing else to do
@@ -875,6 +891,28 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
                 {
                     self.inventory.devices[response.result.uuid].name = response.result.name;
+                    var dev = self.findDevice(response.result.uuid);
+                    if( dev!==null )
+                    {
+                        dev.name(response.result.name);
+                    }
+                }
+
+                //nothing else to do
+                done = true;
+            }
+
+            //handle stale event
+            if( !done && response.result.event=="event.device.stale" )
+            {
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
+                {
+                    self.inventory.devices[response.result.uuid].stale = response.result.stale;
+                    var dev = self.findDevice(response.result.uuid);
+                    if( dev!==null )
+                    {
+                        dev.stale(response.result.stale);
+                    }
                 }
 
                 //nothing else to do

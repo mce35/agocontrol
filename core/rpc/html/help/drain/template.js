@@ -15,7 +15,7 @@ function Debug(agocontrol)
     //append received event
     self.eventHandler = function(event, type)
     {
-        if( event && event.event!='event.device.announce')
+        if( event )
         {
             //get current date
             var d = formatDate(new Date());

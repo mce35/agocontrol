@@ -16,15 +16,26 @@ function device(agocontrol, obj, uuid) {
 
     this.uuid = uuid;
     this.action = ''; // dummy for table
+    this.name = ko.observable(this.name);
     this.handledBy = this['handled-by'];
     var currentState = parseInt(this.state);
     this.state = ko.observable(currentState);
     this.values = ko.observable(this.values);
-    this.stale = ko.observable(this.stale);
     this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
 
+    var params = [];
+    for( var key in self.parameters )
+    {
+        var param = {};
+        param.key = key;
+        param.value = ko.observable(self.parameters[key]);
+        params.push(param);
+    }
+    self.koparameters = ko.observableArray(params);
+
+    this.stale = ko.observable(this.stale);
     self.staleStyle = ko.pureComputed(function() {
-        return self.stale ? 'bg-light-blue' : 'bg-red';
+        return (self.stale() ? 'bg-red' : 'bg-light-blue');
     });
 
     if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" )
@@ -400,7 +411,7 @@ function device(agocontrol, obj, uuid) {
             content.command = "getvideoframe";
             content.uuid = self.uuid;
             // TODO: this had a 90s reply timeout before implementing the promise style - check if this is still needed
-            self.agocontrol.sendCommand(content,90).then(function(res)
+            self.agocontrol.sendCommand(content,null,90).then(function(res)
             {
                 if (res.data && res.data.image && document.getElementById("camIMG"))
                 {
@@ -426,5 +437,38 @@ function device(agocontrol, obj, uuid) {
                 this[k] = obj[k];
             }
         }
+    };
+
+    //save device parameters
+    self.saveParameters = function()
+    {
+        //sync device parameters
+        for( var i=0; i<self.koparameters().length; i++ )
+        {
+            var conv = Number(self.koparameters()[i].value());
+            if( isNaN(conv) )
+            {
+                //save string
+                self.parameters[self.koparameters()[i].key] = self.koparameters()[i].value();
+            }
+            else
+            {
+                //save number
+                self.parameters[self.koparameters()[i].key] = conv;
+            }
+        }
+
+        //save parameters to resolver
+        var content = {};
+        content.command = 'setdeviceparameters';
+        content.uuid = self.agocontrol.agoController;
+        content.device = self.uuid;
+        content.parameters = self.parameters;
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                //close modal
+                $('#detailsModal').modal('hide');
+            });
+
     };
 }

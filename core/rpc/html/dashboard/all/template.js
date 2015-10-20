@@ -18,7 +18,7 @@ function dashBoard(agocontrol)
         var list = self.agocontrol.devices();
         list = list.filter(function(dev)
         {
-            if (dev.devicetype == "event" || $.trim(dev.name) == "")
+            if (dev.devicetype == "event" || $.trim(dev.name()) == "")
             {
                 return false;
             }
@@ -29,7 +29,7 @@ function dashBoard(agocontrol)
                 {
                     return true;
                 }
-                if (dev.name.toLowerCase().indexOf(keyword) != -1)
+                if (dev.name().toLowerCase().indexOf(keyword) != -1)
                 {
                     return true;
                 }
