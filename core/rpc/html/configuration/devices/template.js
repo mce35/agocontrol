@@ -248,7 +248,7 @@ function DeviceConfig(agocontrol)
                     if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
                     {
                         var d = self.findDevice(item.uuid);
-                        d.name = value;
+                        d.name(value);
                     }
                     else
                     {
@@ -266,7 +266,7 @@ function DeviceConfig(agocontrol)
         if( $(td).hasClass('select_device_room') )
         {
             var d = self.findDevice(item.uuid);
-            if( d && d.name && d.name.length>0 )
+            if( d && d.name() && d.name().length>0 )
             {
                 $(td).editable(function(value, settings) {
                     var content = {};
