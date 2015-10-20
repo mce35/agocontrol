@@ -97,7 +97,7 @@ bool operator>=(qpid::types::Variant a, qpid::types::Variant b) {
 void AgoEvent::eventHandler(std::string subject, qpid::types::Variant::Map content)
 {
     // ignore device announce events
-    if (subject == "event.device.announce")
+    if( subject=="event.device.announce" || subject=="event.device.discover" )
     {
         return;
     }
