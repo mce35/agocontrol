@@ -227,16 +227,16 @@ function ScenarioConfig(agocontrol)
         for ( var i = 0; i < self.agocontrol.devices().length; i++)
         {
             var dev = self.agocontrol.devices()[i];
-            if( self.agocontrol.schema().devicetypes[dev.devicetype] && self.agocontrol.schema().devicetypes[dev.devicetype].commands.length > 0 && dev.name)
+            if( self.agocontrol.schema().devicetypes[dev.devicetype] && self.agocontrol.schema().devicetypes[dev.devicetype].commands.length > 0 && dev.name() )
             {
                 var dspName = "";
                 if (dev.room)
                 {
-                    dspName = dev.room + " - " + dev.name;
+                    dspName = dev.name()+' ('+dev.room+')';
                 }
                 else
                 {
-                    dspName = dev.name;
+                    dspName = dev.name();
                 }
                 deviceSelect.options[deviceSelect.options.length] = new Option(dspName, dev.uuid);
                 deviceSelect.options[deviceSelect.options.length - 1]._dev = dev;
