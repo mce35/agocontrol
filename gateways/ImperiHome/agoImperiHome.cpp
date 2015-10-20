@@ -319,6 +319,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         param["unit"]=agoValue["unit"];
                         param["graphable"]="false";
                         paramList.push_back(param);
+                        deviceinfo["params"]=paramList;
                     }
                 } else if (device["devicetype"] == "humiditysensor") {
                     deviceinfo["type"]="DevHygrometry";
