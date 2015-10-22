@@ -82,11 +82,11 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
+            if( (device.name().length>0 || (device.name().length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
             {
-                if( device.name.length>0 )
+                if( device.name().length>0 )
                 {
-                    devices.push([device.name, device.uuid]);
+                    devices.push([device.name(), device.uuid]);
                 }
                 else
                 {
@@ -107,11 +107,11 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
+            if( (device.name().length>0 || (device.name().length===0 && device.internalid.endsWith('controller'))) && device.devicetype==deviceType )
             {
-                if( device.name.length>0 )
+                if( device.name().length>0 )
                 {
-                    devices.push([device.name, device.internalid]);
+                    devices.push([device.name(), device.internalid]);
                 }
                 else
                 {
@@ -133,7 +133,7 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && duplicates.indexOf(device.devicetype)===-1 )
+            if( (device.name().length>0 || (device.name().length===0 && device.internalid.endsWith('controller'))) && duplicates.indexOf(device.devicetype)===-1 )
             {
                 types.push([device.devicetype, device.devicetype]);
                 duplicates.push(device.devicetype);
@@ -155,16 +155,16 @@ window.BlocklyAgocontrol = {
         for( var i=0; i<this.devices.length; i++ )
         {
             device = this.devices[i];
-            if( (device.name.length>0 || (device.name.length===0 && device.internalid.endsWith('controller'))) && device.devicetype===deviceType && duplicates.indexOf(device.name)===-1 )
+            if( (device.name().length>0 || (device.name().length===0 && device.internalid.endsWith('controller'))) && device.devicetype===deviceType && duplicates.indexOf(device.name())===-1 )
             {
-                if( device.name.length>0 )
+                if( device.name().length>0 )
                 {
-                    names.push([device.name, device.name]);
-                    duplicates.push(device.name);
+                    names.push([device.name(), device.name()]);
+                    duplicates.push(device.name());
                 }
                 else
                 {
-                    names.push([device.internalid, device.name]);
+                    names.push([device.internalid, device.name()]);
                     duplicates.push(device.internalid);
                 }
             }
@@ -639,11 +639,7 @@ Blockly.Blocks['agocontrol_deviceUuid'] = {
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
             if( currentDevice )
             {
-                var field = this.getField_("DEVICE");
-                if( field )
-                {
-                    field.setValue(currentDevice);
-                }
+                this.setFieldValue(currentDevice, "DEVICE");
             }
         }
         
@@ -689,11 +685,7 @@ Blockly.Blocks['agocontrol_deviceInternalid'] = {
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
             if( currentDevice )
             {
-                var field = this.getField_("DEVICE");
-                if( field )
-                {
-                    field.setValue(currentDevice);
-                }
+                this.setFieldValue(currentDevice, "DEVICE");
             }
         }
         
@@ -760,11 +752,7 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
             if( currentDevice )
             {
-                var field = this.getField_("DEVICE");
-                if( field )
-                {
-                    field.setValue(currentDevice);
-                }
+                this.setFieldValue(currentDevice, "DEVICE");
             }
 
             var events = [];
@@ -784,11 +772,7 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
             this.container.appendField(new Blockly.FieldDropdown(events), "EVENT");
             if( currentEvent )
             {
-                var field = this.getField_("EVENT");
-                if( field )
-                {
-                    field.setValue(currentEvent);
-                }
+                this.setFieldValue(currentEvent, "EVENT");
             }
         }
         var currentDevice = this.getFieldValue("DEVICE");
@@ -807,11 +791,7 @@ Blockly.Blocks['agocontrol_deviceEvent'] = {
     
     //set event
     setEvent: function(newEvent) {
-        var field = this.getField_("EVENT");
-        if( field )
-        {
-            field.setValue(newEvent);
-        }
+        this.setFieldValue(newEvent, "EVENT");
     }
 };
 
@@ -835,11 +815,7 @@ Blockly.Blocks['agocontrol_eventAll'] = {
     
     //set event
     setEvent: function(newEvent) {
-        var field = this.getField_("EVENT");
-        if( field )
-        {
-            return field.setValue(newEvent);
-        }
+        this.setFieldValue(newEvent, "EVENT");
     },
     
     onchange: function() {
@@ -898,11 +874,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
             this.container.appendField(new Blockly.FieldDropdown(devices), "DEVICE");
             if( currentDevice )
             {
-                var field = this.getField_("DEVICE");
-                if( field )
-                {
-                    field.setValue(currentDevice);
-                }
+                this.setFieldValue(currentDevice, "DEVICE");
             }
         }
 
@@ -931,11 +903,7 @@ Blockly.Blocks['agocontrol_deviceProperty'] = {
             this.container.appendField(new Blockly.FieldDropdown(props), "PROP");
             if( currentProp )
             {
-                var field = this.getField_("PROP");
-                if( field )
-                {
-                    field.setValue(currentProp);
-                }
+                this.setFieldValue(currentProp, "PROP");
             }
         }
         
@@ -965,11 +933,7 @@ Blockly.Blocks['agocontrol_eventProperty'] = {
   
     //force event selected in dropdown
     setEvent: function(newEvent) {
-        var field = this.getField_("EVENT");
-        if( field )
-        {
-            return field.setValue(newEvent);
-        }
+        this.setFieldValue(newEvent, "EVENT");
     },
   
     //return current event
@@ -1010,11 +974,7 @@ Blockly.Blocks['agocontrol_eventProperty'] = {
             //select property value if necessary
             if( currentProp )
             {
-                var field = this.getField_("PROP");
-                if( field )
-                {
-                    field.setValue(currentProp);
-                }
+                this.setFieldValue(currentProp, "PROP");
             }
         }
         
@@ -1550,11 +1510,7 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
   
     //force event selected in dropdown
     setEvent: function(newEvent) {
-        var field = this.getField_("EVENT");
-        if( field )
-        {
-            return field.setValue(newEvent);
-        }
+        this.setFieldValue(newEvent, "EVENT");
     },
   
     //return current event
@@ -1595,11 +1551,7 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
             //select property value if necessary
             if( currentProp )
             {
-                var field = this.getField_("PROP");
-                if( field )
-                {
-                    field.setValue(currentProp);
-                }
+                this.setFieldValue(currentProp, "PROP");
             }
         }
         
