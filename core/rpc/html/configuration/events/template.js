@@ -19,7 +19,7 @@ function EventsConfig(agocontrol)
 
         //sort devices
         self.agocontrol.devices().sort(function(a, b) {
-            return a.name.localeCompare(b.name);
+            return a.name().localeCompare(b.name());
         });
 
         return events;
@@ -950,16 +950,16 @@ function EventsConfig(agocontrol)
             });*/
             for ( var i = 0; i < self.agocontrol.devices().length; i++)
             {
-                if (self.agocontrol.devices()[i].name)
+                if (self.agocontrol.devices()[i].name())
                 {
                     var dspName = "";
                     if (self.agocontrol.devices()[i].room)
                     {
-                        dspName = self.agocontrol.devices()[i].room + " - " + self.agocontrol.devices()[i].name;
+                        dspName = self.agocontrol.devices()[i].name()+' ('+self.agocontrol.devices()[i].room+')';
                     }
                     else
                     {
-                        dspName = self.agocontrol.devices()[i].name;
+                        dspName = self.agocontrol.devices()[i].name();
                     }
                     deviceSelect.options[deviceSelect.options.length] = new Option(dspName, self.agocontrol.devices()[i].uuid);
                     if (defaultValues && self.agocontrol.devices()[i].uuid == defaultValues.param.uuid)
@@ -1090,16 +1090,16 @@ function EventsConfig(agocontrol)
             deviceSelect.name = path + ".device";
             for ( var i = 0; i < self.agocontrol.devices().length; i++)
             {
-                if (self.agocontrol.devices()[i].name)
+                if (self.agocontrol.devices()[i].name())
                 {
                     var dspName = "";
                     if (self.agocontrol.devices()[i].room)
                     {
-                        dspName = self.agocontrol.devices()[i].room + " - " + self.agocontrol.devices()[i].name;
+                        dspName = self.agocontrol.devices()[i].name()+' ('+self.agocontrol.devices()[i].room+')';
                     }
                     else
                     {
-                        dspName = self.agocontrol.devices()[i].name;
+                        dspName = self.agocontrol.devices()[i].name();
                     }
                     deviceSelect.options[deviceSelect.options.length] = new Option(dspName, self.agocontrol.devices()[i].uuid);
                     if (defaultValues && defaultValues.param.parameter == "uuid" && self.agocontrol.devices()[i].uuid == defaultValues.value)
@@ -1155,16 +1155,16 @@ function EventsConfig(agocontrol)
             {
                 continue;
             }
-            if (self.agocontrol.devices()[i].name)
+            if (self.agocontrol.devices()[i].name())
             {
                 var dspName = "";
                 if (self.agocontrol.devices()[i].room)
                 {
-                    dspName = self.agocontrol.devices()[i].room + " - " + self.agocontrol.devices()[i].name;
+                    dspName = self.agocontrol.devices()[i].name()+' ('+self.agocontrol.devices()[i].room+')';
                 }
                 else
                 {
-                    dspName = self.agocontrol.devices()[i].name;
+                    dspName = self.agocontrol.devices()[i].name();
                 }
                 deviceListSelect.options[j] = new Option(dspName, i);
                 if (defaults && defaults.uuid == dev["uuid"])
