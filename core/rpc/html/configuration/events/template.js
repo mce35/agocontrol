@@ -1219,10 +1219,6 @@ function EventsConfig(agocontrol)
             if (cmd.parameters !== undefined)
             {
                 commandParams.style.display = "";
-                //var legend = document.createElement("legend");
-                //legend.style.fontWeight = 700;
-                //legend.appendChild(document.createTextNode("Parameters"));
-                //commandParams.appendChild(legend);
                 for ( var param in cmd.parameters)
                 {
                     var div = document.createElement("div");
@@ -1241,13 +1237,22 @@ function EventsConfig(agocontrol)
                     if (cmd.parameters[param].type == 'option')
                     {
                         var select = document.createElement("select");
+                        var selectedIndex = -1;
                         select.setAttribute("name", param);
                         select.setAttribute("class", "cmdParam form-control");
                         select.setAttribute("id", cmd.parameters[param].name);
                         for ( var i = 0; i < cmd.parameters[param].options.length; i++)
                         {
                             select.options[select.options.length] = new Option(cmd.parameters[param].options[i], cmd.parameters[param].options[i]);
+                            if( defaults && defaults[param] && selectedIndex==-1 )
+                            {
+                                if( cmd.parameters[param].options[i]==defaults[param] )
+                                {
+                                    selectedIndex = i;
+                                }
+                            }
                         }
+                        select.selectedIndex = selectedIndex;
                         div2.appendChild(select);
                     }
                     else
