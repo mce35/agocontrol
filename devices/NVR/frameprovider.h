@@ -35,7 +35,6 @@ class AgoFrameConsumer
 {
     private:
         string _id;
-        //queue<AgoFrame*> _frames;
         queue<Mat> _frames;
 
     public:

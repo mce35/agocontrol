@@ -20,7 +20,6 @@ using namespace std;
     pthread_mutex_destroy(&_mutex);
 }*/
 
-
 /**
  * Decrease internal counter when frame has been processed
  */
@@ -85,6 +84,7 @@ Mat AgoFrameConsumer::popFrame(CallbackBoostThreadSleep theadSleepForCallback)
 {
     while( _frames.size()==0 )
     {
+        //wait for a frame
         theadSleepForCallback(boost::chrono::milliseconds(10));
     }
     //if( _frames.size()>0 )
@@ -258,7 +258,6 @@ void AgoFrameProvider::threadFunction()
                 {
                     //consumers connected
                     (*_capture) >> frame;
-                    //_frames.push(frame);
     
                     //push frame to registered consumers
                     for( list<AgoFrameConsumer*>::iterator it=_consumers.begin(); it!=_consumers.end(); it++ )
