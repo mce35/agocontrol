@@ -112,7 +112,7 @@ Blockly.Blocks['variables_set'] = {
       "colour": Blockly.Blocks.variables.HUE,
       "tooltip": Blockly.Msg.VARIABLES_SET_TOOLTIP,
       "helpUrl": Blockly.Msg.VARIABLES_SET_HELPURL
-    });
+    });    
     this.contextMenuMsg_ = Blockly.Msg.VARIABLES_SET_CREATE_GET;
   },
   /**
@@ -153,7 +153,6 @@ Blockly.Blocks['variables_is_defined'] = {
             .appendField("is defined");
         this.setInputsInline(true);
         this.setOutput(true);
-        this.setTooltip('');
+        this.setTooltip('Is block defined?');
     }
 };
-
