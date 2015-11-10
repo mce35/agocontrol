@@ -284,56 +284,54 @@
         </category>
         <category name="Procedures" custom="PROCEDURE">
         </category>
-        <category name="Agocontrol">
-            <category name="Content">
-                <block type="agocontrol_content">
-                    <value name="EVENT">
-                        <block type="agocontrol_eventAll">
-                        </block>
-                    </value>
-                </block>
-                <block type="agocontrol_contentProperty"/>
-                <block type="logic_compare">
-                    <value name="A">
-                        <block type="agocontrol_contentProperty">
-                        </block>
-                    </value>
-                    <value name="B">
-                        <block type="math_number">
-                            <field name="NUM">0</field>
-                        </block>
-                    </value>
-                </block>
-                <block type="agocontrol_printContent"/>
-            </category>
-            <category name="Inventory">
-                <block type="agocontrol_deviceProperty"/>
-            </category>
-            <category name="Device">
-                <block type="agocontrol_deviceUuid"/>
-                <block type="agocontrol_deviceInternalid"/>
-                <block type="agocontrol_deviceName">
-                    <value name="UUID">
-                        <block type="agocontrol_deviceUuid">
-                        </block>
-                    </value>
-                </block>
-            </category>
-            <category name="Event">
-                <block type="agocontrol_deviceEvent"/>
-                <block type="agocontrol_eventAll"/>
-            </category>
-            <category name="Actions">
-                <block type="agocontrol_sendMessage"/>
-                <block type="agocontrol_sleep"/>
-                <block type="agocontrol_journal"/>
-            </category>
-            <category name="System variables">
-                <block type="agocontrol_getVariable"/>
-                <block type="agocontrol_setVariable"/>
-                <block type="agocontrol_defaultEmail"/>
-                <block type="agocontrol_defaultPhoneNumber"/>
-            </category>
+        <sep></sep>
+        <category name="Trigger">
+            <block type="agocontrol_content">
+                <value name="EVENT">
+                    <block type="agocontrol_eventAll">
+                    </block>
+                </value>
+            </block>
+            <block type="agocontrol_contentProperty"/>
+            <block type="logic_compare">
+                <value name="A">
+                    <block type="agocontrol_contentProperty"></block>
+                </value>
+                <value name="B">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+            <block type="agocontrol_printContent"/>
+        </category>
+        <category name="Inventory">
+            <block type="agocontrol_deviceProperty"/>
+        </category>
+        <category name="Device">
+            <block type="agocontrol_deviceUuid"/>
+            <block type="agocontrol_deviceInternalid"/>
+            <block type="agocontrol_deviceName">
+                <value name="UUID">
+                    <block type="agocontrol_deviceUuid">
+                    </block>
+                </value>
+            </block>
+        </category>
+        <category name="Event">
+            <block type="agocontrol_deviceEvent"/>
+            <block type="agocontrol_eventAll"/>
+        </category>
+        <category name="Actions">
+            <block type="agocontrol_sendMessage"/>
+            <block type="agocontrol_sleep"/>
+            <block type="agocontrol_journal"/>
+        </category>
+        <category name="System variables">
+            <block type="agocontrol_getVariable"/>
+            <block type="agocontrol_setVariable"/>
+            <block type="agocontrol_defaultEmail"/>
+            <block type="agocontrol_defaultPhoneNumber"/>
         </category>
     </xml>
    

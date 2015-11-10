@@ -768,10 +768,16 @@ function init_template(path, params, agocontrol)
             var workspace = null;
 
             //init blockly
+            //hack to make sure all blockly modules are loaded
             var interval = window.setInterval(function() {
                 if( typeof Blockly!='object' )
                 {
                     //blockly not loaded yet
+                    return;
+                }
+                if( typeof BlocklyAgocontrol!='object' )
+                {
+                    //agocontrol object not loaded yet
                     return;
                 }
                 var extra = model.getDefaultContacts();
@@ -791,7 +797,21 @@ function init_template(path, params, agocontrol)
                 element.innerHTML = "";
                 workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
                     path: "configuration/blockly/blockly/",
-                    toolbox: document.getElementById('toolbox')
+                    toolbox: document.getElementById('toolbox'),
+                    zoom: {
+                        controls: true,
+                        wheel: false, //keep wheel to scroll to main page not blockly workspace
+                        startScale: 1.0,
+                        maxScale: 2.0,
+                        minScale: 0.5,
+                        scaleSpeed: 1.2
+                    },
+                    grid: {
+                        spacing: 20,
+                        length: 2,
+                        colour: '#ccc',
+                        snap: true
+                    }
                 });
                 viewmodel().setWorkspace(workspace);
 
