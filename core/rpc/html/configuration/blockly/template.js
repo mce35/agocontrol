@@ -30,6 +30,7 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.email = '';
     self.phone = '';
     self.contactsUpdated = false;
+    self.blockNumber = 3; //number of blocks with default workspace
 
     //update default contacts
     self.updateDefaultContacts = function()
@@ -263,13 +264,20 @@ function agoBlocklyPlugin(devices, agocontrol)
     {
         if( self.workspace.rendered )
         {
-            if( !self.scriptLoaded )
+            //only change button state if number of blocks is different from last time
+            var blockNumber = self.workspace.getAllBlocks().length;
+            if( blockNumber!=self.blockNumber )
             {
-                self.scriptSaved(false);
-            }
-            else if( self.scriptLoaded )
-            {
-                self.scriptLoaded = false;
+                //update number of blocks
+                self.blockNumber = blockNumber;
+                if( !self.scriptLoaded )
+                {
+                    self.scriptSaved(false);
+                }
+                else if( self.scriptLoaded )
+                {
+                    self.scriptLoaded = false;
+                }
             }
         }
     };
@@ -768,7 +776,6 @@ function init_template(path, params, agocontrol)
             var workspace = null;
 
             //init blockly
-            //hack to make sure all blockly modules are loaded
             var interval = window.setInterval(function() {
                 if( typeof Blockly!='object' )
                 {
@@ -795,7 +802,9 @@ function init_template(path, params, agocontrol)
 
                 //inject blockly
                 element.innerHTML = "";
-                workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
+                var blocklyArea = document.getElementById('blocklyArea');
+                var blocklyDiv = document.getElementById('blocklyDiv');
+                workspace = Blockly.inject(blocklyDiv, {
                     path: "configuration/blockly/blockly/",
                     toolbox: document.getElementById('toolbox'),
                     zoom: {
@@ -813,6 +822,29 @@ function init_template(path, params, agocontrol)
                         snap: true
                     }
                 });
+
+                //hack to make blockly using maximum page space
+                //https://developers.google.com/blockly/installation/injecting-resizable
+                var onresize = function(e) {
+                    var element = blocklyArea;
+                    var x = 0;
+                    var y = 0;
+
+                    do {
+                        x += element.offsetLeft;
+                        y += element.offsetTop;
+                        element = element.offsetParent;
+                    } while (element);
+
+                    blocklyDiv.style.left = x + 'px';
+                    blocklyDiv.style.top = y + 'px';
+                    blocklyDiv.style.width = (blocklyArea.offsetWidth-50) + 'px'; //reduce of 50px to take in count margin
+                    blocklyDiv.style.height = (blocklyArea.offsetHeight-50) + 'px';
+                };
+                window.addEventListener('resize', onresize, false);
+                onresize();
+
+                //set workspace
                 viewmodel().setWorkspace(workspace);
 
                 //init agoblockly

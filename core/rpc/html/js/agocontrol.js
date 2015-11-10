@@ -1240,6 +1240,11 @@ Agocontrol.prototype = {
         }
         self.skin(skin);
 
+        //trigger window resize event (useful for blockly)
+        window.setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+        }, 500);
+
         //save changes
         $.ajax({
             url : "cgi-bin/ui.cgi?key=skin&param=theme&value="+skin,
