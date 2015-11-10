@@ -496,28 +496,29 @@ window.BlocklyAgocontrol = {
         {
             //get triggered content event
             var contentEvent = null;
-            if( contents[i].getChildren()[0].type==="agocontrol_eventAll" || contents[i].getChildren()[0].type==="agocontrol_deviceEvent" )
+            var children = contents[i].getChildren();
+            if( children.length>0 && (children[0].type==="agocontrol_eventAll" || children[0].type==="agocontrol_deviceEvent") )
             {
-                contentEvent = contents[i].getChildren()[0].getEvent();
+                contentEvent = children[0].getEvent();
             }
 
             //update children
             var parent_ = contents[i].getParent();
             if( parent_!==null )
             {
-                var children = parent_.getDescendants();
-                for( var j=0; j<children.length; j++ )
+                var descendants = parent_.getDescendants();
+                for( var j=0; j<descendants.length; j++ )
                 {
-                    if( children[j].type==="agocontrol_printContent" || (children[j].type==="agocontrol_content" && children[j].id!==contents[i].id) )
+                    if( descendants[j].type==="agocontrol_printContent" || (descendants[j].type==="agocontrol_content" && descendants[j].id!==contents[i].id) )
                     {
-                        children[j].inContent = true;
+                        descendants[j].inContent = true;
                     }
-                    else if( children[j].type==="agocontrol_contentProperty" )
+                    else if( descendants[j].type==="agocontrol_contentProperty" )
                     {
-                        children[j].inContent = true;
-                        if( contentEvent!==null && children[j].getEvent()!==contentEvent )
+                        descendants[j].inContent = true;
+                        if( contentEvent!==null && descendants[j].getEvent()!==contentEvent )
                         {
-                            children[j].setEvent(contentEvent);
+                            descendants[j].setEvent(contentEvent);
                         }
                     }
                 }
