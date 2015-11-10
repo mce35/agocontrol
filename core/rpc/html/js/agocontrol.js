@@ -14,8 +14,8 @@ Agocontrol.prototype = {
     eventHandlers: [],
     _allApplications: ko.observableArray([]),
     _allProtocols: ko.observableArray([]),
-    _getApplications: new Promise(function(){}),
-    _getProtocols: new Promise(function(){}),
+    _getApplications: Promise.pending(),
+    _getProtocols: Promise.pending(),
     _favorites: ko.observable(),
     _noProcesses: ko.observable(false),
 
@@ -118,7 +118,7 @@ Agocontrol.prototype = {
             }
 
             this.applications(applications);
-            this._getApplications.then();
+            this._getApplications.resolve();
 
             //protocols
             var protocols = [];
@@ -148,7 +148,7 @@ Agocontrol.prototype = {
             }
 
             this.protocols(protocols);
-            this._getProtocols.then();
+            this._getProtocols.resolve();
 
         }, this);
 
