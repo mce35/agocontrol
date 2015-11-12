@@ -1,14 +1,10 @@
 /**
  * Model class
- * 
- * @returns {systemConfig}
  */
-function SystemConfig(agocontrol)
+function Processes(agocontrol)
 {
     var self = this;
     self.agocontrol = agocontrol;
-    self.inventory = ko.observable(JSON.stringify(self.agocontrol.inventory, undefined, 2));
-    self.updateInterval = null;
     self.processes = ko.observableArray([]);
     self.grid = new ko.agoGrid.viewModel({
         data: self.processes,
@@ -48,18 +44,20 @@ function SystemConfig(agocontrol)
     //launch autorefresh and get current status
     self.updateInterval = window.setInterval(self.getStatus, 10000);
     self.getStatus();
-
 }
 
 /**
- * Initalizes the System model
+ * Initalizes the model
  */
 function init_template(path, params, agocontrol)
 {
-    var model = new SystemConfig(agocontrol);
+    var model = new Processes(agocontrol);
     return model;
 }
 
+/**
+ * Reset template
+ */
 function reset_template(model)
 {
     if( model )
@@ -67,4 +65,3 @@ function reset_template(model)
         window.clearInterval(model.updateInterval);
     }
 }
-

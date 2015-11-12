@@ -1,0 +1,7 @@
+{
+    "name": "Processes",
+    "version": "1.0.0",
+    "description": "Infos about agocontrol processes",
+    "template": "html/processes",
+    "listable": true
+}
