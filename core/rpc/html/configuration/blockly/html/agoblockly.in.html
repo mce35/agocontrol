@@ -119,7 +119,7 @@
 
     <!-- blockly configuration -->
     <xml style="display: none" id="toolbox">
-        <category name="Logic">
+        <category name="Logic" colour="210">
             <block type="controls_if"/>
             <block type="logic_compare"/>
             <block type="logic_operation"/>
@@ -127,7 +127,7 @@
             <block type="logic_boolean"/>
             <block type="logic_ternary"/>
         </category>
-        <category name="Loops">
+        <category name="Loops" colour="120">
             <block type="controls_repeat"/>
             <block type="controls_whileUntil"/>
             <block type="controls_for">
@@ -150,7 +150,7 @@
             <block type="controls_forEach"/>
             <block type="controls_flow_statements"/>
         </category>
-        <category name="Math">
+        <category name="Math" colour="230">
             <block type="math_number"/>
             <block type="math_arithmetic"/>
             <block type="agocontrol_range">
@@ -205,11 +205,11 @@
             <block type="math_random_float"/>
             <block type="math_modulo"/>
         </category>
-        <category name="Colour">
+        <category name="Colour" colour="20">
             <block type="colour_picker"/>
             <block type="colour_rgb"/>
         </category>
-        <category name="Text">
+        <category name="Text" colour="160">
             <block type="text"/>
             <block type="agocontrol_email"/>
             <block type="agocontrol_phoneNumber"/>
@@ -226,7 +226,7 @@
             <block type="text_trim"/>
             <block type="text_format"/>
         </category>
-        <category name="List">
+        <category name="List" colour="260">
             <block type="lists_create_empty"/>
             <block type="lists_create_with"/>
             <block type="lists_repeat">
@@ -267,25 +267,25 @@
                 </value>
             </block>
         </category>
-        <category name="Datetime">
+        <category name="Datetime" colour="20">
             <block type="datetime_timestamp"/>
             <block type="datetime_totimestamp"/>
             <block type="datetime_currentdate"/>
             <block type="datetime_specificdate"/>
         </category>
-        <category name="Common">
+        <category name="Common" colour="20">
             <block type="text_print"/>
             <block type="common_tonumber"/>
             <block type="common_tostring"/>
             <block type="common_type"/>
             <block type="common_execute"/>
         </category>
-        <category name="Local variables" custom="VARIABLE">
+        <category name="Local variables" colour="330" custom="VARIABLE">
         </category>
-        <category name="Procedures" custom="PROCEDURE">
+        <category name="Procedures" colour="290" custom="PROCEDURE">
         </category>
         <sep></sep>
-        <category name="Trigger">
+        <category name="Trigger" colour="210">
             <block type="agocontrol_content">
                 <value name="EVENT">
                     <block type="agocontrol_eventAll">
@@ -305,10 +305,10 @@
             </block>
             <block type="agocontrol_printContent"/>
         </category>
-        <category name="Inventory">
+        <category name="Inventory" colour="140">
             <block type="agocontrol_deviceProperty"/>
         </category>
-        <category name="Device">
+        <category name="Device" colour="20">
             <block type="agocontrol_deviceUuid"/>
             <block type="agocontrol_deviceInternalid"/>
             <block type="agocontrol_deviceName">
@@ -318,16 +318,16 @@
                 </value>
             </block>
         </category>
-        <category name="Event">
+        <category name="Event" colour="65">
             <block type="agocontrol_deviceEvent"/>
             <block type="agocontrol_eventAll"/>
         </category>
-        <category name="Actions">
-            <block type="agocontrol_sendMessage"/>
+        <category name="Actions" colour="290">
             <block type="agocontrol_sleep"/>
             <block type="agocontrol_journal"/>
+            <block type="agocontrol_sendMessage"/>
         </category>
-        <category name="System variables">
+        <category name="System variables" colour="330">
             <block type="agocontrol_getVariable"/>
             <block type="agocontrol_setVariable"/>
             <block type="agocontrol_defaultEmail"/>
