@@ -60,6 +60,8 @@ configuration/rooms/html/rooms.xml.in
 configuration/scenarios/html/scenarios.xml.in
 configuration/systemmonitoring/html/systemmonitoring.xml.in
 configuration/variables/html/variables.xml.in
-help/system/html/system.xml.in
+help/inventory/html/inventory.xml.in
+help/version/html/version.xml.in
+help/processes/html/processes.xml.in
 help/drain/html/drain.xml.in
 help/config/html/config.xml.in
