@@ -13,7 +13,20 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.scriptName = ko.observable('untitled');
     self.scriptSaved = ko.observable(true);
     self.scriptLoaded = false;
-    self.debugData = ko.observable('{}');
+    self.debugEvents = ko.observable();
+    self.debugSelectedEvent = ko.observable();
+    self.debugEventProps = ko.pureComputed(function() {
+        var ev = self.debugSelectedEvent();
+        var props = [];
+        if( ev && self.agocontrol.schema().events[ev] )
+        {
+            for( var i=0; i<self.agocontrol.schema().events[ev].parameters.length; i++ )
+            {
+                props.push({'label':self.agocontrol.schema().events[ev].parameters[i], 'value':ko.observable('')});
+            }
+        }
+        return props;
+    });
     self.debugging = false;
     self.defaultWorkspace = '<xml>'
         + '<block type="controls_if">'
@@ -599,6 +612,30 @@ function agoBlocklyPlugin(devices, agocontrol)
         }
     };
 
+    //search events in lua
+    self.searchEvents = function()
+    {
+        //init
+        var results = [];
+        var lua = self.getLua();
+
+        //prepare regexp
+        var re = /^.*content\.subject\ ==\ \'(.*)\'.*$/gm; 
+        var m;
+         
+        //search for events
+        while( (m = re.exec(lua))!==null )
+        {
+            if( m.index===re.lastIndex )
+            {
+                re.lastIndex++;
+            }
+            results.push(m[1]);
+        }
+
+        return results;
+    }
+
     //start debugging
     self.startDebug = function()
     {
@@ -615,17 +652,12 @@ function agoBlocklyPlugin(devices, agocontrol)
         //clear debug area
         self.clearDebug();
 
-        //check specified data
-        var data = null;
-        try
+        //build data
+        var data = {};
+        data['subject'] = self.debugSelectedEvent();
+        for( var i=0; i<self.debugEventProps().length; i++ )
         {
-            data = JSON.parse(self.debugData());
-        }
-        catch(err)
-        {
-            notif.warning(err);
-            self.debugging = false;
-            return;
+            data[self.debugEventProps()[i].label] = self.debugEventProps()[i].value();
         }
 
         //launch debug command
@@ -661,6 +693,10 @@ function agoBlocklyPlugin(devices, agocontrol)
     //debug script
     self.openDebug = function()
     {
+        //get trigger event from script
+        var events = self.searchEvents();
+        self.debugEvents(events);
+
         //open dialog
         $("#debugDialog").modal('show');
     };

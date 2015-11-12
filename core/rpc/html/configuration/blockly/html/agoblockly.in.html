@@ -102,13 +102,24 @@
                     <_h4 data-translateable="true" class="modal-title">Debug script</_h4>
                 </div>
                 <div class="modal-body">
-                    <div class="btn-group">
+                    <div class="btn-group agorowbottom">
                         <button type="button" class="btn btn-primary" data-bind="click:startDebug"><_span data-translateable="true">Start</_span></button>
                         <button type="button" class="btn btn-primary" data-bind="click:stopDebug"><_span data-translateable="true">Stop</_span></button>
                         <button type="button" class="btn btn-primary" data-bind="click:clearDebug"><_span data-translateable="true">Clear</_span></button>
                     </div>
-                    <textarea class="form-control agorowbottom agomargintop" rows="2" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}" data-bind="value:debugData"></textarea>
-                    <div id="debugContainer">
+                    <form class="form">
+                        <div class="form-group">
+                            <select class="form-control" data-bind="options:debugEvents, value:debugSelectedEvent"/>
+                        </div>
+                    </form>
+                    <form class="form-inline">
+                        <ko opts="foreach:debugEventProps">
+                        <div class="form-group">
+                            <input type="text" class="form-control input-sm" data-bind="value:value, attr:{placeholder:label}"/>
+                        </div>
+                        </ko>
+                    </form>
+                    <div id="debugContainer" class="agorowtop">
                         <ul class="list-group" style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
                         </ul>
                     </div>
