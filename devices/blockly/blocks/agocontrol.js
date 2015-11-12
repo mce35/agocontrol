@@ -1672,7 +1672,6 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
         this.setColour(140);
         this.container = this.appendDummyInput()
             .appendField("trigger prop")
-            //.appendField(new Blockly.FieldDropdown(window.BlocklyAgocontrol.getAllEvents()), "EVENT")
             .appendField(new Blockly.FieldDropdown([['','']]), "PROP");
         this.setInputsInline(true);
         this.setOutput(true); //no way to determine output
@@ -1681,13 +1680,11 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
   
     //force event selected in dropdown
     setEvent: function(newEvent) {
-        //this.setFieldValue(newEvent, "EVENT");
         this.event = newEvent;
     },
   
     //return current event
     getEvent: function() {
-        //return this.getFieldValue("EVENT");
         return this.event;
     },
 
@@ -1706,9 +1703,7 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
             this.setWarningText(null);
             
         //update properties list
-        //var currentEvent = this.getFieldValue("EVENT");
         var currentEvent = this.event;
-        console.log('currentevent='+this.event);
         var currentProp = null;
         if( this.firstRun )
         {
@@ -1718,8 +1713,6 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
         {
             this.lastEvent = currentEvent;
             var props = window.BlocklyAgocontrol.getEventProperties(currentEvent);
-            console.log('PROPS');
-            console.log(props);
             if( props.length===0 )
             {
                 props.push(['','']);
