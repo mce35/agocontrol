@@ -590,24 +590,24 @@ function agoBlocklyPlugin(devices, agocontrol)
             if( event.type===0 )
             {
                 //start message
-                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+event.msg+'</i>');
             }
             else if( event.type===1 )
             {
                 //end message
-                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+event.msg+'</i>');
                 //stop debugging
                 self.stopDebug();
             }
             else if( event.type===2 )
             {
                 //error message
-                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-danger">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-danger">'+event.msg+'</i>');
             }
             else if( event.type===3 )
             {
                 //default message
-                $('#debugContainer > ul').append('<li class="list-group-item">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item">'+event.msg+'</i>');
             }
         }
     };
