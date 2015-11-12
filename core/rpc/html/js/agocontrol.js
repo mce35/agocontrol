@@ -49,7 +49,7 @@ Agocontrol.prototype = {
 
     //ui config
     skin: ko.observable('skin-yellow-light body-light'),
-    colorStyle: null,
+    theme: null,
     darkStyle: ko.observable(false),
 
     _init : function(){
@@ -169,9 +169,9 @@ Agocontrol.prototype = {
 
         //handle dark/light style changes
         self.darkStyle.subscribe(function(value) {
-            if( self.colorStyle )
+            if( self.theme )
             {
-                self.setSkin(self.colorStyle);
+                self.setSkin(self.theme);
             }
         });
 
@@ -182,7 +182,7 @@ Agocontrol.prototype = {
             var skin = localStorage.getItem("skin");
             if( skin )
             {
-                self.colorStyle = skin.replace('-light', '');
+                self.theme = self.getThemeFromSkin(skin);
                 if( skin.indexOf('light')===-1 )
                 {
                     self.darkStyle(true);
@@ -1146,22 +1146,37 @@ Agocontrol.prototype = {
         });
     },
 
+    //get theme from skin
+    getThemeFromSkin: function(skin)
+    {
+        var re = /(skin-\w*).*/g;
+        var m = re.exec(skin);
+        var theme = 'skin-yellow-light';
+        if( m!==null )
+        {
+            theme = m[1]
+        }
+        return theme;
+    },
+
     //change ui skin
     setSkin: function(skin)
     {
         var self = this;
-        self.colorStyle = skin;
 
-        //append general style light/dark
+        //update theme
+        self.theme = self.getThemeFromSkin(skin);
+
+        //build new skin string
         if( self.darkStyle() )
         {
-            skin = skin.replace('-light','')+' body-dark';
+            skin = self.theme+' body-dark';
         }
         else
         {
-            skin = skin.replace('-light','')+'-light body-light';
+            skin = self.theme+'-light body-light';
         }
-        
+
         //check if same skin already applied
         if( skin==self.skin() )
         {
