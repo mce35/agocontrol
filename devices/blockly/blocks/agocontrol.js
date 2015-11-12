@@ -402,72 +402,6 @@ window.BlocklyAgocontrol = {
         }
     },
     
-    //return all event blocks in group specified block belongs to
-    //@return {master, blocks}: 
-    //  - master: first event block attached to agocontrol_content that's supposed to "control" all other events
-    //  - blocks: array of event blocks in content group (excluding master)
-    /*getEventBlocksInBlockGroup: function(block) {
-        //init
-        var output = {'master':null, 'blocks':[]};
-        var parent = block.getParent();
-        var blockLevel = 0;
-        
-        //looking for main block parent
-        while( parent )
-        {
-            if( parent.getParent() && parent.getSurroundParent() && parent.getParent().id==parent.getSurroundParent().id )
-            {
-                parent = parent.getParent();
-                blockLevel++;
-            }
-            else
-                break;
-        }
-  
-        if( parent )
-        {
-            var level = -1;
-            //walk though parent searching for agocontrol_content block
-            for( var i=0; i<parent.getChildren().length; i++ )
-            {
-                if( parent.getChildren()[i].getSurroundParent() && parent.getChildren()[i].getSurroundParent().id==parent.id )
-                {
-                    output = this._getEventBlocksInBlockGroupDeep(block, blockLevel, parent.getChildren()[i], 0, output);
-                }
-            }
-        }
-        
-        return output;
-    },
-    _getEventBlocksInBlockGroupDeep: function(block, blockLevel, child, childLevel, output) {
-        childLevel++;
-        if( child.type=="agocontrol_content" && output.master===null )
-        {
-            //update master event block
-            for( var i=0; i<child.getChildren().length; i++ )
-            {
-                if( child.getChildren()[i].type=="agocontrol_eventAll" || child.getChildren()[i].type=="agocontrol_deviceEvent" )
-                {
-                    output.master = child.getChildren()[i];
-                }
-            }
-        }
-        else if( child.type==="agocontrol_contentProperty" )
-        {
-            //update blocks array
-            if( output.master && output.master.id!==child.id )
-            {
-                output.blocks.push(child);
-            }
-        }
-        
-        for( var i=0; i<child.getChildren().length; i++ )
-        {
-            output = this._getEventBlocksInBlockGroupDeep(block, blockLevel, child.getChildren()[i], childLevel, output);
-        }
-        return output;
-    },*/
-    
     //update event blocks
     updateEventBlocks: function(block) {
         //search all agocontrol_content blocks and disable inContent flag
@@ -502,11 +436,28 @@ window.BlocklyAgocontrol = {
                 contentEvent = children[0].getEvent();
             }
 
-            //update children
+            //update embedded blocks
+            //parent_ should be a if block
             var parent_ = contents[i].getParent();
             if( parent_!==null )
             {
-                var descendants = parent_.getDescendants();
+                //get real descendants of if block
+                var descendants = [];
+                var children = parent_.getChildren();
+                for( var k=0; k<children.length; k++ )
+                {
+                    if( children[k].getSurroundParent() && children[k].getSurroundParent().id===parent_.id )
+                    {
+                        //append descendants of the embedded child
+                        var descen = children[k].getDescendants();
+                        for( var l=0; l<descen.length; l++ )
+                        {
+                            descendants.push(descen[l]);
+                        }
+                    }
+                }
+
+                //iterate over real descendants
                 for( var j=0; j<descendants.length; j++ )
                 {
                     if( descendants[j].type==="agocontrol_printContent" || (descendants[j].type==="agocontrol_content" && descendants[j].id!==contents[i].id) )
@@ -1624,7 +1575,7 @@ Blockly.Blocks['agocontrol_content'] = {
 
         //check if no problem
         if( this.inContent )
-            this.setWarningText('Content block shouldn\'t be nested in other "content" logic block');
+            this.setWarningText('Content block shouldn\'t be nested in other "trigger" logic block');
         else
             this.setWarningText(null);
     }
@@ -1696,9 +1647,9 @@ Blockly.Blocks['agocontrol_contentProperty'] = {
         //update event blocks
         window.BlocklyAgocontrol.updateEventBlocks(this);
         
-        //check if block is nested in "content" block
+        //check if block is nested in "trigger" block
         if( !this.inContent )
-            this.setWarningText('Content property block MUST be nested in a "content" logic block');
+            this.setWarningText('Content property block MUST be nested in a "trigger" logic block');
         else if( !this.propWarning )
             this.setWarningText(null);
             
