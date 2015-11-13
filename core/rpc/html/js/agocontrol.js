@@ -49,7 +49,7 @@ Agocontrol.prototype = {
 
     //ui config
     skin: ko.observable('skin-yellow-light body-light'),
-    colorStyle: null,
+    theme: null,
     darkStyle: ko.observable(false),
 
     _init : function(){
@@ -118,7 +118,7 @@ Agocontrol.prototype = {
             }
 
             this.applications(applications);
-            this._getApplications.fulfill();
+            this._getApplications.resolve();
 
             //protocols
             var protocols = [];
@@ -148,7 +148,7 @@ Agocontrol.prototype = {
             }
 
             this.protocols(protocols);
-            this._getProtocols.fulfill();
+            this._getProtocols.resolve();
 
         }, this);
 
@@ -169,9 +169,9 @@ Agocontrol.prototype = {
 
         //handle dark/light style changes
         self.darkStyle.subscribe(function(value) {
-            if( self.colorStyle )
+            if( self.theme )
             {
-                self.setSkin(self.colorStyle);
+                self.setSkin(self.theme);
             }
         });
 
@@ -182,7 +182,7 @@ Agocontrol.prototype = {
             var skin = localStorage.getItem("skin");
             if( skin )
             {
-                self.colorStyle = skin.replace('-light', '');
+                self.theme = self.getThemeFromSkin(skin);
                 if( skin.indexOf('light')===-1 )
                 {
                     self.darkStyle(true);
@@ -363,6 +363,20 @@ Agocontrol.prototype = {
             if( self.rooms()[i].uuid==uuid )
             {
                 return self.rooms()[i];
+            }
+        }
+        return null;
+    },
+
+    //find device
+    findDevice: function(uuid)
+    {
+        var self = this;
+        for ( var i=0; i<self.devices().length; i++)
+        {
+            if( self.devices()[i].uuid===uuid )
+            {
+                return self.devices()[i];
             }
         }
         return null;
@@ -834,6 +848,9 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
                 {
                     delete self.inventory.devices[response.result.uuid];
+                    self.devices.remove(function(item) {
+                        return item.uuid===response.result.uuid;
+                    });
                 }
                 else
                 {
@@ -850,8 +867,7 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
                 {
                     //brand new device, get inventory and fill local one with new infos
-                    //TODO add other event than announce because it is used for refreshing device timestamp
-                    /*self.getInventory()
+                    self.getInventory()
                         .then(function(result) {
                             var tmpDevices = self.cleanInventory(result.data.devices);
                             if( tmpDevices && tmpDevices[response.result.uuid] )
@@ -862,7 +878,7 @@ Agocontrol.prototype = {
                             {
                                 console.warn('Unable to update device because no infos about it in inventory');
                             }
-                        });*/
+                        });
                 }
 
                 //nothing else to do
@@ -875,6 +891,28 @@ Agocontrol.prototype = {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
                 {
                     self.inventory.devices[response.result.uuid].name = response.result.name;
+                    var dev = self.findDevice(response.result.uuid);
+                    if( dev!==null )
+                    {
+                        dev.name(response.result.name);
+                    }
+                }
+
+                //nothing else to do
+                done = true;
+            }
+
+            //handle stale event
+            if( !done && response.result.event=="event.device.stale" )
+            {
+                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
+                {
+                    self.inventory.devices[response.result.uuid].stale = response.result.stale;
+                    var dev = self.findDevice(response.result.uuid);
+                    if( dev!==null )
+                    {
+                        dev.stale(response.result.stale);
+                    }
                 }
 
                 //nothing else to do
@@ -1108,21 +1146,44 @@ Agocontrol.prototype = {
         });
     },
 
+    //get theme from skin
+    getThemeFromSkin: function(skin)
+    {
+        var re = /(skin-\w*).*/g;
+        var m = re.exec(skin);
+        var theme = 'skin-yellow-light';
+        if( m!==null )
+        {
+            theme = m[1]
+        }
+        return theme;
+    },
+
     //change ui skin
     setSkin: function(skin)
     {
         var self = this;
-        self.colorStyle = skin;
 
-        //append general style light/dark
+        //update theme
+        self.theme = self.getThemeFromSkin(skin);
+
+        //build new skin string
         if( self.darkStyle() )
         {
-            skin = skin.replace('-light','')+' body-dark';
+            skin = self.theme+' body-dark';
         }
         else
         {
-            skin = skin.replace('-light','')+'-light body-light';
+            skin = self.theme+'-light body-light';
         }
+
+        //check if same skin already applied
+        if( skin==self.skin() )
+        {
+            return;
+        }
+
+        //save new skin
         self.skin(skin);
 
         //save changes
@@ -1193,6 +1254,11 @@ Agocontrol.prototype = {
             skin = skin + ' sidebar-collapse';
         }
         self.skin(skin);
+
+        //trigger window resize event (useful for blockly)
+        window.setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+        }, 500);
 
         //save changes
         $.ajax({

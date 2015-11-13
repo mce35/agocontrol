@@ -1537,7 +1537,7 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
  */
 void AgoLua::eventHandler(std::string subject, qpid::types::Variant::Map content)
 {
-    if ( subject == "event.device.announce" )
+    if( subject=="event.device.announce" || subject=="event.device.discover" )
     {
         return;
     }

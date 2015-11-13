@@ -1,4 +1,4 @@
-<div>
+<div style="width:100%; height:800px;">
 
     <!-- lua dialog -->
     <div class="modal fade" tabindex="-1" id="luaDialog">
@@ -102,13 +102,24 @@
                     <_h4 data-translateable="true" class="modal-title">Debug script</_h4>
                 </div>
                 <div class="modal-body">
-                    <div class="btn-group">
+                    <div class="btn-group agorowbottom">
                         <button type="button" class="btn btn-primary" data-bind="click:startDebug"><_span data-translateable="true">Start</_span></button>
                         <button type="button" class="btn btn-primary" data-bind="click:stopDebug"><_span data-translateable="true">Stop</_span></button>
                         <button type="button" class="btn btn-primary" data-bind="click:clearDebug"><_span data-translateable="true">Clear</_span></button>
                     </div>
-                    <textarea class="form-control agorowbottom agomargintop" rows="2" placeholder="{'uuid':'XXX-XXXX-XXXX-XXXX', 'event':'event.environment.humiditychanged', 'level':35, 'unit':'percent'}" data-bind="value:debugData"></textarea>
-                    <div id="debugContainer">
+                    <form class="form">
+                        <div class="form-group">
+                            <select class="form-control" data-bind="options:debugEvents, value:debugSelectedEvent"/>
+                        </div>
+                    </form>
+                    <form class="form-inline">
+                        <ko opts="foreach:debugEventProps">
+                        <div class="form-group">
+                            <input type="text" class="form-control input-sm" data-bind="value:value, attr:{placeholder:label}"/>
+                        </div>
+                        </ko>
+                    </form>
+                    <div id="debugContainer" class="agorowtop">
                         <ul class="list-group" style="min-height:200px; max-height:600px; padding:5px; overflow:auto; border:1px solid #A0A0A0; background-color:#EFEFEF; font-size:small; border-radius:5px;">
                         </ul>
                     </div>
@@ -119,7 +130,7 @@
 
     <!-- blockly configuration -->
     <xml style="display: none" id="toolbox">
-        <category name="Logic">
+        <category name="Logic" colour="210">
             <block type="controls_if"/>
             <block type="logic_compare"/>
             <block type="logic_operation"/>
@@ -127,36 +138,36 @@
             <block type="logic_boolean"/>
             <block type="logic_ternary"/>
         </category>
-        <category name="Loops">
+        <category name="Loops" colour="120">
             <block type="controls_repeat"/>
             <block type="controls_whileUntil"/>
             <block type="controls_for">
                 <value name="FROM">
                     <block type="math_number">
-                        <title name="NUM">1</title>
+                        <field name="NUM">1</field>
                     </block>
                 </value>
                 <value name="TO">
                     <block type="math_number">
-                        <title name="NUM">10</title>
+                        <field name="NUM">10</field>
                     </block>
                 </value>
                 <value name="BY">
                     <block type="math_number">
-                        <title name="NUM">1</title>
+                        <field name="NUM">1</field>
                     </block>
                 </value>
             </block>
             <block type="controls_forEach"/>
             <block type="controls_flow_statements"/>
         </category>
-        <category name="Math">
+        <category name="Math" colour="230">
             <block type="math_number"/>
             <block type="math_arithmetic"/>
             <block type="agocontrol_range">
                 <value name="MIN">
                     <block type="math_number">
-                        <title name="NUM">0</title>
+                        <field name="NUM">0</field>
                     </block>
                 </value>
                 <value name="PROP">
@@ -164,7 +175,7 @@
                 </value>
                 <value name="MAX">
                     <block type="math_number">
-                        <title name="NUM">100</title>
+                        <field name="NUM">100</field>
                     </block>
                 </value>
             </block>
@@ -172,7 +183,7 @@
             <block type="math_change">
                 <value name="DELTA">
                     <block type="math_number">
-                        <title name="NUM">1</title>
+                        <field name="NUM">1</field>
                     </block>
                 </value>
             </block>
@@ -181,35 +192,35 @@
             <block type="math_constrain">
                 <value name="LOW">
                     <block type="math_number">
-                        <title name="NUM">1</title>
+                        <field name="NUM">1</field>
                     </block>
                 </value>
                 <value name="HIGH">
                     <block type="math_number">
-                        <title name="NUM">100</title>
+                        <field name="NUM">100</field>
                     </block>
                 </value>
             </block>
             <block type="math_random_int">
                 <value name="FROM">
                     <block type="math_number">
-                        <title name="NUM">1</title>
+                        <field name="NUM">1</field>
                     </block>
                 </value>
                 <value name="TO">
                     <block type="math_number">
-                        <title name="NUM">100</title>
+                        <field name="NUM">100</field>
                     </block>
                 </value>
             </block>
             <block type="math_random_float"/>
             <block type="math_modulo"/>
         </category>
-        <category name="Colour">
+        <category name="Colour" colour="20">
             <block type="colour_picker"/>
             <block type="colour_rgb"/>
         </category>
-        <category name="Text">
+        <category name="Text" colour="160">
             <block type="text"/>
             <block type="agocontrol_email"/>
             <block type="agocontrol_phoneNumber"/>
@@ -226,7 +237,7 @@
             <block type="text_trim"/>
             <block type="text_format"/>
         </category>
-        <category name="List">
+        <category name="List" colour="260">
             <block type="lists_create_empty"/>
             <block type="lists_create_with"/>
             <block type="lists_repeat">
@@ -267,73 +278,71 @@
                 </value>
             </block>
         </category>
-        <category name="Datetime">
+        <category name="Datetime" colour="20">
             <block type="datetime_timestamp"/>
             <block type="datetime_totimestamp"/>
             <block type="datetime_currentdate"/>
             <block type="datetime_specificdate"/>
         </category>
-        <category name="Common">
+        <category name="Common" colour="20">
             <block type="text_print"/>
             <block type="common_tonumber"/>
             <block type="common_tostring"/>
             <block type="common_type"/>
             <block type="common_execute"/>
         </category>
-        <category name="Local variables" custom="VARIABLE">
+        <category name="Local variables" colour="330" custom="VARIABLE">
         </category>
-        <category name="Procedures" custom="PROCEDURE">
+        <category name="Procedures" colour="290" custom="PROCEDURE">
         </category>
-        <category name="Agocontrol">
-            <category name="Content">
-                <block type="agocontrol_content">
-                    <value name="EVENT">
-                        <block type="agocontrol_eventAll">
-                        </block>
-                    </value>
-                </block>
-                <block type="agocontrol_contentProperty"/>
-                <block type="logic_compare">
-                    <value name="A">
-                        <block type="agocontrol_contentProperty">
-                        </block>
-                    </value>
-                    <value name="B">
-                        <block type="math_number">
-                            <title name="NUM">0</title>
-                        </block>
-                    </value>
-                </block>
-                <block type="agocontrol_printContent"/>
-            </category>
-            <category name="Inventory">
-                <block type="agocontrol_deviceProperty"/>
-            </category>
-            <category name="Device">
-                <block type="agocontrol_deviceUuid"/>
-                <block type="agocontrol_deviceInternalid"/>
-                <block type="agocontrol_deviceName">
-                    <value name="UUID">
-                        <block type="agocontrol_deviceUuid">
-                        </block>
-                    </value>
-                </block>
-            </category>
-            <category name="Event">
-                <block type="agocontrol_deviceEvent"/>
-                <block type="agocontrol_eventAll"/>
-            </category>
-            <category name="Actions">
-                <block type="agocontrol_sendMessage"/>
-                <block type="agocontrol_sleep"/>
-                <block type="agocontrol_journal"/>
-            </category>
-            <category name="System variables">
-                <block type="agocontrol_getVariable"/>
-                <block type="agocontrol_setVariable"/>
-                <block type="agocontrol_defaultEmail"/>
-                <block type="agocontrol_defaultPhoneNumber"/>
-            </category>
+        <sep></sep>
+        <category name="Trigger" colour="210">
+            <block type="agocontrol_content">
+                <value name="EVENT">
+                    <block type="agocontrol_eventAll">
+                    </block>
+                </value>
+            </block>
+            <block type="agocontrol_contentProperty"/>
+            <block type="logic_compare">
+                <value name="A">
+                    <block type="agocontrol_contentProperty"></block>
+                </value>
+                <value name="B">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+            </block>
+            <block type="agocontrol_printContent"/>
+        </category>
+        <category name="Inventory" colour="140">
+            <block type="agocontrol_deviceProperty"/>
+        </category>
+        <category name="Device" colour="20">
+            <block type="agocontrol_deviceUuid"/>
+            <block type="agocontrol_deviceInternalid"/>
+            <block type="agocontrol_deviceName">
+                <value name="UUID">
+                    <block type="agocontrol_deviceUuid">
+                    </block>
+                </value>
+            </block>
+        </category>
+        <category name="Event" colour="65">
+            <block type="agocontrol_deviceEvent"/>
+            <block type="agocontrol_eventAll"/>
+        </category>
+        <category name="Actions" colour="290">
+            <block type="agocontrol_sleep"/>
+            <block type="agocontrol_journal"/>
+            <block type="agocontrol_sendMessage"/>
+        </category>
+        <category name="System variables" colour="330">
+            <block type="agocontrol_getVariable"/>
+            <block type="agocontrol_setVariable"/>
+            <block type="agocontrol_defaultEmail"/>
+            <block type="agocontrol_defaultPhoneNumber"/>
         </category>
     </xml>
    
@@ -354,77 +363,75 @@
         <_span data-translateable="true" id="rsf">Script not renamed</_span>
     </section>
 
-    <!-- title -->
-    <section class="content-header">
-        <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
-    </section>
-    
-    <!-- content -->
-    <section class="content">
-
-        <!-- toolbar -->
-        <div class="row margin-bottom">
-            <div class="col-xs-12 col-md-12">
-                <div class="btn-toolbar">
+    <table style="width:100%; height:100%;">
+    <!--title-->
+    <tr>
+        <td style="height:50px;">
+            <section class="content-header">
+                <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
+            </section>
+        </td>
+    </tr>
+    <!-- toolbox -->
+    <tr style="height:40px;">
+        <td style="padding: 20px 20px 0px 20px;">
+            <div class="btn-toolbar">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" data-bind="click:clear">
+                        <span class="en-doc"></span>
+                        <_span data-translateable="true">New</_span>
+                    </button>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-primary" data-bind="click:clear">
-                            <span class="en-doc"></span>
-                            <_span data-translateable="true">New</_span>
+                        <button type="button" class="btn btn-primary" data-bind="click:save">
+                            <span class="en-install"></span>
+                            <_span data-translateable="true">Save</_span>
+                            <ko opts="ifnot:scriptSaved">
+                                <_span class="badge" data-translateable="true">Changed</_span>
+                            </ko>
                         </button>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-primary" data-bind="click:save">
-                                <span class="en-install"></span>
-                                <_span data-translateable="true">Save</_span>
-                                <ko opts="ifnot:scriptSaved">
-                                    <_span class="badge" data-translateable="true">Changed</_span>
-                                </ko>
-                            </button>
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><_a href="#" data-bind="click:saveas" data-translateable="true">Save as</_a></li>
-                            </ul>
-                        </div>
-                        <button type="button" class="btn btn-primary" data-bind="click:load">
-                            <span class="en-doc-text"></span>
-                            <_span data-translateable="true">Load</_span>
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            <span class="caret"></span>
                         </button>
-                        <button type="button" class="btn btn-primary" data-bind="click:importScript">
-                            <span class="en-down"></span>
-                            <_span data-translateable="true">Import</_span>
-                        </button>
+                        <ul class="dropdown-menu">
+                            <li><_a href="#" data-bind="click:saveas" data-translateable="true">Save as</_a></li>
+                        </ul>
                     </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary" data-bind="click:check">
-                            <span class="en-check"></span>
-                            <_span data-translateable="true">Check</_span>
-                        </button>
-                    <button type="button" class="btn btn-primary" data-bind="click:viewlua">
-                        <span class="en-eye"></span>
-                        <_span data-translateable="true">View</_span>
-                        </button>
-                        <button type="button" class="btn btn-primary" data-bind="click:openDebug">
-                            <span class="en-flash"></span>
-                            <_span data-translateable="true">Debug</_span>
-                        </button>
-                    </div>
+                    <button type="button" class="btn btn-primary" data-bind="click:load">
+                        <span class="en-doc-text"></span>
+                        <_span data-translateable="true">Load</_span>
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bind="click:importScript">
+                        <span class="en-down"></span>
+                        <_span data-translateable="true">Import</_span>
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" data-bind="click:check">
+                        <span class="en-check"></span>
+                        <_span data-translateable="true">Check</_span>
+                    </button>
+                <button type="button" class="btn btn-primary" data-bind="click:viewlua">
+                    <span class="en-eye"></span>
+                    <_span data-translateable="true">View</_span>
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bind="click:openDebug">
+                        <span class="en-flash"></span>
+                        <_span data-translateable="true">Debug</_span>
+                    </button>
                 </div>
             </div>
-        </div>
-
-        <!-- blockly -->
-        <div class="row hidden-xs hidden-sm">
-            <div class="col-xs-12 col-md-12">
-                <div id="blocklyDiv" style="height:800px; width:1100px;" data-bind="blockly:blocklyViewModel"/>
-            </div>
-        </div>
-        <div class="row hidden-md hidden-lg">
-            <div class="col-xs-12 col-md-12">
-                <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
-            </div>
-        </div>
-
-    </section>
+        </td>
+    </tr>
+    <tr class="hidden-xs hidden-sm">
+        <td id="blocklyArea" style="padding: 0px 20px 0px 20px;">
+            <div id="blocklyDiv" style="" data-bind="blockly:blocklyViewModel"/>    
+        </td>
+    </tr>
+    <tr class="hidden-md hidden-lg">
+        <td>
+            <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
+        </td>
+    </tr>
+    </table>
 
 </div>

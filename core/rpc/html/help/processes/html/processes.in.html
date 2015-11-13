@@ -1,0 +1,28 @@
+<div>
+
+    <!-- title -->
+    <section class="content-header">
+        <_h1 data-translateable="true">Processes</_h1>
+    </section>
+
+    <!-- content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <script id="rowTemplate" type="text/html">
+                    <td data-bind="text: name"></td>
+                    <ko opts="if: running">
+                    <td><i style="color:green; font-weight:bold;" class="en-check"></i></td>
+                    </ko>
+                    <ko opts="ifnot: running">
+                    <td><i style="color:red; font-weight:bold;" class="en-cancel"></i></td>
+                    </ko>
+                    <td data-bind="text: cpu"></td>
+                    <td data-bind="text: sizeToHRSize(memRes)"></td>
+                </script>
+                <div data-bind="agoGrid:grid"/>
+            </div>
+        </div>
+    </section>
+ 
+</div>

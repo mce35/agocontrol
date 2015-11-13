@@ -228,14 +228,14 @@ function Dashboard(dashboard, edition, agocontrol)
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             var device = self.agocontrol.devices()[i];
-            if( device.name && device.name.length>0 )
+            if( device.name() && device.name().length>0 )
             {
                 if( self.selectedMainFilter()=='rooms' )
                 {
                     //filter by rooms
                     if( self.selectedSubFilter() && device.room==self.selectedSubFilter().name )
                     {
-                        output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                        output.push({uuid:device.uuid, name:device.name(), devicetype:device.devicetype});
                     }
                 }
                 else if( self.selectedMainFilter()=='types' )
@@ -243,13 +243,13 @@ function Dashboard(dashboard, edition, agocontrol)
                     //filter by devicetype
                     if( self.selectedSubFilter() && device.devicetype==self.selectedSubFilter().name )
                     {
-                        output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                        output.push({uuid:device.uuid, name:device.name(), devicetype:device.devicetype});
                     }
                 }
                 else
                 {
                     //no filter
-                    output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                    output.push({uuid:device.uuid, name:device.name(), devicetype:device.devicetype});
                 }
             }
 
@@ -372,7 +372,7 @@ function Dashboard(dashboard, edition, agocontrol)
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             var device = self.agocontrol.devices()[i];
-            if( device.name && device.name.length>0 )
+            if( device.name() && device.name().length>0 )
             {
                 var found = false;
                 for( var j=0; j<output.length; j++ )
@@ -439,7 +439,12 @@ function Dashboard(dashboard, edition, agocontrol)
             }
 
             //store device at its position
-            content[x][y] = self.findDevice(k);
+            var device = self.findDevice(k);
+            if( device!==null )
+            {
+                //device still exists in inventory
+                content[x][y] = device;
+            }
         }
 
         //re-enable drag and drop

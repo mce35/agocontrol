@@ -1,0 +1,15 @@
+<div class="container-fluid">
+    <form class="form-horizontal" data-bind="foreach:koparameters">
+        <div class="form-group">
+            <label class="col-sm-4 control-label" data-bind="text:key"></label>
+            <div class="col-sm-4">
+                <input type="text" data-bind="value:value" class="form-control"></input>
+            </div>
+        </div>
+    </form>
+    <form class="form-horizontal">
+        <div class="col-sm-offset-4 col-sm-6">
+            <button type="button" data-translateable="true" data-bind="click:saveParameters" class="btn btn-primary">Save changes</button>
+        </div>
+    </form>
+</div>

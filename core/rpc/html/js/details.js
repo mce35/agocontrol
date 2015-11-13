@@ -124,6 +124,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
             }
                 
             //show modal
+            $('#detailsTitle').html('Device details');
             $('#detailsModal').modal('show');
         }
     }, $('#detailsContent')[0]);
@@ -551,3 +552,38 @@ Agocontrol.prototype.render = function(device, environment, type)
     }
 };
 
+//Opens parameters page for the given device
+Agocontrol.prototype.showParameters = function(device)
+{
+    var self = this;
+
+    //Check if we have a template if yes use it otherwise fall back to default
+    $.ajax({
+        type : 'HEAD',
+        url : "templates/parameters/" + device.devicetype + ".html",
+        success : function()
+        {
+            self.doShowParameters(device, device.devicetype);
+        },
+        error : function()
+        {
+            self.doShowParameters(device, "default");
+        }
+    });
+};
+
+//Shows parameters page of a device
+Agocontrol.prototype.doShowParameters = function(device, template)
+{
+    var self = this;
+
+    ko.renderTemplate("templates/parameters/" + template, device,
+    {
+        afterRender : function()
+        {
+            //show modal
+            $('#detailsTitle').html('Device parameters');
+            $('#detailsModal').modal('show');
+        }
+    }, $('#detailsContent')[0]);
+};

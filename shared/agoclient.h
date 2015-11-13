@@ -91,8 +91,8 @@ namespace agocontrol {
         boost::function< qpid::types::Variant::Map (qpid::types::Variant::Map) > commandHandler;
         boost::function< void (std::string, qpid::types::Variant::Map) > eventHandler;
         bool emitDeviceAnnounce(const char *internalId, const char *deviceType);
+        bool emitDeviceDiscover(const char *internalId, const char *deviceType);
         bool emitDeviceRemove(const char *internalId);
-        bool emitDeviceStale(const char* internalId, const int stale);
     public:
         AgoConnection(const char *interfacename);
         ~AgoConnection();
@@ -104,7 +104,8 @@ namespace agocontrol {
         bool suspendDevice(const char* internalId);
         bool resumeDevice(const char* internalId);
         std::string getDeviceType(const char *internalId);
-        int isDeviceStale(const char *internalId);
+        int isDeviceStale(const char* internalId);
+        bool emitDeviceStale(const char* uuid, const int stale);
 
         // C-style function pointers
         bool addHandler(qpid::types::Variant::Map (*handler)(qpid::types::Variant::Map));

@@ -1,0 +1,7 @@
+{
+    "name": "Version",
+    "version": "1.0.0",
+    "description": "Agocontrol version",
+    "template": "html/version",
+    "listable": true
+}

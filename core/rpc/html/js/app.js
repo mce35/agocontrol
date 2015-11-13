@@ -164,8 +164,7 @@ function loadScript(url) {
             cleanup();
             reject();
         };
-    })
-    .cancellable();
+    });
 
     // Circumvent IE6 bugs with base elements (#2709 and #4378) by prepending
     // Use native DOM manipulation to avoid our domManip AJAX trickery
@@ -327,19 +326,18 @@ function AgocontrolViewModel()
             }
             if (resources.length > 0)
             {
-                resourcePromise = new Promise(function(resolve, reject){
+                self.resourcePromise = new Promise(function(resolve, reject){
                     head.load(resources, function() {
                         // head.load does not have any failure mechanism
                         resolve();
                     });
-                })
-                .cancellable();
+                });
             }
         }
 
         // Compound promise which fires when both above are ready
         Promise.all([self.scriptPromise, self.resourcePromise])
-            .then(function(){
+            .then(function() {
                 // Template script and Resources ready
                 if (typeof init_template == 'function')
                 {

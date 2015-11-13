@@ -13,7 +13,20 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.scriptName = ko.observable('untitled');
     self.scriptSaved = ko.observable(true);
     self.scriptLoaded = false;
-    self.debugData = ko.observable('{}');
+    self.debugEvents = ko.observable();
+    self.debugSelectedEvent = ko.observable();
+    self.debugEventProps = ko.pureComputed(function() {
+        var ev = self.debugSelectedEvent();
+        var props = [];
+        if( ev && self.agocontrol.schema().events[ev] )
+        {
+            for( var i=0; i<self.agocontrol.schema().events[ev].parameters.length; i++ )
+            {
+                props.push({'label':self.agocontrol.schema().events[ev].parameters[i], 'value':ko.observable('')});
+            }
+        }
+        return props;
+    });
     self.debugging = false;
     self.defaultWorkspace = '<xml>'
         + '<block type="controls_if">'
@@ -30,6 +43,7 @@ function agoBlocklyPlugin(devices, agocontrol)
     self.email = '';
     self.phone = '';
     self.contactsUpdated = false;
+    self.blockNumber = 3; //number of blocks with default workspace
 
     //update default contacts
     self.updateDefaultContacts = function()
@@ -263,13 +277,20 @@ function agoBlocklyPlugin(devices, agocontrol)
     {
         if( self.workspace.rendered )
         {
-            if( !self.scriptLoaded )
+            //only change button state if number of blocks is different from last time
+            var blockNumber = self.workspace.getAllBlocks().length;
+            if( blockNumber!=self.blockNumber )
             {
-                self.scriptSaved(false);
-            }
-            else if( self.scriptLoaded )
-            {
-                self.scriptLoaded = false;
+                //update number of blocks
+                self.blockNumber = blockNumber;
+                if( !self.scriptLoaded )
+                {
+                    self.scriptSaved(false);
+                }
+                else if( self.scriptLoaded )
+                {
+                    self.scriptLoaded = false;
+                }
             }
         }
     };
@@ -569,27 +590,51 @@ function agoBlocklyPlugin(devices, agocontrol)
             if( event.type===0 )
             {
                 //start message
-                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+event.msg+'</i>');
             }
             else if( event.type===1 )
             {
                 //end message
-                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-info">'+event.msg+'</i>');
                 //stop debugging
                 self.stopDebug();
             }
             else if( event.type===2 )
             {
                 //error message
-                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-danger">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item list-group-item-danger">'+event.msg+'</i>');
             }
             else if( event.type===3 )
             {
                 //default message
-                $('#debugContainer > ul').append('<li class="list-group-item">'+JSON.stringify(event.msg)+'</i>');
+                $('#debugContainer > ul').append('<li class="list-group-item">'+event.msg+'</i>');
             }
         }
     };
+
+    //search events in lua
+    self.searchEvents = function()
+    {
+        //init
+        var results = [];
+        var lua = self.getLua();
+
+        //prepare regexp
+        var re = /^.*content\.subject\ ==\ \'(.*)\'.*$/gm; 
+        var m;
+         
+        //search for events
+        while( (m = re.exec(lua))!==null )
+        {
+            if( m.index===re.lastIndex )
+            {
+                re.lastIndex++;
+            }
+            results.push(m[1]);
+        }
+
+        return results;
+    }
 
     //start debugging
     self.startDebug = function()
@@ -607,17 +652,12 @@ function agoBlocklyPlugin(devices, agocontrol)
         //clear debug area
         self.clearDebug();
 
-        //check specified data
-        var data = null;
-        try
+        //build data
+        var data = {};
+        data['subject'] = self.debugSelectedEvent();
+        for( var i=0; i<self.debugEventProps().length; i++ )
         {
-            data = JSON.parse(self.debugData());
-        }
-        catch(err)
-        {
-            notif.warning(err);
-            self.debugging = false;
-            return;
+            data[self.debugEventProps()[i].label] = self.debugEventProps()[i].value();
         }
 
         //launch debug command
@@ -653,6 +693,10 @@ function agoBlocklyPlugin(devices, agocontrol)
     //debug script
     self.openDebug = function()
     {
+        //get trigger event from script
+        var events = self.searchEvents();
+        self.debugEvents(events);
+
         //open dialog
         $("#debugDialog").modal('show');
     };
@@ -774,6 +818,11 @@ function init_template(path, params, agocontrol)
                     //blockly not loaded yet
                     return;
                 }
+                if( typeof BlocklyAgocontrol!='object' )
+                {
+                    //agocontrol object not loaded yet
+                    return;
+                }
                 var extra = model.getDefaultContacts();
                 if( extra && extra.updated===false )
                 {
@@ -789,10 +838,49 @@ function init_template(path, params, agocontrol)
 
                 //inject blockly
                 element.innerHTML = "";
-                workspace = Blockly.inject( document.getElementById('blocklyDiv'), {
+                var blocklyArea = document.getElementById('blocklyArea');
+                var blocklyDiv = document.getElementById('blocklyDiv');
+                workspace = Blockly.inject(blocklyDiv, {
                     path: "configuration/blockly/blockly/",
-                    toolbox: document.getElementById('toolbox')
+                    toolbox: document.getElementById('toolbox'),
+                    zoom: {
+                        controls: true,
+                        wheel: false, //keep wheel to scroll to main page not blockly workspace
+                        startScale: 1.0,
+                        maxScale: 2.0,
+                        minScale: 0.5,
+                        scaleSpeed: 1.2
+                    },
+                    grid: {
+                        spacing: 20,
+                        length: 2,
+                        colour: '#ccc',
+                        snap: true
+                    }
                 });
+
+                //hack to make blockly using maximum page space
+                //https://developers.google.com/blockly/installation/injecting-resizable
+                var onresize = function(e) {
+                    var element = blocklyArea;
+                    var x = 0;
+                    var y = 0;
+
+                    do {
+                        x += element.offsetLeft;
+                        y += element.offsetTop;
+                        element = element.offsetParent;
+                    } while (element);
+
+                    blocklyDiv.style.left = x + 'px';
+                    blocklyDiv.style.top = y + 'px';
+                    blocklyDiv.style.width = (blocklyArea.offsetWidth-50) + 'px'; //reduce of 50px to take in count margin
+                    blocklyDiv.style.height = (blocklyArea.offsetHeight-50) + 'px';
+                };
+                window.addEventListener('resize', onresize, false);
+                onresize();
+
+                //set workspace
                 viewmodel().setWorkspace(workspace);
 
                 //init agoblockly

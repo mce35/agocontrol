@@ -858,8 +858,10 @@ int AgoRpc::mg_event_handler(struct mg_connection *conn, enum mg_event event)
 void AgoRpc::eventHandler(std::string subject, qpid::types::Variant::Map content)
 {
     // don't flood clients with unneeded events
-    if( subject=="event.environment.timechanged")
+    if( subject=="event.environment.timechanged" || subject=="event.device.discover" )
+    {
         return;
+    }
 
     //remove empty command from content
     Variant::Map::iterator it = content.find("command");

@@ -182,6 +182,18 @@ class AgoConnection:
         content["handled-by"] = self.instance
         self.send_message("event.device.announce", content)
 
+    def emit_device_discover(self, uuid, device):
+        """Send a device discover event, this will
+        be honored by the resolver component.
+        You can find more information regarding the resolver
+        here: http://wiki.agocontrol.com/index.php/Resolver """
+        content = {}
+        content["devicetype"] = device["devicetype"]
+        content["uuid"] = uuid
+        content["internalid"] = device["internalid"]
+        content["handled-by"] = self.instance
+        self.send_message("event.device.discover", content)
+
     def emit_device_remove(self, uuid):
         """Send a device remove event to the resolver"""
         content = {}
@@ -476,10 +488,10 @@ class AgoConnection:
         self.log.debug("Reporting child devices")
         for device in self.devices:
             #only report not stale device
-            if not self.devices[device].has_key("stale"):
-                self.devices[device]["stale"] = 0
-            if self.devices[device]["stale"]==0:
-                self.emit_device_announce(device, self.devices[device])
+            #if not self.devices[device].has_key("stale"):
+            #    self.devices[device]["stale"] = 0
+            #if self.devices[device]["stale"]==0:
+            self.emit_device_discover(device, self.devices[device])
 
     def _sendreply(self, addr, content):
         """Internal used to send a reply."""

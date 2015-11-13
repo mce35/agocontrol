@@ -1,0 +1,7 @@
+{
+    "name": "Inventory",
+    "version": "1.0.0",
+    "description": "Inventory overview",
+    "template": "html/inventory",
+    "listable": true
+}

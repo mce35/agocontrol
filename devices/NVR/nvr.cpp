@@ -374,19 +374,20 @@ void AgoVideo::stopTimelapse(string internalid)
  * Detect motion function
  * @return number of changes
  */
-inline int detectMotion(const Mat& motion, Mat& result, Box& area, int maxDeviation, Scalar& color)
+inline int detectMotion(const Mat& __motion, Mat& result, Box& area, int maxDeviation, Scalar& color)
 {
     //calculate the standard deviation
     Scalar mean, stddev;
-    meanStdDev(motion, mean, stddev);
+    meanStdDev(__motion, mean, stddev);
     //AGO_DEBUG() << "stddev[0]=" << stddev[0];
 
     //if not to much changes then the motion is real (neglect agressive snow, temporary sunlight)
+    AGO_DEBUG() << "stddev=" << stddev[0];
     if( stddev[0]<maxDeviation )
     {
         int numberOfChanges = 0;
-        int minX = motion.cols, maxX = 0;
-        int minY = motion.rows, maxY = 0;
+        int minX = __motion.cols, maxX = 0;
+        int minY = __motion.rows, maxY = 0;
 
         // loop over image and detect changes
         for( int j=area.minY; j<area.maxY; j+=2 ) // height
@@ -396,7 +397,7 @@ inline int detectMotion(const Mat& motion, Mat& result, Box& area, int maxDeviat
                 //check if at pixel (j,i) intensity is equal to 255
                 //this means that the pixel is different in the sequence
                 //of images (prev_frame, current_frame, next_frame)
-                if( static_cast<int>(motion.at<uchar>(j,i))==255 )
+                if( static_cast<int>(__motion.at<uchar>(j,i))==255 )
                 {
                     numberOfChanges++;
                     if( minX>i ) minX = i;
@@ -451,22 +452,39 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
     int fps = provider->getFps();
     AGO_DEBUG() << "Motion '" << internalid << "': fps=" << fps;
 
+    /*VideoCapture _capture = VideoCapture(motionUri);
+    Size resolution = Size(_capture.get(CV_CAP_PROP_FRAME_WIDTH), _capture.get(CV_CAP_PROP_FRAME_HEIGHT));
+    AGO_DEBUG() << "resolution=" << resolution;
+    int fps = _capture.get(CV_CAP_PROP_FPS);
+    AGO_DEBUG() << "fps=" << fps;*/
+
     //init buffer
-    unsigned int maxBufferSize = motion["bufferduration"].asInt32() * fps;
+    //unsigned int maxBufferSize = motion["bufferduration"].asInt32() * fps;
     std::queue<Mat> buffer;
 
     //get frames and convert to gray
     Mat prevFrame, currentFrame, nextFrame, result, tempFrame;
     if( provider->isRunning() )
+    //if( _capture.isOpened() )
     {
-        tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-        cvtColor(tempFrame, prevFrame, CV_RGB2GRAY);
+        prevFrame = consumer.popFrame(&boost::this_thread::sleep_for);
+        //_capture >> prevFrame;
+        cvtColor(prevFrame, prevFrame, CV_RGB2GRAY);
+        AGO_DEBUG() << "prevframe ok";
 
-        tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-        cvtColor(tempFrame, currentFrame, CV_RGB2GRAY);
+        currentFrame = consumer.popFrame(&boost::this_thread::sleep_for);
+        //_capture >> currentFrame;
+        cvtColor(currentFrame, currentFrame, CV_RGB2GRAY);
+        AGO_DEBUG() << "currentframe ok";
 
-        tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-        cvtColor(tempFrame, nextFrame, CV_RGB2GRAY);
+        nextFrame = consumer.popFrame(&boost::this_thread::sleep_for);
+        //_capture >> nextFrame;
+        cvtColor(nextFrame, nextFrame, CV_RGB2GRAY);
+        AGO_DEBUG() << "nextframe ok";
+    }
+    else
+    {
+        AGO_DEBUG() << "not opened";
     }
 
     //other declarations
@@ -503,12 +521,13 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                 //get new frame
                 prevFrame = currentFrame;
                 currentFrame = nextFrame;
-                tempFrame = consumer.popFrame(&boost::this_thread::sleep_for);
-                result = tempFrame; //keep color copy
-                cvtColor(tempFrame, nextFrame, CV_RGB2GRAY);
+                nextFrame = consumer.popFrame(&boost::this_thread::sleep_for);
+                //_capture >> nextFrame;
+                result = nextFrame; //keep color copy
+                cvtColor(nextFrame, nextFrame, CV_RGB2GRAY);
 
                 //add text to frame (current time and motion name)
-                stringstream stream;
+                /*stringstream stream;
                 stream << getDateTimeString(true, true, true, " ");
                 if( name.length()>0 )
                 {
@@ -523,10 +542,10 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                 catch(cv::Exception& e)
                 {
                     AGO_ERROR() << "Motion '" << internalid << "': opencv exception #1 occured " << e.what();
-                }
+                }*/
 
                 //handle buffer
-                if( !isRecording )
+                /*if( !isRecording )
                 {
                     while( buffer.size()>=maxBufferSize )
                     {
@@ -534,22 +553,24 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                         buffer.pop();
                     }
                     buffer.push(result);
-                }
+                }*/
 
                 //calc differences between the images and do AND-operation
                 //threshold image, low differences are ignored (ex. contrast change due to sunlight)
-                try
-                {
+                //try
+                //{
                     absdiff(prevFrame, nextFrame, d1);
                     absdiff(nextFrame, currentFrame, d2);
                     bitwise_and(d1, d2, _motion);
+                    //debug purpose: display frame in window
+                    //imshow("Display window", nextFrame);
                     threshold(_motion, _motion, 35, 255, CV_THRESH_BINARY);
                     erode(_motion, _motion, kernelErode);
-                }
+                /*}
                 catch(cv::Exception& e)
                 {
                     AGO_ERROR() << "Motion '" << internalid << "': opencv exception #2 occured " << e.what();
-                }
+                }*/
 
                 //debug purpose: display frame in window
                 //imshow("Display window", _motion);
@@ -563,19 +584,21 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                 //drop first 5 seconds for stabilization
                 if( now<=(startup+5) )
                 {
+                    AGO_DEBUG() << "Wait for stabilization (" << (now-startup) << "s)";
                     continue;
                 }
 
                 //detect motion
                 numberOfChanges = 0;
-                try
-                {
+                //try
+                //{
                     numberOfChanges = detectMotion(_motion, result, area, maxDeviation, color);
-                }
+                    AGO_DEBUG() << numberOfChanges;
+                /*}
                 catch(cv::Exception& e)
                 {
                     AGO_ERROR() << "Motion '" << internalid << "': opencv exception #3 occured " << e.what();
-                }
+                }*/
 
                 if( !isTriggered )
                 {
@@ -622,7 +645,7 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
                                 AGO_DEBUG() << "Motion '" << internalid << "': enable motion trigger and start motion recording";
                                 isRecording = true;
     
-                                //and empty buffer into recorder
+                                //empty buffer into recorder
                                 while( buffer.size()>0 )
                                 {
                                     recorder << buffer.front();
@@ -695,6 +718,7 @@ void AgoVideo::motionFunction(string internalid, qpid::types::Variant::Map motio
     {
         recorder.release();
     }
+    //_capture.release();
 
     AGO_DEBUG() << "Motion '" << internalid << "': stopped";
 }
@@ -941,7 +965,7 @@ std::string AgoVideo::getDateTimeString(bool date, bool time, bool withSeparator
  */
 void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map content)
 {
-    if( videomap["config"].isVoid() )
+    if( videomap["recordings"].isVoid() )
     {
         //nothing configured, exit right now
         AGO_DEBUG() << "no config";
@@ -970,6 +994,7 @@ void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map conte
     {
         //handle device deletion
         string internalid = agoConnection->uuidToInternalId(content["uuid"].asString());
+        AGO_DEBUG() << "event.device.remove: " << internalid << " - " << content;
         bool found = false;
 
         pthread_mutex_lock(&videomapMutex);
@@ -1006,6 +1031,10 @@ void AgoVideo::eventHandler(std::string subject, qpid::types::Variant::Map conte
             {
                 AGO_ERROR() << "Event 'device.remove': cannot save videomap";
             }
+        }
+        else
+        {
+            AGO_DEBUG() << "no device found";
         }
     }
     else if( subject=="event.system.devicenamechanged" )
@@ -1084,7 +1113,7 @@ qpid::types::Variant::Map AgoVideo::commandHandler(qpid::types::Variant::Map con
     string command = content["command"].asString();
 
     std::string internalid = content["internalid"].asString();
-    if (internalid == "videocontroller")
+    if (internalid == "surveillancecontroller")
     {
         if( command=="addtimelapse" )
         {
@@ -1230,7 +1259,7 @@ qpid::types::Variant::Map AgoVideo::commandHandler(qpid::types::Variant::Map con
         else if( command=="getrecordingsconfig" )
         {
             qpid::types::Variant::Map config = videomap["recordings"].asMap();
-            returnData["config"] = config;
+            returnData["recordings"] = config;
             return responseSuccess(returnData);
         }
         else if( command=="setrecordingsconfig" )
@@ -1431,7 +1460,7 @@ void AgoVideo::setupApp()
     AGO_DEBUG() << "Loaded videomap: " << videomap;
 
     //finalize
-    agoConnection->addDevice("videocontroller", "videocontroller");
+    agoConnection->addDevice("surveillancecontroller", "surveillancecontroller");
     addCommandHandler();
     addEventHandler();
 

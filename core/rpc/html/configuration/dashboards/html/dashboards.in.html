@@ -33,7 +33,7 @@
                 </ko>
                     <td>
                         <div class="btn-group">
-                            <button type="button" data-translateable="true" data-bind="click: $root.gotoDashboard.bind($data, $data, true)" class="btn btn-primary btn-xs" _title="Edit" _alt="Edit">
+                            <button type="button" data-translateable="true" data-bind="click: $root.gotoDashboard.bind($data, $data, true)" class="btn btn-primary btn-xs hidden-sm" _title="Edit" _alt="Edit">
                                 <span class="en-pencil"/>
                             </button>
                             <button type="button" data-translateable="true" data-bind="click: $parent.deleteDashboard" class="btn btn-primary btn-xs" _title="Delete" _alt="Delete">
@@ -56,10 +56,12 @@
                             <div class="form-group">
                                 <_label data-translateable="true" class="col-sm-3 control-label">New dashboard name</_label>
                                 <div class="col-sm-4">
-                                    <input type="email" data-translateable="true" data-bind="value: newDashboardName" class="form-control" _placeholder="New dashboard name"></input>
-                                    <span class="input-group-btn">
-                                        <_button type="submit" data-translateable="true" data-bind="click: createDashboard" class="btn btn-primary">Create dashboard</_button>
-                                    </span>
+                                    <div class="input-group">
+                                        <input type="email" data-translateable="true" data-bind="value: newDashboardName" class="form-control" _placeholder="New dashboard name"></input>
+                                        <span class="input-group-btn">
+                                            <_button type="submit" data-translateable="true" data-bind="click: createDashboard" class="btn btn-primary">Create dashboard</_button>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </form>
