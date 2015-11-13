@@ -11,7 +11,6 @@ function KNX(agocontrol)
     self.ga = null;
     self.gaLoaded = ko.observable(false);
     self.treeviewDisplayed = false;
-    self.devices = ko.observableArray([]);
     self.selectedNode = null;
     self.deviceTypes = ko.observableArray([]);
     self.selectedDeviceType = ko.observable(null);
@@ -31,7 +30,7 @@ function KNX(agocontrol)
     });
     self.selectedDeviceTypeParam = null;
     self.gaIdValue = {};
-    self.devices = ko.observableArray([]);
+    self.knxDevices = ko.observableArray([]);
     self.selectedDevice = ko.observable(undefined);
     self.selectedDeviceTypeEdit = ko.observable(null);
     self.selectedDevice.subscribe(function() {
@@ -294,16 +293,10 @@ function KNX(agocontrol)
                             device[item] = res.data.devices[uuid][item];
                         }
                     }
+                    device['text'] = (device['name'].length>0 ? device['name'] : device['uuid']);
                     devices.push(device);
                 }
-                self.devices(devices);
-
-                //force selectedDevice to first device
-                /*if( self.devices().length>0 )
-                {
-                    self.selectedDevice( self.devices()[self.devices().length-1] );
-                    self.selectedDevice( self.devices()[0]);
-                }*/
+                self.knxDevices(devices);
             });
     };
 
@@ -582,7 +575,7 @@ function KNX(agocontrol)
     };
 
     self.devicesGrid = new ko.agoGrid.viewModel({
-        data: self.devices,
+        data: self.knxDevices,
         columns: [
             {headerText: 'Name', rowText:'name'},
             {headerText: 'Uuid', rowText:'uuid'},

@@ -148,15 +148,17 @@
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Device to edit</_label>
                             <div class="col-sm-6">
-                                <select class="form-control" data-bind="options:devices, optionsText:function(item){if(item.name.length>0){return name;}else{return item.uuid}}, value:selectedDevice, optionsCaption:'Select a device...'"></select>
+                                <select class="form-control" data-bind="options:devices, optionsText:'text', value:selectedDevice, optionsCaption:'Select a device...'"></select>
                             </div>
                         </div>
+                        <ko opts="if: selectedDevice">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Device type</_label>
                             <div class="col-sm-6">
                                 <select class="form-control" data-bind="options:deviceTypes, value:selectedDeviceTypeEdit, optionsCaption:'Select a device type...'"></select>
                             </div>
                         </div>
+                        </ko>
                         <ko opts="foreach: deviceTypeParametersEdit">
                         <div class="form-group">
                             <label class="col-sm-4 control-label" data-bind="text:value"></label>
