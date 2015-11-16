@@ -99,11 +99,6 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
                 }
             }
 
-            if( options.state )
-            {
-                options.state = ko.utils.unwrapObservable(options.state);
-            }
-
             //init widget with specified options
             //@see options http://www.bootstrap-switch.org/options.html
             $(element).bootstrapSwitch(options);
