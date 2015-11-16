@@ -43,4 +43,4 @@ devicetypes:
         temperaturesensor: [temperature]
         powermeter: [energy]
         co2sensor: [airquality]
-        humidity: [humidity]
+        humiditysensor: [humidity]
