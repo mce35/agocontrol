@@ -463,15 +463,6 @@ function KNX(agocontrol)
         $('#treeviewModal').modal('hide');
     }
 
-    self.findDevice = function(uuid) {
-        var l = self.agocontrol.devices().filter(function(d) {
-            return d.uuid==uuid;
-        });
-        if(l.length == 1)
-            return l[0];
-        return null;
-    };
-
     //edit row
     self.makeEditable = function(item, td, tr)
     {
@@ -483,17 +474,10 @@ function KNX(agocontrol)
                 content.uuid = self.agocontrol.agoController;
                 content.command = "setdevicename";
                 content.name = value;
-                self.agocontrol.sendCommand(content, function(res) {
-                    if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
-                    {
-                        var d = self.findDevice(item.uuid);
-                        d.name = value;
-                    }
-                    else
-                    {
-                        notif.error('Error updating device name');
-                    }
-                });
+                self.agocontrol.sendCommand(content)
+                    .catch(function(err) {
+                        notif.error('Unable to rename device');
+                    });
                 return value;
             },
             {
@@ -504,8 +488,8 @@ function KNX(agocontrol)
             
         if( $(td).hasClass('change_room') )
         {
-            var d = self.findDevice(item.uuid);
-            if( d && d.name && d.name.length>0 )
+            var d = self.agocontrol.findDevice(item.uuid);
+            if( d && d.name() && d.name().length>0 )
             {
                 $(td).editable(function(value, settings) {
                     var content = {};
@@ -514,33 +498,28 @@ function KNX(agocontrol)
                     content.command = "setdeviceroom";
                     value = value == "unset" ? "" : value;
                     content.room = value;
-                    self.agocontrol.sendCommand(content, function(res) {
-                        if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
-                        {
+                    self.agocontrol.sendCommand(content)
+                        .then(function(res) {
                             //update inventory
-                            var d = self.findDevice(item.uuid);
-                            if(value === "")
+                            var d = self.agocontrol.findDevice(item.uuid);
+                            if( d && value==="" )
                             {
                                 d.room = d.roomUID = "";
                             }
                             else
                             {
-                                var room = self.findRoom(value);
+                                var room = self.agocontrol.findRoom(value);
                                 if(room)
                                 {
                                     d.room = room.name;
                                 }
                                 d.roomUID = value;
                             }
-
-                            //update room filters
-                            self.updateRoomFilters();
-                        }
-                        else
-                        {
+                        })
+                        .catch(function(err) {
                             notif.error('Error updating room');
-                        }
-                    });
+                        });
+
                     if( value==="" )
                     {
                         return "unset";
