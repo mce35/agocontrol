@@ -113,6 +113,7 @@
                 //apply search
                 if( $.trim(this.search()).length>0 )
                 {
+                    var searchLC = this.search().toLowerCase();
                     for( var i=out.length-1; i>=0; i-- )
                     {
                         var found = false;
@@ -120,7 +121,8 @@
                         {
                             if( this.columns[j].rowText && this.columns[j].rowText.length>0 )
                             {
-                                if( (''+out[i][this.columns[j].rowText]).toLowerCase().indexOf(this.search())>=0 )
+
+                                if( (''+out[i][this.columns[j].rowText]).toLowerCase().indexOf(searchLC)>=0 )
                                 {
                                     found = true;
                                     break;
