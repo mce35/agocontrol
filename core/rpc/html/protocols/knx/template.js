@@ -505,15 +505,19 @@ function KNX(agocontrol)
                             if( d && value==="" )
                             {
                                 d.room = d.roomUID = "";
+                                self.agocontrol.inventory.devices[item.uuid].room = "";
+                                self.agocontrol.inventory.devices[item.uuid].roomUID = "";
                             }
-                            else
+                            else if( d )
                             {
                                 var room = self.agocontrol.findRoom(value);
                                 if(room)
                                 {
                                     d.room = room.name;
+                                    self.agocontrol.inventory.devices[item.uuid].room = room.name;
                                 }
                                 d.roomUID = value;
+                                self.agocontrol.inventory.devices[item.uuid].roomUID = value;
                             }
                         })
                         .catch(function(err) {
