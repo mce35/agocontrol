@@ -325,11 +325,12 @@ function KNX(agocontrol)
                 self.selectedDeviceType(self.deviceTypes()[self.deviceTypes().length-1]);
                 self.selectedDeviceType(self.deviceTypes()[0]);
 
-                //refresh devices
-                self.getDevices();
-
                 //notify user
                 notif.success('Device added succesfully');
+            })
+            .finally(function() {
+                //refresh devices
+                self.getDevices();
             });
     };
 
@@ -355,13 +356,13 @@ function KNX(agocontrol)
 
         self.agocontrol.sendCommand(content)
             .then(function(res) {
-                //refresh devices
-                self.getDevices();
-                
                 //notify user
                 notif.success('Device deleted succesfully');
             })
             .finally(function() {
+                //refresh devices
+                self.getDevices();
+
                 self.agocontrol.unblock($('#agoGrid'));
             });
     };
