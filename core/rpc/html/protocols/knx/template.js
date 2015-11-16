@@ -316,7 +316,7 @@ function KNX(agocontrol)
             if( self.deviceTypeParameters()[i]['id']===null )
             {
                 //item not filled, stop here
-                notif.warning('Please fill all ???');
+                notif.warning('Please fill all parameters');
                 return;
             }
             content.devicemap[self.deviceTypeParameters()[i]['key']] = self.deviceTypeParameters()[i]['id'];
@@ -384,7 +384,7 @@ function KNX(agocontrol)
             if( self.deviceTypeParametersEdit()[i]['id']===null )
             {
                 //item not filled, stop here
-                notif.warning('Please fill all ???');
+                notif.warning('Please fill all parameters');
                 return;
             }
             content.devicemap[self.deviceTypeParametersEdit()[i]['key']] = self.deviceTypeParametersEdit()[i]['id'];
