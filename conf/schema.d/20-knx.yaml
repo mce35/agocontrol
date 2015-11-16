@@ -30,6 +30,10 @@ devicetypes:
           name: brightness
         energy:
           name: energy
+        airquality:
+          name: air quality ppm
+        humidity:
+          name: humidity percent
       childdevices:
         switch: [onoff, onoffstatus]
         dimmer: [onoff, onoffstatus, setlevel, levelstatus]
@@ -38,3 +42,5 @@ devicetypes:
         brightnesssensor: [brightness]
         temperaturesensor: [temperature]
         powermeter: [energy]
+        co2sensor: [airquality]
+        humidity: [humidity]
