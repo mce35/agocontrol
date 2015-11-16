@@ -158,7 +158,6 @@
                                 <select class="form-control" data-bind="options:deviceTypes, value:selectedDeviceTypeEdit, optionsCaption:'Select a device type...'"></select>
                             </div>
                         </div>
-                        </ko>
                         <ko opts="foreach: deviceTypeParametersEdit">
                         <div class="form-group">
                             <label class="col-sm-4 control-label" data-bind="text:value"></label>
@@ -174,6 +173,7 @@
                                 <_button type="button" data-translateable="true" data-bind="click:saveDevice" class="btn btn-primary">Save changes</_button>
                             </div>
                         </div>
+                        </ko>
                     </form>
                 </div>
 
