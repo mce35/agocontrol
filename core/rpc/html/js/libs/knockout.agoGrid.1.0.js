@@ -93,16 +93,26 @@
                 //apply filters
                 if( this.filters().length>0 )
                 {
-                    for( var i=0; i<this.filters().length; i++ )
-                    {
-                        for( var j=0; j<this.allData().length; j++ )
-                        {
-                            if( this.allData()[j][this.filters()[i].column]!==undefined && this.allData()[j][this.filters()[i].column]===this.filters()[i].value )
+                    out = this.allData().filter(function(item) {
+                            for( var i=0; i<this.filters().length; i++ )
                             {
-                                out.push(this.allData()[j]);
+                                if( item[this.filters()[i].column]!==undefined )
+                                {
+                                    //column exists, check filter now
+                                    if( item[this.filters()[i].column]!==this.filters()[i].value )
+                                    {
+                                        //item is filtered, stop here
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    //column doesn't exist, keep item
+                                }
                             }
-                        }
-                    }
+                            //item is not filtered
+                            return true;
+                      }, this);
                 }
                 else
                 {
