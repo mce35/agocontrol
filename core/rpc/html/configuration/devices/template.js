@@ -257,6 +257,8 @@ function DeviceConfig(agocontrol)
                             if( d && value==="" )
                             {
                                 d.room = d.roomUID = "";
+                                self.agocontrol.inventory.devices[item.uuid].room = "";
+                                self.agocontrol.inventory.devices[item.uuid].roomUID = "";
                             }
                             else if( d )
                             {
@@ -264,8 +266,10 @@ function DeviceConfig(agocontrol)
                                 if( room )
                                 {
                                     d.room = room.name;
+                                    self.agocontrol.inventory.devices[item.uuid].room = room.name;
                                 }
                                 d.roomUID = value;
+                                self.agocontrol.inventory.devices[item.uuid].roomUID = value;
                             }
 
                             //update room filters
