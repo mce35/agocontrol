@@ -277,6 +277,7 @@ function KNX(agocontrol)
                     device['name'] = infos['name'];
                     device['room'] = infos['room'];
                     device['params'] = [];
+                    var searchGAs = '';
                     for( var item in res.data.devices[uuid] )
                     {
                         if( item!=='devicetype' )
@@ -287,12 +288,14 @@ function KNX(agocontrol)
                             param['id'] = res.data.devices[uuid][item];
                             param['label'] = self.gaIdValue[res.data.devices[uuid][item]] + ' (' + param['id'] + ')';
                             device['params'].push(param);
+                            searchGAs += res.data.devices[uuid][item] + ' ';
                         }
                         else
                         {
                             device[item] = res.data.devices[uuid][item];
                         }
                     }
+                    device['searchgas'] = searchGAs;
                     device['text'] = (device['name'].length>0 ? device['name'] : device['uuid']);
                     devices.push(device);
                 }
@@ -583,7 +586,8 @@ function KNX(agocontrol)
             {headerText: 'Type', rowText:'devicetype'},
             {headerText: 'Room', rowText:'room'},
             {headerText: 'Associations', rowText:''},
-            {headerText: 'Actions', rowText:''}
+            {headerText: 'Actions', rowText:''},
+            {headerText: '', rowText:'searchgas'}
         ],
         rowTemplate: 'deviceRowTemplate',
         rowCallback: self.makeEditable

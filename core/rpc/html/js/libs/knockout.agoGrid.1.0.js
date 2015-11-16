@@ -23,8 +23,8 @@
  *  - data: data to display in grid (array) [MANDATORY].
  *  - columns: array of column names and column mappings.
  *             Format:
- *              - headerText : displayed column name [MANDATORY]
- *              - rowText: name of real column name in data item [MANDATORY but can be '']
+ *              - headerText : displayed column name [MANDATORY]. If headerText='' the column is hidden (useful to specify search strings)
+ *              - rowText: name of real column name in data item [MANDATORY]. If rowText='' the column is not used for searches (useful for toolbar)
  *             Sample:
  *              columns: [{headerText:'President', rowText:'name'}, {headerText:'Took office', rowText:'took'}, {headerText:'Left office', rowText:'left'}]
  *              data: [{name:'George Washington', took:'April 30, 1789', left:'March 4, 1797'}, {name:'John Adams', took:'March 4, 1797', left:'March 4, 1801'}] 
@@ -310,6 +310,7 @@
                     <table class=\"table table-hover table-bordered table-stripped\" style=\"margin-top:0px; margin-bottom:0px;\" data-bind=\"attr: {id:gridId}\"> \
                         <thead>\
                             <tr data-bind=\"foreach: columns\">\
+                               <!-- ko ifnot: headerText=='' -->\
                                <th>\
                                   <!-- ko ifnot: rowText=='' -->\
                                       <span style=\"cursor:pointer; text-overflow:ellipsis;\" data-bind=\"text:headerText, click:sortBy.bind($data, $context, rowText)\"></span>\
@@ -326,6 +327,7 @@
                                       <span style=\"text-overflow:ellipsis;\" data-bind=\"text:headerText\"></span>\
                                   <!-- /ko -->\
                                </th>\
+                               <!-- /ko -->\
                             </tr>\
                         </thead>\
                         <tbody data-bind=\"template : { name:bodyTemplate, foreach:itemsOnCurrentPage, as:'myrow' }\">\
