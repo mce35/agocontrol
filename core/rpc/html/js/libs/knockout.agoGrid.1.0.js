@@ -121,8 +121,8 @@
                         {
                             if( this.columns[j].rowText && this.columns[j].rowText.length>0 )
                             {
-
-                                if( (''+out[i][this.columns[j].rowText]).toLowerCase().indexOf(searchLC)>=0 )
+                                var str = ko.utils.unwrapObservable(out[i][this.columns[j].rowText]);
+                                if( (''+str).toLowerCase().indexOf(searchLC)>=0 )
                                 {
                                     found = true;
                                     break;
