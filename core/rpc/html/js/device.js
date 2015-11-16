@@ -149,7 +149,7 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.refreshMultigraphThumbsInterval = window.setInterval(self.refreshMultigraphThumbs, 120000);
     }
 
-    if( self.devicetype=="multigraph" && $.trim(self.name).length>0 )
+    if( self.devicetype=="multigraph" && $.trim(self.name()).length>0 )
     {
         var def = {'uuid': uuid, 'internalid':obj.internalid, 'observable':self.multigraphThumb, 'removed':false};
         if( self.agocontrol.dataLoggerController )
