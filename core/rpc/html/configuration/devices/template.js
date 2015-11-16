@@ -119,24 +119,6 @@ function DeviceConfig(agocontrol)
         self.handlerFilters(handlerList);
     }
 
-    self.findDevice = function(uuid) {
-        var l = self.agocontrol.devices().filter(function(d) {
-            return d.uuid==uuid;
-        });
-        if(l.length == 1)
-            return l[0];
-        return null;
-    };
-
-    self.findRoom = function(uuid) {
-        var l = self.agocontrol.rooms().filter(function(d) {
-            return d.uuid==uuid;
-        });
-        if(l.length == 1)
-            return l[0];
-        return null;
-    };
-
     self.addFilter = function(item) {
         var tmp = "";
         var i = 0;
@@ -244,17 +226,10 @@ function DeviceConfig(agocontrol)
                 content.uuid = self.agocontrol.agoController;
                 content.command = "setdevicename";
                 content.name = value;
-                self.agocontrol.sendCommand(content, function(res) {
-                    if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
-                    {
-                        var d = self.findDevice(item.uuid);
-                        d.name(value);
-                    }
-                    else
-                    {
+                self.agocontrol.sendCommand(content)
+                    .catch(function(err) {
                         notif.error('Error updating device name');
-                    }
-                });
+                    });
                 return value;
             },
             {
@@ -265,7 +240,7 @@ function DeviceConfig(agocontrol)
             
         if( $(td).hasClass('select_device_room') )
         {
-            var d = self.findDevice(item.uuid);
+            var d = self.agocontrol.findDevice(item.uuid);
             if( d && d.name() && d.name().length>0 )
             {
                 $(td).editable(function(value, settings) {
@@ -275,19 +250,18 @@ function DeviceConfig(agocontrol)
                     content.command = "setdeviceroom";
                     value = value == "unset" ? "" : value;
                     content.room = value;
-                    self.agocontrol.sendCommand(content, function(res) {
-                        if( res!==undefined && res.result!==undefined && res.result!=='no-reply' && res.result.returncode!=-1 )
-                        {
+                    self.agocontrol.sendCommand(content)
+                        .then(function(res) {
                             //update inventory
-                            var d = self.findDevice(item.uuid);
-                            if(value === "")
+                            var d = self.agocontrol.findDevice(item.uuid);
+                            if( d && value==="" )
                             {
                                 d.room = d.roomUID = "";
                             }
-                            else
+                            else if( d )
                             {
-                                var room = self.findRoom(value);
-                                if(room)
+                                var room = self.agocontrol.findRoom(value);
+                                if( room )
                                 {
                                     d.room = room.name;
                                 }
@@ -296,12 +270,10 @@ function DeviceConfig(agocontrol)
 
                             //update room filters
                             self.updateRoomFilters();
-                        }
-                        else
-                        {
+                        })
+                        .catch(function(err) {
                             notif.error('Error updating room');
-                        }
-                    });
+                        });
                     if( value==="" )
                     {
                         return "unset";
