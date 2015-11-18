@@ -27,7 +27,9 @@ using namespace agocontrol;
 class AgoShvt250: public AgoApp {
 private:
     void setupApp();
-
+    int delta_co2;
+    float delta_hum ;
+    float delta_temp;
     int serial_read (int dev,uint8_t pnt[],int len,long timeout);
     void receiveFunction();
     int fd;
@@ -96,15 +98,15 @@ void AgoShvt250::receiveFunction() {
                     tmp_hum << bufr[14] << bufr[15] << bufr[16] << bufr[17];
                     float hum = atof(tmp_hum.str().c_str());
                     AGO_DEBUG() << "co2: " << co2 << " hum: " << hum << " temp: " << temp ;
-                    if (co2 != old_co2) {
+                    if (abs(co2 - old_co2) > delta_co2) {
                         agoConnection->emitEvent("shvt250-co2", "event.environment.co2changed", co2, "ppm");
                         old_co2 = co2;
                     }
-                    if (hum != old_hum) {
+                    if (abs(hum - old_hum) > delta_hum) {
                         agoConnection->emitEvent("shvt250-hum", "event.environment.humiditychanged", hum, "percent");
                         old_hum = hum;
                     }
-                    if (temp != old_temp) {
+                    if (abs(temp - old_temp) > delta_temp) {
                         agoConnection->emitEvent("shvt250-temp", "event.environment.temperaturechanged", temp, "degC");
                         old_temp = temp;
                     }
@@ -126,6 +128,11 @@ void AgoShvt250::setupApp() {
 
     fd = open(getConfigOption("device", "/dev/ttyUSB3").c_str(), O_RDWR);
     // TODO: check for error
+    //
+
+    delta_co2 = atoi(getConfigOption("delta_co2", "2").c_str());
+    delta_hum = atof(getConfigOption("delta_hum", "0.2").c_str());
+    delta_temp = atof(getConfigOption("delta_temp", "0.2").c_str());
 
     agoConnection->addDevice("shvt250-temp", "temperaturesensor");
     agoConnection->addDevice("shvt250-hum", "co2sensor");
