@@ -20,7 +20,7 @@ function OnVIFPlugin(devices, agocontrol)
     self.configData = ko.observableArray(null);
     self.onvifService = ko.observable(null);
     self.onvifOperation = ko.observable(null);
-    self.onvifParameters = ko.observable(JSON.stringify({'key': 'value'}, null, 4));
+    self.onvifParameters = ko.observable('{}');
     self.onvifResponse = ko.observable('');
     self.onvifServices = ko.observableArray(['devicemgmt', 'deviceio', 'event', 'analytics', 'analyticsdevice', 'display', 'imaging', 'media', 'ptz', 'receiver', 'remotediscovery', 'recording', 'replay', 'search']);
     self.configSetOperation = ko.observable(null);
@@ -364,7 +364,7 @@ function OnVIFPlugin(devices, agocontrol)
         self.recordingContourType(item.record_contour);
 
         //open modal
-        $('#cameraDetails').addClass('active');
+        $('#cameraDetails').modal('show');
     };
 
     //update camera credentials
@@ -612,42 +612,6 @@ function OnVIFPlugin(devices, agocontrol)
         self.configSetOperation(setOperation);
     };
 
-    //get operation from advanced tab
-    self.getAdvancedOperation = function()
-    {
-        if( self.onvifService() && self.onvifOperation() )
-        {
-            self.agocontrol.block('#cameraDetails');
-            self.onvifParameters('');
-
-            content = {};
-            content.uuid = self.controllerUuid;
-            content.command = 'dooperation';
-            content.internalid = self.selectedCamera().internalid;
-            content.service = self.onvifService();
-            content.operation = self.onvifOperation();
-            content.params = {};
-            self.agocontrol.sendCommand(content, null, 20)
-            .then(function(resp) {
-                try
-                {
-                    self.onvifParameters(JSON.stringify(resp.data, null, 4));
-                }
-                catch(err)
-                {
-                    notif.error('Response is invalid ['+err+']');
-                }
-            })
-            .finally(function() {
-                self.agocontrol.unblock('#cameraDetails');
-            });
-        }
-        else
-        {
-            notif.info('Please fill service and operation parameters');
-        }
-    };
-
     //check json
     self.checkJson = function()
     {
@@ -756,6 +720,11 @@ function OnVIFPlugin(devices, agocontrol)
         downloadurl = location.protocol + "//" + location.hostname + (location.port && ":" + location.port) + "/download?filename="+item.filename+"&uuid="+self.controllerUuid;
         window.open(downloadurl, '_blank');
     };
+
+    self.debug = function()
+    {
+        console.log(arguments);
+    }
 
     //by default get config
     self.getConfig();
