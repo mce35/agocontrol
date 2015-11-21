@@ -135,8 +135,8 @@ void AgoShvt250::setupApp() {
     delta_temp = atof(getConfigOption("delta_temp", "0.2").c_str());
 
     agoConnection->addDevice("shvt250-temp", "temperaturesensor");
-    agoConnection->addDevice("shvt250-hum", "co2sensor");
-    agoConnection->addDevice("shvt250-co2", "humiditysensor");
+    agoConnection->addDevice("shvt250-hum", "humiditysensor");
+    agoConnection->addDevice("shvt250-co2", "co2sensor");
 
     // B9600 8n1
     struct termios tio;
