@@ -620,7 +620,7 @@ function agoBlocklyPlugin(devices, agocontrol)
         var lua = self.getLua();
 
         //prepare regexp
-        var re = /^.*content\.subject\ ==\ \'(.*)\'.*$/gm; 
+        var re = /^.*content\.subject\ ==\ \'(\w+\.\w+\.\w+)\'.*$/gm;
         var m;
          
         //search for events
