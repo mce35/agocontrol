@@ -1,0 +1,49 @@
+<div class="container-fluid">
+    <div class="row">
+        <dl class="dl-horizontal">
+            <dt>UUID</dt>
+            <dd data-bind="text: uuid"></dd>
+            <_dt data-translateable="true">Name</_dt>
+            <dd data-bind="text: name"></dd>
+            <_dt data-translateable="true">Device type</_dt>
+            <dd data-bind="text: devicetype"></dd>
+            <_dt data-translateable="true">Room</_dt>
+            <dd data-bind="text: room"></dd>
+            <_dt data-translateable="true">Timestamp</_dt>
+            <dd data-bind="text: timeStamp"></dd>
+        </dl>
+    </div>
+    <div class="row agorowbottom">
+        <div class="btn-group btn-group-justified" data-toggle="buttons">
+            <label class="btn btn-default active">
+                <input type="radio" name="renderType" value="graph" autocomplete="off" checked="checked"/>
+                <_span data-translateable="true">Graph</_span>
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="renderType" value="plots" autocomplete="off"/>
+                <_span data-translateable="true">Plots</_span>
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="renderType" value="list" autocomplete="off"/>
+                <_span data-translateable="true">List</_span>
+            </label>
+        </div>
+    </div>
+    <div class="row agorowbottom">
+        <div id="graphContainer" style="width:100%; min-height:r1300px;"></div>
+    </div>
+    <div class="row">
+        <form class="form-inline">
+            <div class="form-group">
+                <_label data-translateable="true" for="start_date">From</_label>
+                <input type="text" class="form-control" id="start_date" readonly="readonly"/>
+            </div>
+            <div class="form-group">
+                <_label data-translateable="true" for="end_date">To</_label>
+                <input type="text" class="form-control" id="end_date" readonly="readonly"/>
+            </div>
+            <_button type="submit" class="btn btn-primary" id="get_graph" data-translateable="true">Refresh</_button>
+        </form>
+    </div>
+</div>
+

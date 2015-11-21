@@ -1,0 +1,44 @@
+<div>
+
+    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
+            <i class="fa en-air"></i>
+        </span>
+        <div class="info-box-content">
+            <div class="info-box-title">
+                <ko opts="if:name">
+                <h3 data-bind="text:name"/>
+                </ko>
+                <ko opts="ifnot:name">
+                <h3 data-bind="text:devicetype"/>
+                </ko>
+            </div>
+            <div class="info-box-detail">
+                <ko opts="if:room">
+                <div class="info-box-location">
+                    <i class="en-location"/>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
+            <div class="well">
+                <ko opts="foreach: valueList">
+                <div class="row">
+                    <div class="col-xs-6 col-md-6 text-center">
+                        <h4 class="nowrap" data-bind="text:name"></h4>
+                    </div>
+                    <div class="col-xs-6 col-md-6 text-center">
+                        <h4><strong class="nowrap" data-bind="text:levelUnit"></strong></h4>
+                    </div>
+                </div>
+                </ko>
+            </div>
+        </div>
+    </div>
+
+</div>
