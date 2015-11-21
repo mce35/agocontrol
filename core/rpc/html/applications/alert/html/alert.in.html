@@ -195,7 +195,12 @@
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">To send you a test email, type your email address and click on button</_label>
                             <div class="col-sm-6">
-                                <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: mailTest">Test</_button>
+                                <div class="input-group">
+                                    <input type="text" _placeholder="email" data-translateable="true" class="form-control" id="mailEmail"/>
+                                    <span class="input-group-btn">
+                                        <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: mailTest">Test</_button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </form>
