@@ -1482,9 +1482,12 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
             {
                 case V_TEMP_V13:
                     valid = 1;
-                    if (units == "M") {
+                    if (units == "M")
+                    {
                         agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degC");
-                    } else {
+                    }
+                    else
+                    {
                         agoConnection->emitEvent(internalid.c_str(), "event.environment.temperaturechanged", payload.c_str(), "degF");
                     }
                     break;
