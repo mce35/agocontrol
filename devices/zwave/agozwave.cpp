@@ -1310,15 +1310,23 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     else if (label == "Temperature")
                     {
                         eventtype="event.environment.temperaturechanged";
-                        if (units=="F" && unitsystem==0)
+                        //fix unit
+                        if( units=="F" )
+                        {
+                            units = "degF";
+                        }
+                        else
                         {
                             units = "degC";
+                        }
+                        //convert value according to configured metrics
+                        if (units=="F" && unitsystem==0)
+                        {
                             str = float2str((atof(str.c_str())-32)*5/9);
                             level = str;
                         }
                         else if (units =="C" && unitsystem==1)
                         {
-                            units = "degF";
                             str = float2str(atof(str.c_str())*9/5 + 32);
                             level = str;
                         }
