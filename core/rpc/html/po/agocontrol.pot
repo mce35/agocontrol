@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-12 16:40+0100\n"
+"POT-Creation-Date: 2015-11-23 11:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -339,7 +339,7 @@ msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/security/html/security.xml.in.h:17
-#: ../protocols/onvif/html/onvif.xml.in.h:14
+#: ../protocols/onvif/html/onvif.xml.in.h:15
 #: ../protocols/knx/html/knx.xml.in.h:19
 #: ../configuration/datalogger/html/datalogger.xml.in.h:10
 #: ../configuration/system/html/system.xml.in.h:7
@@ -382,7 +382,7 @@ msgid "12voip username"
 msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:31
-#: ../protocols/onvif/html/onvif.xml.in.h:13
+#: ../protocols/onvif/html/onvif.xml.in.h:14
 #: ../configuration/cloud/html/cloud.xml.in.h:14
 msgid "Password"
 msgstr ""
@@ -436,7 +436,7 @@ msgid "email"
 msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:43
-#: ../protocols/onvif/html/onvif.xml.in.h:11
+#: ../protocols/onvif/html/onvif.xml.in.h:12
 msgid "Login"
 msgstr ""
 
@@ -961,7 +961,7 @@ msgid "Delete device"
 msgstr ""
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:55
-#: ../protocols/onvif/html/onvif.xml.in.h:51
+#: ../protocols/onvif/html/onvif.xml.in.h:48
 #: ../protocols/knx/html/knx.xml.in.h:3
 #: ../configuration/blockly/html/agoblockly.xml.in.h:4
 #: ../configuration/dashboards/html/dashboards.xml.in.h:3
@@ -1058,7 +1058,7 @@ msgid "Request node configuration parameters"
 msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:22
-#: ../protocols/onvif/html/onvif.xml.in.h:42
+#: ../protocols/onvif/html/onvif.xml.in.h:41
 msgid "Request parameters"
 msgstr ""
 
@@ -1225,196 +1225,185 @@ msgid "Controller configuration"
 msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:68
-#: ../protocols/onvif/html/onvif.xml.in.h:52
+#: ../protocols/onvif/html/onvif.xml.in.h:49
 msgid "Download"
 msgstr ""
 
 #: ../protocols/onvif/html/onvif.xml.in.h:1
+#: ../configuration/devices/html/devices.xml.in.h:9
+msgid "Details"
+msgstr ""
+
+#: ../protocols/onvif/html/onvif.xml.in.h:2
 #: ../configuration/datalogger/html/datalogger.xml.in.h:2
 msgid "General"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:2
+#: ../protocols/onvif/html/onvif.xml.in.h:3
 msgid "Config"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:3
+#: ../protocols/onvif/html/onvif.xml.in.h:4
 msgid "Motion"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:4
+#: ../protocols/onvif/html/onvif.xml.in.h:5
 msgid "Recording"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:5
+#: ../protocols/onvif/html/onvif.xml.in.h:6
 msgid "Advanced"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:6
+#: ../protocols/onvif/html/onvif.xml.in.h:7
 msgid "Camera ip address"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:7
-msgid "Ip"
-msgstr ""
-
 #: ../protocols/onvif/html/onvif.xml.in.h:8
-msgid "Camera port"
+msgid "Ip address"
 msgstr ""
 
 #: ../protocols/onvif/html/onvif.xml.in.h:9
-msgid "Port"
+msgid "Camera port"
 msgstr ""
 
 #: ../protocols/onvif/html/onvif.xml.in.h:10
+msgid "Port"
+msgstr ""
+
+#: ../protocols/onvif/html/onvif.xml.in.h:11
 msgid "Camera login"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:12
+#: ../protocols/onvif/html/onvif.xml.in.h:13
 msgid "Camera password"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:15
+#: ../protocols/onvif/html/onvif.xml.in.h:16
 msgid "Camera URI"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:16
+#: ../protocols/onvif/html/onvif.xml.in.h:17
 msgid "URI"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:17
+#: ../protocols/onvif/html/onvif.xml.in.h:18
 msgid "Get device infos"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:18
-msgid ""
-"Update existing configuration. If you feel limited and need to add more "
-"infos, please use \"Advanced\" tab"
-msgstr ""
-
 #: ../protocols/onvif/html/onvif.xml.in.h:19
-msgid "Hostname"
+msgid ""
+"Update configuration. If you feel limited and need to configure more things, "
+"please use \"Advanced\" tab"
 msgstr ""
 
 #: ../protocols/onvif/html/onvif.xml.in.h:20
-msgid "Date and time"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:21
-msgid "NTP"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:22
-msgid "Network interfaces"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:23
-msgid "OnVIF operations<i class=\"icon-link\"/>"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:24
 msgid ""
 "Enabling motion will create a new binary device that allows you to create "
 "events with it"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:25
+#: ../protocols/onvif/html/onvif.xml.in.h:21
 msgid "Enable motion"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:26
+#: ../protocols/onvif/html/onvif.xml.in.h:22
 msgid "Camera profile"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:27
+#: ../protocols/onvif/html/onvif.xml.in.h:23
 msgid "Get all profiles"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:28
+#: ../protocols/onvif/html/onvif.xml.in.h:24
 msgid "Detection sensitivity"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:29
+#: ../protocols/onvif/html/onvif.xml.in.h:25
 msgid "Detection deviation"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:30
-msgid "(the higher the value, the more motion is allowed)"
+#: ../protocols/onvif/html/onvif.xml.in.h:26
+msgid "The higher the value, the more motion is allowed"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:31
+#: ../protocols/onvif/html/onvif.xml.in.h:27
 msgid "On duration"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:32
-msgid "seconds"
+#: ../protocols/onvif/html/onvif.xml.in.h:28
+msgid "In seconds"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:33
+#: ../protocols/onvif/html/onvif.xml.in.h:29
 msgid "Please note that recording will only work if motion is enabled"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:34
+#: ../protocols/onvif/html/onvif.xml.in.h:30
 msgid "Enable recording"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:35
+#: ../protocols/onvif/html/onvif.xml.in.h:31
 msgid "Recording profile"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:36
+#: ../protocols/onvif/html/onvif.xml.in.h:32
 msgid "Recording duration after last motion detected"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:37
+#: ../protocols/onvif/html/onvif.xml.in.h:33
 msgid "Draw detected area"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:38
+#: ../protocols/onvif/html/onvif.xml.in.h:34
 msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:39
+#: ../protocols/onvif/html/onvif.xml.in.h:35
 msgid "Service name"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:40
+#: ../protocols/onvif/html/onvif.xml.in.h:36
+msgid "OnVIF operations"
+msgstr ""
+
+#: ../protocols/onvif/html/onvif.xml.in.h:37
 msgid "Operation name"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:41
+#: ../protocols/onvif/html/onvif.xml.in.h:38
 msgid "Operation"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:43
-msgid "Response"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:44
+#: ../protocols/onvif/html/onvif.xml.in.h:39
 msgid "Execute"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:45
+#: ../protocols/onvif/html/onvif.xml.in.h:40
 msgid "Check parameters"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:46
-msgid "My cameras"
+#: ../protocols/onvif/html/onvif.xml.in.h:42
+msgid "Response"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:47
-msgid "My recordings"
+#: ../protocols/onvif/html/onvif.xml.in.h:43
+msgid "Cameras"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:48
+#: ../protocols/onvif/html/onvif.xml.in.h:44
+msgid "Recordings"
+msgstr ""
+
+#: ../protocols/onvif/html/onvif.xml.in.h:45
 msgid "Add camera"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:49
+#: ../protocols/onvif/html/onvif.xml.in.h:46
 msgid "Recordings config"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:50
+#: ../protocols/onvif/html/onvif.xml.in.h:47
 #: ../protocols/knx/html/knx.xml.in.h:12
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
 #: ../configuration/events/html/events.xml.in.h:9
@@ -1422,31 +1411,19 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:53
-msgid "Ip address"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:54
+#: ../protocols/onvif/html/onvif.xml.in.h:50
 msgid "Get camera profiles"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:51
 msgid "Select camera profile"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:56
+#: ../protocols/onvif/html/onvif.xml.in.h:52
 msgid "Save camera"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:57
-msgid "Recordings directory"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:58
-msgid "Directory"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:59
+#: ../protocols/onvif/html/onvif.xml.in.h:53
 msgid "Recordings purge delay"
 msgstr ""
 
@@ -1880,10 +1857,6 @@ msgstr ""
 
 #: ../configuration/devices/html/devices.xml.in.h:7
 msgid "Filter handlers:"
-msgstr ""
-
-#: ../configuration/devices/html/devices.xml.in.h:9
-msgid "Details"
 msgstr ""
 
 #: ../configuration/devices/html/devices.xml.in.h:10
