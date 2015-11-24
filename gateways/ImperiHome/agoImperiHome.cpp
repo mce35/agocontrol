@@ -277,6 +277,18 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                     deviceinfo["params"]=paramList;
                 } else if (device["devicetype"] == "co2sensor") {
                     deviceinfo["type"]="DevCO2";
+                    qpid::types::Variant::List paramList;
+                    if (!(values["co2"]).isVoid()) {
+                        qpid::types::Variant::Map agoValue;
+                        qpid::types::Variant::Map param;
+                        agoValue = (values["co2"]).asMap();
+                        param["key"]="Value";
+                        param["value"]=agoValue["level"].asString();
+                        param["unit"]=agoValue["unit"];
+                        param["graphable"]="false";
+                        paramList.push_back(param);
+                        deviceinfo["params"]=paramList;
+                    }
                 } else if (device["devicetype"] == "multilevelsensor") {
                     deviceinfo["type"]="DevGenericSensor";
                     qpid::types::Variant::List paramList;
@@ -290,6 +302,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         param["unit"]=agoValue["unit"];
                         param["graphable"]="false";
                         paramList.push_back(param);
+                        deviceinfo["params"]=paramList;
                     }
                     deviceinfo["params"]=paramList;
                 } else if (device["devicetype"] == "brightnesssensor") {
@@ -304,6 +317,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         param["unit"]=agoValue["unit"];
                         param["graphable"]="false";
                         paramList.push_back(param);
+                        deviceinfo["params"]=paramList;
                     }
                 } else if (device["devicetype"] == "smokedetector") {
                     deviceinfo["type"]="DevSmoke";
@@ -333,6 +347,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         param["unit"]=agoValue["unit"];
                         param["graphable"]="false";
                         paramList.push_back(param);
+                        deviceinfo["params"]=paramList;
                     }
                 } else if (device["devicetype"] == "thermostat") {
                     deviceinfo["type"]="DevThermostat";
