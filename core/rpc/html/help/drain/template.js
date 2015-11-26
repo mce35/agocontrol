@@ -18,7 +18,7 @@ function Debug(agocontrol)
         if( event )
         {
             //get current date
-            var d = formatDate(new Date());
+            var d = datetimeToString(new Date());
 
             //append new message
             if( type===undefined )

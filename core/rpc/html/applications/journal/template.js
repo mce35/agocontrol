@@ -52,7 +52,7 @@ function Journal(agocontrol)
                         var day = d.getDate()
                         messages.push({
                             'kind': 'label',
-                            'text': d.getFullYear()+'/'+(month<10 ? '0'+month : month)+'/'+(day<10 ? '0'+day : day)
+                            'text': dateToString(d)
                         });
                         prevDay = d.getDate();
                     }
@@ -94,16 +94,21 @@ function init_template(path, params, agocontrol)
             {
                 //start date
                 var start = new Date((new Date()).getTime() - 7*24*3600*1000); //now -1 week
-                $(element).val($.datepicker.formatDate('dd/mm/yy', start) + ' 00:00');
+                start.setHours(0);
+                start.setMinutes(0);
+                $(element).val(datetimeToString(start));
             }
             else
             {
                 //end date
-                $(element).val($.datepicker.formatDate('dd/mm/yy', new Date())+' 23:59');
+                var end = new Date();
+                end.setHours(23);
+                end.setMinutes(59);
+                $(element).val(datetimeToString(end));
             }
 
             $(element).datetimepicker({
-                format: 'd/m/Y H:i',
+                format: getDatetimepickerFormat(),
                 onChangeDateTime: function(dp,$input)
                 {
                     //check date

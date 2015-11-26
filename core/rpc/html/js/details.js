@@ -68,10 +68,12 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
 
                 //set start date
                 var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
-                var startEl = $('#start_date');
-                startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
-                startEl.datetimepicker({
-                    format: 'd.m.Y H:i',
+                start.setHours(0);
+                start.setMinutes(0);
+                var el = $('#start_date');
+                el.val(datetimeToString(start));
+                el.datetimepicker({
+                    format: getDatetimepickerFormat(),
                     onChangeDateTime: function(dp,$input)
                     {
                         //check date
@@ -88,10 +90,13 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 });
 
                 //set end date
-                var endEl = $('#end_date');
-                endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
-                endEl.datetimepicker({
-                    format:'d.m.Y H:i',
+                var end = new Date();
+                end.setHours(23);
+                end.setMinutes(59);
+                el = $('#end_date');
+                el.val(datetimeToString(end));
+                el.datetimepicker({
+                    format: getDatetimepickerFormat(),
                     onChangeDateTime: function(dp,$input)
                     {
                         //check date
@@ -365,7 +370,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = formatDate(new Date(values[i].time * 1000));
+                values[i].date = datetimeToString(new Date(values[i].time * 1000));
                 values[i].value = values[i].level + " " + unit;
                 delete values[i].level;
             }
@@ -374,7 +379,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = formatDate(new Date(values[i].time * 1000));
+                values[i].date = datetimeToString(new Date(values[i].time * 1000));
                 values[i].value = values[i].latitude + "," + values[i].longitude;
                 delete values[i].latitude;
                 delete values[i].longitude;
