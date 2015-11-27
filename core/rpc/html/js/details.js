@@ -77,8 +77,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 function computeRangeDates()
                 {
                     var end = new Date();
-                    end.setHours(end.getHours()+1);
-                    end.setMinutes(0);
+                    end.setMinutes(end.getMinutes()+1);
                     end.setSeconds(0);
                     endEl.val( datetimeToString(end) );
                     var start = new Date(end.getTime() - rangeEl.val()*60*60*1000);
@@ -97,9 +96,9 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 });
 
                 //configure date range
-                var rangeOptions = [{'text':'Last hour', 'value':1}, {'text':'Last 6 hours', 'value':6}, {'text':'Last 12 hours', 'value':12}, {'text':'Last day', 'value':24},
-                                    {'text':'Last week', 'value':168}, {'text':'Last month', 'value':730}, {'text':'Last 3 months', 'value':2190}, {'text':'Last 6 months', 'value':4380},
-                                    {'text':'Last year', 'value':8760}, {'text':'Custom range', 'value':0}];
+                var rangeOptions = [{'text':'Last 2 hours', 'value':2}, {'text':'Last 6 hours', 'value':6}, {'text':'Last 12 hours', 'value':12}, {'text':'Last day', 'value':24},
+                                    {'text':'Last 2 days', 'value':48}, {'text':'Last week', 'value':168}, {'text':'Last month', 'value':730}, {'text':'Last 3 months', 'value':2190},
+                                    {'text':'Last 6 months', 'value':4380}, {'text':'Last year', 'value':8760}, {'text':'Custom range', 'value':0}];
                 $.each(rangeOptions, function(i, item) {
                     rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
                 });
