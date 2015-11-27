@@ -42,6 +42,13 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
     {
         afterRender : function()
         {
+            //force environment for specific devices
+            if( device.devicetype=="binarysensor" || device.devicetype=="multigraph" )
+            {
+                environment = "device.state";
+            }
+
+            //configure radio button (graph type selector)
             $('input[type=radio][name=renderType]').on('change', function() {
                 self.render(device, environment, $(this).val());
             });
@@ -59,65 +66,105 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
             else if( ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype=="multigraph"))
             {
                 //sensor template
-                    
-                //add refresh button action
-                $('#get_graph').click(function(e) {
+                
+                //init elements
+                var rangeEl = $('#range_date');
+                var startEl = $('#start_date');
+                var endEl = $('#end_date');
+                var buttonEl = $('#get_graph');
+
+                //local functions
+                function computeRangeDates()
+                {
+                    var end = new Date();
+                    end.setHours(end.getHours()+1);
+                    end.setMinutes(0);
+                    end.setSeconds(0);
+                    endEl.val( datetimeToString(end) );
+                    var start = new Date(end.getTime() - rangeEl.val()*60*60*1000);
+                    startEl.val( datetimeToString(start) );
+                };
+
+                //hide by default custom elements
+                startEl.parent().hide();
+                endEl.parent().hide();
+                buttonEl.hide();
+
+                //configure refresh button
+                buttonEl.click(function(e) {
                     e.preventDefault();
                     self.render(device, environment);
                 });
 
-                //set start date
-                var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
-                start.setHours(0);
-                start.setMinutes(0);
-                var el = $('#start_date');
-                el.val(datetimeToString(start));
-                el.datetimepicker({
+                //configure date range
+                var rangeOptions = [{'text':'Last hour', 'value':1}, {'text':'Last 6 hours', 'value':6}, {'text':'Last 12 hours', 'value':12}, {'text':'Last day', 'value':24},
+                                    {'text':'Last week', 'value':168}, {'text':'Last month', 'value':730}, {'text':'Last 3 months', 'value':2190}, {'text':'Last 6 months', 'value':4380},
+                                    {'text':'Last year', 'value':8760}, {'text':'Custom range', 'value':0}];
+                $.each(rangeOptions, function(i, item) {
+                    rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
+                });
+                rangeEl.change(function() {
+                    if( rangeEl.val()==0 )
+                    {
+                        //display custom range fields
+                        startEl.parent().show();
+                        endEl.parent().show();
+                        buttonEl.show();
+                    }
+                    else
+                    {
+                        //hide custom range fields
+                        startEl.parent().hide();
+                        endEl.parent().hide();
+                        buttonEl.hide();
+
+                        //compute selected range
+                        computeRangeDates();
+
+                        //render graph
+                        self.render(device, environment);
+                    }
+                });
+                rangeEl.val(24);
+                computeRangeDates();
+
+                //configure datetime pickers
+                startEl.datetimepicker({
                     format: getDatetimepickerFormat(),
                     onChangeDateTime: function(dp,$input)
                     {
                         //check date
-                        var sd = stringToDatetime($('#start_date').val());
-                        var ed = stringToDatetime($('#end_date').val());
+                        var sd = stringToDatetime(startEl.val());
+                        var ed = stringToDatetime(endEl.val());
                         if( sd.getTime()>ed.getTime() )
                         {
                             //invalid date
                             notif.warning('Specified datetime is invalid');
                             sd = new Date(ed.getTime() - 24 * 3600 * 1000);
-                            $('#start_date').val( datetimeToString(sd) );
+                            startEl.val( datetimeToString(sd) );
                         }
                     }
                 });
 
                 //set end date
-                var end = new Date();
-                end.setHours(23);
-                end.setMinutes(59);
-                el = $('#end_date');
-                el.val(datetimeToString(end));
-                el.datetimepicker({
+                endEl.datetimepicker({
                     format: getDatetimepickerFormat(),
                     onChangeDateTime: function(dp,$input)
                     {
                         //check date
-                        var sd = stringToDatetime($('#start_date').val());
-                        var ed = stringToDatetime($('#end_date').val());
+                        var sd = stringToDatetime(startEl.val());
+                        var ed = stringToDatetime(endEl.val());
                         if( sd.getTime()>ed.getTime() )
                         {
                             //invalid date
                             notif.warning('Specified datetime is invalid');
                             ed = new Date(sd.getTime() + 24 * 3600 * 1000);
-                            $('#end_date').val( datetimeToString(ed) );
+                            endEl.val( datetimeToString(ed) );
                         }
                     }
                 });
 
-                if( device.devicetype=="binarysensor" || device.devicetype=="multigraph" )
-                {
-                    environment = "device.state";
-                }
-
-                //render default
+                //render graph
                 if( device.devicetype=="gpssensor" )
                 {
                     self.render(device, environment ? environment : device.valueList()[0].name, "map");
@@ -127,7 +174,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     self.render(device, environment ? environment : device.valueList()[0].name, "graph");
                 }
             }
-                
+
             //show modal
             $('#detailsTitle').html('Device details');
             $('#detailsModal').modal('show');
@@ -471,7 +518,7 @@ Agocontrol.prototype.render = function(device, environment, type)
     //get type
     if( type===null || type===undefined )
     {
-        type = type = self.lastRenderType;
+        type = self.lastRenderType;
     }
     self.lastRenderType = type;
 
