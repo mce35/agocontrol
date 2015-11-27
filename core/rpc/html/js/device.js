@@ -21,7 +21,7 @@ function device(agocontrol, obj, uuid) {
     var currentState = parseInt(this.state);
     this.state = ko.observable(currentState);
     this.values = ko.observable(this.values);
-    this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
+    this.timeStamp = ko.observable(datetimeToString(new Date(this.lastseen * 1000)));
 
     var params = [];
     for( var key in self.parameters )
