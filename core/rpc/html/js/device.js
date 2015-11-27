@@ -96,26 +96,15 @@ function device(agocontrol, obj, uuid) {
         content.command = "getthumb";
         content.uuid = self.agocontrol.dataLoggerController;
         content.multigraph = deferred.internalid;
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-            {
-                if( !res.error )
-                {
-                    deferred.observable('data:image/png;base64,' + res.result.data.graph);
-                }
-                else
-                {
-                    //TODO notif something?
-                }
-            }
-            else
-            {
+        self.agocontrol.sendCommand(content, null, 10)
+            .then(function(res) {
+                deferred.observable('data:image/png;base64,' + res.result.data.graph);
+            })
+            .catch(function(err) {
                 //no thumb available
                 //TODO notif something?
                 console.error('request getthumb failed');
-            }
-        }, 10);
+            });
     };
 
     //refresh dashboard multigraph thumb
@@ -214,10 +203,8 @@ function device(agocontrol, obj, uuid) {
             content.devices = [uuid];
             content.start = start;
             content.end = end;
-            self.agocontrol.sendCommand(content, function(res)
-            {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-                {
+            self.agocontrol.sendCommand(content, null, 10)
+                .then( function(res) {
                     if( !res.result.error && document.getElementById("graphRRD") )
                     {
                         document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.data.graph;
@@ -227,12 +214,10 @@ function device(agocontrol, obj, uuid) {
                     {
                         notif.error('Unable to get graph: '+res.result.msg);
                     }
-                }
-                else
-                {
+                })
+                .catch(function(err) {
                     notif.error('Unable to get graph: Internal error');
-                }
-            }, 10);
+                });
         };
 
     }
@@ -357,19 +342,17 @@ function device(agocontrol, obj, uuid) {
         {
             content[params[i].name] = params[i].value;
         }
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            notif.info("Done");
-        });
+        self.agocontrol.sendCommand(content)
+            .then( function(res) {
+                notif.info("Done");
+            });
     };
 
     //add device function
     this.addDevice = function(content, callback)
     {
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then( function(res) {
                 if( res.result.error===0 )
                 {
                     notif.error(res.result.msg);
@@ -382,12 +365,10 @@ function device(agocontrol, obj, uuid) {
                 {
                     callback(res);
                 }
-            }
-            else
-            {
+            })
+            .catch(function(err) {
                 notif.fatal('Fatal error: no response received');
-            }
-        });
+            });
     };
 
     //get devices
@@ -396,29 +377,35 @@ function device(agocontrol, obj, uuid) {
         var content = {};
         content.uuid = uuid;
         content.command = 'getdevices';
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if (callback !== undefined)
-                callback(res);
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                if( callback !== undefined )
+                {
+                    callback(res);
+                }
+            });
     };
 
     if (this.devicetype == "camera")
     {
         this.getVideoFrame = function()
         {
+            self.agocontrol.block($('#imageContainer').parent());
+
             var content = {};
             content.command = "getvideoframe";
             content.uuid = self.uuid;
             // TODO: this had a 90s reply timeout before implementing the promise style - check if this is still needed
-            self.agocontrol.sendCommand(content,null,90).then(function(res)
-            {
-                if (res.data && res.data.image && document.getElementById("camIMG"))
-                {
-                    document.getElementById("camIMG").src = "data:image/jpeg;base64," + res.data.image;
-                    $("#camIMG").show();
-                }
-            })
+            self.agocontrol.sendCommand(content, null, 90)
+                .then(function(res) {
+                    if( res.data && res.data.image )
+                    {
+                        $('#imageContainer').attr('src', 'data:image/jpeg;base64,'+res.data.image);
+                    }
+                })
+                .finally(function() {
+                    self.agocontrol.unblock($('#imageContainer').parent());
+                });
         };
     }
 
@@ -469,6 +456,5 @@ function device(agocontrol, obj, uuid) {
                 //close modal
                 $('#detailsModal').modal('hide');
             });
-
     };
 }
