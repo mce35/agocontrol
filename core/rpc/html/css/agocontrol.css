@@ -23,6 +23,18 @@
     stroke: #ddd;
 }
 
+.d3-tooltip {
+    position: absolute;
+    z-index: 9999999;
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    text-align: center;
+}
+
 /* extra large button */
 .btn-xl {
     padding: 18px 28px;

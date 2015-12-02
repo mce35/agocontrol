@@ -337,17 +337,50 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    //create tooltip
+    var tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "d3-tooltip")
+        .style("visibility", "hidden");
+
     function draw()
     {
         svg.select("g.x.axis").call(xAxis);
         svg.select("g.y.axis").call(yAxis);
         svg.select("path.area").attr("d", area);
         svg.select("path.line").attr("d", line);
-    }
+
+        svg.selectAll("circle")
+            .data(data)
+            .attr("cx", function(d,i){ return x(d.date) || 0; })
+            .attr("cy",function(d,i){ return y(d.value) || 0; });
+    };
+
+    function showTooltip(pt, item)
+    {
+        var coord = d3.mouse(pt);
+        var chartTip = d3.select(".d3-tooltip");
+        tooltip.style("visibility", "visible");
+        tooltip.style("top", (d3.event.pageY-10)+"px")
+            .style("left",(d3.event.pageX+10)+"px");
+        var dt = new Date(item.date);
+        tooltip.html("<small>"+datetimeToString(dt)+"</small><br/><big>"+item.value+"</big>");
+    };
+
+    function hideTooltip(pt)
+    {
+        tooltip.style("visibility", "hidden");
+    };
 
     //define zoom
     var zoom = d3.behavior.zoom()
         .on("zoom", draw);
+
+    //prepare data
+    data.forEach(function(d) {
+        d.date = d.time*1000;
+        d.value = +d.level;
+    });
 
     //configure graph
     svg.append("clipPath")
@@ -360,7 +393,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     svg.append("g")
             .attr("class", "y axis")
         .append("text")
-            .attr("transform", "rotate(-90)")
+            .attr("transform", "translate("+-40+" "+height/2+") rotate(-90)")
             .attr("y", 6)
             .attr("dy", ".8em")
             .style("text-anchor", "end")
@@ -383,15 +416,21 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .attr("width", width)
         .attr("height", height)
         .style("fill", "none")
-        .style("cursor", "move")
+        //.style("cursor", "move")
         .style("pointer-events", "all")
         .call(zoom);
-
-    //prepare data
-    data.forEach(function(d) {
-        d.date = d.time*1000;
-        d.value = +d.level;
-    });
+    svg.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+            .attr("cx", function(d,i){ return x(d.date) || 0; })
+            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("fill", colorL)
+            .attr("opacity", "0.4")
+            .attr("cursor", "pointer")
+            .attr("r", 3)
+            .on("mouseover", function(d) { showTooltip(this, d);})
+            .on("mouseout", function() { hideTooltip(this);});
 
     //compute boundaries
     x.domain(d3.extent(data, function(d) { return d.date; }));
