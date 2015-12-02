@@ -353,7 +353,14 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         svg.selectAll("circle")
             .data(data)
             .attr("cx", function(d,i){ return x(d.date) || 0; })
-            .attr("cy",function(d,i){ return y(d.value) || 0; });
+            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("opacity", function(item) {
+                var coordx = x(item.date);
+                if( coordx<0 || coordx>width )
+                    return 0.000001; //hide item
+                else
+                    return 0.4
+            });
     };
 
     function showTooltip(pt, item)
