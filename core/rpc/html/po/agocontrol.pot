@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-23 11:45+0100\n"
+"POT-Creation-Date: 2015-12-02 14:29+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,26 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: ../index.xml.in.h:1
+msgid "Toggle navigation"
+msgstr ""
+
+#: ../index.xml.in.h:2
+msgid "Go to journal"
+msgstr ""
+
+#: ../index.xml.in.h:3
+msgid "DASHBOARDS"
+msgstr ""
+
+#: ../index.xml.in.h:4
+msgid "APPLICATIONS"
+msgstr ""
+
+#: ../index.xml.in.h:5
+msgid "PROTOCOLS"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:1
 #: ../templates/details/batterysensor.xml.in.h:1
@@ -123,8 +143,7 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-#: ../applications/journal/html/journal.xml.in.h:2
-msgid "From"
+msgid "Range"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:9
@@ -137,14 +156,13 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:9
 #: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../applications/journal/html/journal.xml.in.h:3
-msgid "To"
+#: ../applications/journal/html/journal.xml.in.h:2
+msgid "From"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:10
 #: ../templates/details/batterysensor.xml.in.h:10
 #: ../templates/details/brightnesssensor.xml.in.h:10
-#: ../templates/details/camera.xml.in.h:5
 #: ../templates/details/distancesensor.xml.in.h:10
 #: ../templates/details/energymeter.xml.in.h:10
 #: ../templates/details/gpssensor.xml.in.h:9
@@ -152,6 +170,21 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
+#: ../applications/journal/html/journal.xml.in.h:3
+msgid "To"
+msgstr ""
+
+#: ../templates/details/barometersensor.xml.in.h:11
+#: ../templates/details/batterysensor.xml.in.h:11
+#: ../templates/details/brightnesssensor.xml.in.h:11
+#: ../templates/details/camera.xml.in.h:5
+#: ../templates/details/distancesensor.xml.in.h:11
+#: ../templates/details/energymeter.xml.in.h:11
+#: ../templates/details/gpssensor.xml.in.h:10
+#: ../templates/details/humiditysensor.xml.in.h:11
+#: ../templates/details/multigraph.xml.in.h:8
+#: ../templates/details/powermeter.xml.in.h:11
+#: ../templates/details/temperaturesensor.xml.in.h:11
 #: ../protocols/zwave/html/zwave.xml.in.h:16
 msgid "Refresh"
 msgstr ""
