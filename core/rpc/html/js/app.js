@@ -68,68 +68,6 @@ function ucFirst(str)
 
 /*============== DATETIME FUNCTIONS ==============*/
 /**
- * Convert string to js Date object. If conversion fails return current date
- */
-function stringToDatetime(str)
-{
-    var dt = Date.parse(str);
-    if( isNaN(dt) )
-    {
-        return new Date();
-    }
-    return new Date(dt);
-};
-
-/**
- * Convert datetime js object to string according to user locales
- */
-function dateToString(dt)
-{
-    return dt.toLocaleDateString();
-}
-
-/**
- * Convert datetime js object to string according to user locales
- */
-function timeToString(dt)
-{
-    var t = dt.toLocaleTimeString();
-    var re = /(\d+):(\d+):\d+(.*)/g;
-    var m;
-    if( (m=re.exec(t))!==null )
-    {
-        //remove seconds
-        return m[1]+':'+m[2]+m[3];
-    }
-    return t;
-};
-
-/**
- * Convert datetime js object to string according to user locales
- */
-function datetimeToString(dt)
-{
-    return dateToString(dt)+' '+timeToString(dt);
-};
-
-/**
- * Convert timestamp to string under format "d.m.y h:m"
- */
-function timestampToString(ts)
-{
-    var dt = new Date(ts*1000);
-    return datetimeToString(dt);
-};
-
-/**
- * Return current timestamp (in seconds)
- */
-function getTimestamp()
-{
-    return Math.floor(Date.now()/1000);
-};
-
-/**
  * Return date format according to user locale
  */
 function getDateFormat()
@@ -189,7 +127,12 @@ function getDateFormat()
         "sr-Latn-ME" : "d.M.yyyy", "sma-SE" : "yyyy-MM-dd", "en-SG" : "d/M/yyyy", "ug-CN" : "yyyy-M-d",
         "sr-Cyrl-BA" : "d.M.yyyy", "es-US" : "M/d/yyyy"
     };
-    return formats[navigator.language] || 'dd/MM/yyyy';
+    var lang = navigator.language;
+    if( navigator.language.indexOf('-')===-1 )
+    {
+        lang = navigator.language+'-'+navigator.language.toUpperCase();
+    }
+    return formats[lang] || 'dd/MM/yyyy';
 };
 
 /**
@@ -230,6 +173,69 @@ function getDateTimeFormat(withSeconds)
 {
     return getDateFormat()+' '+getTimeFormat(withSeconds);
 }
+
+/**
+ * Convert string to js Date object. If conversion fails return current date
+ * /!\ Please use ISO string format to make sure conversion is correct!
+ */
+function isoStringToDatetime(str)
+{
+    var dt = Date.parse(str);
+    if( isNaN(dt) )
+    {
+        return new Date();
+    }
+    return new Date(dt);
+};
+
+/**
+ * Convert datetime js object to string according to user locales
+ */
+function dateToString(dt)
+{
+    return dt.toLocaleDateString();
+}
+
+/**
+ * Convert datetime js object to string according to user locales
+ */
+function timeToString(dt)
+{
+    var t = dt.toLocaleTimeString();
+    var re = /(\d+):(\d+):\d+(.*)/g;
+    var m;
+    if( (m=re.exec(t))!==null )
+    {
+        //remove seconds
+        return m[1]+':'+m[2]+m[3];
+    }
+    return t;
+};
+
+/**
+ * Convert datetime js object to string according to user locales
+ */
+function datetimeToString(dt)
+{
+    return dateToString(dt)+' '+timeToString(dt);
+};
+
+/**
+ * Convert timestamp to string under format "d.m.y h:m"
+ */
+function timestampToString(ts)
+{
+    var dt = new Date(ts*1000);
+    return datetimeToString(dt);
+};
+
+/**
+ * Return current timestamp (in seconds)
+ */
+function getTimestamp()
+{
+    return Math.floor(Date.now()/1000);
+};
 
 
 /*============== AGOCONTROL FUNCTIONS ==============*/

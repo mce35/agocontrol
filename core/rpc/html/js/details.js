@@ -42,6 +42,9 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
     {
         afterRender : function()
         {
+            var startDt = 0;
+            var endDt = 0;
+
             //force environment for specific devices
             if( device.devicetype=="binarysensor" || device.devicetype=="multigraph" )
             {
@@ -50,7 +53,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
 
             //configure radio button (graph type selector)
             $('input[type=radio][name=renderType]').on('change', function() {
-                self.render(device, environment, $(this).val());
+                self.render(device, environment, startDt, endDt, $(this).val());
             });
 
             if( $('#commandList').length )
@@ -76,12 +79,12 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //local functions
                 function computeRangeDates()
                 {
-                    var end = new Date();
-                    end.setMinutes(end.getMinutes()+1);
-                    end.setSeconds(0);
-                    endEl.val( datetimeToString(end) );
-                    var start = new Date(end.getTime() - rangeEl.val()*60*60*1000);
-                    startEl.val( datetimeToString(start) );
+                    endDt = new Date();
+                    endDt.setMinutes(endDt.getMinutes()+1);
+                    endDt.setSeconds(0);
+                    endEl.val( datetimeToString(endDt) );
+                    startDt = new Date(endDt.getTime() - rangeEl.val()*60*60*1000);
+                    startEl.val( datetimeToString(startDt) );
                 };
 
                 //hide by default custom elements
@@ -92,7 +95,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //configure refresh button
                 buttonEl.click(function(e) {
                     e.preventDefault();
-                    self.render(device, environment);
+                    self.render(device, environment, startDt, endDt);
                 });
 
                 //configure date range
@@ -121,7 +124,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                         computeRangeDates();
 
                         //render graph
-                        self.render(device, environment);
+                        self.render(device, environment, startDt, endDt);
                     }
                 });
                 rangeEl.val(24);
@@ -130,17 +133,19 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //configure datetime pickers
                 startEl.datetimepicker({
                     format: getDatetimepickerFormat(),
-                    onChangeDateTime: function(dp,$input)
+                    onChangeDateTime: function(dt,$input)
                     {
                         //check date
-                        var sd = stringToDatetime(startEl.val());
-                        var ed = stringToDatetime(endEl.val());
-                        if( sd.getTime()>ed.getTime() )
+                        if( dt.getTime()>endDt.getTime() )
                         {
                             //invalid date
                             notif.warning('Specified datetime is invalid');
-                            sd = new Date(ed.getTime() - 24 * 3600 * 1000);
-                            startEl.val( datetimeToString(sd) );
+                            startEl.val( datetimeToString(startDt) );
+                        }
+                        else
+                        {
+                            //update start datetime
+                            startDt.setTime(dt.getTime());
                         }
                     }
                 });
@@ -148,17 +153,19 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //set end date
                 endEl.datetimepicker({
                     format: getDatetimepickerFormat(),
-                    onChangeDateTime: function(dp,$input)
+                    onChangeDateTime: function(dt,$input)
                     {
                         //check date
-                        var sd = stringToDatetime(startEl.val());
-                        var ed = stringToDatetime(endEl.val());
-                        if( sd.getTime()>ed.getTime() )
+                        if( startDt.getTime()>dt.getTime() )
                         {
                             //invalid date
                             notif.warning('Specified datetime is invalid');
-                            ed = new Date(sd.getTime() + 24 * 3600 * 1000);
-                            endEl.val( datetimeToString(ed) );
+                            endEl.val( datetimeToString(endDt) );
+                        }
+                        else
+                        {
+                            //update end datetime
+                            endDt.setTime(dt.getTime());
                         }
                     }
                 });
@@ -166,11 +173,11 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //render graph
                 if( device.devicetype=="gpssensor" )
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, "map");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "map");
                 }
                 else
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, "graph");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "graph");
                 }
             }
 
@@ -509,7 +516,7 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, type)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt, type)
 {
     var self = this;
     self.block($('#graphContainer'));
@@ -521,14 +528,11 @@ Agocontrol.prototype.render = function(device, environment, type)
     }
     self.lastRenderType = type;
 
-    var start = stringToDatetime($('#start_date').val());
-    var end = stringToDatetime($('#end_date').val());
-
     //fix end date
     now = new Date();
-    if( end.getTime()>now.getTime() )
+    if( endDt.getTime()>now.getTime() )
     {
-        end = now;
+        endDt = now;
     }
 
     if( type=="graph" )
@@ -538,8 +542,8 @@ Agocontrol.prototype.render = function(device, environment, type)
         content.command = "getgraph";
         content.uuid = self.dataLoggerController;
         content.devices = [device.uuid];
-        content.start = Math.round(start.getTime()/1000);
-        content.end = Math.round(end.getTime()/1000);
+        content.start = Math.round(startDt.getTime()/1000);
+        content.end = Math.round(endDt.getTime()/1000);
         self.sendCommand(content)
             .then(function(res) {
                 self.renderRRD(res.data.graph);
@@ -560,8 +564,8 @@ Agocontrol.prototype.render = function(device, environment, type)
         content.command = "getdata";
         content.replytimeout = 15;
         content.deviceid = device.uuid;
-        content.start = start.toISOString();
-        content.end = end.toISOString();
+        content.start = startDt.toISOString();
+        content.end = endDt.toISOString();
         content.env = environment.toLowerCase();
         self.sendCommand(content, null, 30)
             .then(function(res) {
@@ -582,11 +586,11 @@ Agocontrol.prototype.render = function(device, environment, type)
                 //render
                 if( type=="plots" )
                 {
-                    self.renderPlots(device, environment, unit, values, start, end);
+                    self.renderPlots(device, environment, unit, values, startDt, endDt);
                 }
                 else if( type=="list" )
                 {
-                    self.renderList(device, environment, unit, values, start, end);
+                    self.renderList(device, environment, unit, values, startDt, endDt);
                 }
                 else if( type=="map" )
                 {
