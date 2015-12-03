@@ -200,9 +200,10 @@ Agocontrol.prototype.showCommandList = function(container, device)
 {
     var self = this;
     var commandSelect = document.createElement("select");
-    var commandParams = document.createElement("span");
     commandSelect.id = "commandSelect";
     commandSelect.className = "form-control";
+    var commandParams = document.createElement("p");
+    commandParams.style['padding-top'] = '10px';
     var type = device.devicetype;
     if( type && self.schema().devicetypes[type] )
     {
