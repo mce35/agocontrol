@@ -182,7 +182,14 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
             }
 
             //show modal
-            $('#detailsTitle').html('Device details');
+            if( device && device.name() && device.name().length>0 )
+            {
+                $('#detailsTitle').html('<strong>'+device.name()+'</strong> <small>('+device.uuid+')</small>');
+            }
+            else
+            {
+                $('#detailsTitle').html('Device details');
+            }
             $('#detailsModal').modal('show');
         }
     }, $('#detailsContent')[0]);
