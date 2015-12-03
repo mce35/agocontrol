@@ -219,7 +219,6 @@ function device(agocontrol, obj, uuid) {
                     notif.error('Unable to get graph: Internal error');
                 });
         };
-
     }
 
     if( this.devicetype=="barometersensor" )
@@ -407,6 +406,33 @@ function device(agocontrol, obj, uuid) {
                     self.agocontrol.unblock($('#imageContainer').parent());
                 });
         };
+
+        self.cameraThumb = ko.observable('');
+        self.getThumbFrame = function()
+        {
+            var noFrame = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAM1BMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACjBUbJAAAAEHRSTlMADx8vP09fb3+Pn6+/z9/v+t8hjgAAA69JREFUeNrt28GyqyAMANCAiIgY8v9f+xad+9RWJQlYNmV9ZzhDMZCQC2BCJlo9dBsLERFR7DV/IOorQOosIBIK3N2wVYCywEwrFcYi3c6rQDBmYgx0IoAntiASc8gWIXIFM7GHe0Lg+PMTwgMCFACEPwJL4CXzE5rmAtECEAVoLJAtAFE2jQXCBZAvQUEwSueXL8G9IIkB8iW4Ezj5/IoluBEoFkCzBG+CJfyNWTM/5XA+/M2hHek7A2fbWUAUbW9B9r0F2y4dhk6C6TWjzbmXwP3dCnsJ0Pydc70E4f8510mQt3NOI8CUUkpprRD4bSqZAGe/u/paF5IyHu0SE75gnc7C2Kj54XCfmjEFcbjM3Lz44kSH3JAjmO/zTzEBSCRIQ7ngkCsABUEeObcKu1QAbgWZm/1PFYBbAbuGMmQ9oI3ArnoAW2BcCEtKKYbx87cxqx7AEgzz4XvDOCoFQBqBT2eX4GMiYLMeUBA4vLqHH3diBeBWcBPrcBB/jUByAeOad6gCqwBqQRRuA6AnBaEG0ESANYAW+8BXAdSCQbAEQA8IULAEQE8ItohkKgFvZQ6uYFeeiZUAr8udA7u+VgJYXfaez19E5ADU1g9GboGrAFi0FYzIjYYgOFskAuTWGEHx9MES/N88tgpg1HWkkbkLgbmZF2lECufvckJA2vayNCZG5mfABkijcmoOEAoeAMgETwBEgqUxIEpP59AEsL4HVL6gzWdIH6cqW+CaBKKTgMoVGGaGxj4LUCZA7q0QuAE1yu6Jc6PjOJ1drTiCgbkHi1eybaIsEWxwW3knHE+Xsijw7MSgBNgONZP5AuSn6CXA7koS+BmLY/8CZYC/yPNuayiCzpciAK+KPqxqnsnVgP0STGJBuUJRBuB17bgoYNRoyoBDfioUMC6vDMChSC4ScPoeGIBjfibYByY3AhwTtIH9NbJqtSwADdePMrUvnjzA21uJCbmZgAeg1Xw8EmIbARPwKQCwY4gppTQPNR0QXACt7H7V+AzgbaWbCUDwt9MTAgmAFtteIAK8P8q0EIDwq0HfWADi0IXetBTIWyWJKJ49YlsfNF0g2n6VFHY9ccZNC+piYhR3qx6C06uJJVecC/6Q8dQPqSDzXraeEwQAMNhP8GrAdtRN4OQdF00Fk+CB8wnBLq77/H3BsaXTxm8LPppa7YzfE1y09VrnQ6vhb06mVfHfSLVD2Q30E/wEP8FP8BN8QeB7C1boLYDeAugsQOgsCNBXsEC34ddXI+4/FLdnpiKujp0AAAAASUVORK5CYII=';
+            var content = {};
+            content.command = "getvideoframe";
+            content.uuid = self.uuid;
+            // TODO: this had a 90s reply timeout before implementing the promise style - check if this is still needed
+            self.agocontrol.sendCommand(content, null, 90)
+                .then(function(res) {
+                    if( res.data && res.data.image )
+                    {
+                        self.cameraThumb('data:image/jpeg;base64,'+res.data.image);
+                    }
+                    else
+                    {
+                        self.cameraThumb(noFrame);
+                    }
+                })
+                .catch(function(err) {
+                    self.cameraThumb(noFrame);
+                });
+        };
+
+        //by default get dashboard widget background, but no refresh available
+        self.getThumbFrame();
     }
 
     //update device content
