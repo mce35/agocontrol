@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-02 14:27+0100\n"
+"POT-Creation-Date: 2015-12-03 18:09+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,8 +51,10 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:1
 #: ../templates/details/powermeter.xml.in.h:1
 #: ../templates/details/temperaturesensor.xml.in.h:1
-msgid "Name"
-msgstr "Naam"
+#: ../protocols/knx/html/knx.xml.in.h:18
+#, fuzzy
+msgid "Device type"
+msgstr "Apparaat Type"
 
 #: ../templates/details/barometersensor.xml.in.h:2
 #: ../templates/details/batterysensor.xml.in.h:2
@@ -66,10 +68,8 @@ msgstr "Naam"
 #: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
-#: ../protocols/knx/html/knx.xml.in.h:18
-#, fuzzy
-msgid "Device type"
-msgstr "Apparaat Type"
+msgid "Room"
+msgstr "Kamer"
 
 #: ../templates/details/barometersensor.xml.in.h:3
 #: ../templates/details/batterysensor.xml.in.h:3
@@ -83,23 +83,20 @@ msgstr "Apparaat Type"
 #: ../templates/details/multigraph.xml.in.h:3
 #: ../templates/details/powermeter.xml.in.h:3
 #: ../templates/details/temperaturesensor.xml.in.h:3
-msgid "Room"
-msgstr "Kamer"
+msgid "Timestamp"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:4
 #: ../templates/details/batterysensor.xml.in.h:4
 #: ../templates/details/brightnesssensor.xml.in.h:4
-#: ../templates/details/camera.xml.in.h:4
-#: ../templates/details/default.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:4
 #: ../templates/details/energymeter.xml.in.h:4
-#: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
-#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
-msgid "Timestamp"
-msgstr ""
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
+msgstr "Grafiek"
 
 #: ../templates/details/barometersensor.xml.in.h:5
 #: ../templates/details/batterysensor.xml.in.h:5
@@ -109,20 +106,20 @@ msgstr ""
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
-msgstr "Grafiek"
+msgid "Plots"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:6
 #: ../templates/details/batterysensor.xml.in.h:6
 #: ../templates/details/brightnesssensor.xml.in.h:6
 #: ../templates/details/distancesensor.xml.in.h:6
 #: ../templates/details/energymeter.xml.in.h:6
+#: ../templates/details/gpssensor.xml.in.h:5
 #: ../templates/details/humiditysensor.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
-msgid "Plots"
-msgstr ""
+msgid "List"
+msgstr "Lijst"
 
 #: ../templates/details/barometersensor.xml.in.h:7
 #: ../templates/details/batterysensor.xml.in.h:7
@@ -131,10 +128,11 @@ msgstr ""
 #: ../templates/details/energymeter.xml.in.h:7
 #: ../templates/details/gpssensor.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:7
+#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
-msgid "List"
-msgstr "Lijst"
+msgid "Range"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:8
 #: ../templates/details/batterysensor.xml.in.h:8
@@ -146,8 +144,10 @@ msgstr "Lijst"
 #: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-msgid "Range"
-msgstr ""
+#: ../applications/journal/html/journal.xml.in.h:2
+#, fuzzy
+msgid "From"
+msgstr "Van:"
 
 #: ../templates/details/barometersensor.xml.in.h:9
 #: ../templates/details/batterysensor.xml.in.h:9
@@ -159,14 +159,15 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:9
 #: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../applications/journal/html/journal.xml.in.h:2
+#: ../applications/journal/html/journal.xml.in.h:3
 #, fuzzy
-msgid "From"
-msgstr "Van:"
+msgid "To"
+msgstr "Aan:"
 
 #: ../templates/details/barometersensor.xml.in.h:10
 #: ../templates/details/batterysensor.xml.in.h:10
 #: ../templates/details/brightnesssensor.xml.in.h:10
+#: ../templates/details/camera.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:10
 #: ../templates/details/energymeter.xml.in.h:10
 #: ../templates/details/gpssensor.xml.in.h:9
@@ -174,38 +175,22 @@ msgstr "Van:"
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
-#: ../applications/journal/html/journal.xml.in.h:3
-#, fuzzy
-msgid "To"
-msgstr "Aan:"
-
-#: ../templates/details/barometersensor.xml.in.h:11
-#: ../templates/details/batterysensor.xml.in.h:11
-#: ../templates/details/brightnesssensor.xml.in.h:11
-#: ../templates/details/camera.xml.in.h:5
-#: ../templates/details/distancesensor.xml.in.h:11
-#: ../templates/details/energymeter.xml.in.h:11
-#: ../templates/details/gpssensor.xml.in.h:10
-#: ../templates/details/humiditysensor.xml.in.h:11
-#: ../templates/details/multigraph.xml.in.h:8
-#: ../templates/details/powermeter.xml.in.h:11
-#: ../templates/details/temperaturesensor.xml.in.h:11
 #: ../protocols/zwave/html/zwave.xml.in.h:16
 #, fuzzy
 msgid "Refresh"
 msgstr "Ververs lijst"
 
-#: ../templates/details/default.xml.in.h:5
+#: ../templates/details/default.xml.in.h:4
 #, fuzzy
 msgid "Command"
 msgstr "Commando:"
 
-#: ../templates/details/default.xml.in.h:6
+#: ../templates/details/default.xml.in.h:5
 #: ../configuration/scenarios/html/scenarios.xml.in.h:10
 msgid "Run"
 msgstr "Uitvoeren"
 
-#: ../templates/details/gpssensor.xml.in.h:5
+#: ../templates/details/gpssensor.xml.in.h:4
 msgid "Map"
 msgstr ""
 
@@ -2259,6 +2244,9 @@ msgstr "Gebeurtenis Configuratie"
 #: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr ""
+
+#~ msgid "Name"
+#~ msgstr "Naam"
 
 #, fuzzy
 #~ msgid "Hostname"

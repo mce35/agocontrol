@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-02 14:27+0100\n"
+"POT-Creation-Date: 2015-12-03 18:09+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -49,8 +49,9 @@ msgstr "PROTOCOLS"
 #: ../templates/details/multigraph.xml.in.h:1
 #: ../templates/details/powermeter.xml.in.h:1
 #: ../templates/details/temperaturesensor.xml.in.h:1
-msgid "Name"
-msgstr "Nom"
+#: ../protocols/knx/html/knx.xml.in.h:18
+msgid "Device type"
+msgstr "Type de périphérique"
 
 #: ../templates/details/barometersensor.xml.in.h:2
 #: ../templates/details/batterysensor.xml.in.h:2
@@ -64,9 +65,8 @@ msgstr "Nom"
 #: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
-#: ../protocols/knx/html/knx.xml.in.h:18
-msgid "Device type"
-msgstr "Type de périphérique"
+msgid "Room"
+msgstr "Pièce"
 
 #: ../templates/details/barometersensor.xml.in.h:3
 #: ../templates/details/batterysensor.xml.in.h:3
@@ -80,23 +80,20 @@ msgstr "Type de périphérique"
 #: ../templates/details/multigraph.xml.in.h:3
 #: ../templates/details/powermeter.xml.in.h:3
 #: ../templates/details/temperaturesensor.xml.in.h:3
-msgid "Room"
-msgstr "Pièce"
+msgid "Timestamp"
+msgstr "Temps"
 
 #: ../templates/details/barometersensor.xml.in.h:4
 #: ../templates/details/batterysensor.xml.in.h:4
 #: ../templates/details/brightnesssensor.xml.in.h:4
-#: ../templates/details/camera.xml.in.h:4
-#: ../templates/details/default.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:4
 #: ../templates/details/energymeter.xml.in.h:4
-#: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
-#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
-msgid "Timestamp"
-msgstr "Temps"
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
+msgstr "Graphique"
 
 #: ../templates/details/barometersensor.xml.in.h:5
 #: ../templates/details/batterysensor.xml.in.h:5
@@ -106,20 +103,20 @@ msgstr "Temps"
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
-msgstr "Graphique"
+msgid "Plots"
+msgstr "Points"
 
 #: ../templates/details/barometersensor.xml.in.h:6
 #: ../templates/details/batterysensor.xml.in.h:6
 #: ../templates/details/brightnesssensor.xml.in.h:6
 #: ../templates/details/distancesensor.xml.in.h:6
 #: ../templates/details/energymeter.xml.in.h:6
+#: ../templates/details/gpssensor.xml.in.h:5
 #: ../templates/details/humiditysensor.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
-msgid "Plots"
-msgstr "Points"
+msgid "List"
+msgstr "Liste"
 
 #: ../templates/details/barometersensor.xml.in.h:7
 #: ../templates/details/batterysensor.xml.in.h:7
@@ -128,10 +125,11 @@ msgstr "Points"
 #: ../templates/details/energymeter.xml.in.h:7
 #: ../templates/details/gpssensor.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:7
+#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
-msgid "List"
-msgstr "Liste"
+msgid "Range"
+msgstr "Intervalle"
 
 #: ../templates/details/barometersensor.xml.in.h:8
 #: ../templates/details/batterysensor.xml.in.h:8
@@ -143,8 +141,9 @@ msgstr "Liste"
 #: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-msgid "Range"
-msgstr "Intervalle"
+#: ../applications/journal/html/journal.xml.in.h:2
+msgid "From"
+msgstr "De"
 
 #: ../templates/details/barometersensor.xml.in.h:9
 #: ../templates/details/batterysensor.xml.in.h:9
@@ -156,13 +155,14 @@ msgstr "Intervalle"
 #: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:9
 #: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../applications/journal/html/journal.xml.in.h:2
-msgid "From"
-msgstr "De"
+#: ../applications/journal/html/journal.xml.in.h:3
+msgid "To"
+msgstr "A"
 
 #: ../templates/details/barometersensor.xml.in.h:10
 #: ../templates/details/batterysensor.xml.in.h:10
 #: ../templates/details/brightnesssensor.xml.in.h:10
+#: ../templates/details/camera.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:10
 #: ../templates/details/energymeter.xml.in.h:10
 #: ../templates/details/gpssensor.xml.in.h:9
@@ -170,35 +170,20 @@ msgstr "De"
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
-#: ../applications/journal/html/journal.xml.in.h:3
-msgid "To"
-msgstr "A"
-
-#: ../templates/details/barometersensor.xml.in.h:11
-#: ../templates/details/batterysensor.xml.in.h:11
-#: ../templates/details/brightnesssensor.xml.in.h:11
-#: ../templates/details/camera.xml.in.h:5
-#: ../templates/details/distancesensor.xml.in.h:11
-#: ../templates/details/energymeter.xml.in.h:11
-#: ../templates/details/gpssensor.xml.in.h:10
-#: ../templates/details/humiditysensor.xml.in.h:11
-#: ../templates/details/multigraph.xml.in.h:8
-#: ../templates/details/powermeter.xml.in.h:11
-#: ../templates/details/temperaturesensor.xml.in.h:11
 #: ../protocols/zwave/html/zwave.xml.in.h:16
 msgid "Refresh"
 msgstr "Mettre à jour"
 
-#: ../templates/details/default.xml.in.h:5
+#: ../templates/details/default.xml.in.h:4
 msgid "Command"
 msgstr "Commande"
 
-#: ../templates/details/default.xml.in.h:6
+#: ../templates/details/default.xml.in.h:5
 #: ../configuration/scenarios/html/scenarios.xml.in.h:10
 msgid "Run"
 msgstr "Executer"
 
-#: ../templates/details/gpssensor.xml.in.h:5
+#: ../templates/details/gpssensor.xml.in.h:4
 msgid "Map"
 msgstr "Carte"
 
@@ -2141,32 +2126,3 @@ msgstr "Debug des évènements Agocontrol"
 msgid "Autoscroll"
 msgstr "Autoscroll"
 
-#~ msgid "Ip"
-#~ msgstr "Ip"
-
-#~ msgid "Hostname"
-#~ msgstr "Hostname"
-
-#~ msgid "Date and time"
-#~ msgstr "Date et heure"
-
-#~ msgid "NTP"
-#~ msgstr "NTP"
-
-#~ msgid "Network interfaces"
-#~ msgstr "Réseau"
-
-#~ msgid "OnVIF operations<i class=\"icon-link\"/>"
-#~ msgstr "OnVIF operations<i class=\"icon-link\"/>"
-
-#~ msgid "My cameras"
-#~ msgstr "Mes caméras"
-
-#~ msgid "My recordings"
-#~ msgstr "Mes enregistrements"
-
-#~ msgid "Recordings directory"
-#~ msgstr "Répertoire des enregistrements"
-
-#~ msgid "Directory"
-#~ msgstr "Répertoire"

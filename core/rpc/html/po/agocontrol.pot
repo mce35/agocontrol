@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-02 14:29+0100\n"
+"POT-Creation-Date: 2015-12-03 18:09+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,8 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:1
 #: ../templates/details/powermeter.xml.in.h:1
 #: ../templates/details/temperaturesensor.xml.in.h:1
-msgid "Name"
+#: ../protocols/knx/html/knx.xml.in.h:18
+msgid "Device type"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:2
@@ -64,8 +65,7 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
-#: ../protocols/knx/html/knx.xml.in.h:18
-msgid "Device type"
+msgid "Room"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:3
@@ -80,22 +80,19 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:3
 #: ../templates/details/powermeter.xml.in.h:3
 #: ../templates/details/temperaturesensor.xml.in.h:3
-msgid "Room"
+msgid "Timestamp"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:4
 #: ../templates/details/batterysensor.xml.in.h:4
 #: ../templates/details/brightnesssensor.xml.in.h:4
-#: ../templates/details/camera.xml.in.h:4
-#: ../templates/details/default.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:4
 #: ../templates/details/energymeter.xml.in.h:4
-#: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
-#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
-msgid "Timestamp"
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:5
@@ -106,8 +103,7 @@ msgstr ""
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
+msgid "Plots"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:6
@@ -115,10 +111,11 @@ msgstr ""
 #: ../templates/details/brightnesssensor.xml.in.h:6
 #: ../templates/details/distancesensor.xml.in.h:6
 #: ../templates/details/energymeter.xml.in.h:6
+#: ../templates/details/gpssensor.xml.in.h:5
 #: ../templates/details/humiditysensor.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
-msgid "Plots"
+msgid "List"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:7
@@ -128,9 +125,10 @@ msgstr ""
 #: ../templates/details/energymeter.xml.in.h:7
 #: ../templates/details/gpssensor.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:7
+#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
-msgid "List"
+msgid "Range"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:8
@@ -143,7 +141,8 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-msgid "Range"
+#: ../applications/journal/html/journal.xml.in.h:2
+msgid "From"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:9
@@ -156,13 +155,14 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:9
 #: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../applications/journal/html/journal.xml.in.h:2
-msgid "From"
+#: ../applications/journal/html/journal.xml.in.h:3
+msgid "To"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:10
 #: ../templates/details/batterysensor.xml.in.h:10
 #: ../templates/details/brightnesssensor.xml.in.h:10
+#: ../templates/details/camera.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:10
 #: ../templates/details/energymeter.xml.in.h:10
 #: ../templates/details/gpssensor.xml.in.h:9
@@ -170,35 +170,20 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:10
 #: ../templates/details/temperaturesensor.xml.in.h:10
-#: ../applications/journal/html/journal.xml.in.h:3
-msgid "To"
-msgstr ""
-
-#: ../templates/details/barometersensor.xml.in.h:11
-#: ../templates/details/batterysensor.xml.in.h:11
-#: ../templates/details/brightnesssensor.xml.in.h:11
-#: ../templates/details/camera.xml.in.h:5
-#: ../templates/details/distancesensor.xml.in.h:11
-#: ../templates/details/energymeter.xml.in.h:11
-#: ../templates/details/gpssensor.xml.in.h:10
-#: ../templates/details/humiditysensor.xml.in.h:11
-#: ../templates/details/multigraph.xml.in.h:8
-#: ../templates/details/powermeter.xml.in.h:11
-#: ../templates/details/temperaturesensor.xml.in.h:11
 #: ../protocols/zwave/html/zwave.xml.in.h:16
 msgid "Refresh"
 msgstr ""
 
-#: ../templates/details/default.xml.in.h:5
+#: ../templates/details/default.xml.in.h:4
 msgid "Command"
 msgstr ""
 
-#: ../templates/details/default.xml.in.h:6
+#: ../templates/details/default.xml.in.h:5
 #: ../configuration/scenarios/html/scenarios.xml.in.h:10
 msgid "Run"
 msgstr ""
 
-#: ../templates/details/gpssensor.xml.in.h:5
+#: ../templates/details/gpssensor.xml.in.h:4
 msgid "Map"
 msgstr ""
 
