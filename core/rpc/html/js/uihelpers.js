@@ -277,3 +277,25 @@ function getDatetimepickerFormat()
     return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'h').replace(/m+/gi,'i').replace(/a/gi,'A');
 };
 
+/**
+ * Return device type according to bootstrap
+ * @see https://github.com/titosust/Bootstrap-device-detector
+ */
+function getDeviceSize()
+{
+    var env = ["xs", "sm", "md", "lg"];
+    var device = env[3];
+    var $el = $('<div>').appendTo('body');
+    for (var i = env.length - 1; i >= 0; i--)
+    {
+        $el.addClass('hidden-'+env[i]);
+        if ($el.is(':hidden'))
+        {
+            device=env[i];
+            break;
+        }
+    }
+    $el.remove();
+    return device;
+};
+

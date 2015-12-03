@@ -12,6 +12,7 @@ Agocontrol.prototype = {
     deferredMultigraphThumbs: [],
     refreshMultigraphThumbsInterval: null,
     eventHandlers: [],
+    deviceSize: null,
     _allApplications: ko.observableArray([]),
     _allProtocols: ko.observableArray([]),
     _getApplications: Promise.pending(),
@@ -166,6 +167,9 @@ Agocontrol.prototype = {
     initialize : function()
     {
         var self = this;
+
+        //get device size
+        self.deviceSize = getDeviceSize();
 
         //handle dark/light style changes
         self.darkStyle.subscribe(function(value) {
