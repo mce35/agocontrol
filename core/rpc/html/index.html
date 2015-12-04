@@ -103,18 +103,10 @@
                                 <ul class="menu" data-bind="foreach: $root.agocontrol.journalEntries">
                                     <li>
                                         <a href="#" data-bind="click:$root.noclick" style="cursor:default">
-                                            <!-- ko if:type=='warning' -->
-                                            <i class="en-attention text-orange" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToString(time)}"></i>
-                                            <!-- /ko -->
-                                            <!-- ko if:type=='error' -->
-                                            <i class="en-alert text-red" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToString(time)}"></i>
-                                            <!-- /ko -->
-                                            <!-- ko if:type=='info' -->
-                                            <i class="en-info-circled text-green" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToString(time)}"></i>
-                                            <!-- /ko -->
-                                            <!-- ko if:type=='debug' -->
-                                            <i class="en-flash text-aqua" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':timestampToString(time)}"></i>
-                                            <!-- /ko -->
+                                            <i class="en-attention text-orange" data-toggle="tooltip" data-placement="right" data-bind="visible:type=='warning', attr:{'title':timestampToString(time)}"></i>
+                                            <i class="en-alert text-red" data-toggle="tooltip" data-placement="right" data-bind="visible:type=='error', attr:{'title':timestampToString(time)}"></i>
+                                            <i class="en-info-circled text-green" data-toggle="tooltip" data-placement="right" data-bind="visible:type=='info', attr:{'title':timestampToString(time)}"></i>
+                                            <i class="en-flash text-aqua" data-toggle="tooltip" data-placement="right" data-bind="visible:type=='debug', attr:{'title':timestampToString(time)}"></i>
                                             <span data-bind="text:message"></span>
                                         </a>
                                     </li>
@@ -186,30 +178,14 @@
                 <ul class="control-sidebar-menu" data-bind="foreach: agocontrol.configurations">
                     <li>
                         <a href="#" data-bind="click:$root.gotoConfiguration.bind($data)">
-                            <!-- ko if:category=='events' -->
-                            <i class="menu-icon fa fa-bolt bg-red"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='cloud' -->
-                            <i class="menu-icon fa fa-cloud bg-blue"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='dashboards' -->
-                            <i class="menu-icon fa fa-th-large bg-maroon"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='core' -->
-                            <i class="menu-icon fa fa-cog bg-black"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='devices' -->
-                            <i class="menu-icon fa fa-cube bg-green"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='rooms' -->
-                            <i class="menu-icon fa fa-home bg-aqua"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='scenarios' -->
-                            <i class="menu-icon fa fa-list-ol bg-orange"></i>
-                            <!-- /ko -->
-                            <!-- ko if:category=='variables' -->
-                            <i class="menu-icon fa fa-superscript bg-purple"></i>
-                            <!-- /ko -->
+                            <i class="menu-icon fa fa-bolt bg-red" data-bind="visible:category=='events'"></i>
+                            <i class="menu-icon fa fa-cloud bg-blue" data-bind="visible:category=='cloud'"></i>
+                            <i class="menu-icon fa fa-th-large bg-maroon" data-bind="visible:category=='dashboards'"></i>
+                            <i class="menu-icon fa fa-cog bg-black" data-bind="visible:category=='core'"></i>
+                            <i class="menu-icon fa fa-cube bg-green" data-bind="visible:category=='devices'"></i>
+                            <i class="menu-icon fa fa-home bg-aqua" data-bind="visible:category=='rooms'"></i>
+                            <i class="menu-icon fa fa-list-ol bg-orange" data-bind="visible:category=='scenarios'"></i>
+                            <i class="menu-icon fa fa-superscript bg-purple" data-bind="visible:category=='variables'"></i>
                             <div class="menu-info">
                                 <h4 class="control-sidebar-subheading" data-bind="text:name"></h4>
                                 <p data-bind="text:description"></p>
@@ -243,39 +219,38 @@
                 <h3 class="control-sidebar-heading">Help</h3>
                 <ul class="control-sidebar-menu" data-bind="foreach: agocontrol.helps">
                     <li>
-                        <!-- ko if:url===null -->
-                        <a href="#" data-bind="click:$root.gotoHelp">
+                        <a href="#" data-bind="visible:url===null, click:$root.gotoHelp">
                             <i class="menu-icon fa fa-question-circle bg-light-blue"></i>
                             <div class="menu-info">
                                 <h4 class="control-sidebar-subheading" data-bind="text:name"></h4>
                                 <p data-bind="text:description"></p>
                             </div>
                         </a>
-                        <!-- /ko -->
-                        <!-- ko ifnot:url===null -->
-                        <a target="_blank" data-bind="attr:{'href':url}">
+                        <a target="_blank" data-bind="visible:url!==null, attr:{'href':url}">
                             <i class="menu-icon fa fa-link bg-light-blue"></i>
                             <div class="menu-info">
                                 <h4 class="control-sidebar-subheading" data-bind="text:name"></h4>
                                 <p data-bind="text:description"></p>
                             </div>
                         </a>
-                        <!-- /ko -->
                     </li>
                 </ul>
             </div>
         </div>
     </aside>
-    <div class="control-sidebar-bg"/>
+    <div class="control-sidebar-bg">
+    </div>
 
     <!-- PAGE CONTENT -->
     <div class="content-wrapper" style="min-height: 916px;">
         <!-- PLUGINS -->
-        <div id="plugins" data-bind="template: {name:'templates/plugins/plugins', data:plugins, afterRender:afterRenderPlugins}"/>
+        <div id="plugins" data-bind="template: {name:'templates/plugins/plugins', data:plugins, afterRender:afterRenderPlugins}">
+        </div>
 
         <!-- CONTENT -->
         <div id="main" data-bind="with:currentView">
-            <div style="min-height:650px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}"/>
+            <div style="min-height:650px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}">
+            </div>
         </div>
     </div>
 
