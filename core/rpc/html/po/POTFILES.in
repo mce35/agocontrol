@@ -1,4 +1,3 @@
-index.xml.in
 templates/details/barometersensor.xml.in
 templates/details/batterysensor.xml.in
 templates/details/brightnesssensor.xml.in
