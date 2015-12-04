@@ -23,25 +23,25 @@
 <link rel="stylesheet" type="text/css" href="css/adminLTE.min.css"/>
 <link rel="stylesheet" type="text/css" href="css/adminLTE.skins.min.css"/>
 
-<script type="text/javascript" src="js/libs/jquery-1.11.1.min.js"/>
-<script type="text/javascript" src="js/libs/jquery-ui.js"/>
-<script type="text/javascript" src="js/libs/jquery.blockUI.min.js"/>
-<script type="text/javascript" src="js/libs/jquery.jeditable.min.js"/>
-<script type="text/javascript" src="js/libs/d3.v3.min.js"/>
-<script type="text/javascript" src="js/libs/agonotifications.js"/>
-<script type="text/javascript" src="js/lang.js"/>
-<script type="text/javascript" src="js/libs/knockout-3.2.0.js"/>
-<script type="text/javascript" src="js/libs/koExternalTemplateEngine_all.js"/>
-<script type="text/javascript" src="js/libs/knockout.agoGrid.1.0.js"/>
-<script type="text/javascript" src="js/libs/bluebird.min.js"/>
-<script type="text/javascript" src="js/libs/bootstrap.min.js"/>
-<script type="text/javascript" src="js/libs/bootstrap-switch.min.js"/>
-<script type="text/javascript" src="js/libs/bootstrap-slider.min.js"/>
-<script type="text/javascript" src="js/libs/bootstrap-colorpicker.min.js"/>
-<script type="text/javascript" src="js/libs/select2.full.min.js"/>
-<script type="text/javascript" src="js/libs/head.load.min.js"/>
-<script type="text/javascript" src="js/libs/sammy.min.js"/>
-<script type="text/javascript" src="js/libs/jquery.datetimepicker.min.js"/>
+<script type="text/javascript" src="js/libs/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/libs/jquery-ui.js"></script>
+<script type="text/javascript" src="js/libs/jquery.blockUI.min.js"></script>
+<script type="text/javascript" src="js/libs/jquery.jeditable.min.js"></script>
+<script type="text/javascript" src="js/libs/d3.v3.min.js"></script>
+<script type="text/javascript" src="js/libs/agonotifications.js"></script>
+<script type="text/javascript" src="js/lang.js"></script>
+<script type="text/javascript" src="js/libs/knockout-3.2.0.js"></script>
+<script type="text/javascript" src="js/libs/koExternalTemplateEngine_all.js"></script>
+<script type="text/javascript" src="js/libs/knockout.agoGrid.1.0.js"></script>
+<script type="text/javascript" src="js/libs/bluebird.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap-switch.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap-slider.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap-colorpicker.min.js"></script>
+<script type="text/javascript" src="js/libs/select2.full.min.js"></script>
+<script type="text/javascript" src="js/libs/head.load.min.js"></script>
+<script type="text/javascript" src="js/libs/sammy.min.js"></script>
+<script type="text/javascript" src="js/libs/jquery.datetimepicker.min.js"></script>
 
 </head>
 
@@ -73,10 +73,10 @@
         <nav class="navbar navbar-static-top">
             <!-- Sidebar toggle button-->
             <a href="#" class="sidebar-toggle hidden-sm hidden-md hidden-lg" data-toggle='offcanvas'>
-                <_span class="sr-only" data-translateable="true">Toggle navigation</_span>
+                <span class="sr-only" data-translateable="true">Toggle navigation</span>
             </a>
             <a href="#" class="sidebar-toggle hidden-xs" data-bind="click:$root.agocontrol.collapseMenu">
-                <_span class="sr-only" data-translateable="true">Toggle navigation</_span>
+                <span class="sr-only" data-translateable="true">Toggle navigation</span>
             </a>
             <div class="navbar-custom-menu">
                 <ul class="nav navbar-nav">
@@ -121,7 +121,7 @@
                                 </ul>
                             </li>
                             <li class="footer">
-                                <_button type="button" data-bind="click:function() { window.location.href='#app/Journal'; }" class="btn btn-default btn-xs" data-translateable="true">Go to journal</_button>
+                                <button type="button" data-bind="click:function() { window.location.href='#app/Journal'; }" class="btn btn-default btn-xs" data-translateable="true">Go to journal</button>
                             </li>
                         </ul>
                     </li>
@@ -140,35 +140,35 @@
     <aside class="main-sidebar">
         <section class="sidebar">
             <ul class="sidebar-menu">
-                <_li class="header" data-translateable="true">DASHBOARDS</_li>
-                <ko opts="foreach:agocontrol.dashboards">
-                <ko opts="if:icon">
+                <li class="header" data-translateable="true">DASHBOARDS</li>
+                <!-- ko foreach:agocontrol.dashboards -->
+                <!-- ko if:icon -->
                 <li data-bind="attr:{'id':'menu_'+name.replace(' ','_')}"><a href="#" data-bind="click:$root.gotoDashboard"><i data-bind="attr:{'class':'fa '+icon}"></i><span data-bind="text:ucName"/></a></li>
-                </ko>
-                <ko opts="ifnot:icon">
+                <!-- /ko -->
+                <!-- ko ifnot:icon -->
                 <li data-bind="attr:{'id':'menu_'+name.replace(' ','_')}"><a href="#" data-bind="click:$root.gotoDashboard"><i class="fa fa-circle-o"></i><span data-bind="text:ucName"/></a></li>
-                </ko>
-                </ko>
-                <_li class="header" data-translateable="true">APPLICATIONS</_li>
-                <ko opts="foreach:agocontrol.applications">
-                <ko opts="if:fav">
-                <ko opts="if:icon">
+                <!-- /ko -->
+                <!-- /ko -->
+                <li class="header" data-translateable="true">APPLICATIONS</li>
+                <!-- ko foreach:agocontrol.applications -->
+                <!-- ko if:fav -->
+                <!-- ko if:icon -->
                 <li data-bind="attr:{'id':'menu_'+name.replace(' ','_')}"><a href="#" data-bind="click:$root.gotoApplication"><i data-bind="attr:{'class':'fa '+icon}"></i><span data-bind="text:name"/></a></li>
-                </ko>
-                <ko opts="ifnot:icon">
+                <!-- /ko -->
+                <!-- ko ifnot:icon -->
                 <li data-bind="attr:{'id':'menu_'+name.replace(' ','_')}"><a href="#" data-bind="click:$root.gotoApplication"><i class="fa fa-circle-o"></i><span data-bind="text:name"/></a></li>
-                </ko>
-                </ko>
-                </ko>
-                <_li class="header" data-translateable="true">PROTOCOLS</_li>
-                <ko opts="foreach:agocontrol.protocols">
-                <ko opts="if:icon">
+                <!-- /ko -->
+                <!-- /ko -->
+                <!-- /ko -->
+                <li class="header" data-translateable="true">PROTOCOLS</li>
+                <!-- ko foreach:agocontrol.protocols -->
+                <!-- ko if:icon -->
                 <li data-bind="attr:{'id':'menu_'+name.replace(' ','_')}"><a href="#" data-bind="click:$root.gotoProtocol"><i data-bind="attr:{'class':'fa '+icon}"></i><span data-bind="text:name"/></a></li>
-                </ko>
-                <ko opts="ifnot:icon">
+                <!-- /ko -->
+                <!-- ko ifnot:icon -->
                 <li data-bind="attr:{'id':'menu_'+name.replace(' ','_')}"><a href="#" data-bind="click:$root.gotoProtocol"><i class="fa fa-circle-o"></i><span data-bind="text:name"/></a></li>
-                </ko>
-                </ko>
+                <!-- /ko -->
+                <!-- /ko -->
             </ul>
         </section>
     </aside>
@@ -281,15 +281,15 @@
 
 </div> 
 
-<script type="text/javascript" src="js/agocontrol.js"/>
-<script type="text/javascript" src="js/device.js"/>
-<script type="text/javascript" src="js/details.js"/>
-<script type="text/javascript" src="js/uihelpers.js"/>
-<script type="text/javascript" src="js/plugins.js"/>
-<script type="text/javascript" src="js/app.js"/>
-<script type="text/javascript" src="js/libs/jquery.slimscroll.min.js"/>
-<script type="text/javascript" src="js/libs/bootstrap-switch.min.js"/>
-<script type="text/javascript" src="js/libs/adminLTE.min.js"/>
+<script type="text/javascript" src="js/agocontrol.js"></script>
+<script type="text/javascript" src="js/device.js"></script>
+<script type="text/javascript" src="js/details.js"></script>
+<script type="text/javascript" src="js/uihelpers.js"></script>
+<script type="text/javascript" src="js/plugins.js"></script>
+<script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript" src="js/libs/jquery.slimscroll.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap-switch.min.js"></script>
+<script type="text/javascript" src="js/libs/adminLTE.min.js"></script>
 
 </body>
 </html>
