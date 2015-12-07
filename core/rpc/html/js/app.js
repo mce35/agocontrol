@@ -127,7 +127,7 @@ function getDateFormat()
         "sr-Latn-ME" : "d.M.yyyy", "sma-SE" : "yyyy-MM-dd", "en-SG" : "d/M/yyyy", "ug-CN" : "yyyy-M-d",
         "sr-Cyrl-BA" : "d.M.yyyy", "es-US" : "M/d/yyyy"
     };
-    var lang = navigator.language;
+    var lang = navigator.language || navigator.userLanguage;
     if( navigator.language.indexOf('-')===-1 )
     {
         lang = navigator.language+'-'+navigator.language.toUpperCase();
