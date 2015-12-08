@@ -265,6 +265,18 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
             });
         }
     };
+
+    ko.bindingHandlers.formNoEnter = {
+        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            $(element).keypress(function(ev) {
+                //prevent from enter key pressed in form
+                if( ev.which=='13' )
+                {
+                    ev.preventDefault();
+                }
+            });
+        }
+    };
 };
 
 /**
