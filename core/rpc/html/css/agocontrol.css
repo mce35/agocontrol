@@ -1,6 +1,6 @@
 /* Bootstrap customization for agocontrol */
 
-/* D3 device graph style */
+/********** D3 device graph style **********/
 .axis {
       shape-rendering: crispEdges;
 }
@@ -35,31 +35,31 @@
     text-align: center;
 }
 
-/* extra large button */
+/********** extra large button **********/
 .btn-xl {
     padding: 18px 28px;
     font-size: 22px;
     border-radius: 8px;
 }
 
-/* adminLTE menu */
+/********** adminLTE menu **********/
 .control-sidebar-heading {
     border-bottom: 1px solid #CCCCCC;
 }
 
-/* pin button */
+/********** pin button **********/
 .btn-pin {
     width: 100%;
     height: 100%;
     font-size: 24px;
 }
 
-/* body background */
+/********** body background **********/
 body {
     background-color: #C8C8C8;
 }
 
-/* main header items */
+/********** main header items **********/
 .navbar-nav>.notifications-menu>.dropdown-menu>.footer,
 .navbar-nav>.messages-menu>.dropdown-menu>.footer,
 .navbar-nav>.tasks-menu>.dropdown-menu>.footer {
@@ -72,7 +72,7 @@ body {
     width: 100%;
 }
 
-/* notifications */
+/********** notifications **********/
 .content-notifs,
 .agonotif-box {
     display:none;
@@ -109,7 +109,7 @@ body {
 }
 
 
-/* ago container */
+/********** ago stuff **********/
 .agocontainer {
     background-color: #FFFFFF;
     padding-left: 30px;
@@ -128,51 +128,7 @@ body {
     margin-top: 20px;
 }
 
-/* dashboard widget device icon */
-.dashboard-widget .small-box {
-    border-radius:5px !important;
-}
-
-.dashboard-widget .small-box .inner {
-    height:80px;
-    cursor:pointer;
-}
-
-.dashboard-widget .small-box .inner h3 {
-    margin:0px !important;
-    overflow:hidden;
-}
-
-.dashboard-widget .small-box .inner p {
-    margin:0px !important;
-    overflow:hidden;
-}
-
-.dashboard-widget .small-box .icon {
-    font-size: 75px;
-}
-
-.dashboard-widget .small-box-footer {
-    height:80px;
-    overflow:hidden;
-    padding:10px !important;
-    background:transparent !important;
-}
-
-.dashboard-widget .small-box-footer:hover {
-    background: transparent;
-}
-
-.dashboard-widget .small-box-footer .btn-group-justified {
-    margin-top: 15px;
-}
-
-.dashboard-widget .small-box-footer .well {
-    color:#000000;
-    padding:7px;
-    margin-top:15px;
-}
-
+/********** custom dashboard widget **********/
 div.dashboard-widget-draggable {
     cursor:move;
 }
@@ -197,7 +153,173 @@ div.dashboard-widget-draggable {
     border-left: 2px solid #307197;
 }
 
-/* custom dashboard editor */
+/********** dashboard widget **********/
+/* widget with very small header and no detail */
+.widget-sm {
+}
+
+.widget-sm > .info-box:first-child {
+    max-height: 40px !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    margin-bottom: 0px !important;
+}
+
+.widget-sm > .info-box:first-child > .info-box-icon {
+    width: 40px !important;
+    height: 40px !important;
+    line-height: 40px !important;
+    font-size: 25px !important;
+}
+
+.widget-sm > .info-box:first-child > .info-box-content {
+    padding: 6px 10px;
+    margin-left: 40px !important;
+}
+
+.widget-sm > .info-box:first-child > .info-box-content > .info-box-title {
+    font-size: 20px !important;
+    font-weight: 500;
+}
+
+.widget-sm > .info-box:first-child > .info-box-content > .info-box-detail {
+    display: none;
+}
+
+.widget-sm > .info-box:nth-child(2) {
+    height: 120px !important;
+}
+
+/* widget with small header and no detail */
+.widget-md {
+}
+
+.widget-md > .info-box:first-child {
+    max-height: 60px !important;
+    min-height: 60px !important;
+    height: 60px !important;
+    margin-bottom: 0px !important;
+}
+
+.widget-md > .info-box:first-child > .info-box-icon {
+    width: 60px !important;
+    height: 60px !important;
+    line-height: 60px !important;
+    font-size: 40px !important;
+}
+
+.widget-md > .info-box:first-child > .info-box-content {
+    padding: 10px 10px;
+    margin-left: 60px !important;
+}
+
+.widget-md > .info-box:first-child > .info-box-content > .info-box-title {
+    font-size: 25px !important;
+    font-weight: 500;
+}
+
+.widget-md > .info-box:first-child > .info-box-content > .info-box-detail {
+    display: none;
+}
+
+.widget-md > .info-box:nth-child(2) {
+    height: 100px !important;
+}
+
+/* widget with medium header (default) */
+.widget-lg {
+}
+
+.widget-lg > .info-box:first-child {
+    max-height: 80px !important;
+    min-height: 80px !important;
+    height: 80px !important;
+    margin-bottom: 0px !important;
+}
+
+.widget-lg > .info-box:first-child > .info-box-icon {
+    width: 80px !important;
+    height: 80px !important;
+    line-height: 80px !important;
+    font-size: 50px !important;
+}
+
+.widget-lg > .info-box:first-child > .info-box-content {
+    padding: 10px 10px;
+    margin-left: 80px !important;
+}
+
+.widget-lg > .info-box:first-child > .info-box-content > .info-box-title {
+    font-size: 25px !important;
+    font-weight: 500;
+}
+
+.widget-lg > .info-box:first-child > .info-box-content > .info-box-detail {
+    display: inline;
+}
+
+.widget-lg > .info-box:nth-child(2) {
+    max-height: 80px !important;
+    min-height: 80px !important;
+    height: 80px !important;
+}
+
+/* widget with no header or overlaid header */
+.widget-overlay, .widget-xs {
+    width: 100%;
+    height: 160px;
+    margin-bottom: 15px;
+    background-color: white;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    border-radius: 2px;
+}
+
+.widget-xs > .info-box {
+    display: none;
+}
+
+.widget-overlay > .widget-overlay-bg {
+    position: relative;
+    max-height: 100%;
+}
+
+.widget-overlay > .info-box:first-child {
+    position: absolute;
+    top: 0px;
+    max-height: 40px !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    width: initial !important;
+    margin-bottom: 0px !important;
+    opacity: 0.80;
+}
+
+.widget-overlay > .info-box:first-child > .info-box-icon {
+    width: 40px !important;
+    height: 40px !important;
+    line-height: 40px !important;
+    font-size: 25px !important;
+}
+
+.widget-overlay > .info-box:first-child > .info-box-content {
+    padding: 6px 10px;
+    margin-left: 40px !important;
+}
+
+.widget-overlay > .info-box:first-child > .info-box-content > .info-box-title {
+    font-size: 20px !important;
+    font-weight: 500;
+}
+
+.widget-overlay > .info-box:first-child > .info-box-content > .info-box-detail {
+    display: none;
+}
+
+.widget-overlay > .info-box:nth-child(2) {
+    display: none;
+}
+
+/********** custom dashboard editor **********/
 .dashboard-editor {
     display:none;
     height:160px;
@@ -207,7 +329,7 @@ div.dashboard-widget-draggable {
     margin-bottom:10px;
 }
 
-/* device list */
+/********** device list **********/
 .device-list {
     background-color:#EEEEEE;
     border:1px solid #D8D8D8;
@@ -252,7 +374,7 @@ div.dashboard-widget-draggable {
     color:#3085D6;
 }
 
-/* css helpers */
+/********** css helpers **********/
 .nowrap {
     white-space: nowrap;
 }
@@ -273,7 +395,7 @@ div.dashboard-widget-draggable {
     margin-top: 20px !important;
 }
 
-/* adminLTE tweaks */
+/********** adminLTE tweaks **********/
 .bg-white {
     background-color: #FFFFFF !important;
 }
@@ -289,16 +411,6 @@ div.dashboard-widget-draggable {
 
 .dashboard-widget .info-box-icon {
     cursor: pointer;
-}
-
-.info-box-title > h1,
-.info-box-title > h2,
-.info-box-title > h3,
-.info-box-title > h4,
-.info-box-title > h5,
-.info-box-title > h6 {
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
 }
 
 .info-box-title {
@@ -351,13 +463,3 @@ div.dashboard-widget-draggable {
     background-color: #222D32; /* dark color */
 }
 
-/* reduce dashboard widget height */
-.dashboard-widget > .info-box {
-    min-height: 80px !important;
-}
-
-.dashboard-widget > .info-box > .info-box-icon {
-    width: 80px !important;
-    height: 80px !important;
-    line-height: 80px !important;
-}
