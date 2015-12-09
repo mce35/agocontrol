@@ -2,6 +2,10 @@
 
 <!-- frame thumb only available on large devices -->
 <div class="widget-overlay hidden-xs hidden-sm hidden-md">
+
+    <!-- camera frame -->
+    <img class="widget-overlay-bg img-responsive center-block" data-bind="attr:{'src':cameraThumb}"/>
+
     <!-- device name and details box link -->
     <div class="info-box" data-bind="css:staleStyle">
         <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
@@ -14,8 +18,6 @@
         </div>
     </div>
 
-    <!-- camera frame -->
-    <img class="widget-overlay-bg img-responsive center-block" data-bind="attr:{'src':cameraThumb}"/>
 </div>
 
 <!-- default camera widget on small devices -->
