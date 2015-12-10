@@ -23,6 +23,12 @@ class AgoResponse:
         else:
             raise Exception("Invalid response, neither result or error present")
 
+    def __str__(self):
+        if self.is_error():
+            return 'AgoResponse[ERROR] message="%s" data=[%s]' % (self.message(), str(self.data()))
+        else:
+            return 'AgoResponse[OK] message="%s" data=[%s]' % (self.message(), str(self.data()))
+
     def is_error(self):
         return "error" in self.response
 
