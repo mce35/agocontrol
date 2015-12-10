@@ -433,31 +433,33 @@ class AgoApp:
             return False, param
 
         #check type
+        value = content[param]
         if type!=None:
             try:
                 if type=='string':
-                    new_param = str(param)
+                    new_value = str(value)
                     #check if str is empty
-                    if empty and isinstance(new_param, str) and len(new_param)==0:
-                        self.log.trace('Parameter "%s" is empty' % (new_param))
-                        return False, param
+                    self.log.debug('new_value=%s isinstance=%s len=%d' % (new_value, str(isinstance(new_value, str)), len(new_value)))
+                    if empty and isinstance(new_value, str) and len(new_value)==0:
+                        self.log.debug('Parameter "%s" is empty' % (param))
+                        return False, value
                     else:
-                        return True, new_param
+                        return True, new_value
                 elif type=='int':
-                    return True, int(param)
+                    return True, int(value)
                 elif type=='float':
-                    return True, float(param)
+                    return True, float(value)
                 elif type=='bool':
-                    return True, bool(param)
+                    return True, bool(value)
             except:
                 #conversion exception
-                self.log.trace('Conversion exception for "%s" [%s] to %s' % (param, type(param), type))
-                return False, param
+                self.log.trace('Conversion exception for "%s" [%s] to %s' % (value, type(value), type))
+                return False, value
         else:
             #check if str is empty
-            if empty and isinstance(param, str) and len(param)==0:
+            if empty and isinstance(value, str) and len(value)==0:
                 self.log.trace('Parameter "%s" is empty' % (param))
-                return False, param
+                return False, value
 
         return True, param
 
