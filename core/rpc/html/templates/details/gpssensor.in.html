@@ -1,17 +1,19 @@
 <div class="container-fluid">
-    <div class="row">
-        <dl class="dl-horizontal">
-            <dt>UUID</dt>
-            <dd data-bind="text: uuid"></dd>
-            <_dt data-translateable="true">Name</_dt>
-            <dd data-bind="text: name"></dd>
-            <_dt data-translateable="true">Device type</_dt>
-            <dd data-bind="text: devicetype"></dd>
-            <_dt data-translateable="true">Room</_dt>
-            <dd data-bind="text: room"></dd>
-            <_dt data-translateable="true">Timestamp</_dt>
-            <dd data-bind="text: timeStamp"></dd>
-        </dl>
+    <div class="row agorowbottom">
+        <ul style="list-style-type:none;">
+            <li>
+                <_strong data-translateable="true">Device type</_strong>:
+                <span data-bind="text:devicetype"/>
+            </li>
+            <li>
+                <_strong data-translateable="true">Room</_strong>:
+                <span data-bind="text:room"/>
+            </li>
+            <li>
+                <_strong data-translateable="true">Timestamp</_strong>:
+                <span data-bind="text:timeStamp"/>
+            </li>
+        </ul>
     </div>
     <div class="row agorowbottom">
         <div class="btn-group btn-group-justified" data-toggle="buttons">
@@ -30,6 +32,10 @@
     </div>
     <div class="row">
         <form class="form-inline">
+            <div class="form-group">
+                <_label data-translateable="true" for="range_date">Range</_label>
+                <select class="form-control" id="range_date"></select>
+            </div>
             <div class="form-group">
                 <_label data-translateable="true" for="start_date">From</_label>
                 <input type="text" class="form-control" id="start_date" readonly="readonly"/>

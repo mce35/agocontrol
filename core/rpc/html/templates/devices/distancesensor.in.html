@@ -1,16 +1,16 @@
-<div>
+<div class="widget-lg">
 
-    <div class="info-box no-margin-bottom" data-bind="css:staleStyle">
+    <div class="info-box" data-bind="css:staleStyle">
         <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
             <i class="fa en-address"></i>
         </span>
         <div class="info-box-content">
             <div class="info-box-title">
                 <ko opts="if:name">
-                <h3 data-bind="text:name"/>
+                <span data-bind="text:name"/>
                 </ko>
                 <ko opts="ifnot:name">
-                <h3 data-bind="text:devicetype"/>
+                <span data-bind="text:devicetype"/>
                 </ko>
             </div>
             <div class="info-box-detail">

@@ -23,8 +23,8 @@
  *  - data: data to display in grid (array) [MANDATORY].
  *  - columns: array of column names and column mappings.
  *             Format:
- *              - headerText : displayed column name [MANDATORY]
- *              - rowText: name of real column name in data item [MANDATORY but can be '']
+ *              - headerText : displayed column name [MANDATORY]. If headerText='' the column is hidden (useful to specify search strings)
+ *              - rowText: name of real column name in data item [MANDATORY]. If rowText='' the column is not used for searches (useful for toolbar)
  *             Sample:
  *              columns: [{headerText:'President', rowText:'name'}, {headerText:'Took office', rowText:'took'}, {headerText:'Left office', rowText:'left'}]
  *              data: [{name:'George Washington', took:'April 30, 1789', left:'March 4, 1797'}, {name:'John Adams', took:'March 4, 1797', left:'March 4, 1801'}] 
@@ -93,16 +93,26 @@
                 //apply filters
                 if( this.filters().length>0 )
                 {
-                    for( var i=0; i<this.filters().length; i++ )
-                    {
-                        for( var j=0; j<this.allData().length; j++ )
-                        {
-                            if( this.allData()[j][this.filters()[i].column]!==undefined && this.allData()[j][this.filters()[i].column]===this.filters()[i].value )
+                    out = this.allData().filter(function(item) {
+                            for( var i=0; i<this.filters().length; i++ )
                             {
-                                out.push(this.allData()[j]);
+                                if( item[this.filters()[i].column]!==undefined )
+                                {
+                                    //column exists, check filter now
+                                    if( item[this.filters()[i].column]!==this.filters()[i].value )
+                                    {
+                                        //item is filtered, stop here
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    //column doesn't exist, keep item
+                                }
                             }
-                        }
-                    }
+                            //item is not filtered
+                            return true;
+                      }, this);
                 }
                 else
                 {
@@ -113,6 +123,7 @@
                 //apply search
                 if( $.trim(this.search()).length>0 )
                 {
+                    var searchLC = this.search().toLowerCase();
                     for( var i=out.length-1; i>=0; i-- )
                     {
                         var found = false;
@@ -120,7 +131,8 @@
                         {
                             if( this.columns[j].rowText && this.columns[j].rowText.length>0 )
                             {
-                                if( (''+out[i][this.columns[j].rowText]).toLowerCase().indexOf(this.search())>=0 )
+                                var str = ko.utils.unwrapObservable(out[i][this.columns[j].rowText]);
+                                if( (''+str).toLowerCase().indexOf(searchLC)>=0 )
                                 {
                                     found = true;
                                     break;
@@ -310,6 +322,7 @@
                     <table class=\"table table-hover table-bordered table-stripped\" style=\"margin-top:0px; margin-bottom:0px;\" data-bind=\"attr: {id:gridId}\"> \
                         <thead>\
                             <tr data-bind=\"foreach: columns\">\
+                               <!-- ko ifnot: headerText=='' -->\
                                <th>\
                                   <!-- ko ifnot: rowText=='' -->\
                                       <span style=\"cursor:pointer; text-overflow:ellipsis;\" data-bind=\"text:headerText, click:sortBy.bind($data, $context, rowText)\"></span>\
@@ -326,6 +339,7 @@
                                       <span style=\"text-overflow:ellipsis;\" data-bind=\"text:headerText\"></span>\
                                   <!-- /ko -->\
                                </th>\
+                               <!-- /ko -->\
                             </tr>\
                         </thead>\
                         <tbody data-bind=\"template : { name:bodyTemplate, foreach:itemsOnCurrentPage, as:'myrow' }\">\

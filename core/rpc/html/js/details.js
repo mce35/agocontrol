@@ -42,8 +42,18 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
     {
         afterRender : function()
         {
+            var startDt = 0;
+            var endDt = 0;
+
+            //force environment for specific devices
+            if( device.devicetype=="binarysensor" || device.devicetype=="multigraph" )
+            {
+                environment = "device.state";
+            }
+
+            //configure radio button (graph type selector)
             $('input[type=radio][name=renderType]').on('change', function() {
-                self.render(device, environment, $(this).val());
+                self.render(device, environment, startDt, endDt, $(this).val());
             });
 
             if( $('#commandList').length )
@@ -59,72 +69,127 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
             else if( ((device.valueList && device.valueList() && device.valueList().length) || device.devicetype == "binarysensor" || device.devicetype=="multigraph"))
             {
                 //sensor template
-                    
-                //add refresh button action
-                $('#get_graph').click(function(e) {
+                
+                //init elements
+                var rangeEl = $('#range_date');
+                var startEl = $('#start_date');
+                var endEl = $('#end_date');
+                var buttonEl = $('#get_graph');
+
+                //local functions
+                function computeRangeDates()
+                {
+                    endDt = new Date();
+                    endDt.setMinutes(endDt.getMinutes()+1);
+                    endDt.setSeconds(0);
+                    endEl.val( datetimeToString(endDt) );
+                    startDt = new Date(endDt.getTime() - rangeEl.val()*60*60*1000);
+                    startEl.val( datetimeToString(startDt) );
+                };
+
+                //hide by default custom elements
+                startEl.parent().hide();
+                endEl.parent().hide();
+                buttonEl.hide();
+
+                //configure refresh button
+                buttonEl.click(function(e) {
                     e.preventDefault();
-                    self.render(device, environment);
+                    self.render(device, environment, startDt, endDt);
                 });
 
-                //set start date
-                var start = new Date((new Date()).getTime() - 24 * 3600 * 1000);
-                var startEl = $('#start_date');
-                startEl.val($.datepicker.formatDate('dd.mm.yy', start) + ' 00:00');
+                //configure date range
+                var rangeOptions = [{'text':'Last 2 hours', 'value':2}, {'text':'Last 6 hours', 'value':6}, {'text':'Last 12 hours', 'value':12}, {'text':'Last day', 'value':24},
+                                    {'text':'Last 2 days', 'value':48}, {'text':'Last week', 'value':168}, {'text':'Last month', 'value':730}, {'text':'Last 3 months', 'value':2190},
+                                    {'text':'Last 6 months', 'value':4380}, {'text':'Last year', 'value':8760}, {'text':'Custom range', 'value':0}];
+                $.each(rangeOptions, function(i, item) {
+                    rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
+                });
+                rangeEl.change(function() {
+                    if( rangeEl.val()==0 )
+                    {
+                        //display custom range fields
+                        startEl.parent().show();
+                        endEl.parent().show();
+                        buttonEl.show();
+                    }
+                    else
+                    {
+                        //hide custom range fields
+                        startEl.parent().hide();
+                        endEl.parent().hide();
+                        buttonEl.hide();
+
+                        //compute selected range
+                        computeRangeDates();
+
+                        //render graph
+                        self.render(device, environment, startDt, endDt);
+                    }
+                });
+                rangeEl.val(24);
+                computeRangeDates();
+
+                //configure datetime pickers
                 startEl.datetimepicker({
-                    format: 'd.m.Y H:i',
-                    onChangeDateTime: function(dp,$input)
+                    format: getDatetimepickerFormat(),
+                    onChangeDateTime: function(dt,$input)
                     {
                         //check date
-                        var sd = stringToDatetime($('#start_date').val());
-                        var ed = stringToDatetime($('#end_date').val());
-                        if( sd.getTime()>ed.getTime() )
+                        if( dt.getTime()>endDt.getTime() )
                         {
                             //invalid date
                             notif.warning('Specified datetime is invalid');
-                            sd = new Date(ed.getTime() - 24 * 3600 * 1000);
-                            $('#start_date').val( datetimeToString(sd) );
+                            startEl.val( datetimeToString(startDt) );
+                        }
+                        else
+                        {
+                            //update start datetime
+                            startDt.setTime(dt.getTime());
                         }
                     }
                 });
 
                 //set end date
-                var endEl = $('#end_date');
-                endEl.val($.datepicker.formatDate('dd.mm.yy', new Date())+' 23:59');
                 endEl.datetimepicker({
-                    format:'d.m.Y H:i',
-                    onChangeDateTime: function(dp,$input)
+                    format: getDatetimepickerFormat(),
+                    onChangeDateTime: function(dt,$input)
                     {
                         //check date
-                        var sd = stringToDatetime($('#start_date').val());
-                        var ed = stringToDatetime($('#end_date').val());
-                        if( sd.getTime()>ed.getTime() )
+                        if( startDt.getTime()>dt.getTime() )
                         {
                             //invalid date
                             notif.warning('Specified datetime is invalid');
-                            ed = new Date(sd.getTime() + 24 * 3600 * 1000);
-                            $('#end_date').val( datetimeToString(ed) );
+                            endEl.val( datetimeToString(endDt) );
+                        }
+                        else
+                        {
+                            //update end datetime
+                            endDt.setTime(dt.getTime());
                         }
                     }
                 });
 
-                if( device.devicetype=="binarysensor" || device.devicetype=="multigraph" )
-                {
-                    environment = "device.state";
-                }
-
-                //render default
+                //render graph
                 if( device.devicetype=="gpssensor" )
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, "map");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "map");
                 }
                 else
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, "graph");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "graph");
                 }
             }
-                
+
             //show modal
-            $('#detailsTitle').html('Device details');
+            if( device && device.name() && device.name().length>0 )
+            {
+                $('#detailsTitle').html('<strong>'+device.name()+'</strong> <small>('+device.uuid+')</small>');
+            }
+            else
+            {
+                $('#detailsTitle').html('Device details');
+            }
             $('#detailsModal').modal('show');
         }
     }, $('#detailsContent')[0]);
@@ -135,9 +200,10 @@ Agocontrol.prototype.showCommandList = function(container, device)
 {
     var self = this;
     var commandSelect = document.createElement("select");
-    var commandParams = document.createElement("span");
     commandSelect.id = "commandSelect";
     commandSelect.className = "form-control";
+    var commandParams = document.createElement("p");
+    commandParams.style['padding-top'] = '10px';
     var type = device.devicetype;
     if( type && self.schema().devicetypes[type] )
     {
@@ -279,17 +345,57 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    //create tooltip
+    var tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "d3-tooltip")
+        .style("visibility", "hidden");
+
     function draw()
     {
         svg.select("g.x.axis").call(xAxis);
         svg.select("g.y.axis").call(yAxis);
         svg.select("path.area").attr("d", area);
         svg.select("path.line").attr("d", line);
-    }
+
+        svg.selectAll("circle")
+            .data(data)
+            .attr("cx", function(d,i){ return x(d.date) || 0; })
+            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("opacity", function(item) {
+                var coordx = x(item.date);
+                if( coordx<0 || coordx>width )
+                    return 0.000001; //hide item
+                else
+                    return 0.4
+            });
+    };
+
+    function showTooltip(pt, item)
+    {
+        var coord = d3.mouse(pt);
+        var chartTip = d3.select(".d3-tooltip");
+        tooltip.style("visibility", "visible");
+        tooltip.style("top", (d3.event.pageY-10)+"px")
+            .style("left",(d3.event.pageX+10)+"px");
+        var dt = new Date(item.date);
+        tooltip.html("<small>"+datetimeToString(dt)+"</small><br/><big>"+item.value+"</big>");
+    };
+
+    function hideTooltip(pt)
+    {
+        tooltip.style("visibility", "hidden");
+    };
 
     //define zoom
     var zoom = d3.behavior.zoom()
         .on("zoom", draw);
+
+    //prepare data
+    data.forEach(function(d) {
+        d.date = d.time*1000;
+        d.value = +d.level;
+    });
 
     //configure graph
     svg.append("clipPath")
@@ -302,7 +408,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     svg.append("g")
             .attr("class", "y axis")
         .append("text")
-            .attr("transform", "rotate(-90)")
+            .attr("transform", "translate("+-40+" "+height/2+") rotate(-90)")
             .attr("y", 6)
             .attr("dy", ".8em")
             .style("text-anchor", "end")
@@ -325,15 +431,21 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .attr("width", width)
         .attr("height", height)
         .style("fill", "none")
-        .style("cursor", "move")
+        //.style("cursor", "move")
         .style("pointer-events", "all")
         .call(zoom);
-
-    //prepare data
-    data.forEach(function(d) {
-        d.date = d.time*1000;
-        d.value = +d.level;
-    });
+    svg.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+            .attr("cx", function(d,i){ return x(d.date) || 0; })
+            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("fill", colorL)
+            .attr("opacity", "0.4")
+            .attr("cursor", "pointer")
+            .attr("r", 3)
+            .on("mouseover", function(d) { showTooltip(this, d);})
+            .on("mouseout", function() { hideTooltip(this);});
 
     //compute boundaries
     x.domain(d3.extent(data, function(d) { return d.date; }));
@@ -365,7 +477,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = formatDate(new Date(values[i].time * 1000));
+                values[i].date = datetimeToString(new Date(values[i].time * 1000));
                 values[i].value = values[i].level + " " + unit;
                 delete values[i].level;
             }
@@ -374,7 +486,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = formatDate(new Date(values[i].time * 1000));
+                values[i].date = datetimeToString(new Date(values[i].time * 1000));
                 values[i].value = values[i].latitude + "," + values[i].longitude;
                 delete values[i].latitude;
                 delete values[i].longitude;
@@ -458,7 +570,7 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, type)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt, type)
 {
     var self = this;
     self.block($('#graphContainer'));
@@ -466,18 +578,15 @@ Agocontrol.prototype.render = function(device, environment, type)
     //get type
     if( type===null || type===undefined )
     {
-        type = type = self.lastRenderType;
+        type = self.lastRenderType;
     }
     self.lastRenderType = type;
 
-    var start = stringToDatetime($('#start_date').val());
-    var end = stringToDatetime($('#end_date').val());
-
     //fix end date
     now = new Date();
-    if( end.getTime()>now.getTime() )
+    if( endDt.getTime()>now.getTime() )
     {
-        end = now;
+        endDt = now;
     }
 
     if( type=="graph" )
@@ -487,8 +596,8 @@ Agocontrol.prototype.render = function(device, environment, type)
         content.command = "getgraph";
         content.uuid = self.dataLoggerController;
         content.devices = [device.uuid];
-        content.start = Math.round(start.getTime()/1000);
-        content.end = Math.round(end.getTime()/1000);
+        content.start = Math.round(startDt.getTime()/1000);
+        content.end = Math.round(endDt.getTime()/1000);
         self.sendCommand(content)
             .then(function(res) {
                 self.renderRRD(res.data.graph);
@@ -509,8 +618,8 @@ Agocontrol.prototype.render = function(device, environment, type)
         content.command = "getdata";
         content.replytimeout = 15;
         content.deviceid = device.uuid;
-        content.start = start.toISOString();
-        content.end = end.toISOString();
+        content.start = startDt.toISOString();
+        content.end = endDt.toISOString();
         content.env = environment.toLowerCase();
         self.sendCommand(content, null, 30)
             .then(function(res) {
@@ -531,11 +640,11 @@ Agocontrol.prototype.render = function(device, environment, type)
                 //render
                 if( type=="plots" )
                 {
-                    self.renderPlots(device, environment, unit, values, start, end);
+                    self.renderPlots(device, environment, unit, values, startDt, endDt);
                 }
                 else if( type=="list" )
                 {
-                    self.renderList(device, environment, unit, values, start, end);
+                    self.renderList(device, environment, unit, values, startDt, endDt);
                 }
                 else if( type=="map" )
                 {

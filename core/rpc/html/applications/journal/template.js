@@ -10,6 +10,8 @@ function Journal(agocontrol)
     self.type = ko.observable('all');
     self.filter = ko.observable('');
     self.messages = ko.observableArray([]);
+    self.startDt = 0;
+    self.endDt = 0;
 
     if( self.agocontrol.devices()!==undefined )
     {
@@ -33,8 +35,8 @@ function Journal(agocontrol)
         content.command = 'getmessages';
         content.filter = self.filter();
         content.type = self.type();
-        content.start = stringToDatetime($('#journal_start').val());
-        content.end = stringToDatetime($('#journal_end').val());
+        content.start = self.startDt.toISOString();
+        content.end = self.endDt.toISOString();
         self.agocontrol.sendCommand(content)
             .then(function(res) {
                 var prevDay = null;
@@ -52,7 +54,7 @@ function Journal(agocontrol)
                         var day = d.getDate()
                         messages.push({
                             'kind': 'label',
-                            'text': d.getFullYear()+'/'+(month<10 ? '0'+month : month)+'/'+(day<10 ? '0'+day : day)
+                            'text': dateToString(d)
                         });
                         prevDay = d.getDate();
                     }
@@ -82,46 +84,65 @@ function Journal(agocontrol)
  */
 function init_template(path, params, agocontrol)
 {
-    var start = new Date((new Date()).getTime() - 7*24*3600*1000); //now -1 week
-    var end = new Date((new Date()).getTime()); 
+    var model = new Journal(agocontrol);
 
     ko.bindingHandlers.dateTimePicker = {
         init : function(element, valueAccessor, allBindingsAccessor)
         {
             //set default date
-            var id = $(element).attr('id');
-            if( id.indexOf('start')!==-1 )
+            if( $(element).attr('id').indexOf('start')!==-1 )
             {
                 //start date
-                var start = new Date((new Date()).getTime() - 7*24*3600*1000); //now -1 week
-                $(element).val($.datepicker.formatDate('dd/mm/yy', start) + ' 00:00');
+                model.startDt = new Date((new Date()).getTime() - 7*24*3600*1000); //now -1 week
+                model.startDt.setHours(0);
+                model.startDt.setMinutes(0);
+                $(element).val(datetimeToString(model.startDt));
             }
             else
             {
                 //end date
-                $(element).val($.datepicker.formatDate('dd/mm/yy', new Date())+' 23:59');
+                model.endDt = new Date();
+                model.endDt.setHours(23);
+                model.endDt.setMinutes(59);
+                $(element).val(datetimeToString(model.endDt));
             }
 
             $(element).datetimepicker({
-                format: 'd/m/Y H:i',
-                onChangeDateTime: function(dp,$input)
+                format: getDatetimepickerFormat(),
+                onChangeDateTime: function(dt,$input)
                 {
-                    //check date
-                    var sd = stringToDatetime($('#journal_start').val());
-                    var ed = stringToDatetime($('#journal_end').val());
-                    if( sd.getTime()>ed.getTime() )
+                    //check datetime
+                    if( $input.attr('id').indexOf('start')!==-1 )
                     {
-                        //invalid date
-                        notif.warning('Specified datetime is invalid');
-                        sd = new Date(ed.getTime() - 24 * 3600 * 1000);
-                        $(element).val( datetimeToString(sd) );
+                        if( dt.getTime()>model.endDt.getTime() )
+                        {
+                            notif.warning('Specified datetime is invalid');
+                            $input.val( datetimeToString(model.startDt) );
+                        }
+                        else
+                        {
+                            //update start datetime
+                            model.startDt.setTime(dt.getTime());
+                        }
+                    }
+                    else
+                    {
+                        if( model.startDt.getTime()>dt.getTime() )
+                        {
+                            notif.warning('Specified datetime is invalid');
+                            $input.val( datetimeToString(model.endDt) );
+                        }
+                        else
+                        {
+                            //update start datetime
+                            model.endDt.setTime(dt.getTime());
+                        }
                     }
                 }  
             });
         }
     }
 
-    var model = new Journal(agocontrol);
     return model;
 };
 

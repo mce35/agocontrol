@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 set (AGODEVICES
   ATAlarm
+  shvt250
   onvif
   example
   enocean3

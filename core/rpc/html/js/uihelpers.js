@@ -26,28 +26,36 @@ Agocontrol.prototype.unblock = function(el)
  * TODO: Do we want to use translated .message identifier 
  * primarily?
  */
-function getErrorMessage(error) {
+function getErrorMessage(error)
+{
     if(!error)
+    {
         throw new Error("Cannot get error from nothing!");
+    }
 
-    if(error.data && error.data.description)
+    if( error.data && error.data.description )
+    {
         return error.data.description;
+    }
 
-    if(error.message)
+    if( error.message )
+    {
         // Should be a non-human readable error, such as "no.reply"
         return error.message;
+    }
 
     return "JSON-RPC error " + error.code;
-}
+};
 
 /* Show an JSON-RPC error using notif
  * use on sendCommmand promise like this:
  *
  *  promise.catch(notifCommandError)
  */
-function notifCommandError(error) {
+function notifCommandError(error)
+{
     notif.error("ERROR: " + getErrorMessage(error));
-}
+};
 
 //Init specific knockout bindings
 Agocontrol.prototype.initSpecificKnockoutBindings = function()
@@ -97,11 +105,6 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
                         cb(event, state, element);
                     };
                 }
-            }
-
-            if( options.state )
-            {
-                options.state = ko.utils.unwrapObservable(options.state);
             }
 
             //init widget with specified options
@@ -253,133 +256,58 @@ Agocontrol.prototype.initSpecificKnockoutBindings = function()
             //var allBindings = allBindingsAccessor();
             var options = valueAccessor();
 
-            //handle selected options
-            /*var selection = null;
-            if( allBindings.value )
-            {
-                //simple value configured
-                selection = ko.unwrap(allBindings.value());
-            }
-            else if( allBindings.selectedOptions )
-            {
-                selection = ko.unwrap(allBindings.selectedOptions);
-            }*/
-            
-            //handle select2 data
-            /*if( allBindings.options && ko.isObservable(allBindings.options) )
-            {
-                //ko values
-                options.data = [];
-                if( allBindings.optionsText )
-                {
-                    //user specify a text to display, we need to build specific value array
-                    for( var i=0; i<allBindings.options().length; i++ )
-                    {
-                        options.data.push( allBindings.options()[i][allBindings.optionsText] );
-                    }
-                }
-                else
-                {
-                    //no specific field to display, add array content
-                    for( var i=0; i<allBindings.options().length; i++ )
-                    {
-                        options.data.push( allBindings.options()[i] );
-                    }
-                }
-            }
-            else
-            {
-                //static array
-                options.data = allBindings.options;
-            }
-            console.log(options.data);*/
-
+            //handle options
             $(element).select2(options);
-            /*if( selection )
-            {
-                $(element).val(selection).trigger("change");
-            }*/
             
             //clean up
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
                 $(element).select2('destroy');
             });
-        },
-        update : function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
         }
-    /*update: function (el, valueAccessor, allBindingsAccessor, viewModel) {
-        var allBindings = allBindingsAccessor();
-
-        if ("value" in allBindings) {
-            if (allBindings.select2.multiple && allBindings.value().constructor != Array) {                
-                $(el).select2("val", allBindings.value().split(","));
-            }
-            else {
-                $(el).select2("val", allBindings.value());
-            }
-        } else if ("selectedOptions" in allBindings) {
-            var converted = [];
-            var textAccessor = function(value) { return value; };
-            if ("optionsText" in allBindings) {
-                textAccessor = function(value) {
-                    var valueAccessor = function (item) { return item; }
-                    if ("optionsValue" in allBindings) {
-                        valueAccessor = function (item) { return item[allBindings.optionsValue]; }
-                    }
-                    var items = $.grep(allBindings.options(), function (e) { return valueAccessor(e) == value});
-                    if (items.length == 0 || items.length > 1) {
-                        return "UNKNOWN";
-                    }
-                    return items[0][allBindings.optionsText];
-                }
-            }
-            $.each(allBindings.selectedOptions(), function (key, value) {
-                converted.push({id: value, text: textAccessor(value)});
-            });
-            $(el).select2("data", converted);
-        }
-    }*/
     };
 
+    ko.bindingHandlers.formNoEnter = {
+        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            $(element).keypress(function(ev) {
+                //prevent from enter key pressed in form
+                if( ev.which=='13' )
+                {
+                    ev.preventDefault();
+                }
+            });
+        }
+    };
 };
 
 /**
- * Return human readable size
- * http://stackoverflow.com/a/20463021/3333386
+ * Return current date time format to datetimepicker format
  */
-function sizeToHRSize(a,b,c,d,e)
+function getDatetimepickerFormat()
 {
-    return (b=Math,c=b.log,d=1e3,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2) +' '+(e?'kMGTPEZY'[--e]+'B':'Bytes');
-}
+    var d = getDateFormat();
+    var t = getTimeFormat();
+    return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'h').replace(/m+/gi,'i').replace(/a/gi,'A');
+};
 
 /**
- * convert timestamp to human readable datetime
+ * Return device type according to bootstrap
+ * @see https://github.com/titosust/Bootstrap-device-detector
  */
-function timestampToHRstring(ts)
+function getDeviceSize()
 {
-    var d = new Date();
-    d.setTime(ts*1000);
-
-    month = d.getMonth()+1;
-    if( month<10 )
-        month = '0'+month;
-
-    day = d.getDate();
-    if( day<10 )
-        day = '0'+day;
-
-    hours = d.getHours();
-    if( hours<10 )
-        hours = '0'+hours;
-
-    minutes = d.getMinutes();
-    if( minutes<10 )
-        minutes = '0'+minutes;
-
-    seconds = d.getSeconds();
-    if( seconds<10 )
-        seconds = '0'+seconds;
-
-    return ''+d.getFullYear()+'/'+month+'/'+day+' '+hours+':'+minutes+':'+seconds;
-}
+    var env = ["xs", "sm", "md", "lg"];
+    var device = env[3];
+    var $el = $('<div>').appendTo('body');
+    for (var i = env.length - 1; i >= 0; i--)
+    {
+        $el.addClass('hidden-'+env[i]);
+        if ($el.is(':hidden'))
+        {
+            device=env[i];
+            break;
+        }
+    }
+    $el.remove();
+    return device;
+};
 

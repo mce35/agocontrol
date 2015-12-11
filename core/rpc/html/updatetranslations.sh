@@ -1,4 +1,9 @@
 #/bin/bash
+
+for i in `find -maxdepth 1 -name \*in.html`;
+    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
+done
+
 cd templates
 for i in `find . -name \*in.html`;
     do ln -s `basename "$i"` "${i%.*.*}.xml.in";

@@ -230,7 +230,7 @@ function AlertPlugin(devices, agocontrol)
         content.uuid = self.agoalertUuid;
         content.command = 'test';
         content.type = 'mail';
-        content.tos = document.getElementsByClassName("mailEmail")[0].value;
+        content.tos = $('#mailEmail').val();
         self.agocontrol.sendCommand(content);
     };
 

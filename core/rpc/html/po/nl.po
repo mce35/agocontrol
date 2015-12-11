@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-12 16:40+0100\n"
+"POT-Creation-Date: 2015-12-03 18:09+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../index.xml.in.h:1
+#, fuzzy
+msgid "Toggle navigation"
+msgstr "Kamer Configuratie"
+
+#: ../index.xml.in.h:2
+msgid "Go to journal"
+msgstr ""
+
+#: ../index.xml.in.h:3
+msgid "DASHBOARDS"
+msgstr ""
+
+#: ../index.xml.in.h:4
+msgid "APPLICATIONS"
+msgstr ""
+
+#: ../index.xml.in.h:5
+msgid "PROTOCOLS"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:1
 #: ../templates/details/batterysensor.xml.in.h:1
@@ -30,8 +51,10 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:1
 #: ../templates/details/powermeter.xml.in.h:1
 #: ../templates/details/temperaturesensor.xml.in.h:1
-msgid "Name"
-msgstr "Naam"
+#: ../protocols/knx/html/knx.xml.in.h:18
+#, fuzzy
+msgid "Device type"
+msgstr "Apparaat Type"
 
 #: ../templates/details/barometersensor.xml.in.h:2
 #: ../templates/details/batterysensor.xml.in.h:2
@@ -45,10 +68,8 @@ msgstr "Naam"
 #: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
-#: ../protocols/knx/html/knx.xml.in.h:18
-#, fuzzy
-msgid "Device type"
-msgstr "Apparaat Type"
+msgid "Room"
+msgstr "Kamer"
 
 #: ../templates/details/barometersensor.xml.in.h:3
 #: ../templates/details/batterysensor.xml.in.h:3
@@ -62,23 +83,20 @@ msgstr "Apparaat Type"
 #: ../templates/details/multigraph.xml.in.h:3
 #: ../templates/details/powermeter.xml.in.h:3
 #: ../templates/details/temperaturesensor.xml.in.h:3
-msgid "Room"
-msgstr "Kamer"
+msgid "Timestamp"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:4
 #: ../templates/details/batterysensor.xml.in.h:4
 #: ../templates/details/brightnesssensor.xml.in.h:4
-#: ../templates/details/camera.xml.in.h:4
-#: ../templates/details/default.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:4
 #: ../templates/details/energymeter.xml.in.h:4
-#: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
-#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
-msgid "Timestamp"
-msgstr ""
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
+msgstr "Grafiek"
 
 #: ../templates/details/barometersensor.xml.in.h:5
 #: ../templates/details/batterysensor.xml.in.h:5
@@ -88,20 +106,20 @@ msgstr ""
 #: ../templates/details/humiditysensor.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
-msgstr "Grafiek"
+msgid "Plots"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:6
 #: ../templates/details/batterysensor.xml.in.h:6
 #: ../templates/details/brightnesssensor.xml.in.h:6
 #: ../templates/details/distancesensor.xml.in.h:6
 #: ../templates/details/energymeter.xml.in.h:6
+#: ../templates/details/gpssensor.xml.in.h:5
 #: ../templates/details/humiditysensor.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
-msgid "Plots"
-msgstr ""
+msgid "List"
+msgstr "Lijst"
 
 #: ../templates/details/barometersensor.xml.in.h:7
 #: ../templates/details/batterysensor.xml.in.h:7
@@ -110,10 +128,11 @@ msgstr ""
 #: ../templates/details/energymeter.xml.in.h:7
 #: ../templates/details/gpssensor.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:7
+#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
-msgid "List"
-msgstr "Lijst"
+msgid "Range"
+msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:8
 #: ../templates/details/batterysensor.xml.in.h:8
@@ -148,7 +167,7 @@ msgstr "Aan:"
 #: ../templates/details/barometersensor.xml.in.h:10
 #: ../templates/details/batterysensor.xml.in.h:10
 #: ../templates/details/brightnesssensor.xml.in.h:10
-#: ../templates/details/camera.xml.in.h:5
+#: ../templates/details/camera.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:10
 #: ../templates/details/energymeter.xml.in.h:10
 #: ../templates/details/gpssensor.xml.in.h:9
@@ -161,17 +180,17 @@ msgstr "Aan:"
 msgid "Refresh"
 msgstr "Ververs lijst"
 
-#: ../templates/details/default.xml.in.h:5
+#: ../templates/details/default.xml.in.h:4
 #, fuzzy
 msgid "Command"
 msgstr "Commando:"
 
-#: ../templates/details/default.xml.in.h:6
+#: ../templates/details/default.xml.in.h:5
 #: ../configuration/scenarios/html/scenarios.xml.in.h:10
 msgid "Run"
 msgstr "Uitvoeren"
 
-#: ../templates/details/gpssensor.xml.in.h:5
+#: ../templates/details/gpssensor.xml.in.h:4
 msgid "Map"
 msgstr ""
 
@@ -353,7 +372,7 @@ msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 
 #: ../applications/alert/html/alert.xml.in.h:22
 #: ../applications/security/html/security.xml.in.h:17
-#: ../protocols/onvif/html/onvif.xml.in.h:14
+#: ../protocols/onvif/html/onvif.xml.in.h:15
 #: ../protocols/knx/html/knx.xml.in.h:19
 #: ../configuration/datalogger/html/datalogger.xml.in.h:10
 #: ../configuration/system/html/system.xml.in.h:7
@@ -401,7 +420,7 @@ msgid "12voip username"
 msgstr "Je gebruikersnaam"
 
 #: ../applications/alert/html/alert.xml.in.h:31
-#: ../protocols/onvif/html/onvif.xml.in.h:13
+#: ../protocols/onvif/html/onvif.xml.in.h:14
 #: ../configuration/cloud/html/cloud.xml.in.h:14
 msgid "Password"
 msgstr "Wachtwoord"
@@ -459,7 +478,7 @@ msgid "email"
 msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:43
-#: ../protocols/onvif/html/onvif.xml.in.h:11
+#: ../protocols/onvif/html/onvif.xml.in.h:12
 msgid "Login"
 msgstr "Inloggen"
 
@@ -1019,7 +1038,7 @@ msgid "Delete device"
 msgstr "Filter apparaattypen:"
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:55
-#: ../protocols/onvif/html/onvif.xml.in.h:51
+#: ../protocols/onvif/html/onvif.xml.in.h:48
 #: ../protocols/knx/html/knx.xml.in.h:3
 #: ../configuration/blockly/html/agoblockly.xml.in.h:4
 #: ../configuration/dashboards/html/dashboards.xml.in.h:3
@@ -1123,7 +1142,7 @@ msgid "Request node configuration parameters"
 msgstr ""
 
 #: ../protocols/zwave/html/zwave.xml.in.h:22
-#: ../protocols/onvif/html/onvif.xml.in.h:42
+#: ../protocols/onvif/html/onvif.xml.in.h:41
 msgid "Request parameters"
 msgstr ""
 
@@ -1298,212 +1317,203 @@ msgid "Controller configuration"
 msgstr "ago control Configuratie"
 
 #: ../protocols/zwave/html/zwave.xml.in.h:68
-#: ../protocols/onvif/html/onvif.xml.in.h:52
+#: ../protocols/onvif/html/onvif.xml.in.h:49
 msgid "Download"
 msgstr ""
 
 #: ../protocols/onvif/html/onvif.xml.in.h:1
+#: ../configuration/devices/html/devices.xml.in.h:9
+msgid "Details"
+msgstr "Details"
+
+#: ../protocols/onvif/html/onvif.xml.in.h:2
 #: ../configuration/datalogger/html/datalogger.xml.in.h:2
 msgid "General"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:2
+#: ../protocols/onvif/html/onvif.xml.in.h:3
 #, fuzzy
 msgid "Config"
 msgstr "Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:3
+#: ../protocols/onvif/html/onvif.xml.in.h:4
 #, fuzzy
 msgid "Motion"
 msgstr "Actie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:4
+#: ../protocols/onvif/html/onvif.xml.in.h:5
 #, fuzzy
 msgid "Recording"
 msgstr "SMS Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:5
+#: ../protocols/onvif/html/onvif.xml.in.h:6
 msgid "Advanced"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:6
+#: ../protocols/onvif/html/onvif.xml.in.h:7
 #, fuzzy
 msgid "Camera ip address"
 msgstr "Je email adres"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:7
-msgid "Ip"
-msgstr ""
-
 #: ../protocols/onvif/html/onvif.xml.in.h:8
+#, fuzzy
+msgid "Ip address"
+msgstr "Je email adres"
+
+#: ../protocols/onvif/html/onvif.xml.in.h:9
 msgid "Camera port"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:9
+#: ../protocols/onvif/html/onvif.xml.in.h:10
 msgid "Port"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:10
+#: ../protocols/onvif/html/onvif.xml.in.h:11
 msgid "Camera login"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:12
+#: ../protocols/onvif/html/onvif.xml.in.h:13
 #, fuzzy
 msgid "Camera password"
 msgstr "Je wachtwoord"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:15
+#: ../protocols/onvif/html/onvif.xml.in.h:16
 msgid "Camera URI"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:16
+#: ../protocols/onvif/html/onvif.xml.in.h:17
 msgid "URI"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:17
+#: ../protocols/onvif/html/onvif.xml.in.h:18
 msgid "Get device infos"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:18
-msgid ""
-"Update existing configuration. If you feel limited and need to add more "
-"infos, please use \"Advanced\" tab"
-msgstr ""
-
 #: ../protocols/onvif/html/onvif.xml.in.h:19
-#, fuzzy
-msgid "Hostname"
-msgstr "Gebruikernaam"
+msgid ""
+"Update configuration. If you feel limited and need to configure more things, "
+"please use \"Advanced\" tab"
+msgstr ""
 
 #: ../protocols/onvif/html/onvif.xml.in.h:20
-msgid "Date and time"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:21
-msgid "NTP"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:22
-msgid "Network interfaces"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:23
-msgid "OnVIF operations<i class=\"icon-link\"/>"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:24
 msgid ""
 "Enabling motion will create a new binary device that allows you to create "
 "events with it"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:25
+#: ../protocols/onvif/html/onvif.xml.in.h:21
 msgid "Enable motion"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:26
+#: ../protocols/onvif/html/onvif.xml.in.h:22
 #, fuzzy
 msgid "Camera profile"
 msgstr "Je email adres"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:27
+#: ../protocols/onvif/html/onvif.xml.in.h:23
 msgid "Get all profiles"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:28
+#: ../protocols/onvif/html/onvif.xml.in.h:24
 msgid "Detection sensitivity"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:29
+#: ../protocols/onvif/html/onvif.xml.in.h:25
 #, fuzzy
 msgid "Detection deviation"
 msgstr "Cloud Activering"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:30
-msgid "(the higher the value, the more motion is allowed)"
+#: ../protocols/onvif/html/onvif.xml.in.h:26
+msgid "The higher the value, the more motion is allowed"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:31
+#: ../protocols/onvif/html/onvif.xml.in.h:27
 #, fuzzy
 msgid "On duration"
 msgstr "Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:32
-msgid "seconds"
+#: ../protocols/onvif/html/onvif.xml.in.h:28
+msgid "In seconds"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:33
+#: ../protocols/onvif/html/onvif.xml.in.h:29
 msgid "Please note that recording will only work if motion is enabled"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:34
+#: ../protocols/onvif/html/onvif.xml.in.h:30
 #, fuzzy
 msgid "Enable recording"
 msgstr "SMS Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:35
+#: ../protocols/onvif/html/onvif.xml.in.h:31
 #, fuzzy
 msgid "Recording profile"
 msgstr "SMS Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:36
+#: ../protocols/onvif/html/onvif.xml.in.h:32
 msgid "Recording duration after last motion detected"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:37
+#: ../protocols/onvif/html/onvif.xml.in.h:33
 msgid "Draw detected area"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:38
+#: ../protocols/onvif/html/onvif.xml.in.h:34
 msgid "This tab allows you to execute onvif requests"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:39
+#: ../protocols/onvif/html/onvif.xml.in.h:35
 #, fuzzy
 msgid "Service name"
 msgstr "Apparaat Naam"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:40
+#: ../protocols/onvif/html/onvif.xml.in.h:36
+#, fuzzy
+msgid "OnVIF operations"
+msgstr "Omschrijving"
+
+#: ../protocols/onvif/html/onvif.xml.in.h:37
 #, fuzzy
 msgid "Operation name"
 msgstr "Geef gebeurtenis naam"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:41
+#: ../protocols/onvif/html/onvif.xml.in.h:38
 #, fuzzy
 msgid "Operation"
 msgstr "Omschrijving"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:43
-msgid "Response"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:44
+#: ../protocols/onvif/html/onvif.xml.in.h:39
 msgid "Execute"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:45
+#: ../protocols/onvif/html/onvif.xml.in.h:40
 msgid "Check parameters"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:46
-msgid "My cameras"
+#: ../protocols/onvif/html/onvif.xml.in.h:42
+msgid "Response"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:47
+#: ../protocols/onvif/html/onvif.xml.in.h:43
 #, fuzzy
-msgid "My recordings"
+msgid "Cameras"
+msgstr "Je wachtwoord"
+
+#: ../protocols/onvif/html/onvif.xml.in.h:44
+#, fuzzy
+msgid "Recordings"
 msgstr "SMS Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:48
+#: ../protocols/onvif/html/onvif.xml.in.h:45
 msgid "Add camera"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:49
+#: ../protocols/onvif/html/onvif.xml.in.h:46
 #, fuzzy
 msgid "Recordings config"
 msgstr "SMS Configuratie"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:50
+#: ../protocols/onvif/html/onvif.xml.in.h:47
 #: ../protocols/knx/html/knx.xml.in.h:12
 #: ../configuration/dashboards/html/dashboards.xml.in.h:6
 #: ../configuration/events/html/events.xml.in.h:9
@@ -1511,33 +1521,19 @@ msgstr "SMS Configuratie"
 msgid "Edit"
 msgstr "Bewerken"
 
-#: ../protocols/onvif/html/onvif.xml.in.h:53
-#, fuzzy
-msgid "Ip address"
-msgstr "Je email adres"
-
-#: ../protocols/onvif/html/onvif.xml.in.h:54
+#: ../protocols/onvif/html/onvif.xml.in.h:50
 msgid "Get camera profiles"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:55
+#: ../protocols/onvif/html/onvif.xml.in.h:51
 msgid "Select camera profile"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:56
+#: ../protocols/onvif/html/onvif.xml.in.h:52
 msgid "Save camera"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:57
-#, fuzzy
-msgid "Recordings directory"
-msgstr "SMS Configuratie"
-
-#: ../protocols/onvif/html/onvif.xml.in.h:58
-msgid "Directory"
-msgstr ""
-
-#: ../protocols/onvif/html/onvif.xml.in.h:59
+#: ../protocols/onvif/html/onvif.xml.in.h:53
 #, fuzzy
 msgid "Recordings purge delay"
 msgstr "SMS Configuratie"
@@ -2015,10 +2011,6 @@ msgstr "Filter apparaattypen:"
 msgid "Filter handlers:"
 msgstr "Filter kamers:"
 
-#: ../configuration/devices/html/devices.xml.in.h:9
-msgid "Details"
-msgstr "Details"
-
 #: ../configuration/devices/html/devices.xml.in.h:10
 msgid "Parameters"
 msgstr ""
@@ -2252,6 +2244,21 @@ msgstr "Gebeurtenis Configuratie"
 #: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr ""
+
+#~ msgid "Name"
+#~ msgstr "Naam"
+
+#, fuzzy
+#~ msgid "Hostname"
+#~ msgstr "Gebruikernaam"
+
+#, fuzzy
+#~ msgid "My recordings"
+#~ msgstr "SMS Configuratie"
+
+#, fuzzy
+#~ msgid "Recordings directory"
+#~ msgstr "SMS Configuratie"
 
 #~ msgid "Yes"
 #~ msgstr "Ja"

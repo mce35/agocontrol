@@ -21,7 +21,7 @@ function device(agocontrol, obj, uuid) {
     var currentState = parseInt(this.state);
     this.state = ko.observable(currentState);
     this.values = ko.observable(this.values);
-    this.timeStamp = ko.observable(formatDate(new Date(this.lastseen * 1000)));
+    this.timeStamp = ko.observable(datetimeToString(new Date(this.lastseen * 1000)));
 
     var params = [];
     for( var key in self.parameters )
@@ -96,26 +96,15 @@ function device(agocontrol, obj, uuid) {
         content.command = "getthumb";
         content.uuid = self.agocontrol.dataLoggerController;
         content.multigraph = deferred.internalid;
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-            {
-                if( !res.error )
-                {
-                    deferred.observable('data:image/png;base64,' + res.result.data.graph);
-                }
-                else
-                {
-                    //TODO notif something?
-                }
-            }
-            else
-            {
+        self.agocontrol.sendCommand(content, null, 10)
+            .then(function(res) {
+                deferred.observable('data:image/png;base64,' + res.result.data.graph);
+            })
+            .catch(function(err) {
                 //no thumb available
                 //TODO notif something?
                 console.error('request getthumb failed');
-            }
-        }, 10);
+            });
     };
 
     //refresh dashboard multigraph thumb
@@ -149,7 +138,7 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.refreshMultigraphThumbsInterval = window.setInterval(self.refreshMultigraphThumbs, 120000);
     }
 
-    if( self.devicetype=="multigraph" && $.trim(self.name).length>0 )
+    if( self.devicetype=="multigraph" && $.trim(self.name()).length>0 )
     {
         var def = {'uuid': uuid, 'internalid':obj.internalid, 'observable':self.multigraphThumb, 'removed':false};
         if( self.agocontrol.dataLoggerController )
@@ -214,10 +203,8 @@ function device(agocontrol, obj, uuid) {
             content.devices = [uuid];
             content.start = start;
             content.end = end;
-            self.agocontrol.sendCommand(content, function(res)
-            {
-                if( res!==undefined && res.result!==undefined && res.result!=='no-reply' )
-                {
+            self.agocontrol.sendCommand(content, null, 10)
+                .then( function(res) {
                     if( !res.result.error && document.getElementById("graphRRD") )
                     {
                         document.getElementById("graphRRD").src = "data:image/png;base64," + res.result.data.graph;
@@ -227,14 +214,11 @@ function device(agocontrol, obj, uuid) {
                     {
                         notif.error('Unable to get graph: '+res.result.msg);
                     }
-                }
-                else
-                {
+                })
+                .catch(function(err) {
                     notif.error('Unable to get graph: Internal error');
-                }
-            }, 10);
+                });
         };
-
     }
 
     if( this.devicetype=="barometersensor" )
@@ -357,19 +341,17 @@ function device(agocontrol, obj, uuid) {
         {
             content[params[i].name] = params[i].value;
         }
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            notif.info("Done");
-        });
+        self.agocontrol.sendCommand(content)
+            .then( function(res) {
+                notif.info("Done");
+            });
     };
 
     //add device function
     this.addDevice = function(content, callback)
     {
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
-            {
+        self.agocontrol.sendCommand(content)
+            .then( function(res) {
                 if( res.result.error===0 )
                 {
                     notif.error(res.result.msg);
@@ -382,12 +364,10 @@ function device(agocontrol, obj, uuid) {
                 {
                     callback(res);
                 }
-            }
-            else
-            {
+            })
+            .catch(function(err) {
                 notif.fatal('Fatal error: no response received');
-            }
-        });
+            });
     };
 
     //get devices
@@ -396,30 +376,67 @@ function device(agocontrol, obj, uuid) {
         var content = {};
         content.uuid = uuid;
         content.command = 'getdevices';
-        self.agocontrol.sendCommand(content, function(res)
-        {
-            if (callback !== undefined)
-                callback(res);
-        });
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                if( callback !== undefined )
+                {
+                    callback(res);
+                }
+            });
     };
 
     if (this.devicetype == "camera")
     {
         this.getVideoFrame = function()
         {
+            self.agocontrol.block($('#imageContainer').parent());
+
             var content = {};
             content.command = "getvideoframe";
             content.uuid = self.uuid;
             // TODO: this had a 90s reply timeout before implementing the promise style - check if this is still needed
-            self.agocontrol.sendCommand(content,null,90).then(function(res)
-            {
-                if (res.data && res.data.image && document.getElementById("camIMG"))
-                {
-                    document.getElementById("camIMG").src = "data:image/jpeg;base64," + res.data.image;
-                    $("#camIMG").show();
-                }
-            })
+            self.agocontrol.sendCommand(content, null, 90)
+                .then(function(res) {
+                    if( res.data && res.data.image )
+                    {
+                        $('#imageContainer').attr('src', 'data:image/jpeg;base64,'+res.data.image);
+                    }
+                })
+                .finally(function() {
+                    self.agocontrol.unblock($('#imageContainer').parent());
+                });
         };
+
+        //camera thumb feature only available on large devices (tablet and desktop)
+        self.cameraThumb = ko.observable('');
+        if( self.agocontrol.deviceSize=='lg' )
+        {
+            self.getThumbFrame = function()
+            {
+                var noFrame = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAC0CAMAAAATtNrjAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNvyMY98AAACxUExURQAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMTa1RMAAAA6dFJOUwAABAgMEBQYHCAkKCwwNDg8P0BESExPUFNcX2Bna3B3e3+Hi4+Tl5+rr7e7w8fLz9fb3+Pn6+/z9/tFeqmxAAACWElEQVRo3u3Y21raUBCA0b9yDqZKSlspiqgBQSqYoCWZ93+wXgQRYR9SctmZe9a3DzOT2fClYqCAAgoooIACCiiggAIKKKCAAgoooIACCvw3QJjIskuFeBGR1yqCiEk4+xk/for7bzZgaRK6KzmK55YZ6L4eC421GOKZ0kIsxrgqK7QyM5CclRQexBK/KCU0/tgA6xJ2wvcoiqKJWGMcfUS3ZhD+KbJZWFGQ/Bbgx9XpgtxAa5NXELKABxGH8Jqma6cwIRGbsLq7bADUwtHCCqRFNRqE2df9W2rHluwUxCisLg9TpTN3AgdCHhqy7Tp3AQfCNqub0WDYb78LvY0LOBZa42R7UHGwFXIXcCjc7x1bPq0Xu3ACrnyQpNjT3Ak4heJUOpkTcK+hbux2SGlhCtD2APJkr+48AFh4gDtHf4gBRh6g7+gwKUDoAZquHtUGam7gDWBgO8k+wNoJpABD210MAdISgO02B35gDdC35UPk34LUtsliFJpA3XML4fsqDUICcOEBRruEPxbGAGMPsAAIcpOQtQB+ewBpA0xNlXUPcO4rpiLh64mtTz56gayz350PhTD3AjIvfmNcw/lS/IBcA1CfGk7S3ZV3jaNXlGMQp54eZQFk09t9EvvDYeieQDBOHtf2OaoUIDLvlBWwjR5xu5xwWN77WT0KawDN/t3Tlb1PTpwTzDpN35zfiwlBVm6iMwtZADdSQbgBuM1PFYpBE8JZdoqwP+rWulGJuPh0m5vw5Hea6ZWkQgVhSVWBisJLlYd/dylJqP+hKKCAAgoooIACChzHX+uvTlTRyOtpAAAAAElFTkSuQmCC';
+                var content = {};
+                content.command = "getvideoframe";
+                content.uuid = self.uuid;
+                // TODO: this had a 90s reply timeout before implementing the promise style - check if this is still needed
+                self.agocontrol.sendCommand(content, null, 90)
+                    .then(function(res) {
+                        if( res.data && res.data.image )
+                        {
+                            self.cameraThumb('data:image/jpeg;base64,'+res.data.image);
+                        }
+                        else
+                        {
+                            self.cameraThumb(noFrame);
+                        }
+                    })
+                    .catch(function(err) {
+                        self.cameraThumb(noFrame);
+                    });
+            };
+    
+            //by default get dashboard widget background, but no refresh available
+            self.getThumbFrame();
+        }
     }
 
     //update device content
@@ -469,6 +486,5 @@ function device(agocontrol, obj, uuid) {
                 //close modal
                 $('#detailsModal').modal('hide');
             });
-
     };
 }
