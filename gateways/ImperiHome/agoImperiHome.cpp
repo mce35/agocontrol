@@ -254,7 +254,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         qpid::types::Variant::Map param, param2, param3;
                         qpid::types::Variant::List paramList;
                         param["key"]="Level";
-                        param["value"]=values["state"].asInt64() == 0 ? "0" : "100"; // TODO: should reflect real level
+                        param["value"]=values["state"].asInt64() == 0 ? "100" : "0"; // TODO: should reflect real level
                         paramList.push_back(param);
                         param2["key"]="stopable";
                         param2["value"]=1; // TODO: add new device type to agocontrol so that we can distinguish
@@ -421,7 +421,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         command["command"]="settemperature";
                         command["temperature"]=atof(items[5].c_str());
                     } else  if (items[4] == "pulseShutter") {
-                        command["command"]= items[5]=="up" ? "on" : "off";
+                        command["command"]= items[5]=="up" ? "off" : "on";
                     }
                 } else { // we got action without parameter
                     if (items[4] == "stopShutter") {
