@@ -188,7 +188,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
             }
             else
             {
-                $('#detailsTitle').html('Device details');
+                $('#detailsTitle').html('Device details <small>('+device.uuid+')</small>');
             }
             $('#detailsModal').modal('show');
         }
