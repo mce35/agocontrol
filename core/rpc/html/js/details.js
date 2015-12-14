@@ -305,21 +305,27 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         colorA = '#FFD400';
     }
 
+    //prepare data
+    data.forEach(function(d) {
+        d.date = d.time*1000;
+        d.value = +d.level;
+    });
+
     //graph parameters
     var margin = {top: 30, right: 20, bottom: 30, left: 50},
         width = 870 - margin.left - margin.right,
         height = 325 - margin.top - margin.bottom;
-    var x = d3.time.scale()
+    var xScale = d3.time.scale()
         .range([0, width]);
-    var y = d3.scale.linear()
+    var yScale = d3.scale.linear()
         .range([height, 0]);
     var xAxis = d3.svg.axis()
-        .scale(x)
+        .scale(xScale)
         .orient("bottom")
         .tickSize(-height, 0)
         .tickPadding(6);
     var yAxis = d3.svg.axis()
-        .scale(y)
+        .scale(yScale)
         .orient("left")
         .tickSize(-width)
         .tickPadding(6);
@@ -327,15 +333,21 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     //area generator
     var area = d3.svg.area()
         .interpolate("step-after")
-        .x(function(d) { return x(d.date); })
-        .y0(y(0))
-        .y1(function(d) { return y(d.value); });
+        .x(function(d) { return xScale(d.date); })
+        .y0(function(d) {
+            if( d.value>=0 ) return yScale(0);
+            else return yScale(d.value);
+        })
+        .y1(function(d) {
+            if( d.value>=0 ) return yScale(d.value);
+            else return yScale(0);
+        });
 
     //line generator
     var line = d3.svg.line()
         .interpolate("step-after")
-        .x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.value); });
+        .x(function(d) { return xScale(d.date); })
+        .y(function(d) { return yScale(d.value); });
 
     //create graph canvas
     var svg = d3.select("#graphContainer").append("svg")
@@ -360,10 +372,10 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
 
         svg.selectAll("circle")
             .data(data)
-            .attr("cx", function(d,i){ return x(d.date) || 0; })
-            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("cx", function(d,i){ return xScale(d.date) || 0; })
+            .attr("cy",function(d,i){ return yScale(d.value) || 0; })
             .attr("opacity", function(item) {
-                var coordx = x(item.date);
+                var coordx = xScale(item.date);
                 if( coordx<0 || coordx>width )
                     return 0.000001; //hide item
                 else
@@ -391,20 +403,14 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     var zoom = d3.behavior.zoom()
         .on("zoom", draw);
 
-    //prepare data
-    data.forEach(function(d) {
-        d.date = d.time*1000;
-        d.value = +d.level;
-    });
-
     //configure graph
     svg.append("clipPath")
             .attr("id", "clip")
         .append("rect")
-            .attr("x", x(0))
-            .attr("y", y(1))
-            .attr("width", x(1) - x(0))
-            .attr("height", y(0) - y(1));
+            .attr("x", xScale(0))
+            .attr("y", yScale(1))
+            .attr("width", xScale(1) - xScale(0))
+            .attr("height", yScale(0) - yScale(1));
     svg.append("g")
             .attr("class", "y axis")
         .append("text")
@@ -438,8 +444,8 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .data(data)
         .enter()
         .append("circle")
-            .attr("cx", function(d,i){ return x(d.date) || 0; })
-            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("cx", function(d,i){ return xScale(d.date) || 0; })
+            .attr("cy",function(d,i){ return yScale(d.value) || 0; })
             .attr("fill", colorL)
             .attr("opacity", "0.4")
             .attr("cursor", "pointer")
@@ -448,10 +454,17 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
             .on("mouseout", function() { hideTooltip(this);});
 
     //compute boundaries
-    x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain([0, d3.max(data, function(d) { return d.value; })]);
+    var yMin = d3.min(data, function(d) { return d.value; });
+    var yMax = d3.max(data, function(d) { return d.value; });
+    if( yMin>0 )
+    {
+        yMin = 0;
+    }
+    xScale.domain(d3.extent(data, function(d) { return d.date; }));
+    yScale.domain([yMin, yMax]);
 
-    zoom.x(x);
+    //set default zoom
+    zoom.x(xScale);
 
     //bind the data to our path elements.
     svg.select("path.area").data([data]);
