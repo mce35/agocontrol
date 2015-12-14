@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-03 18:09+0100\n"
+"POT-Creation-Date: 2015-12-14 15:44+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -1851,12 +1851,12 @@ msgid "Add graph"
 msgstr "Ajouter un graphe"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:12
-msgid "Select sensors to display on graph"
-msgstr "Sélectionner les capteurs à mettre sur le graphique"
+msgid "Select sensors to display on the same graph"
+msgstr "Sélectionner les capteurs à mettre sur le même graphique"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:13
-msgid "Number of hours to display on thumb"
-msgstr "Nombre d'heures à afficher sur la miniature"
+msgid "Number of hours to display on dashboard thumb"
+msgstr "Nombre d'heures à afficher sur la miniature du tableau de bord"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:14
 msgid "Delete graph"
@@ -2125,4 +2125,3 @@ msgstr "Debug des évènements Agocontrol"
 #: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr "Autoscroll"
-

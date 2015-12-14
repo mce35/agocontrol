@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-03 18:09+0100\n"
+"POT-Creation-Date: 2015-12-14 15:44+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1946,11 +1946,11 @@ msgid "Add graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:12
-msgid "Select sensors to display on graph"
+msgid "Select sensors to display on the same graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:13
-msgid "Number of hours to display on thumb"
+msgid "Number of hours to display on dashboard thumb"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:14
