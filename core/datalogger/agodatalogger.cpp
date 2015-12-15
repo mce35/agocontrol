@@ -47,12 +47,6 @@ namespace fs = ::boost::filesystem;
 
 using namespace agocontrol;
 
-typedef enum GRAPH_DATA_SOURCE {
-    NONE,
-    RRD,
-    SQLITE
-} GraphDataSource;
-
 class AgoDataLogger: public AgoApp {
 private:
     //inventory
@@ -64,15 +58,18 @@ private:
     int string_real_length(const std::string str);
     std::string string_prepend_spaces(std::string source, size_t newSize);
     static void debugSqlite(void* foo, const char* msg);
+    void computeRendering();
+    void commandGetData(qpid::types::Variant::Map& content, qpid::types::Variant::Map& returnData);
+    bool commandGetGraph(qpid::types::Variant::Map& content, qpid::types::Variant::Map& returnData);
 
     //database
     bool createTableIfNotExist(string tablename, list<string> createqueries);
     qpid::types::Variant::Map getDatabaseInfos();
     bool purgeTable(std::string table, int timestamp);
     bool isTablePurgeAllowed(std::string table);
-    void GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
-    bool GetGraphDataFromSqlite(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
-    bool GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result);
+    void getGraphData(qpid::types::Variant::List uuids, int start, int end, string environment, qpid::types::Variant::Map& result);
+    bool getGraphDataFromSqlite(qpid::types::Variant::List uuids, int start, int end, string environment, qpid::types::Variant::Map& result);
+    bool getGraphDataFromRrd(qpid::types::Variant::List uuids, int start, int end, qpid::types::Variant::Map& result);
 
     //rrd
     bool prepareGraph(std::string uuid, int multiId, qpid::types::Variant::Map& data);
@@ -108,7 +105,9 @@ bool dataLogging = 1;
 bool gpsLogging = 1;
 bool rrdLogging = 1;
 int purgeDelay = 0; //in months
-GraphDataSource graphDataSource = SQLITE;
+std::string desiredRendering = "plots"; // could be "image" or "plots"
+std::string rendering = "plots";
+//GraphDataSource graphDataSource = SQLITE;
 const char* colors[] = {"#800080", "#0000FF", "#008000", "#FF00FF", "#000080", "#FF0000", "#00FF00", "#00FFFF", "#800000", "#808000", "#008080", "#C0C0C0", "#808080", "#000000", "#FFFF00"};
 qpid::types::Variant::Map devicemap;
 qpid::types::Variant::List allowedPurgeTables;
@@ -994,62 +993,65 @@ void AgoDataLogger::debugSqlite(void* foo, const char* msg)
 /**
  * Return graph data from rrd file
  */
-bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+//bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+bool AgoDataLogger::getGraphDataFromRrd(qpid::types::Variant::List uuids, int start, int end, qpid::types::Variant::Map& result)
 {
+    AGO_TRACE() << "getGraphDataFromRrd";
+
     qpid::types::Variant::List values;
     bool error = false;
-
-    //generate rrd filename
-    string uuid = content["deviceid"].asString();
+    string uuid = uuids.front().asString();
     stringstream filename;
     filename << uuid << ".rrd";
     fs::path rrdfile = getLocalStatePath(filename.str());
-
-    // Parse the timestrings
-    string startDate = content["start"].asString();
-    string endDate = content["end"].asString();
-    replaceString(startDate, "-", "");
-    replaceString(startDate, ":", "");
-    replaceString(startDate, "Z", "");
-    replaceString(endDate, "-", "");
-    replaceString(endDate, ":", "");
-    replaceString(endDate, "Z", "");
-    boost::posix_time::ptime base(boost::gregorian::date(1970, 1, 1));
-    boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
-    boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
- 
     string filenamestr = rrdfile.string();
-    time_t startTimet = start.total_seconds();
-    time_t endTimet = end.total_seconds();
-    AGO_DEBUG() << "start=" << startTimet << " end=" << endTimet;
+    time_t startTimet = (time_t)start;;
+    time_t endTimet = (time_t)end;
+    AGO_TRACE() << "file=" << filenamestr << " start=" << start << " end=" << end;
 
     unsigned long step = 0;
     unsigned long ds_cnt;
     char** ds_namv;
-    rrd_value_t *data, *dP;
+    rrd_value_t *data = NULL;
     rrd_clear_error();
+    int count = 0;
+    unsigned long ds = 0;
+    //rrd_fetch_r example found here https://github.com/pldimitrov/Rrd/blob/master/src/Rrd.c
     int res = rrd_fetch_r(filenamestr.c_str(), "AVERAGE", &startTimet, &endTimet, &step, &ds_cnt, &ds_namv, &data);
-    if( res==0 )
+    if( res==0 && data!=NULL )
     {
-        AGO_DEBUG() << "Fetch ok step=" << step;
-        for( dP=data; *dP; dP++ )
+        int size = (endTimet - startTimet) / step - 1;
+        double level = 0;
+        for( ds=0; ds<ds_cnt; ds++ )
         {
-            //AGO_TRACE() << startTimet << " => " << (double)(*dP);
-            qpid::types::Variant::Map value;
-            if( !isnan((double)(*dP)) )
+            for( int i=0; i<size; i++ )
             {
-                value["time"] = (uint64_t)startTimet;
-                value["level"] = (double)(*dP);
-                values.push_back(value);
-            }
-            startTimet += step;
+                level = (double)data[ds+i*ds_cnt];
+                if( !isnan(level) )
+                {
+                    count++;
+                    qpid::types::Variant::Map value;
+                    value["time"] = (uint64_t)startTimet;
+                    value["level"] = (double)data[ds+i*ds_cnt];
+                    values.push_back(value);
+                }
+                startTimet += step;
+            }   
         }
+        AGO_TRACE() << "rrd_fetch returns: step=" << step << " datasource_count=" << ds_cnt << " data_count=" << count;
     }
     else
     {
         AGO_DEBUG() << "Fetch failed: " << rrd_get_error();
         error = true;
     }
+
+    //free memory
+    if( data )
+        free(data);
+    for( unsigned int i=0; i<sizeof(ds_namv)/sizeof(char*); i++ )
+        free(ds_namv[i]);
+    free(ds_namv);
 
     AGO_TRACE() << "RRD query returns " << values.size() << " values";
 
@@ -1060,31 +1062,15 @@ bool AgoDataLogger::GetGraphDataFromRrd(qpid::types::Variant::Map content, qpid:
 /**
  * Return graph data from sqlite
  */
-bool AgoDataLogger::GetGraphDataFromSqlite(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+bool AgoDataLogger::getGraphDataFromSqlite(qpid::types::Variant::List uuids, int start, int end, string environment, qpid::types::Variant::Map& result)
 {
+    AGO_TRACE() << "getGraphDataFromSqlite: " << environment;
+
     sqlite3_stmt *stmt;
     int rc;
     qpid::types::Variant::List values;
     std::stringstream query;
-
-    // Parse the timestrings
-    string startDate = content["start"].asString();
-    string endDate = content["end"].asString();
-    replaceString(startDate, "-", "");
-    replaceString(startDate, ":", "");
-    replaceString(startDate, "Z", "");
-    replaceString(endDate, "-", "");
-    replaceString(endDate, ":", "");
-    replaceString(endDate, "Z", "");
-    string uuid = content["deviceid"].asString();
-
-    //get environment
-    string environment = content["env"].asString();
-    AGO_TRACE() << "GetGraphData:" << environment;
-
-    boost::posix_time::ptime base(boost::gregorian::date(1970, 1, 1));
-    boost::posix_time::time_duration start = boost::posix_time::from_iso_string(startDate) - base;
-    boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
+    string uuid = uuids.front().asString();
 
     //prepare specific query string
     if( environment=="position" )
@@ -1110,8 +1096,8 @@ bool AgoDataLogger::GetGraphDataFromSqlite(qpid::types::Variant::Map content, qp
 
 
         //fill query
-        sqlite3_bind_int(stmt, 1, start.total_seconds());
-        sqlite3_bind_int(stmt, 2, end.total_seconds());
+        sqlite3_bind_int(stmt, 1, start);
+        sqlite3_bind_int(stmt, 2, end);
         sqlite3_bind_text(stmt, 3, uuid.c_str(), -1, NULL);
 
         do
@@ -1138,8 +1124,8 @@ bool AgoDataLogger::GetGraphDataFromSqlite(qpid::types::Variant::Map content, qp
         AGO_TRACE() << "Execute query on data table";
 
         //fill query
-        sqlite3_bind_int(stmt, 1, start.total_seconds());
-        sqlite3_bind_int(stmt, 2, end.total_seconds());
+        sqlite3_bind_int(stmt, 1, start);
+        sqlite3_bind_int(stmt, 2, end);
         sqlite3_bind_text(stmt, 3, environment.c_str(), -1, NULL);
         sqlite3_bind_text(stmt, 4, uuid.c_str(), -1, NULL);
 
@@ -1172,15 +1158,15 @@ bool AgoDataLogger::GetGraphDataFromSqlite(qpid::types::Variant::Map content, qp
 /**
  * Return data for graph generation
  */
-void AgoDataLogger::GetGraphData(qpid::types::Variant::Map content, qpid::types::Variant::Map &result)
+void AgoDataLogger::getGraphData(qpid::types::Variant::List uuids, int start, int end, string environment, qpid::types::Variant::Map& result)
 {
-    if( graphDataSource==SQLITE )
+    if( dataLogging )
     {
-        GetGraphDataFromSqlite(content, result);
+        getGraphDataFromSqlite(uuids, start, end, environment, result);
     }
-    else if( graphDataSource==RRD )
+    else if( rrdLogging )
     {
-        GetGraphDataFromRrd(content, result);
+        getGraphDataFromRrd(uuids, start, end, result);
     }
     else
     {
@@ -1563,6 +1549,100 @@ void AgoDataLogger::dailyPurge()
 }
 
 /**
+ * Compute real rendering value according to user preferences
+ */
+void AgoDataLogger::computeRendering()
+{
+    if( !dataLogging && !rrdLogging )
+    {
+        //no choice: no rendering
+        rendering = "none";
+    }
+    else if( dataLogging && !rrdLogging )
+    {
+        //only plots rendering available
+        rendering = "plots";
+    }
+    else if( !dataLogging && rrdLogging )
+    {
+        //rrd enabled, both plots and image available, use user preference
+        rendering = desiredRendering;
+    }
+    else
+    {
+        //both rrd and data logging are enabled, use user preference
+        rendering = desiredRendering;
+    }
+    AGO_DEBUG() << "Computed rendering: " << rendering;
+}
+
+/**
+ * "getdata" and "getrawdata" commands handler
+ */
+void AgoDataLogger::commandGetData(qpid::types::Variant::Map& content, qpid::types::Variant::Map& returnData)
+{
+    AGO_TRACE() << "commandGetData";
+
+    //check parameters
+    checkMsgParameter(content, "start", VAR_INT32);
+    checkMsgParameter(content, "end", VAR_INT32);
+    checkMsgParameter(content, "devices", VAR_LIST);
+
+    //variables
+    qpid::types::Variant::List uuids;
+    uuids = content["devices"].asList();
+    string environment = "";
+    if( !content["env"].isVoid() )
+    {
+        environment = content["env"].asString();
+    }
+
+    //get data
+    getGraphData(uuids, content["start"].asInt32(), content["end"].asInt32(), environment, returnData);
+}
+
+/**
+ * "getgraph" command handler
+ */
+bool AgoDataLogger::commandGetGraph(qpid::types::Variant::Map& content, qpid::types::Variant::Map& returnData)
+{
+    AGO_TRACE() << "commandGetGraph";
+
+    //check parameters
+    checkMsgParameter(content, "start", VAR_INT32);
+    checkMsgParameter(content, "end", VAR_INT32);
+    checkMsgParameter(content, "devices", VAR_LIST);
+
+    //variables
+    unsigned char* img = NULL;
+    unsigned long size = 0;
+    qpid::types::Variant::List uuids;
+    uuids = content["devices"].asList();
+
+    //is a multigraph?
+    if( uuids.size()==1 )
+    {
+        string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
+        if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
+        {
+            uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
+        }
+    }
+
+    //get image
+    if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
+    {
+        returnData["graph"] = base64_encode(img, size);
+        return true;
+    }
+    else
+    {
+        //error generating graph
+        return false;
+    }
+}
+
+/**
  * Command handler
  */
 qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Map content)
@@ -1571,10 +1651,71 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
     std::string internalid = content["internalid"].asString();
     if (internalid == "dataloggercontroller")
     {
-        if (content["command"] == "getdata")
+        if( (content["command"]=="getdata" || content["command"]=="getgraph") && rendering=="none" )
         {
-            GetGraphData(content, returnData);
+            //no data storage, nothing to return
+            returnData["rendering"] = rendering;
             return responseSuccess(returnData);
+        }
+        else if( content["command"]=="getdata" )
+        {
+            //get data according to user preferences
+            
+            //is multigraph?
+            bool isMultigraph = false;
+            checkMsgParameter(content, "devices", VAR_LIST);
+            qpid::types::Variant::List uuids = content["devices"].asList();
+            if( uuids.size()==1 )
+            {
+                string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
+                if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
+                {
+                    isMultigraph = true;
+                }
+            }
+            
+            if( isMultigraph || rendering=="image" )
+            {
+                //render image
+                //multigraph only implemented on rrdtool for now
+                if( commandGetGraph(content, returnData) )
+                {
+                    returnData["rendering"] = "image";
+                    return responseSuccess(returnData);
+                }
+                else
+                {
+                    return responseFailed("Failed to generate graph");
+                }
+                
+            }
+            else
+            {
+                //render plots
+                commandGetData(content, returnData);
+                returnData["rendering"] = "plots";
+                return responseSuccess(returnData);
+            }
+        }
+        else if( content["command"]=="getrawdata" )
+        {
+            //explicitely request raw data (device values)
+            commandGetData(content, returnData);
+            returnData["rendering"] = "raw";
+            return responseSuccess(returnData);
+        }
+        else if( content["command"]=="getgraph" )
+        {
+            //explicitely request an image
+            if( commandGetGraph(content, returnData) )
+            {
+                returnData["rendering"] = "image";
+                return responseSuccess(returnData);
+            }
+            else
+            {
+                return responseFailed("Failed to generate graph");
+            }
         }
         else if (content["command"] == "getdeviceenvironments")
         {
@@ -1605,38 +1746,6 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             sqlite3_finalize(stmt);
 
             return responseSuccess(returnData);
-        }
-        else if( content["command"] == "getgraph" )
-        {
-            checkMsgParameter(content, "start", VAR_INT32);
-            checkMsgParameter(content, "end", VAR_INT32);
-            checkMsgParameter(content, "devices", VAR_LIST);
-
-            unsigned char* img = NULL;
-            unsigned long size = 0;
-            qpid::types::Variant::List uuids;
-
-            uuids = content["devices"].asList();
-            //is a multigraph?
-            if( uuids.size()==1 )
-            {
-                string internalid = agoConnection->uuidToInternalId((*uuids.begin()).asString());
-                if( internalid.length()>0 && !devicemap["multigraphs"].asMap()[internalid].isVoid() )
-                {
-                    uuids = devicemap["multigraphs"].asMap()[internalid].asMap()["uuids"].asList();
-                }
-            }
-
-            if( generateGraph(uuids, content["start"].asInt32(), content["end"].asInt32(), 0, &img, &size) )
-            {
-                returnData["graph"] = base64_encode(img, size);
-                return responseSuccess(returnData);
-            }
-            else
-            {
-                //error generating graph
-                return responseFailed("Failed to generate graph");
-            }
         }
         else if( content["command"]=="getconfig" )
         {
@@ -1671,6 +1780,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             returnData["gpsLogging"] = gpsLogging ? 1 : 0;
             returnData["rrdLogging"] = rrdLogging ? 1 : 0;
             returnData["purgeDelay"] = purgeDelay;
+            returnData["rendering"] = desiredRendering;
             returnData["database"] = db;
             return responseSuccess(returnData);
         }
@@ -1716,6 +1826,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
         else if( content["command"]=="getthumb" )
         {
             checkMsgParameter(content, "multigraph", VAR_STRING);
+
             //check if inventory available
             if( !checkInventory() )
             {
@@ -1759,6 +1870,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             checkMsgParameter(content, "rrdLogging", VAR_BOOL);
             checkMsgParameter(content, "gpsLogging", VAR_BOOL);
             checkMsgParameter(content, "purgeDelay", VAR_INT32);
+            checkMsgParameter(content, "rendering", VAR_STRING);
 
             bool error = false;
             if( content["dataLogging"].asBool() )
@@ -1824,30 +1936,39 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                     error = true;
                 }
             }
+
+            if( !error )
+            {
+                desiredRendering = content["rendering"].asString();
+                if( !setConfigOption("rendering", desiredRendering.c_str()) )
+                {
+                    AGO_ERROR() << "Unable to save rendering value to config file";
+                    error = true;
+                }
+                else
+                {
+                    //get real rendering according user preferences
+                    computeRendering();
+                }   
+            }
     
             if( error )
             {
                 return responseFailed("Failed to save one or more options");
             }
 
-            //handle graph data source
             if( dataLogging )
-            {
-                //default is to display data from sqlite
-                graphDataSource = SQLITE;
-                AGO_DEBUG() << "data source from sqlite";
-            }
-            else if( rrdLogging )
-            {
-                graphDataSource = RRD;
-                AGO_DEBUG() << "data source from rrd";
-            }
+                AGO_INFO() << "Data logging enabled";
             else
-            {
-                //no data logging
-                graphDataSource = NONE;
-                AGO_DEBUG() << "data source is disabled";
-            }
+                AGO_INFO() << "Data logging disabled";
+            if( gpsLogging )
+                AGO_INFO() << "GPS logging enabled";
+            else
+                AGO_INFO() << "GPS logging disabled";
+            if( rrdLogging )
+                AGO_INFO() << "RRD logging enabled";
+            else
+                AGO_INFO() << "RRD logging disabled";
 
             return responseSuccess();
         }
@@ -2016,25 +2137,10 @@ void AgoDataLogger::setupApp()
         purgeDelay = r;
     }
     AGO_INFO() << "Purge delay = " << purgeDelay << " months";
-
-    //handle graph data source
-    if( dataLogging )
-    {
-        //default is to display data from sqlite
-        graphDataSource = SQLITE;
-        AGO_DEBUG() << "data source from sqlite";
-    }
-    else if( rrdLogging )
-    {
-        graphDataSource = RRD;
-        AGO_DEBUG() << "data source from rrd";
-    }
-    else
-    {
-        //no data logging
-        graphDataSource = NONE;
-        AGO_DEBUG() << "data source is disabled";
-    }
+    desiredRendering = getConfigOption("rendering", "plots");
+    AGO_INFO() << "Rendering = " << desiredRendering;
+    //get real rendering according user preferences
+    computeRendering();
 
     // load map, create sections if empty
     fs::path dmf = getConfigPath(DEVICEMAPFILE);
