@@ -53,6 +53,15 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <_label for="selected" data-translateable="true" class="col-sm-2 control-label">Desired graph rendering</_label>
+                            <div class="col-sm-2">
+                                <select class="form-control" data-bind="value:rendering">
+                                    <_option value="image" data-translateable="true">Static image graph</_option>
+                                    <_option value="plots" data-translateable="true">Interactive graph</_option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <_label for="selected" data-translateable="true" class="col-sm-2 control-label">Keep data X months (0=no purge)</_label>
                             <div class="col-sm-2">
                                 <input data-translateable="true" type="text" _placeholder="number of months" data-bind="value: purgeDelay" class="form-control" />
