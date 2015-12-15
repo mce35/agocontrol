@@ -1018,6 +1018,24 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 }
                             }
                             break;
+                        case COMMAND_CLASS_COLOR:
+                            if (label == "Color")
+                            {
+                                if ((device = devices.findId(nodeinstance)) != NULL)
+                                {   
+                                    device->addValue(label, id);
+                                    device->setDevicetype("dimmerrgb");
+                                }
+                                else
+                                {
+                                    device = new ZWaveNode(nodeinstance, "dimmerrgb");
+                                    device->addValue(label, id);
+                                    devices.add(device);
+                                    AGO_DEBUG() << "Color: add new dimmerrgb [" << device->getId() << ", " << device->getDevicetype() << "]";
+                                    agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                                }
+                            }
+                            break;
                         case COMMAND_CLASS_SWITCH_MULTILEVEL:
                             if (label == "Level")
                             {
@@ -1959,6 +1977,51 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 }
                 else
                 {
+                    if (Manager::Get()->SetValue(*tmpValueID , (uint8) 0)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+                }
+            }
+            else if(devicetype == "dimmerrgb")
+            {
+                if (content["command"] == "on" )
+                {
+                    tmpValueID = device->getValueID("Level");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Level' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , (uint8) 255)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+                }
+                else if (content["command"] == "setlevel")
+                {
+                    tmpValueID = device->getValueID("Level");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Level' label");
+                    checkMsgParameter(content, "level", VAR_INT32);
+                    uint8 level = content["level"].asInt32();
+                    if (level > 99) level=99;
+                    if (Manager::Get()->SetValue(*tmpValueID, level)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+                }
+                else if (content["command"] == "setcolor")
+                {
+                    tmpValueID = device->getValueID("Color");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Color' label");
+                    checkMsgParameter(content, "red");
+                    checkMsgParameter(content, "green");
+                    checkMsgParameter(content, "blue");
+                    stringstream colorString;
+                    colorString << "#";
+                    colorString << std::uppercase << std::hex << content["red"].asString();
+                    colorString << std::uppercase << std::hex << content["green"].asString();
+                    colorString << std::uppercase << std::hex << content["blue"].asString();
+                    colorString << "00";
+                    colorString << "00";
+                    AGO_DEBUG() << "setting color string: " << colorString.str();
+                    if (Manager::Get()->SetValue(*tmpValueID, colorString.str())) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device color value");
+                }
+                else
+                {
+                    tmpValueID = device->getValueID("Level");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Level' label");
                     if (Manager::Get()->SetValue(*tmpValueID , (uint8) 0)) return responseSuccess();
                     else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                 }
