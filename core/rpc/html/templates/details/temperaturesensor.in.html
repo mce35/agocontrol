@@ -33,12 +33,15 @@
                     <_label data-translateable="true" for="end_date">To</_label>
                     <input type="text" class="form-control" id="end_date" readonly="readonly"/>
                 </div>
-                <button type="submit" class="btn btn-primary" id="get_graph" data-translateable="true"><i class="en-arrows-ccw"></i></button>
+                <button type="submit" class="btn btn-primary" id="get_graph" data-translateable="true" _alt="Refresh" _title="Refresh"><i class="en-arrows-ccw"></i></button>
             </form>
         </div>
         <div class="col-sm-3 text-right">
-            <div class="checkbox">
-                <label><input type="checkbox" id="renderingList"/><_span data-translateable="true">Display list</_span></label>
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary" _alt="Show values" _title="Show values" data-translateable="true">
+                    <input type="checkbox" id="renderingList"/>
+                    <i class="en-doc-text"></i>
+                </label>
             </div>
         </div>
     </div>
