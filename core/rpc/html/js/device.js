@@ -98,12 +98,11 @@ function device(agocontrol, obj, uuid) {
         content.multigraph = deferred.internalid;
         self.agocontrol.sendCommand(content, null, 10)
             .then(function(res) {
-                deferred.observable('data:image/png;base64,' + res.result.data.graph);
+                deferred.observable('data:image/png;base64,' + res.data.graph);
             })
             .catch(function(err) {
                 //no thumb available
-                //TODO notif something?
-                console.error('request getthumb failed');
+                console.error('Request getthumb failed', err);
             });
     };
 
