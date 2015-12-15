@@ -51,9 +51,9 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 environment = "device.state";
             }
 
-            //configure radio button (graph type selector)
-            $('input[type=radio][name=renderType]').on('change', function() {
-                self.render(device, environment, startDt, endDt, $(this).val());
+            //render list instead of data (graph/map/plots)
+            $('input[type=checkbox][id=renderingList]').on('change', function() {
+                self.render(device, environment, startDt, endDt);
             });
 
             if( $('#commandList').length )
@@ -85,7 +85,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     endEl.val( datetimeToString(endDt) );
                     startDt = new Date(endDt.getTime() - rangeEl.val()*60*60*1000);
                     startEl.val( datetimeToString(startDt) );
-                };
+                }
 
                 //hide by default custom elements
                 startEl.parent().hide();
@@ -106,7 +106,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
                 });
                 rangeEl.change(function() {
-                    if( rangeEl.val()==0 )
+                    if( rangeEl.val()===0 )
                     {
                         //display custom range fields
                         startEl.parent().show();
@@ -267,7 +267,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     $('#graphContainer').empty();
 
     //check if we have data
-    if( data.length==0 )
+    if( data.length===0 )
     {
         notif.warning('No data to display');
         return;
@@ -293,7 +293,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         colorL = '#FF0000';
         colorA = '#FF8787';
     }
-    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype=='' ||device.devicetype=='batterysensor' )
+    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype==='' ||device.devicetype=='batterysensor' )
     {
         colorL = '#007A00';
         colorA = '#00BB00';
@@ -379,9 +379,9 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
                 if( coordx<0 || coordx>width )
                     return 0.000001; //hide item
                 else
-                    return 0.4
+                    return 0.4;
             });
-    };
+    }
 
     function showTooltip(pt, item)
     {
@@ -392,12 +392,12 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
             .style("left",(d3.event.pageX+10)+"px");
         var dt = new Date(item.date);
         tooltip.html("<small>"+datetimeToString(dt)+"</small><br/><big>"+item.value+"</big>");
-    };
+    }
 
     function hideTooltip(pt)
     {
         tooltip.style("visibility", "hidden");
-    };
+    }
 
     //define zoom
     var zoom = d3.behavior.zoom()
@@ -478,7 +478,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
 Agocontrol.prototype.renderList = function(device, environment, unit, values, startDate, endDate)
 {
     var self = this;
-    var data = []
+    var data = [];
 
     values.sort(function(a, b) {
         return b.time - a.time;
@@ -583,17 +583,13 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, startDt, endDt, type)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt/*, type*/)
 {
     var self = this;
     self.block($('#graphContainer'));
 
-    //get type
-    if( type===null || type===undefined )
-    {
-        type = self.lastRenderType;
-    }
-    self.lastRenderType = type;
+    //render list?
+    var renderingList = $('#renderingList').prop('checked');
 
     //fix end date
     now = new Date();
@@ -602,76 +598,57 @@ Agocontrol.prototype.render = function(device, environment, startDt, endDt, type
         endDt = now;
     }
 
-    if( type=="graph" )
-    {
-        //RRD graph, get image data
-        var content = {};
-        content.command = "getgraph";
-        content.uuid = self.dataLoggerController;
-        content.devices = [device.uuid];
-        content.start = Math.round(startDt.getTime()/1000);
-        content.end = Math.round(endDt.getTime()/1000);
-        self.sendCommand(content)
-            .then(function(res) {
+    //other render needs values and unit
+    var content = {};
+    content.uuid = self.dataLoggerController;
+    content.command = (renderingList ? "getrawdata" : "getdata");
+    content.replytimeout = 15;
+    content.devices = [device.uuid];
+    content.start = Math.round(startDt.getTime()/1000);
+    content.end = Math.round(endDt.getTime()/1000);
+    content.env = environment.toLowerCase();
+    self.sendCommand(content, null, 30)
+        .then(function(res) {
+            //get unit
+            var unit = "";
+            for ( var k = 0; k < device.valueList().length; k++)
+            {
+                if (device.valueList()[k].name == environment)
+                {
+                    unit = device.valueList()[k].unit;
+                    break;
+                }
+            }
+
+            //get data
+            var values = res.data.values;
+
+            //render
+            if( res.data.rendering=="raw" )
+            {
+                self.renderList(device, environment, unit, values, startDt, endDt);
+            }
+            else if( res.data.rendering=="plots" )
+            {
+                self.renderPlots(device, environment, unit, values, startDt, endDt);
+            }
+            else if( res.data.rendering=="image" )
+            {
                 self.renderRRD(res.data.graph);
-            })
-            .catch(function(err) {
-                notif.error("Unable to render values");
-                console.error(err);
-            })
-            .finally(function() {
-                self.unblock($('#graphContainer'));
-            });
-    }
-    else
-    {
-        //other render needs values and unit
-        var content = {};
-        content.uuid = self.dataLoggerController;
-        content.command = "getdata";
-        content.replytimeout = 15;
-        content.deviceid = device.uuid;
-        content.start = startDt.toISOString();
-        content.end = endDt.toISOString();
-        content.env = environment.toLowerCase();
-        self.sendCommand(content, null, 30)
-            .then(function(res) {
-                //get unit
-                var unit = "";
-                for ( var k = 0; k < device.valueList().length; k++)
-                {
-                    if (device.valueList()[k].name == environment)
-                    {
-                        unit = device.valueList()[k].unit;
-                        break;
-                    }
-                }
-
-                //get data
-                var values = res.data.values;
-
-                //render
-                if( type=="plots" )
-                {
-                    self.renderPlots(device, environment, unit, values, startDt, endDt);
-                }
-                else if( type=="list" )
-                {
-                    self.renderList(device, environment, unit, values, startDt, endDt);
-                }
-                else if( type=="map" )
-                {
-                    self.renderMap(values);
-                }
-            })
-            .catch(function(err) {
-                notif.error("Unable to render values");
-                console.error(err);
-            })
-            .finally(function() {
-                self.unblock($('#graphContainer'));
-            });   
-    }
+            }
+            /*TODO render map
+            else if( res.data.rendering=="map" )
+            {
+                self.renderMap(values);
+            }*/
+        })
+        .catch(function(err) {
+            notif.error("Unable to render values");
+            console.error(err);
+        })
+        .finally(function() {
+            self.unblock($('#graphContainer'));
+        });   
 };
 
 //Opens parameters page for the given device
