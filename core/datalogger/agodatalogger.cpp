@@ -533,22 +533,22 @@ void AgoDataLogger::addSingleGraphParameters(qpid::types::Variant::Map& data, ch
     addGraphParam(string_format("LINE1:levelmin%s::dashes", data["colorMin"].asString().c_str()), params, index);
 
     //MIN GPRINT
-    addGraphParam(string_format("GPRINT:levelmin:\"   Min %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmin:   Min %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 
     //MAX LINE
     addGraphParam(string_format("LINE1:levelmax%s::dashes", data["colorMax"].asString().c_str()), params, index);
 
     //MAX GPRINT
-    addGraphParam(string_format("GPRINT:levelmax:\"   Max %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmax:   Max %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 
     //AVG LINE
     addGraphParam(string_format("LINE1:levelavg%s::dashes", data["colorAvg"].asString().c_str()), params, index);
 
     //AVG GPRINT
-    addGraphParam(string_format("GPRINT:levelavg:\"   Avg %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelavg:   Avg %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 
     //LAST GPRINT
-    addGraphParam(string_format("GPRINT:levellast:\"   Last %%6.2lf%s\"", data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levellast:   Last %%6.2lf%s", data["unit"].asString().c_str()), params, index);
 }
 
 /**
@@ -579,16 +579,16 @@ void AgoDataLogger::addMultiGraphParameters(qpid::types::Variant::Map& data, cha
     addGraphParam(string_format("LINE1:level%d%s:%s", id, data["colorL"].asString().c_str(), data["kind"].asString().c_str()), params, index);
 
     //MIN GPRINT
-    addGraphParam(string_format("GPRINT:levelmin%d:\"     Min %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmin%d:     Min %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
 
     //MAX GPRINT
-    addGraphParam(string_format("GPRINT:levelmax%d:\"     Max %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelmax%d:     Max %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
 
     //AVG GPRINT
-    addGraphParam(string_format("GPRINT:levelavg%d:\"     Avg %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levelavg%d:     Avg %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
 
     //LAST GPRINT
-    addGraphParam(string_format("GPRINT:levellast%d:\"     Last %%6.2lf%s\"", id, data["unit"].asString().c_str()), params, index);
+    addGraphParam(string_format("GPRINT:levellast%d:     Last %%6.2lf%s", id, data["unit"].asString().c_str()), params, index);
 
     //new line
     addGraphParam("COMMENT:\\n", params, index);
@@ -1162,6 +1162,11 @@ void AgoDataLogger::getGraphData(qpid::types::Variant::List uuids, int start, in
 {
     if( dataLogging )
     {
+        getGraphDataFromSqlite(uuids, start, end, environment, result);
+    }
+    else if( environment=="position" )
+    {
+        //force values retrieving from database
         getGraphDataFromSqlite(uuids, start, end, environment, result);
     }
     else if( rrdLogging )
