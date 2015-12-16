@@ -529,6 +529,9 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
         case COMMAND_CLASS_ZIP_SERVICES:
             output="COMMAND_CLASS_ZIP_SERVICES";
             break;
+        case COMMAND_CLASS_COLOR:
+            output="COMMAND_CLASS_COLOR";
+            break;
         default:
             output="COMMAND_UNKNOWN";
     }
