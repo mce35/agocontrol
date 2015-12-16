@@ -173,11 +173,11 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //render graph
                 if( device.devicetype=="gpssensor" )
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "map");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
                 }
                 else
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "graph");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
                 }
             }
 
@@ -583,7 +583,7 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, startDt, endDt/*, type*/)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt)
 {
     var self = this;
     self.block($('#graphContainer'));
@@ -630,17 +630,23 @@ Agocontrol.prototype.render = function(device, environment, startDt, endDt/*, ty
             }
             else if( res.data.rendering=="plots" )
             {
-                self.renderPlots(device, environment, unit, values, startDt, endDt);
+                if( environment=="position" )
+                {
+                    self.renderMap(values);
+                }
+                else
+                {
+                    self.renderPlots(device, environment, unit, values, startDt, endDt);
+                }
             }
             else if( res.data.rendering=="image" )
             {
                 self.renderRRD(res.data.graph);
             }
-            /*TODO render map
-            else if( res.data.rendering=="map" )
+            else
             {
-                self.renderMap(values);
-            }*/
+                notif.info('No data stored. Unable to display graph');
+            }
         })
         .catch(function(err) {
             notif.error("Unable to render values");
