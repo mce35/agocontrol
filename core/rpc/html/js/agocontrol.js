@@ -481,7 +481,9 @@ Agocontrol.prototype = {
         {
             var content = {};
             content.uuid = self.journal;
-            content.command = 'today';
+            content.command = 'getmessages';
+            content.type = 'all';
+            content.filter = '';
             self.sendCommand(content)
                 .then(function(res) {
                     //save entries

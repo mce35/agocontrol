@@ -2029,10 +2029,21 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
         else if( content["command"]=="getmessages" )
         {
             //return messages in specified time range
-            checkMsgParameter(content, "start", VAR_STRING, false);
-            checkMsgParameter(content, "end", VAR_STRING, false);
             checkMsgParameter(content, "filter", VAR_STRING, true);
             checkMsgParameter(content, "type", VAR_STRING, false);
+            if( content["start"].isVoid() && content["end"].isVoid() )
+            {
+                //no timerange specified, return message of today
+                ptime s(date(day_clock::local_day()), hours(0));
+                ptime e(date(day_clock::local_day()), hours(23)+minutes(59)+seconds(59));
+                content["start"] = dateToDatabaseFormat(s);
+                content["end"] = dateToDatabaseFormat(e);
+            }
+            else
+            {
+                checkMsgParameter(content, "start", VAR_STRING, false);
+                checkMsgParameter(content, "end", VAR_STRING, false);
+            }
 
             if( getMessagesFromJournal(content, returnData) )
             {
@@ -2043,7 +2054,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 return responseFailed("Internal error");
             }
         }
-        else if( content["command"]=="today" )
+        /*else if( content["command"]=="today" )
         {
             ptime s(date(day_clock::local_day()), hours(0));
             ptime e(date(day_clock::local_day()), hours(23)+minutes(59)+seconds(59));
@@ -2061,7 +2072,7 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
             {
                 return responseFailed("Internal error");
             }
-        }
+        }*/
         else
         {
             return responseUnknownCommand();
