@@ -481,7 +481,9 @@ Agocontrol.prototype = {
         {
             var content = {};
             content.uuid = self.journal;
-            content.command = 'today';
+            content.command = 'getmessages';
+            content.type = 'all';
+            content.filter = '';
             self.sendCommand(content)
                 .then(function(res) {
                     //save entries
@@ -870,8 +872,9 @@ Agocontrol.prototype = {
             {
                 if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
                 {
-                    //brand new device, get inventory and fill local one with new infos
-                    self.getInventory()
+                    //brand new device, refresh all inventory
+                    self.refreshDevices();
+                    /*self.getInventory()
                         .then(function(result) {
                             var tmpDevices = self.cleanInventory(result.data.devices);
                             if( tmpDevices && tmpDevices[response.result.uuid] )
@@ -882,7 +885,7 @@ Agocontrol.prototype = {
                             {
                                 console.warn('Unable to update device because no infos about it in inventory');
                             }
-                        });
+                        });*/
                 }
 
                 //nothing else to do

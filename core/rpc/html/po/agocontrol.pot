@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-03 18:09+0100\n"
+"POT-Creation-Date: 2015-12-15 18:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -88,11 +88,12 @@ msgstr ""
 #: ../templates/details/brightnesssensor.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:4
 #: ../templates/details/energymeter.xml.in.h:4
+#: ../templates/details/gpssensor.xml.in.h:4
 #: ../templates/details/humiditysensor.xml.in.h:4
+#: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
-#: ../configuration/datalogger/html/datalogger.xml.in.h:3
-msgid "Graph"
+msgid "Range"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:5
@@ -100,10 +101,13 @@ msgstr ""
 #: ../templates/details/brightnesssensor.xml.in.h:5
 #: ../templates/details/distancesensor.xml.in.h:5
 #: ../templates/details/energymeter.xml.in.h:5
+#: ../templates/details/gpssensor.xml.in.h:5
 #: ../templates/details/humiditysensor.xml.in.h:5
+#: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-msgid "Plots"
+#: ../applications/journal/html/journal.xml.in.h:2
+msgid "From"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:6
@@ -111,24 +115,28 @@ msgstr ""
 #: ../templates/details/brightnesssensor.xml.in.h:6
 #: ../templates/details/distancesensor.xml.in.h:6
 #: ../templates/details/energymeter.xml.in.h:6
-#: ../templates/details/gpssensor.xml.in.h:5
+#: ../templates/details/gpssensor.xml.in.h:6
 #: ../templates/details/humiditysensor.xml.in.h:6
+#: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
-msgid "List"
+#: ../applications/journal/html/journal.xml.in.h:3
+msgid "To"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:7
 #: ../templates/details/batterysensor.xml.in.h:7
 #: ../templates/details/brightnesssensor.xml.in.h:7
+#: ../templates/details/camera.xml.in.h:4
 #: ../templates/details/distancesensor.xml.in.h:7
 #: ../templates/details/energymeter.xml.in.h:7
-#: ../templates/details/gpssensor.xml.in.h:6
+#: ../templates/details/gpssensor.xml.in.h:7
 #: ../templates/details/humiditysensor.xml.in.h:7
-#: ../templates/details/multigraph.xml.in.h:4
+#: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
-msgid "Range"
+#: ../protocols/zwave/html/zwave.xml.in.h:16
+msgid "Refresh"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:8
@@ -136,42 +144,11 @@ msgstr ""
 #: ../templates/details/brightnesssensor.xml.in.h:8
 #: ../templates/details/distancesensor.xml.in.h:8
 #: ../templates/details/energymeter.xml.in.h:8
-#: ../templates/details/gpssensor.xml.in.h:7
+#: ../templates/details/gpssensor.xml.in.h:8
 #: ../templates/details/humiditysensor.xml.in.h:8
-#: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
-#: ../applications/journal/html/journal.xml.in.h:2
-msgid "From"
-msgstr ""
-
-#: ../templates/details/barometersensor.xml.in.h:9
-#: ../templates/details/batterysensor.xml.in.h:9
-#: ../templates/details/brightnesssensor.xml.in.h:9
-#: ../templates/details/distancesensor.xml.in.h:9
-#: ../templates/details/energymeter.xml.in.h:9
-#: ../templates/details/gpssensor.xml.in.h:8
-#: ../templates/details/humiditysensor.xml.in.h:9
-#: ../templates/details/multigraph.xml.in.h:6
-#: ../templates/details/powermeter.xml.in.h:9
-#: ../templates/details/temperaturesensor.xml.in.h:9
-#: ../applications/journal/html/journal.xml.in.h:3
-msgid "To"
-msgstr ""
-
-#: ../templates/details/barometersensor.xml.in.h:10
-#: ../templates/details/batterysensor.xml.in.h:10
-#: ../templates/details/brightnesssensor.xml.in.h:10
-#: ../templates/details/camera.xml.in.h:4
-#: ../templates/details/distancesensor.xml.in.h:10
-#: ../templates/details/energymeter.xml.in.h:10
-#: ../templates/details/gpssensor.xml.in.h:9
-#: ../templates/details/humiditysensor.xml.in.h:10
-#: ../templates/details/multigraph.xml.in.h:7
-#: ../templates/details/powermeter.xml.in.h:10
-#: ../templates/details/temperaturesensor.xml.in.h:10
-#: ../protocols/zwave/html/zwave.xml.in.h:16
-msgid "Refresh"
+msgid "Show values"
 msgstr ""
 
 #: ../templates/details/default.xml.in.h:4
@@ -181,10 +158,6 @@ msgstr ""
 #: ../templates/details/default.xml.in.h:5
 #: ../configuration/scenarios/html/scenarios.xml.in.h:10
 msgid "Run"
-msgstr ""
-
-#: ../templates/details/gpssensor.xml.in.h:4
-msgid "Map"
 msgstr ""
 
 #: ../templates/devices/computer.xml.in.h:1
@@ -359,7 +332,7 @@ msgstr ""
 #: ../applications/security/html/security.xml.in.h:17
 #: ../protocols/onvif/html/onvif.xml.in.h:15
 #: ../protocols/knx/html/knx.xml.in.h:19
-#: ../configuration/datalogger/html/datalogger.xml.in.h:10
+#: ../configuration/datalogger/html/datalogger.xml.in.h:13
 #: ../configuration/system/html/system.xml.in.h:7
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
 msgid "Save changes"
@@ -748,7 +721,7 @@ msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
 #: ../applications/journal/html/journal.xml.in.h:1
-#: ../configuration/datalogger/html/datalogger.xml.in.h:22
+#: ../configuration/datalogger/html/datalogger.xml.in.h:25
 msgid "Journal"
 msgstr ""
 
@@ -1789,6 +1762,10 @@ msgstr ""
 msgid "Datalogger configuration"
 msgstr ""
 
+#: ../configuration/datalogger/html/datalogger.xml.in.h:3
+msgid "Graph"
+msgstr ""
+
 #: ../configuration/datalogger/html/datalogger.xml.in.h:4
 msgid "Database"
 msgstr ""
@@ -1806,58 +1783,70 @@ msgid "Activate RRDTool logging (graph)"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:8
-msgid "Keep data X months (0=no purge)"
+msgid "Desired graph rendering"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:9
-msgid "number of months"
+msgid "Static image graph"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:10
+msgid "Interactive graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:11
-msgid "Add graph"
+msgid "Keep data X months (0=no purge)"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:12
-msgid "Select sensors to display on graph"
-msgstr ""
-
-#: ../configuration/datalogger/html/datalogger.xml.in.h:13
-msgid "Number of hours to display on thumb"
+msgid "number of months"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:14
-msgid "Delete graph"
+msgid "Add graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:15
-msgid "Graphs"
+msgid "Select sensors to display on the same graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:16
-msgid "Associated sensors"
+msgid "Number of hours to display on dashboard thumb"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:17
-msgid "Database size"
+msgid "Delete graph"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:18
-msgid "Sensor values"
+msgid "Graphs"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:19
-msgid "Purge all values"
+msgid "Associated sensors"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:20
-msgid "GPS positions"
+msgid "Database size"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:21
-msgid "Purge all positions"
+msgid "Sensor values"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:22
+msgid "Purge all values"
 msgstr ""
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:23
+msgid "GPS positions"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:24
+msgid "Purge all positions"
+msgstr ""
+
+#: ../configuration/datalogger/html/datalogger.xml.in.h:26
 msgid "Purge all messages"
 msgstr ""
 

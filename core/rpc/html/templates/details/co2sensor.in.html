@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <div class="row agorowbottom">
+    <div class="row">
         <ul style="list-style-type:none;">
             <li>
                 <_strong data-translateable="true">Device type</_strong>:
@@ -16,40 +16,34 @@
         </ul>
     </div>
     <div class="row agorowbottom">
-        <div class="btn-group btn-group-justified" data-toggle="buttons">
-            <label class="btn btn-default active">
-                <input type="radio" name="renderType" value="graph" autocomplete="off" checked="checked"/>
-                <_span data-translateable="true">Graph</_span>
-            </label>
-            <label class="btn btn-default">
-                <input type="radio" name="renderType" value="plots" autocomplete="off"/>
-                <_span data-translateable="true">Plots</_span>
-            </label>
-            <label class="btn btn-default">
-                <input type="radio" name="renderType" value="list" autocomplete="off"/>
-                <_span data-translateable="true">List</_span>
-            </label>
-        </div>
-    </div>
-    <div class="row agorowbottom">
         <div id="graphContainer" style="width:100%; min-height:r1300px;"></div>
     </div>
     <div class="row">
-        <form class="form-inline">
-            <div class="form-group">
-                <_label data-translateable="true" for="range_date">Range</_label>
-                <select class="form-control" id="range_date"></select>
+        <div class="col-sm-9">
+            <form class="form-inline">
+                <div class="form-group">
+                    <_label data-translateable="true" for="range_date">Range</_label>
+                    <select class="form-control" id="range_date"></select>
+                </div>
+                <div class="form-group">
+                    <_label data-translateable="true" for="start_date">From</_label>
+                    <input type="text" class="form-control" id="start_date" readonly="readonly"/>
+                </div>
+                <div class="form-group">
+                    <_label data-translateable="true" for="end_date">To</_label>
+                    <input type="text" class="form-control" id="end_date" readonly="readonly"/>
+                </div>
+                <button type="submit" class="btn btn-primary" id="get_graph" data-translateable="true" _alt="Refresh" _title="Refresh"><i class="en-arrows-ccw"></i></button>
+            </form>
+        </div>
+        <div class="col-sm-3 text-right">
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary" _alt="Show values" _title="Show values" data-translateable="true">
+                    <input type="checkbox" id="renderingList"/>
+                    <i class="en-doc-text"></i>
+                </label>
             </div>
-            <div class="form-group">
-                <_label data-translateable="true" for="start_date">From</_label>
-                <input type="text" class="form-control" id="start_date" readonly="readonly"/>
-            </div>
-            <div class="form-group">
-                <_label data-translateable="true" for="end_date">To</_label>
-                <input type="text" class="form-control" id="end_date" readonly="readonly"/>
-            </div>
-            <_button type="submit" class="btn btn-primary" id="get_graph" data-translateable="true">Refresh</_button>
-        </form>
+        </div>
     </div>
 </div>
 

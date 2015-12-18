@@ -12,6 +12,7 @@ templates/details/humiditysensor.xml.in
 templates/details/multigraph.xml.in
 templates/details/powermeter.xml.in
 templates/details/temperaturesensor.xml.in
+templates/details/multilevelsensor.xml.in
 templates/devices/barometersensor.xml.in
 templates/devices/batterysensor.xml.in
 templates/devices/binarysensor.xml.in
@@ -39,6 +40,7 @@ templates/devices/switch.xml.in
 templates/devices/temperaturesensor.xml.in
 templates/devices/thermostat.xml.in
 templates/devices/twittergateway.xml.in
+templates/devices/multilevelsensor.xml.in
 templates/plugins/plugins.xml.in
 applications/alert/html/alert.xml.in
 applications/agoscheduler/html/agoscheduler.xml.in

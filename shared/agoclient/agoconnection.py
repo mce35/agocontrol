@@ -23,6 +23,12 @@ class AgoResponse:
         else:
             raise Exception("Invalid response, neither result or error present")
 
+    def __str__(self):
+        if self.is_error():
+            return 'AgoResponse[ERROR] message="%s" data=[%s]' % (self.message(), str(self.data()))
+        else:
+            return 'AgoResponse[OK] message="%s" data=[%s]' % (self.message(), str(self.data()))
+
     def is_error(self):
         return "error" in self.response
 
@@ -328,12 +334,8 @@ class AgoConnection:
         """
         return self.response_result(iden=self.RESPONSE_SUCCESS, mess=message, data=data)
 
-    def send_message(self, content):
-        """Send message without subject."""
-        return self.send_message(None, content)
-
     def send_message(self, subject, content):
-        """Method to send an agocontrol message with a subject."""
+        """Method to send an agocontrol message with a subject. Subject can be None if necessary"""
         _content = content
         _content["instance"] = self.instance
         if self.log.isEnabledFor(logging.TRACE):

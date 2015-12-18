@@ -324,7 +324,8 @@ function DeviceConfig(agocontrol)
             {headerText:'Device type', rowText:'devicetype'},
             {headerText:'Handled by', rowText:'handledBy'},
             {headerText:'Internalid', rowText:'internalid'},
-            {headerText:'Actions', rowText:''}
+            {headerText:'Actions', rowText:''},
+            {headerText:'', rowText:'uuid'}
         ],
         rowCallback: self.makeEditable,
         rowTemplate: 'rowTemplate',

@@ -51,9 +51,9 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 environment = "device.state";
             }
 
-            //configure radio button (graph type selector)
-            $('input[type=radio][name=renderType]').on('change', function() {
-                self.render(device, environment, startDt, endDt, $(this).val());
+            //render list instead of data (graph/map/plots)
+            $('input[type=checkbox][id=renderingList]').on('change', function() {
+                self.render(device, environment, startDt, endDt);
             });
 
             if( $('#commandList').length )
@@ -85,7 +85,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     endEl.val( datetimeToString(endDt) );
                     startDt = new Date(endDt.getTime() - rangeEl.val()*60*60*1000);
                     startEl.val( datetimeToString(startDt) );
-                };
+                }
 
                 //hide by default custom elements
                 startEl.parent().hide();
@@ -106,7 +106,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
                 });
                 rangeEl.change(function() {
-                    if( rangeEl.val()==0 )
+                    if( rangeEl.val()===0 )
                     {
                         //display custom range fields
                         startEl.parent().show();
@@ -173,11 +173,11 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //render graph
                 if( device.devicetype=="gpssensor" )
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "map");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
                 }
                 else
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "graph");
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
                 }
             }
 
@@ -188,7 +188,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
             }
             else
             {
-                $('#detailsTitle').html('Device details');
+                $('#detailsTitle').html('Device details <small>('+device.uuid+')</small>');
             }
             $('#detailsModal').modal('show');
         }
@@ -267,7 +267,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     $('#graphContainer').empty();
 
     //check if we have data
-    if( data.length==0 )
+    if( data.length===0 )
     {
         notif.warning('No data to display');
         return;
@@ -293,7 +293,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         colorL = '#FF0000';
         colorA = '#FF8787';
     }
-    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype=='' ||device.devicetype=='batterysensor' )
+    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype==='' ||device.devicetype=='batterysensor' )
     {
         colorL = '#007A00';
         colorA = '#00BB00';
@@ -305,21 +305,27 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         colorA = '#FFD400';
     }
 
+    //prepare data
+    data.forEach(function(d) {
+        d.date = d.time*1000;
+        d.value = +d.level;
+    });
+
     //graph parameters
     var margin = {top: 30, right: 20, bottom: 30, left: 50},
         width = 870 - margin.left - margin.right,
         height = 325 - margin.top - margin.bottom;
-    var x = d3.time.scale()
+    var xScale = d3.time.scale()
         .range([0, width]);
-    var y = d3.scale.linear()
+    var yScale = d3.scale.linear()
         .range([height, 0]);
     var xAxis = d3.svg.axis()
-        .scale(x)
+        .scale(xScale)
         .orient("bottom")
         .tickSize(-height, 0)
         .tickPadding(6);
     var yAxis = d3.svg.axis()
-        .scale(y)
+        .scale(yScale)
         .orient("left")
         .tickSize(-width)
         .tickPadding(6);
@@ -327,15 +333,21 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
     //area generator
     var area = d3.svg.area()
         .interpolate("step-after")
-        .x(function(d) { return x(d.date); })
-        .y0(y(0))
-        .y1(function(d) { return y(d.value); });
+        .x(function(d) { return xScale(d.date); })
+        .y0(function(d) {
+            if( d.value>=0 ) return yScale(0);
+            else return yScale(d.value);
+        })
+        .y1(function(d) {
+            if( d.value>=0 ) return yScale(d.value);
+            else return yScale(0);
+        });
 
     //line generator
     var line = d3.svg.line()
         .interpolate("step-after")
-        .x(function(d) { return x(d.date); })
-        .y(function(d) { return y(d.value); });
+        .x(function(d) { return xScale(d.date); })
+        .y(function(d) { return yScale(d.value); });
 
     //create graph canvas
     var svg = d3.select("#graphContainer").append("svg")
@@ -360,16 +372,16 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
 
         svg.selectAll("circle")
             .data(data)
-            .attr("cx", function(d,i){ return x(d.date) || 0; })
-            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("cx", function(d,i){ return xScale(d.date) || 0; })
+            .attr("cy",function(d,i){ return yScale(d.value) || 0; })
             .attr("opacity", function(item) {
-                var coordx = x(item.date);
+                var coordx = xScale(item.date);
                 if( coordx<0 || coordx>width )
                     return 0.000001; //hide item
                 else
-                    return 0.4
+                    return 0.4;
             });
-    };
+    }
 
     function showTooltip(pt, item)
     {
@@ -380,31 +392,25 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
             .style("left",(d3.event.pageX+10)+"px");
         var dt = new Date(item.date);
         tooltip.html("<small>"+datetimeToString(dt)+"</small><br/><big>"+item.value+"</big>");
-    };
+    }
 
     function hideTooltip(pt)
     {
         tooltip.style("visibility", "hidden");
-    };
+    }
 
     //define zoom
     var zoom = d3.behavior.zoom()
         .on("zoom", draw);
 
-    //prepare data
-    data.forEach(function(d) {
-        d.date = d.time*1000;
-        d.value = +d.level;
-    });
-
     //configure graph
     svg.append("clipPath")
             .attr("id", "clip")
         .append("rect")
-            .attr("x", x(0))
-            .attr("y", y(1))
-            .attr("width", x(1) - x(0))
-            .attr("height", y(0) - y(1));
+            .attr("x", xScale(0))
+            .attr("y", yScale(1))
+            .attr("width", xScale(1) - xScale(0))
+            .attr("height", yScale(0) - yScale(1));
     svg.append("g")
             .attr("class", "y axis")
         .append("text")
@@ -438,8 +444,8 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .data(data)
         .enter()
         .append("circle")
-            .attr("cx", function(d,i){ return x(d.date) || 0; })
-            .attr("cy",function(d,i){ return y(d.value) || 0; })
+            .attr("cx", function(d,i){ return xScale(d.date) || 0; })
+            .attr("cy",function(d,i){ return yScale(d.value) || 0; })
             .attr("fill", colorL)
             .attr("opacity", "0.4")
             .attr("cursor", "pointer")
@@ -448,10 +454,17 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
             .on("mouseout", function() { hideTooltip(this);});
 
     //compute boundaries
-    x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain([0, d3.max(data, function(d) { return d.value; })]);
+    var yMin = d3.min(data, function(d) { return d.value; });
+    var yMax = d3.max(data, function(d) { return d.value; });
+    if( yMin>0 )
+    {
+        yMin = 0;
+    }
+    xScale.domain(d3.extent(data, function(d) { return d.date; }));
+    yScale.domain([yMin, yMax]);
 
-    zoom.x(x);
+    //set default zoom
+    zoom.x(xScale);
 
     //bind the data to our path elements.
     svg.select("path.area").data([data]);
@@ -465,7 +478,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
 Agocontrol.prototype.renderList = function(device, environment, unit, values, startDate, endDate)
 {
     var self = this;
-    var data = []
+    var data = [];
 
     values.sort(function(a, b) {
         return b.time - a.time;
@@ -570,17 +583,13 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, startDt, endDt, type)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt)
 {
     var self = this;
     self.block($('#graphContainer'));
 
-    //get type
-    if( type===null || type===undefined )
-    {
-        type = self.lastRenderType;
-    }
-    self.lastRenderType = type;
+    //render list?
+    var renderingList = $('#renderingList').prop('checked');
 
     //fix end date
     now = new Date();
@@ -589,76 +598,63 @@ Agocontrol.prototype.render = function(device, environment, startDt, endDt, type
         endDt = now;
     }
 
-    if( type=="graph" )
-    {
-        //RRD graph, get image data
-        var content = {};
-        content.command = "getgraph";
-        content.uuid = self.dataLoggerController;
-        content.devices = [device.uuid];
-        content.start = Math.round(startDt.getTime()/1000);
-        content.end = Math.round(endDt.getTime()/1000);
-        self.sendCommand(content)
-            .then(function(res) {
-                self.renderRRD(res.data.graph);
-            })
-            .catch(function(err) {
-                notif.error("Unable to render values");
-                console.error(err);
-            })
-            .finally(function() {
-                self.unblock($('#graphContainer'));
-            });
-    }
-    else
-    {
-        //other render needs values and unit
-        var content = {};
-        content.uuid = self.dataLoggerController;
-        content.command = "getdata";
-        content.replytimeout = 15;
-        content.deviceid = device.uuid;
-        content.start = startDt.toISOString();
-        content.end = endDt.toISOString();
-        content.env = environment.toLowerCase();
-        self.sendCommand(content, null, 30)
-            .then(function(res) {
-                //get unit
-                var unit = "";
-                for ( var k = 0; k < device.valueList().length; k++)
+    //other render needs values and unit
+    var content = {};
+    content.uuid = self.dataLoggerController;
+    content.command = (renderingList ? "getrawdata" : "getdata");
+    content.replytimeout = 15;
+    content.devices = [device.uuid];
+    content.start = Math.round(startDt.getTime()/1000);
+    content.end = Math.round(endDt.getTime()/1000);
+    content.env = environment.toLowerCase();
+    self.sendCommand(content, null, 30)
+        .then(function(res) {
+            //get unit
+            var unit = "";
+            for ( var k = 0; k < device.valueList().length; k++)
+            {
+                if (device.valueList()[k].name == environment)
                 {
-                    if (device.valueList()[k].name == environment)
-                    {
-                        unit = device.valueList()[k].unit;
-                        break;
-                    }
+                    unit = device.valueList()[k].unit;
+                    break;
                 }
+            }
 
-                //get data
-                var values = res.data.values;
+            //get data
+            var values = res.data.values;
 
-                //render
-                if( type=="plots" )
-                {
-                    self.renderPlots(device, environment, unit, values, startDt, endDt);
-                }
-                else if( type=="list" )
-                {
-                    self.renderList(device, environment, unit, values, startDt, endDt);
-                }
-                else if( type=="map" )
+            //render
+            if( res.data.rendering=="raw" )
+            {
+                self.renderList(device, environment, unit, values, startDt, endDt);
+            }
+            else if( res.data.rendering=="plots" )
+            {
+                if( environment=="position" )
                 {
                     self.renderMap(values);
                 }
-            })
-            .catch(function(err) {
-                notif.error("Unable to render values");
-                console.error(err);
-            })
-            .finally(function() {
-                self.unblock($('#graphContainer'));
-            });   
-    }
+                else
+                {
+                    self.renderPlots(device, environment, unit, values, startDt, endDt);
+                }
+            }
+            else if( res.data.rendering=="image" )
+            {
+                self.renderRRD(res.data.graph);
+            }
+            else
+            {
+                notif.info('No data stored. Unable to display graph');
+            }
+        })
+        .catch(function(err) {
+            notif.error("Unable to render values");
+            console.error(err);
+        })
+        .finally(function() {
+            self.unblock($('#graphContainer'));
+        });   
 };
 
 //Opens parameters page for the given device
