@@ -514,9 +514,9 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
         case COMMAND_CLASS_ZIP_ADV_CLIENT:
             output="COMMAND_CLASS_ZIP_ADV_CLIENT";
             break;
-        case COMMAND_CLASS_ZIP_ADV_SERVER:
-            output="COMMAND_CLASS_ZIP_ADV_SERVER";
-            break;
+        //case COMMAND_CLASS_ZIP_ADV_SERVER:
+        //    output="COMMAND_CLASS_ZIP_ADV_SERVER";
+        //    break;
         case COMMAND_CLASS_ZIP_ADV_SERVICES:
             output="COMMAND_CLASS_ZIP_ADV_SERVICES";
             break;
