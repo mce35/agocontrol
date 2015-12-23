@@ -2054,25 +2054,6 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
                 return responseFailed("Internal error");
             }
         }
-        /*else if( content["command"]=="today" )
-        {
-            ptime s(date(day_clock::local_day()), hours(0));
-            ptime e(date(day_clock::local_day()), hours(23)+minutes(59)+seconds(59));
-
-            qpid::types::Variant::Map content;
-            content["start"] = dateToDatabaseFormat(s);
-            content["end"] = dateToDatabaseFormat(e);
-            content["type"] = "all";
-            content["filter"] = "";
-            if( getMessagesFromJournal(content, returnData) )
-            {
-                return responseSuccess(returnData);
-            }
-            else
-            {
-                return responseFailed("Internal error");
-            }
-        }*/
         else
         {
             return responseUnknownCommand();
