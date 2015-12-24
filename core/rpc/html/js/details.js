@@ -106,7 +106,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
                 });
                 rangeEl.change(function() {
-                    if( rangeEl.val()===0 )
+                    if( rangeEl.val()==0 )
                     {
                         //display custom range fields
                         startEl.parent().show();
@@ -173,11 +173,11 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //render graph
                 if( device.devicetype=="gpssensor" )
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "map");
                 }
                 else
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "graph");
                 }
             }
 
@@ -583,7 +583,7 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, startDt, endDt)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt/*, type*/)
 {
     var self = this;
     self.block($('#graphContainer'));
