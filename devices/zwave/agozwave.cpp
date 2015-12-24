@@ -533,7 +533,9 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
             output="COMMAND_CLASS_COLOR";
             break;
         default:
-            output="COMMAND_UNKNOWN";
+            stringstream temp;
+            temp << "COMMAND_UNKNOWN[" << commandClassId << "]";
+            output = temp.str();
     }
     return output;
 }
