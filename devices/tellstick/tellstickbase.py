@@ -33,6 +33,7 @@ class tellstickbase(object):
         self.switches={}
         self.remotes={}
         self.app = app
+        self.log = app.log
 
     def __get__(self, obj, objtype=None):
         pass

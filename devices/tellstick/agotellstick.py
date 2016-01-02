@@ -137,6 +137,7 @@ class AgoTellstick(agoclient.AgoApp):
     #            print ("method=" + method)
 
     def emitTempChanged(self, devId, temp):
+        self.log.debug("emitTempChanged called for devID=" + str(devId) + " temp=" + str(temp))
         tempC = temp
         if self.TempUnits == 'F':
             tempF = 9.0/5.0 * tempC + 32.0
@@ -150,16 +151,16 @@ class AgoTellstick(agoclient.AgoApp):
                 self.connection.emit_event(devId + "-temp", "event.environment.temperaturechanged", str(tempC), "degC")
 
     def emitHumidityChanged(self, devId, humidity):
-        #print "hum=" + str(humidity)
-        #print "last=" + str(sensors[devId]["lastHumidity"])
-
+        self.log.debug("emitHumidityChanged called for devID=" + str(devId) + " humidity=" + str(humidity))
         if humidity != float(self.sensors[devId]["lastHumidity"]):
             self.sensors[devId]["lastHumidity"] = humidity
             self.connection.emit_event(devId + "-hum", "event.environment.humiditychanged", str(humidity), "%")
 
     def listNewSensors(self):
         self.sensors = self.tellstick.listSensors()
+        self.log.debug ("listSensors returned " + str(self.sensors.__sizeof__()) + " items")
         for id, value in self.sensors.iteritems():
+            self.log.trace("listNewSensors: devId: %s ",str(id))
             if value["new"] != True:
                 continue
 
@@ -199,8 +200,6 @@ class AgoTellstick(agoclient.AgoApp):
         self.dev_delay = {}
         self.sensors = {}
 
-        #device = (agoclient.get_config_option("tellstick", "device", "/dev/usbxxxx")
-
         try:
             self.general_delay = float(self.get_config_option('Delay', 500, 'EventDevices'))/1000
         except ValueError:
@@ -208,27 +207,31 @@ class AgoTellstick(agoclient.AgoApp):
 
         try:
             self.SensorPollInterval = float(self.get_config_option('SensorPollInterval', 300))
+            self.log.debug("SensorPollIntervall set to " + str(self.SensorPollInterval))
         except ValueError:
             self.SensorPollInterval = 300.0  # 5 minutes
+            self.log.debug("SensorPollIntervall defaulted to 300s")
 
         units = self.get_config_option("units", "SI", section="units")
         self.TempUnits = "C"
         if units.lower() == "us":
             self.TempUnits = "F"
+        self.log.debug("TempUnits: " + self.TempUnits)
 
         stickVersion = self.get_config_option('StickVersion', 'Tellstick Duo')
-
         try:
             if "Net" in stickVersion:
                 # Postpone tellsticknet loading, has extra dependencies which
                 # we can do without if we've only got a Duo
                 from tellsticknet import tellsticknet
                 self.tellstick = tellsticknet(self)
+                self.log.debug("Stick: Tellstick Net found in config")
             else:
                 from  tellstickduo import  tellstickduo
                 self.tellstick = tellstickduo(self)
+                self.log.debug("Stick: Defaulting to Tellstick Duo")
         except OSError,e:
-            self.log.error("Failed to load tellstick code: %s", e)
+            self.log.error("Failed to load Tellstick stick version code: %s", e)
             raise agoclient.agoapp.StartupError()
 
         self.tellstick.init(self.SensorPollInterval, self.TempUnits)
@@ -255,13 +258,10 @@ class AgoTellstick(agoclient.AgoApp):
                 self.connection.send_message (None, content)
                 self.log.debug("'setdevicename' message sent for %s, name=%s", deviceUUID, name)
 
-        # Get devices from Telldus, announce to Ago Control
+        ####################################################
         self.log.info("Getting switches and dimmers")
         switches = self.tellstick.listSwitches()
         for devId, dev in switches.iteritems():
-        #    devId = self.tellstick.getDeviceId(i)
-        #    model = self.tellstick.getModel(devId)
-        #    name = self.tellstick.getName(devId)
             model = dev["model"]
             name = dev["name"]
 
@@ -285,6 +285,7 @@ class AgoTellstick(agoclient.AgoApp):
             # Check if device already exist, if not - send its name from the tellstick config file
             setNameIfNecessary(deviceUUID, name)
 
+        ####################################################
         self.log.info("Getting remotes & motion sensors")
         remotes = self.tellstick.listRemotes()
         for devId, dev in remotes.iteritems():
@@ -304,6 +305,7 @@ class AgoTellstick(agoclient.AgoApp):
                 # Check if device already exist, if not - send its name from the tellstick config file
                 setNameIfNecessary(deviceUUID, name)
 
+        ####################################################
         self.log.info("Getting temp and humidity sensors")
         self.listNewSensors()
 

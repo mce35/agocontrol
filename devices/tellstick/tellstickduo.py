@@ -34,6 +34,7 @@ class tellstickduo(tellstickbase):
     def init(self, SensorPollDelay, TempUnits):
         #TELLSTICK_BELL | TELLSTICK_TOGGLE | TELLSTICK_LEARN | TELLSTICK_EXECUTE | TELLSTICK_UP | TELLSTICK_DOWN | TELLSTICK_STOP
         td.init( defaultMethods = td.TELLSTICK_TURNON | td.TELLSTICK_TURNOFF | td.TELLSTICK_DIM)
+        self.log.info("Init executed")
 
     def close(self):
         return td.close()
@@ -80,13 +81,13 @@ class tellstickduo(tellstickbase):
 
     def SensorEventInterceptor (self, protocol, model, id, dataType, value, timestamp, callbackId):
         devId = "S" + str(id)
-        print "SensorEventInterceptod called for " + devId
+        self.log.debug ("SensorEventInterceptod called for " + devId)
 
         if devId not in self.sensors:
             s = {}
             s["id"] =devId
             s["model"]= model
-            #print("New sensor intercepted: devId=" + s["id"] + " model=" + model)
+            self.log.debug("New sensor intercepted: devId=" + s["id"] + " model=" + model)
             s["new"] = True
             if dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE:
                 s["temp"] = float(value) # C/F
@@ -107,10 +108,11 @@ class tellstickduo(tellstickbase):
             self.sensors[devId] = s
 
 
+
         if devId in self.sensors:
             s = self.sensors[devId]
             if (dataType & td.TELLSTICK_HUMIDITY == td.TELLSTICK_HUMIDITY and s["isHumiditySensor"] == False) or (dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE and s["isTempSensor"] == False):
-                print("New data type intercepted: devId=" + devId + " model=" + model)
+                self.log.debug("New data intercepted: devId=" + devId + " model=" + model)
                 s["new"] = True
                 if dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE:
                     s["temp"] = float(value)  # C/F
