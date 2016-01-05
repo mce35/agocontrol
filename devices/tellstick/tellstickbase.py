@@ -32,6 +32,8 @@ class tellstickbase(object):
         self.sensors={}
         self.switches={}
         self.remotes={}
+        self.ignoreModels = {}
+        self.ignoreDevices = {}
         self.app = app
         self.log = app.log
 
@@ -78,3 +80,8 @@ class tellstickbase(object):
         pass
     def registerSensorEvent(self, deviceEvent):
         pass
+    def checkIgnore(self, devID): #TODO: Flytta till, agotellstick.py???
+        if devID in self.ignoreDevices:
+            return True
+        else:
+            return False
