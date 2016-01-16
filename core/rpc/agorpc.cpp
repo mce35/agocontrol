@@ -163,12 +163,12 @@ static void mg_printmap(struct mg_connection *conn, Variant::Map map);
 
 static void mg_printlist(struct mg_connection *conn, Variant::List list) {
     std::string json = variantListToJSONString(list);
-    mg_printf_data(conn, json.c_str());
+    mg_printf_data(conn, "%s", json.c_str());
 }
 
 static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
     std::string json = variantMapToJSONString(map);
-    mg_printf_data(conn, json.c_str());
+    mg_printf_data(conn, "%s", json.c_str());
 }
 
 /**
