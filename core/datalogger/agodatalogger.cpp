@@ -2083,6 +2083,13 @@ void AgoDataLogger::setupApp()
 
     //create missing tables
     list<string> queries;
+    //db
+    queries.push_back("CREATE TABLE data(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp LONG);");
+    queries.push_back("CREATE INDEX timestamp_idx ON data(timestamp);");
+    queries.push_back("CREATE INDEX environment_idx ON data(environment);");
+    queries.push_back("CREATE INDEX uuid_idx ON data(uuid);");
+    createTableIfNotExist("data", queries);
+    queries.clear();
     //position
     queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
     queries.push_back("CREATE INDEX timestamp_position_idx ON position(timestamp)");
