@@ -69,11 +69,16 @@ string Inventory::getdeviceroom (string uuid) {
     return getfirst(query.c_str(), 1, uuid.c_str());
 }
 
+int Inventory::deletedevice(string uuid) {
+    string query = "delete from devices where uuid = ?";
+    getfirst(query.c_str(), 1, uuid.c_str());
+    return 0;
+}
+
 int Inventory::setdevicename (string uuid, string name) {
     if (name == "") {
-        string query = "delete from devices where uuid = ?";
-        getfirst(query.c_str(), 1, uuid.c_str());
-        return 0;
+        AGO_INFO() << "TODO: Old use of setdevicename with blank name, please change to deletedevice()!";
+        return deletedevice(uuid);
     }
     if (getdevicename(uuid) == "") { // does not exist, create
         string query = "insert into devices (name, uuid) VALUES (?, ?)";

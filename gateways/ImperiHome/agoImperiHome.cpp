@@ -330,7 +330,11 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         agoValue = (values["temperature"]).asMap();
                         param["key"]="Value";
                         param["value"]=agoValue["level"].asString();
-                        param["unit"]=agoValue["unit"];
+                        if (agoValue["unit"] == "degC") {
+                            param["unit"]="˚C";
+                        } else {
+                            param["unit"]="˚F";
+                        }
                         param["graphable"]="false";
                         paramList.push_back(param);
                         deviceinfo["params"]=paramList;

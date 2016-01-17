@@ -286,7 +286,17 @@ function getDatetimepickerFormat()
 {
     var d = getDateFormat();
     var t = getTimeFormat();
-    return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'h').replace(/m+/gi,'i').replace(/a/gi,'A');
+    var l = new Date().toLocaleTimeString();
+    if( l.indexOf('AM')!==-1 || l.indexOf('PM')!==-1 )
+    {
+        //12h format
+        return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'h').replace(/m+/gi,'i').replace(/a/gi,'A');
+    }
+    else
+    {
+        //24h format
+        return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'H').replace(/m+/gi,'i');
+    }
 };
 
 /**

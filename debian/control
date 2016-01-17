@@ -229,7 +229,7 @@ Description: Tellstick Duo & Tellstick Net interface driver
 
 Package: agocontrol-axisaudiotransmit
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-requests
 Description: Plays audio samples via built in speaker of an Axis IP Camera
 
 Package: agocontrol-weatherreporter

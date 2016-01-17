@@ -44,6 +44,10 @@ function dashBoard(agocontrol)
         return list;
     });
 
+    self.absorbEnter = function(data, event) {
+        return event.keyCode !== 13;
+    };
+
     self.itemsPerPage = ko.pureComputed(function() {
         if( typeof(Storage)!=='undefined' )
         {
