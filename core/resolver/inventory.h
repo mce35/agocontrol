@@ -29,6 +29,7 @@ public:
 
     string getdevicename (string uuid);
     string getdeviceroom (string uuid);
+    int deletedevice (string uuid);
     int setdevicename (string uuid, string name);
     string getroomname (string uuid);
     int setroomname (string uuid, string name);

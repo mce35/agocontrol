@@ -380,13 +380,17 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
         {
             checkMsgParameter(content, "device", VAR_STRING, true);
 
-            if (inv->setdevicename(content["device"], content["name"]) == 0)
+            string name = content["name"].asString();
+            if(name == "") {
+                // XXX: Should use deletedevice command instead
+                inv->deletedevice(content["device"]);
+            }else if (inv->setdevicename(content["device"], name) == 0)
             {
                 // update name in local device map
                 Variant::Map *device;
-                string name = inv->getdevicename(content["device"]);
+                name = inv->getdevicename(content["device"]);
                 string uuid = content["device"];
-                if (!inventory[uuid].isVoid())
+                if (inventory.find(uuid) != inventory.end())
                 {
                     device = &inventory[uuid].asMap();
                     (*device)["name"]= name;
@@ -400,6 +404,23 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             {
                 return responseFailed("Failed to store change");
             }
+        }
+        else if( content["command"]=="deletedevice" )
+        {
+            // Compound command which removes device from inventory map and deletes from DB
+            checkMsgParameter(content, "device", VAR_STRING); //device uuid
+            string uuid = content["device"];
+
+            AGO_INFO() << "removing device: uuid=" << uuid;
+            Variant::Map::iterator it = inventory.find(uuid);
+            if (it != inventory.end())
+            {
+                inventory.erase(it);
+                saveDevicemap();
+            }
+
+            inv->deletedevice(uuid);
+            return responseSuccess("Device removed");
         }
         else if (content["command"] == "deleteroom")
         {
@@ -518,9 +539,10 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
         {
             checkMsgParameter(content, "device", VAR_STRING);
 
-            if (!(inventory[content["device"].asString()].isVoid()))
+            string uuid = content["device"];
+            if (inventory.find(uuid) != inventory.end())
             {
-                responseData["device"] = inventory[content["device"].asString()].asMap();
+                responseData["device"] = inventory[uuid].asMap();
                 return responseSuccess(responseData);
             }
             else
@@ -626,6 +648,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             return responseSuccess("Parameters saved");
         }
 
+
         return responseUnknownCommand();
     }
     else
@@ -678,7 +701,19 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
             device["room"]=inv->getdeviceroom(content["uuid"].asString());
             device["room"].setEncoding("utf8");
             qpid::types::Variant::Map::const_iterator it = inventory.find(uuid);
-            if (it == inventory.end())
+            if (it != inventory.end() && !it->second.isVoid())
+            {
+                // device exists, and has valid content
+                // TODO: use a non-const interator and modify the timestamp in place to avoid the following copying of data
+                qpid::types::Variant::Map olddevice;
+                olddevice = it->second.asMap();
+                device["lastseen"] = olddevice["lastseen"];
+                device["stale"] = olddevice["stale"];
+                device["state"] = olddevice["state"];
+                device["values"] = olddevice["values"];
+                device["parameters"] = olddevice["parameters"];
+            }
+            else
             {
                 // device is newly announced, set default state and values
                 uint64_t timestamp;
@@ -688,6 +723,7 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
                 device["state"].setEncoding("utf8");
                 device["values"] = values;
                 device["stale"] = (uint8_t)0;
+
                 if( !deviceparameters[uuid].isVoid() )
                 {
                     //load device parameters from map
@@ -702,22 +738,10 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
                 }
                 AGO_INFO() << "adding device: uuid=" << uuid << " type: " << device["devicetype"].asString();
             }
-            else
-            {
-                // device exists, get current values
-                // TODO: use a non-const interator and modify the timestamp in place to avoid the following copying of data
-                qpid::types::Variant::Map olddevice;
-                if (!it->second.isVoid())
-                {
-                    olddevice = it->second.asMap();
-                    device["lastseen"] = olddevice["lastseen"];
-                    device["stale"] = olddevice["stale"];
-                    device["state"] = olddevice["state"];
-                    device["values"] = olddevice["values"];
-                    device["parameters"] = olddevice["parameters"];
-                }
-            }
+
             inventory[uuid] = device;
+            // TODO: Should postpone these; if we do a discovery we will write
+            // these to disk for every device..
             saveDevicemap();
             saveDeviceParametersMap();
         }
@@ -806,6 +830,12 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
                 if( !parameters["staleTimeout"].isVoid() )
                 {
                     int64_t timeout = parameters["staleTimeout"].asUint64();
+                    if((*device)["stale"].getType() != VAR_UINT8) {
+                        // Shouldn't happen unless we have a bug somewhere.
+                        AGO_WARNING() << "Unexpected non-uint8 'stale' element in device " << it->first << ": " << it->second;
+                        (*device)["stale"] = 0;
+                    }
+
                     int stale = (*device)["stale"].asInt8();
                     string uuid = it->first;
                     if( timeout>0 )
