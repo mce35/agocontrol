@@ -427,6 +427,22 @@ div.dashboard-widget-draggable {
     /*text-transform: uppercase;*/
 }
 
+/* Marquee-effect for too long titles. Enabled via JS
+ * where required. */
+.info-box-title.marquee-title:hover {
+    text-overflow: none;
+}
+.info-box-title.marquee-title:hover span {
+	/* Note: duration is actually controlled from JS */
+	animation: marquee 3s linear infinite;
+	display: inline-block;
+}
+@keyframes marquee {
+	0%   { transform: translate(0, 0); }
+	100% { transform: translate(-100%, 0); }
+}
+
+
 .info-box-detail {
     width: 100%;
     overflow: hidden;

@@ -33,7 +33,7 @@
     </div>
 
     <!-- widgets -->
-	<div class="row" data-bind="foreach:devicesPerPage">
+	<div class="row" data-bind="foreach:{ data:devicesPerPage, afterRender: afterDeviceRender }">
         <ko opts="if: $parent.devicesPerLine()==3">
             <div class="col-md-4 col-sm-6 col-xs-12 dashboard-widget" data-bind="template:{name:$parent.deviceTemplate, data:$data}" />
         </ko>
