@@ -29,7 +29,7 @@ class AgoTellstick(agoclient.AgoApp):
                 if resCode != 'success':  # != 0:
                     self.log.trace("rescode = %s", resCode)
                     # res = self.tellstick.getErrorString(resCode)
-                    self.log.error("Failed to turn on device, res=" + resCode)
+                    self.log.error("Failed to turn on device, res=%s", resCode)
                 else:
                     self.connection.emit_event(internalid, "event.device.statechanged", 255, "")
 
@@ -44,7 +44,7 @@ class AgoTellstick(agoclient.AgoApp):
                 resCode = self.tellstick.turnOff(internalid)
                 if resCode != 'success':  # 0:
                     # res = self.tellstick.getErrorString(resCode)
-                    self.log.error("Failed to turn off device, res=" + resCode)
+                    self.log.error("Failed to turn off device, res=%s", resCode)
                 else:
                     # res = 'Success'
                     self.connection.emit_event(internalid, "event.device.statechanged", 0, "")
@@ -140,39 +140,39 @@ class AgoTellstick(agoclient.AgoApp):
 
     def emitTempChanged(self, devId, temp):
         if self.sensors[devId]["ignore"] == False:
-            self.log.debug("emitTempChanged called for devID=" + str(devId) + " temp=" + str(temp))
+            self.log.debug("emitTempChanged called for devID=%s temp=%s", str(devId), str(temp))
             tempC = temp
-            self.log.trace("TempUnits=" + self.TempUnits)
+            self.log.trace("TempUnits=%s", self.TempUnits)
             if self.TempUnits == 'F':
                 tempF = 9.0 / 5.0 * tempC + 32.0
                 if tempF != float(self.sensors[devId]["lastTemp"]):
                     self.sensors[devId]["lastTemp"] = tempF
                     self.connection.emit_event(devId, "event.environment.temperaturechanged", str(tempF), "degF")
                     self.sensors[devId]["lastEmit"] = time.time()
-                    self.log.debug("emitTempChanged emitted temp=" + str(tempF) + " F for device " + str(devId))
+                    self.log.debug("emitTempChanged emitted temp=%s F for device %s", str(tempF), str(devId))
             else:
                 # print "devId=" + str(devId)
-                self.log.trace("TempC=" + str(tempC) +  " lastTemp=" + str(self.sensors[devId]["lastTemp"]))
+                self.log.trace("TempC=%s lastTemp=%s",  str(tempC), str(self.sensors[devId]["lastTemp"]))
                 if tempC != float(self.sensors[devId]["lastTemp"]):
                     self.sensors[devId]["lastTemp"] = tempC
                     # + "-temp"
                     self.connection.emit_event(devId , "event.environment.temperaturechanged", str(tempC), "degC")
                     self.sensors[devId]["lastEmit"] = time.time()
-                    self.log.debug("emitTempChanged emitted temp=" + str(tempC) + " C for device " + str(devId))
+                    self.log.debug("emitTempChanged emitted temp=%s C for device %s",  str(tempC), str(devId))
 
     def emitHumidityChanged(self, devId, humidity):
         if self.sensors[devId]["ignore"] == False:
-            self.log.debug("emitHumidityChanged called for devID=" + str(devId) + " humidity=" + str(humidity))
+            self.log.debug("emitHumidityChanged called for devID=%s humidity=%s",  str(devId), str(humidity))
             if humidity != float(self.sensors[devId]["lastHumidity"]):
                 self.sensors[devId]["lastHumidity"] = humidity
                 self.sensors[devId]["lastEmit"] = time.time()
                 # + "-hum"
                 self.connection.emit_event(devId, "event.environment.humiditychanged", str(humidity), "%")
-                self.log.debug("emitHumdityChanged emitted hum=" + str(humidity) + "% for device " + str(devId))
+                self.log.debug("emitHumdityChanged emitted hum=%s% for device %s", str(humidity), str(devId))
 
     def listNewSensors(self):
         sensors = self.tellstick.listSensors()
-        self.log.debug("listSensors returned " + str(len(sensors)) + " items")
+        self.log.debug("listSensors returned %d items", len(sensors))
         for id, value in sensors.iteritems():
             self.log.trace("listNewSensors: devId: %s ", str(id))
             if value["new"] != True:
@@ -203,11 +203,11 @@ class AgoTellstick(agoclient.AgoApp):
                             if value["isTempSensor"]:
                                 self.connection.add_device(devId, "temperaturesensor")
                                 self.emitTempChanged(devId, float(value["temp"]))
-                                self.log.info("devId=" + devId + " added as tempsensor at " + str(value["temp"]) + " deg")
+                                self.log.info("devId=%s added as tempsensor at %d deg",  devId, value["temp"])
                             if value["isHumiditySensor"]:
                                 self.connection.add_device(devId, "humiditysensor")
                                 self.emitHumidityChanged(devId, float(value["humidity"]))
-                                self.log.info("devId=" + devId + "added as humidity sensor at " + str(value["humidity"]) + "%")
+                                self.log.info("devId=%s added as humidity sensor at %d%", devId, value["humidity"])
 
     def agoSensorEvent(self, protocol, model, id, dataType, value, timestamp, callbackId):
         self.log.trace("SensorEvent protocol: %s model: %s id: %s value: %s%s timestamp: %d",
@@ -220,7 +220,7 @@ class AgoTellstick(agoclient.AgoApp):
 
         if self.sensors[devId]["ignore"] == False:
             if dataType & self.tellstick.TELLSTICK_TEMPERATURE == self.tellstick.TELLSTICK_TEMPERATURE:
-                self.log.trace("Emit temp change for " + str(devId))
+                self.log.trace("Emit temp change for %s", str(devId))
                 self.emitTempChanged(devId, float(value))
                 # tempC = value
                 # if TempUnits == 'F':
@@ -229,7 +229,7 @@ class AgoTellstick(agoclient.AgoApp):
                 # else:
                 #     self.connection.emit_event(str(devId), "event.environment.temperaturechanged", tempC, "degC")
             if dataType & self.tellstick.TELLSTICK_HUMIDITY == self.tellstick.TELLSTICK_HUMIDITY:
-                self.log.trace("Emit humidity change for " + str(devId))
+                self.log.trace("Emit humidity change for %s", str(devId))
                 self.emitHumidityChanged(devId, float(value))
                 # self.connection.emit_event(str(devId), "event.environment.humiditychanged", float(value), "%")
 
@@ -242,6 +242,7 @@ class AgoTellstick(agoclient.AgoApp):
         self.ignoreModels = {}
         self.ignoreDevices = {}
         self.SensorMaxWait = 300
+        self.inventory={}
 
         try:
             self.general_delay = float(
@@ -252,7 +253,7 @@ class AgoTellstick(agoclient.AgoApp):
         try:
             self.SensorPollInterval = float(
                 self.get_config_option('SensorPollInterval', 300, section='tellstick', app='tellstick'))
-            self.log.debug("SensorPollIntervall set to " + str(self.SensorPollInterval))
+            self.log.debug("SensorPollIntervall set to %d", self.SensorPollInterval)
         except ValueError:
             self.SensorPollInterval = 300.0  # 5 minutes
             self.log.debug("SensorPollIntervall defaulted to 300s")
@@ -261,7 +262,7 @@ class AgoTellstick(agoclient.AgoApp):
         self.TempUnits = "C"
         if units.lower() == "us":
             self.TempUnits = "F"
-        self.log.debug("TempUnits: " + self.TempUnits)
+        self.log.debug("TempUnits: %s", self.TempUnits)
 
         stickVersion = self.get_config_option('StickVersion', 'Duo', section='tellstick', app='tellstick')
         try:
@@ -284,99 +285,25 @@ class AgoTellstick(agoclient.AgoApp):
         self.connection.add_handler(self.message_handler)
 
         # Get agocontroller, required to set names on new devices
-        inventory = self.connection.get_inventory()
-        agoController = self.connection.get_agocontroller(inventory)
-        if agoController == None:
+        self.inventory = self.connection.get_inventory()
+        self.agoController = self.connection.get_agocontroller(self.inventory)
+        if self.agoController == None:
             self.log.error("No agocontroller found, cannot set device names")
             raise agoclient.agoapp.StartupError()
 
-        def setNameIfNecessary(deviceUUID, name):
-            dev = inventory['devices'].get(deviceUUID)
-            if (dev == None or dev['name'] == '') and name != '':
-                content = {}
-                content["command"] = "setdevicename"
-                content["uuid"] = agoController
-                content["device"] = deviceUUID
-                content["name"] = name
-
-                message = Message(content=content)
-                self.connection.send_message(None, content)
-                self.log.debug("'setdevicename' message sent for %s, name=%s", deviceUUID, name)
 
         ####################################################
         self.log.info("Getting list of models and devices to ignore")
-        try:
-            ignoreModels = self.get_config_option('IgnoreModels', "", section='EventDevices', app='tellstick')
-            self.log.debug("Got from config file: IgnoreModel=" + ignoreModels)
-        except ValueError:
-            ignoreModels = ""
-            self.log.debug("ValueError, IgnoreModels is empty")
+        self.readIgnores()
 
-        self.ignoreModels = ignoreModels.replace(' ', '').split(',')
-        self.tellstick.ignoreModels = self.ignoreModels
-
-        try:
-            ignoreDevices = self.get_config_option('IgnoreDevices', "", section='EventDevices', app='tellstick')
-            self.log.debug("Got from config file: IgnoreDevices=" + ignoreDevices)
-        except ValueError:
-            ignoreDevices = ""
-            self.log.debug("ValueError, IgnoreDevices is empty")
-
-        self.ignoreDevices = ignoreDevices.replace(' ', '').split(',')
-        self.tellstick.ignoreDevices = self.ignoreDevices
-
-        ####################################################
         self.log.info("Getting switches and dimmers + remotes & motion sensors")
-        switches = self.tellstick.listSwitches()
-        for devId, dev in switches.iteritems():
-            model = dev["model"]
-            name = dev["name"]
+        self.listNewDevices()
 
-            self.log.trace("devId=%s name=%s model=%s", devId, name, model)
-
-            deviceUUID = ""
-            if devId in self.ignoreDevices:
-                self.log.info("Device ignored")
-
-            else:
-                try:
-                    type = self.get_config_option('Type', "unset", section=str(devId), app='tellstick')
-                except ValueError:
-                    type = "unset"
-
-                #if model not in self.ignoreModels:
-                if type.lower() == "wall switch" or type.lower() == "motion sensor":
-                    try:
-                        self.dev_delay[devId] = float(
-                            self.get_config_option('Delay', self.general_delay, section=str(devId), app='tellstick')) / 1000
-                    except ValueError:
-                        self.dev_delay[devId] = self.general_delay
-
-                    self.connection.add_device(devId, "binarysensor")
-                    self.log.info("devId=" + str(devId) + " added as " +  type)
-
-                elif dev["isDimmer"]:
-                    self.connection.add_device(devId, "dimmer")
-                    self.log.info("devId=" + str(devId) + " added as dimmer")
-
-                else:
-                    self.connection.add_device(devId, "switch")
-                    self.log.info("devId=" + str(devId) + " added as switch")
-
-                deviceUUID = self.connection.internal_id_to_uuid(devId)
-                # info ("deviceUUID=" + deviceUUID + " name=" + self.tellstick.getName(devId))
-                # info("Switch Name=" + dev.name + " protocol=" + dev.protocol + " model=" + dev.model)
-
-                # If a new device, set name from the tellstick config file
-                setNameIfNecessary(deviceUUID, name)
-
-        ####################################################
         self.log.info("Getting temp and humidity sensors")
-
         try:
             self.SensorMaxWait = float(
                 self.get_config_option('MaxWait', 300, section='Sensors', app='tellstick'))
-            self.log.debug("SensorMaxWait set to " + str(self.SensorMaxWait))
+            self.log.debug("SensorMaxWait set to %s" + str(self.SensorMaxWait))
         except ValueError:
             self.SensorMaxWait= 300.0  # 5 minutes
             self.log.debug("SensorMaxWait defaulted to 300s")
@@ -399,6 +326,84 @@ class AgoTellstick(agoclient.AgoApp):
 
         cbId.append(self.tellstick.registerSensorEvent(self.agoSensorEvent))
         self.log.debug('Register sensor event returned: %s', str(cbId[-1]))
+
+    def readIgnores(self):
+        try:
+            ignoreModels = self.get_config_option('IgnoreModels', "", section='EventDevices', app='tellstick')
+            self.log.debug("Got from config file: IgnoreModel=%s", ignoreModels)
+        except ValueError:
+            ignoreModels = ""
+            self.log.debug("ValueError, IgnoreModels is empty")
+        self.ignoreModels = ignoreModels.replace(' ', '').split(',')
+        self.tellstick.ignoreModels = self.ignoreModels
+        try:
+            ignoreDevices = self.get_config_option('IgnoreDevices', "", section='EventDevices', app='tellstick')
+            self.log.debug("Got from config file: IgnoreDevices=%s", ignoreDevices)
+        except ValueError:
+            ignoreDevices = ""
+            self.log.debug("ValueError, IgnoreDevices is empty")
+        self.ignoreDevices = ignoreDevices.replace(' ', '').split(',')
+        self.tellstick.ignoreDevices = self.ignoreDevices
+
+    def listNewDevices(self):
+        def setNameIfNecessary(deviceUUID, name):
+            dev = self.inventory['devices'].get(deviceUUID)
+            if (dev == None or dev['name'] == '') and name != '':
+                content = {}
+                content["command"] = "setdevicename"
+                content["uuid"] = self.agoController
+                content["device"] = deviceUUID
+                content["name"] = name
+
+                message = Message(content=content)
+                self.connection.send_message(None, content)
+                self.log.debug("'setdevicename' message sent for %s, name=%s", deviceUUID, name)
+
+        switches = self.tellstick.listSwitches()
+        for devId, dev in switches.iteritems():
+            model = dev["model"]
+            name = dev["name"]
+
+            self.log.trace("devId=%s name=%s model=%s", devId, name, model)
+
+            deviceUUID = ""
+            if devId in self.ignoreDevices:
+                self.log.info("Device ignored")
+
+            else:
+                try:
+                    type = self.get_config_option('Type', "unset", section=str(devId), app='tellstick')
+                except ValueError:
+                    type = "unset"
+
+                # if model not in self.ignoreModels:
+                if type.lower() == "wall switch" or type.lower() == "motion sensor":
+                    try:
+                        self.dev_delay[devId] = float(
+                                self.get_config_option('Delay', self.general_delay, section=str(devId),
+                                                       app='tellstick')) / 1000
+                    except ValueError:
+                        self.dev_delay[devId] = self.general_delay
+
+                    self.connection.add_device(devId, "binarysensor")
+                    self.log.info("devId=%s added as %s", str(devId), type)
+
+                elif dev["isDimmer"]:
+                    self.connection.add_device(devId, "dimmer")
+                    self.log.info("devId=%s added as dimmer", str(devId))
+
+                else:
+                    self.connection.add_device(devId, "switch")
+                    self.log.info("devId=%s added as switch", str(devId))
+
+                deviceUUID = self.connection.internal_id_to_uuid(devId)
+                # info ("deviceUUID=" + deviceUUID + " name=" + self.tellstick.getName(devId))
+                # info("Switch Name=" + dev.name + " protocol=" + dev.protocol + " model=" + dev.model)
+
+                # If a new device, set name from the tellstick config file
+                setNameIfNecessary(deviceUUID, name)
+
+
 
     def app_cleanup(self):
         if self.tellstick:
