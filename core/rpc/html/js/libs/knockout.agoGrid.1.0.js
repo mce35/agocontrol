@@ -281,10 +281,6 @@
             this.resetFilters = function() {
                 this.filters.removeAll();
             };
-
-            this.absorbEnter = function(data, event) {
-                return event.keyCode !== 13;
-            };
         }
     };
 
@@ -306,7 +302,7 @@
                     </div>\
                     <div class=\"col-xs-9 col-md-offset-2 col-md-5\" style=\"text-align:right;\">\
                         <!-- ko if:displaySearch -->\
-                        <form class=\"form-inline\" data-bind=\"event: { keypress: absorbEnter }\">\
+                        <form class=\"form-inline\" data-bind=\"formNoEnter:{}\">\
                             <span class=\"en-search hidden-xs\"></span>\
                             <div class=\"input-group input-group-sm\">\
                                 <input type=\"text\" class=\"form-control\" data-bind=\"textInput:search\">\
