@@ -323,7 +323,8 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .scale(xScale)
         .orient("bottom")
         .tickSize(-height, 0)
-        .tickPadding(6);
+        .tickPadding(6)
+        .tickFormat(getD3DatetimeParser());
     var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left")

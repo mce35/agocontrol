@@ -300,6 +300,32 @@ function getDatetimepickerFormat()
 };
 
 /**
+ * Return D3 date time format parser (use it with tickFormat)
+ */
+function getD3DatetimeParser()
+{
+    var l = new Date().toLocaleTimeString();
+	var hours24 = true;
+    if( l.indexOf('AM')!==-1 || l.indexOf('PM')!==-1 )
+		hours24 = false;
+
+    var format = [];
+	format.push([".%L", function(d) { return d.getMilliseconds(); }]);
+	format.push([":%S", function(d) { return d.getSeconds(); }]);
+	format.push(["%I:%M", function(d) { return d.getMinutes(); }]);
+	if( hours24 )
+		format.push(["%H", function(d) { return d.getHours(); }]);
+	else
+		format.push(["%I %p", function(d) { return d.getHours(); }]);
+	format.push(["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }]);
+	format.push(["%b %d", function(d) { return d.getDate() != 1; }]);
+	format.push(["%B", function(d) { return d.getMonth(); }]);
+	format.push(["%Y", function() { return true; }]);
+
+ 	return d3.time.format.multi(format);
+}
+
+/**
  * Return device type according to bootstrap
  * @see https://github.com/titosust/Bootstrap-device-detector
  */
