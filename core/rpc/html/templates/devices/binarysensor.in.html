@@ -7,7 +7,7 @@
         <div class="info-box-content">
             <div class="info-box-title">
                 <ko opts="if:name">
-                <span data-bind="text:name"/>
+                <span data-bind="text:name, attr:{title:name, alt:name}"/>
                 </ko>
                 <ko opts="ifnot:name">
                 <span data-bind="text:devicetype"/>
