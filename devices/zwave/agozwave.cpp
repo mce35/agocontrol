@@ -1030,6 +1030,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 {   
                                     device->addValue(label, id);
                                     device->setDevicetype("dimmerrgb");
+                                    agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 else
                                 {
