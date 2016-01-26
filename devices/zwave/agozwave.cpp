@@ -1257,6 +1257,22 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 // Manager::Get()->EnablePoll(id);
                             }
                             break;
+                        case COMMAND_CLASS_DOOR_LOCK:
+                            AGO_DEBUG() << "adding door lock label: " << label;
+                            if ((device = devices.findId(nodeinstance)) != NULL)
+                            {
+                                device->addValue(label, id);
+                                device->setDevicetype("doorlock");
+                            }
+                            else
+                            {
+                                device = new ZWaveNode(nodeinstance, "doorlock");
+                                device->addValue(label, id);
+                                devices.add(device);
+                                AGO_DEBUG() << "Doorlock: add new doorlock [" << device->getId() << ", " << device->getDevicetype() << "]";
+                                agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                            }
+                            break;
                         default:
                             AGO_INFO() << "Notification: Unassigned Value Added Home=" << std::hex << _notification->GetHomeId() << " Node=" << std::dec << (int)_notification->GetNodeId() << " Genre=" << std::dec << (int)id.GetGenre() << " Class=" << getHRCommandClassId(id.GetCommandClassId()) << " Instance=" << std::dec << (int)id.GetInstance() << " Index=" << std::dec << (int)id.GetIndex() << " Type=" << (int)id.GetType() << " Label: " << label;
 
@@ -2178,6 +2194,21 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         if (Manager::Get()->SetValueListSelection(*tmpValueID , "Auto Low")) return responseSuccess();
                         else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
+                }
+            } else if (devicetype == "doorlock") {
+                if (content["command"] == "open")
+                {
+                    tmpValueID = device->getValueID("Locked");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Locked' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , true)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+                } else if (content["command"] == "close")
+                {
+                    tmpValueID = device->getValueID("Locked");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Locked' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , false)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+
                 }
             }
         }
