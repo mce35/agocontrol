@@ -44,6 +44,9 @@
 #define CONFIG_BASE_PATH "/etc/openzwave/"
 #define CONFIG_MANUFACTURER_SPECIFIC CONFIG_BASE_PATH "manufacturer_specific.xml"
 
+// Helper method to cap an int to 0x00-0xFF
+#define CAP_8BIT_INT(value) (max(min(value, 0xFF), 0x00))
+
 using namespace std;
 using namespace qpid::types;
 using namespace agocontrol;
@@ -2030,9 +2033,9 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     checkMsgParameter(content, "green");
                     checkMsgParameter(content, "blue");
                     int red, green, blue = 0;
-                    red = atoi(content["red"].asString().c_str()) * 255 / 100;
-                    green = atoi(content["green"].asString().c_str()) * 255 / 100;
-                    blue = atoi(content["blue"].asString().c_str()) * 255 / 100;
+                    red = CAP_8BIT_INT(atoi(content["red"].asString().c_str()));
+                    green = CAP_8BIT_INT(atoi(content["green"].asString().c_str()));
+                    blue = CAP_8BIT_INT(atoi(content["blue"].asString().c_str()));
                     stringstream colorString;
                     colorString << "#";
                     colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << red;
