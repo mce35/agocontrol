@@ -2035,9 +2035,9 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     blue = atoi(content["blue"].asString().c_str()) * 255 / 100;
                     stringstream colorString;
                     colorString << "#";
-                    colorString << std::uppercase << std::hex << red;
-                    colorString << std::uppercase << std::hex << green;
-                    colorString << std::uppercase << std::hex << blue;
+                    colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << red;
+                    colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << green;
+                    colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << blue;
                     colorString << "00";
                     colorString << "00";
                     AGO_DEBUG() << "setting color string: " << colorString.str();
