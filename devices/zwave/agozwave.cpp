@@ -2029,11 +2029,15 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     checkMsgParameter(content, "red");
                     checkMsgParameter(content, "green");
                     checkMsgParameter(content, "blue");
+                    int red, green, blue = 0;
+                    red = atoi(content["red"].asString().c_str()) * 255 / 100;
+                    green = atoi(content["green"].asString().c_str()) * 255 / 100;
+                    blue = atoi(content["blue"].asString().c_str()) * 255 / 100;
                     stringstream colorString;
                     colorString << "#";
-                    colorString << std::uppercase << std::hex << content["red"].asString();
-                    colorString << std::uppercase << std::hex << content["green"].asString();
-                    colorString << std::uppercase << std::hex << content["blue"].asString();
+                    colorString << std::uppercase << std::hex << red;
+                    colorString << std::uppercase << std::hex << green;
+                    colorString << std::uppercase << std::hex << blue;
                     colorString << "00";
                     colorString << "00";
                     AGO_DEBUG() << "setting color string: " << colorString.str();
