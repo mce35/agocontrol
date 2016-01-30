@@ -1,26 +1,19 @@
 <div class="widget-lg">
 
-    <div class="info-box" data-bind="css:staleStyle">
-        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-            <i class="fa en-comment"></i>
-        </span>
-        <div class="info-box-content">
-            <div class="info-box-title">
-                <ko opts="if:name">
-                <span data-bind="text:name, attr:{title:name, alt:name}"/>
-                </ko>
-                <ko opts="ifnot:name">
-                <span data-bind="text:devicetype"/>
-                </ko>
-            </div>
-            <div class="info-box-detail">
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+        <div class="inner">
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <div>
                 <ko opts="if:room">
-                <div class="info-box-location">
-                    <i class="en-location"/>
+                <div class="widget-box-location">
+                    <i class="en-location"></i>
                     <span data-bind="text:room"/>
                 </div>
                 </ko>
             </div>
+        </div>
+        <div class="icon">
+            <i class="fa en-comment"></i>
         </div>
     </div>
 

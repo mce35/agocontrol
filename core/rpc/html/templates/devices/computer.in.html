@@ -1,5 +1,26 @@
 <div class="widget-lg">
 
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+        <div class="inner">
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <div>
+                <div class="widget-box-detail">
+                    <i class="en-info-circled"></i>
+                    <span data-bind="text:state"/>
+                </div>
+                <ko opts="if:room">
+                <div class="widget-box-location">
+                    <i class="en-location"></i>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+            </div>
+        </div>
+        <div class="icon">
+            <i class="fa en-keyboard"></i>
+        </div>
+    </div>
+
     <div class="info-box" data-bind="css:staleStyle">
         <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
             <i class="fa en-keyboard"></i>

@@ -22,27 +22,20 @@
 
 <!-- default camera widget on small devices -->
 <div class="widget-lg hidden-lg">
-    <div data-bind="css:staleStyle" class="info-box">
-        <span data-bind="click: function(data, event) { agocontrol.showDetails(data) }" class="info-box-icon">
-            <i class="fa en-cog"/>
-        </span>
-        <div class="info-box-content">
-            <div class="info-box-title">
-                <ko opts="if:name">
-                <span data-bind="text:name"/>
-                </ko>
-                <ko opts="ifnot:name">
-                <span data-bind="text:devicetype"/>
-                </ko>
-            </div>
-            <div class="info-box-detail">
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+        <div class="inner">
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <div>
                 <ko opts="if:room">
-                <div class="info-box-location">
-                    <i class="en-location"/>
+                <div class="widget-box-location">
+                    <i class="en-location"></i>
                     <span data-bind="text:room"/>
                 </div>
                 </ko>
             </div>
+        </div>
+        <div class="icon">
+            <i class="fa fa-video-camera"></i>
         </div>
     </div>
     
