@@ -1102,26 +1102,20 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
         debugResult["msg"] = "Script debugging started";
         agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
         int status = luaL_loadstring(L, script.c_str());
-        int result = 0;
+        std::string err_prefix = "Failed to load script: ";
         if(status == LUA_OK)
         {
-            result = lua_pcall(L, 0, LUA_MULTRET, 0);
+            err_prefix = "Failed to execute script: ";
+            status = lua_pcall(L, 0, LUA_MULTRET, 0);
         }
-        else
-        {
-            AGO_ERROR()<< "Could not load debug script";
-            debugResult["type"] = DBG_ERROR;
-            debugResult["msg"] = "Could not load debug script";
-            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
-        }
-        if ( result!=0 )
-        {
+
+        if(status != 0) {
             std::string err = lua_tostring(L, -1);
-            AGO_ERROR() << "Debug failed: " << err;
-            debugResult["type"] = DBG_ERROR;
-            debugResult["msg"] = err;
-            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
             lua_pop(L, 1); // remove error message
+            AGO_ERROR() << err_prefix << err;
+            debugResult["type"] = DBG_ERROR;
+            debugResult["msg"] = err_prefix + err;
+            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
         }
  
         //finalize script
@@ -1157,22 +1151,20 @@ void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &sc
     //execute script
     AGO_TRACE() << "Loading " << script;
     int status = luaL_loadfile(L, script.c_str());
-    int result = 0;
+    std::string err_prefix = "Failed to load script: ";
     if(status == LUA_OK)
     {
-        result = lua_pcall(L, 0, LUA_MULTRET, 0);
+        err_prefix = "Failed to execute script: ";
+        status = lua_pcall(L, 0, LUA_MULTRET, 0);
     }
-    else
+    if(status != 0)
     {
-        AGO_ERROR()<< "Could not load script: " << script;
-    }
-    if ( result!=0 )
-    {
-        AGO_ERROR() << "Script " << script << " failed: " << lua_tostring(L, -1);
-        lua_pop(L, 1); // remove error message
+        // Error msg includes filename
+        AGO_ERROR() << err_prefix << lua_tostring(L, -1);
+        lua_pop(L, 1);
     }
 
-    //finalize script
+    // finalize script
     finalizeScript(L, content, script.string(), context);
     lua_close(L);
     AGO_TRACE() << "Execution of " << script << " finished.";
