@@ -92,6 +92,7 @@ try:
                     f.write('{}')
                     f.close()
                 except Exception as e:
+                    result['result'] = 1
                     result['error'] = 'Unable to create "%s" [%s]' % (path, str(e))
 
             if os.path.exists(path):
