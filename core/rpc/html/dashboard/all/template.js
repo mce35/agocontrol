@@ -118,34 +118,6 @@ function dashBoard(agocontrol)
     {
         self.keyword("");
     };
-
-    var timeout;
-    // For all titles which are too long to fit in the box, enable a CSS-animation
-    // marquee effect
-    var fixAnimationDuration = function() {
-        $('.info-box-title').each(function(n,e){
-            var span=$('span', e);
-            var w = span.width();
-            var boxW = e.offsetWidth;
-            if(w > boxW) {
-                $(e).addClass('marquee-title');
-                // Set animation duration dynamically, we need longer time
-                // to scroll through for longer texts. Otherwise the speed will be
-                // different for different text lenghts.
-                var q = (w/boxW);
-                span.css('animationDuration', (3*q)+'s');
-            }
-        });
-    };
-
-    self.afterDeviceRender = function() {
-        // This is triggered after each foreach is complete.
-        // Wait for last one.
-        if(timeout)
-            clearTimeout(timeout);
-
-        timeout = setTimeout(fixAnimationDuration);
-    };
 }
 
 /**
