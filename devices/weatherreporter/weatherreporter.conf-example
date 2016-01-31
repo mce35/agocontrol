@@ -1,16 +1,19 @@
 [weatherreporter]
+log_level=trace
 
-[Services]
+[General]
 Delay = 150
-	[[temperatur.nu]]
-		[[[Utesensor garaget]]]
-		Hash = 12345678901234567890123456789012
-		Sensor = S21
-		UUID = 51f1f117-1a32-3ga1-b5aa-a3a6ff211f31
-	[[Weather Underground]]
-		Password=some_secret
-		[[[Utesensor garage]]]
-		Station=your_station_name
-		Sensor = S21
-		UUID = 51f1f117-1a32-3ga1-b5aa-a3a6ff211f31 
+sensors=S1,S27
 
+[WeatherUnderground]
+Password=your_password
+
+[S1]
+Desc=Utesensor garaget
+UUID = 12345678-1234-1234-1234-123456789abc
+WU-Station=ABCDEXYZ1
+TN-Hash = 12345678901234567890123456789012
+
+[S27]
+Desc=Utesensor entrance
+UUID = 12345678-1234-1234-1234-123456789cba
