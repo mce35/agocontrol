@@ -7,6 +7,10 @@ sensors=S1,S27
 
 [WeatherUnderground]
 Password=your_password
+Delay=151
+
+[temperatur.nu]
+Delay=152
 
 [S1]
 Desc=Utesensor garaget
