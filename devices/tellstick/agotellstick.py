@@ -15,6 +15,9 @@ __status__ = 'Experimental'
 __version__ = AGO_TELLSTICK_VERSION
 ############################################
 
+# TODO: Add filter to sensor reading. Example of bad data:
+
+
 import time
 from qpid.messaging import Message
 import agoclient
@@ -23,7 +26,7 @@ import agoclient
 class AgoTellstick(agoclient.AgoApp):
     def message_handler(self, internalid, content):
         if "command" in content:
-            # On
+            # On, refactoring,
             if content["command"] == "on":
                 resCode = self.tellstick.turnOn(internalid)
                 if resCode != 'success':  # != 0:
@@ -140,7 +143,7 @@ class AgoTellstick(agoclient.AgoApp):
 
     def emitTempChanged(self, devId, temp):
         if self.sensors[devId]["ignore"] == False:
-            self.log.debug("emitTempChanged called for devID=%s temp=%s", str(devId), str(temp))
+            self.log.debug("emitTempChanged called for devID=%s temp=%f", str(devId), temp)
             tempC = temp
             self.log.trace("TempUnits=%s", self.TempUnits)
             if self.TempUnits == 'F':
@@ -162,13 +165,29 @@ class AgoTellstick(agoclient.AgoApp):
 
     def emitHumidityChanged(self, devId, humidity):
         if self.sensors[devId]["ignore"] == False:
-            self.log.debug("emitHumidityChanged called for devID=%s humidity=%s",  str(devId), str(humidity))
+            self.log.debug("emitHumidityChanged called for devID=%s humidity=",  str(devId)) #, humidity) TODO: Fix
             if humidity != float(self.sensors[devId]["lastHumidity"]):
                 self.sensors[devId]["lastHumidity"] = humidity
                 self.sensors[devId]["lastEmit"] = time.time()
                 # + "-hum"
                 self.connection.emit_event(devId, "event.environment.humiditychanged", str(humidity), "%")
-                self.log.debug("emitHumdityChanged emitted hum=%s% for device %s", str(humidity), str(devId))
+                #self.log.debug("emitHumdityChanged emitted hum=%s% for devId=%s", str(humidity), str(devId))
+                self.log.debug("emitHumdityChanged emitted devId=%s", str(devId))
+
+    def loadSensorConfig(self, devId):
+        try:
+            offset = float(self.get_config_option('Offset', 0.0, section=str(devId), app='tellstick'))
+            self.log.info("Offset for dev=%s set to %s", devId, str(offset))
+        except ValueError:
+            offset=0.0
+            self.log.info("No offset for dev=%s", devId)
+        self.sensors[devId]["offset"] = offset
+
+        try:
+            desc = float(self.get_config_option('Desc', "", section=str(devId), app='tellstick'))
+        except ValueError:
+            desc = ""
+        self.sensors[devId]["description"] = desc
 
     def listNewSensors(self):
         sensors = self.tellstick.listSensors()
@@ -200,14 +219,15 @@ class AgoTellstick(agoclient.AgoApp):
                             self.sensors[devId]["ignore"] = False
 
                         if self.sensors[devId]["ignore"] == False:
+                            self.loadSensorConfig(devId)
                             if value["isTempSensor"]:
                                 self.connection.add_device(devId, "temperaturesensor")
-                                self.emitTempChanged(devId, float(value["temp"]))
-                                self.log.info("devId=%s added as tempsensor at %d deg",  devId, value["temp"])
+                                self.emitTempChanged(devId, float(value["temp"])+value["offset"])
+                                self.log.info("devId=%s added as tempsensor at %s deg",  devId, str(value["temp"]+value["offset"]))
                             if value["isHumiditySensor"]:
                                 self.connection.add_device(devId, "humiditysensor")
-                                self.emitHumidityChanged(devId, float(value["humidity"]))
-                                self.log.info("devId=%s added as humidity sensor at %d%", devId, value["humidity"])
+                                self.emitHumidityChanged(devId, float(value["humidity"])+value["offset"])
+                                self.log.info("devId=%s added as humidity sensor at %s%%", devId, str(value["humidity"]+value["offset"]))
 
     def agoSensorEvent(self, protocol, model, id, dataType, value, timestamp, callbackId):
         self.log.trace("SensorEvent protocol: %s model: %s id: %s value: %s%s timestamp: %d",
@@ -220,8 +240,9 @@ class AgoTellstick(agoclient.AgoApp):
 
         if self.sensors[devId]["ignore"] == False:
             if dataType & self.tellstick.TELLSTICK_TEMPERATURE == self.tellstick.TELLSTICK_TEMPERATURE:
-                self.log.trace("Emit temp change for %s", str(devId))
-                self.emitTempChanged(devId, float(value))
+                self.log.trace("Emit temp change for %s temp=%f offset=%f", str(devId), float(value), self.sensors[devId]["offset"])
+                self.log.trace("Emit temp change for %s offset temp=%f ", str(devId), float(value)+self.sensors[devId]["offset"])
+                self.emitTempChanged(devId, float(value)+self.sensors[devId]["offset"])
                 # tempC = value
                 # if TempUnits == 'F':
                 #     tempF = 9.0/5.0 * tempC + 32.0
@@ -230,7 +251,7 @@ class AgoTellstick(agoclient.AgoApp):
                 #     self.connection.emit_event(str(devId), "event.environment.temperaturechanged", tempC, "degC")
             if dataType & self.tellstick.TELLSTICK_HUMIDITY == self.tellstick.TELLSTICK_HUMIDITY:
                 self.log.trace("Emit humidity change for %s", str(devId))
-                self.emitHumidityChanged(devId, float(value))
+                self.emitHumidityChanged(devId, float(float(value)+self.sensors[devId]["offset"]))
                 # self.connection.emit_event(str(devId), "event.environment.humiditychanged", float(value), "%")
 
     def setup_app(self):

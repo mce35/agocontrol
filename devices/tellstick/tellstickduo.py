@@ -82,10 +82,12 @@ class tellstickduo(tellstickbase):
     def newTempSensor(self, devId, model, value):
         s = {}
         s["id"] =devId
+        s["description"]=""
         s["model"]= model
-        self.log.debug("New sensor intercepted: devId=" + devId + " model=" + model)
+        self.log.debug("New temperature sensor intercepted: devId=" + devId + " model=" + model)
         s["new"] = True
         s["temp"] = float(value) # C/F
+        s["offset"] = 0.0 #TODO: Add to parameter & config file
         s["lastTemp"] = float(-274.0)
         s["isTempSensor"] = True
         s["isHumiditySensor"] = False
@@ -95,10 +97,12 @@ class tellstickduo(tellstickbase):
     def newHumiditySensor(self, devId, model, value):
         s = {}
         s["id"] =devId
+        s["description"]=""
         s["model"]= model
-        self.log.debug("New sensor intercepted: devId=" + devId + " model=" + model)
+        self.log.debug("New humidity sensor intercepted: devId=" + devId + " model=" + model)
         s["new"] = True
         s["humidity"] = float(value)
+        s["offset"] = 0.0 #TODO: Add to parameter & config file
         s["lastHumidity"] = float(-999.0)
         s["isHumiditySensor"] = True
         s["isTempSensor"] = False
