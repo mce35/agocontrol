@@ -32,6 +32,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
         """event handler - Processes incomming events and looks if they are of a relevant kind
                          - Look up if there are reporting services to call for the sensor
         """
+        self.log.trace("event_handler start")
         if "event.environment.temperaturechanged" in subject:
             self.log.trace("subject=%s content=%s", subject, content)
 
@@ -46,7 +47,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
                     if "temperatur.nu" in self.sensors[x]:
                         #if self.sensors[x]["unit"] == 'degC': #TODO: Handle degF also
                         TN=self.sensors[x]["temperatur.nu"]
-                        print ("TN-Hash: %s", TN["Hash"])
+                        self.log.trace ("temperatur.nu upload. temp = %d TN-Hash: %s", self.sensors[x]["temp"], TN["Hash"])
                         self.sendTemperaturNu(self.sensors[x]["temp"], TN["Hash"]) #TODO: check if return ok
                         self.sensors[x]["temperatur.nu"]["LastUpdate"]=datetime.now()
                     else:
@@ -54,7 +55,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
 
                     if "WeatherUnderground" in self.sensors[x]:
                         WU=self.sensors[x]["WeatherUnderground"]
-                        print ("WS-Station %s", WU["Station"])
+                        self.log.trace("WeatherUnderground upload. temp=%d Station %s", self.sensors[x]["temp"], WU["Station"])
                         self.sendWeatherUnderground(WU["Station"], WU["Password"],self.sensors[x]["temp"], self.sensors[x]["unit"]) #TODO: check if return ok
                         self.sensors[x]["WeatherUnderground"]["LastUpdate"]=datetime.now()
                     else:
