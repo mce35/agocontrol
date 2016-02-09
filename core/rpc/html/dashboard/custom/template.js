@@ -290,21 +290,25 @@ function Dashboard(dashboard, edition, agocontrol)
     //sub filter options
     self.subFilterOptions = ko.computed(function()
     {
+        var out = [];
+        function compare(a,b) {
+            if( a.name<b.name ) return -1;
+            else if( a.name>b.name ) return 1;
+            else return 0;
+        };
+
         if( self.selectedMainFilter()=='types' )
         {
             //return devices of specified types
-            return self.deviceTypes();
+            out = self.deviceTypes().slice(0).sort(compare);
         }
         else if( self.selectedMainFilter()=='rooms' )
         {
             //return all rooms
-            return self.rooms();
+            out = self.rooms().slice(0).sort(compare);
         }
-        else
-        {
-            //return nothing
-            return [];
-        }
+
+        return out;
     });
 
     //show editor
