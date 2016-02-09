@@ -1047,15 +1047,18 @@ Agocontrol.prototype = {
     //remove specified event handler
     removeEventHandler: function(callback)
     {
-        var self = this;
-        var index = self.eventHandlers.indexOf(callback);
-        if( callback && index!==-1 )
+        if( self.eventHandlers.length>0 )
         {
-            self.eventHandlers.splice(index, 1);
-        }
-        else
-        {
-            console.error('Unable to remove callback from eventHandlers list because callback was not found!');
+            var self = this;
+            var index = self.eventHandlers.indexOf(callback);
+            if( callback && index!==-1 )
+            {
+                self.eventHandlers.splice(index, 1);
+            }
+            else
+            {
+                console.error('Unable to remove callback from eventHandlers list because callback was not found!');
+            }
         }
     },
 
