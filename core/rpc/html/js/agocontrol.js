@@ -1047,9 +1047,9 @@ Agocontrol.prototype = {
     //remove specified event handler
     removeEventHandler: function(callback)
     {
+        var self = this;
         if( self.eventHandlers.length>0 )
         {
-            var self = this;
             var index = self.eventHandlers.indexOf(callback);
             if( callback && index!==-1 )
             {
