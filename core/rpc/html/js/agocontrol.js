@@ -944,6 +944,22 @@ Agocontrol.prototype = {
                 done = true;
             }
 
+            //update media infos
+            if( !done && response.result.event=="event.device.mediainfos" )
+            {
+                for( var i=0; i<self.devices().length; i++ )
+                {
+                    if( self.devices()[i].uuid==response.result.uuid && self.devices()[i].updateMediaInfos )
+                    {
+                        //update device media infos
+                        self.devices()[i].updateMediaInfos(response.result);
+
+                        //stop statement
+                        break;
+                    }
+                }
+            }
+
             //update device data (values)
             if( !done )
             {
@@ -975,7 +991,7 @@ Agocontrol.prototype = {
                                     self.devices()[i]['state'](response.result.level);
                                 }
                             }
-                    }   
+                        }
 
                         //update device stale
                         if( response.result.event=="event.device.stale" && response.result.stale!==undefined )

@@ -209,6 +209,7 @@ div.dashboard-widget-draggable {
 
 .widget-sm > .info-box:nth-child(2) {
     height: 120px !important;
+    overflow: hidden;
 }
 
 /* widget with small header and no detail */
@@ -257,6 +258,7 @@ div.dashboard-widget-draggable {
 
 .widget-md > .info-box:nth-child(2) {
     height: 100px !important;
+    overflow: hidden;
 }
 
 /* widget with medium header (default) */
@@ -306,6 +308,7 @@ div.dashboard-widget-draggable {
     height: 80px !important;
     max-height: 80px !important;
     min-height: 80px !important;
+    overflow: hidden;
 }
 
 /* widget with no header or overlaid header */
@@ -324,6 +327,7 @@ div.dashboard-widget-draggable {
 
 .widget-xs > .info-box:nth-child(2) {
     height: 160px !important;
+    overflow: hidden;
 }
 
 .widget-overlay > .widget-overlay-bg {

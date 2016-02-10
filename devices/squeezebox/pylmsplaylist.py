@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -57,6 +57,7 @@ class LMSPlaylist(LMSServerNotifications):
         self.__deltrack_callback = None
         self.__movetrack_callback = None
         self.__reload_callback = None
+        self.__lastNewsongId = None
 
     def __millitime(self):
         return int(round(time.time() * 1000))
@@ -106,8 +107,24 @@ class LMSPlaylist(LMSServerNotifications):
                 if items[2]=='newsong':
                     #192.168.1.1 playlist newsong Thinking%20Of%20You%20(Flo%20Rida) 20
                     #player starts playing a new song
-                    if self.__play_callback:
-                        self.__play_callback(items[0], items[3], items[4])
+                    #HACK: when playing songs randomly, there is an issue in squeezeboxserver: newsong is sometimes called twice,
+                    #once with current song and secondly with the new current song. Also specified playlist_index is incorrect.
+                    #To fix that we call get_current_song function manually and return song infos in callback parameters and we
+                    #store last song id received to drop duplicates
+                    song = self.get_current_song(items[0])
+                    self.logger.info('---> newsong notif %s' % song)
+                    if not song:
+                        #no song found (why?), execute callback anyway
+                        self.logger.info('no song found')
+                        self.__play_callback(items[0], song, items[4])
+                    elif song['id']!=self.__lastNewsongId:
+                        #song id is different than previous one, execute callback
+                        self.logger.info('song found')
+                        self.__lastNewsongId = song['id']
+                        self.__play_callback(items[0], song, items[4])
+                    else:
+                        #drop notification
+                        self.logger.debug('--> drop notification')
                 elif items[2]=='pause':
                     #192.168.1.1 pause [0|1]
                     #player update pause status
@@ -240,13 +257,21 @@ class LMSPlaylist(LMSServerNotifications):
         
         return playlist
         
-    def get_current_song(self, player_id):
-        """return current song infos"""
+    def get_current_song(self, player_id, playlist_index=None):
+        """
+        Return current song infos
+        @param player_id: id of the player
+        @param playlist_index: index of the playlist (optionnal, if not specified get current playlist index)
+        """
         current = None
         
         try:
-            index = int(self.__server.request('%s playlist index ?' % player_id))
-            song = self.__server.request('%s playlist path %d ?' % (player_id, index))
+            if not playlist_index:
+                playlist_index = int(self.__server.request('%s playlist index ?' % player_id))
+            else:
+                #make sure playlist_index is integer
+                playlist_index = int(playlist_index)
+            song = self.__server.request('%s playlist path %d ?' % (player_id, playlist_index))
             self.logger.debug('song=%s' % song)
             if song:
                 #url = '%s%s' % ('file:',song[0]['file'])
@@ -309,7 +334,7 @@ if __name__=="__main__":
             logger.error('No song!')
     
     try:
-        lib = LMSLibrary('192.168.1.53', 9090)
+        lib = LMSLibrary('192.168.1.53', 9090, 9000)
         play = LMSPlaylist(lib, '192.168.1.53', 9090)
         play.set_callbacks(current_song_changed, None, None, None, None, None, None, None, None)
         play.start()

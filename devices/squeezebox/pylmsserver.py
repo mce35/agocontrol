@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -37,9 +37,7 @@ class LMSServer(object):
     LMS Server access to perform some requests
     """
 
-    def __init__(self, hostname="localhost", port=9090, 
-                       username="", password="",
-                       charset="utf-8"):
+    def __init__(self, hostname="localhost", cli_port=9090, username="", password="", charset="utf-8"):
         """
         Constructor
         """
@@ -48,7 +46,7 @@ class LMSServer(object):
         self.telnet = None
         self.logged_in = False
         self.hostname = hostname
-        self.port = port
+        self.cli_port = cli_port
         self.username = username
         self.password = password
         self.version = ""
@@ -99,7 +97,7 @@ class LMSServer(object):
         Telnet Connect
         """
         try:
-            self.telnet = telnetlib.Telnet(self.hostname, self.port)
+            self.telnet = telnetlib.Telnet(self.hostname, self.cli_port)
         except Exception as e:
             self.logger.critical('Unable to connect [%s]' % str(e))
             self.telnet = None
@@ -330,9 +328,9 @@ class LMSServerNotifications(threading.Thread, LMSServer):
     """
     Class that catch LMS server notifications to create events on some server actions
     """
-    def __init__(self, notifications_callback, hostname="localhost", port=9090, username="", password="", charset="utf-8"):
+    def __init__(self, notifications_callback, hostname="localhost", cli_port=9090, username="", password="", charset="utf-8"):
         """constructor"""
-        LMSServer.__init__(self, hostname, port, username, password, charset)
+        LMSServer.__init__(self, hostname, cli_port, username, password, charset)
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("LMSServerNotifications")
         
