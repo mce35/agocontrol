@@ -20,8 +20,10 @@ __version__    = AGO_TELLSTICK_VERSION
 from tellstickbase import tellstickbase
 import td
 
+
 class tellstickduo(tellstickbase):
     """Class used for Tellstick & Tellstick Duo devices"""
+
     def __get__(self, obj, objtype=None):
         pass
 
@@ -32,8 +34,8 @@ class tellstickduo(tellstickbase):
         pass
 
     def init(self, SensorPollDelay, TempUnits):
-        #TELLSTICK_BELL | TELLSTICK_TOGGLE | TELLSTICK_LEARN | TELLSTICK_EXECUTE | TELLSTICK_UP | TELLSTICK_DOWN | TELLSTICK_STOP
-        td.init( defaultMethods = td.TELLSTICK_TURNON | td.TELLSTICK_TURNOFF | td.TELLSTICK_DIM)
+        # TELLSTICK_BELL | TELLSTICK_TOGGLE | TELLSTICK_LEARN | TELLSTICK_EXECUTE | TELLSTICK_UP | TELLSTICK_DOWN | TELLSTICK_STOP
+        td.init(defaultMethods=td.TELLSTICK_TURNON | td.TELLSTICK_TURNOFF | td.TELLSTICK_DIM)
         self.log.info("Init executed")
 
     def close(self):
@@ -44,7 +46,7 @@ class tellstickduo(tellstickbase):
         return self.getErrorString(resCode).lower()
 
     def turnOff(self, devId):
-        resCode =  td.turnOff(devId)
+        resCode = td.turnOff(devId)
         return self.getErrorString(resCode).lower()
 
     def getErrorString(self, resCode):
@@ -54,7 +56,7 @@ class tellstickduo(tellstickbase):
         resCode = td.dim(devId, level)
         return self.getErrorString(resCode).lower()
 
-    def getName(self,devId):
+    def getName(self, devId):
         return td.getName(devId)
 
     def methodsReadable(self, method, default):
@@ -64,10 +66,9 @@ class tellstickduo(tellstickbase):
         return td.getNumberOfDevices()
 
     def getNumberOfSensors(self):
-        return td.getNumberOfDevices() #wrong
+        return td.getNumberOfDevices()  # wrong
 
-
-    def getDeviceId(self,i):
+    def getDeviceId(self, i):
         return td.getDeviceId(i)
 
     def getModel(self, devId):
@@ -81,13 +82,13 @@ class tellstickduo(tellstickbase):
 
     def newTempSensor(self, devId, model, value):
         s = {}
-        s["id"] =devId
-        s["description"]=""
-        s["model"]= model
+        s["id"] = devId
+        s["description"] = ""
+        s["model"] = model
         self.log.debug("New temperature sensor intercepted: devId=" + devId + " model=" + model)
         s["new"] = True
-        s["temp"] = float(value) # C/F
-        s["offset"] = 0.0 #TODO: Add to parameter & config file
+        s["temp"] = float(value)  # C/F
+        s["offset"] = 0.0  # TODO: Add to parameter & config file
         s["lastTemp"] = float(-274.0)
         s["isTempSensor"] = True
         s["isHumiditySensor"] = False
@@ -96,30 +97,30 @@ class tellstickduo(tellstickbase):
 
     def newHumiditySensor(self, devId, model, value):
         s = {}
-        s["id"] =devId
-        s["description"]=""
-        s["model"]= model
+        s["id"] = devId
+        s["description"] = ""
+        s["model"] = model
         self.log.debug("New humidity sensor intercepted: devId=" + devId + " model=" + model)
         s["new"] = True
         s["humidity"] = float(value)
-        s["offset"] = 0.0 #TODO: Add to parameter & config file
+        s["offset"] = 0.0  # TODO: Add to parameter & config file
         s["lastHumidity"] = float(-999.0)
         s["isHumiditySensor"] = True
         s["isTempSensor"] = False
         s["ignore"] = False
         return s
 
-    def SensorEventInterceptor (self, protocol, model, id, dataType, value, timestamp, callbackId):
-        devId = 'S' + str(id)       # Prefix 'S' to make sure name doesn't clash with self-defined devices
+    def SensorEventInterceptor(self, protocol, model, id, dataType, value, timestamp, callbackId):
+        devId = 'S' + str(id)  # Prefix 'S' to make sure name doesn't clash with self-defined devices
         devIdT = devId + "-temp"
         devIdH = devId + "-hum"
-        #self.checkIgnore(self, devId) #TODO: Add once moved
-        self.log.trace ("SensorEventInterceptor called for " + devId)
+        # self.checkIgnore(self, devId) #TODO: Add once moved
+        self.log.trace("SensorEventInterceptor called for " + devId)
 
         if str(id) not in self.ignoreDevices:
             # New temperature sensor?
             if devIdT not in self.sensors and dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE:
-                self.sensors[devIdT] = self.newTempSensor (devIdT, model, value)
+                self.sensors[devIdT] = self.newTempSensor(devIdT, model, value)
 
             # New humidity sensor?
             if devIdH not in self.sensors and dataType & td.TELLSTICK_HUMIDITY == td.TELLSTICK_HUMIDITY:
@@ -178,7 +179,7 @@ class tellstickduo(tellstickbase):
         return self.switches
 
     def listRemotes(self):
-        self.log.trace ("listRemotes start")
+        self.log.trace("listRemotes start")
         if len(self.remotes) == 0:
             self.log.info("getNumberOfDevices=" + str(self.getNumberOfDevices()))
             for i in range(self.getNumberOfDevices()):

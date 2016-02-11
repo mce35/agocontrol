@@ -6,14 +6,14 @@ AGO_TELLSTICK_VERSION = '0.0.9'
 #
 # Date of origin: 2014-01-25
 #
-__author__     = "Joakim Lindbom"
-__copyright__  = "Copyright 2014, Joakim Lindbom"
-__credits__    = ["Joakim Lindbom", "The ago control team"]
-__license__    = "GPL Public License Version 3"
+__author__ = "Joakim Lindbom"
+__copyright__ = "Copyright 2014, Joakim Lindbom"
+__credits__ = ["Joakim Lindbom", "The ago control team"]
+__license__ = "GPL Public License Version 3"
 __maintainer__ = "Joakim Lindbom"
-__email__      = 'Joakim.Lindbom@gmail.com'
-__status__     = "Experimental"
-__version__    = AGO_TELLSTICK_VERSION
+__email__ = 'Joakim.Lindbom@gmail.com'
+__status__ = "Experimental"
+__version__ = AGO_TELLSTICK_VERSION
 ############################################
 
 from tellstickbase import tellstickbase
@@ -25,6 +25,7 @@ from agoclient.agoapp import ConfigurationError
 
 class tellsticknet(tellstickbase):
     """Class used for Tellstick Net devices with direct access to Telldus Live API"""
+
     def __init__(self, app):
         super(tellsticknet, self).__init__(app)
 
@@ -36,9 +37,9 @@ class tellsticknet(tellstickbase):
         if not self.PRIVATE_KEY:
             raise ConfigurationError("PRIVATE_KEY missing in config file, cannot continue.")
 
-        self.devices={}
-        self.models={}
-        self.names={}
+        self.devices = {}
+        self.models = {}
+        self.names = {}
         self.devicesRetrieved = False
 
     def __get__(self, obj, objtype=None):
@@ -61,12 +62,12 @@ class tellsticknet(tellstickbase):
             raise ConfigurationError("token/tokenSecret missing in telldus section, please use tellstick_auth.py first")
 
         self.token = oauth.OAuthToken(token, secret)
-        self.SensorPollDelay  = SensorPollDelay
+        self.SensorPollDelay = SensorPollDelay
         self.TempUnits = TempUnits
 
     def close(self):
         pass
-        #return td.close()
+        # return td.close()
 
     def turnOn(self, devId):
         return self.doMethod(devId, self.TELLSTICK_TURNON)
@@ -75,13 +76,12 @@ class tellsticknet(tellstickbase):
         return self.doMethod(devId, self.TELLSTICK_TURNOFF)
 
     def getErrorString(self, resCode):
-        return resCode #Telldus API returns strings, not resCodes. Just for making this compatible with Tellstick Duo API
-
+        return resCode  # Telldus API returns strings, not resCodes. Just for making this compatible with Tellstick Duo API
 
     def dim(self, devId, level):
         return self.doMethod(devId, self.TELLSTICK_DIM, level)
 
-    def getName(self,devId):
+    def getName(self, devId):
         try:
             return self.names[devId]
         except:
@@ -98,7 +98,7 @@ class tellsticknet(tellstickbase):
             return name
 
     def methodsReadable(self, method, default):
-        #return td.methodsReadable (method, default)
+        # return td.methodsReadable (method, default)
         return "X"
 
     def getNumberOfDevices(self):
@@ -108,7 +108,7 @@ class tellsticknet(tellstickbase):
             self.listSwitches()
             return len(self.switches)
 
-    def getDeviceId(self,i):
+    def getDeviceId(self, i):
         return (self.devices[i])
 
     def getModel(self, devId):
@@ -136,19 +136,23 @@ class tellsticknet(tellstickbase):
                 # Devices in the group stored in  response['devices']
 
         return self.models[devId]
-# dead code
+
+    # dead code
 
     def registerDeviceEvent(self, deviceEvent):
         pass
-        #return td.registerDeviceEvent(deviceEvent)
+        # return td.registerDeviceEvent(deviceEvent)
+
     def registerDeviceChangedEvent(self, deviceEvent):
         pass
-        #return td.registerDeviceChangedEvent(deviceEvent)
-    def registerSensorEvent(self, deviceEvent):
-        thread.start_new_thread (self.sensorThread, (deviceEvent, 0))
+        # return td.registerDeviceChangedEvent(deviceEvent)
 
-    def doMethod(self, deviceId, methodId, methodValue = 0):
-        response = self.doRequest('device/info', {'id': deviceId}) # Put this in local cache to avoid lookup over the net
+    def registerSensorEvent(self, deviceEvent):
+        thread.start_new_thread(self.sensorThread, (deviceEvent, 0))
+
+    def doMethod(self, deviceId, methodId, methodValue=0):
+        response = self.doRequest('device/info',
+                                  {'id': deviceId})  # Put this in local cache to avoid lookup over the net
 
         if (methodId == self.TELLSTICK_TURNON):
             method = 'on'
@@ -181,14 +185,17 @@ class tellsticknet(tellstickbase):
         return retString
 
     def doRequest(self, method, params):
-        oauth_request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=self.token, http_method='GET', http_url="http://api.telldus.com/json/" + method, parameters=params)
+        oauth_request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=self.token, http_method='GET',
+                                                                   http_url="http://api.telldus.com/json/" + method,
+                                                                   parameters=params)
         oauth_request.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), self.consumer, self.token)
         headers = oauth_request.to_header()
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
         conn = httplib.HTTPConnection("api.telldus.com:80")
         try:
-            conn.request('GET', "/json/" + method + "?" + urllib.urlencode(params, True).replace('+', '%20'), headers=headers)
+            conn.request('GET', "/json/" + method + "?" + urllib.urlencode(params, True).replace('+', '%20'),
+                         headers=headers)
 
             response = conn.getresponse()
             return json.load(response)
@@ -197,7 +204,7 @@ class tellsticknet(tellstickbase):
 
     def listSwitches(self):
         response = self.doRequest('devices/list', {'supportedMethods': self.SUPPORTED_METHODS})
-        noDevices= len(response['device'])
+        noDevices = len(response['device'])
         print("Number of devices: %i" % noDevices)
         i = 0
         for device in response['device']:
@@ -208,13 +215,13 @@ class tellsticknet(tellstickbase):
             dev["id"] = devId
             dev["name"] = device["name"]
             dev["model"] = model
-            if 'switch'in model or 'dimmer' in model:
+            if 'switch' in model or 'dimmer' in model:
                 if 'dimmer' in model:
                     dev["isDimmer"] = True
                 else:
                     dev["isDimmer"] = False
                 self.devices[i] = device["id"]
-                i = i +1
+                i = i + 1
                 self.names[device["id"]] = device["name"]
                 self.switches[devId] = dev
             elif 'group' not in model:
@@ -234,15 +241,15 @@ class tellsticknet(tellstickbase):
         for sensor in response['sensor']:
             if sensor["id"] not in self.sensors:
                 s = {}
-                #lastupdate = datetime.datetime.fromtimestamp(int(sensor['lastUpdated']))
-                #print "%s\t%s\t%s" % (sensor['id'], sensor['name'], lastupdate)
+                # lastupdate = datetime.datetime.fromtimestamp(int(sensor['lastUpdated']))
+                # print "%s\t%s\t%s" % (sensor['id'], sensor['name'], lastupdate)
                 devId = str(sensor["id"])
                 s["id"] = devId
                 s["name"] = sensor["name"]
                 s["new"] = True
                 if "temp" in sensor:
                     s["isTempSensor"] = True
-                    s["temp"] = float(sensor["temp"]) # C/ F
+                    s["temp"] = float(sensor["temp"])  # C/ F
                     s["lastTemp"] = -274.0
                 else:
                     s["isTempSensor"] = False
@@ -265,37 +272,38 @@ class tellsticknet(tellstickbase):
 
         return self.sensors
 
-#    def getSensorData(self, sensorId):
-#        response = self.doRequest('sensor/info', {'id': sensorId })
-#        lastupdate = datetime.datetime.fromtimestamp(int(response['lastUpdated']))
-#        sensor_name = response['name']
-#        for data in response['data']:
-#            print "%s\t%s\t%s\t%s" % (sensor_name, data['name'], data['value'], lastupdate)
-#            #if data['name'] == "temp":
+    #    def getSensorData(self, sensorId):
+    #        response = self.doRequest('sensor/info', {'id': sensorId })
+    #        lastupdate = datetime.datetime.fromtimestamp(int(response['lastUpdated']))
+    #        sensor_name = response['name']
+    #        for data in response['data']:
+    #            print "%s\t%s\t%s\t%s" % (sensor_name, data['name'], data['value'], lastupdate)
+    #            #if data['name'] == "temp":
 
-    def sensorThread (self, sensorCallback, dummy):
+    def sensorThread(self, sensorCallback, dummy):
 
         while (True):
             for devId, dev in self.sensors.iteritems():
-                response = self.doRequest('sensor/info', {'id': dev["id"] })
+                response = self.doRequest('sensor/info', {'id': dev["id"]})
                 lastupdate = datetime.datetime.fromtimestamp(int(response['lastUpdated']))
 
                 for data in response['data']:
-                    #print "%s\t%s\t%s\t%s" % (response['name'], data['name'], data['value'], lastupdate)
+                    # print "%s\t%s\t%s\t%s" % (response['name'], data['name'], data['value'], lastupdate)
 
                     if data['name'] == 'temp' and float(data['value']) != self.sensors[devId]["lastTemp"]:
                         tempC = float(data['value'])
                         self.sensors[devId]["lastTemp"] = tempC
                         if tempC != self.sensors[devId]["temp"]:
                             self.sensors[devId]["temp"] = tempC
-                            sensorCallback(protocol="", model="temp", devId=devId, dataType=0, value=tempC, timestamp=lastupdate, callbackId=None)
+                            sensorCallback(protocol="", model="temp", devId=devId, dataType=0, value=tempC,
+                                           timestamp=lastupdate, callbackId=None)
 
                     if data['name'] == 'humidity' and float(data['value']) != self.sensors[devId]["lastHumidity"]:
                         humidity = float(data['value'])
                         self.sensors[devId]["lastHumidity"] = humidity
-                        if humidity<> self.sensors[devId]["humidity"]:
+                        if humidity <> self.sensors[devId]["humidity"]:
                             self.sensors[devId]["humidity"] = humidity
-                            sensorCallback (protocol = "", model = "humidity", devId = devId, dataType = 0, value = humidity, timestamp = lastupdate, callbackId = None)
+                            sensorCallback(protocol="", model="humidity", devId=devId, dataType=0, value=humidity,
+                                           timestamp=lastupdate, callbackId=None)
 
-            time.sleep (float(self.SensorPollDelay))
-
+            time.sleep(float(self.SensorPollDelay))
