@@ -120,7 +120,7 @@ def emit_stream(internalid):
     client.emit_event(internalid, "event.device.statechanged", str(STATE_STREAM), "")
 
 def emit_media_infos(internalid, infos):
-    logging.debug('emit MEDIAINFOS')
+    logging.info('emit MEDIAINFOS')
     if not internalid:
         logging.error("Unable to emit mediainfos of not specified device")
         return False
@@ -138,6 +138,7 @@ def emit_media_infos(internalid, infos):
     cover_b64 = None
     if 'album_id' in infos: #Local file
         cover_path = str(library.get_cover_path(infos['album_id'], infos['artwork_track_id'], '/tmp/', filename, (100,100)))
+        logging.info('cover_path=%s' % cover_path)
         if cover_path != 'None':
             with open(cover_path, "rb") as cover_bin:
                 cover_b64 = buffer(base64.b64encode(cover_bin.read()))
@@ -145,7 +146,6 @@ def emit_media_infos(internalid, infos):
         #TODO: Add cover art lookup via https://developer.spotify.com/web-api/search-item/
         #infos: {'album': 'The Mountain', 'artist': 'Haken', 'url': 'spotify:track:5fUGUcxc6Ocn89pv60AKhr', 'bitrate': '320k VBR', 'title': 'Pareidolia', 'tracknum': '8', 'year': '0', 'duration': '651', 'type': 'Ogg Vorbis (Spotify)', 'id': '-109058656'}
         cover_b64=None
-
     data = {'title':infos['title'], 'album':infos['album'], 'artist':infos['artist'], 'cover':cover_b64}
 
     client.emit_event_raw(internalid, "event.device.mediainfos", data)

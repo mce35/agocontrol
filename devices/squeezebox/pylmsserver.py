@@ -199,40 +199,47 @@ class LMSServer(object):
         items = []
         try:
             #request command without decoding output
+            self.logger.debug('COMMAND=%s' % command)
             response = self.request(command, False)
+            self.logger.debug('RESPONSE=%s' % response)
             response_parts = response.split(' ')
-            if response.startswith('count'):
-                self.logger.debug('count response')
-                #get number of items
-                count = int(self._decode(response_parts[0]).split(':',1)[1])
+            if len(response)>0:
+                if response.startswith('count'):
+                    self.logger.debug('count response')
+                    #get number of items
+                    count = int(self._decode(response_parts[0]).split(':',1)[1])
 
-                #get items separator
-                separator = self._decode(response_parts[1]).split(':',1)[0]
+                    #get items separator
+                    separator = self._decode(response_parts[1]).split(':',1)[0]
 
-                #get items
-                sub_items = None
-                for i in range(1, len(response_parts)):
-                    (key,val) = self._decode(response_parts[i]).split(':',1)
-                    if key==separator:
-                        #save current sub_items
-                        if sub_items:
-                            items.append(sub_items)
-                        sub_items = {}
+                    #get items
+                    sub_items = None
+                    for i in range(1, len(response_parts)):
+                        (key,val) = self._decode(response_parts[i]).split(':',1)
+                        if key==separator:
+                            #save current sub_items
+                            if sub_items:
+                                items.append(sub_items)
+                            sub_items = {}
+                            sub_items[key] = val
+                        else:
+                            sub_items[key] = val
+                    items.append(sub_items)
+                    self.logger.debug(items)
+
+                else:
+                    self.logger.debug('no count response')
+                    #just split items
+                    sub_items = {}
+                    count = 1
+                    for i in range(len(response_parts)):
+                        (key,val) = self._decode(response_parts[i]).split(':',1)
                         sub_items[key] = val
-                    else:
-                        sub_items[key] = val
-                items.append(sub_items)
-                self.logger.debug(items)
+                    items.append(sub_items)
 
             else:
-                self.logger.debug('no count response')
-                #just split items
-                sub_items = {}
-                count = 1
-                for i in range(len(response_parts)):
-                    (key,val) = self._decode(response_parts[i]).split(':',1)
-                    sub_items[key] = val
-                items.append(sub_items)
+                #no response:S bad request surely
+                return 0,[],True
 
         except Exception as e:
             #error parsing results (not correct?)
