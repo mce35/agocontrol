@@ -1,3 +1,4 @@
 lib/systemd/system/agozwave.service
 opt/agocontrol/bin/agozwave
 etc/opt/agocontrol/schema.d/20-zwave.yaml
+etc/opt/agocontrol/conf.d/zwave.conf
