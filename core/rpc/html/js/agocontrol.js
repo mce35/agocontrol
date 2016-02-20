@@ -171,14 +171,6 @@ Agocontrol.prototype = {
         //get device size
         self.deviceSize = getDeviceSize();
 
-        //handle dark/light style changes
-        self.darkStyle.subscribe(function(value) {
-            if( self.theme )
-            {
-                self.setSkin(self.theme);
-            }
-        });
-
         //get ui config (localstorage)
         //this is used to avoid skin refresh at startup
         if( typeof(Storage)!=="undefined" )
@@ -198,6 +190,14 @@ Agocontrol.prototype = {
                 self.skin(skin);
             }
         }
+
+        //handle dark/light style changes
+        self.darkStyle.subscribe(function(value) {
+            if( self.theme )
+            {
+                self.setSkin(self.theme);
+            }
+        });
 
         var p0 = this.getUiConfig();
         var p1 = this.getInventory()
