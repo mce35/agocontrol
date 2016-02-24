@@ -115,7 +115,11 @@ void AgoShvt250::receiveFunction() {
                     AGO_DEBUG() << "invalid checksum: calculated: " << std::dec << (int) checksum << " frame: " << std::dec << (int) bufr[21];
                 }
             } else {
-                AGO_DEBUG() << "invalid frame, no STX";
+                AGO_ERROR() << "invalid frame, no STX";
+                while (bufr[0] != 0x2) {
+                    int len = serial_read(fd, bufr, 1, 6);
+                }
+                int len = serial_read(fd, bufr+1, 23, 6);
             }
         } else AGO_DEBUG() << "invalid length: " << len;
 
