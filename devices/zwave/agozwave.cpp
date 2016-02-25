@@ -1608,13 +1608,13 @@ void AgoZwave::_OnNotification (Notification const* _notification)
             uint8 _notificationCode = _notification->GetNotification();
             switch (_notificationCode) {
                 case Notification::Code_Timeout:
-                    AGO_TRACE() << "z-wave command did time out";
+                    AGO_ERROR() << "z-wave command did time out for node " << _notification->GetNodeId();
                     break;
                 case Notification::Code_Dead:
-                    AGO_TRACE() << "z-wave node dead";
+                    AGO_ERROR() << "z-wave node dead, id: " << _notification->GetNodeId();
                     break;
                 case Notification::Code_Alive:
-                    AGO_TRACE() << "z-wave node alive again";
+                    AGO_ERROR() << "z-wave node alive again, id: " << _notification->GetNodeId();
                     break;
                 default:
                     break;
