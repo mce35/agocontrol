@@ -1604,6 +1604,24 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
         case Notification::Type_DriverReset:
         case Notification::Type_Notification:
+        {
+            uint8 _notificationCode = _notification->GetNotification();
+            switch (_notificationCode) {
+                case Notification::Code_Timeout:
+                    AGO_TRACE() << "z-wave command did time out";
+                    break;
+                case Notification::Code_Dead:
+                    AGO_TRACE() << "z-wave node dead";
+                    break;
+                case Notification::Code_Alive:
+                    AGO_TRACE() << "z-wave node alive again";
+                    break;
+                default:
+                    break;
+            }
+
+            break;
+        }
         case Notification::Type_NodeNaming:
         case Notification::Type_NodeProtocolInfo:
         case Notification::Type_NodeQueriesComplete:
