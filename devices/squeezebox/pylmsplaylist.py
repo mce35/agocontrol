@@ -28,17 +28,20 @@ from pylmslibrary import LMSLibrary
 import threading
 import os
 import logging
-import urllib
 import time
 
 class LMSPlaylist(LMSServerNotifications):
-    """Manage playlist"""
+    """
+    Manage playlist
+    """
 
     FILTER_TIMEOUT = 10 #in ms
     ALLOWED_COMMANDS = ['playlist', 'power', 'play', 'pause']
 
     def __init__(self, library, hostname='localhost', port=9090, username='', password='', charset='utf8'):
-        """init"""
+        """
+        Constructor
+        """
         LMSServerNotifications.__init__(self, self._callback, hostname, port, username, password, charset)
         self.logger = logging.getLogger("LMSPlaylist")
 
@@ -67,8 +70,10 @@ class LMSPlaylist(LMSServerNotifications):
         pass
 
     def __filterByTimestamp(self, player_id):
-        """Filter response by timestamp
-            return True if response must be filtered"""
+        """
+        Filter response by timestamp
+        @return True if response must be filtered
+        """
         msec = self.__millitime()
         if self.__lastresponse.has_key(player_id):
             if msec<(self.__lastresponse[player_id] + self.FILTER_TIMEOUT):
@@ -83,17 +88,21 @@ class LMSPlaylist(LMSServerNotifications):
         return False
 
     def __filterByResponse(self, command):
-        """Filter response by command
-            return True if response must be filtered"""
+        """
+        Filter response by command
+        @return True if response must be filtered
+        """
         if not command in self.ALLOWED_COMMANDS:
             return True
         else:
             return False
         
     def _process_response(self, items):
-        """overwrite _process_reponse from LMSServerNotifications
-           process response received by lmsserver
-           this function can be overwriten to process some other stuff"""
+        """
+        Overwrite _process_reponse from LMSServerNotifications
+        process response received by lmsserver
+        this function can be overwriten to process some other stuff
+        """
         self.logger.debug('-->_process_response %s' % str(items))
 
         try:
@@ -112,14 +121,14 @@ class LMSPlaylist(LMSServerNotifications):
                     #To fix that we call get_current_song function manually and return song infos in callback parameters and we
                     #store last song id received to drop duplicates
                     song = self.get_current_song(items[0])
-                    self.logger.info('---> newsong notif %s' % song)
+                    self.logger.debug('---> newsong notif %s' % song)
                     if not song:
                         #no song found (why?), execute callback anyway
-                        self.logger.info('no song found')
+                        self.logger.debug('no song found')
                         self.__play_callback(items[0], song, items[4])
                     elif song['id']!=self.__lastNewsongId:
                         #song id is different than previous one, execute callback
-                        self.logger.info('song found')
+                        self.logger.debug('song found')
                         self.__lastNewsongId = song['id']
                         self.__play_callback(items[0], song, items[4])
                     else:
@@ -192,16 +201,17 @@ class LMSPlaylist(LMSServerNotifications):
             self.logger.exception('Exception in _process_response:')
         
     def set_callbacks(self, play_callback, pause_callback, stop_callback, on_callback, off_callback, addtrack_callback, deltrack_callback, movetrack_callback, reload_callback):
-        """callbacks:
-        play_callback: player starts playing
-        pause_callback: player playback is paused
-        stop_callback: player stops playing
-        addtrack_callback: new track added to playlist
-        deltrack_callback: track deleted from playlist
-        movetrack_callback : track moved on playlist
-        reload_callback: playlist reloaded
-        on_callback: player switched on
-        off_callback: player switched off
+        """
+        Set callbacks:
+        @param play_callback: player starts playing
+        @param pause_callback: player playback is paused
+        @param stop_callback: player stops playing
+        @param addtrack_callback: new track added to playlist
+        @param deltrack_callback: track deleted from playlist
+        @param movetrack_callback : track moved on playlist
+        @param reload_callback: playlist reloaded
+        @param on_callback: player switched on
+        @param off_callback: player switched off
         """
         self.__play_callback = play_callback
         self.__pause_callback = pause_callback
@@ -214,7 +224,9 @@ class LMSPlaylist(LMSServerNotifications):
         self.__off_callback = off_callback
         
     def get_playlist(self, player_id):
-        """return full playlist content"""
+        """
+        Return full playlist content
+        """
         playlist = []
         
         #get number of item in playlist
@@ -256,30 +268,65 @@ class LMSPlaylist(LMSServerNotifications):
                 self.logger.exception('Unable to get song infos:')
         
         return playlist
-        
+
     def get_current_song(self, player_id, playlist_index=None):
         """
         Return current song infos
         @param player_id: id of the player
         @param playlist_index: index of the playlist (optionnal, if not specified get current playlist index)
+        @return album, artist, url (direct download), bitrate, album_id, artwork_track_id, replay_gain, tagversion
+                genre, filesize, year, duration, title, samplerate, tracknum, type, id, artwork_url (online services
+                cover), remote_title (radio stream title), remote (flag if it's online service)
         """
         current = None
         
         try:
-            if not playlist_index:
-                playlist_index = int(self.__server.request('%s playlist index ?' % player_id))
+            #is online service?
+            remote = self.__server.request('%s playlist remote ?' % (player_id))
+            self.logger.debug('remote=%s' % remote)
+
+            if remote=='0':
+                #local file
+
+                #get playlist index
+                if not playlist_index:
+                    playlist_index = int(self.__server.request('%s playlist index ?' % player_id))
+                else:
+                    #make sure playlist_index is integer
+                    playlist_index = int(playlist_index)
+
+                #get file infos from file url
+                song = self.__server.request('%s playlist path %d ?' % (player_id, playlist_index))
+                self.logger.debug('song=%s' % song)
+                if song:
+                    current = self.library.get_song_infos_by_url(song)
+                else:
+                    #error occured
+                    self.logger.error('Unable to get current song for player %s: no song found' % player_id)
+
             else:
-                #make sure playlist_index is integer
-                playlist_index = int(playlist_index)
-            song = self.__server.request('%s playlist path %d ?' % (player_id, playlist_index))
-            self.logger.debug('song=%s' % song)
-            if song:
-                #url = '%s%s' % ('file:',song[0]['file'])
-                #self.logger.debug('url=%s' % url)
-                current = self.library.get_song_infos_by_url(song)
-            else:
-                #error occured
-                self.logger.error('Unable to get current song on player %s' % player_id)
+                #remote file
+                
+                #get player
+                player = None
+                for p in self.__server.get_players():
+                    if p.mac==player_id:
+                        #found player
+                        player = p
+                        break
+
+                #get file infos from player status
+                if player:
+                    status = player.get_current_status()
+                    if status:
+                        current = status
+                    else:
+                        #no player status returned
+                        self.logger.error('Unable to get current song infos from player %s: no player status' % player_id)
+                else:
+                    #no player found
+                    self.logger.error('Unable to get current song infos from player %s: unknown player' % player_id)
+
         except Exception as e:
             #problem during song infos retrieving
             self.logger.exception('Unable to get current song infos:')
@@ -287,11 +334,15 @@ class LMSPlaylist(LMSServerNotifications):
         return current
 
     def get_server(self):
-        """return server to request some stuff"""
+        """
+        Return server to request some stuff
+        """
         return self.__server
 
         
-"""TESTS"""
+"""
+TESTS
+"""
 if __name__=="__main__":
     import gobject; gobject.threads_init()
     logger = logging.getLogger()

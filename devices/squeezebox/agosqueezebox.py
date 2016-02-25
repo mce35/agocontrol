@@ -12,6 +12,7 @@ import threading
 import time
 import base64
 import logging
+import urllib
 
 host = ''
 server = None
@@ -120,7 +121,7 @@ def emit_stream(internalid):
     client.emit_event(internalid, "event.device.statechanged", str(STATE_STREAM), "")
 
 def emit_media_infos(internalid, infos):
-    logging.info('emit MEDIAINFOS')
+    logging.debug('emit MEDIAINFOS')
     if not internalid:
         logging.error("Unable to emit mediainfos of not specified device")
         return False
@@ -132,55 +133,28 @@ def emit_media_infos(internalid, infos):
         if not infos:
             logging.error("Unable to find infos of internalid '%s'" % internalid)
             return False
+    logging.debug('emit_media_infos : %s' % infos)
 
     #prepare cover
-    filename = 'cover_%s.jpg' % ''.join(x for x in internalid if x.isalnum())
+    if infos.has_key('remote') and infos['remote']=='1':
+        #get cover from online service
+        cover_data = library.get_remote_cover(infos['artwork_url'])
+    else:
+        #get cover from local source
+        filename = 'cover_%s.jpg' % ''.join(x for x in internalid if x.isalnum())
+        cover_data = library.get_cover(infos['album_id'], infos['artwork_track_id'], filename, (100,100))
     cover_b64 = None
-    if 'album_id' in infos: #Local file
-        cover_path = str(library.get_cover_path(infos['album_id'], infos['artwork_track_id'], '/tmp/', filename, (100,100)))
-        logging.info('cover_path=%s' % cover_path)
-        if cover_path != 'None':
-            with open(cover_path, "rb") as cover_bin:
-                cover_b64 = buffer(base64.b64encode(cover_bin.read()))
-    if 'url' in infos and infos['url'][:7]=='spotify':
-        #TODO: Add cover art lookup via https://developer.spotify.com/web-api/search-item/
-        #infos: {'album': 'The Mountain', 'artist': 'Haken', 'url': 'spotify:track:5fUGUcxc6Ocn89pv60AKhr', 'bitrate': '320k VBR', 'title': 'Pareidolia', 'tracknum': '8', 'year': '0', 'duration': '651', 'type': 'Ogg Vorbis (Spotify)', 'id': '-109058656'}
-        cover_b64=None
-    data = {'title':infos['title'], 'album':infos['album'], 'artist':infos['artist'], 'cover':cover_b64}
+    if cover_data:
+        cover_b64 = buffer(base64.b64encode(cover_data))
+        logging.debug('cover_b64 %d' % len(cover_b64))
+
+    #and fill returned data
+    data = {'title':infos['title'], 'album':infos['album'],
+        'artist':infos['artist'], 'cover':cover_b64}
 
     client.emit_event_raw(internalid, "event.device.mediainfos", data)
 
 
-#init
-try:
-    #connect agoclient
-    client = agoclient.AgoConnection("squeezebox")
-
-    #read configuration
-    host = agoclient.get_config_option("squeezebox", "host", "127.0.0.1")
-    cli_port = int(agoclient.get_config_option("squeezebox", "cliport", "9090"))
-    html_port = int(agoclient.get_config_option("squeezebox", "htmlport", "9000"))
-    login = agoclient.get_config_option("squeezebox", "login", "")
-    passwd = agoclient.get_config_option("squeezebox", "password", "")
-    logging.info("Config: %s@%s:%d" % (login, host, cli_port))
-    
-    #connect to squeezebox server
-    logging.info('Creating LMSServer...')
-    server = pylmsserver.LMSServer(host, cli_port, login, passwd)
-    server.connect()
-    
-    #connect to notifications server
-    logging.info('Creating LMSPlaylist...')
-    library = pylmslibrary.LMSLibrary(host, cli_port, html_port, login, passwd)
-    playlist = pylmsplaylist.LMSPlaylist(library, host, cli_port, login, passwd)
-    #play, pause, stop, on, off, add, del, move, reload
-    playlist.set_callbacks(play_callback, pause_callback, stop_callback, on_callback, off_callback, None, None, None, None)
-    playlist.start()
-    
-except Exception as e:
-    #init failed
-    logging.exception('Init failed, exit now')
-    quit()
 
     
 
@@ -258,6 +232,39 @@ def messageHandler(internalid, content):
         elif content["command"] == "mediainfos":
             emit_media_infos(internalid, None)
 
+
+#init
+try:
+    #connect agoclient
+    client = agoclient.AgoConnection("squeezebox")
+
+    #read configuration
+    host = agoclient.get_config_option("squeezebox", "host", "127.0.0.1")
+    cli_port = int(agoclient.get_config_option("squeezebox", "cliport", "9090"))
+    html_port = int(agoclient.get_config_option("squeezebox", "htmlport", "9000"))
+    login = agoclient.get_config_option("squeezebox", "login", "")
+    passwd = agoclient.get_config_option("squeezebox", "password", "")
+    logging.info("Config: %s@%s:%d" % (login, host, cli_port))
+    
+    #connect to squeezebox server
+    logging.info('Connecting to LMSServer...')
+    server = pylmsserver.LMSServer(host, cli_port, login, passwd)
+    server.connect()
+    
+    #connect to notifications server
+    logging.info('Connecting to notification server...')
+    library = pylmslibrary.LMSLibrary(host, cli_port, html_port, login, passwd)
+    playlist = pylmsplaylist.LMSPlaylist(library, host, cli_port, login, passwd)
+    #play, pause, stop, on, off, add, del, move, reload
+    playlist.set_callbacks(play_callback, pause_callback, stop_callback, on_callback, off_callback, None, None, None, None)
+    playlist.start()
+    
+except Exception as e:
+    #init failed
+    logging.exception('Init failed, exit now')
+    quit()
+
+#connect message handler
 client.add_handler(messageHandler)
 
 #add server
@@ -305,6 +312,7 @@ try:
 
         #emit media infos
         emit_media_infos(p.mac, None)
+
 
 except Exception as e:
     logging.exception('Failed to get player status. Exit now')

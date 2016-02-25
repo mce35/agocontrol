@@ -336,7 +336,9 @@ class LMSServerNotifications(threading.Thread, LMSServer):
     Class that catch LMS server notifications to create events on some server actions
     """
     def __init__(self, notifications_callback, hostname="localhost", cli_port=9090, username="", password="", charset="utf-8"):
-        """constructor"""
+        """
+        Constructor
+        """
         LMSServer.__init__(self, hostname, cli_port, username, password, charset)
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("LMSServerNotifications")
@@ -347,16 +349,22 @@ class LMSServerNotifications(threading.Thread, LMSServer):
         self._callback = notifications_callback
         
     def __del__(self):
-        """Destructor"""
+        """
+        Destructor
+        """
         self.stop()
         LMSServer.__del__(self)
 
     def stop(self):
-        """stop process"""
+        """
+        Stop process
+        """
         self.__running = False
             
     def subscribe_players(self, player_ids):
-        """subscribe players to notifications"""
+        """
+        Subscribe to specified players notifications
+        """
         if not player_ids:
             self._player_ids = []
         elif type(player_ids) is list:
@@ -367,12 +375,16 @@ class LMSServerNotifications(threading.Thread, LMSServer):
             self._player_ids = []
 
     def _process_response(self, items):
-        """process response received by lmsserver
-           this function can be overwriten to process some other stuff"""
+        """
+        Process response received by lmsserver this function can be
+        overwriten to process some other stuff
+        """
         self._callback(items)
 
     def run(self):
-        """process"""
+        """
+        Process
+        """
         while self.__running:
             if not self.is_connected():
                 #connect pylmsserver
@@ -399,7 +411,7 @@ class LMSServerNotifications(threading.Thread, LMSServer):
                             #notifications for specified player
                             self._process_response(items)
                     else:
-                        #no player id filter
+                        #no player filtering activated, process any player
                         self._process_response(items)
             else:
                 #pause
@@ -410,7 +422,9 @@ class LMSServerNotifications(threading.Thread, LMSServer):
 
 
 
-"""TESTS"""
+"""
+TESTS
+"""
 if __name__=="__main__":
     import gobject; gobject.threads_init()
     logger = logging.getLogger()
