@@ -137,7 +137,7 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
         vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
         va_end( saveargs );
     }
-	std::string nodeString = GetNodeString(_nodeId);
+    std::string nodeString = GetNodeString(_nodeId);
 
     if (_level == LogLevel_StreamDetail) AGO_TRACE() << "OZW " << nodeString << string(lineBuf);
     else if (_level == LogLevel_Debug) AGO_DEBUG() << "OZW " << nodeString << string(lineBuf);
@@ -1606,20 +1606,38 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         case Notification::Type_Notification:
         {
             uint8 _notificationCode = _notification->GetNotification();
+            ValueID id = _notification->GetValueID();
+            ZWaveNode *device = devices.findValue(id);
+            qpid::types::Variant::Map eventmap;
+            stringstream message;
             switch (_notificationCode) {
                 case Notification::Code_Timeout:
-                    AGO_ERROR() << "z-wave command did time out for node " << _notification->GetNodeId();
+                    AGO_ERROR() << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
+                    message << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
+                    eventmap["message"] = message;
+                    if( device )
+                    {
+                        agoConnection->emitEvent(device->getId().c_str(), "event.system.error", eventmap);
+                    }
                     break;
                 case Notification::Code_Dead:
-                    AGO_ERROR() << "z-wave node dead, id: " << _notification->GetNodeId();
+                    AGO_ERROR() << "Z-wave nodeid " << _notification->GetNodeId() << " is dead!";
+                    if( device )
+                    {
+                        agoConnection->suspendDevice(device->getId().c_str());
+                    }
                     break;
                 case Notification::Code_Alive:
-                    AGO_ERROR() << "z-wave node alive again, id: " << _notification->GetNodeId();
+                    AGO_ERROR() << "Z-wave nodeid " << _notification->GetNodeId() << " is alive again";
+                    if( device )
+                    {
+                        agoConnection->resumeDevice(device->getId().c_str());
+                    }
                     break;
                 default:
+                    AGO_INFO() << "Z-wave reports an uncatch notification [" << _notificationCode << "] for nodeid " << _notification->GetNodeId();
                     break;
             }
-
             break;
         }
         case Notification::Type_NodeNaming:
@@ -2271,10 +2289,11 @@ void AgoZwave::setupApp()
     // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
     // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
 
-    if(Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" ) == NULL) {
-	   AGO_ERROR() << "Failed to configure OpenZWave";
-	   throw StartupError();
-	}
+    if(Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" ) == NULL)
+    {
+        AGO_ERROR() << "Failed to configure OpenZWave";
+        throw StartupError();
+    }
     if (getConfigOption("returnroutes", "true")=="true")
     {
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
@@ -2333,7 +2352,7 @@ void AgoZwave::setupApp()
         Manager::Destroy();
         pthread_mutex_destroy( &g_criticalSection );
         throw StartupError();
-    }	
+    }
 }
 
 void AgoZwave::cleanupApp() {
