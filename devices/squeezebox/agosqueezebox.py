@@ -13,6 +13,7 @@ import time
 import base64
 import logging
 import urllib
+import re
 
 host = ''
 server = None
@@ -135,22 +136,38 @@ def emit_media_infos(internalid, infos):
             return False
     logging.debug('emit_media_infos : %s' % infos)
 
-    #prepare cover
+    #prepare data
+    title = 'Unknown'
+    album = 'Unknown'
+    artist = 'Unknown'
     if infos.has_key('remote') and infos['remote']=='1':
         #get cover from online service
         cover_data = library.get_remote_cover(infos['artwork_url'])
+        if infos.has_key('album') and infos.has_key('artist') and infos.has_key('title'):
+            title = infos['title']
+            album = infos['album']
+            artist = infos['artist']
+        elif infos.has_key('current_title'):
+            #split all infos from current_titile field
+            #format: The Greatest by Cat Power from The Greatest
+            p = re.compile(ur'(.*) by (.*) from (.*)')
+            matches = p.findall(infos['current_title'])
+            if len(matches)>0 and len(matches[0])==3:
+                (title, artist, album) = matches[0]
     else:
         #get cover from local source
         filename = 'cover_%s.jpg' % ''.join(x for x in internalid if x.isalnum())
         cover_data = library.get_cover(infos['album_id'], infos['artwork_track_id'], filename, (100,100))
+        title = infos['title']
+        album = infos['album']
+        artist = infos['artist']
     cover_b64 = None
     if cover_data:
         cover_b64 = buffer(base64.b64encode(cover_data))
         logging.debug('cover_b64 %d' % len(cover_b64))
 
     #and fill returned data
-    data = {'title':infos['title'], 'album':infos['album'],
-        'artist':infos['artist'], 'cover':cover_b64}
+    data = {'title':title, 'album':album, 'artist':artist, 'cover':cover_b64}
 
     client.emit_event_raw(internalid, "event.device.mediainfos", data)
 
