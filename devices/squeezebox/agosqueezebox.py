@@ -140,6 +140,7 @@ def emit_media_infos(internalid, infos):
     title = 'Unknown'
     album = 'Unknown'
     artist = 'Unknown'
+    cover_data = None
     if infos.has_key('remote') and infos['remote']=='1':
         #get cover from online service
         cover_data = library.get_remote_cover(infos['artwork_url'])
@@ -157,7 +158,8 @@ def emit_media_infos(internalid, infos):
     else:
         #get cover from local source
         filename = 'cover_%s.jpg' % ''.join(x for x in internalid if x.isalnum())
-        cover_data = library.get_cover(infos['album_id'], infos['artwork_track_id'], filename, (100,100))
+        if infos.has_key('album_id') and infos.has_key('artwork_track_id'):
+            cover_data = library.get_cover(infos['album_id'], infos['artwork_track_id'], filename, (100,100))
         title = infos['title']
         album = infos['album']
         artist = infos['artist']
