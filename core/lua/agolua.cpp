@@ -148,7 +148,8 @@ static std::string get_file_contents(const fs::path &filename)
         in.close();
         return(contents);
     }
-    throw(errno);
+
+    throw fs::filesystem_error( "reading file", filename, boost::system::error_code(errno, boost::system::system_category()) );
 }
 
 /**
@@ -1315,18 +1316,20 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         {
             checkMsgParameter(content, "name", VAR_STRING);
 
-            try
-            {
+            try {
                 // if a path is passed, strip it for security reasons
                 fs::path input(content["name"]);
                 fs::path script = construct_script_name(input.stem());
-                std::ofstream file;
 
-                // XXX: this did not seem to throw even if the directory did not exist...
+                std::ofstream file;
                 file.open(script.c_str());
-                file << content["script"].asString();
-                file.close();
-                return responseSuccess();
+                if(file) {
+                    file << content["script"].asString();
+                    file.close();
+                    return responseSuccess();
+                }
+                AGO_ERROR() << "failed to open " << script << ": " << strerror(errno);
+                return responseFailed(std::string("Unable to write script file: ") + strerror(errno));
             }
             catch( const fs::filesystem_error& e )
             {
