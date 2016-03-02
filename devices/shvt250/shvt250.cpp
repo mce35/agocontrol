@@ -117,9 +117,12 @@ void AgoShvt250::receiveFunction() {
             } else {
                 AGO_ERROR() << "invalid frame, no STX";
                 while (bufr[0] != 0x2) {
+                    AGO_ERROR() << "attempting to read next byte";
                     int len = serial_read(fd, bufr, 1, 6);
+                    AGO_ERROR() << "did read " << len << " bytes";
                 }
                 int len = serial_read(fd, bufr+1, 23, 6);
+                AGO_ERROR() << "skipping " << len << " bytes";
             }
         } else AGO_DEBUG() << "invalid length: " << len;
 
