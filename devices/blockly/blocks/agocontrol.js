@@ -1851,3 +1851,20 @@ Blockly.Blocks['agocontrol_journal'] = {
         return window.BlocklyAgocontrol.journalUuid;
     }
 };
+
+//check weekday
+Blockly.Blocks['agocontrol_weekday'] = {
+    init : function() {
+        //block definition
+        this.appendValueInput("WEEKDAY")
+            .setCheck("String");
+        this.appendDummyInput()
+            .appendField("is")
+            .appendField(new Blockly.FieldDropdown([["weekday", "-2"], ["weekend", "-1"], ["monday", "1"], ["tuesday", "2"], ["wednesday", "3"], ["thursday", "4"], ["friday", "5"], ["saturday", "6"], ["sunday", "0"]]), "TYPE");
+        this.setInputsInline(true);
+        this.setOutput(true, "Boolean");
+        this.setColour(20);
+        this.setTooltip('Return true if specified day is corresponding to selected option');
+    }
+};
+

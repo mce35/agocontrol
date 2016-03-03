@@ -209,3 +209,25 @@ Blockly.Lua['agocontrol_journal'] = function(block) {
     return code;
 };
 
+Blockly.Lua['agocontrol_weekday'] = function(block) {
+    var day = Blockly.Lua.valueToCode(block, 'WEEKDAY', Blockly.Lua.ORDER_ATOMIC) || '';
+    var type = block.getFieldValue('TYPE');
+    var code = "";
+    if( type=='-2' )
+    {
+        //weekday
+        code = ""+day+" == '1' or "+day+" == '2' or "+day+" == '3' or "+day+" == '4' or "+day+" == '5'"
+    }
+    else if( type=='-1' )
+    {
+        //weekend
+        code = ""+day+" == '6' or "+day+" == '0'"
+    }
+    else
+    {
+        //specific day
+        code = ""+day+" == "+type
+    }
+    return [code, Blockly.Lua.ORDER_RELATIONAL];
+};
+

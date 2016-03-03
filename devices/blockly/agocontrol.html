@@ -163,6 +163,7 @@
             <block type="datetime_totimestamp"></block>
             <block type="datetime_currentdate"></block>
             <block type="datetime_specificdate"></block>
+            <block type="agocontrol_weekday"></block>
         </category>
         <category name="Common">
             <block type="text_print"></block>
@@ -280,8 +281,10 @@
     //var schema = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/conf/schema.d/00-core.yaml');
     var schema = YAML.load('http://tanguy.no-ip.org/fullschema.yaml');
     //var deviceMap = YAML.load('http://192.168.1.1/deviceMap.yaml');
-    var deviceMap = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/master/devices/blockly/deviceMap.yaml');
-    var variables = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/master/devices/blockly/variables.yaml');
+    //var deviceMap = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/devices/blockly/deviceMap.yaml');
+    //var variables = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/devices/blockly/variables.yaml');
+    var deviceMap = YAML.load('http://192.168.1.1/deviceMap.yaml');
+    var variables = YAML.load('http://192.168.1.1/variables.yaml');
     console.log("schema:");
     console.log(schema);
     console.log("deviceMap:");
