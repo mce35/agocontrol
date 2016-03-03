@@ -553,7 +553,7 @@ class Player(object):
                 volume = 100
             self.request("mixer volume %i" % (volume))
         except TypeError:
-            pass
+            self.logger.exception('set_volume exception')
 
     def set_bass(self, bass):
         """
@@ -567,7 +567,7 @@ class Player(object):
                 bass = 100
             self.request("mixer bass %i" % (bass))
         except TypeError:
-            pass
+            self.logger.exception('set_bass exception')
 
     def bass_up(self, amount=5):
         """
@@ -585,7 +585,7 @@ class Player(object):
             self.request("mixer bass -%i" % (amount))
             self.get_bass()
         except TypeError:
-            pass
+            self.logger.exception('bass_down exception')
 
     def set_treble(self, treble):
         """
@@ -599,7 +599,7 @@ class Player(object):
                 treble = 100
             self.request("mixer treble %i" % (treble))
         except TypeError:
-            pass
+            self.logger.exception('set_treble exception')
 
     def treble_up(self, amount=5):
         """
@@ -610,7 +610,7 @@ class Player(object):
             self.request("mixer treble +%i" % (amount))
             self.get_treble()
         except TypeError:
-            pass
+            self.logger.exception('treble_up exception')
 
     def treble_down(self, amount=5):
         """
@@ -621,7 +621,7 @@ class Player(object):
             self.request("mixer treble -%i" % (amount))
             self.get_treble()
         except TypeError:
-            pass
+            self.logger.exception('treble_down exception')
 
     def set_pitch(self, pitch):
         """
@@ -635,7 +635,7 @@ class Player(object):
                 pitch = 120
             self.request("mixer pitch %i" % (pitch))
         except TypeError:
-            pass
+            self.logger.exception('set_pitch exception')
 
     def pitch_up(self, amount=5):
         """
@@ -646,7 +646,7 @@ class Player(object):
             self.request("mixer pitch +%i" % (amount))
             self.get_pitch()
         except TypeError:
-            pass
+            self.logger.exception('pitch_up exception')
 
     def pitch_down(self, amount=5):
         """
@@ -657,7 +657,7 @@ class Player(object):
             self.request("mixer pitch -%i" % (amount))
             self.get_pitch()
         except TypeError:
-            pass
+            self.logger.exception('pitch_down exception')
 
     def set_rate(self, rate):
         """
@@ -671,7 +671,7 @@ class Player(object):
                 rate = 4
             self.request("mixer rate %i" % (rate))
         except TypeError:
-            pass
+            self.logger.exception('set_rate exception')
 
     def rate_up(self, amount=1):
         """
@@ -682,7 +682,7 @@ class Player(object):
             self.request("mixer rate +%i" % (amount))
             self.get_rate()
         except TypeError:
-            pass
+            self.logger.exception('rate_up exception')
 
     def rate_down(self, amount=1):
         """
@@ -693,7 +693,7 @@ class Player(object):
             self.request("mixer rate -%i" % (amount))
             self.get_rate()
         except TypeError:
-            pass
+            self.logger.exception('rate_down exception')
 
     def volume_up(self, amount=5):
         """
@@ -704,7 +704,7 @@ class Player(object):
             self.request("mixer volume +%i" % (amount))
             self.get_volume()
         except TypeError:
-            pass
+            self.logger.exception('volume_up exception')
 
     def volume_down(self, amount=5):
         """
@@ -715,7 +715,7 @@ class Player(object):
             self.request("mixer volume -%i" % (amount))
             self.get_volume()
         except TypeError:
-            pass
+            self.logger.exception('volume_down exception')
     
     def mute(self):
         """
@@ -737,7 +737,7 @@ class Player(object):
             seconds = int(seconds)
             self.request("time %s" % (seconds))
         except TypeError:
-            pass
+            self.logger.exception('seek_to exception')
         
     def forward(self, seconds=10):
         """
@@ -747,7 +747,7 @@ class Player(object):
             seconds = int(seconds)
             self.request("time +%s" % (seconds))        
         except TypeError:
-            pass
+            self.logger.exception('forward exception')
 
     def rewind(self, seconds=10):
         """
@@ -757,7 +757,7 @@ class Player(object):
             seconds = int(seconds)
             self.request("time -%s" % (seconds))   
         except TypeError:
-            pass
+            self.logger.exception('rewind exception')
 
     def ir_button(self, button):
         """
