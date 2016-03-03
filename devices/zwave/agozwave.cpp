@@ -663,6 +663,7 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
     if( sentEvents[sInternalId].isVoid() )
     {
         //add new entry
+        AGO_DEBUG() << "filterEvent: create new entry for internalid " << sInternalId;
         infos["eventype"] = sEventType;
         infos["level"] = level;
         infos["timestamp"] = now;
@@ -688,41 +689,47 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
                     if( now<=(oldTimestamp+2) )
                     {
                         //same event sent too quickly, drop it
+                        AGO_DEBUG() << "filterEvent: event " << sEventType  << " for " << sInternalId << " is filtered";
                         filtered = true;
                     }
                     else
                     {
                         //last event was sent some time ago, no filtering
+                        AGO_DEBUG() << "filterEvent: duplicated event " << sEventType << " detected for " << sInternalId;
                         filtered = false;
                     }
                 }
                 else
                 {
                     //should not happen
-                    AGO_TRACE() << "In filterEvent, infos[timestamp] isn't exist";
+                    AGO_DEBUG() << "filterEvent: infos[timestamp] isn't exist";
                     filtered = false;
                 }
             }
             else
             {
                 //level is different, no filtering
-                AGO_TRACE() << "In filterEvent, infos[level] isn't exist";
+                AGO_DEBUG() << "filterEvent: level " << level << " is different from old one " << oldLevel << " for " << sInternalId;
                 filtered = false;
             }
         }
         else
         {
             //should not happen
+            AGO_DEBUG() << "filterEvent: infos[level] isn't exist";
             filtered = false;
+        }
+
+        //update map
+        if( !filtered )
+        {
+            infos["level"] = level;
+            infos["timestamp"] = now;
+            sentEvents[sInternalId] = infos;
         }
     }
 
-    //update map
-    if( !filtered )
-    {
-        infos["level"] = level;
-        infos["timestamp"] = now;
-    }
+    AGO_DEBUG() << "filterEvent: sentEvent: " << sentEvents;
 
     return filtered;
 }
