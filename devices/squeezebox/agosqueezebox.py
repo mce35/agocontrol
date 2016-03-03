@@ -241,6 +241,12 @@ def messageHandler(internalid, content):
         elif content["command"] == "previous":
             logging.info("Command PREVIOUS: %s" % internalid)
             player.prev()
+        elif content["command"] == "setvolume":
+            logging.info("Command SETVOLUME: %s" % internalid)
+            if content.has_key('volume'):
+                player.set_volume(content['volume'])
+            else:
+                logging.error('Missing parameter "volume" to command SETVOLUME')
         elif content["command"] == "displaymessage":
             if content.has_key('line1') and content.has_key('line2') and content.has_key('duration'):
                 logging.info("Command DISPLAYMESSAGE: %s" % internalid)

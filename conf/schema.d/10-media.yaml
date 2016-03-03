@@ -11,6 +11,12 @@ commands:
     name: volume up
   vol-:
     name: volume down
+  setvolume:
+    name: set volume
+    parameters:
+      volume:
+        name: volume
+        type: integer
   chan+:
     name: next channel
   chan-:
