@@ -654,6 +654,7 @@ string AgoZwave::getHRNotification(Notification::NotificationType notificationTy
  */
 bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string level)
 {
+    bool filtered = false;
     string sInternalId = string(internalId);
     string sEventType = string(eventType);
 
@@ -667,7 +668,8 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
         infos["timestamp"] = now;
         sentEvents[sInternalId] = infos;
 
-        return false;
+        //no filtering
+        filtered = false;
     }
     else
     {
@@ -686,34 +688,43 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
                     if( now<=(oldTimestamp+2) )
                     {
                         //same event sent too quickly, drop it
-                        return true;
+                        filtered = true;
                     }
                     else
                     {
-                        //no filtering
-                        return false;
+                        //last event was sent some time ago, no filtering
+                        filtered = false;
                     }
                 }
                 else
                 {
                     //should not happen
                     AGO_TRACE() << "In filterEvent, infos[timestamp] isn't exist";
-                    return false;
+                    filtered = false;
                 }
             }
             else
             {
                 //level is different, no filtering
                 AGO_TRACE() << "In filterEvent, infos[level] isn't exist";
-                return false;
+                filtered = false;
             }
         }
         else
         {
             //should not happen
-            return false;
+            filtered = false;
         }
     }
+
+    //update map
+    if( !filtered )
+    {
+        infos["level"] = level;
+        infos["timestamp"] = now;
+    }
+
+    return filtered;
 }
 
 bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, const char *level, const char *unit)
