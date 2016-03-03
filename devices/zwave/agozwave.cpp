@@ -20,6 +20,7 @@
 
 #include <limits.h>
 #include <float.h>
+#include <time.h>
 
 
 #define __STDC_FORMAT_MACROS
@@ -61,6 +62,7 @@ private:
     int unitsystem;
     uint32 g_homeId;
     bool g_initFailed;
+    qpid::types::Variant::Map sentEvents;
 
     typedef struct {
         uint32			m_homeId;
@@ -81,17 +83,23 @@ private:
     qpid::types::Variant::Map getCommandClassWakeUpParameter(OpenZWave::ValueID* valueID);
     bool setCommandClassParameter(uint32 homeId, uint8 nodeId, uint8 commandClassId, uint8 index, string newValue);
     void requestAllNodeConfigParameters();
+    bool filterEvent(const char *internalId, const char *eventType, string level);
+    bool emitFilteredEvent(const char *internalId, const char *eventType, const char *level, const char *unit);
+    bool emitFilteredEvent(const char *internalId, const char *eventType, double level, const char *unit);
+    bool emitFilteredEvent(const char *internalId, const char *eventType, int level, const char *unit);
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void setupApp();
     void cleanupApp();
     string getHRCommandClassId(uint8_t commandClassId);
     string getHRNotification(Notification::NotificationType notificationType);
+
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
         , unitsystem(0)
         , g_homeId(0)
         , g_initFailed(false)
+        , sentEvents()
      //   , initCond(PTHREAD_COND_INITIALIZER)
      //   , initMutex(PTHREAD_MUTEX_INITIALIZER)
         {}
@@ -641,6 +649,116 @@ string AgoZwave::getHRNotification(Notification::NotificationType notificationTy
     return output;
 }
 
+/**
+ * Emit event like in agoconnection but filtered duplicated event within the same second
+ */
+bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string level)
+{
+    string sInternalId = string(internalId);
+    string sEventType = string(eventType);
+
+    qpid::types::Variant::Map infos;
+    uint64_t now = (uint64_t)(time(NULL));
+    if( sentEvents[sInternalId].isVoid() )
+    {
+        //add new entry
+        infos["eventype"] = sEventType;
+        infos["level"] = level;
+        infos["timestamp"] = now;
+        sentEvents[sInternalId] = infos;
+
+        return false;
+    }
+    else
+    {
+        infos = sentEvents[sInternalId].asMap();
+        //check level
+        if( !infos["level"].isVoid() )
+        {
+            string oldLevel = infos["level"].asString();
+            if( oldLevel==level )
+            {
+                if( !infos["timestamp"].isVoid() )
+                {
+                    //same level received, check timestamp
+                    uint64_t oldTimestamp = infos["timestamp"].asUint64();
+                    //XXX maybe 1 second is enough ?
+                    if( now<=(oldTimestamp+2) )
+                    {
+                        //same event sent too quickly, drop it
+                        return true;
+                    }
+                    else
+                    {
+                        //no filtering
+                        return false;
+                    }
+                }
+                else
+                {
+                    //should not happen
+                    AGO_TRACE() << "In filterEvent, infos[timestamp] isn't exist";
+                    return false;
+                }
+            }
+            else
+            {
+                //level is different, no filtering
+                AGO_TRACE() << "In filterEvent, infos[level] isn't exist";
+                return false;
+            }
+        }
+        else
+        {
+            //should not happen
+            return false;
+        }
+    }
+}
+
+bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, const char *level, const char *unit)
+{
+    string sLevel = string(level);
+    if( !filterEvent(internalId, eventType, sLevel) )
+    {
+        return agoConnection->emitEvent(internalId, eventType, level, unit);
+    }
+    else
+    {
+        AGO_DEBUG() << "Event '" << eventType << "' from '" << internalId << "' at level '" << level << "' is filtered";
+        return true;
+    }
+}
+
+bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, double level, const char *unit)
+{
+    stringstream sLevel;
+    sLevel << level;
+    if( !filterEvent(internalId, eventType, sLevel.str()) )
+    {
+        return agoConnection->emitEvent(internalId, eventType, level, unit);
+    }
+    else
+    {
+        AGO_DEBUG() << "Event '" << eventType << "' from '" << internalId << "' at level '" << level << "' is filtered";
+        return true;
+    }
+}
+
+bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, int level, const char *unit)
+{
+    stringstream sLevel;
+    sLevel << level;
+    if( !filterEvent(internalId, eventType, sLevel.str()) )
+    {
+        return agoConnection->emitEvent(internalId, eventType, level, unit);
+    }
+    else
+    {
+        AGO_DEBUG() << "Event '" << eventType << "' from '" << internalId << "' at level '" << level << "' is filtered";
+        return true;
+    }
+}
 
 //-----------------------------------------------------------------------------
 // <getNodeInfo>
@@ -688,7 +806,7 @@ ValueID* AgoZwave::getValueID(int nodeid, int instance, string label)
         {
             if ( ((*it)->m_nodeId == nodeid) && ((*it2).GetInstance() == instance) )
             {
-                string valuelabel = Manager::Get()->GetValueLabel((*it2));
+                string valuelabel = OpenZWave::Manager::Get()->GetValueLabel((*it2));
                 if (label == valuelabel)
                 {
                     // AGO_TRACE() << "Found ValueID: " << (*it2).GetId();
@@ -1446,7 +1564,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         if (device != NULL)
                         {
                             AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
-                            agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.c_str(), units.c_str());	
+                            emitFilteredEvent(device->getId().c_str(), eventtype.c_str(), level.c_str(), units.c_str());	
                         }
                     }
                 }
@@ -1525,7 +1643,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                 if (device != NULL)
                 {
                     AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
-                    agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.str().c_str(), "");	
+                    emitFilteredEvent(device->getId().c_str(), eventtype.c_str(), level.str().c_str(), "");	
                 }
                 else
                 {
@@ -1611,6 +1729,10 @@ void AgoZwave::_OnNotification (Notification const* _notification)
             qpid::types::Variant::Map eventmap;
             stringstream message;
             switch (_notificationCode) {
+                case Notification::Code_MsgComplete:
+                    //completed message
+                    //update lastseen
+                    break;
                 case Notification::Code_Timeout:
                     AGO_ERROR() << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
                     message << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
@@ -1620,8 +1742,14 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         agoConnection->emitEvent(device->getId().c_str(), "event.system.error", eventmap);
                     }
                     break;
+                case Notification::Code_NoOperation:
+                    break;
+                case Notification::Code_Awake:
+                    break;
+                case Notification::Code_Sleep:
+                    break;
                 case Notification::Code_Dead:
-                    AGO_ERROR() << "Z-wave nodeid " << _notification->GetNodeId() << " is dead!";
+                    AGO_ERROR() << "Z-wave nodeid " << _notification->GetNodeId() << " is presumed dead!";
                     if( device )
                     {
                         agoConnection->suspendDevice(device->getId().c_str());
@@ -1635,7 +1763,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                     }
                     break;
                 default:
-                    AGO_INFO() << "Z-wave reports an uncatch notification [" << _notificationCode << "] for nodeid " << _notification->GetNodeId();
+                    AGO_INFO() << "Z-wave reports an uncatch notification for nodeid " << _notification->GetNodeId();
                     break;
             }
             break;
