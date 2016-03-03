@@ -447,6 +447,7 @@ Agocontrol.prototype = {
                     {
                         //add new device
                         self.devices.push(new device(self, devs[uuid], uuid));
+                        self.inventory.devices[uuid] = devs[uuid];
                     }
                 }
             });
