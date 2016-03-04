@@ -53,7 +53,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">x</span></button>
-                <h4 class="modal-title" id="detailsTitle">Details</h4>
+                <_h4 class="modal-title" id="detailsTitle" data-translateable="true">Details</_h4>
             </div>
             <div class="modal-body" id="detailsContent">
             </div>
@@ -67,9 +67,9 @@
     <header class="main-header">
         <a class="logo" href="#">
             <!-- mini logo for sidebar mini 50x50 pixels -->
-            <span class="logo-mini">AC</span>
+            <span class="logo-mini">ac</span>
             <!-- logo for regular state and mobile devices -->
-            <span class="logo-lg">AgoControl</span>
+            <span class="logo-lg">ago control</span>
         </a>
 
         <nav class="navbar navbar-static-top">
@@ -197,7 +197,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane active" id="control-sidebar-config-tab">
-                <h3 class="control-sidebar-heading">Agocontrol configuration</h3>
+                <_h3 class="control-sidebar-heading" data-translateable="true">ago control configuration</_h3>
                 <ul class="control-sidebar-menu" data-bind="foreach: agocontrol.configurations">
                     <li>
                         <a href="#" data-bind="click:$root.gotoConfiguration.bind($data)">
@@ -234,20 +234,21 @@
                 </ul>
             </div>
             <div class="tab-pane" id="control-sidebar-color-tab">
-                <h3 class="control-sidebar-heading">Color theme</h3>
+                <_h3 class="control-sidebar-heading" data-translateable="true">Color theme</_h3>
                 <ul class="control-sidebar-menu">
-                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-blue');}"><i class="menu-icon bg-light-blue"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">Blue</h4></div></a></li>
-                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-black');}"><i class="menu-icon bg-white"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">White</h4></div></a></li>
-                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-purple');}"><i class="menu-icon bg-purple"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">Purple</h4></div></a></li>
-                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-green');}"><i class="menu-icon bg-green"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">Green</h4></div></a></li>
-                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-red');}"><i class="menu-icon bg-red"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">Red</h4></div></a></li>
-                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-yellow');}"><i class="menu-icon bg-yellow"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">Yellow</h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-blue');}"><i class="menu-icon bg-light-blue"> </i><div class="menu-info"><_h4 class="control-sidebar-subheading" data-translateable="true">Blue</_h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-black');}"><i class="menu-icon bg-white"> </i><div class="menu-info"><_h4 class="control-sidebar-subheading" data-translateable="true">White</_h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-purple');}"><i class="menu-icon bg-purple"> </i><div class="menu-info"><_h4 class="control-sidebar-subheading" data-translateable="true">Purple</_h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-green');}"><i class="menu-icon bg-green"> </i><div class="menu-info"><_h4 class="control-sidebar-subheading" data-translateable="true">Green</_h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-red');}"><i class="menu-icon bg-red"> </i><div class="menu-info"><_h4 class="control-sidebar-subheading" data-translateable="true">Red</_h4></div></a></li>
+                <li><a href="#" data-bind="click:function(d,e){agocontrol.setSkin('skin-yellow');}"><i class="menu-icon bg-yellow"> </i><div class="menu-info"><_h4 class="control-sidebar-subheading" data-translateable="true">Yellow</_h4></div></a></li>
                 </ul>
-                <h3 class="control-sidebar-heading">Color style</h3>
+                <_h3 class="control-sidebar-heading" data-translateable="true">Color style</_h3>
                 <div class="form-group">
-                    <label class="control-sidebar-subheading">Toggle dark/light style <input type="checkbox" class="pull-right" data-bind="checked:agocontrol.darkStyle"/></label>
+                    <input type="checkbox" class="pull-right" data-bind="checked:agocontrol.darkStyle"/>
+                    <_span class="control-sidebar-subheading" data-translateable="true">Toggle dark/light style</_span>
                 </div>
-                <h3 class="control-sidebar-heading">Dashboard size</h3>
+                <_h3 class="control-sidebar-heading" data-translateable="true">Dashboard size</_h3>
                 <ul class="control-sidebar-menu">
                 <li><a href="#" data-bind="click:function(d,e){agocontrol.setDashboardSize('3x3');}"><i class="menu-icon bg-black fa fa-th"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">3x3</h4></div></a></li>
                 <li><a href="#" data-bind="click:function(d,e){agocontrol.setDashboardSize('4x3');}"><i class="menu-icon bg-black fa fa-th"> </i><div class="menu-info"><h4 class="control-sidebar-subheading">4x3</h4></div></a></li>
@@ -255,7 +256,7 @@
                 </ul>
             </div>
             <div class="tab-pane" id="control-sidebar-help-tab">
-                <h3 class="control-sidebar-heading">Help</h3>
+                <_h3 class="control-sidebar-heading" data-translateable="true">Help</_h3>
                 <ul class="control-sidebar-menu" data-bind="foreach: agocontrol.helps">
                     <li>
                         <ko opts="if:url===null">

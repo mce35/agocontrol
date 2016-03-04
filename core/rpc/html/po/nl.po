@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-15 18:20+0100\n"
+"POT-Creation-Date: 2016-03-04 20:16+0100\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,25 +18,80 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../index.xml.in.h:1
+#: ../index.xml.in.h:1 ../protocols/onvif/html/onvif.xml.in.h:1
+#: ../configuration/devices/html/devices.xml.in.h:9
+msgid "Details"
+msgstr "Details"
+
+#: ../index.xml.in.h:2
 #, fuzzy
 msgid "Toggle navigation"
 msgstr "Kamer Configuratie"
 
-#: ../index.xml.in.h:2
+#: ../index.xml.in.h:3
 msgid "Go to journal"
 msgstr ""
 
-#: ../index.xml.in.h:3
+#: ../index.xml.in.h:4
 msgid "DASHBOARDS"
 msgstr ""
 
-#: ../index.xml.in.h:4
+#: ../index.xml.in.h:5
 msgid "APPLICATIONS"
 msgstr ""
 
-#: ../index.xml.in.h:5
+#: ../index.xml.in.h:6
 msgid "PROTOCOLS"
+msgstr ""
+
+#: ../index.xml.in.h:7
+#, fuzzy
+msgid "ago control configuration"
+msgstr "ago control Configuratie"
+
+#: ../index.xml.in.h:8
+msgid "Color theme"
+msgstr ""
+
+#: ../index.xml.in.h:9
+msgid "Blue"
+msgstr ""
+
+#: ../index.xml.in.h:10
+msgid "White"
+msgstr ""
+
+#: ../index.xml.in.h:11
+msgid "Purple"
+msgstr ""
+
+#: ../index.xml.in.h:12
+msgid "Green"
+msgstr ""
+
+#: ../index.xml.in.h:13
+msgid "Red"
+msgstr ""
+
+#: ../index.xml.in.h:14
+msgid "Yellow"
+msgstr ""
+
+#: ../index.xml.in.h:15
+msgid "Color style"
+msgstr ""
+
+#: ../index.xml.in.h:16
+msgid "Toggle dark/light style"
+msgstr ""
+
+#: ../index.xml.in.h:17
+#, fuzzy
+msgid "Dashboard size"
+msgstr "Hoofdpagina"
+
+#: ../index.xml.in.h:18
+msgid "Help"
 msgstr ""
 
 #: ../templates/details/barometersensor.xml.in.h:1
@@ -51,6 +106,7 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:1
 #: ../templates/details/powermeter.xml.in.h:1
 #: ../templates/details/temperaturesensor.xml.in.h:1
+#: ../templates/details/multilevelsensor.xml.in.h:1
 #: ../protocols/knx/html/knx.xml.in.h:18
 #, fuzzy
 msgid "Device type"
@@ -68,6 +124,7 @@ msgstr "Apparaat Type"
 #: ../templates/details/multigraph.xml.in.h:2
 #: ../templates/details/powermeter.xml.in.h:2
 #: ../templates/details/temperaturesensor.xml.in.h:2
+#: ../templates/details/multilevelsensor.xml.in.h:2
 msgid "Room"
 msgstr "Kamer"
 
@@ -83,6 +140,7 @@ msgstr "Kamer"
 #: ../templates/details/multigraph.xml.in.h:3
 #: ../templates/details/powermeter.xml.in.h:3
 #: ../templates/details/temperaturesensor.xml.in.h:3
+#: ../templates/details/multilevelsensor.xml.in.h:3
 msgid "Timestamp"
 msgstr ""
 
@@ -96,6 +154,7 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:4
 #: ../templates/details/powermeter.xml.in.h:4
 #: ../templates/details/temperaturesensor.xml.in.h:4
+#: ../templates/details/multilevelsensor.xml.in.h:4
 msgid "Range"
 msgstr ""
 
@@ -109,7 +168,8 @@ msgstr ""
 #: ../templates/details/multigraph.xml.in.h:5
 #: ../templates/details/powermeter.xml.in.h:5
 #: ../templates/details/temperaturesensor.xml.in.h:5
-#: ../applications/journal/html/journal.xml.in.h:2
+#: ../templates/details/multilevelsensor.xml.in.h:5
+#: ../applications/journal/html/journal.xml.in.h:3
 #, fuzzy
 msgid "From"
 msgstr "Van:"
@@ -124,7 +184,8 @@ msgstr "Van:"
 #: ../templates/details/multigraph.xml.in.h:6
 #: ../templates/details/powermeter.xml.in.h:6
 #: ../templates/details/temperaturesensor.xml.in.h:6
-#: ../applications/journal/html/journal.xml.in.h:3
+#: ../templates/details/multilevelsensor.xml.in.h:6
+#: ../applications/journal/html/journal.xml.in.h:4
 #, fuzzy
 msgid "To"
 msgstr "Aan:"
@@ -140,6 +201,7 @@ msgstr "Aan:"
 #: ../templates/details/multigraph.xml.in.h:7
 #: ../templates/details/powermeter.xml.in.h:7
 #: ../templates/details/temperaturesensor.xml.in.h:7
+#: ../templates/details/multilevelsensor.xml.in.h:7
 #: ../protocols/zwave/html/zwave.xml.in.h:16
 #, fuzzy
 msgid "Refresh"
@@ -154,9 +216,18 @@ msgstr "Ververs lijst"
 #: ../templates/details/humiditysensor.xml.in.h:8
 #: ../templates/details/powermeter.xml.in.h:8
 #: ../templates/details/temperaturesensor.xml.in.h:8
+#: ../templates/details/multilevelsensor.xml.in.h:8
 #, fuzzy
 msgid "Show values"
 msgstr "Weergeven als:"
+
+#: ../templates/details/datalist.xml.in.h:1
+msgid "Date"
+msgstr ""
+
+#: ../templates/details/datalist.xml.in.h:2
+msgid "Value"
+msgstr "Waarde"
 
 #: ../templates/details/default.xml.in.h:4
 #, fuzzy
@@ -171,14 +242,12 @@ msgstr "Uitvoeren"
 #: ../templates/devices/computer.xml.in.h:1
 #: ../templates/devices/dimmer.xml.in.h:2
 #: ../templates/devices/dimmerrgb.xml.in.h:2
-#: ../templates/devices/squeezebox.xml.in.h:1
 #: ../templates/devices/switch.xml.in.h:2
 msgid "ON"
 msgstr "AAN"
 
 #: ../templates/devices/dimmer.xml.in.h:1
 #: ../templates/devices/dimmerrgb.xml.in.h:1
-#: ../templates/devices/squeezebox.xml.in.h:2
 #: ../templates/devices/switch.xml.in.h:1
 msgid "OFF"
 msgstr "UIT"
@@ -228,21 +297,13 @@ msgstr ""
 msgid "RUN SCENARIO"
 msgstr ""
 
-#: ../templates/devices/squeezebox.xml.in.h:3
-msgid "PLAY"
-msgstr ""
-
-#: ../templates/devices/squeezebox.xml.in.h:4
-msgid "PAUSE"
-msgstr ""
-
 #: ../templates/devices/thermostat.xml.in.h:1
 msgid "Mode"
 msgstr "Mode"
 
 #: ../templates/devices/thermostat.xml.in.h:2
-msgid "FanMode"
-msgstr "VentilatorMode"
+msgid "Fan mode"
+msgstr ""
 
 #: ../templates/devices/thermostat.xml.in.h:3
 msgid "Heat"
@@ -252,8 +313,14 @@ msgstr "Verwarm"
 msgid "Cool"
 msgstr "Koel"
 
+#: ../templates/plugins/plugins.xml.in.h:1
+#, fuzzy
+msgid "Time remaining"
+msgstr "Gebeurtenis Configuratie"
+
 #: ../applications/alert/html/alert.xml.in.h:1
-msgid "Agoalert is not responding"
+#, fuzzy
+msgid "agoalert is not responding."
 msgstr "Agoalert reageert niet"
 
 #: ../applications/alert/html/alert.xml.in.h:2
@@ -262,29 +329,33 @@ msgid "Internal error"
 msgstr "Interne fout"
 
 #: ../applications/alert/html/alert.xml.in.h:3
-msgid "Unable to refresh PushBullet devices"
+#, fuzzy
+msgid "Unable to refresh PushBullet devices."
 msgstr "PushBullet apparaat kan niet ververst worden"
 
 #: ../applications/alert/html/alert.xml.in.h:4
-msgid "PushBullet devices retrieved successfully"
+#, fuzzy
+msgid "PushBullet devices retrieved successfully."
 msgstr "PushBullet apparaat ophalen gelukt"
 
 #: ../applications/alert/html/alert.xml.in.h:5
-msgid "generating url"
+#, fuzzy
+msgid "generating URL"
 msgstr "genereren url"
 
 #: ../applications/alert/html/alert.xml.in.h:6
-msgid "authorization url"
+#, fuzzy
+msgid "authorization URL"
 msgstr "authorisatie url"
 
 #: ../applications/alert/html/alert.xml.in.h:7
 #, fuzzy
-msgid "Configuration saved successfully"
+msgid "Configuration saved successfully."
 msgstr "Script ingeladen."
 
 #: ../applications/alert/html/alert.xml.in.h:8
 #, fuzzy
-msgid "Failed to save configuration"
+msgid "Failed to save configuration."
 msgstr "SMS Configuratie"
 
 #: ../applications/alert/html/alert.xml.in.h:9
@@ -310,41 +381,49 @@ msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:14
 #, fuzzy
-msgid "Configured?"
-msgstr "Configuratie"
+msgid ""
+"Follow instructions above to authorize ago control to access your Twitter "
+"account."
+msgstr "Volg bovenstaande instructies om je gebruiker te authoriseren:"
 
 #: ../applications/alert/html/alert.xml.in.h:15
 #, fuzzy
-msgid "Click on link to generate an authorization url"
-msgstr "authorisatie url"
+msgid "Configured?"
+msgstr "Configuratie"
 
 #: ../applications/alert/html/alert.xml.in.h:16
+#, fuzzy
+msgid "Click on link to generate an authorization URL"
+msgstr "authorisatie url"
+
+#: ../applications/alert/html/alert.xml.in.h:17
 msgid "here"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:17
+#: ../applications/alert/html/alert.xml.in.h:18
 #, fuzzy
 msgid "Then click on generated link"
 msgstr "Klik op gegenereerde link"
 
-#: ../applications/alert/html/alert.xml.in.h:18
+#: ../applications/alert/html/alert.xml.in.h:19
 msgid "Authorize access on Twitter"
 msgstr "Autoriseer toegang tot Twitter"
 
-#: ../applications/alert/html/alert.xml.in.h:19
+#: ../applications/alert/html/alert.xml.in.h:20
 msgid "Type given access code here"
 msgstr "Geef toegangscode op"
 
-#: ../applications/alert/html/alert.xml.in.h:20
+#: ../applications/alert/html/alert.xml.in.h:21
 #, fuzzy
 msgid "Twitter code"
 msgstr "Twitter is geconfigureerd"
 
-#: ../applications/alert/html/alert.xml.in.h:21
-msgid "Finally click on button to save access code"
+#: ../applications/alert/html/alert.xml.in.h:22
+#, fuzzy
+msgid "Finally click on button to save access code."
 msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 
-#: ../applications/alert/html/alert.xml.in.h:22
+#: ../applications/alert/html/alert.xml.in.h:23
 #: ../applications/security/html/security.xml.in.h:17
 #: ../protocols/onvif/html/onvif.xml.in.h:15
 #: ../protocols/knx/html/knx.xml.in.h:19
@@ -354,143 +433,144 @@ msgstr "Klik tot slot op de knop om de toegangscode op te slaan"
 msgid "Save changes"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:23
+#: ../applications/alert/html/alert.xml.in.h:24
 #, fuzzy
-msgid "To send test tweet on your account, click on button"
+msgid "To place a test tweet on your account, click on the button."
 msgstr "Klik op de knop om een test bericht te tweeten:"
 
-#: ../applications/alert/html/alert.xml.in.h:24
+#: ../applications/alert/html/alert.xml.in.h:25
 #: ../protocols/zwave/html/zwave.xml.in.h:18
 msgid "Test"
 msgstr "Test"
 
-#: ../applications/alert/html/alert.xml.in.h:25
+#: ../applications/alert/html/alert.xml.in.h:26
 #, fuzzy
-msgid "Choose SMS provider in list"
+msgid "Choose an SMS provider from the list"
 msgstr "Kies je push provider uit de lijst:"
 
-#: ../applications/alert/html/alert.xml.in.h:26
+#: ../applications/alert/html/alert.xml.in.h:27
 #, fuzzy
 msgid "You need to create an account on"
 msgstr "Je hebt een account en credits nodig om SMS berichten te versturen"
 
-#: ../applications/alert/html/alert.xml.in.h:27
+#: ../applications/alert/html/alert.xml.in.h:28
 #, fuzzy
 msgid "and add credits to send SMS"
 msgstr "Je hebt een account en credits nodig om SMS berichten te versturen"
 
-#: ../applications/alert/html/alert.xml.in.h:28
+#: ../applications/alert/html/alert.xml.in.h:29
 msgid "SMS rates"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:29
+#: ../applications/alert/html/alert.xml.in.h:30
 #: ../configuration/cloud/html/cloud.xml.in.h:10
 msgid "Username"
 msgstr "Gebruikernaam"
 
-#: ../applications/alert/html/alert.xml.in.h:30
+#: ../applications/alert/html/alert.xml.in.h:31
 #, fuzzy
 msgid "12voip username"
 msgstr "Je gebruikersnaam"
 
-#: ../applications/alert/html/alert.xml.in.h:31
+#: ../applications/alert/html/alert.xml.in.h:32
 #: ../protocols/onvif/html/onvif.xml.in.h:14
 #: ../configuration/cloud/html/cloud.xml.in.h:14
 msgid "Password"
 msgstr "Wachtwoord"
 
-#: ../applications/alert/html/alert.xml.in.h:32
+#: ../applications/alert/html/alert.xml.in.h:33
 #, fuzzy
 msgid "12voip password"
 msgstr "Je wachtwoord"
 
-#: ../applications/alert/html/alert.xml.in.h:33
-msgid ""
-"Free Mobile is a french internet/mobile provider. It offers for free to send "
-"SMS to mobile account owner and only for its number."
-msgstr ""
-
 #: ../applications/alert/html/alert.xml.in.h:34
 msgid ""
-"To use it in ago control, activate option in your free account and save "
-"provided apikey"
+"Free Mobile is a french internet/mobile provider. It offers to send SMS for "
+"free to the account owner and only for its number."
 msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:35
+msgid ""
+"To use it in ago control, activate the option in your free account and save "
+"the provided API key."
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:36
 #, fuzzy
 msgid "User"
 msgstr "Gebruikernaam"
 
-#: ../applications/alert/html/alert.xml.in.h:36
+#: ../applications/alert/html/alert.xml.in.h:37
 msgid "Free user"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:37
+#: ../applications/alert/html/alert.xml.in.h:38
 msgid "Apikey"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:38
-msgid "To send you a test SMS, click on button"
-msgstr "Klik op de knop om een test SMS te versturen"
-
 #: ../applications/alert/html/alert.xml.in.h:39
 #, fuzzy
-msgid "SMTP server* (smtp:port)"
-msgstr "SMTP server"
+msgid "To send a test SMS, click on the button."
+msgstr "Klik op de knop om een test SMS te versturen"
 
 #: ../applications/alert/html/alert.xml.in.h:40
-msgid "smtp"
+#, fuzzy
+msgid ""
+"Specify your email SMTP server and a sender email address (* is mandatory)."
 msgstr ""
+"Specificeer je email SMTP server en een afzender emailadres (* is verplicht):"
 
 #: ../applications/alert/html/alert.xml.in.h:41
+msgid "SMTP server*"
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:42
+#, fuzzy
+msgid "server:port"
+msgstr "SMTP server"
+
+#: ../applications/alert/html/alert.xml.in.h:43
 #, fuzzy
 msgid "Sender email*"
 msgstr "Afzender adres"
 
-#: ../applications/alert/html/alert.xml.in.h:42
+#: ../applications/alert/html/alert.xml.in.h:44
 msgid "email"
 msgstr ""
 
-#: ../applications/alert/html/alert.xml.in.h:43
+#: ../applications/alert/html/alert.xml.in.h:45
 #: ../protocols/onvif/html/onvif.xml.in.h:12
 msgid "Login"
 msgstr "Inloggen"
 
-#: ../applications/alert/html/alert.xml.in.h:44
-#, fuzzy
-msgid "login"
-msgstr "Inloggen"
-
-#: ../applications/alert/html/alert.xml.in.h:45
-#, fuzzy
-msgid "password"
-msgstr "Wachtwoord"
-
 #: ../applications/alert/html/alert.xml.in.h:46
-msgid "TLS"
-msgstr "TLS"
+msgid "Use TLS"
+msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:47
-msgid "To send you a test email, type your email address and click on button"
+#, fuzzy
+msgid "To send a test email, type your email address and click on the button."
 msgstr ""
 "Vul je emailadres in en klik op de knop om een test email te verzenden."
 
 #: ../applications/alert/html/alert.xml.in.h:48
+#: ../configuration/system/html/system.xml.in.h:5
 #, fuzzy
-msgid "Choose push provider in list"
-msgstr "Kies je push provider uit de lijst:"
+msgid "Email address"
+msgstr "Je email adres"
 
 #: ../applications/alert/html/alert.xml.in.h:49
+#, fuzzy
+msgid "Choose a push provider from list"
+msgstr "Kies je push provider uit de lijst:"
+
+#: ../applications/alert/html/alert.xml.in.h:50
 msgid "Enter your apikey"
 msgstr "Geef je API key"
 
-#: ../applications/alert/html/alert.xml.in.h:50
+#: ../applications/alert/html/alert.xml.in.h:51
 msgid "available here"
 msgstr "hier beschikbaar"
-
-#: ../applications/alert/html/alert.xml.in.h:51
-msgid "apikey"
-msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:52
 msgid "Refresh your devices list clicking on the button"
@@ -525,15 +605,21 @@ msgid "Enter your apikeys"
 msgstr "Geef je API keys"
 
 #: ../applications/alert/html/alert.xml.in.h:60
-msgid "Apikeys"
+msgid "apikey"
 msgstr ""
 
 #: ../applications/alert/html/alert.xml.in.h:61
-msgid "To push you test notification, click on button"
+msgid "Apikeys"
+msgstr ""
+
+#: ../applications/alert/html/alert.xml.in.h:62
+#, fuzzy
+msgid "To push a test notification, click on the button."
 msgstr "Klik op de knop om een test push bericht te versturen"
 
 #: ../applications/agoscheduler/html/agoscheduler.xml.in.h:2
-msgid "Agoscheduler is not responding. Unable to display schedules."
+#, fuzzy
+msgid "agoscheduler is not responding. Unable to display schedules."
 msgstr "Agoscheduler reageert niet. Weergave van de agenda mislukt."
 
 #: ../applications/agoscheduler/html/agoscheduler.xml.in.h:3
@@ -605,7 +691,8 @@ msgstr ""
 "gewijzigd."
 
 #: ../applications/agoscheduler/html/agoscheduler.xml.in.h:19
-msgid "Schedule's color"
+#, fuzzy
+msgid "Schedule color"
 msgstr "Item kleur"
 
 #: ../applications/applications/html/applications.xml.in.h:1
@@ -685,7 +772,7 @@ msgstr "Gebeurtenis Configuratie"
 
 #: ../applications/security/html/security.xml.in.h:13
 #, fuzzy
-msgid "Security configguration"
+msgid "Security configuration"
 msgstr "Scenario Configuratie"
 
 #: ../applications/security/html/security.xml.in.h:14
@@ -766,11 +853,15 @@ msgid "Default housemode (activated after valid pin is entered)"
 msgstr ""
 
 #: ../applications/journal/html/journal.xml.in.h:1
-#: ../configuration/datalogger/html/datalogger.xml.in.h:25
+#: ../configuration/datalogger/html/datalogger.xml.in.h:24
 msgid "Journal"
 msgstr ""
 
-#: ../applications/journal/html/journal.xml.in.h:4
+#: ../applications/journal/html/journal.xml.in.h:2
+msgid "Message filter"
+msgstr ""
+
+#: ../applications/journal/html/journal.xml.in.h:5
 msgid "Get"
 msgstr ""
 
@@ -1295,11 +1386,6 @@ msgstr "ago control Configuratie"
 msgid "Download"
 msgstr ""
 
-#: ../protocols/onvif/html/onvif.xml.in.h:1
-#: ../configuration/devices/html/devices.xml.in.h:9
-msgid "Details"
-msgstr "Details"
-
 #: ../protocols/onvif/html/onvif.xml.in.h:2
 #: ../configuration/datalogger/html/datalogger.xml.in.h:2
 msgid "General"
@@ -1648,7 +1734,7 @@ msgstr "Script opgeslagen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:7
 #, fuzzy
-msgid "Saveas"
+msgid "Save as"
 msgstr "Opslaan"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:8
@@ -1693,7 +1779,8 @@ msgid "Script loaded successfully."
 msgstr "Script ingeladen."
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:19
-msgid "Please select a script"
+#, fuzzy
+msgid "Please select a script."
 msgstr "Selecteer een script"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:20
@@ -1701,11 +1788,13 @@ msgid "Unable to load script, it seems to be corrupted!"
 msgstr "Niet mogelijk om script te laden, het lijkt beschadigt."
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:21
-msgid "Script not saved"
+#, fuzzy
+msgid "Script not saved."
 msgstr "Script niet opgeslagen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:22
-msgid "Please specify a valid script name"
+#, fuzzy
+msgid "Please specify a valid script name."
 msgstr "Geef een geldige script naam"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:23
@@ -1713,21 +1802,23 @@ msgid "Delete selected script?"
 msgstr "Verwijder geselecteert script?"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:24
-msgid "Script deleted successfully"
+#, fuzzy
+msgid "Script deleted successfully."
 msgstr "Script verwijderd"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:25
-msgid "Unable to delete script"
+#, fuzzy
+msgid "Unable to delete script."
 msgstr "Verwijderen van script mislukt"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:26
 #, fuzzy
-msgid "Script renamed successfully"
+msgid "Script renamed successfully."
 msgstr "Script opgeslagen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:27
 #, fuzzy
-msgid "Script not renamed"
+msgid "Script not renamed."
 msgstr "Script niet opgeslagen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:28
@@ -1744,27 +1835,22 @@ msgid "Changed"
 msgstr ""
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:31
-#, fuzzy
-msgid "Save as"
-msgstr "Opslaan"
-
-#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 msgid "Import"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
 msgid "Check"
 msgstr "Controleer"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:34
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
 msgid "View"
 msgstr "Bekijk"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:35
+#: ../configuration/blockly/html/agoblockly.xml.in.h:34
 msgid "Debug"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:36
+#: ../configuration/blockly/html/agoblockly.xml.in.h:35
 msgid "Event editor is only available on large resolution devices."
 msgstr ""
 
@@ -1951,35 +2037,30 @@ msgstr "Verwijderen"
 
 #: ../configuration/datalogger/html/datalogger.xml.in.h:18
 #, fuzzy
-msgid "Graphs"
-msgstr "Grafiek"
-
-#: ../configuration/datalogger/html/datalogger.xml.in.h:19
-#, fuzzy
 msgid "Associated sensors"
 msgstr "Actie"
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:20
+#: ../configuration/datalogger/html/datalogger.xml.in.h:19
 msgid "Database size"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:21
+#: ../configuration/datalogger/html/datalogger.xml.in.h:20
 msgid "Sensor values"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:22
+#: ../configuration/datalogger/html/datalogger.xml.in.h:21
 msgid "Purge all values"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:23
+#: ../configuration/datalogger/html/datalogger.xml.in.h:22
 msgid "GPS positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:24
+#: ../configuration/datalogger/html/datalogger.xml.in.h:23
 msgid "Purge all positions"
 msgstr ""
 
-#: ../configuration/datalogger/html/datalogger.xml.in.h:26
+#: ../configuration/datalogger/html/datalogger.xml.in.h:25
 msgid "Purge all messages"
 msgstr ""
 
@@ -2062,18 +2143,13 @@ msgid ""
 "each time those informations."
 msgstr ""
 
-#: ../configuration/system/html/system.xml.in.h:5
-#, fuzzy
-msgid "Email address"
-msgstr "Je email adres"
-
 #: ../configuration/system/html/system.xml.in.h:6
 msgid "Phone number"
 msgstr ""
 
 #: ../configuration/system/html/system.xml.in.h:8
 msgid ""
-"Find and click on your home to find its position. Agocontrol needs this "
+"Find and click on your home to find its position. ago control needs this "
 "information to compute sunset/sunrise times."
 msgstr ""
 
@@ -2162,7 +2238,7 @@ msgid "Memory monitoring"
 msgstr ""
 
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:4
-msgid "Agocontrol can triggers an event when selected process is missing"
+msgid "ago control triggers an event when selected process is missing."
 msgstr ""
 
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:5
@@ -2170,7 +2246,7 @@ msgid "Selected processes"
 msgstr ""
 
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:7
-msgid "Agocontrol can trigger an event when a process reach a memory threshold"
+msgid "ago control triggers an event when a process reach a memory threshold."
 msgstr ""
 
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:8
@@ -2211,7 +2287,7 @@ msgstr "Configuratie"
 
 #: ../help/version/html/version.xml.in.h:1
 #, fuzzy
-msgid "Agocontrol version"
+msgid "ago control version"
 msgstr "Agocontrol gebruiken"
 
 #: ../help/version/html/version.xml.in.h:2
@@ -2221,6 +2297,11 @@ msgstr ""
 #: ../help/version/html/version.xml.in.h:3
 msgid "System"
 msgstr "Systeem"
+
+#: ../help/version/html/version.xml.in.h:4
+#, fuzzy
+msgid "ago control download page"
+msgstr "ago control Forum"
 
 #: ../help/processes/html/processes.xml.in.h:1
 #, fuzzy
@@ -2235,6 +2316,37 @@ msgstr "Gebeurtenis Configuratie"
 #: ../help/drain/html/drain.xml.in.h:5
 msgid "Autoscroll"
 msgstr ""
+
+#: ../help/config/html/config.xml.in.h:1
+#, fuzzy
+msgid "System informations"
+msgstr "Systeem Status"
+
+#, fuzzy
+#~ msgid "Internal error."
+#~ msgstr "Interne fout"
+
+#, fuzzy
+#~ msgid "login"
+#~ msgstr "Inloggen"
+
+#, fuzzy
+#~ msgid "password"
+#~ msgstr "Wachtwoord"
+
+#~ msgid "TLS"
+#~ msgstr "TLS"
+
+#~ msgid "FanMode"
+#~ msgstr "VentilatorMode"
+
+#, fuzzy
+#~ msgid "Saveas"
+#~ msgstr "Opslaan"
+
+#, fuzzy
+#~ msgid "Graphs"
+#~ msgstr "Grafiek"
 
 #~ msgid "List"
 #~ msgstr "Lijst"
@@ -2259,10 +2371,6 @@ msgstr ""
 
 #~ msgid "No"
 #~ msgstr "Nee"
-
-#, fuzzy
-#~ msgid "System informations"
-#~ msgstr "Systeem Status"
 
 #~ msgid "Version"
 #~ msgstr "Versie"
@@ -2300,12 +2408,6 @@ msgstr ""
 #~ msgid "Twitter is not configured"
 #~ msgstr "Twitter is niet geconfigureerd"
 
-#, fuzzy
-#~ msgid ""
-#~ "Follow instructions above to authorize agocontrol to access your Twitter "
-#~ "account"
-#~ msgstr "Volg bovenstaande instructies om je gebruiker te authoriseren:"
-
 #~ msgid "SMS is configured"
 #~ msgstr "SMS is geconfigureerd"
 
@@ -2319,13 +2421,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Mail is not configured"
 #~ msgstr "Mail is niet geconfigureerd"
-
-#, fuzzy
-#~ msgid ""
-#~ "Specify your email SMTP server and a sender email address (* is mandatory)"
-#~ msgstr ""
-#~ "Specificeer je email SMTP server en een afzender emailadres (* is "
-#~ "verplicht):"
 
 #, fuzzy
 #~ msgid "email address"
@@ -2444,10 +2539,6 @@ msgstr ""
 #~ msgid "Welcome"
 #~ msgstr "Welkom"
 
-#, fuzzy
-#~ msgid "Dashboards"
-#~ msgstr "Hoofdpagina"
-
 #~ msgid "Rooms and Variables"
 #~ msgstr "Kamers en Variabelen"
 
@@ -2555,9 +2646,6 @@ msgstr ""
 
 #~ msgid "Create Floorplan"
 #~ msgstr "Maak Plattegrond"
-
-#~ msgid "Value"
-#~ msgstr "Waarde"
 
 #~ msgid "Room Name"
 #~ msgstr "Kamer Naam"
