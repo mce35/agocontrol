@@ -121,12 +121,10 @@ function Dashboard(dashboard, edition, agocontrol)
             $(this).droppable({
                 accept: '.device-list-item, .dashboard-widget',
                 activate: function(event, ui) {
-                    $(this).find('div.info-box:first-child').addClass('border-t-r-l');
-                    $(this).find('div.info-box:last-child').addClass('border-r-b-l');
+                    $(this).find('div.info-box:last-child').addClass('border-r-b-l-t');
                 },
                 deactivate: function(event, ui) {
-                    $(this).find('div.info-box:first-child').removeClass('border-t-r-l');
-                    $(this).find('div.info-box:last-child').removeClass('border-r-b-l');
+                    $(this).find('div.info-box:last-child').removeClass('border-r-b-l-t');
                 },
                 over: function(event, ui) {
                     $(this).find('div.info-box:first-child').removeClass('bg-white').addClass('bg-aqua');

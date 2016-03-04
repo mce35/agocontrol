@@ -141,16 +141,11 @@ div.dashboard-widget-draggable {
     background-color: #3085D6;
 }
 
-.border-t-r-l {
-    border-top: 2px solid #307197;
-    border-right: 2px solid #307197;
-    border-left: 2px solid #307197;
-}
-
-.border-r-b-l {
+.border-r-b-l-t {
     border-right: 2px solid #307197;
     border-bottom: 2px solid #307197;
     border-left: 2px solid #307197;
+    border-top: 2px solid #307197;
 }
 
 /********** dashboard widget **********/
