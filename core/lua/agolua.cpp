@@ -6,6 +6,8 @@
 #include <sstream>
 #include <cerrno>
 
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
@@ -57,9 +59,9 @@ private:
     int filterByEvents;
     fs::path scriptdir;
     qpid::types::Variant::Map scriptContexts;
-    pthread_mutex_t inventoryMutex;
-    pthread_mutex_t scriptsInfosMutex;
-    pthread_mutex_t scriptsContextsMutex;
+    boost::mutex mutexInventory;
+    boost::mutex mutexScriptInfos;
+    boost::mutex mutexScriptContexts;
     int64_t lastInventoryUpdate;
 
     fs::path construct_script_name(fs::path input) ;
@@ -541,7 +543,7 @@ int AgoLua::luaSetVariable(lua_State *L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::unique_lock<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() && !inventory["variables"].isVoid() )
     {
         //update current inventory to reflect changes without reloading it (too long!!)
@@ -563,7 +565,6 @@ int AgoLua::luaSetVariable(lua_State *L)
         //no inventory available
         lua_pushnumber(L, 0);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -579,7 +580,7 @@ int AgoLua::luaGetVariable(lua_State *L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::unique_lock<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -611,7 +612,6 @@ int AgoLua::luaGetVariable(lua_State *L)
         //no inventory available
         lua_pushnil(L);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -630,7 +630,7 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::unique_lock<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -718,7 +718,6 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
         //no inventory available
         lua_pushnil(L);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -732,9 +731,8 @@ int AgoLua::luaGetInventory(lua_State *L)
     updateInventory();
 
     //then return it
-    pthread_mutex_lock(&inventoryMutex);
+    boost::unique_lock<boost::mutex> lock(mutexInventory);
     pushTableFromMap(L, inventory);
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -795,7 +793,7 @@ int AgoLua::luaGetDeviceName(lua_State* L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::unique_lock<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -835,7 +833,6 @@ int AgoLua::luaGetDeviceName(lua_State* L)
         //no inventory available
         lua_pushnil(L);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -845,8 +842,7 @@ int AgoLua::luaGetDeviceName(lua_State* L)
  */
 void AgoLua::updateInventory()
 {
-    pthread_mutex_lock(&inventoryMutex);
-
+    boost::unique_lock<boost::mutex> lock(mutexInventory);
     time_t now = time(NULL);
     if( difftime(now, lastInventoryUpdate)>=INVENTORY_MAX_AGE || inventory.size()==0 )
     {
@@ -884,7 +880,6 @@ void AgoLua::updateInventory()
         }
     }
 
-    pthread_mutex_unlock(&inventoryMutex);
 }
 
 /**
@@ -937,7 +932,7 @@ void AgoLua::searchEvents(const fs::path& scriptPath, qpid::types::Variant::List
  */
 void AgoLua::purgeScripts()
 {
-    pthread_mutex_lock(&scriptsInfosMutex);
+    boost::unique_lock<boost::mutex> lock(mutexScriptInfos);
 
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -999,8 +994,6 @@ void AgoLua::purgeScripts()
     scriptsInfos["scripts"] = scripts;
     variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
     scriptsInfos = jsonFileToVariantMap(getConfigPath(SCRIPTSINFOSFILE));
-
-    pthread_mutex_unlock(&scriptsInfosMutex);
 }
 
 /**
@@ -1017,21 +1010,22 @@ void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const 
     }
     luaL_openlibs(L);
 
-    //load script context (from local variables)
-    pthread_mutex_lock(&scriptsContextsMutex);
-    if( scriptContexts[script].isVoid() )
     {
-        //no context yet, create empty one
-        scriptContexts[script] = context;
-    }
-    else
-    {
-        if( !scriptContexts[script].isVoid() )
+        //load script context (from local variables)
+        boost::unique_lock<boost::mutex> lock(mutexScriptContexts);
+        if( scriptContexts[script].isVoid() )
         {
-            context = scriptContexts[script].asMap();
+            //no context yet, create empty one
+            scriptContexts[script] = context;
+        }
+        else
+        {
+            if( !scriptContexts[script].isVoid() )
+            {
+                context = scriptContexts[script].asMap();
+            }
         }
     }
-    pthread_mutex_unlock(&scriptsContextsMutex);
     AGO_TRACE() << "LUA context before:" << context;
 
     //add mapped functions
@@ -1073,9 +1067,10 @@ void AgoLua::finalizeScript(lua_State* L, qpid::types::Variant::Map& content, co
     //handle context value
     lua_getglobal(L, "context");
     pullTableToMap(L, context);
-    pthread_mutex_lock(&scriptsContextsMutex);
-    scriptContexts[script] = context;
-    pthread_mutex_unlock(&scriptsContextsMutex);
+    {
+        boost::unique_lock<boost::mutex> lock(mutexScriptContexts);
+        scriptContexts[script] = context;
+    }
     AGO_TRACE() << "LUA context after:" << context;
 }
 
@@ -1176,7 +1171,7 @@ void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &sc
  */
 bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path &script)
 {
-    pthread_mutex_lock(&scriptsInfosMutex);
+    boost::unique_lock<boost::mutex> lock(mutexScriptInfos);
 
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -1219,14 +1214,13 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
         variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
 
         //reset script context if exists
-        pthread_mutex_lock(&scriptsContextsMutex);
+        boost::unique_lock<boost::mutex> lock(mutexScriptContexts);
         if( !scriptContexts[script.string()].isVoid() )
         {
             qpid::types::Variant::Map context = scriptContexts[script.string()].asMap();
             context.clear();
             scriptContexts[script.string()] = context;
         }
-        pthread_mutex_unlock(&scriptsContextsMutex);
     }
 
     //check if current triggered event is caught in script
@@ -1256,8 +1250,6 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
         //config option disable events filtering
         executeScript = true;
     }
-
-    pthread_mutex_unlock(&scriptsInfosMutex);
 
     return executeScript;
 }
@@ -1555,11 +1547,6 @@ void AgoLua::eventHandler(std::string subject, qpid::types::Variant::Map content
 
 void AgoLua::setupApp()
 {
-    //init mutex
-    pthread_mutex_init(&inventoryMutex, NULL);
-    pthread_mutex_init(&scriptsInfosMutex, NULL);
-    pthread_mutex_init(&scriptsContextsMutex, NULL);
-
     agocontroller = agoConnection->getAgocontroller();
 
     //get config
