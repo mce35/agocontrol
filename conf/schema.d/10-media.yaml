@@ -204,7 +204,7 @@ devicetypes:
   squeezebox:
     name: Squeezebox Player
     description: Plays music
-    commands: ["on", "off", play, pause, stop, displaymessage]
+    commands: ["on", "off", play, pause, stop, displaymessage, setvolume]
     events: [event.device.statechanged, event.device.mediastatechanged]
     properties: [mediastate]
   squeezeboxserver:
