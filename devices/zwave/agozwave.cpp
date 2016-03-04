@@ -663,7 +663,7 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
     if( sentEvents[sInternalId].isVoid() )
     {
         //add new entry
-        AGO_DEBUG() << "filterEvent: create new entry for internalid " << sInternalId;
+        AGO_TRACE() << "filterEvent: create new entry for internalid " << sInternalId;
         infos["eventype"] = sEventType;
         infos["level"] = level;
         infos["timestamp"] = now;
@@ -685,38 +685,38 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
                 {
                     //same level received, check timestamp
                     uint64_t oldTimestamp = infos["timestamp"].asUint64();
-                    //XXX maybe 1 second is enough ?
-                    if( now<=(oldTimestamp+2) )
+                    //1 seconds seems to be enough
+                    if( now<=(oldTimestamp+1) )
                     {
                         //same event sent too quickly, drop it
-                        AGO_DEBUG() << "filterEvent: event " << sEventType  << " for " << sInternalId << " is filtered";
+                        AGO_TRACE() << "filterEvent: event " << sEventType  << " for " << sInternalId << " is filtered";
                         filtered = true;
                     }
                     else
                     {
                         //last event was sent some time ago, no filtering
-                        AGO_DEBUG() << "filterEvent: duplicated event " << sEventType << " detected for " << sInternalId;
+                        AGO_TRACE() << "filterEvent: duplicated event " << sEventType << " detected for " << sInternalId << "but timeout expired";
                         filtered = false;
                     }
                 }
                 else
                 {
                     //should not happen
-                    AGO_DEBUG() << "filterEvent: infos[timestamp] isn't exist";
+                    AGO_TRACE() << "filterEvent: infos[timestamp] isn't exist";
                     filtered = false;
                 }
             }
             else
             {
                 //level is different, no filtering
-                AGO_DEBUG() << "filterEvent: level " << level << " is different from old one " << oldLevel << " for " << sInternalId;
+                AGO_TRACE() << "filterEvent: level " << level << " is different from old one " << oldLevel << " for " << sInternalId;
                 filtered = false;
             }
         }
         else
         {
             //should not happen
-            AGO_DEBUG() << "filterEvent: infos[level] isn't exist";
+            AGO_TRACE() << "filterEvent: infos[level] isn't exist";
             filtered = false;
         }
 
@@ -729,7 +729,7 @@ bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string
         }
     }
 
-    AGO_DEBUG() << "filterEvent: sentEvent: " << sentEvents;
+    AGO_TRACE() << "filterEvent: sentEvent: " << sentEvents;
 
     return filtered;
 }
