@@ -228,6 +228,6 @@ Blockly.Lua['agocontrol_weekday'] = function(block) {
         //specific day
         code = ""+day+" == "+type
     }
-    return [code, Blockly.Lua.ORDER_RELATIONAL];
+    return ["("+code+")", Blockly.Lua.ORDER_RELATIONAL];
 };
 
