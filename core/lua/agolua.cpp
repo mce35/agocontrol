@@ -543,7 +543,7 @@ int AgoLua::luaSetVariable(lua_State *L)
     //update inventory
     updateInventory();
 
-    boost::unique_lock<boost::mutex> lock(mutexInventory);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() && !inventory["variables"].isVoid() )
     {
         //update current inventory to reflect changes without reloading it (too long!!)
@@ -580,7 +580,7 @@ int AgoLua::luaGetVariable(lua_State *L)
     //update inventory
     updateInventory();
 
-    boost::unique_lock<boost::mutex> lock(mutexInventory);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -630,7 +630,7 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
     //update inventory
     updateInventory();
 
-    boost::unique_lock<boost::mutex> lock(mutexInventory);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -731,7 +731,7 @@ int AgoLua::luaGetInventory(lua_State *L)
     updateInventory();
 
     //then return it
-    boost::unique_lock<boost::mutex> lock(mutexInventory);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     pushTableFromMap(L, inventory);
 
     return 1;
@@ -793,7 +793,7 @@ int AgoLua::luaGetDeviceName(lua_State* L)
     //update inventory
     updateInventory();
 
-    boost::unique_lock<boost::mutex> lock(mutexInventory);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -842,7 +842,7 @@ int AgoLua::luaGetDeviceName(lua_State* L)
  */
 void AgoLua::updateInventory()
 {
-    boost::unique_lock<boost::mutex> lock(mutexInventory);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     time_t now = time(NULL);
     if( difftime(now, lastInventoryUpdate)>=INVENTORY_MAX_AGE || inventory.size()==0 )
     {
@@ -932,7 +932,7 @@ void AgoLua::searchEvents(const fs::path& scriptPath, qpid::types::Variant::List
  */
 void AgoLua::purgeScripts()
 {
-    boost::unique_lock<boost::mutex> lock(mutexScriptInfos);
+    boost::lock_guard<boost::mutex> lock(mutexScriptInfos);
 
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -1012,7 +1012,7 @@ void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const 
 
     {
         //load script context (from local variables)
-        boost::unique_lock<boost::mutex> lock(mutexScriptContexts);
+        boost::lock_guard<boost::mutex> lock(mutexScriptContexts);
         if( scriptContexts[script].isVoid() )
         {
             //no context yet, create empty one
@@ -1068,7 +1068,7 @@ void AgoLua::finalizeScript(lua_State* L, qpid::types::Variant::Map& content, co
     lua_getglobal(L, "context");
     pullTableToMap(L, context);
     {
-        boost::unique_lock<boost::mutex> lock(mutexScriptContexts);
+        boost::lock_guard<boost::mutex> lock(mutexScriptContexts);
         scriptContexts[script] = context;
     }
     AGO_TRACE() << "LUA context after:" << context;
@@ -1171,7 +1171,7 @@ void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &sc
  */
 bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path &script)
 {
-    boost::unique_lock<boost::mutex> lock(mutexScriptInfos);
+    boost::lock_guard<boost::mutex> lock(mutexScriptInfos);
 
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -1214,7 +1214,7 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
         variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
 
         //reset script context if exists
-        boost::unique_lock<boost::mutex> lock(mutexScriptContexts);
+        boost::lock_guard<boost::mutex> lock(mutexScriptContexts);
         if( !scriptContexts[script.string()].isVoid() )
         {
             qpid::types::Variant::Map context = scriptContexts[script.string()].asMap();

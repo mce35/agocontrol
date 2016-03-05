@@ -436,7 +436,8 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
     AGO_TRACE() << "sendAlarm() BEGIN";
 
     {
-       boost::unique_lock<boost::mutex> lock(mutexAlertGateways);
+       boost::lock_guard<boost::mutex> lock(mutexAlertGateways);
+       boost::unique_lock<boost::mutex> contacts_lock(mutexContacts, boost::defer_lock_t());
        for( qpid::types::Variant::Map::iterator it=alertGateways.begin(); it!=alertGateways.end(); it++ )
        {
           if( it->first==uuid )
@@ -446,7 +447,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
              std::string gatewayType = it->second.asString();
              if( gatewayType=="smsgateway" )
              {
-                boost::unique_lock<boost::mutex> lock(mutexContacts);
+                contacts_lock.lock();
                 if( phone.size()>0 )
                 {
                    (*content)["command"] = "sendsms";
@@ -462,7 +463,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
              }
              else if( gatewayType=="smtpgateway" )
              {
-                boost::unique_lock<boost::mutex> lock(mutexContacts);
+                contacts_lock.lock();
                 if( phone.size()>0 )
                 {
                    (*content)["command"] = "sendmail";
@@ -512,7 +513,7 @@ void AgoSecurity::sendAlarm(std::string zone, std::string uuid, std::string mess
  */
 void AgoSecurity::refreshDefaultContact()
 {
-    boost::unique_lock<boost::mutex> lock(mutexContacts);
+    boost::lock_guard<boost::mutex> lock(mutexContacts);
     std::string oldEmail = email;
     std::string oldPhone = phone;
     email = getConfigOption("email", "", "system", "system");
@@ -561,7 +562,7 @@ void AgoSecurity::refreshAlertGateways()
         //get available alert gateway uuids
         if( !inventory["devices"].isVoid() )
         {
-            boost::unique_lock<boost::mutex> lock(mutexAlertGateways);
+            boost::lock_guard<boost::mutex> lock(mutexAlertGateways);
 
             //clear list
             alertGateways.clear();
