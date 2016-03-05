@@ -160,9 +160,12 @@ def emit_media_infos(internalid, infos):
         filename = 'cover_%s.jpg' % ''.join(x for x in internalid if x.isalnum())
         if infos.has_key('album_id') and infos.has_key('artwork_track_id'):
             cover_data = library.get_cover(infos['album_id'], infos['artwork_track_id'], filename, (100,100))
-        title = infos['title']
-        album = infos['album']
-        artist = infos['artist']
+        if infos.has_key('title'):
+            title = infos['title']
+        if infos.has_key('album'):
+            album = infos['album']
+        if infos.has_key('artist'):
+            artist = infos['artist']
     cover_b64 = None
     if cover_data:
         cover_b64 = buffer(base64.b64encode(cover_data))
