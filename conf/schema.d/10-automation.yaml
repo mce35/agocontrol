@@ -266,6 +266,9 @@ events:
   event.environment.fanstatechanged:
     description: fan state has changed
     parameters: [level, unit, uuid]
+  event.environment.co2changed:
+    description: CO2 level has changed
+    parameters: [level, unit, uuid]
 units:
   degC:
     label: "°C"
