@@ -74,9 +74,12 @@ class Ipx800v3(threading.Thread):
     STATUS = 'http://%s/status.xml'
 
     def __init__(self, port, ipxCallback):
-        """constructor
-           @param port: local port for webserver (used to get M2M return infos)
-           @param ipxCallback: result of ipx board m2m push (params: ipxIp[str], url[str], error[str]) """
+        """
+        Constructor
+        @param port: local port for webserver (used to get M2M return infos)
+        @param ipxCallback: result of ipx board m2m push (params: ipxIp[str], url[str], error[str])
+        @param push: use push instead of telnet (push is less reactive than telnet)
+        """
         threading.Thread.__init__(self)
         self.logger = logging.getLogger('Ipx800v3')
         self.port = port
@@ -85,11 +88,15 @@ class Ipx800v3(threading.Thread):
         self.__running = True
 
     def __del__(self):
-        """destructor"""
+        """
+        Destructor
+        """
         self.stop()
 
     def run(self):
-        """ipx800v3 background process"""
+        """
+        Ipx800v3 background process
+        """
         self.logger.debug('Serving at localhost:%d' % self.port)
         try:
             while self.__running:
@@ -100,7 +107,9 @@ class Ipx800v3(threading.Thread):
             self.logger.debug('Exception in run(): %s' % str(e))
 
     def stop(self):
-        """stop ipx server"""
+        """
+        Stop ipx server
+        """
         self.logger.debug('Stop')
         self.__running = False
         if self.__server:
@@ -109,8 +118,13 @@ class Ipx800v3(threading.Thread):
             sys.stdin.close()
 
     def __pushCallback(self, board, url, error):
-        """push callback
-           @return: call specified function (callback) with parameters ipxIp, content (dict)"""
+        """
+        Push callback
+        @param board: board ip
+        @param url: board url
+        @param error: setted to true if error occured during push
+        @return: call specified function (callback) with parameters ipxIp, content (dict)
+        """
         #awaited url
         # - from M2M push:
         #00:04:A3:2D:67:9F&In=00000000000000000000000000000000&Out=00000000111111111111111111111111&An1=0&An2=0&An3=0&An4=0&C1=0&C2=0&C3=0
@@ -173,7 +187,9 @@ class Ipx800v3(threading.Thread):
             self.__callback(board, output)
 
     def __sendExtUrl(self, url, params):
-        """send url"""
+        """
+        Send url
+        """
         try:
             url += urllib.urlencode(params)
             req = urllib2.urlopen(url)
@@ -192,9 +208,11 @@ class Ipx800v3(threading.Thread):
 
     """----------TIMERS----------"""
     def resetTimer(self, ipx, timerId):
-        """reset specified timer
-           @param ipx: ipx ip 
-           @param timerId: timer id [0-127]"""
+        """
+        Reset specified timer
+        @param ipx: ipx ip 
+        @param timerId: timer id [0-127]
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('resetTimer: ipx ip is not valid')
@@ -209,14 +227,16 @@ class Ipx800v3(threading.Thread):
         return self.__sendUrl(url, params)
 
     def configureTimer(self, ipx, timerId, day, hour, minute, outputId, action):
-        """schedule specified timer
-           @param ipx: ipx ip 
-           @param timerid: integer [0-127]
-           @param day: 0-6 (monday to sunday), 7 (everyday), 8 (workingday), 9 (weekday)
-           @param hour: hour of timer
-           @param minute: minute of timer
-           @param outputId: output id (relay[0-31], counter[32-34])
-           @param action: action to apply on relay (0=off, 1=on, 2=invert, 3=pulse, 4=cancel, 7=reset counters)"""
+        """
+        Schedule specified timer
+        @param ipx: ipx ip 
+        @param timerid: integer [0-127]
+        @param day: 0-6 (monday to sunday), 7 (everyday), 8 (workingday), 9 (weekday)
+        @param hour: hour of timer
+        @param minute: minute of timer
+        @param outputId: output id (relay[0-31], counter[32-34])
+        @param action: action to apply on relay (0=off, 1=on, 2=invert, 3=pulse, 4=cancel, 7=reset counters)
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('configureTimer: ipx ip is not valid')
@@ -248,9 +268,11 @@ class Ipx800v3(threading.Thread):
 
     """----------INPUTS----------"""
     def setInput(self, ipx, inputId):
-        """simulate virtual action on specified input
-           @param ipx: ipx ip
-           @param inputId: input id [0-31]"""
+        """
+        Simulate virtual action on specified input
+        @param ipx: ipx ip
+        @param inputId: input id [0-31]
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('setInput: ipx ip is not valid')
@@ -265,13 +287,15 @@ class Ipx800v3(threading.Thread):
         return self.__sendUrl(url, params)
 
     def configureDigitalInput(self, ipx, inputId, outputIds, mode, inv=None, name=None):
-        """configure digital input
-           @param ipx: ipx ip 
-           @param inputId: digital input id [0-31]
-           @param outputIds: list of outputs to control [0-31]
-           @param mode: input mode (0=on/off, 1=switch, 2=shutter, 3=on, 4=off)
-           @param inv: inverse mode (facultative)
-           @param name: new name of input (facultative)"""
+        """
+        Configure digital input
+        @param ipx: ipx ip 
+        @param inputId: digital input id [0-31]
+        @param outputIds: list of outputs to control [0-31]
+        @param mode: input mode (0=on/off, 1=switch, 2=shutter, 3=on, 4=off)
+        @param inv: inverse mode (facultative)
+        @param name: new name of input (facultative)
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('configureDigitalInput: ipx ip is not valid')
@@ -316,15 +340,17 @@ class Ipx800v3(threading.Thread):
         return self.__sendUrl(url, params)
 
     def configureAnalogInput(self, ipx, inputId, outputIds, mode, thresholdMax, thresholdMin, actionMax, actionMin, name=None):
-        """configure analog input
-           @param inputId: analog input id [0-3]
-           @param mode: input mode (0=raw value, 1=tension, 2=TC4012, 3=SHT-X3 light, 4=SHT-X3 temperature, 5=SHT-X3 humidity
-           @param outputIds: list of output ids [1-8]
-           @param thresholdMax: max threshold
-           @param thresholdMin: min threshold
-           @param actionMax: action when max threshold detected (1=on, 0=off)
-           @param actionMin: action when min threshold detected (1=on, 0=off)
-           @param name: name of input (facultative)"""
+        """
+        Configure analog input
+        @param inputId: analog input id [0-3]
+        @param mode: input mode (0=raw value, 1=tension, 2=TC4012, 3=SHT-X3 light, 4=SHT-X3 temperature, 5=SHT-X3 humidity
+        @param outputIds: list of output ids [1-8]
+        @param thresholdMax: max threshold
+        @param thresholdMin: min threshold
+        @param actionMax: action when max threshold detected (1=on, 0=off)
+        @param actionMin: action when min threshold detected (1=on, 0=off)
+        @param name: name of input (facultative)
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('configureAnalogInput: ipx ip is not valid')
@@ -358,10 +384,12 @@ class Ipx800v3(threading.Thread):
 
     """----------OUTPUTS----------"""
     def setOutput(self, ipx, outputId, state=None):
-        """set specified output without pulse
-           @param ipx: ips ip
-           @param outputid: output id [0-31]
-           @param state: force state to value (0=off, 1=on) or just pulse output (=None)"""
+        """
+        Set specified output without pulse
+        @param ipx: ips ip
+        @param outputid: output id [0-31]
+        @param state: force state to value (0=off, 1=on) or just pulse output (=None)
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('setOutputNoPulse: ipx ip is not valid')
@@ -391,12 +419,14 @@ class Ipx800v3(threading.Thread):
             return self.__sendUrl(url, params)
 
     def configureOutput(self, ipx, outputId, delayOn=None, delayOff=None, name=None):
-        """configure output
-           @param ipx: ipx ip
-           @param outputid: output id [0-31]
-           @param delayon: time to wait before starting relay (1=0.1s, max=65535) (facultative)
-           @param delayoff: time to wait before stopping relay (1=0.1s, max=65535) (facultative)
-           @param name: name of output (facultative)"""
+        """
+        Configure output
+        @param ipx: ipx ip
+        @param outputid: output id [0-31]
+        @param delayon: time to wait before starting relay (1=0.1s, max=65535) (facultative)
+        @param delayoff: time to wait before stopping relay (1=0.1s, max=65535) (facultative)
+        @param name: name of output (facultative)
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('configureOutput: ipx ip is not valid')
@@ -427,12 +457,14 @@ class Ipx800v3(threading.Thread):
 
     """----------COUNTERS----------"""
     def setCounter(self, ipx, counterId, value, name='counter'):
-        """set counter value and/or name
-           @info: /!\ name if mandatory otherwise command doesn't work :S 
-           @param ipx: ipx ip 
-           @param counterId: counter id [0-2] 
-           @param value: counter value (0 to reset)
-           @param name: new name of counter (facultative)"""
+        """
+        Set counter value and/or name
+        @info: /!\ name if mandatory otherwise command doesn't work :S 
+        @param ipx: ipx ip 
+        @param counterId: counter id [0-2] 
+        @param value: counter value (0 to reset)
+        @param name: new name of counter (facultative)
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('setCounter: ipx ip is not valid')
@@ -456,12 +488,14 @@ class Ipx800v3(threading.Thread):
 
     """----------PING----------"""
     def configurePingWatchdog(self, ipx, ip, interval, retries, outputId):
-        """configure integrated ping function
-           @param ipx: ipx ip
-           @param ip: ip to ping
-           @param interval: interval between 2 retries
-           @param retries: number of retries before trigger output
-           @param outputId: triggered output [0-31]"""
+        """
+        Configure integrated ping function
+        @param ipx: ipx ip
+        @param ip: ip to ping
+        @param interval: interval between 2 retries
+        @param retries: number of retries before trigger output
+        @param outputId: triggered output [0-31]
+        """
         #check params
         if not ipx or len(ipx)==0:
             self.logger.error('configurePingWatchdog: ipx ip is not valid')
@@ -487,8 +521,10 @@ class Ipx800v3(threading.Thread):
 
     """----------STATUS----------"""
     def getStatus(self, ipx):
-        """return status of all board elements
-           @output dict:  """
+        """
+        Return status of all board elements
+        @output dict:
+        """
         #check parameters
         if not ipx or len(ipx)==0:
             self.logger.error('getStatus: ipx ip is not valid')
