@@ -99,7 +99,9 @@ Blockly.Lua['agocontrol_content'] = function(block) {
             code += " or ";
         else
             code += " and ";
-        code += Blockly.Lua.valueToCode(block, 'PROP'+i, Blockly.Lua.ORDER_NONE) || '';
+        var e = Blockly.Lua.valueToCode(block, 'PROP'+i, Blockly.Lua.ORDER_NONE);
+		  if(e)
+           code += '(' + e + ')';
     }
     return [code, Blockly.Lua.ORDER_NONE];
 };
@@ -215,19 +217,19 @@ Blockly.Lua['agocontrol_weekday'] = function(block) {
     var code = "";
     if( type=='-2' )
     {
-        //weekday
-        code = ""+day+" == '1' or "+day+" == '2' or "+day+" == '3' or "+day+" == '4' or "+day+" == '5'"
+        //weekday (1-5)
+        code = ""+day+" <= '5'"
     }
     else if( type=='-1' )
     {
-        //weekend
-        code = ""+day+" == '6' or "+day+" == '0'"
+        //weekend (6,7)
+        code = ""+day+" >= '6'"
     }
     else
     {
         //specific day
         code = ""+day+" == "+type
     }
-    return ["("+code+")", Blockly.Lua.ORDER_RELATIONAL];
+    return [code, Blockly.Lua.ORDER_RELATIONAL];
 };
 
