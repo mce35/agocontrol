@@ -1,0 +1,29 @@
+Building instructions for Blockly
+=================================
+
+To build an updated Blockly extension, you need to checkout the Blockly
+sources, copy a few files, then use their build script and copy the generated
+files back to Agocontrol.
+
+You need to specify an external workdir we're building blockly from, and point
+to where you have checked out the agocontrol source.
+
+	export WRK=/home/$USER/blocklybuild AGO=/home/$USER/agocontrol
+
+Then, you may run the simple setup.sh script (in this dir)
+
+	./setup.sh
+
+This script is only needed to be run the first time (or if any changes has
+occured..). It is safe to run repeatedly.
+
+Now we are fully prepared, and can start the build:
+
+	cd $WRK
+	python build.py
+
+You now copy the generated files back to agocontrol:
+
+	./copy-build.sh
+
+All done!

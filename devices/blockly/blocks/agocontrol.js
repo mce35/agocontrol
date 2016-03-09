@@ -1247,19 +1247,19 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
                             case "integer":
                             case "number":
                                 checkType = "Number";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'math_number');
+                                newBlock = this.workspace.newBlock('math_number');
                                 break;
                             case "string":
                                 checkType = "String";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'text');
+                                newBlock = this.workspace.newBlock('text');
                                 break;
                             case "boolean":
                                 checkType = "Boolean";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'logic_boolean'); 
+                                newBlock = this.workspace.newBlock('logic_boolean'); 
                                 break;
                             case "option":
                                 checkType = "String";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'agocontrol_fixedItemsList');
+                                newBlock = this.workspace.newBlock('agocontrol_fixedItemsList');
                                 var opts = [];
                                 if( this.commands[currentCommand].parameters[param].options!==undefined )
                                 {
@@ -1272,25 +1272,25 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
                                 break;
                             case "email":
                                 checkType = "Email";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'agocontrol_email');
+                                newBlock = this.workspace.newBlock('agocontrol_email');
                                 break;
                             case "color":
                             case "colour":
                                 checkType = "Colour";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'colour_picker');
+                                newBlock = this.workspace.newBlock('colour_picker');
                                 break;
                             case "phone":
                                 checkType = "Phone";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'agocontrol_phoneNumber');
+                                newBlock = this.workspace.newBlock('agocontrol_phoneNumber');
                                 break;
                             case "uuid":
                                 checkType = "Device";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'agocontrol_device');
+                                newBlock = this.workspace.newBlock('agocontrol_device');
                                 break;
                             default:
                                 //allow any type
                                 checkType = "String";
-                                newBlock = Blockly.Block.obtain(this.workspace, 'text');
+                                newBlock = this.workspace.newBlock('text');
                                 break;
                         }
                     }
@@ -1298,7 +1298,7 @@ Blockly.Blocks['agocontrol_sendMessage'] = {
                     {
                         //unknown block type, allow any type
                         checkType = "String";
-                        newBlock = Blockly.Block.obtain(this.workspace, 'text');
+                        newBlock = this.workspace.newBlock('text');
                     }
                     this._addCustomField(param, this.commands[currentCommand].parameters[param].name, checkType, newBlock, duplicated);
                 }
@@ -1868,3 +1868,21 @@ Blockly.Blocks['agocontrol_weekday'] = {
     }
 };
 
+
+// Cross-polute variables module
+Blockly.Blocks['variables_is_defined'] = {
+    /**
+     * Block to check variable definition
+     */
+    init: function() {
+        //this.setHelpUrl(Blockly.Msg.VARIABLES_SET_HELPURL);
+        this.setColour(Blockly.Blocks.variables.HUE);
+        //this.setHelpUrl('http://www.example.com/');
+        this.appendValueInput('VAR');
+        this.appendDummyInput()
+            .appendField("is defined");
+        this.setInputsInline(true);
+        this.setOutput(true);
+        this.setTooltip('Is block defined?');
+    }
+};
