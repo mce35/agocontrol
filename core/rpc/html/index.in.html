@@ -61,7 +61,7 @@
     </div>
 </div>
 
-<div id="wrapper">
+<div class="wrapper">
 
     <!-- TOP BAR -->
     <header class="main-header">
@@ -291,14 +291,14 @@
     </div>
 
     <!-- PAGE CONTENT -->
-    <div class="content-wrapper" style="min-height: 916px;">
+    <div class="content-wrapper">
         <!-- PLUGINS -->
         <div id="plugins" data-bind="template: {name:'templates/plugins/plugins', data:plugins, afterRender:afterRenderPlugins}">
         </div>
 
         <!-- CONTENT -->
-        <div id="main" data-bind="with:currentView">
-            <div style="min-height:650px;" data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}">
+        <div id="main" data-bind="with:currentView" style="min-height:650px;">
+            <div data-bind="template: {name:templateName, data:model, afterRender:$parent.afterRender}">
             </div>
         </div>
     </div>

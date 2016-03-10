@@ -1,4 +1,4 @@
-<div style="width:100%; height:800px;">
+<div style="width:100%;">
 
     <!-- lua dialog -->
     <div class="modal fade" tabindex="-1" id="luaDialog">
@@ -65,7 +65,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- saveas dialog -->
     <div class="modal fade" tabindex="-1" id="saveasDialog">
         <div class="modal-dialog">
@@ -346,7 +346,7 @@
             <block type="agocontrol_defaultPhoneNumber"/>
         </category>
     </xml>
-   
+
     <!-- notification messages -->
     <section class="content-notifs">
         <_span data-translateable="true" id="nr">luacontroller is not responding. Unable to execute action.</_span>
@@ -364,19 +364,14 @@
         <_span data-translateable="true" id="rsf">Script not renamed</_span>
     </section>
 
-    <table style="width:100%; height:100%;">
     <!--title-->
-    <tr>
-        <td style="height:50px;">
-            <section class="content-header">
-                <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
-            </section>
-        </td>
-    </tr>
+    <section class="content-header">
+        <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
+    </section>
     <!-- toolbox -->
-    <tr style="height:40px;">
-        <td style="padding: 20px 20px 0px 20px;">
-            <div class="btn-toolbar">
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12 btn-toolbar">
                 <div class="btn-group">
                     <button type="button" class="btn btn-primary" data-bind="click:clear">
                         <span class="en-doc"></span>
@@ -421,18 +416,14 @@
                     </button>
                 </div>
             </div>
-        </td>
-    </tr>
-    <tr class="hidden-xs hidden-sm">
-        <td id="blocklyArea" style="padding: 0px 20px 0px 20px;">
-            <div id="blocklyDiv" style="" data-bind="blockly:blocklyViewModel"/>    
-        </td>
-    </tr>
-    <tr class="hidden-md hidden-lg">
-        <td>
-            <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
-        </td>
-    </tr>
-    </table>
-
+        </div>
+        <div class="row" style="padding-top:8px;">
+            <div id="blocklyArea" class="col-md-12">
+                <div id="blocklyDiv" data-bind="blockly:blocklyViewModel"/>
+                <div class="hidden-md hidden-lg">
+                    <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

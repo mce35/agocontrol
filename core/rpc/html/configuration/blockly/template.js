@@ -845,7 +845,7 @@ function init_template(path, params, agocontrol)
                     toolbox: document.getElementById('toolbox'),
                     zoom: {
                         controls: true,
-                        wheel: false, //keep wheel to scroll to main page not blockly workspace
+                        wheel: true, //keep wheel to scroll to main page not blockly workspace
                         startScale: 1.0,
                         maxScale: 2.0,
                         minScale: 0.5,
@@ -859,23 +859,19 @@ function init_template(path, params, agocontrol)
                     }
                 });
 
-                //hack to make blockly using maximum page space
-                //https://developers.google.com/blockly/installation/injecting-resizable
+                // hack to make blockly using maximum page space, originally
+                // https://developers.google.com/blockly/installation/injecting-resizable
+                // Adjust for adminLTE layout.
+                // Beware: this does not work perfectly when shrinking the window
                 var onresize = function(e) {
-                    var element = blocklyArea;
-                    var x = 0;
-                    var y = 0;
+                    var element = $('#blocklyArea')[0];
 
-                    do {
-                        x += element.offsetLeft;
-                        y += element.offsetTop;
-                        element = element.offsetParent;
-                    } while (element);
+                    // target elements offsetParent is the .wrapper div (covers all of the viewport)
+                    // use the full viewport height and calculate area height based on offset to top of viewport (wrapper)
+                    var wh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+                    var h = wh - element.offsetTop - 15;
 
-                    blocklyDiv.style.left = x + 'px';
-                    blocklyDiv.style.top = y + 'px';
-                    blocklyDiv.style.width = (blocklyArea.offsetWidth-50) + 'px'; //reduce of 50px to take in count margin
-                    blocklyDiv.style.height = (blocklyArea.offsetHeight-50) + 'px';
+                    blocklyDiv.style.height = h + 'px';
                 };
                 window.addEventListener('resize', onresize, false);
                 onresize();
