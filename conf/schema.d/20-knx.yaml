@@ -34,6 +34,8 @@ devicetypes:
           name: air quality ppm
         humidity:
           name: humidity percent
+        windspeed:
+          name: windspeed in m/s
       childdevices:
         switch: [onoff, onoffstatus]
         dimmer: [onoff, onoffstatus, setlevel, levelstatus]
@@ -44,3 +46,4 @@ devicetypes:
         powermeter: [energy]
         co2sensor: [airquality]
         humiditysensor: [humidity]
+        windsensor: [windspeed]

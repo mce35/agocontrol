@@ -255,6 +255,8 @@ void *AgoKnx::listener() {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.humiditychanged", tl.getFloatData(), "percent");
                         } else if (type == "airquality") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.co2changed", tl.getFloatData(), "ppm");
+                        } else if (type == "windspeed") {
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.windspeedchanged", l.getFloatData(), "m/s");
                         } else if (type == "energy") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "A");
                         } else if (type == "power") {
