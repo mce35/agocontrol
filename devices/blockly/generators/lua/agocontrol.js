@@ -215,20 +215,20 @@ Blockly.Lua['agocontrol_weekday'] = function(block) {
     var day = Blockly.Lua.valueToCode(block, 'WEEKDAY', Blockly.Lua.ORDER_ATOMIC) || '';
     var type = block.getFieldValue('TYPE');
     var code = "";
-    if( type=='-2' )
+    if(type == -2)
     {
         //weekday (1-5)
-        code = ""+day+" <= '5'"
+        code = "tonumber("+day+") <= 5"
     }
-    else if( type=='-1' )
+    else if(type == -1)
     {
         //weekend (6,7)
-        code = ""+day+" >= '6'"
+        code = "tonumber("+day+") >= 6"
     }
     else
     {
         //specific day
-        code = ""+day+" == "+type
+        code = "tonumber("+day+") == "+type
     }
     return [code, Blockly.Lua.ORDER_RELATIONAL];
 };
