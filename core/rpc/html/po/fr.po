@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-06 10:01+0100\n"
+"POT-Creation-Date: 2016-03-11 14:52+0100\n"
 "PO-Revision-Date: 2014-02-10 18:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: ago control <jaeger@agocontrol.com>\n"
@@ -215,6 +215,7 @@ msgstr "Type de périphérique"
 #: ../configuration/systemmonitoring/html/systemmonitoring.xml.in.h:6
 #: ../configuration/system/html/system.xml.in.h:7
 #: ../configuration/datalogger/html/datalogger.xml.in.h:13
+#: ../templates/parameters/default.xml.in.h:1
 msgid "Save changes"
 msgstr "Sauvegarder"
 
