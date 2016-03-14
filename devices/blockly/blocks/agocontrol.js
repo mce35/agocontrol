@@ -1860,9 +1860,9 @@ Blockly.Blocks['agocontrol_weekday'] = {
             .setCheck("String");
         this.appendDummyInput()
             .appendField("is")
-            .appendField(new Blockly.FieldDropdown([["weekday", -2], ["weekend", -1],
-							["monday", 1], ["tuesday", 2], ["wednesday", 3], ["thursday", 4],
-							["friday", 5], ["saturday", 6], ["sunday", 7]]),
+            .appendField(new Blockly.FieldDropdown([["weekday", '-2'], ["weekend", '-1'],
+							["monday", '1'], ["tuesday", '2'], ["wednesday", '3'], ["thursday", '4'],
+							["friday", '5'], ["saturday", '6'], ["sunday", '7']]),
 						"TYPE");
         this.setInputsInline(true);
         this.setOutput(true, "Boolean");
