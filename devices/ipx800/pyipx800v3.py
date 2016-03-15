@@ -32,9 +32,137 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import logging
 import threading
 import sys
+import telnetlib
 import urllib, urllib2
+import urlparse
 from xml.dom import minidom
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import time
+
+
+class Ipx800v3Telnet(threading.Thread):
+    """
+    Implements a thread to listen to ipx callbacks over telnet connection
+    """
+    def __init__(self, ip, port, callback, charset='utf-8'):
+        """
+        Constructor
+        """
+        threading.Thread.__init__(self)
+        self.logger = logging.getLogger('Ipx800v3Telnet')
+        self.ip = ip
+        self.port = port
+        self.__callback = callback
+        self.running = True
+        self.charset = charset
+        self.__telnet = None
+
+    def __del__(self):
+        """
+        Destructor
+        """
+        self.stop()
+
+    def stop(self):
+        self.running = False
+
+    def run(self):
+        """
+        Thread process
+        """
+        self.logger.info('Thread running for %s:%d' % (self.ip, self.port))
+        while self.running:
+            try:
+                if not self.telnet_is_connected():
+                    #not connected, try to connect
+                    if not self.telnet_connect():
+                        #not connected, retry in few seconds
+                        self.logger.info('Unable to connect to ipx800 %s' % self.ip)
+                        time.sleep(5)
+
+                if self.telnet_is_connected():
+                    response = self.telnet_response(timeout=1)
+                    if response:
+                        self.telnet_parse_response(response)
+            except:
+                self.logger.exception('Exception in run():')
+
+        self.telnet_disconnect()
+        self.logger.info('Thread ended for %s:%d' % (self.ip, self.port))
+
+    def telnet_connect(self):
+        """
+        Connect to telnet port
+        """
+        try:
+            self.__telnet = telnetlib.Telnet(self.ip, self.port)
+        except Exception as e:
+            self.logger.exception('Unable to connect to telnet port %d' % self.port)
+            self.__telnet = None
+        return self.__telnet
+
+    def telnet_disconnect(self):
+	"""
+	Disconnect from telnet
+	"""
+        if self.__telnet:
+            self.__telnet.close()
+
+    def telnet_is_connected(self):
+        """
+        Return true if telnet is connected
+        """
+        if self.__telnet:
+            return True
+        else:
+            return False
+
+    def telnet_response(self, timeout=0):
+        """
+        Wait for telnet message
+        @return received message
+        """
+        resp = None
+        try:
+            if self.telnet_is_connected():
+                resp = self.__telnet.read_until( '\n'.encode(self.charset), timeout)
+            else:
+                resp = None
+        except EOFError:
+            #telnet failed (not connected?)
+            self.__telnet = None #force to reconnect next time
+            resp = None
+        except Exception as e:
+            #something failed
+            self.logger.exception("Exception in response:")
+            resp = None
+        return resp
+
+    def telnet_parse_response(self, message):
+        """
+        Parse received message from telnet
+        @format: I=00000000000000000000000000000000&O=10000000111111111111111111111111&A0=1022&A1=1022&A2=1022&A3=1022&A4=0&A5=0&A6=0&A7=0&A8=0&A9=0&A10=0&A11=0&A12=0&A13=0&A14=0&A15=0&C1=12&C2=3&C3=11&C4=1&C5=12&C6=1&C7=16&C8=3
+        """
+        self.logger.info(message)
+        url = 'http://dummy/?' + message
+        params = urlparse.parse_qs(urlparse.urlparse(url).query, keep_blank_values=True)
+	output = {}
+	for param in params:
+            if param == 'I':
+                for i in range(len(params[param][0])):
+                    output['in%d'%i] = int(params[param][0][i])
+            elif param == 'O':
+                for i in range(len(params[param][0])):
+                    output['out%d'%i] = int(params[param][0][i])
+            elif param.startswith('A'):
+                output['an%s'%param.replace('A','')] = float(params[param][0])
+            elif param.startswith('C'):
+                output['cnt%s'%param.replace('C','')] = int(params[param][0])
+
+        #send result
+        if self.__callback!=None:
+            self.__callback(self.ip, output)
+
 
 class Ipx800v3HttpHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -73,18 +201,22 @@ class Ipx800v3(threading.Thread):
     PINGWATCHDOG = 'http://%s/protect/settings/ping.htm?'
     STATUS = 'http://%s/status.xml'
 
-    def __init__(self, port, ipxCallback):
+    def __init__(self, port, ipxCallback, push=False):
         """
         Constructor
-        @param port: local port for webserver (used to get M2M return infos)
+        @param port: local port for webserver (used to get M2M return infos) or cli port (telnet)
         @param ipxCallback: result of ipx board m2m push (params: ipxIp[str], url[str], error[str])
-        @param push: use push instead of telnet (push is less reactive than telnet)
+        @param cli_port: port to connect to telnet socket. If not provided, use http push that is less responsive than telnet
         """
         threading.Thread.__init__(self)
         self.logger = logging.getLogger('Ipx800v3')
         self.port = port
         self.__callback = ipxCallback
-        self.__server = Ipx800v3HttpServer(('', port), Ipx800v3HttpHandler, self.__pushCallback)
+        self.__push = push
+        if self.__push:
+            #use push instead of telnet
+            self.__server = Ipx800v3HttpServer(('', port), Ipx800v3HttpHandler, self.__pushCallback)
+        self.__telnet_threads = []
         self.__running = True
 
     def __del__(self):
@@ -97,14 +229,20 @@ class Ipx800v3(threading.Thread):
         """
         Ipx800v3 background process
         """
-        self.logger.debug('Serving at localhost:%d' % self.port)
         try:
             while self.__running:
-                self.__server.handle_request()
-            #self.__server.serve_forever()
+                if self.__push:
+                    #handle push requests
+                    self.logger.debug('Serving at localhost:%d' % self.port)
+                    self.__server.handle_request()
+
+                else:
+                    #no push configured, release cpu
+                    time.sleep(1)
+
         except Exception as e:
             #may be stopped
-            self.logger.debug('Exception in run(): %s' % str(e))
+            self.logger.exception('Exception in run():')
 
     def stop(self):
         """
@@ -112,10 +250,25 @@ class Ipx800v3(threading.Thread):
         """
         self.logger.debug('Stop')
         self.__running = False
-        if self.__server:
-            self.__server.socket.close()
-            #self.__server.shutdown()
-            sys.stdin.close()
+        if self.__push:
+            if self.__server:
+                #stop local webserver
+                self.__server.socket.close()
+                sys.stdin.close()
+        else:
+            #stop all telnet threads
+            for thread in self.__telnet_threads:
+                thread.stop()
+
+    def add_board(self, ip, port=9870):
+        """
+        Add board. This connect to telnet port and listen to callbacks
+        @param ip: ipx board ip
+        @param port: ipx telnet port [default 9870]
+        """
+	board = Ipx800v3Telnet(ip, port, self.__callback)
+        self.__telnet_threads.append(board)
+        board.start()
 
     def __pushCallback(self, board, url, error):
         """
@@ -199,7 +352,7 @@ class Ipx800v3(threading.Thread):
             #self.logger.debug('\n'.join(lines))
             return True, lines
         except Exception as e:
-            self.logger.error('Exception in sendUrl: %s [%s]' % (str(e), url))
+            self.logger.exception('Exception in sendUrl:')
         return False, []
 
     def __sendUrl(self, url, params):

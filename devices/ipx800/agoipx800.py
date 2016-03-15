@@ -1467,6 +1467,9 @@ try:
     units = agoclient.get_config_option("system", "units", "SI")
     logger.info('System units: %s' % units)
 
+    #create ipx800v3 object
+    ipx800v3 = Ipx800v3(IPX_WEBSERVER_PORT, ipxCallback)
+
     #add known devices
     if not loadDevices():
         quit('Unable to load devices. Exit now.')
@@ -1476,6 +1479,7 @@ try:
         #register board
         logger.info('  - add board [%s]' % ipxIp)
         client.add_device(ipxIp, 'ipx800v3board')
+        ipx800v3.add_board(ipxIp)
         for internalid in devices[ipxIp]:
             if devices[ipxIp][internalid]['type']==DEVICE_OUTPUT_SWITCH:
                 logger.info('    - add switch [%s]' % internalid)
@@ -1503,9 +1507,9 @@ try:
                 client.add_device(internalid, 'binarysensor')
             else:
                 logger.error('    - add nothing: unknown device type [%s]' % (internalid))
-        
-    #create ipx800v3 object
-    ipx800v3 = Ipx800v3(IPX_WEBSERVER_PORT, ipxCallback)
+
+    #start ipxv3
+    #XXX still useful?
     ipx800v3.start()
 
     #update counter and analog devices value
