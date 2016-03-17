@@ -3,7 +3,7 @@ commands:
     name: add association
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       group:
         name: group
@@ -21,7 +21,7 @@ commands:
     name: return associations for specified node
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       group:
         name: group
@@ -38,19 +38,19 @@ commands:
     name: heal a Zwave node
     paramters:
       node:
-        name: node
+        name: node id
         type: integer
   refreshnode:
     name: refresh network info about a Zwave node
     paramters:
       node:
-        name: node
+        name: node id
         type: integer
   removeassociation:
     name: remove association
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       group:
         name: group
@@ -72,7 +72,7 @@ commands:
     name: configure node parameter
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       param:
         name: parameter number
@@ -93,16 +93,16 @@ commands:
     name: launch command to test ZWave network 
     parameters:
       count:
-        name: count
+        name: number of test message to send
         type: integer
   testnode:
     name: launch command to test specified node
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       count:
-        name: count
+        name: number of test messages to send
         type: integer
 devicetypes:
   zwavecontroller:
