@@ -369,22 +369,31 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.sendCommand(content);
     };
 
-    this.execCommand = function()
-    {
-        var command = document.getElementById("commandSelect").options[document.getElementById("commandSelect").selectedIndex].value;
-        var content = {};
-        content.uuid = uuid;
-        content.command = command;
-        var params = document.getElementsByClassName("cmdParam");
-        for ( var i = 0; i < params.length; i++)
+
+    // If we have simple commands, add generic execCommand
+    var schematype;
+    var cmds;
+    if( (schematype = self.agocontrol.schema().devicetypes[self.devicetype]) &&
+        (cmds = schematype.commands) && cmds.length ) {
+        this.execCommand = function()
         {
-            content[params[i].name] = params[i].value;
-        }
-        self.agocontrol.sendCommand(content)
-            .then( function(res) {
-                notif.info("Done");
-            });
-    };
+            var command = document.getElementById("commandSelect").options[document.getElementById("commandSelect").selectedIndex].value;
+            var content = {};
+            content.uuid = uuid;
+            content.command = command;
+            var params = document.getElementsByClassName("cmdParam");
+            for ( var i = 0; i < params.length; i++)
+            {
+                content[params[i].name] = params[i].value;
+            }
+            self.agocontrol.sendCommand(content)
+                .then( function(res) {
+                    notif.info("Done");
+                });
+        };
+    }
+    else
+        this.execCommand = null;
 
     //add device function
     this.addDevice = function(content, callback)

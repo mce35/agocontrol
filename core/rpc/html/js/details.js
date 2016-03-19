@@ -227,12 +227,15 @@ Agocontrol.prototype.showCommandList = function(container, device)
     commandSelect.className = "form-control";
     var commandParams = document.createElement("p");
     commandParams.style['padding-top'] = '10px';
+
+    var schemaCommands = self.schema().commands;
     var type = device.devicetype;
     if( type && self.schema().devicetypes[type] )
     {
-        for ( var i = 0; i < self.schema().devicetypes[type].commands.length; i++)
+        var cmds = self.schema().devicetypes[type].commands;
+        for ( var i = 0; i < cmds.length; i++)
         {
-            commandSelect.options[i] = new Option(self.schema().commands[self.schema().devicetypes[type].commands[i]].name, self.schema().devicetypes[type].commands[i]);
+            commandSelect.options[i] = new Option(schemaCommands[cmds[i]].name, cmds[i]);
         }
     }
 
@@ -242,7 +245,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
         {
            return 0;
         }
-        var cmd = self.schema().commands[commandSelect.options[commandSelect.selectedIndex].value];
+        var cmd = schemaCommands[commandSelect.options[commandSelect.selectedIndex].value];
         commandParams.innerHTML = "";
         if( cmd.parameters!==undefined )
         {
