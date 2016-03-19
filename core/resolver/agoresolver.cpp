@@ -384,6 +384,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             if(name == "") {
                 // XXX: Should use deletedevice command instead
                 inv->deletedevice(content["device"]);
+                return responseSuccess();
             }else if (inv->setdevicename(content["device"], name) == 0)
             {
                 // update name in local device map
