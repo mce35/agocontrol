@@ -2,6 +2,31 @@
  * Extend Agocontrol object with device details functions
  */
 
+Agocontrol.templateExists = {};
+Agocontrol.prototype.checkTemplateExists = function(templateName) {
+    var cache = Agocontrol.templateExists,
+        cachedValue = cache[templateName];
+    if(cachedValue === true)
+        return Promise.resolve();
+    else if(cachedValue === false)
+        return Promise.reject();
+
+    var p = new Promise(function(resolve, reject) {
+        $.ajax({
+            type : 'HEAD',
+            url: templateName,
+            success: resolve,
+            error: reject
+        })
+    });
+
+    p.then(
+            function(){cache[templateName] = true;},
+            function(){cache[templateName] = false;});
+
+    return p;
+}
+
 //Opens details page for the given device
 Agocontrol.prototype.showDetails = function(device)
 {
@@ -18,19 +43,17 @@ Agocontrol.prototype.showDetails = function(device)
         }
     }
 
-    //Check if we have a template if yes use it otherwise fall back to default
-    $.ajax({
-        type : 'HEAD',
-        url : "templates/details/" + device.devicetype + ".html",
-        success : function()
-        {
-            self.doShowDetails(device, device.devicetype, environment);
-        },
-        error : function()
-        {
-            self.doShowDetails(device, "default", environment);
-        }
-    });
+    // Check if we have a template if yes use it otherwise fall back to default
+    var templateName = "templates/details/" + device.devicetype + ".html";
+    this.checkTemplateExists(templateName)
+        .then(function()
+            {
+                self.doShowDetails(device, device.devicetype, environment);
+            },
+            function()
+            {
+                self.doShowDetails(device, "default", environment);
+            });
 };
 
 //Shows the detail page of a device
