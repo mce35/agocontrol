@@ -347,3 +347,19 @@ function getDeviceSize()
     return device;
 };
 
+/**
+ * Extend Bootstrap's "modal" module with enter key support.
+ * If enter is pressed, a 'defaultAction' event is submitted to the dialog element.
+ *
+ * Set data-bind="event:{defaultAction: doDeleteDevice}" on the modal root element.
+ */
+$.fn.modal.Constructor.prototype.escape = function(){
+    if (this.isShown && this.options.keyboard) {
+        this.$element.on('keydown.dismiss.bs.modal', $.proxy(function (e) {
+            e.which == 27 && this.hide();
+            e.which == 13 && this.$element.trigger('defaultAction');
+        }, this))
+    } else if (!this.isShown) {
+        this.$element.off('keydown.dismiss.bs.modal')
+    }
+}
