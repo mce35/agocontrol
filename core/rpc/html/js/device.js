@@ -1,7 +1,7 @@
 /**
  * Device class used by app.js and others for representing and interaction
  * with devices
- * 
+ *
  * @param obj
  * @param uuid
  * @returns {device}
@@ -166,18 +166,14 @@ function device(agocontrol, obj, uuid) {
                 {
                     unit = self.agocontrol.schema().units[self.values()[k].unit].label;
                 }
-                //fix unit if nothing specified
-                if( $.trim(unit).length==0 )
-                {
-                    unit = '-';
-                }
+
                 if( self.values()[k].level!==null && self.values()[k].level!==undefined )
                 {
                     result.push({
                         name : k.charAt(0).toUpperCase() + k.substr(1),
                         level : self.values()[k].level,
                         unit : unit,
-                        levelUnit : ''+self.values()[k].level+unit
+                        levelUnit : ''+self.values()[k].level + (unit? ' '+unit:'')
                     });
                 }
                 else if( self.values()[k].latitude && self.values()[k].longitude )
@@ -192,7 +188,7 @@ function device(agocontrol, obj, uuid) {
             }
             return result;
         });
-   
+
         //add function to get rrd graph
         this.getRrdGraph = function(uuid, start, end)
         {
@@ -476,7 +472,7 @@ function device(agocontrol, obj, uuid) {
                         self.cameraThumb(noFrame);
                     });
             };
-    
+
             //by default get dashboard widget background, but no refresh available
             self.getThumbFrame();
         }
