@@ -1,2 +1,2 @@
 job1:
-  script: "cmake . && make -j8"
+  script: "cmake . && make -j10"
