@@ -5,9 +5,7 @@
 #include <sstream>
 #include <fstream>
 
-#ifndef __FreeBSD__
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 

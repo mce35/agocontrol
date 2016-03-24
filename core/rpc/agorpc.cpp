@@ -21,9 +21,7 @@
 #include <math.h>
 
 #include <termios.h>
-#ifndef __FreeBSD__
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>

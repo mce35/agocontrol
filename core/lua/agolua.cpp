@@ -91,7 +91,6 @@ public:
         {}
 
     // called from global static wrapper functions, thus public
-    int luaAddDevice(lua_State *l);
     int luaSendMessage(lua_State *l);
     int luaSetVariable(lua_State *L);
     int luaGetVariable(lua_State *L);
@@ -406,14 +405,7 @@ void AgoLua::pullTableToMap(lua_State *L, qpid::types::Variant::Map& table)
         {
             AGO_TRACE() << "Pull '" << key << "' as BOOLEAN";
             bool value = lua_toboolean(L, -1);
-            if( value )
-            {
-                table[key] = true;
-            }
-            else
-            {
-                table[key] = false;
-            }
+            table[key] = value;
         }
         else if( lua_isnoneornil(L, -1) )
         {
@@ -451,14 +443,7 @@ void AgoLua::pullTableToList(lua_State *L, qpid::types::Variant::List& list)
         {
             AGO_TRACE() << "Pull list value as BOOLEAN";
             bool value = lua_toboolean(L, -1);
-            if( value )
-            {
-                list.push_back(true);
-            }
-            else
-            {
-                list.push_back(false);
-            }
+            list.push_back(value);
         }
         else if( lua_isnoneornil(L, -1) )
         {
@@ -583,8 +568,6 @@ int AgoLua::luaGetVariable(lua_State *L)
     boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
-        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
-
         //get variable name
         variableName = std::string(lua_tostring(L,1));
 
@@ -796,8 +779,6 @@ int AgoLua::luaGetDeviceName(lua_State* L)
     boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
-        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
-
         //get uuid
         uuid = std::string(lua_tostring(L,1));
         if( uuid.length()>0 && !inventory["devices"].isVoid() )
@@ -970,7 +951,7 @@ void AgoLua::purgeScripts()
     AGO_TRACE() << "Config scripts: " << configScripts;
 
     //purge obsolete infos
-    bool found = false;
+    bool found;
     for( qpid::types::Variant::List::iterator it=configScripts.begin(); it!=configScripts.end(); it++ )
     {
         found = false;
