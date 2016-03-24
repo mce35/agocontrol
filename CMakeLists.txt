@@ -70,7 +70,10 @@ include_directories("${LOCALDIR}/include/libxml2")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-# JSONCpp is used globally (agoclient.h)
+# JSONCpp is used by all components (via agoclient.h)
+# Note that jsoncpp is usually installed under .../include/jsoncpp, not directly into
+# include. But this is not always true, i.e. Brew on Mac does not install it there.
+# Do not include 'jsoncpp/' in C++ include directives!
 set (JSONCPP_ROOT_DIR "${LOCALDIR}/lib")
 set (JSONCPP_INCLUDE_DIR "${LOCALDIR}/include/jsoncpp")
 

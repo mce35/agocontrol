@@ -8,7 +8,7 @@
 
 #include <boost/bind.hpp>
 
-#include <jsoncpp/json/reader.h>
+#include <json/reader.h>
 #include "agoclient.h"
 
 using namespace std;

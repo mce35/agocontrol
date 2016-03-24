@@ -15,8 +15,8 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include <jsoncpp/json/writer.h>
-#include <jsoncpp/json/reader.h>
+#include <json/writer.h>
+#include <json/reader.h>
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <rrd.h>
