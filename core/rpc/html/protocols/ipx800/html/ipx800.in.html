@@ -13,15 +13,32 @@
     <!-- content -->
     <section class="content">
         <!-- main actions -->
-        <div class="row agorowbottom">
+        <div class="row">
             <div class="col-xs-12">
-                <form class="form-inline">
+                <form class="form-horizontal">
                     <div class="form-group">
-                        <_label data-translateable="true">New board IP</_label>
-                        <input type="text" data-translateable="true" data-bind="value: boardIp" class="form-control" _placeholder="Board IP"></input>
+                        <_label data-translateable="true" class="col-sm-3 control-label">New board IP</_label>
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <input type="text" data-translateable="true" data-bind="value: boardIp" class="form-control" _placeholder="Board IP"></input>
+                                <span class="input-group-btn">
+                                    <_button type="submit" data-translateable="true" data-bind="click: addBoard" class="btn btn-primary">Add board</_button>
+                                </span>
+                            </div>
+                        </div>
                     </div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <form class="form-horizontal">
                     <div class="form-group">
-                        <_button type="submit" data-translateable="true" data-bind="click: addBoard" class="btn btn-primary">Add board</_button>
+                        <_label data-translateable="true" class="col-sm-3 control-label">Select a board</_label>
+                        <div class="col-sm-3">
+                            <select data-bind="options:boards, value:selectedBoard" class="form-control">
+                            </select>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -35,6 +52,7 @@
                 <li><_a href="#tabs-analogs" data-translateable="true" class="en-tape">Analogs</_a></li>
                 <li><_a href="#tabs-counters" data-translateable="true" class="en-chart-bar">Counters</_a></li>
                 <li><_a href="#tabs-links" data-translateable="true" class="en-link">Links</_a></li>
+                <li><_a href="#tabs-devices" data-translateable="true" class="en-doc">Devices</_a></li>
                 <li><_a href="#tabs-board" data-translateable="true" class="en-doc">Board</_a></li>
             </ul>
             <div class="tab-content">
@@ -181,8 +199,17 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label data-translateable="true" class="col-sm-4 control-label">Digital input type</label>
+                                <div class="col-sm-6">
+                                    <select data-bind="value: selectedDigitalType" class="form-control">
+                                        <_option value="dbinary">Binary</_option>
+                                        <_option value="dpushbutton">Pushbutton</_option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <div class="col-sm-offset-4 col-sm-6">
-                                    <_button type="button" class="btn btn-primary" data-translateable="true" data-bind="click: addDigital">Add device</_button>
+                                    <_button type="button" data-translateable="true" data-bind="click: addDigital" class="btn btn-primary">Add device</_button>
                                 </div>
                             </div>
                         </form>
@@ -264,6 +291,11 @@
                                         <option value="1">A2</option>
                                         <option value="2">A3</option>
                                         <option value="3">A4</option>
+                                        <option value="4">A4</option>
+                                        <option value="5">A5</option>
+                                        <option value="6">A6</option>
+                                        <option value="7">A7</option>
+                                        <option value="8">A8</option>
                                     </select>
                                 </div>
                             </div>
@@ -294,6 +326,11 @@
                                         <option value="0">C1</option>
                                         <option value="1">C2</option>
                                         <option value="2">C3</option>
+                                        <option value="3">C4</option>
+                                        <option value="4">C5</option>
+                                        <option value="5">C6</option>
+                                        <option value="6">C7</option>
+                                        <option value="7">C8</option>
                                     </select>
                                 </div>
                             </div>
@@ -323,20 +360,38 @@
                     </fieldset>
                 </div>
 
+                <!-- device list -->
+                <div id="tabs-devices" class="tab-pane fade">
+                    <script type="text/html" id="rowTemplate">
+                        <ko opts="if:name">
+                        <td data-bind="text:name, attr:{'data-uuid':uuid}" class="change_name"></td>
+                        </ko>
+                        <ko opts="ifnot:name">
+                        <_td data-bind="attr:{'data-uuid':uuid}" data-translateable="true" class="change_name">unset</_td>
+                        </ko>
+                        <ko opts="if:room">
+                        <td data-bind="text:room, attr:{'data-uuid':uuid}" class="change_room"></td>
+                        </ko>
+                        <ko opts="ifnot:room">
+                        <_td data-bind="attr:{'data-uuid':uuid}" data-translateable="true" class="change_room">unset</_td>
+                        </ko>
+                        <td data-bind="text: type"></td>
+                        <td data-bind="text: inputs"></td>
+                        <td data-bind="attr: {'title': internalid }, text: internalid"></td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteDevice">
+                                    <span class="en-cancel"></span>
+                                </button>
+                            </div>
+                        </td>
+                    </script>
+                    <div data-bind="agoGrid:grid"></div>
+                </div>
+                
                 <!-- board config -->
                 <div id="tabs-board" class="tab-pane fade">
                     <form class="form-horizontal">
-                        <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Delete device</_label>
-                            <div class="col-sm-6">
-                                <select data-bind="options:allDevices, optionsText:'name', value:selectedDeviceToDelete" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-offset-4 col-sm-6">
-                                <_button type="button" data-bind="click:deleteDevice" class="btn btn-primary" data-translateable="true">Delete</_button>
-                            </div>
-                        </div>
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Force saving board config</_label>
                             <div class="col-sm-6">
