@@ -95,6 +95,7 @@ devicetypes:
     name: Pushbutton
     description: momentary switch
     commands: [push]
+    events: [event.device.push, event.device.doublepush, event.device.triplepush]
   hdmicec:
     name: HDMI CEC interface
     description: control devices on the HDMI bus
@@ -269,6 +270,12 @@ events:
   event.environment.co2changed:
     description: CO2 level has changed
     parameters: [level, unit, uuid]
+  event.device.push:
+    description: single push
+  event.device.doublepush:
+    description: double push
+  event.device.triplepush:
+    description: triple push
 units:
   degC:
     label: "°C"
