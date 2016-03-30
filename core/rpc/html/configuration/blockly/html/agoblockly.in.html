@@ -33,6 +33,7 @@
     </div>
     <script type="text/html" id="rowTemplate">
         <td data-bind="attr: {'data-oldname': name}, text: name" class="rename_script"/>
+        <td data-bind="text: enabled" />
         <td>
             <div class="btn-group">
                 <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiLoadScript.bind($data,name)" data-translateable="true" _alt="Load" _title="Load">
@@ -43,6 +44,9 @@
                 </button>
                 <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiExportScript.bind($data,name)" data-translateable="true" _alt="Export" _title="Export">
                     <span class="en-up"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiEnableScript.bind($data,name)" data-translateable="true" _alt="Enable/disable script" _title="Enable/disable script">
+                    <span class="en-lock"></span>
                 </button>
             </div>
         </td>
@@ -362,6 +366,8 @@
         <_span data-translateable="true" id="nd">Unable to delete script.</_span>
         <_span data-translateable="true" id="rss">Script renamed successfully.</_span>
         <_span data-translateable="true" id="rsf">Script not renamed.</_span>
+        <_span data-translateable="true" id="ess">Script enabled/disabled successfully.</_span>
+        <_span data-translateable="true" id="esf">Unable to enable or disable script.</_span>
     </section>
 
     <!--title-->

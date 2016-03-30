@@ -80,6 +80,7 @@ private:
     bool canExecuteScript(qpid::types::Variant::Map content, const fs::path &script);
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
     void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+    bool enableScript(const string& script, uint8_t enabled);
 
     void setupApp();
 
@@ -1112,6 +1113,36 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
 }
 
 /**
+ * Enable/disable specified script
+ * @param script: script full path
+ * @param enable: enable(1) or disabled(0)
+ */
+bool AgoLua::enableScript(const string& script, uint8_t enabled)
+{
+    boost::lock_guard<boost::mutex> lock(mutexScriptInfos);
+
+    //get script infos
+    qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
+    if( scripts[script].isVoid() )
+    {
+        //no script infos yet, nothing to do here
+        AGO_DEBUG() << "enableScript: no script infos found";
+    }
+    else
+    {
+        //update enable flag
+        qpid::types::Variant::Map infos = scripts[script].asMap();
+        infos["enabled"] = enabled;
+        scripts[script] = infos;
+        scriptsInfos["scripts"] = scripts;
+        variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
+        AGO_DEBUG() << "enableScript: enabled flag for script '" << script << "' updated to " << (int)enabled;
+    }
+
+    return true;
+}
+
+/**
  * Execute LUA script (blocking).
  * Called in separate thread.
  */
@@ -1183,10 +1214,16 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
             }
         }
     }
+
     if( parseScript )
     {
         AGO_DEBUG() << "Update script infos (" << script << ")";
         infos["updated"] = (int32_t)updated;
+        if( infos["enabled"].isVoid() )
+        {
+            //append enabled infos
+            infos["enabled"] = (uint8_t)1;
+        }
         qpid::types::Variant::List events;
         searchEvents(script, &events);
         infos["events"] = events;
@@ -1204,32 +1241,53 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
         }
     }
 
-    //check if current triggered event is caught in script
-    bool executeScript = false;
-    if( filterByEvents==1 )
+    bool executeScript = true;
+
+    //check if script is enabled
+    if( !infos["enabled"].isVoid() )
     {
-        qpid::types::Variant::List events = infos["events"].asList();
-        if( events.size()>0 )
+        uint8_t enabled = infos["enabled"].asUint8();
+        if( enabled==0 )
         {
-            for( qpid::types::Variant::List::iterator it=events.begin(); it!=events.end(); it++ )
+            AGO_DEBUG() << "Script '" << script << "' disabled by user";
+            executeScript = false;
+        }
+    }
+
+    //check if current triggered event is caught in script
+    if( executeScript )
+    {
+        executeScript = false;
+        if( filterByEvents==1 )
+        {
+            qpid::types::Variant::List events = infos["events"].asList();
+            if( events.size()>0 )
             {
-                if( (*it)==content["subject"] )
+                for( qpid::types::Variant::List::iterator it=events.begin(); it!=events.end(); it++ )
                 {
-                    executeScript = true;
-                    break;
+                    if( (*it)==content["subject"] )
+                    {
+                        executeScript = true;
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                //no events detected in script, trigger it everytime :S
+                executeScript = true;
             }
         }
         else
         {
-            //no events detected in script, trigger it everytime :S
+            //config option disable events filtering
             executeScript = true;
         }
-    }
-    else
-    {
-        //config option disable events filtering
-        executeScript = true;
+
+        if( !executeScript )
+        {
+            AGO_DEBUG() << "Script '" << script << "' disabled by event";
+        }
     }
 
     return executeScript;
@@ -1248,6 +1306,8 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         if (content["command"]=="getscriptlist")
         {
             qpid::types::Variant::List scriptlist;
+            qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
+            qpid::types::Variant::Map infos;
             if (fs::exists(scriptdir))
             {
                 fs::recursive_directory_iterator it(scriptdir);
@@ -1256,12 +1316,35 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 {
                     if (fs::is_regular_file(*it) && (it->path().extension().string() == ".lua") && (it->path().filename().string() != "helper.lua"))
                     {
-                        scriptlist.push_back(qpid::types::Variant(it->path().stem().string()));
+                        qpid::types::Variant::Map item;
+                        //get script name
+                        fs::path script = construct_script_name(it->path().filename());
+                        string scriptName = it->path().stem().string();
+                        item["name"] = scriptName;
+                        //get script infos
+                        if( !scripts[script.string()].isVoid() )
+                        {
+                            infos = scripts[script.string()].asMap();
+                            if( !infos["enabled"].isVoid() )
+                            {
+                                uint8_t enabled = infos["enabled"].asUint8();
+                                item["enabled"] = enabled;
+                            }
+                            else
+                            {
+                                item["enabled"] = 1;
+                            }
+                        }
+                        else
+                        {
+                            item["enabled"] = 1;
+                        }
+                        scriptlist.push_back(item);
                     }
                     ++it;
                 }
             }
-            returnData["scriptlist"]=scriptlist;
+            returnData["scriptlist"] = scriptlist;
             return responseSuccess(returnData);
         }
         else if (content["command"] == "getscript")
@@ -1462,6 +1545,25 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
             returnData["email"] = getConfigOption("email", "", "system", "system");
             returnData["phone"] = getConfigOption("phone", "", "system", "system");
             return responseSuccess(returnData);
+        }
+        else if( content["command"]=="enablescript" )
+        {
+            //enable/disable script
+            AGO_DEBUG() << "enable/disable script command received: " << content;
+            checkMsgParameter(content, "enabled", VAR_UINT8);
+            checkMsgParameter(content, "name", VAR_STRING);
+
+            fs::path input(content["name"]);
+            fs::path script = construct_script_name(input.stem());
+            uint8_t enabled = content["enabled"].asUint8();
+            if( enableScript(script.string(), enabled) )
+            {
+                return responseSuccess();
+            }
+            else
+            {
+                return responseFailed("Unable to enable/disable script");
+            }
         }
         else
         {

@@ -311,9 +311,12 @@ function agoBlocklyPlugin(devices, agocontrol)
                 for( var i=0; i<res.data.scriptlist.length; i++ )
                 {
                     //only keep agoblockly scripts
-                    if( res.data.scriptlist[i].indexOf('blockly_')===0 )
+                    if( res.data.scriptlist[i].name.indexOf('blockly_')===0 )
                     {
-                        self.availableScripts.push({'name':res.data.scriptlist[i].replace('blockly_','')});
+                        self.availableScripts.push({
+                            'name':res.data.scriptlist[i].name.replace('blockly_',''),
+                            'enabled':res.data.scriptlist[i].enabled==1 ? 'enabled' : 'disabled'
+                        });
                     }
                 }
 
@@ -400,6 +403,26 @@ function agoBlocklyPlugin(devices, agocontrol)
                 notif.error('#rsf');
             });
     };
+
+    //enable/disable a script
+    self.enableScript = function(script, enable)
+    {
+        var content = {
+            uuid: self.luaControllerUuid,
+            command: 'enablescript',
+            name: 'blockly_'+script,
+            enabled: enable ? 1 : 0
+        };
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                notif.success('#ess');
+                self.loadScripts();
+            })
+            .catch(function(err) {
+                notif.error('#esf');
+            });
+    };
+
 
     //Add default blocks
     self.addDefaultBlocks = function()
@@ -761,6 +784,7 @@ function agoBlocklyPlugin(devices, agocontrol)
         data: self.availableScripts,
         columns: [
             {headerText:'Script', rowText:'name'},
+            {headerText:'Enabled', rowText:'enabled'},
             {headerText:'Actions', rowText:''}
         ],
         rowCallback: self.uiRenameScript,
@@ -777,6 +801,20 @@ function agoBlocklyPlugin(devices, agocontrol)
                 self.loadScripts();
             });
         }
+    };
+
+    //enable/disable script
+    self.uiEnableScript = function(script)
+    {
+        for( var i=0; i<self.availableScripts().length; i++ )
+        {
+            if( self.availableScripts()[i].name == script )
+            {
+                var enabled = self.availableScripts()[i].enabled();
+                self.enableScript(script, !enabled);
+            }
+        }
+
     };
 
     //export script
