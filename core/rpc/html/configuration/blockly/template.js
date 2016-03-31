@@ -810,7 +810,7 @@ function agoBlocklyPlugin(devices, agocontrol)
         {
             if( self.availableScripts()[i].name == script )
             {
-                var enabled = self.availableScripts()[i].enabled();
+                var enabled = self.availableScripts()[i].enabled;
                 self.enableScript(script, !enabled);
             }
         }
