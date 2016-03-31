@@ -566,19 +566,19 @@ bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant:
                 }
                 else
                 {
-                    AGO_TRACE() << "I_LOG_MESSAGE send payload: no payload in message? [" << temp << "]";
+                    AGO_DEBUG() << "I_LOG_MESSAGE send payload: no payload in message? [" << temp << "]";
                     result = false;
                 }
             }
             else
             {
-                AGO_TRACE() << "I_LOG_MESSAGE send payload: infos string is not valid [" << allItems[2] << "]";
+                AGO_DEBUG() << "I_LOG_MESSAGE send payload: infos string is not valid [" << allItems[2] << "]";
                 result = false;
             }
         }
         else
         {
-            AGO_TRACE() << "I_LOG_MESSAGE send payload is not valid";
+            AGO_DEBUG() << "I_LOG_MESSAGE send payload is not valid";
             result = false;
         }
     }
@@ -588,11 +588,21 @@ bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant:
         //format: read: <sender>-<last>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>:<payload>
         items["type"] = "read";
         std::vector<std::string> allItems = split(payload, ':');
+        //allItems[0] = "read"
+        //allItems[1] = " <sender>-<last>-<destination> s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>"
+        //allItems[2] = "<payload>"
         if( allItems.size()>=3 )
         {
+            //prepare data
             string temp = allItems[1];
+            //remove first space character before route info
             boost::algorithm::trim(temp);
-            std::vector<std::string> routeItems = split(temp, '-');
+            std::vector<std::string> subItems = split(temp, ' ');
+            //subItems[0] = "<sender>-<last>-<destination>"
+            //subItems[1] = "s=<sensor>,c=<command>,t=<type>,pt=<payload type>,l=<length>,sg=<signed>"
+            
+            //get route
+            std::vector<std::string> routeItems = split(subItems[0], '-');
             if( routeItems.size()==3 )
             {
                 items["sender"] = routeItems[0];
@@ -601,60 +611,67 @@ bool AgoMySensors::splitInternalLogMessage(string payload, qpid::types::Variant:
             }
             else
             {
-                AGO_TRACE() << "I_LOG_MESSAGE read payload: route string is not valid [" << allItems[1] << "]";
+                AGO_DEBUG() << "I_LOG_MESSAGE read payload: route string is not valid [" << allItems[1] << "]";
                 result = false;
             }
 
-            std::vector<std::string> infosItems = split(allItems[2], ',');
+            //get log infos
+            std::vector<std::string> infosItems = split(subItems[1], ',');
             if( infosItems.size()==6 )
             {
-                //destination child is item #0 (s=<sensor>)
+                //s=<sensor>
                 string temp = infosItems[0];
                 boost::replace_all(temp, "s=", "");
                 items["sensor"] = temp;
+
+                //c=<command>
                 temp = infosItems[1];
                 boost::replace_all(temp, "c=", "");
                 items["command"] = temp;
+
+                //t=<type>
                 temp = infosItems[2];
                 boost::replace_all(temp, "t=", "");
                 items["commandtype"] = temp;
+
+                //pt=<payload type>
                 temp = infosItems[3];
                 boost::replace_all(temp, "pt=", "");
                 items["payloadtype"] = temp;
+
+                //l=<length>
                 temp = infosItems[4];
                 boost::replace_all(temp, "l=", "");
                 items["length"] = temp;
+
+                //above v1.5 signed info exists
                 temp = infosItems[5];
-                std::vector<std::string> temps = split(temp, ':');
-                if( temps.size()==2 )
+                if( temp.length()>0 )
                 {
-                    temp = temps[0];
+                    //sg=<signed>
                     boost::replace_all(temp, "sg=", "");
                     items["signed"] = temp;
-                }
-                else
-                {
-                    AGO_TRACE() << "I_LOG_MESSAGE read payload: no payload in message? [" << temp << "]";
-                    result = false;
                 }
             }
             else
             {
-                AGO_TRACE() << "I_LOG_MESSAGE read payload: infos string is not valid [" << allItems[2] << "]";
+                AGO_DEBUG() << "I_LOG_MESSAGE read payload: infos string is not valid [" << allItems[2] << "]";
                 result = false;
             }
         }
         else
         {
-            AGO_TRACE() << "I_LOG_MESSAGE read payload is not valid";
+            AGO_DEBUG() << "I_LOG_MESSAGE read payload is not valid";
             result = false;
         }
     }
     else
     {
-        AGO_TRACE() << "I_LOG_MESSAGE is neither send nor read message";
+        AGO_DEBUG() << "I_LOG_MESSAGE is neither send nor read message";
         result = false;
     }
+
+    AGO_TRACE() << "splitInternalLogMessage found items: " << items;
 
     return result;
 }
