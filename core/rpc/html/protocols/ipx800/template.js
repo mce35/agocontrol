@@ -40,6 +40,7 @@ function ipxConfig(agocontrol)
     self.outputDevices = ko.observableArray([]);
     self.digitalDevices = ko.observableArray([]);
     self.binaryDevices = ko.observableArray([]);
+    self.pushbuttonDevices = ko.observableArray([]);
     self.analogDevices = ko.observableArray([]);
     self.counterDevices = ko.observableArray([]);
     self.selectedDeviceToForce = ko.observable();
@@ -67,7 +68,6 @@ function ipxConfig(agocontrol)
     //edit row
     self.makeEditable = function(item, td, tr)
     {
-        console.log('click click');
         if( $(td).hasClass('change_name') )
         {
             $(td).editable(function(value, settings) {
@@ -252,6 +252,7 @@ function ipxConfig(agocontrol)
         self.outputDevices.removeAll();
         self.digitalDevices.removeAll();
         self.binaryDevices.removeAll();
+        self.pushbuttonDevices.removeAll();
         self.analogDevices.removeAll();
         self.counterDevices.removeAll();
         self.allDevices.removeAll();
@@ -290,6 +291,10 @@ function ipxConfig(agocontrol)
             if( devices.digitals[i].type=='dbinary' )
             {
                 self.binaryDevices.push(dev);
+            }
+            else if( devices.digitals[i].type=='dpushbutton' )
+            {
+                self.pushbuttonDevices.push(dev);
             }
             self.allDevices.push(dev);
         }
@@ -355,16 +360,15 @@ function ipxConfig(agocontrol)
                 {
                     if( res.result.error===0 )
                     {
-                        //console.log('STATUS res:');
-                        //console.log(res);
+                        //console.log('STATUS res:', res);
                         $('#currentoutputs').html(res.result.status.outputs);
                         $('#currentanalogs').html(res.result.status.analogs);
                         $('#currentcounters').html(res.result.status.counters);
                         $('#currentdigitals').html(res.result.status.digitals);
 
-                        console.log('BOARD DEVICES:', res.result.devices);
+                        //console.log('BOARD DEVICES:', res.result.devices);
                         self.updateDevices(res.result.devices, res.result.links);
-                        console.log("ALLDEVICES", self.allDevices());
+                        //console.log("ALLDEVICES", self.allDevices());
                     }
                     else
                     {
@@ -478,8 +482,7 @@ function ipxConfig(agocontrol)
             self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
-                    //console.log('BOARD DEVICES:');
-                    //console.log(res.result.devices);
+                    //console.log('BOARD DEVICES:', res.result.devices);
                     
                     if( res.result.error===0 )
                     {
