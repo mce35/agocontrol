@@ -1533,8 +1533,16 @@ void AgoMySensors::processMessageV13(int radioId, int childId, int messageType, 
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
                     break;
                 case V_RAIN_V13:
-                    break;
                 case V_RAINRATE_V13:
+                    valid = 1;
+                    if (units == "M")
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.rainchanged", payload.c_str(), "mm");
+                    }
+                    else
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.rainchanged", payload.c_str(), "inches");
+                    }
                     break;
                 case V_WIND_V13:
                     break;
@@ -2012,8 +2020,16 @@ void AgoMySensors::processMessageV14(int nodeId, int childId, int messageType, i
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
                     break;
                 case V_RAIN_V14:
-                    break;
                 case V_RAINRATE_V14:
+                    valid = VALID_SAVE;
+                    if (units == "M")
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.rainchanged", payload.c_str(), "mm");
+                    }
+                    else
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.rainchanged", payload.c_str(), "inches");
+                    }
                     break;
                 case V_WIND_V14:
                     break;
@@ -2603,8 +2619,16 @@ void AgoMySensors::processMessageV15(int nodeId, int childId, int messageType, i
                     agoConnection->emitEvent(internalid.c_str(), "event.environment.forecastchanged", payload.c_str(), "");
                     break;
                 case V_RAIN_V15:
-                    break;
                 case V_RAINRATE_V15:
+                    valid = VALID_SAVE;
+                    if (units == "M")
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.rainchanged", payload.c_str(), "mm");
+                    }
+                    else
+                    {
+                        agoConnection->emitEvent(internalid.c_str(), "event.environment.rainchanged", payload.c_str(), "inches");
+                    }
                     break;
                 case V_WIND_V15:
                     break;
