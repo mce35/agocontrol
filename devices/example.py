@@ -127,8 +127,8 @@ class AgoExample(agoclient.AgoApp):
         # for the device that you did specifiy when using add_device()
 
         # we add a switch and a dimmer
-        self.connection.add_device("123", "dimmer")
-        self.connection.add_device("124", "switch")
+        self.connection.add_device("123", "dimmer", 'example-dimmer')
+        self.connection.add_device("124", "switch", 'example-switch')
 
         # for our threading example in the next section we also add a binary sensor:
         self.connection.add_device("125", "binarysensor")

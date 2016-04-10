@@ -683,15 +683,31 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
         string uuid = content["uuid"];
         if (uuid != "")
         {
+            bool wasKnown = inv->isDeviceRegistered(uuid);
+
             // AGO_TRACE() << "preparing device: uuid=" << uuid;
             Variant::Map device;
-            Variant::Map values;
-            device["devicetype"]=content["devicetype"].asString();
-            device["internalid"]=content["internalid"].asString();
-            device["handled-by"]=content["handled-by"].asString();
+            device["devicetype"] = content["devicetype"].asString();
+            device["internalid"] = content["internalid"].asString();
+            device["handled-by"] = content["handled-by"].asString();
+
             // AGO_TRACE() << "getting name from inventory";
-            device["name"]=inv->getdevicename(content["uuid"].asString());
-            if (device["name"].asString() == "" && device["devicetype"] == "agocontroller") device["name"]="agocontroller";
+            device["name"] = inv->getDeviceName(uuid);
+
+            if (device["name"].asString() == "") {
+                if (device["devicetype"] == "agocontroller") {
+                    device["name"] = "agocontroller";
+                }
+                else if (content.count("initial_name") && !wasKnown)
+                {
+                    // First seen, set name.
+                    std::string name(content["initial_name"].asString());
+
+                    if(inv->setDeviceName(content["device"], name)) {
+                        device["name"] = name;
+                    }
+                }
+            }
             device["name"].setEncoding("utf8");
 
             // AGO_TRACE() << "getting room from inventory";
@@ -714,6 +730,7 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
             else
             {
                 // device is newly announced, set default state and values
+                Variant::Map values;
                 uint64_t timestamp;
                 timestamp = time(NULL);
                 device["lastseen"] = timestamp;
@@ -886,7 +903,7 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
             }
             else
             {
-                //add paramters field
+                //add parameters field
                 AGO_TRACE() << "add missing parameters field";
                 qpid::types::Variant::Map parameters;
                 parameters["staleTimeout"] = (uint64_t)0;

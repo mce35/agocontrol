@@ -176,7 +176,7 @@ class AgoConnection:
         except ValueError, exception:  # includes simplejson error
             self.log.error("Cannot decode uuid map from file: %s", exception)
 
-    def emit_device_announce(self, uuid, device):
+    def emit_device_announce(self, uuid, device, initial_name):
         """Send a device announce event, this will
         be honored by the resolver component.
         You can find more information regarding the resolver
@@ -186,6 +186,10 @@ class AgoConnection:
         content["uuid"] = uuid
         content["internalid"] = device["internalid"]
         content["handled-by"] = self.instance
+
+        if initial_name != None:
+            content["initial_name"] = initial_name
+
         self.send_message("event.device.announce", content)
 
     def emit_device_discover(self, uuid, device):
@@ -213,20 +217,23 @@ class AgoConnection:
         content["stale"] = stale
         self.send_message("event.device.stale", content)
 
-    def add_device(self, internalid, devicetype):
+    def add_device(self, internalid, devicetype, initial_name=None):
         """Add a device. Announcement to ago control will happen
         automatically. Commands to this device will be dispatched
         to the command handler.
-        The devicetype corresponds to an entry in the schema."""
-        if (self.internal_id_to_uuid(internalid) is None):
+        The devicetype corresponds to an entry in the schema.
+        If an initial_name is set, the device will be given that name when it's first seen."""
+        if self.internal_id_to_uuid(internalid) is None:
             self.uuids[str(uuid4())] = internalid
             self.store_uuid_map()
+
         device = {}
         device["devicetype"] = devicetype
         device["internalid"] = internalid
         device["stale"] = 0
+
         self.devices[self.internal_id_to_uuid(internalid)] = device
-        self.emit_device_announce(self.internal_id_to_uuid(internalid), device)
+        self.emit_device_announce(self.internal_id_to_uuid(internalid), device, initial_name)
 
     def remove_device(self, internalid):
         """Remove a device."""

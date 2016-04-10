@@ -88,7 +88,7 @@ namespace agocontrol {
         bool filterCommands;
         boost::function< qpid::types::Variant::Map (qpid::types::Variant::Map) > commandHandler;
         boost::function< void (std::string, qpid::types::Variant::Map) > eventHandler;
-        bool emitDeviceAnnounce(const char *internalId, const char *deviceType);
+        bool emitDeviceAnnounce(const char *internalId, const char *deviceType, const char*initialName);
         bool emitDeviceDiscover(const char *internalId, const char *deviceType);
         bool emitDeviceRemove(const char *internalId);
     public:
@@ -96,7 +96,7 @@ namespace agocontrol {
         ~AgoConnection();
         void run();
         void shutdown();
-        bool addDevice(const char *internalId, const char *deviceType);
+        bool addDevice(const char *internalId, const char *deviceType, const char*initialName = NULL);
         bool addDevice(const char *internalId, const char *deviceType, bool passuuid);
         bool removeDevice(const char *internalId);
         bool suspendDevice(const char* internalId);
