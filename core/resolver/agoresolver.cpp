@@ -564,7 +564,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                         content["value"].asString().c_str(),
                         content["app"].asString().c_str()))
             {
-                AGO_INFO() << "Changed config option by request:" 
+                AGO_INFO() << "Changed config option by request:"
                     << " section = " << content["section"].asString()
                     << " option = " << content["option"].asString()
                     << " value = " << content["value"].asString()
@@ -737,7 +737,7 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
                 device["state"] = "0";
                 device["state"].setEncoding("utf8");
                 device["values"] = values;
-                device["stale"] = (uint8_t)0;
+                device["stale"] = 0;
 
                 if( !deviceparameters[uuid].isVoid() )
                 {
@@ -845,11 +845,12 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
                 if( !parameters["staleTimeout"].isVoid() )
                 {
                     int64_t timeout = parameters["staleTimeout"].asUint64();
-                    if( (*device)["stale"].getType()!=VAR_UINT8 )
-                    {
+                    if(!qpid::types::isIntegerType((*device)["stale"].getType())) {
                         // Shouldn't happen unless we have a bug somewhere.
-                        AGO_WARNING() << "Unexpected non-uint8 'stale' (found type " << (*device)["stale"].getType() << ") item in device " << it->first << ": " << it->second;
-                        (*device)["stale"] = (uint8_t)0;
+                        AGO_WARNING() << "Unexpected non-int 'stale' (instead "
+                            << (*device)["stale"].getType()
+                            << ") element in device " << it->first << ": " << *device;
+                        (*device)["stale"] = 0;
                     }
 
                     int stale = (*device)["stale"].asUint8();
