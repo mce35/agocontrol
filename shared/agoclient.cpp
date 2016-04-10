@@ -658,8 +658,6 @@ void agocontrol::AgoConnection::reportDevices()
     for (Variant::Map::const_iterator it = deviceMap.begin(); it != deviceMap.end(); ++it)
     {
         Variant::Map device;
-        Variant::Map content;
-        Message event;
 
         // printf("uuid: %s\n", it->first.c_str());
         device = it->second.asMap();

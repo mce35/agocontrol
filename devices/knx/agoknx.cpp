@@ -140,9 +140,6 @@ bool AgoKnx::loadDevicesXML(fs::path &filename, Variant::Map& _deviceMap) {
 void AgoKnx::reportDevices(Variant::Map devicemap) {
     for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
         Variant::Map device;
-        Variant::Map content;
-        Message event;
-
         device = it->second.asMap();
         agoConnection->addDevice(it->first.c_str(), device["devicetype"].asString().c_str(), true);
     }
