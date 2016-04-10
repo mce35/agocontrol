@@ -339,7 +339,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             string roomUuid = content["room"];
             // if no uuid is provided, we need to generate one for a new room
             if (roomUuid == "") roomUuid = generateUuid();
-            if (inv->setroomname(roomUuid, content["name"]) == 0)
+            if (inv->setRoomName(roomUuid, content["name"]))
             {
                 // return room UUID
                 responseData["uuid"] = roomUuid;
@@ -356,11 +356,11 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             checkMsgParameter(content, "device", VAR_STRING);
             checkMsgParameter(content, "room", VAR_STRING, true);
 
-            if (inv->setdeviceroom(content["device"], content["room"]) == 0)
+            if (inv->setDeviceRoom(content["device"], content["room"]))
             {
                 // update room in local device map
                 Variant::Map *device;
-                string room = inv->getdeviceroom(content["device"]);
+                string room = inv->getDeviceRoom(content["device"]);
                 string uuid = content["device"];
 
                 if (!inventory[uuid].isVoid())
@@ -383,13 +383,13 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             string name = content["name"].asString();
             if(name == "") {
                 // XXX: Should use deletedevice command instead
-                inv->deletedevice(content["device"]);
+                inv->deleteDevice(content["device"]);
                 return responseSuccess();
-            }else if (inv->setdevicename(content["device"], name) == 0)
+            }else if (inv->setDeviceName(content["device"], name))
             {
                 // update name in local device map
                 Variant::Map *device;
-                name = inv->getdevicename(content["device"]);
+                name = inv->getDeviceName(content["device"]);
                 string uuid = content["device"];
                 if (inventory.find(uuid) != inventory.end())
                 {
@@ -420,13 +420,13 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                 saveDevicemap();
             }
 
-            inv->deletedevice(uuid);
+            inv->deleteDevice(uuid);
             return responseSuccess("Device removed");
         }
         else if (content["command"] == "deleteroom")
         {
             checkMsgParameter(content, "room", VAR_STRING);
-            if (inv->deleteroom(content["room"]) == 0)
+            if (inv->deleteRoom(content["room"]))
             {
                 string uuid = content["room"].asString();
                 emitNameEvent(uuid.c_str(), "event.system.roomdeleted", "");
@@ -446,7 +446,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
                 uuid = generateUuid();
             }
 
-            if (inv->setfloorplanname(uuid, content["name"]) == 0)
+            if (inv->setFloorplanName(uuid, content["name"]))
             {
                 emitNameEvent(content["floorplan"].asString().c_str(), "event.system.floorplannamechanged", content["name"].asString().c_str());
                 responseData["uuid"] = uuid;
@@ -464,7 +464,7 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
             checkMsgParameter(content, "x", VAR_INT32);
             checkMsgParameter(content, "y", VAR_INT32);
 
-            if (inv->setdevicefloorplan(content["device"], content["floorplan"], content["x"], content["y"]) == 0)
+            if (inv->setDeviceFloorplan(content["device"], content["floorplan"], content["x"], content["y"]))
             {
                 emitFloorplanEvent(content["device"].asString().c_str(),
                         "event.system.floorplandevicechanged",
@@ -482,20 +482,15 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
         {
             checkMsgParameter(content, "device", VAR_STRING);
             checkMsgParameter(content, "floorplan", VAR_STRING);
-            if( inv->deldevicefloorplan(content["device"], content["floorplan"])==1 )
-            {
-                return responseSuccess();
-            }
-            else
-            {
-                return responseFailed("Failed to store floorplan changes");
-            }
+            inv->delDeviceFloorplan(content["device"], content["floorplan"]);
+
+            return responseSuccess();
         }
         else if (content["command"] == "deletefloorplan")
         {
             checkMsgParameter(content, "floorplan", VAR_STRING);
 
-            if (inv->deletefloorplan(content["floorplan"]) == 0)
+            if (inv->deleteFloorplan(content["floorplan"]))
             {
                 emitNameEvent(content["floorplan"].asString().c_str(), "event.system.floorplandeleted", "");
                 return responseSuccess();
@@ -659,8 +654,8 @@ qpid::types::Variant::Map AgoResolver::commandHandler(qpid::types::Variant::Map 
         {
             responseData["devices"] = inventory;
             responseData["schema"] = schema;
-            responseData["rooms"] = inv->getrooms();
-            responseData["floorplans"] = inv->getfloorplans();
+            responseData["rooms"] = inv->getRooms();
+            responseData["floorplans"] = inv->getFloorplans();
             get_sysinfo();
             responseData["system"] = systeminfo;
             responseData["variables"] = variables;
@@ -698,9 +693,11 @@ void AgoResolver::eventHandler(std::string subject, qpid::types::Variant::Map co
             device["name"]=inv->getdevicename(content["uuid"].asString());
             if (device["name"].asString() == "" && device["devicetype"] == "agocontroller") device["name"]="agocontroller";
             device["name"].setEncoding("utf8");
+
             // AGO_TRACE() << "getting room from inventory";
-            device["room"]=inv->getdeviceroom(content["uuid"].asString());
+            device["room"] = inv->getDeviceRoom(content["uuid"].asString());
             device["room"].setEncoding("utf8");
+
             qpid::types::Variant::Map::const_iterator it = inventory.find(uuid);
             if (it != inventory.end() && !it->second.isVoid())
             {
