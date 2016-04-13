@@ -315,7 +315,7 @@ function agoBlocklyPlugin(devices, agocontrol)
                     {
                         self.availableScripts.push({
                             'name':res.data.scriptlist[i].name.replace('blockly_',''),
-                            'enabled':res.data.scriptlist[i].enabled==1 ? 'enabled' : 'disabled'
+                            'enabled':res.data.scriptlist[i].enabled
                         });
                     }
                 }

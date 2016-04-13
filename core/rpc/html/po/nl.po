@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-30 16:07+0200\n"
+"POT-Creation-Date: 2016-04-13 14:59+0200\n"
 "PO-Revision-Date: 2014-04-07 19:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,7 +133,7 @@ msgstr "Twitter is geconfigureerd"
 #: ../configuration/rooms/html/rooms.xml.in.h:2
 #: ../configuration/variables/html/variables.xml.in.h:2
 #: ../configuration/dashboards/html/dashboards.xml.in.h:2
-#: ../configuration/blockly/html/agoblockly.xml.in.h:10
+#: ../configuration/blockly/html/agoblockly.xml.in.h:13
 #: ../configuration/devices/html/devices.xml.in.h:2
 #: ../configuration/scenarios/html/scenarios.xml.in.h:2
 #: ../configuration/events/html/events.xml.in.h:2
@@ -440,9 +440,9 @@ msgid "Change current housemode"
 msgstr ""
 
 #: ../applications/security/html/security.xml.in.h:15
-#: ../protocols/ipx800/html/ipx800.xml.in.h:60
+#: ../protocols/ipx800/html/ipx800.xml.in.h:61
 #: ../protocols/zwave/html/zwave.xml.in.h:69
-#: ../configuration/blockly/html/agoblockly.xml.in.h:9
+#: ../configuration/blockly/html/agoblockly.xml.in.h:12
 #: ../configuration/scenarios/html/scenarios.xml.in.h:6
 #: ../configuration/events/html/events.xml.in.h:7
 msgid "Save"
@@ -1062,92 +1062,98 @@ msgid "Link binary device to output device"
 msgstr ""
 
 #: ../protocols/ipx800/html/ipx800.xml.in.h:38
+msgid ""
+"Creating a link between 2 devices add a validation step before activating "
+"output, ie: a door sensor prevents from linked shutter to be opened."
+msgstr ""
+
+#: ../protocols/ipx800/html/ipx800.xml.in.h:39
 #, fuzzy
 msgid "Create link between"
 msgstr "Maak gebeurtenis"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:39
+#: ../protocols/ipx800/html/ipx800.xml.in.h:40
 #, fuzzy
 msgid "and"
 msgstr "VentilatorMode"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:40
+#: ../protocols/ipx800/html/ipx800.xml.in.h:41
 #, fuzzy
 msgid "Add link"
 msgstr "Voeg Commando toe"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:41
+#: ../protocols/ipx800/html/ipx800.xml.in.h:42
 #, fuzzy
 msgid "Delete links"
 msgstr "Verwijderen"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:42
+#: ../protocols/ipx800/html/ipx800.xml.in.h:43
 msgid "Link"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:43
+#: ../protocols/ipx800/html/ipx800.xml.in.h:44
 #, fuzzy
 msgid "Delete link"
 msgstr "Verwijderen"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:44
+#: ../protocols/ipx800/html/ipx800.xml.in.h:45
 msgid "Add analogs"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:45
+#: ../protocols/ipx800/html/ipx800.xml.in.h:46
 msgid "Used analogs"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:46
+#: ../protocols/ipx800/html/ipx800.xml.in.h:47
 msgid "Analog type"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:47
+#: ../protocols/ipx800/html/ipx800.xml.in.h:48
 msgid "Temperature"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:48
+#: ../protocols/ipx800/html/ipx800.xml.in.h:49
 msgid "Light"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:49
+#: ../protocols/ipx800/html/ipx800.xml.in.h:50
 msgid "Volt"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:50
+#: ../protocols/ipx800/html/ipx800.xml.in.h:51
 msgid "Humidity"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:51
+#: ../protocols/ipx800/html/ipx800.xml.in.h:52
 msgid "Analog input"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:52
+#: ../protocols/ipx800/html/ipx800.xml.in.h:53
 #, fuzzy
 msgid "Add counter"
 msgstr "Voeg Commando toe"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:53
+#: ../protocols/ipx800/html/ipx800.xml.in.h:54
 #, fuzzy
 msgid "Used counters"
 msgstr "Registreer een Cloud gebruiker"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:54
+#: ../protocols/ipx800/html/ipx800.xml.in.h:55
 msgid "Counter"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:55
+#: ../protocols/ipx800/html/ipx800.xml.in.h:56
 #, fuzzy
 msgid "Reset counter"
 msgstr "Registreer een Cloud gebruiker"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:56
+#: ../protocols/ipx800/html/ipx800.xml.in.h:57
 #: ../protocols/zwave/html/zwave.xml.in.h:66
 #: ../protocols/mysensors/html/mysensors.xml.in.h:12
 msgid "Reset"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:57
+#: ../protocols/ipx800/html/ipx800.xml.in.h:58
 #: ../protocols/knx/html/knx.xml.in.h:11
 #: ../configuration/rooms/html/rooms.xml.in.h:5
 #: ../configuration/dashboards/html/dashboards.xml.in.h:5
@@ -1156,24 +1162,24 @@ msgstr ""
 msgid "unset"
 msgstr "ongedefinieerd"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:58
+#: ../protocols/ipx800/html/ipx800.xml.in.h:59
 #: ../protocols/onvif/html/onvif.xml.in.h:48
 #: ../protocols/knx/html/knx.xml.in.h:3
 #: ../configuration/rooms/html/rooms.xml.in.h:3
 #: ../configuration/variables/html/variables.xml.in.h:3
 #: ../configuration/dashboards/html/dashboards.xml.in.h:3
-#: ../configuration/blockly/html/agoblockly.xml.in.h:4
+#: ../configuration/blockly/html/agoblockly.xml.in.h:6
 #: ../configuration/devices/html/devices.xml.in.h:3
 #: ../configuration/scenarios/html/scenarios.xml.in.h:3
 #: ../configuration/events/html/events.xml.in.h:3
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:59
+#: ../protocols/ipx800/html/ipx800.xml.in.h:60
 msgid "Force saving board config"
 msgstr ""
 
-#: ../protocols/ipx800/html/ipx800.xml.in.h:61
+#: ../protocols/ipx800/html/ipx800.xml.in.h:62
 #, fuzzy
 msgid "Delete this board"
 msgstr "Hoofdpagina"
@@ -1833,137 +1839,161 @@ msgid "Load/delete script"
 msgstr "Script opgeslagen"
 
 #: ../configuration/blockly/html/agoblockly.xml.in.h:3
+#, fuzzy
+msgid "Enabled"
+msgstr "SMS Configuratie"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:4
+msgid "Disabled"
+msgstr ""
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:5
 msgid "Load"
 msgstr "Laden"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:5
+#: ../configuration/blockly/html/agoblockly.xml.in.h:7
 msgid "Export"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:6
+#: ../configuration/blockly/html/agoblockly.xml.in.h:8
+#, fuzzy
+msgid "Enable/disable script"
+msgstr "Verwijderen van script mislukt"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:9
 #, fuzzy
 msgid "Import script"
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:7
+#: ../configuration/blockly/html/agoblockly.xml.in.h:10
 #, fuzzy
 msgid "Save as"
 msgstr "Opslaan"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:8
+#: ../configuration/blockly/html/agoblockly.xml.in.h:11
 #, fuzzy
 msgid "Script name"
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:11
+#: ../configuration/blockly/html/agoblockly.xml.in.h:14
 #, fuzzy
 msgid "Debug script"
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:12
+#: ../configuration/blockly/html/agoblockly.xml.in.h:15
 #: ../help/drain/html/drain.xml.in.h:2
 msgid "Start"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:13
+#: ../configuration/blockly/html/agoblockly.xml.in.h:16
 #: ../help/drain/html/drain.xml.in.h:3
 msgid "Stop"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:14
+#: ../configuration/blockly/html/agoblockly.xml.in.h:17
 #: ../help/drain/html/drain.xml.in.h:4
 msgid "Clear"
 msgstr "Wissen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:15
+#: ../configuration/blockly/html/agoblockly.xml.in.h:18
 msgid "luacontroller is not responding. Unable to execute action."
 msgstr "luacontroller reageert niet. Handeling kan niet worden uitgevoerd."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:16
+#: ../configuration/blockly/html/agoblockly.xml.in.h:19
 msgid "No block defined in workspace."
 msgstr "Geen block gedefinieert."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:17
+#: ../configuration/blockly/html/agoblockly.xml.in.h:20
 msgid "Script saved successfully."
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:18
+#: ../configuration/blockly/html/agoblockly.xml.in.h:21
 msgid "Script loaded successfully."
 msgstr "Script ingeladen."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:19
+#: ../configuration/blockly/html/agoblockly.xml.in.h:22
 #, fuzzy
 msgid "Please select a script."
 msgstr "Selecteer een script"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:20
+#: ../configuration/blockly/html/agoblockly.xml.in.h:23
 msgid "Unable to load script, it seems to be corrupted!"
 msgstr "Niet mogelijk om script te laden, het lijkt beschadigt."
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:21
+#: ../configuration/blockly/html/agoblockly.xml.in.h:24
 #, fuzzy
 msgid "Script not saved."
 msgstr "Script niet opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:22
+#: ../configuration/blockly/html/agoblockly.xml.in.h:25
 #, fuzzy
 msgid "Please specify a valid script name."
 msgstr "Geef een geldige script naam"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:23
+#: ../configuration/blockly/html/agoblockly.xml.in.h:26
 msgid "Delete selected script?"
 msgstr "Verwijder geselecteert script?"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:24
+#: ../configuration/blockly/html/agoblockly.xml.in.h:27
 #, fuzzy
 msgid "Script deleted successfully."
 msgstr "Script verwijderd"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:25
+#: ../configuration/blockly/html/agoblockly.xml.in.h:28
 #, fuzzy
 msgid "Unable to delete script."
 msgstr "Verwijderen van script mislukt"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:26
+#: ../configuration/blockly/html/agoblockly.xml.in.h:29
 #, fuzzy
 msgid "Script renamed successfully."
 msgstr "Script opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:27
+#: ../configuration/blockly/html/agoblockly.xml.in.h:30
 #, fuzzy
 msgid "Script not renamed."
 msgstr "Script niet opgeslagen"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:28
+#: ../configuration/blockly/html/agoblockly.xml.in.h:31
+#, fuzzy
+msgid "Script enabled/disabled successfully."
+msgstr "Script verwijderd"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:32
+#, fuzzy
+msgid "Unable to enable or disable script."
+msgstr "Verwijderen van script mislukt"
+
+#: ../configuration/blockly/html/agoblockly.xml.in.h:33
 #, fuzzy
 msgid "Event configuration stacking blocks"
 msgstr "Gebeurtenis Configuratie"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:29
+#: ../configuration/blockly/html/agoblockly.xml.in.h:34
 msgid "New"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:30
+#: ../configuration/blockly/html/agoblockly.xml.in.h:35
 msgid "Changed"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:31
+#: ../configuration/blockly/html/agoblockly.xml.in.h:36
 msgid "Import"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:32
+#: ../configuration/blockly/html/agoblockly.xml.in.h:37
 msgid "Check"
 msgstr "Controleer"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:33
+#: ../configuration/blockly/html/agoblockly.xml.in.h:38
 msgid "View"
 msgstr "Bekijk"
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:34
+#: ../configuration/blockly/html/agoblockly.xml.in.h:39
 msgid "Debug"
 msgstr ""
 
-#: ../configuration/blockly/html/agoblockly.xml.in.h:35
+#: ../configuration/blockly/html/agoblockly.xml.in.h:40
 msgid "Event editor is only available on large resolution devices."
 msgstr ""
 
