@@ -831,14 +831,14 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
                 if( !parameters["staleTimeout"].isVoid() )
                 {
                     int64_t timeout = parameters["staleTimeout"].asUint64();
-                    if( (*device)["stale"].getType()!=VAR_INT8 )
+                    if( (*device)["stale"].getType()!=VAR_UINT8 )
                     {
                         // Shouldn't happen unless we have a bug somewhere.
-                        AGO_WARNING() << "Unexpected non-int8 'stale' (found type " << (*device)["stale"].getType() << ") item in device " << it->first << ": " << it->second;
-                        (*device)["stale"] = 0;
+                        AGO_WARNING() << "Unexpected non-uint8 'stale' (found type " << (*device)["stale"].getType() << ") item in device " << it->first << ": " << it->second;
+                        (*device)["stale"] = (uint8_t)0;
                     }
 
-                    int stale = (*device)["stale"].asInt8();
+                    int stale = (*device)["stale"].asUint8();
                     string uuid = it->first;
                     if( timeout>0 )
                     {
@@ -850,7 +850,7 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
                             if( stale==0 )
                             {
                                 AGO_DEBUG() << "Device " << it->first << " is dead";
-                                (*device)["stale"] = 1;
+                                (*device)["stale"] = (uint8_t)1;
                                 agoConnection->emitDeviceStale(uuid.c_str(), 1);
 
                                 save = true;
@@ -867,7 +867,7 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
                             {
                                 //disable stale status
                                 AGO_DEBUG() << "Device " << it->first << " is alive";
-                                (*device)["stale"] = 0;
+                                (*device)["stale"] = (uint8_t)0;
                                 agoConnection->emitDeviceStale(uuid.c_str(), 0);
                                 save = true;
                             }
