@@ -831,9 +831,10 @@ void AgoResolver::staleFunction(const boost::system::error_code& error)
                 if( !parameters["staleTimeout"].isVoid() )
                 {
                     int64_t timeout = parameters["staleTimeout"].asUint64();
-                    if((*device)["stale"].getType() != VAR_INT8) {
+                    if( (*device)["stale"].getType()!=VAR_INT8 )
+                    {
                         // Shouldn't happen unless we have a bug somewhere.
-                        AGO_WARNING() << "Unexpected non-uint8 'stale' element in device " << it->first << ": " << it->second;
+                        AGO_WARNING() << "Unexpected non-int8 'stale' (found type " << (*device)["stale"].getType() << ") item in device " << it->first << ": " << it->second;
                         (*device)["stale"] = 0;
                     }
 
