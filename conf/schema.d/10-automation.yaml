@@ -272,10 +272,13 @@ events:
     parameters: [level, unit, uuid]
   event.device.push:
     description: single push
+    parameters: [uuid]
   event.device.doublepush:
     description: double push
+    parameters: [uuid]
   event.device.triplepush:
     description: triple push
+    parameters: [uuid]
 units:
   degC:
     label: "°C"
