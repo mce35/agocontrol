@@ -278,7 +278,7 @@ def updateDeviceDuration(ipxIp, internalid, duration):
     else:
         logger.error('updateDeviceDuration: device "%s" not found' % internalid)
     
-def emitDeviceValueChanged(ipxIp, internalid, value):
+def emitDeviceValueChanged(ipxIp, internalid, value, force=False):
     """
     Emit event for specified device
     """
@@ -336,7 +336,7 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
             unit = None
 
         #prevent from useless message
-        if devices[ipxIp][internalid]['state']==value:
+        if not force and devices[ipxIp][internalid]['state']==value:
             #same value, drop it
             return True
 
@@ -1633,30 +1633,40 @@ try:
             if devices[ipxIp][internalid]['type']==DEVICE_OUTPUT_SWITCH:
                 logger.info('    - add switch [%s]' % internalid)
                 client.add_device(internalid, 'switch')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_OUTPUT_DRAPES:
                 logger.info('    - add drapes [%s]' % internalid)
                 client.add_device(internalid, 'drapes')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_BINARY):
                 logger.info ('    - add analog [%s]' % internalid)
                 if devices[ipxIp][internalid]['type']==DEVICE_ANALOG_TEMPERATURE:
                     client.add_device(internalid, 'temperaturesensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_HUMIDITY:
                     client.add_device(internalid, 'humiditysensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_VOLT:
                     client.add_device(internalid, 'energymeter')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_LIGHT:
                     client.add_device(internalid, 'brightnesssensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_BINARY:
                     client.add_device(internalid, 'binarysensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_COUNTER:
                 logger.info('    - add counter [%s]' % internalid)
                 client.add_device(internalid, 'multilevelsensor')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_BINARY:
                 logger.info('    - add digital [%s]' % internalid)
                 client.add_device(internalid, 'binarysensor')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_PUSHBUTTON:
                 logger.info('    - add pushbutton [%s]' % internalid)
-                client.add_device(internalid, 'binarysensor')
+                client.add_device(internalid, 'pushbutton')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             else:
                 logger.error('    - add nothing: unknown device type [%s]' % (internalid))
 
