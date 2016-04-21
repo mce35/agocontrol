@@ -105,7 +105,7 @@ bool Inventory::setRoomName(string uuid, string name) {
 } 
 
 bool Inventory::setDeviceRoom(string deviceuuid, string roomuuid) {
-    string query = "UPDATES devices SET room = ? WHERE uuid = ?";
+    string query = "UPDATE devices SET room = ? WHERE uuid = ?";
     getFirst(query.c_str(), 2, roomuuid.c_str(), deviceuuid.c_str());
     return getDeviceRoom(deviceuuid) == roomuuid;
 } 
