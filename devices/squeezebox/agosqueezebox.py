@@ -121,8 +121,8 @@ def emit_stream(internalid):
     logging.debug('emit STREAM')
     client.emit_event(internalid, "event.device.statechanged", str(STATE_STREAM), "")
 
-def emit_media_infos(internalid, infos):
-    logging.debug('emit MEDIAINFOS')
+def get_media_infos(internalid, infos):
+    logging.info('get_media_infos')
     if not internalid:
         logging.error("Unable to emit mediainfos of not specified device")
         return False
@@ -174,6 +174,11 @@ def emit_media_infos(internalid, infos):
     #and fill returned data
     data = {'title':title, 'album':album, 'artist':artist, 'cover':cover_b64}
 
+    return data
+
+def emit_media_infos(internalid, infos):
+    logging.debug('emit MEDIAINFOS')
+    data = get_media_infos(internalid, infos)
     client.emit_event_raw(internalid, "event.device.mediainfos", data)
 
 
@@ -202,63 +207,86 @@ def messageHandler(internalid, content):
             logging.info("Command ALLON: %s" % internalid)
             for player in getPlayers():
                 player.on()
+            return True
         elif content["command"]=="alloff":
             logging.info("Command ALLOFF: %s" % internalid)
             for player in getPlayers():
                 player.off()
+            return True
         elif content["command"]=="displaymessage":
             if content.has_key('line1') and content.has_key('line2') and content.has_key('duration'):
                 logging.info("Command DISPLAYMESSAGE: %s" % internalid)
                 for player in getPlayers():
                     player.display(content['line1'], content['line2'], content['duration'])
+                return True
             else:
                 logging.error('Missing parameters to command DISPLAYMESSAGE')
-                return None
+                return False
+
+        #unhandled command
+        logging.warn('Unhandled server command')
+        return False
     else:
         #player command
         #get player
         player = getPlayer(internalid)
-        logging.info(player)
+        logging.info('Found player: %s' % player)
         if not player:
             logging.error('Player %s not found!' % internalid)
-            return None
+            return False
     
         if content["command"] == "on":
             logging.info("Command ON: %s" % internalid)
             player.on()
+            return True
         elif content["command"] == "off":
             logging.info("Command OFF: %s" % internalid)
             player.off()
+            return True
         elif content["command"] == "play":
             logging.info("Command PLAY: %s" % internalid)
             player.play()
+            return True
         elif content["command"] == "pause":
             logging.info("Command PAUSE: %s" % internalid)
             player.pause()
+            return True
         elif content["command"] == "stop":
             logging.info("Command STOP: %s" % internalid)
             player.stop()
+            return True
         elif content["command"] == "next":
             logging.info("Command NEXT: %s" % internalid)
             player.next()
+            return True
         elif content["command"] == "previous":
             logging.info("Command PREVIOUS: %s" % internalid)
             player.prev()
+            return True
         elif content["command"] == "setvolume":
             logging.info("Command SETVOLUME: %s" % internalid)
             if content.has_key('volume'):
                 player.set_volume(content['volume'])
+                return True
             else:
                 logging.error('Missing parameter "volume" to command SETVOLUME')
+                return False
         elif content["command"] == "displaymessage":
             if content.has_key('line1') and content.has_key('line2') and content.has_key('duration'):
                 logging.info("Command DISPLAYMESSAGE: %s" % internalid)
                 player.display(content['line1'], content['line2'], content['duration'])
+                return True
             else:
                 logging.error('Missing parameters to command DISPLAYMESSAGE')
-                return None
+                return False
         elif content["command"] == "mediainfos":
-            emit_media_infos(internalid, None)
+            infos = get_media_infos(internalid, None)
+            logging.info(infos)
+            return infos
+
+        #unhandled device command
+        logging.warn('Unhandled device command')
+        return False
 
 
 #init
