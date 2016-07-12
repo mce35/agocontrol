@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""Agocontrol MQTT device."""
+"""ago control MQTT device"""
 
 # agocontrol MQTT device
 #
@@ -18,7 +18,7 @@ import threading
 import time
 
 class AgoMQTT(agoclient.AgoApp):
-    """AgoControl MQTT device"""
+    """ago control MQTT device"""
 
     def message_handler(self, internalid, content):
         """The messagehandler."""
@@ -55,14 +55,14 @@ class MQTTThread(threading.Thread):
 
     def on_connect(self, client, obj, flags, rc):
         self.app.log.info("Connected to MQTT broker: %s", str(rc))
-        self.app.log.info("Subscribing to: %s",self.app.get_config_option("topic", "sensors/#"))
+        self.app.log.info("Subscribing to: %s", self.app.get_config_option("topic", "sensors/#"))
         self.client.subscribe(self.app.get_config_option("topic", "sensors/#"))
 
     def on_subscribe(self, client, obj, mid, granted_qos):
         self.app.log.info("Subscribed to topic: %s", str(mid))
 
     def on_message(self, client, obj, msg):
-        self.app.log.info("Received MQTT message on topic %s: %s", str(msg.topic),str(msg.payload))
+        self.app.log.info("Received MQTT message on topic %s: %s", str(msg.topic), str(msg.payload))
         topic = str(msg.topic)
         if topic.find("temperature") != -1:
             self.app.announce_device(str(msg.topic), "temperaturesensor")
@@ -78,8 +78,8 @@ class MQTTThread(threading.Thread):
         self.app.log.debug("Paho log: %s %s", str(level), string)
 
     def on_disconnect(self, client, obj, rc):
-        self.app.log.error("Disconected from MQTT broker: %s", str(rc))
-        #self.app.signal_exit()
+        self.app.log.error("Disconnected from MQTT broker: %s", str(rc))
+        # self.app.signal_exit()
         self.connected = False
 
     def run(self):
@@ -92,16 +92,15 @@ class MQTTThread(threading.Thread):
             while not self.connected:
                 try:
                     self.client.connect(self.app.mqtt_broker, 1883, 60)
-                    self.connected=True
+                    self.connected = True
                 except:
                     self.app.log.error("Cannot connect to MQTT broker: %s", self.app.mqtt_broker)
                     time.sleep(3)
-            rc=0
-            self.app.log.debug("entering MQTT client loop")
+            rc = 0
+            self.app.log.debug("Entering MQTT client loop")
             while rc == 0:
                 rc = self.client.loop()
         self.app.log.error("MQTT Thread stopped")
 
 if __name__ == "__main__":
     AgoMQTT().main()
-
