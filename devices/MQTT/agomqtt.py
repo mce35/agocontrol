@@ -7,8 +7,8 @@
 #
 
 # to use the client library we have to import it
-
 import agoclient
+
 try:
     import paho.mqtt.client as mqtt
 except ImportError:
@@ -28,6 +28,7 @@ class AgoMQTT(agoclient.AgoApp):
     def setup_app(self):
         self.mqtt_broker = self.get_config_option("broker", "127.0.0.1")
         self.mqtt_port = self.get_config_option("port", "1883")
+        self.topic = self.get_config_option("topic", "sensors/#")
 
         self.devicelist = []
         self.start_paho_thread()
@@ -45,15 +46,15 @@ class MQTTThread(threading.Thread):
         self.connected = False
 
     def on_connect(self, client, obj, flags, rc):
-        self.app.log.info("Connected to MQTT broker: %s", str(rc))
-        self.app.log.info("Subscribing to: %s", self.app.get_config_option("topic", "sensors/#"))
-        self.client.subscribe(self.app.get_config_option("topic", "sensors/#"))
+        self.app.log.info("Connected to MQTT broker %s:%s (rc=%d)", self.app.mqtt_broker, self.app.mqtt_port, rc)
+        self.app.log.info("Subscribing to: %s", self.app.topic)
+        self.client.subscribe(self.app.topic)
 
     def on_subscribe(self, client, obj, mid, granted_qos):
-        self.app.log.info("Subscribed to topic: %s", str(mid))
+        self.app.log.debug("Subscribed to topic with MID: %d", mid)
 
     def on_message(self, client, obj, msg):
-        self.app.log.info("Received MQTT message on topic %s: %s", str(msg.topic), str(msg.payload))
+        self.app.log.info("Received MQTT message on topic %s: %s", msg.topic, msg.payload)
         topic = str(msg.topic)
         if topic.find("temperature") != -1:
             self.app.announce_device(str(msg.topic), "temperaturesensor")
@@ -69,24 +70,28 @@ class MQTTThread(threading.Thread):
         self.app.log.debug("Paho log: %s %s", str(level), string)
 
     def on_disconnect(self, client, obj, rc):
-        self.app.log.error("Disconnected from MQTT broker: %s", str(rc))
+        self.app.log.error("Disconnected from MQTT broker (rc=%d)", rc)
         # self.app.signal_exit()
         self.connected = False
 
     def run(self):
         self.client = mqtt.Client()
+        
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
+        self.client.on_subscribe = self.on_subscribe
         self.client.on_message = self.on_message
         self.client.on_log = self.on_log
+        
         while not self.app.is_exit_signaled():
             while not self.connected:
                 try:
-                    self.client.connect(self.app.mqtt_broker, self.app.mqtt_port, 60)
+                    rc = self.client.connect(self.app.mqtt_broker, self.app.mqtt_port, 60)
                     self.connected = True
                 except:
-                    self.app.log.error("Cannot connect to MQTT broker: %s", self.app.mqtt_broker)
+                    self.app.log.error("Cannot connect to MQTT broker: %s:%s (rc=%d)", self.app.mqtt_broker, self.app.mqtt_port, rc)
                     time.sleep(3)
+
             rc = 0
             self.app.log.debug("Entering MQTT client loop")
             while rc == 0:
