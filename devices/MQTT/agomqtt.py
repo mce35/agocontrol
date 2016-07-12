@@ -20,18 +20,12 @@ import time
 class AgoMQTT(agoclient.AgoApp):
     """ago control MQTT device"""
 
-    def message_handler(self, internalid, content):
-        """The messagehandler."""
-
     def start_paho_thread(self):
         BACKGROUND = MQTTThread(self)
         BACKGROUND.setDaemon(True)
         BACKGROUND.start()
 
     def setup_app(self):
-        # specify our message handler method
-        self.connection.add_handler(self.message_handler)
-
         self.mqtt_broker = self.get_config_option("broker", "127.0.0.1")
         self.mqtt_port = self.get_config_option("port", "1883")
 
@@ -42,9 +36,6 @@ class AgoMQTT(agoclient.AgoApp):
         if not internalid in self.devicelist:
             self.devicelist.append(internalid)
             self.connection.add_device(internalid, devicetype)
-
-    def app_cleanup(self):
-        pass
 
 class MQTTThread(threading.Thread):
     """MQTTThread"""
