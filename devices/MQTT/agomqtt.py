@@ -82,7 +82,7 @@ class MQTTThread(threading.Thread):
         while not self.app.is_exit_signaled():
             while not self.connected:
                 try:
-                    self.client.connect(self.app.mqtt_broker, 1883, 60)
+                    self.client.connect(self.app.mqtt_broker, self.app.mqtt_port, 60)
                     self.connected = True
                 except:
                     self.app.log.error("Cannot connect to MQTT broker: %s", self.app.mqtt_broker)
