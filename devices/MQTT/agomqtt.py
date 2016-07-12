@@ -44,6 +44,11 @@ class MQTTThread(threading.Thread):
         threading.Thread.__init__(self)
         self.app = app
         self.connected = False
+        self.mapping = {
+            "temperature":["temperaturesensor", "event.environment.temperaturechanged", "degC"],
+            "humidity":["humiditysensor", "event.environment.humiditychanged", "%"],
+            "pressure":["barometersensor", "event.environment.pressurechanged", "mBar"]
+        }
 
     def on_connect(self, client, obj, flags, rc):
         self.app.log.info("Connected to MQTT broker %s:%s (rc=%d)", self.app.mqtt_broker, self.app.mqtt_port, rc)
@@ -55,16 +60,12 @@ class MQTTThread(threading.Thread):
 
     def on_message(self, client, obj, msg):
         self.app.log.info("Received MQTT message on topic %s: %s", msg.topic, msg.payload)
-        topic = str(msg.topic)
-        if topic.find("temperature") != -1:
-            self.app.announce_device(str(msg.topic), "temperaturesensor")
-            self.app.connection.emit_event(str(msg.topic), "event.environment.temperaturechanged", float(msg.payload), "degC")
-        if topic.find("humidity") != -1:
-            self.app.announce_device(str(msg.topic), "humiditysensor")
-            self.app.connection.emit_event(str(msg.topic), "event.environment.humiditychanged", float(msg.payload), "%")
-        if topic.find("pressure") != -1:
-            self.app.announce_device(str(msg.topic), "barometersensor")
-            self.app.connection.emit_event(str(msg.topic), "event.environment.pressurechanged", float(msg.payload), "mBar")
+        for key in self.mapping.keys():
+            if msg.topic.find(key) != -1:
+                self.app.log.debug("Matched key '%s' for topic '%s' - emitting '%s'", key, msg.topic, self.mapping[key][1])
+                self.app.announce_device(msg.topic, self.mapping[key][0])
+                self.app.connection.emit_event(msg.topic, self.mapping[key][1], float(msg.payload), self.mapping[key][2])
+                break
 
     def on_log(self, client, obj, level, string):
         self.app.log.debug("Paho log: %s %s", str(level), string)
