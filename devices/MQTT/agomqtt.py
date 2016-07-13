@@ -14,6 +14,7 @@ try:
 except ImportError:
     import agomqttpahoclient as mqtt
 
+import json
 import threading
 import time
 
@@ -26,16 +27,35 @@ class AgoMQTT(agoclient.AgoApp):
         self.topic = self.get_config_option("topic", "sensors/#")
         self.mapping = self.get_config_option("mapping")
 
-        self.devicelist = []
+        # load existing device list, add and mark devices as stale
+        self.devicelist = {}
+        try:
+            with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json") as store:
+                self.devicelist = json.load(store)
+            for internalid in self.devicelist.keys():
+                self.connection.add_device(internalid, self.devicelist[internalid])
+                self.connection.suspend_device(internalid)
+        except ValueError:
+            self.log.error("Failed to decode MQTT state file - will not use it")
+            self.devicelist = {}
+        except IOError:
+            pass
+
         self.worker = MQTTThread(self)
         self.worker.start()
 
     def cleanup_app(self):
+        self.log.info("Saving MQTT device states")
+        try:
+            with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json", "w") as store:
+                json.dump(self.devicelist, store)
+        except IOError:
+            self.log.error("Failed to write MQTT device list")
         self.worker.join()
 
     def announce_device(self, internalid, devicetype):
-        if not internalid in self.devicelist:
-            self.devicelist.append(internalid)
+        if not internalid in self.devicelist.keys():
+            self.devicelist[internalid] = devicetype
             self.connection.add_device(internalid, devicetype)
 
 class MQTTThread(threading.Thread):
