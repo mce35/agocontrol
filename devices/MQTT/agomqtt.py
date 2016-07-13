@@ -29,6 +29,7 @@ class AgoMQTT(agoclient.AgoApp):
         self.mqtt_broker = self.get_config_option("broker", "127.0.0.1")
         self.mqtt_port = self.get_config_option("port", "1883")
         self.topic = self.get_config_option("topic", "sensors/#")
+        self.mapping = self.get_config_option("mapping")
 
         self.devicelist = []
         self.start_paho_thread()
@@ -49,6 +50,20 @@ class MQTTThread(threading.Thread):
             "humidity":["humiditysensor", "event.environment.humiditychanged", "%"],
             "pressure":["barometersensor", "event.environment.pressurechanged", "mBar"]
         }
+        
+        if self.app.mapping:
+            for mapping in self.app.mapping.split(";"):
+                parts = mapping.split(":")
+                if len(parts) != 4:
+                    self.app.log.error("Wrong number of parameters for mapping - skipping entry '%s'", mapping)
+                    continue
+                
+                # do not permit to overwrite existing mappings (for backwards compatibility)
+                if not parts[0] in self.mapping:
+                    self.app.log.info("Adding new mapping for: %s (%s)", parts[0], ",".join(parts[1:]))
+                    self.mapping[parts[0]] = parts[1:]
+                else:
+                    self.app.log.warning("Skipping existing mapping for: %s", parts[0])
 
     def on_connect(self, client, obj, flags, rc):
         self.app.log.info("Connected to MQTT broker %s:%s (rc=%d, %s)", self.app.mqtt_broker, self.app.mqtt_port, rc, mqtt.error_string(rc))
