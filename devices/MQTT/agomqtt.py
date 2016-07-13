@@ -20,11 +20,6 @@ import time
 class AgoMQTT(agoclient.AgoApp):
     """ago control MQTT device"""
 
-    def start_paho_thread(self):
-        BACKGROUND = MQTTThread(self)
-        BACKGROUND.setDaemon(True)
-        BACKGROUND.start()
-
     def setup_app(self):
         self.mqtt_broker = self.get_config_option("broker", "127.0.0.1")
         self.mqtt_port = self.get_config_option("port", "1883")
@@ -32,7 +27,11 @@ class AgoMQTT(agoclient.AgoApp):
         self.mapping = self.get_config_option("mapping")
 
         self.devicelist = []
-        self.start_paho_thread()
+        self.worker = MQTTThread(self)
+        self.worker.start()
+
+    def cleanup_app(self):
+        self.worker.join()
 
     def announce_device(self, internalid, devicetype):
         if not internalid in self.devicelist:
@@ -86,8 +85,7 @@ class MQTTThread(threading.Thread):
         self.app.log.debug("Paho log: %s %s", str(level), string)
 
     def on_disconnect(self, client, obj, rc):
-        self.app.log.error("Disconnected from MQTT broker (rc=%d, %s)", rc, mqtt.error_string(rc))
-        # self.app.signal_exit()
+        self.app.log.info("Disconnected from MQTT broker (rc=%d, %s)", rc, mqtt.error_string(rc))
         self.connected = False
 
     def run(self):
@@ -110,9 +108,12 @@ class MQTTThread(threading.Thread):
 
             rc = self.client.loop()
             if rc != mqtt.MQTT_ERR_SUCCESS:
-                self.app.log.warning("MQTT loop exited with return code %d (%s)", rc, mqtt.error_string(rc))
+                self.app.log.warning("MQTT loop returned code %d (%s)", rc, mqtt.error_string(rc))
 
-        self.app.log.error("MQTT Thread stopped")
+        if self.connected:
+            self.client.disconnect()
+
+        self.app.log.debug("MQTT Thread stopped")
 
 if __name__ == "__main__":
     AgoMQTT().main()
