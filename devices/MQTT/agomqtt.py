@@ -51,7 +51,7 @@ class MQTTThread(threading.Thread):
         }
 
     def on_connect(self, client, obj, flags, rc):
-        self.app.log.info("Connected to MQTT broker %s:%s (rc=%d)", self.app.mqtt_broker, self.app.mqtt_port, rc)
+        self.app.log.info("Connected to MQTT broker %s:%s (rc=%d, %s)", self.app.mqtt_broker, self.app.mqtt_port, rc, mqtt.error_string(rc))
         self.app.log.info("Subscribing to: %s", self.app.topic)
         self.client.subscribe(self.app.topic)
 
@@ -71,7 +71,7 @@ class MQTTThread(threading.Thread):
         self.app.log.debug("Paho log: %s %s", str(level), string)
 
     def on_disconnect(self, client, obj, rc):
-        self.app.log.error("Disconnected from MQTT broker (rc=%d)", rc)
+        self.app.log.error("Disconnected from MQTT broker (rc=%d, %s)", rc, mqtt.error_string(rc))
         # self.app.signal_exit()
         self.connected = False
 
@@ -87,16 +87,16 @@ class MQTTThread(threading.Thread):
         while not self.app.is_exit_signaled():
             while not self.connected:
                 try:
-                    rc = self.client.connect(self.app.mqtt_broker, self.app.mqtt_port, 60)
+                    self.client.connect(self.app.mqtt_broker, self.app.mqtt_port, 60)
                     self.connected = True
                 except:
-                    self.app.log.error("Cannot connect to MQTT broker: %s:%s (rc=%d)", self.app.mqtt_broker, self.app.mqtt_port, rc)
+                    self.app.log.error("Cannot connect to MQTT broker: %s:%s (rc=%d, %s)", self.app.mqtt_broker, self.app.mqtt_port, rc, mqtt.error_string(rc))
                     time.sleep(3)
 
-            rc = 0
-            self.app.log.debug("Entering MQTT client loop")
-            while rc == 0:
-                rc = self.client.loop()
+            rc = self.client.loop()
+            if rc != mqtt.MQTT_ERR_SUCCESS:
+                self.app.log.warning("MQTT loop exited with return code %d (%s)", rc, mqtt.error_string(rc))
+
         self.app.log.error("MQTT Thread stopped")
 
 if __name__ == "__main__":
