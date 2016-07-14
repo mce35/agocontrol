@@ -79,10 +79,12 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 self.render(device, environment, startDt, endDt);
             });
 
-            if( $('#commandList').length )
+            if( template=='default' )
             {
                 //empty template, fill command list
-                self.showCommandList($('#commandList')[0], device);
+                if( $('#commandList').length ) {
+                    self.showCommandList($('#commandList')[0], device);
+                }
             }
             else if( device.devicetype=='camera' )
             {

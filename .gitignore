@@ -14,3 +14,10 @@ shared/agoclient/_directories.py
 version.h
 CTestTestfile.cmake
 Testing/
+
+# Eclipse/PTP related files
+.project
+.pydevproject
+/.settings/
+/.ptp-sync/
+.ptp-sync-folder
