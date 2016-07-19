@@ -101,6 +101,7 @@ class MQTTThread(threading.Thread):
             if msg.topic.find(key) != -1:
                 self.app.log.debug("Matched key '%s' for topic '%s' - emitting '%s'", key, msg.topic, self.mapping[key][1])
                 self.app.announce_device(msg.topic, self.mapping[key][0])
+                self.app.connection.resume_device(msg.topic)
                 self.app.connection.emit_event(msg.topic, self.mapping[key][1], float(msg.payload), self.mapping[key][2])
                 break
 
