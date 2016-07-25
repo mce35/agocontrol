@@ -28,6 +28,7 @@ class AgoMQTT(agoclient.AgoApp):
         self.mapping = self.get_config_option("mapping")
 
         # load existing device list, add and mark devices as stale
+        self.log.info("Loading MQTT device list...")
         self.devicelist = {}
         try:
             with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json") as store:
@@ -35,22 +36,27 @@ class AgoMQTT(agoclient.AgoApp):
             for internalid in self.devicelist.keys():
                 self.connection.add_device(internalid, self.devicelist[internalid])
                 self.connection.suspend_device(internalid)
-        except ValueError:
-            self.log.error("Failed to decode MQTT state file - will not use it")
+        except (OSError, IOError) as exception:
+            if exception.errno == errno.ENOENT:
+                self.log.debug("MQTT device list not found - starting fresh")
+            else:
+                self.log.error("Failed to load MQTT device list - reason: %s", exception)
+        except ValueError as exception:
+            self.log.error("Failed to decode MQTT device list, will not use it - reason: %s", exception)
             self.devicelist = {}
-        except IOError:
-            pass
 
         self.worker = MQTTThread(self)
         self.worker.start()
 
     def cleanup_app(self):
-        self.log.info("Saving MQTT device states")
+        self.log.info("Saving MQTT device list...")
         try:
             with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json", "w") as store:
                 json.dump(self.devicelist, store)
-        except IOError:
-            self.log.error("Failed to write MQTT device list")
+        except (OSError, IOError) as exception:
+            self.log.error("Failed to write MQTT device list - reason: %s", exception)
+        except ValueError as exception:
+            self.log.error("Failed to encode MQTT device list - reason: %s", exception)
         self.worker.join()
 
     def announce_device(self, internalid, devicetype):
@@ -127,7 +133,7 @@ class MQTTThread(threading.Thread):
                     self.client.connect(self.app.mqtt_broker, self.app.mqtt_port, 60)
                     self.connected = True
                 except:
-                    self.app.log.error("Cannot connect to MQTT broker: %s:%s (rc=%d, %s)", self.app.mqtt_broker, self.app.mqtt_port, rc, mqtt.error_string(rc))
+                    self.app.log.error("Failed to connect to MQTT broker: %s:%s (rc=%d, %s)", self.app.mqtt_broker, self.app.mqtt_port, rc, mqtt.error_string(rc))
                     time.sleep(3)
 
             rc = self.client.loop()
@@ -137,7 +143,7 @@ class MQTTThread(threading.Thread):
         if self.connected:
             self.client.disconnect()
 
-        self.app.log.debug("MQTT Thread stopped")
+        self.app.log.debug("MQTT thread stopped")
 
 if __name__ == "__main__":
     AgoMQTT().main()
