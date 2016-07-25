@@ -29,12 +29,12 @@ class AgoMQTT(agoclient.AgoApp):
 
         # load existing device list, add and mark devices as stale
         self.log.info("Loading MQTT device list...")
-        self.devicelist = {}
         try:
             with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json") as store:
-                self.devicelist = json.load(store)
-            for internalid in self.devicelist.keys():
-                self.connection.add_device(internalid, self.devicelist[internalid])
+                devicelist = json.load(store)
+            for internalid in devicelist.keys():
+                self.log.trace("Restoring MQTT device %s", internalid)
+                self.connection.add_device(internalid, devicelist[internalid])
                 self.connection.suspend_device(internalid)
         except (OSError, IOError) as exception:
             if exception.errno == errno.ENOENT:
@@ -43,7 +43,6 @@ class AgoMQTT(agoclient.AgoApp):
                 self.log.error("Failed to load MQTT device list - reason: %s", exception)
         except ValueError as exception:
             self.log.error("Failed to decode MQTT device list, will not use it - reason: %s", exception)
-            self.devicelist = {}
 
         self.worker = MQTTThread(self)
         self.worker.start()
@@ -51,18 +50,22 @@ class AgoMQTT(agoclient.AgoApp):
     def cleanup_app(self):
         self.log.info("Saving MQTT device list...")
         try:
-            with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json", "w") as store:
-                json.dump(self.devicelist, store)
+            inventory = self.connection.get_inventory()
+            if inventory:
+                devicelist = {}
+                for _, d in inventory["devices"].items():
+                    if d["handled-by"] == "mqtt":
+                        self.log.trace("Storing MQTT device %s", d["internalid"])
+                        devicelist[d["internalid"]] = d["devicetype"]
+                with open(agoclient.config.get_localstate_path() + "/mqtt_devices.json", "w") as store:
+                    json.dump(devicelist, store)
+            else:
+                self.log.warning("Failed to fetch ago control inventory")
         except (OSError, IOError) as exception:
             self.log.error("Failed to write MQTT device list - reason: %s", exception)
         except ValueError as exception:
             self.log.error("Failed to encode MQTT device list - reason: %s", exception)
         self.worker.join()
-
-    def announce_device(self, internalid, devicetype):
-        if not internalid in self.devicelist.keys():
-            self.devicelist[internalid] = devicetype
-            self.connection.add_device(internalid, devicetype)
 
 class MQTTThread(threading.Thread):
     """MQTTThread"""
@@ -105,10 +108,13 @@ class MQTTThread(threading.Thread):
         self.app.log.info("Received MQTT message on topic %s: %s", msg.topic, msg.payload)
         for key in self.mapping.keys():
             if msg.topic.find(key) != -1:
-                self.app.log.debug("Matched key '%s' for topic '%s' - emitting '%s'", key, msg.topic, self.mapping[key][1])
-                self.app.announce_device(msg.topic, self.mapping[key][0])
+                (devicetype, event, unit) = self.mapping[key]
+                self.app.log.debug("Matched key '%s' for topic '%s' - emitting '%s'", key, msg.topic, event)
+                # TODO is it necessary to check here to avoid multiple additions?
+                if self.app.connection.internal_id_to_uuid(msg.topic) is None:
+                    self.app.connection.add_device(msg.topic, devicetype)
                 self.app.connection.resume_device(msg.topic)
-                self.app.connection.emit_event(msg.topic, self.mapping[key][1], float(msg.payload), self.mapping[key][2])
+                self.app.connection.emit_event(msg.topic, event, float(msg.payload), unit)
                 break
 
     def on_log(self, client, obj, level, string):
