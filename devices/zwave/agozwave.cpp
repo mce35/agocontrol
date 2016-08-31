@@ -1665,7 +1665,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                 }
                 else
                 {
-                    AGO_WARNING() << "no agocontrol device found for node event: Label=" << label << " Level=" << level;
+                    AGO_WARNING() << "no agocontrol device found for node event: Label=" << label << " Level=" << level.str();
                 }
 
             }
@@ -1754,7 +1754,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                 case Notification::Code_Timeout:
                     AGO_ERROR() << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
                     message << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
-                    eventmap["message"] = message;
+                    eventmap["message"] = message.str();
                     if( device )
                     {
                         agoConnection->emitEvent(device->getId().c_str(), "event.system.error", eventmap);
