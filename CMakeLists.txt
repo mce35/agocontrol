@@ -59,6 +59,12 @@ set_property( DIRECTORY
 	COMPILE_OPTIONS
 	-Wall -DBOOST_LOG_DYN_LINK)
 
+set_property( DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-DBOOST_FILESYSTEM_VERSION=3
+	-DBOOST_FILESYSTEM_NO_DEPRECATED)
+
 # add the binary tree to the search path for include files
 # so that we will find version.h and other configured files
 include_directories("${PROJECT_BINARY_DIR}")

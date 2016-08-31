@@ -8,9 +8,8 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
+
 #include "boost/regex.hpp"
 
 #ifndef SCRIPTSINFOSFILE
