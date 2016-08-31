@@ -296,7 +296,7 @@ function device(agocontrol, obj, uuid) {
             var content = {};
             content.uuid = uuid;
             content.command = 'mediainfos';
-            self.agocontrol.sendCommand(content);
+            self.agocontrol.sendCommand(content)
                 .then(function(resp) {
                     self.updateMediaInfos(resp);
                 });
