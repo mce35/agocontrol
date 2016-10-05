@@ -211,6 +211,12 @@ devicetypes:
     name: Squeezebox Server
     description: Squeezebox player manager
     commands: ["allon", "alloff", displaymessage]
+  mopidy:
+    name: Mopidy Player
+    description: Plays music
+    commands: ["on", "off", play, pause, stop, displaymessage, setvolume]
+    events: [event.device.statechanged, event.device.mediastatechanged]
+    properties: [mediastate]
   settopbox:
     name: Set top box
     description: Receives TV Service
