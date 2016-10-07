@@ -18,7 +18,6 @@ __version__ = AGO_MOPIDY_VERSION
 import agoclient
 import threading
 import time
-#import pykka
 import mopidy.py
 
 # When developing, it is recommended to run with -d or -t argument,
@@ -41,14 +40,17 @@ class AgoMopidy(agoclient.AgoApp):
             if content["command"] == "on":
                 self.log.debug("switching on: %s", internalid)
 
-                                # Emit an event which notifies all other components of the state change
+                # Emit an event which notifies all other components of the state change
                 #self.connection.emit_event(internalid,
                 #    "event.device.statechanged", "255", "")
             if content["command"] == "play":
                 self.log.debug("Start playing: player %s", internalid)
+                self.players[internalid].mopidy.play()
+                #    "event.device.statechanged", "255", "")
+            elif content["command"] == "pause":
+                self.log.debug("Pause player %s", internalid)
                 self.mopidy.play()
                 #    "event.device.statechanged", "255", "")
-
 
 
             elif content["command"] == "off":
@@ -65,45 +67,19 @@ class AgoMopidy(agoclient.AgoApp):
         else:
             self.log.warning("Test argument was NOT set")
 
-        # if you need to fetch any settings from config.ini,
         # use the self.get_config_option method.
         # This will look in the configuration file conf.d/<app name>.conf
         # under the [<app name>] section.
         # In this example, this means example.conf and [example] section
-        host = self.get_config_option("host", "127.0.0.1")
-        self.log.info("Configuration parameter 'host' was set to %s", host)
-        port = self.get_config_option("host", "6680")
-        self.log.info("Configuration parameter 'port' was set to %s", port)
+        players = self.get_config_option("players", "[none]")
 
-        if self.args.set_parameter:
-            self.log.info("Setting configuration parameter 'host' to %s", self.args.set_parameter)
-            self.set_config_option("host", self.args.set_parameter)
-
-            param = self.get_config_option("host", "0")
-            self.log.info("Configuration parameter 'host' is now set to %s", param)
-
-        self.mopidy(host, port) #TODO: Add user/pw etc.?
-
-        self.connection.add_device("Mopidy", "switch", 'example-switch')
-
-        # for our threading example in the next section we also add a binary sensor:
-        self.connection.add_device("125", "binarysensor")
-
-        # then we add a BACKGROUND thread. This is not required and
-        # just shows how to send events from a separate thread. This might
-        # be handy when you have to poll something in the BACKGROUND or need
-        # to handle some other communication. If you don't need one or if
-        # you want to keep things simple at the moment just skip this section.
-        BACKGROUND = TestEvent(self)
-        BACKGROUND.setDaemon(True)
-        BACKGROUND.start()
-
-        # now you should have added all devices, set up all your internal
-        # and device specific stuff, started everything like listener threads
-        # or whatever.
-        # setup_app will now return, and AgoApp will do the rest.
-        # This normally means calling app_main, which calls the run() method
-        # on the AgoConnection object, which will block and start message handling.
+        for p in players:
+            host = self.get_config_option("host", "127.0.0.1", section=p, app='mopidy')
+            port = self.get_config_option("host", "6680", section=p, app='mopidy')
+            self.connection.add_device("Mopidy", "mopidy", p)
+            self.log.info("Mopidy player %s added. host=%s, port=%s", host, port)
+            self.players[p] = self.mopidy(host, port)  # TODO: Add user/pw etc.?
+            self.players[p] = self.emit_media_infos()
 
     def app_cleanup(self):
         # When our app is about to shutdown, we should clean up any resources we've
@@ -111,6 +87,11 @@ class AgoMopidy(agoclient.AgoApp):
         # In this example, we do not have any resources..
         pass
 
+    def emit_media_info(self, player):
+        self.log.debug('emit MEDIAINFO')
+        TrackInfo = self.players[player].GetCurrentTrackInfo()
+        #client.emit_event_raw(player, "event.device.mediainfos", TrackInfo)
+        self.connection.emit_event(player, "event.device.mediainfos", TrackInfo, "")
 
 if __name__ == "__main__":
     AgoMopidy().main()
