@@ -33,24 +33,58 @@ class AgoMopidy(agoclient.AgoApp):
     def message_handler(self, internalid, content):
         """The messagehandler."""
         if "command" in content:
+            player = self.players[internalid]["mopidy"]
             if content["command"] == "on":
                 self.log.debug("switching on: %s", internalid)
+                #TODO Add ON command
                 self.connection.emit_event(internalid, "event.device.statechanged", "255", "")
 
             elif content["command"] == "off":
                 self.log.debug("switching off: %s", internalid)
+                #TODO Add OFF command
                 self.connection.emit_event(internalid, "event.device.statechanged", "0", "")
 
             elif content["command"] == "play":
                 self.log.debug("Start playing: player %s", internalid)
-                self.players[internalid]["mopidy"].play()
+                #self.players[internalid]["mopidy"].Play()
+                player.Play()
                 #    "event.device.statechanged", "255", "")
             elif content["command"] == "pause":
                 self.log.debug("Pause player %s", internalid)
-                self.players[internalid]["mopidy"].pause()
+                #self.players[internalid]["mopidy"].Pause()
+                player.Pause()
                 #    "event.device.statechanged", "255", "")
 
+            elif content["command"] == "next":
+                self.log.debug("Next track. Player %s", internalid)
+                #self.players[internalid]["mopidy"].NextTrack()
+                player.NextTrack()
+                #    "event.device.statechanged", "255", "")
+            elif content["command"] == "previous":
+                self.log.debug("Previous track. Player %s", internalid)
+                #self.players[internalid]["mopidy"].PreviousTrack()
+                player.PreviousTrack()
+                #    "event.device.statechanged", "255", "")
 
+            elif content["command"] == "setvolume":
+                self.log.debug("Set volume for player %s", internalid)
+                print "setvolume"
+                if 'volume' in content:
+                    #print "volume=" + str(content['volume'])
+                    player.SetVolume(content['volume'])
+                    return True
+                else:
+                    self.log.info('Missing parameter "volume" to command SETVOLUME. Player=%s", internalid')
+                    return False
+
+                #self.players[internalid]["mopidy"].PreviousTrack()
+                player.PreviousTrack()
+                #    "event.device.statechanged", "255", "")
+
+            elif content["command"] == "mediainfos":
+                infos = player.GetCurrentTrackInfo()
+                self.log.info("Requested to get MediaInfo. Player %s", internalid) #TODO: revert to debug
+                return infos
 
     def setup_app(self):
         self.connection.add_handler(self.message_handler)
@@ -93,6 +127,10 @@ class AgoMopidy(agoclient.AgoApp):
                           self.players[p]["mopidy"].TrackInfo["album"],
                           self.players[p]["mopidy"].TrackInfo["title"]) #TODO: change to debug
 
+            BACKGROUND = MediaInfoCollector(self, mop)
+            BACKGROUND.setDaemon(True)
+            BACKGROUND.start()
+
     def app_cleanup(self):
         # When our app is about to shutdown, we should clean up any resources we've
         # allocated in app_setup. This is done here.
@@ -100,16 +138,35 @@ class AgoMopidy(agoclient.AgoApp):
         pass
 
     def emit_media_info(self, player):
-        self.log.debug('emit MEDIAINFO')
-        #TrackInfo = self.players[player]["mopidy"].GetCurrentTrackInfo()
-        #client.emit_event_raw(player, "event.device.mediainfos", TrackInfo)
+        self.log.info('emit MEDIAINFO')
+        TrackInfo = self.players[player]["mopidy"].GetCurrentTrackInfo()
 
         TrackInfo = {'title': self.players[player]["mopidy"].TrackInfo["title"],
                      'album': self.players[player]["mopidy"].TrackInfo["album"],
                      'artist': self.players[player]["mopidy"].TrackInfo["artist"],
                      'cover': None}
 
-        self.connection.emit_event(player, "event.device.mediainfos", TrackInfo, "")
+        #TrackInfo = {'title': player.TrackInfo["title"],
+        #             'album': player.TrackInfo["album"],
+        #             'artist': player.TrackInfo["artist"],
+        #             'cover': None}
+
+        self.connection.emit_event_raw(player, "event.device.mediainfos", TrackInfo)
+
+class MediaInfoCollector(threading.Thread):
+    """Class driving a thread to collect media info."""
+    def __init__(self, app, player):
+        threading.Thread.__init__(self)
+        self.app = app
+        self.player = player
+
+    def run(self):
+        level = 0
+        # TODO: Add a proper shutdown..
+        #self.player.GetCurrentTrackInfo()
+        #self.app.emit_media_info(self.player)
+        time.sleep(30)
+
 
 if __name__ == "__main__":
     AgoMopidy().main()
