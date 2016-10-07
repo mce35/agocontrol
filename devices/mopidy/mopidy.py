@@ -4,14 +4,22 @@ import json
 class Mopidy():
     """Class to access the Mopidy JSON RPC 2.0 API """
 
-    def __init__(self ,host, port):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
         self.url = "http://" + self.host + ":" +  self.port + "/mopidy/rpc"
         self.headers = {'content-type': 'application/json'}
         self.version = self.GetVersion()
-        if self.version == "":
-            print "Error communicating with the Mopidy player"
+        self.TrackInfo = {}
+        self.TrackInfo = {'title': 'None', 'album': 'None', 'artist': 'None', 'cover': None} #TODO: Get cover as b64
+
+        if self.version == None:
+            self.connected = False
+            #self.TrackInfo = self.GetCurrentTrackInfo() # Will fail, calling just to get the TrackInfo filled in
+            #print "Error communicating with the Mopidy player"
+        else:
+            self.connected = True
+            self.TrackInfo = self.GetCurrentTrackInfo()
 
     def CallMopidy(self, method):
         """Call Mopidy JSON RPC API"""
@@ -24,6 +32,7 @@ class Mopidy():
 
         try:
             response = requests.post(self.url, data=json.dumps(payload), headers=self.headers).json()
+            # assert response["jsonrpc"]
             if "result" in response:
                 return response["result"]
         except requests.exceptions.ConnectionError:
@@ -34,47 +43,36 @@ class Mopidy():
     def GetVersion(self):
         """Get Mopidy version"""
         result = self.CallMopidy("core.get_version")
-
-        # print requests.exceptions.ConnectionError
-        # assert response["jsonrpc"]
-
-        if result:
-            return result
-        else:
-            #if "error" in response:
-            print "Not OK"
-            return "" #TODO: return None?
+        #print result
+        return result
 
     def GetCurrentTITrack(self):
         """Get current track"""
         result = self.CallMopidy("core.playback.get_current_tl_track")
         print result
-
-        # print requests.exceptions.ConnectionError
         return result # TODO: Extract artist and track info. Place in class members?
 
     def Pause(self):
         """Pause the player"""
         result = self.CallMopidy("core.playback.pause")
-
         return True #TODO: Check playing state and base return on actuals
 
     def Play(self):
         """Send a Play command to Mopidy. If a track is playinjg, it will be played from the begining"""
         result = self.CallMopidy("core.playback.play")
-
-        # print requests.exceptions.ConnectionError
         return True #TODO: Check playing state and base return on actuals
 
     def GetState(self):
         """Get playing state from Mopidy"""
         result = self.CallMopidy("core.playback.get_state")
-
         return result
 
     def GetCurrentTrackInfo(self):
         """Send a Play command to Mopidy. If a track is playinjg, it will be played from the begining"""
-        result = self.CallMopidy("core.playback.get_current_track")
+        try:
+            result = self.CallMopidy("core.playback.get_current_track")
+        finally:
+            pass
 
         artist = "<none>"
         album  = "<none>"

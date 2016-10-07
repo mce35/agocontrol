@@ -18,11 +18,7 @@ __version__ = AGO_MOPIDY_VERSION
 import agoclient
 import threading
 import time
-import mopidy.py
-
-# When developing, it is recommended to run with -d or -t argument,
-# to enable debug/trace logging and log to console.
-# Please refer to -h for other options.
+from mopidy import Mopidy
 
 class AgoMopidy(agoclient.AgoApp):
     """AgoControl device for the Mopidy music player"""
@@ -39,23 +35,22 @@ class AgoMopidy(agoclient.AgoApp):
         if "command" in content:
             if content["command"] == "on":
                 self.log.debug("switching on: %s", internalid)
-
-                # Emit an event which notifies all other components of the state change
-                #self.connection.emit_event(internalid,
-                #    "event.device.statechanged", "255", "")
-            if content["command"] == "play":
-                self.log.debug("Start playing: player %s", internalid)
-                self.players[internalid].mopidy.play()
-                #    "event.device.statechanged", "255", "")
-            elif content["command"] == "pause":
-                self.log.debug("Pause player %s", internalid)
-                self.mopidy.play()
-                #    "event.device.statechanged", "255", "")
-
+                self.connection.emit_event(internalid, "event.device.statechanged", "255", "")
 
             elif content["command"] == "off":
                 self.log.debug("switching off: %s", internalid)
                 self.connection.emit_event(internalid, "event.device.statechanged", "0", "")
+
+            elif content["command"] == "play":
+                self.log.debug("Start playing: player %s", internalid)
+                self.players[internalid]["mopidy"].play()
+                #    "event.device.statechanged", "255", "")
+            elif content["command"] == "pause":
+                self.log.debug("Pause player %s", internalid)
+                self.players[internalid]["mopidy"].pause()
+                #    "event.device.statechanged", "255", "")
+
+
 
     def setup_app(self):
         self.connection.add_handler(self.message_handler)
@@ -67,19 +62,36 @@ class AgoMopidy(agoclient.AgoApp):
         else:
             self.log.warning("Test argument was NOT set")
 
-        # use the self.get_config_option method.
-        # This will look in the configuration file conf.d/<app name>.conf
-        # under the [<app name>] section.
-        # In this example, this means example.conf and [example] section
-        players = self.get_config_option("players", "[none]")
+        self.players = {}
+        players = self.get_config_option("Players", "[none]")
 
-        for p in players:
+        for p in players.split(","):
+            #TODO: remove spaces from p?
+            self.log.debug('Player ' + p + ' found')
+            #print 'Player ' + p + ' found'
             host = self.get_config_option("host", "127.0.0.1", section=p, app='mopidy')
-            port = self.get_config_option("host", "6680", section=p, app='mopidy')
-            self.connection.add_device("Mopidy", "mopidy", p)
-            self.log.info("Mopidy player %s added. host=%s, port=%s", host, port)
-            self.players[p] = self.mopidy(host, port)  # TODO: Add user/pw etc.?
-            self.players[p] = self.emit_media_infos()
+            #print 'host=' + host
+            port = self.get_config_option("port", "6680", section=p, app='mopidy')
+            #print "port=" + port
+            self.connection.add_device(p, "mopidy")
+            self.log.info("Mopidy player %s added. host=%s, port=%s", p, host, port)
+            mop = Mopidy(host, port)
+            if mop.connected:
+                self.log.info("Mopidy player %s connected.", p)
+            else:
+                self.log.info("Mopidy player %s NOT connected.", p)
+
+            player={
+                "name"   : p,
+                "host"   : host,
+                "port"   : port,
+                "mopidy" : mop
+            }
+            self.players[p] = player
+            self.emit_media_info(p)
+            self.log.info("Now playing: %s - %s - %s ", self.players[p]["mopidy"].TrackInfo["artist"],
+                          self.players[p]["mopidy"].TrackInfo["album"],
+                          self.players[p]["mopidy"].TrackInfo["title"]) #TODO: change to debug
 
     def app_cleanup(self):
         # When our app is about to shutdown, we should clean up any resources we've
@@ -89,8 +101,14 @@ class AgoMopidy(agoclient.AgoApp):
 
     def emit_media_info(self, player):
         self.log.debug('emit MEDIAINFO')
-        TrackInfo = self.players[player].GetCurrentTrackInfo()
+        #TrackInfo = self.players[player]["mopidy"].GetCurrentTrackInfo()
         #client.emit_event_raw(player, "event.device.mediainfos", TrackInfo)
+
+        TrackInfo = {'title': self.players[player]["mopidy"].TrackInfo["title"],
+                     'album': self.players[player]["mopidy"].TrackInfo["album"],
+                     'artist': self.players[player]["mopidy"].TrackInfo["artist"],
+                     'cover': None}
+
         self.connection.emit_event(player, "event.device.mediainfos", TrackInfo, "")
 
 if __name__ == "__main__":

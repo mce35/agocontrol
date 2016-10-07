@@ -228,7 +228,7 @@ function device(agocontrol, obj, uuid) {
         }
     }
 
-    if (this.devicetype == "squeezebox")
+    if (this.devicetype == "squeezebox" || this.devicetype == "mopidy")
     {
         this.mediastate = ko.observable(''); //string variable
         this.title = ko.observable('Unknown');
