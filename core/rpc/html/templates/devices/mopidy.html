@@ -1,0 +1,94 @@
+<div class="widget-sm">
+
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+        <div class="inner">
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <div>
+                <div class="widget-box-state">
+                    <i class="en-info-circled"></i>
+                    <ko opts="if: state()==0">
+                    <span>off</span>
+                    </ko>
+                    <ko opts="if: state()==50">
+                    <span>streaming</span>
+                    </ko>
+                    <ko opts="if: state()==100">
+                    <span>playing</span>
+                    </ko>
+                    <ko opts="if: state()==200">
+                    <span>pause</span>
+                    </ko>
+                </div>
+                <ko opts="if:room">
+                <div class="widget-box-location">
+                    <i class="en-location"></i>
+                    <span data-bind="text:room"/>
+                </div>
+                </ko>
+            </div>
+        </div>
+        <div class="icon">
+            <i class="fa en-note-beamed"></i>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-content no-margin-left">
+            <div class="media">
+                <div class="media-left media-middle">
+                    <img data-bind="attr:{src:cover}" height="100" width="100"/>
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading" >
+                        <span style="text-overflow:ellipsis; white-space:nowrap;" data-bind="text:title"></span>
+                    </h4>
+                    <div>
+                        <div style="display:inline-block; text-overflow:ellipsis; white-space:nowrap; padding-right:10px;">
+                            <i class="en-user"></i>
+                            <span data-bind="text:artist"></span>
+                        </div>
+                        <div style="display:inline-block; text-overflow:ellipsis; white-space:nowrap;">
+                            <i class="en-cd"></i>
+                            <span data-bind="text:album"></span>
+                        </div>
+                    </div>
+                    <div class="btn-toolbar" style="padding-top:8px;">
+                        <div class="btn-group">
+                            <ko opts="if: state()==0">
+                                <button type="button" class="btn btn-xs btn-default" data-bind="click:previous"><i class="en-to-start"></i></button>
+                                <button type="button" class="btn btn-xs btn-default" data-bind="click:play"><i class="en-play"></i></button>
+                                <button type="button" class="btn btn-xs btn-default" data-bind="click:stop"><i class="en-stop"></i></button>
+                                <button type="button" class="btn btn-xs btn-default" data-bind="click:next"><i class="en-to-end"></i></button>
+                            </ko>
+                            <ko opts="ifnot: state()==0">
+                                <button type="button" class="btn btn-xs btn-primary" data-bind="click:previous"><i class="en-to-start"></i></button>
+                                <ko opts="if:(state()!=0 and state()!=100 and state()!=50)">
+                                <button type="button" class="btn btn-xs btn-primary" data-bind="click:play"><i class="en-play"></i></button>
+                                </ko>
+                                <ko opts="ifnot:(state()!=0 and state()!=100 and state()!=50)">
+                                <button type="button" class="btn btn-xs btn-primary" data-bind="click:pause"><i class="en-pause"></i></button>
+                                </ko>
+                                <button type="button" class="btn btn-xs btn-primary" data-bind="click:stop"><i class="en-stop"></i></button>
+                                <button type="button" class="btn btn-xs btn-primary" data-bind="click:next"><i class="en-to-end"></i></button>
+                            </ko>
+                        </div>
+                        <div class="btn-group">
+                            <ko opts="ifnot:state()==50">
+                                <ko opts="if:state()==0">
+                                <button type="button" class="btn btn-xs btn-danger" data-bind="click:turnOn"><i class="fa fa-power-off"></i></button>
+                                </ko>
+                                <ko opts="ifnot:state()==0">
+                                <button type="button" class="btn btn-xs btn-success" data-bind="click:turnOff"><i class="fa fa-power-off"></i></button>
+                                </ko>
+                            </ko>
+                            <ko opts="if:state()==50">
+                                <button type="button" class="btn btn-xs btn-default" title="Streaming" alt="Streaming"><i class="en-rss"></i></button>
+                            </ko>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
