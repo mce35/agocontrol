@@ -544,6 +544,12 @@ devicetypes:
     "commands": ["allon","alloff","displaymessage"]
     "description": "Squeezebox player manager"
     "name": "Squeezebox Server"
+  "mopidy":
+    "commands": ["on", "off", "play", "pause", "stop", "setvolume"]
+    "description": "Plays music"
+    "events": ["event.device.statechanged", "event.device.mediastatechanged"]
+    "name": "Mopidy Music Player"
+    "properties": ["mediastate"]
   "switch":
     "commands": ["on","off"]
     "description": "simple on off switch"

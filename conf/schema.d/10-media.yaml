@@ -212,9 +212,9 @@ devicetypes:
     description: Squeezebox player manager
     commands: ["allon", "alloff", displaymessage]
   mopidy:
-    name: Mopidy Player
+    name: Mopidy Music Player
     description: Plays music
-    commands: ["on", "off", play, pause, stop, displaymessage, setvolume]
+    commands: ["on", "off", play, pause, stop, setvolume]
     events: [event.device.statechanged, event.device.mediastatechanged]
     properties: [mediastate]
   settopbox:

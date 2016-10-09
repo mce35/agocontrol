@@ -41,4 +41,5 @@ systemd/agofirmata.service
 systemd/agoresolver.service
 systemd/agorpc.service
 systemd/agosqueezeboxserver.service
+systemd/agomopidy.service
 systemd/agox10.service
