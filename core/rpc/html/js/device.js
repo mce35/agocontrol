@@ -245,9 +245,12 @@ function device(agocontrol, obj, uuid) {
             }
 
             //update other infos
-            this.title(infos.title.substring(0,55));
-            this.album(infos.album);
-            this.artist(infos.artist);
+            if( infos.title && infos.album && infos.artist )
+            {
+                this.title(infos.title.substring(0,55));
+                this.album(infos.album);
+                this.artist(infos.artist);
+            }
         };
 
         this.play = function()
