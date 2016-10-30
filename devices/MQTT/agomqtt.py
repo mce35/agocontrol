@@ -67,7 +67,10 @@ class MQTTThread(threading.Thread):
         self.mapping = {
             "temperature":["temperaturesensor", "event.environment.temperaturechanged", "degC"],
             "humidity":["humiditysensor", "event.environment.humiditychanged", "%"],
-            "pressure":["barometersensor", "event.environment.pressurechanged", "mBar"]
+            "pressure":["barometersensor", "event.environment.pressurechanged", "mBar"],
+            "power":["powermeter", "event.environment.powerchanged", "W"],
+            "flow":["flowmeter", "event.environment.flowchanged", "m^3"],
+            "energy":["energymeter", "event.environment.energychanged", "W"]
         }
         
         if self.app.mapping:
