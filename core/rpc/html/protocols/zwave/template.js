@@ -909,7 +909,7 @@ function zwaveConfig(zwave) {
     self.nodeParametersGrid = new ko.agoGrid.viewModel({
         data: self.nodeParameters,
         columns: [
-            {headerText:'', rowText:''},
+            {headerText:'Index', rowText:''},
             {headerText:'Parameter', rowText:''},
             {headerText:'Value', rowText:''},
             {headerText:'', rowText:''}

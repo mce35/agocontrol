@@ -81,6 +81,7 @@
                             <div id="configuration" class="tab-pane fade">
                                 <script type="text/html" id="nodeParametersRowTemplate">
                                     <td>
+                                        <span data-bind="text:index"/>
                                         <ko opts="if: help.length>0">
                                         <span class="en-help-circled" data-toggle="tooltip" data-placement="right" data-bind="attr:{'title':help}" />
                                         </ko>
