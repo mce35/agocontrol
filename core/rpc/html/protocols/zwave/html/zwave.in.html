@@ -59,7 +59,7 @@
                                                     <span data-bind="text:asso"/>
                                                 </td>
                                                 <td>
-                                                    <button type="button" class="btn btn-primary btn-sm" _title="Delete node association" _alt="Delete node association" data-translateable="true" data-bind="click:$parent.removeAssociation"><i class="en-cancel"></i></button>
+                                                    <button type="button" class="btn btn-primary btn-sm" _title="Delete node association" _alt="Delete node association" data-translateable="true" data-bind="click:$parents[1].removeAssociation"><i class="en-cancel"></i></button>
                                                 </td>
                                             </tr>
                                             <tr data-bind="if: add">
@@ -68,7 +68,7 @@
                                                     <select class="form-control" data-bind="options:targets, optionsText:'value', value:target"/>
                                                 </td>
                                                 <td>
-                                                    <button type="button" class="btn btn-primary btn-sm" _title="Add association" _alt="Add association" data-translateable="true" data-bind="click:$parent.addAssociation"><i class="en-plus"></i></button>
+                                                    <button type="button" class="btn btn-primary btn-sm" _title="Add association" _alt="Add association" data-translateable="true" data-bind="click:$parents[1].addAssociation"><i class="en-plus"></i></button>
                                                 </td>
                                             </tr>
                                         </tbody>
