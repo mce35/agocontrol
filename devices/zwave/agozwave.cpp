@@ -2013,6 +2013,35 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             returnval["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, mygroup);
             return responseSuccess(returnval);
         }
+        else if (content["command"] == "getallassociations")
+        {
+            checkMsgParameter(content, "node", VAR_INT32);
+            int mynode = content["node"];
+            int numGroups = Manager::Get()->GetNumGroups(g_homeId, mynode);
+
+            qpid::types::Variant::List groups;
+            for(int group=1; group <= numGroups; group++) {
+                qpid::types::Variant::Map g;
+                uint8_t *associations;
+                uint32_t numassoc = Manager::Get()->GetAssociations(g_homeId, mynode, group, &associations);
+
+                qpid::types::Variant::List associationsList;
+                for (uint32_t assoc = 0; assoc < numassoc; assoc++)
+                    associationsList.push_back(associations[assoc]);
+
+                if (numassoc >0) delete[] associations;
+
+                g["group"] = group;
+                g["associations"] = associationsList;
+                g["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, group);
+
+                groups.push_back(g);
+            }
+
+            qpid::types::Variant::Map returnval;
+            returnval["groups"] = groups;
+            return responseSuccess(returnval);
+        }
         else if (content["command"] == "removeassociation")
         {
             checkMsgParameter(content, "node", VAR_INT32);
