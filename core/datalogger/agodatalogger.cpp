@@ -51,6 +51,7 @@ using namespace agocontrol;
 class AgoDataLogger: public AgoApp {
 private:
     cppdb::session sql;
+    std::string dbname;
     //inventory
     void updateInventory();
     bool checkInventory();
@@ -167,7 +168,7 @@ bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createq
             r = sql<< "SELECT name FROM sqlite_master WHERE type='table' AND name = ?" << tablename << cppdb::row;
         } else {
             AGO_TRACE() << "checking existance of table in non-sqlite: " << tablename;
-            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = 'agocontrol' AND table_name = ? LIMIT 1" <<  tablename << cppdb::row; // FIXME don't hardcode db name
+            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = ? AND table_name = ? LIMIT 1" << dbname << tablename << cppdb::row;
         }
         if (r.empty()) {
             AGO_INFO() << "Creating missing table '" << tablename << "'";
@@ -1817,9 +1818,23 @@ void AgoDataLogger::setupApp()
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     try {
         std::string dbconnection = getConfigOption("dbconnection", string("sqlite3:db=" + dbpath.string()).c_str());
-        AGO_INFO() << "CppDB connection string: " << dbconnection;
+        AGO_TRACE() << "CppDB connection string: " << dbconnection;
         sql = cppdb::session(dbconnection);
         AGO_INFO() << "Using " << sql.driver() << " database via CppDB";
+        if (sql.driver() == "mysql") {
+       	    size_t start = dbconnection.find("database=");
+            if (start != std::string::npos) {
+                std::string remainder = dbconnection.substr(start+9);
+                size_t end = remainder.find(";");
+                if (end != std::string::npos) {
+                    dbname = remainder.substr(0,end);
+		} else {
+                    dbname = remainder;
+		}
+		AGO_INFO() << "Database name: " << dbname;
+            }
+
+        }
     } catch (std::exception const &e) {
         AGO_ERROR() << "Can't open database: " << e.what();
         throw StartupError();
