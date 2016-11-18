@@ -167,7 +167,7 @@ bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createq
             r = sql<< "SELECT name FROM sqlite_master WHERE type='table' AND name = ?" << tablename << cppdb::row;
         } else {
             AGO_TRACE() << "checking existance of table in non-sqlite: " << tablename;
-            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = 'agocontrol' AND table_name = '?' LIMIT 1" <<  tablename << cppdb::row;
+            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = 'sqlcpptest' AND table_name = ? LIMIT 1" <<  tablename << cppdb::row;
         }
         if (r.empty()) {
             AGO_INFO() << "Creating missing table '" << tablename << "'";
@@ -1817,6 +1817,7 @@ void AgoDataLogger::setupApp()
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     try {
         sql = cppdb::session(getConfigOption("dbconnectionstring", string("sqlite3:db=" + dbpath.string()).c_str()));
+        // sql = cppdb::session("mysql:database=sqlcpptest;user=sqlcppe;password='sqlcpp'");
         AGO_INFO() << "Using " << sql.driver() << " database via CppDB";
     } catch (std::exception const &e) {
         AGO_ERROR() << "Can't open database: " << e.what();
@@ -1826,22 +1827,40 @@ void AgoDataLogger::setupApp()
     //create missing tables
     list<string> queries;
     //db
-    queries.push_back("CREATE TABLE data(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp LONG);");
-    queries.push_back("CREATE INDEX timestamp_idx ON data(timestamp);");
-    queries.push_back("CREATE INDEX environment_idx ON data(environment);");
-    queries.push_back("CREATE INDEX uuid_idx ON data(uuid);");
+    if (sql.driver() == "sqlite3") {
+        queries.push_back("CREATE TABLE data(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp LONG);");
+    } else {
+        //  [  ERROR] Sql exception: cppdb::mysql::BLOB/TEXT column 'timestamp' used in key specification without a key length
+        // FIXME
+        queries.push_back("CREATE TABLE data (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp INTEGER);");
+    }
+    queries.push_back("CREATE INDEX timestamp_idx ON data (timestamp);");
+    queries.push_back("CREATE INDEX environment_idx ON data (environment);");
+    queries.push_back("CREATE INDEX uuid_idx ON data (uuid);");
     createTableIfNotExist("data", queries);
     queries.clear();
     //position
-    queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
-    queries.push_back("CREATE INDEX timestamp_position_idx ON position(timestamp)");
-    queries.push_back("CREATE INDEX uuid_position_idx ON position(uuid)");
+    if (sql.driver() == "sqlite3") {
+        queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
+    } else {
+        // [  ERROR] Sql exception: cppdb::mysql::You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'position(id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid TEXT, latitude REAL, longit' at line 1
+        // FIXME
+        queries.push_back("CREATE TABLE position (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp INTEGER)");
+    }
+    queries.push_back("CREATE INDEX timestamp_position_idx ON position (timestamp)");
+    queries.push_back("CREATE INDEX uuid_position_idx ON position (uuid)");
     createTableIfNotExist("position", queries);
     queries.clear();
     //journal table
-    queries.push_back("CREATE TABLE journal(id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp LONG, message TEXT, type TEXT)");
-    queries.push_back("CREATE INDEX timestamp_journal_idx ON journal(timestamp)");
-    queries.push_back("CREATE INDEX type_journal_idx ON journal(type)");
+    if (sql.driver() == "sqlite3") {
+        queries.push_back("CREATE TABLE journal(id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp LONG, message TEXT, type TEXT)");
+    } else {
+        // [  ERROR] Sql exception: cppdb::mysql::BLOB/TEXT column 'timestamp' used in key specification without a key length
+        // FIXME
+        queries.push_back("CREATE TABLE journal (id INTEGER PRIMARY KEY AUTO_INCREMENT, timestamp INTEGER, message TEXT, type TEXT)");
+    }
+    queries.push_back("CREATE INDEX timestamp_journal_idx ON journal (timestamp)");
+    queries.push_back("CREATE INDEX type_journal_idx ON journal (type)");
     createTableIfNotExist("journal", queries);
     queries.clear();
 
