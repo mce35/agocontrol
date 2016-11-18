@@ -7,6 +7,7 @@ set (DATALOGGER_LIBRARIES
     pthread
 	 ${Boost_PROGRAM_DATE_TIME_LIBRARY}
     rrd
+    cppdb
 )
 
 # add the executable

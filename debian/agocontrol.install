@@ -8,6 +8,7 @@ lib/systemd/system/agolua.service
 lib/systemd/system/agosecurity.service
 lib/systemd/system/agosystem.service
 etc/opt/agocontrol/conf.d/system.conf
+etc/opt/agocontrol/conf.d/datalogger.conf
 etc/opt/agocontrol/conf.d/rpc.conf
 etc/opt/agocontrol/schema.d/00-core.yaml
 etc/opt/agocontrol/schema.d/05-system.yaml

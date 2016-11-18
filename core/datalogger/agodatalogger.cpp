@@ -9,7 +9,8 @@
 #include <sstream>
 #include <cerrno>
 
-#include <sqlite3.h>
+#include <cppdb/frontend.h>
+#include <stdarg.h>
 
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -49,6 +50,8 @@ using namespace agocontrol;
 
 class AgoDataLogger: public AgoApp {
 private:
+    cppdb::session sql;
+    std::string dbname;
     //inventory
     void updateInventory();
     bool checkInventory();
@@ -91,14 +94,13 @@ private:
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
     void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content);
-    void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content);
+    void eventHandlerSQL(std::string subject, std::string uuid, qpid::types::Variant::Map content);
     void dailyPurge();
     void setupApp();
 public:
     AGOAPP_CONSTRUCTOR(AgoDataLogger);
 };
 
-sqlite3 *db;
 qpid::types::Variant::Map inventory;
 qpid::types::Variant::Map units;
 bool dataLogging = 1;
@@ -159,38 +161,25 @@ bool AgoDataLogger::checkInventory()
 }
 
 bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createqueries) {
-    //init
-    sqlite3_stmt *stmt = NULL;
-    int rc;
-    char* sqlError = 0;
-    string query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
-
-    //prepare query
-    rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
-    if(rc != SQLITE_OK) {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-        return false;
-    }
-    sqlite3_bind_text(stmt, 1, tablename.c_str(), -1, NULL);
-
-    //execute query
-    if( stmt!=NULL ) {
-        rc = sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
-        if( rc!=SQLITE_ROW ) {
-            //table doesn't exit, create it
+    try {
+        cppdb::result r;
+        if (sql.driver() == "sqlite3") {
+            AGO_TRACE() << "checking existance of table in sqlite: " << tablename;
+            r = sql<< "SELECT name FROM sqlite_master WHERE type='table' AND name = ?" << tablename << cppdb::row;
+        } else {
+            AGO_TRACE() << "checking existance of table in non-sqlite: " << tablename;
+            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = ? AND table_name = ? LIMIT 1" << dbname << tablename << cppdb::row;
+        }
+        if (r.empty()) {
             AGO_INFO() << "Creating missing table '" << tablename << "'";
             for( list<string>::iterator it=createqueries.begin(); it!=createqueries.end(); it++ ) {
-                rc = sqlite3_exec(db, (*it).c_str(), NULL, NULL, &sqlError);
-                if(rc != SQLITE_OK) {
-                    AGO_ERROR() << "Sql error #" << rc << ": " << sqlError;
-                    return false;
-                }
+                sql << (*it) << cppdb::exec;
             }
+            createqueries.clear();
         }
+    } catch(std::exception const &e) {
+        AGO_ERROR() << "Sql exception: " << e.what();
     }
-    createqueries.clear();
-
     return true;
 }
 
@@ -836,12 +825,10 @@ void AgoDataLogger::eventHandlerRRDtool(std::string subject, std::string uuid, q
 }
 
 /**
- * Store event data into SQLite database
+ * Store event data into SQL database
  */
-void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content)
+void AgoDataLogger::eventHandlerSQL(std::string subject, std::string uuid, qpid::types::Variant::Map content)
 {
-    sqlite3_stmt *stmt = NULL;
-    int rc;
     string result;
 
     if( gpsLogging && subject=="event.environment.positionchanged" && content["latitude"].asString()!="" && content["longitude"].asString()!="" )
@@ -849,19 +836,12 @@ void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qp
         AGO_DEBUG() << "specific environment case: position";
         string lat = content["latitude"].asString();
         string lon = content["longitude"].asString();
-
-        string query = "INSERT INTO position VALUES(null, ?, ?, ?, ?)";
-        rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
-        if(rc != SQLITE_OK)
-        {
-            AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
+        try {
+            sql <<  "INSERT INTO position VALUES(null, ?, ?, ?, ?)" << uuid << lat << lon << (int)time(NULL) << cppdb::exec;
+        } catch(std::exception const &e) {
+            AGO_ERROR() << "Sql error: "  << e.what();
             return;
         }
-
-        sqlite3_bind_text(stmt, 1, uuid.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 2, lat.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 3, lon.c_str(), -1, NULL);
-        sqlite3_bind_int(stmt, 4, time(NULL));
     }
     else if( dataLogging && content["level"].asString() != "")
     {
@@ -871,50 +851,36 @@ void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qp
         replaceString(subject, "event.", "");
         replaceString(subject, "security.sensortriggered", "state"); // convert security sensortriggered event to state
 
-        string query = "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
-        rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
-        if(rc != SQLITE_OK) {
-            AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
+        try {
+            cppdb::statement stat = sql << "INSERT INTO data VALUES(null, ?, ?, ?, ?)";
+
+            string level = content["level"].asString();
+            stat.bind(uuid);
+            stat.bind(subject);
+
+            double value;
+            switch(content["level"].getType()) {
+                case qpid::types::VAR_DOUBLE:
+                    value = content["level"].asDouble();
+                    stat.bind(value);
+                    break;
+                case qpid::types::VAR_FLOAT:
+                    value = content["level"].asFloat();
+                    stat.bind(value);
+                    break;
+                default:
+                    stat.bind(level);
+            }
+
+            stat.bind(time(NULL));
+
+            stat.exec();
+        } catch(std::exception const &e) {
+            AGO_ERROR() << "Sql error: "  << e.what();
             return;
         }
-
-        string level = content["level"].asString();
-
-        sqlite3_bind_text(stmt, 1, uuid.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 2, subject.c_str(), -1, NULL);
-
-        double value;
-        switch(content["level"].getType()) {
-            case qpid::types::VAR_DOUBLE:
-                value = content["level"].asDouble();
-                sqlite3_bind_double(stmt,3,value);
-                break;
-            case qpid::types::VAR_FLOAT:
-                value = content["level"].asFloat();
-                sqlite3_bind_double(stmt,3,value);
-                break;
-            default:
-                sqlite3_bind_text(stmt, 3, level.c_str(), -1, NULL);
-        }
-
-        sqlite3_bind_int(stmt, 4, time(NULL));
     }
 
-    if( stmt!=NULL )
-    {
-        rc = sqlite3_step(stmt);
-        switch(rc)
-        {
-            case SQLITE_ERROR:
-                AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                break;
-            case SQLITE_ROW:
-                if (sqlite3_column_type(stmt, 0) == SQLITE_TEXT) result =string( (const char*)sqlite3_column_text(stmt, 0));
-                break;
-        }
-
-        sqlite3_finalize(stmt);
-    }
 }
 
 /**
@@ -922,38 +888,12 @@ void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qp
  */
 bool AgoDataLogger::eventHandlerJournal(std::string message, std::string type)
 {
-    sqlite3_stmt *stmt = NULL;
-    int rc;
-    string result;
-
-    string query = "INSERT INTO journal VALUES(null, ?, ?, ?)";
-    rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
+    try {
+        sql <<  "INSERT INTO journal VALUES(null, ?, ?, ?)" << time(NULL) << message << type << cppdb::exec;
+    } catch(std::exception const &e) {
+        AGO_ERROR() << "Sql error: "  << e.what();
         return false;
     }
-
-    sqlite3_bind_int(stmt, 1, time(NULL));
-    sqlite3_bind_text(stmt, 2, message.c_str(), -1, NULL);
-    sqlite3_bind_text(stmt, 3, type.c_str(), -1, NULL);
-
-    if( stmt!=NULL )
-    {
-        rc = sqlite3_step(stmt);
-        switch(rc)
-        {
-            case SQLITE_ERROR:
-                AGO_ERROR() << "Step error: " << sqlite3_errmsg(db);
-                break;
-            case SQLITE_ROW:
-                if (sqlite3_column_type(stmt, 0) == SQLITE_TEXT) result =string( (const char*)sqlite3_column_text(stmt, 0));
-                break;
-        }
-
-        sqlite3_finalize(stmt);
-    }
-
     return true;
 }
 
@@ -965,7 +905,7 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     if( subject!="" && !content["uuid"].isVoid() )
     {
         //data logging
-        eventHandlerSQLite(subject, content["uuid"].asString(), content);
+        eventHandlerSQL(subject, content["uuid"].asString(), content);
 
         //rrd logging
         if( rrdLogging )
@@ -1065,91 +1005,37 @@ bool AgoDataLogger::getGraphDataFromRrd(qpid::types::Variant::List uuids, int st
 bool AgoDataLogger::getGraphDataFromSqlite(qpid::types::Variant::List uuids, int start, int end, string environment, qpid::types::Variant::Map& result)
 {
     AGO_TRACE() << "getGraphDataFromSqlite: " << environment;
-
-    sqlite3_stmt *stmt;
-    int rc;
     qpid::types::Variant::List values;
-    std::stringstream query;
     string uuid = uuids.front().asString();
-
-    //prepare specific query string
-    if( environment=="position" )
-    {
-        rc = sqlite3_prepare_v2(db, "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
-    }
-    else
-    {
-        rc = sqlite3_prepare_v2(db, "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ? AND environment = ? AND uuid = ? ORDER BY timestamp", -1, &stmt, NULL);
-    }
-
-    //check query
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
+    try {
+        if( environment=="position" )
+        {
+            AGO_TRACE() << "Execute query on postition table";
+            cppdb::result r = sql << "SELECT timestamp, latitude, longitude FROM position WHERE timestamp BETWEEN ? AND ? AND uuid = ? ORDER BY timestamp" << start << end << uuid;
+            while(r.next()) {
+                qpid::types::Variant::Map value;
+                value["time"] = r.get<int>("timestamp");
+                value["latitude"] = r.get<double>("latitude");
+                value["longitude"] = r.get<double>("longitude");
+                values.push_back(value);
+            }
+        }
+        else
+        {
+            AGO_TRACE() << "Execute query on data table";
+            cppdb::result r = sql << "SELECT timestamp, level FROM data WHERE timestamp BETWEEN ? AND ? AND environment = ? AND uuid = ? ORDER BY timestamp" << start << end << environment << uuid;
+            while(r.next()) {
+                qpid::types::Variant::Map value;
+                value["time"] = r.get<int>("timestamp");
+                value["level"] = r.get<double>("level");
+                values.push_back(value);
+            }
+        }
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
         return false;
     }
-
-    //add specific fields
-    if( environment=="position" )
-    {
-        AGO_TRACE() << "Execute query on position table";
-
-
-        //fill query
-        sqlite3_bind_int(stmt, 1, start);
-        sqlite3_bind_int(stmt, 2, end);
-        sqlite3_bind_text(stmt, 3, uuid.c_str(), -1, NULL);
-
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    qpid::types::Variant::Map value;
-                    value["time"] = sqlite3_column_int(stmt, 0);
-                    value["latitude"] = sqlite3_column_double(stmt, 1);
-                    value["longitude"] = sqlite3_column_double(stmt, 2);
-                    values.push_back(value);
-                    break;
-            }
-        }
-        while (rc == SQLITE_ROW);
-    }
-    else
-    {
-        AGO_TRACE() << "Execute query on data table";
-
-        //fill query
-        sqlite3_bind_int(stmt, 1, start);
-        sqlite3_bind_int(stmt, 2, end);
-        sqlite3_bind_text(stmt, 3, environment.c_str(), -1, NULL);
-        sqlite3_bind_text(stmt, 4, uuid.c_str(), -1, NULL);
-
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "Step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    qpid::types::Variant::Map value;
-                    value["time"] = sqlite3_column_int(stmt, 0);
-                    value["level"] = sqlite3_column_double(stmt, 1);
-                    values.push_back(value);
-                    break;
-            }
-        }
-        while (rc == SQLITE_ROW);
-    }
-    sqlite3_finalize(stmt);
-
-    AGO_TRACE() << "Sqlite query returns " << values.size() << " values";
+    AGO_TRACE() << "SQL query returns " << values.size() << " values";
 
     result["values"] = values;
     return true;
@@ -1186,8 +1072,6 @@ void AgoDataLogger::getGraphData(qpid::types::Variant::List uuids, int start, in
  */
 bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, qpid::types::Variant::Map& result)
 {
-    sqlite3_stmt *stmt;
-    int rc;
     qpid::types::Variant::List messages;
     std::string filter = "";
     std::string type = "";
@@ -1213,8 +1097,6 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
         }
     }
 
-    //prepare query
-    rc = sqlite3_prepare_v2(db, "SELECT timestamp, message, type FROM journal WHERE timestamp BETWEEN ? AND ? AND message LIKE ? AND type LIKE ? ORDER BY timestamp DESC", -1, &stmt, NULL);
 
     //parse the timestrings
     string startDate = content["start"].asString();
@@ -1230,41 +1112,19 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
     boost::posix_time::time_duration end = boost::posix_time::from_iso_string(endDate) - base;
 
     AGO_TRACE() << "getMessagesFromJournal: start=" << start.total_seconds() << " end=" << end.total_seconds() << " filter=" << filter << " type=" << type;
-
-    //check query
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
+    try {
+        cppdb::result r = sql <<  "SELECT timestamp, message, type FROM journal WHERE timestamp BETWEEN ? AND ? AND message LIKE ? AND type LIKE ? ORDER BY timestamp DESC" << start.total_seconds() << end.total_seconds() << filter << type;
+        while (r.next()) {
+            qpid::types::Variant::Map value;
+            value["time"] = r.get<int>("timestamp");
+            value["message"] = r.get<std::string>("message");
+            value["type"] = r.get<std::string>("type");
+            messages.push_back(value);
+        }
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
         return false;
     }
-
-    //fill query
-    sqlite3_bind_int(stmt, 1, start.total_seconds());
-    sqlite3_bind_int(stmt, 2, end.total_seconds());
-    sqlite3_bind_text(stmt, 3, filter.c_str(), -1, NULL);
-    sqlite3_bind_text(stmt, 4, type.c_str(), -1, NULL);
-
-    //execute query
-    do
-    {
-        rc = sqlite3_step(stmt);
-        switch(rc)
-        {
-            case SQLITE_ERROR:
-                AGO_ERROR() << "Step error: " << sqlite3_errmsg(db);
-                break;
-            case SQLITE_ROW:
-                qpid::types::Variant::Map value;
-                value["time"] = sqlite3_column_int(stmt, 0);
-                value["message"] = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-                value["type"] = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-                messages.push_back(value);
-                break;
-        }
-    }
-    while (rc == SQLITE_ROW);
-
-    sqlite3_finalize(stmt);
 
     AGO_TRACE() << "Query returns " << messages.size() << " messages";
 
@@ -1279,8 +1139,6 @@ bool AgoDataLogger::getMessagesFromJournal(qpid::types::Variant::Map& content, q
  */
 qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
 {
-    sqlite3_stmt *stmt;
-    int rc;
     qpid::types::Variant::Map returnval;
     returnval["data_start"] = 0;
     returnval["data_end"] = 0;
@@ -1293,156 +1151,66 @@ qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
     returnval["journal_count"] = 0;
 
     //get data time range
-    rc = sqlite3_prepare_v2(db, "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM data;", -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-    }
-    else
-    {
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    returnval["data_start"] = (int)sqlite3_column_int(stmt, 0);
-                    returnval["data_end"] = (int)sqlite3_column_int(stmt, 1);
-                    break;
-            }
+    try {
+        cppdb::result r = sql <<  "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM data" << cppdb::row;
+        if (!r.empty()) {
+            returnval["data_start"] = r.get<int>("min");
+            returnval["data_end"] = r.get<int>("max");
         }
-        while (rc == SQLITE_ROW);
-        sqlite3_finalize(stmt);
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
     }
 
     //get data count
-    rc = sqlite3_prepare_v2(db, "SELECT COUNT(id) FROM data;", -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-    }
-    else
-    {
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    returnval["data_count"] = (int64_t)sqlite3_column_int64(stmt, 0);
-                    break;
-            }
+    try {
+        cppdb::result r = sql <<  "SELECT COUNT(id) AS count FROM data" << cppdb::row;
+        if (!r.empty()) {
+            returnval["data_count"] = r.get<int64_t>("count");
         }
-        while (rc == SQLITE_ROW);
-        sqlite3_finalize(stmt);
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
     }
 
     //get position time range
-    rc = sqlite3_prepare_v2(db, "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM position;", -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-    }
-    else
-    {
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    returnval["position_start"] = (int)sqlite3_column_int(stmt, 0);
-                    returnval["position_end"] = (int)sqlite3_column_int(stmt, 1);
-                    break;
-            }
+    try {
+        cppdb::result r = sql <<  "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM position" << cppdb::row;
+        if (!r.empty()) {
+            returnval["position_start"] = r.get<int>("min");
+            returnval["position_end"] = r.get<int>("max");
         }
-        while (rc == SQLITE_ROW);
-        sqlite3_finalize(stmt);
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
     }
 
     //get position count
-    rc = sqlite3_prepare_v2(db, "SELECT COUNT(id) FROM position;", -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-    }
-    else
-    {
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    returnval["position_count"] = (int64_t)sqlite3_column_int64(stmt, 0);
-                    break;
-            }
+    try {
+        cppdb::result r = sql <<  "SELECT COUNT(id) AS count FROM position" << cppdb::row;
+        if (!r.empty()) {
+            returnval["position_count"] = r.get<int64_t>("count");
         }
-        while (rc == SQLITE_ROW);
-        sqlite3_finalize(stmt);
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
     }
 
     //get journal time range
-    rc = sqlite3_prepare_v2(db, "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM journal;", -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-    }
-    else
-    {
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "Step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    returnval["journal_start"] = (int)sqlite3_column_int(stmt, 0);
-                    returnval["journal_end"] = (int)sqlite3_column_int(stmt, 1);
-                    break;
-            }
+    try {
+        cppdb::result r = sql <<  "SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM journal" << cppdb::row;
+        if (!r.empty()) {
+            returnval["journal_start"] = r.get<int>("min");
+            returnval["journal_end"] = r.get<int>("max");
         }
-        while (rc == SQLITE_ROW);
-        sqlite3_finalize(stmt);
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
     }
 
     //get journal count
-    rc = sqlite3_prepare_v2(db, "SELECT COUNT(id) FROM journal;", -1, &stmt, NULL);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
-    }
-    else
-    {
-        do
-        {
-            rc = sqlite3_step(stmt);
-            switch(rc)
-            {
-                case SQLITE_ERROR:
-                    AGO_ERROR() << "Step error: " << sqlite3_errmsg(db);
-                    break;
-                case SQLITE_ROW:
-                    returnval["journal_count"] = (int64_t)sqlite3_column_int64(stmt, 0);
-                    break;
-            }
+    try {
+        cppdb::result r = sql <<  "SELECT COUNT(id) AS count FROM journal" << cppdb::row;
+        if (!r.empty()) {
+            returnval["journal_count"] = r.get<int64_t>("count");
         }
-        while (rc == SQLITE_ROW);
-        sqlite3_finalize(stmt);
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
     }
 
     return returnval;
@@ -1454,8 +1222,6 @@ qpid::types::Variant::Map AgoDataLogger::getDatabaseInfos()
  */
 bool AgoDataLogger::purgeTable(std::string table, int timestamp=0)
 {
-    int rc;
-    char *zErrMsg = 0;
     stringstream query;
     query << "DELETE FROM " << table;
 
@@ -1464,20 +1230,14 @@ bool AgoDataLogger::purgeTable(std::string table, int timestamp=0)
         query << " WHERE timestamp<" << timestamp;
     }
 
-    string str = query.str();
-    AGO_TRACE() << "purgeTable query: " << str;
-
-    rc = sqlite3_exec(db, str.c_str(), NULL, NULL, &zErrMsg);
-    if(rc != SQLITE_OK)
-    {
-        AGO_ERROR() << "Sql error #" << rc << ": " << zErrMsg;
-        return false;
-    }
-    else
-    {
+    AGO_TRACE() << "purgeTable query: " << query.str();
+    try {
+        sql << query.str() << cppdb::exec;
         //vacuum database
-        rc = sqlite3_exec(db, "VACUUM", NULL, NULL, &zErrMsg);
-        return true;
+        if (sql.driver() == "sqlite3") sql << "VACUUM" << cppdb::exec;
+    } catch(std::exception const &e) {
+        AGO_ERROR() << "SQL Error: " << e.what();
+        return false;
     }
     return true;
 }
@@ -1724,32 +1484,15 @@ qpid::types::Variant::Map AgoDataLogger::commandHandler(qpid::types::Variant::Ma
         }
         else if (content["command"] == "getdeviceenvironments")
         {
-            sqlite3_stmt *stmt;
-            int rc;
-            rc = sqlite3_prepare_v2(db, "SELECT distinct uuid, environment FROM data", -1, &stmt, NULL);
-            if(rc != SQLITE_OK)
-            {
-                AGO_ERROR() << "Sql error #" << rc << ": " << sqlite3_errmsg(db);
+            try {
+                cppdb::result r = sql << "SELECT distinct uuid, environment FROM data";
+                while (r.next()) {
+                    returnData[r.get<std::string>("uuid")]=r.get<std::string>("environment");
+                }
+            } catch(std::exception const &e) {
+                AGO_ERROR() << "SQL Error: " << e.what();
                 return responseFailed("SQL Error");
             }
-
-            do
-            {
-                rc = sqlite3_step(stmt);
-                switch(rc)
-                {
-                    case SQLITE_ERROR:
-                        AGO_ERROR() << "step error: " << sqlite3_errmsg(db);
-                        break;
-                    case SQLITE_ROW:
-                        returnData[string((const char*)sqlite3_column_text(stmt, 0))] = string((const char*)sqlite3_column_text(stmt, 1));
-                        break;
-                }
-            }
-            while (rc == SQLITE_ROW);
-
-            sqlite3_finalize(stmt);
-
             return responseSuccess(returnData);
         }
         else if( content["command"]=="getconfig" )
@@ -2073,33 +1816,61 @@ void AgoDataLogger::setupApp()
 
     //init database
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
-    int rc = sqlite3_open(dbpath.c_str(), &db);
-    sqlite3_trace(db, debugSqlite, NULL);
-    if( rc != SQLITE_OK){
-        AGO_ERROR() << "Can't open database " << dbpath.string() << ": " << sqlite3_errmsg(db);
-        sqlite3_close(db);
+    try {
+        std::string dbconnection = getConfigOption("dbconnection", string("sqlite3:db=" + dbpath.string()).c_str());
+        AGO_TRACE() << "CppDB connection string: " << dbconnection;
+        sql = cppdb::session(dbconnection);
+        AGO_INFO() << "Using " << sql.driver() << " database via CppDB";
+        if (sql.driver() == "mysql") {
+       	    size_t start = dbconnection.find("database=");
+            if (start != std::string::npos) {
+                std::string remainder = dbconnection.substr(start+9);
+                size_t end = remainder.find(";");
+                if (end != std::string::npos) {
+                    dbname = remainder.substr(0,end);
+		} else {
+                    dbname = remainder;
+		}
+		AGO_INFO() << "Database name: " << dbname;
+            }
+
+        }
+    } catch (std::exception const &e) {
+        AGO_ERROR() << "Can't open database: " << e.what();
         throw StartupError();
     }
 
     //create missing tables
     list<string> queries;
     //db
-    queries.push_back("CREATE TABLE data(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp LONG);");
-    queries.push_back("CREATE INDEX timestamp_idx ON data(timestamp);");
-    queries.push_back("CREATE INDEX environment_idx ON data(environment);");
-    queries.push_back("CREATE INDEX uuid_idx ON data(uuid);");
+    if (sql.driver() == "sqlite3") {
+        queries.push_back("CREATE TABLE data(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp LONG);");
+    } else {
+        queries.push_back("CREATE TABLE data (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid VARCHAR(36), environment VARCHAR(64), level REAL, timestamp INT(11));");
+    }
+    queries.push_back("CREATE INDEX timestamp_idx ON data (timestamp);");
+    queries.push_back("CREATE INDEX environment_idx ON data (environment);");
+    queries.push_back("CREATE INDEX uuid_idx ON data (uuid);");
     createTableIfNotExist("data", queries);
     queries.clear();
     //position
-    queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
-    queries.push_back("CREATE INDEX timestamp_position_idx ON position(timestamp)");
-    queries.push_back("CREATE INDEX uuid_position_idx ON position(uuid)");
+    if (sql.driver() == "sqlite3") {
+        queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
+    } else {
+        queries.push_back("CREATE TABLE position (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid VARCHAR(36), latitude REAL, longitude REAL, timestamp INT(11))");
+    }
+    queries.push_back("CREATE INDEX timestamp_position_idx ON position (timestamp)");
+    queries.push_back("CREATE INDEX uuid_position_idx ON position (uuid)");
     createTableIfNotExist("position", queries);
     queries.clear();
     //journal table
-    queries.push_back("CREATE TABLE journal(id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp LONG, message TEXT, type TEXT)");
-    queries.push_back("CREATE INDEX timestamp_journal_idx ON journal(timestamp)");
-    queries.push_back("CREATE INDEX type_journal_idx ON journal(type)");
+    if (sql.driver() == "sqlite3") {
+        queries.push_back("CREATE TABLE journal(id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp LONG, message TEXT, type TEXT)");
+    } else {
+        queries.push_back("CREATE TABLE journal (id INTEGER PRIMARY KEY AUTO_INCREMENT, timestamp INT(11), message TEXT, type VARCHAR(64))");
+    }
+    queries.push_back("CREATE INDEX timestamp_journal_idx ON journal (timestamp)");
+    queries.push_back("CREATE INDEX type_journal_idx ON journal (type)");
     createTableIfNotExist("journal", queries);
     queries.clear();
 
