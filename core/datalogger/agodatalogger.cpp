@@ -93,7 +93,7 @@ private:
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void eventHandler(std::string subject, qpid::types::Variant::Map content);
     void eventHandlerRRDtool(std::string subject, std::string uuid, qpid::types::Variant::Map content);
-    void eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content);
+    void eventHandlerSQL(std::string subject, std::string uuid, qpid::types::Variant::Map content);
     void dailyPurge();
     void setupApp();
 public:
@@ -167,7 +167,7 @@ bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createq
             r = sql<< "SELECT name FROM sqlite_master WHERE type='table' AND name = ?" << tablename << cppdb::row;
         } else {
             AGO_TRACE() << "checking existance of table in non-sqlite: " << tablename;
-            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = 'sqlcpptest' AND table_name = ? LIMIT 1" <<  tablename << cppdb::row;
+            r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = 'agocontrol' AND table_name = ? LIMIT 1" <<  tablename << cppdb::row; // FIXME don't hardcode db name
         }
         if (r.empty()) {
             AGO_INFO() << "Creating missing table '" << tablename << "'";
@@ -824,9 +824,9 @@ void AgoDataLogger::eventHandlerRRDtool(std::string subject, std::string uuid, q
 }
 
 /**
- * Store event data into SQLite database
+ * Store event data into SQL database
  */
-void AgoDataLogger::eventHandlerSQLite(std::string subject, std::string uuid, qpid::types::Variant::Map content)
+void AgoDataLogger::eventHandlerSQL(std::string subject, std::string uuid, qpid::types::Variant::Map content)
 {
     string result;
 
@@ -904,7 +904,7 @@ void AgoDataLogger::eventHandler(std::string subject, qpid::types::Variant::Map 
     if( subject!="" && !content["uuid"].isVoid() )
     {
         //data logging
-        eventHandlerSQLite(subject, content["uuid"].asString(), content);
+        eventHandlerSQL(subject, content["uuid"].asString(), content);
 
         //rrd logging
         if( rrdLogging )
@@ -1816,8 +1816,9 @@ void AgoDataLogger::setupApp()
     //init database
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     try {
-        sql = cppdb::session(getConfigOption("dbconnectionstring", string("sqlite3:db=" + dbpath.string()).c_str()));
-        // sql = cppdb::session("mysql:database=sqlcpptest;user=sqlcppe;password='sqlcpp'");
+        std::string dbconnection = getConfigOption("dbconnection", string("sqlite3:db=" + dbpath.string()).c_str());
+        AGO_INFO() << "CppDB connection string: " << dbconnection;
+        sql = cppdb::session(dbconnection);
         AGO_INFO() << "Using " << sql.driver() << " database via CppDB";
     } catch (std::exception const &e) {
         AGO_ERROR() << "Can't open database: " << e.what();
@@ -1830,9 +1831,7 @@ void AgoDataLogger::setupApp()
     if (sql.driver() == "sqlite3") {
         queries.push_back("CREATE TABLE data(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp LONG);");
     } else {
-        //  [  ERROR] Sql exception: cppdb::mysql::BLOB/TEXT column 'timestamp' used in key specification without a key length
-        // FIXME
-        queries.push_back("CREATE TABLE data (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid TEXT, environment TEXT, level REAL, timestamp INTEGER);");
+        queries.push_back("CREATE TABLE data (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid VARCHAR(36), environment VARCHAR(64), level REAL, timestamp INT(11));");
     }
     queries.push_back("CREATE INDEX timestamp_idx ON data (timestamp);");
     queries.push_back("CREATE INDEX environment_idx ON data (environment);");
@@ -1843,9 +1842,7 @@ void AgoDataLogger::setupApp()
     if (sql.driver() == "sqlite3") {
         queries.push_back("CREATE TABLE position(id INTEGER PRIMARY KEY AUTOINCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp LONG)");
     } else {
-        // [  ERROR] Sql exception: cppdb::mysql::You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'position(id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid TEXT, latitude REAL, longit' at line 1
-        // FIXME
-        queries.push_back("CREATE TABLE position (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid TEXT, latitude REAL, longitude REAL, timestamp INTEGER)");
+        queries.push_back("CREATE TABLE position (id INTEGER PRIMARY KEY AUTO_INCREMENT, uuid VARCHAR(36), latitude REAL, longitude REAL, timestamp INT(11))");
     }
     queries.push_back("CREATE INDEX timestamp_position_idx ON position (timestamp)");
     queries.push_back("CREATE INDEX uuid_position_idx ON position (uuid)");
@@ -1855,9 +1852,7 @@ void AgoDataLogger::setupApp()
     if (sql.driver() == "sqlite3") {
         queries.push_back("CREATE TABLE journal(id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp LONG, message TEXT, type TEXT)");
     } else {
-        // [  ERROR] Sql exception: cppdb::mysql::BLOB/TEXT column 'timestamp' used in key specification without a key length
-        // FIXME
-        queries.push_back("CREATE TABLE journal (id INTEGER PRIMARY KEY AUTO_INCREMENT, timestamp INTEGER, message TEXT, type TEXT)");
+        queries.push_back("CREATE TABLE journal (id INTEGER PRIMARY KEY AUTO_INCREMENT, timestamp INT(11), message TEXT, type VARCHAR(64))");
     }
     queries.push_back("CREATE INDEX timestamp_journal_idx ON journal (timestamp)");
     queries.push_back("CREATE INDEX type_journal_idx ON journal (type)");
