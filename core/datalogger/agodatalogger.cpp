@@ -1816,7 +1816,7 @@ void AgoDataLogger::setupApp()
     //init database
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     try {
-        sql = cppdb::session("sqlite3:db=" + dbpath.string());
+        sql = cppdb::session(getConfigOption("dbconnectionstring", string("sqlite3:db=" + dbpath.string()).c_str()));
         AGO_INFO() << "Using " << sql.driver() << " database via CppDB";
     } catch (std::exception const &e) {
         AGO_ERROR() << "Can't open database: " << e.what();
