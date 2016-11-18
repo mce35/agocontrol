@@ -162,9 +162,11 @@ bool AgoDataLogger::checkInventory()
 bool AgoDataLogger::createTableIfNotExist(string tablename, list<string> createqueries) {
     try {
         cppdb::result r;
-        if (sql.driver() == "sqlite") {
+        if (sql.driver() == "sqlite3") {
+            AGO_TRACE() << "checking existance of table in sqlite: " << tablename;
             r = sql<< "SELECT name FROM sqlite_master WHERE type='table' AND name = ?" << tablename << cppdb::row;
         } else {
+            AGO_TRACE() << "checking existance of table in non-sqlite: " << tablename;
             r = sql << "SELECT * FROM information_schema.tables WHERE table_schema = 'agocontrol' AND table_name = '?' LIMIT 1" <<  tablename << cppdb::row;
         }
         if (r.empty()) {
@@ -1231,7 +1233,7 @@ bool AgoDataLogger::purgeTable(std::string table, int timestamp=0)
     try {
         sql << query.str() << cppdb::exec;
         //vacuum database
-        if (sql.driver() == "sqlite") sql << "VACUUM" << cppdb::exec;
+        if (sql.driver() == "sqlite3") sql << "VACUUM" << cppdb::exec;
     } catch(std::exception const &e) {
         AGO_ERROR() << "SQL Error: " << e.what();
         return false;
@@ -1815,6 +1817,7 @@ void AgoDataLogger::setupApp()
     fs::path dbpath = ensureParentDirExists(getLocalStatePath(DBFILE));
     try {
         sql = cppdb::session("sqlite3:db=" + dbpath.string());
+        AGO_INFO() << "Using " << sql.driver() << " database via CppDB";
     } catch (std::exception const &e) {
         AGO_ERROR() << "Can't open database: " << e.what();
         throw StartupError();
