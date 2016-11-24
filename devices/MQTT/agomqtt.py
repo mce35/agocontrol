@@ -8,6 +8,7 @@
 
 # to use the client library we have to import it
 import agoclient
+import json
 
 try:
     import paho.mqtt.client as mqtt
@@ -20,7 +21,18 @@ import time
 
 class AgoMQTT(agoclient.AgoApp):
     """ago control MQTT device"""
-    
+
+    def event_handler(self, event, content):
+        try:
+            if (event.find("changed")):
+                environment = (event.split('.')[2]).replace("changed","")
+                # self.log.info("Environment: " + environment)
+                if (environment != "time"):
+                    self.worker.client.publish("sensors/" + content["uuid"] + "/" + environment, "%.3f" % round(content["level"],3))
+        except:
+            self.log.error("Exception in event handler, received: " + event + " Content: " + json.dumps(content))
+            pass
+
     def setup_app(self):
         self.mqtt_broker = self.get_config_option("broker", "127.0.0.1")
         self.mqtt_port = self.get_config_option("port", "1883")
@@ -70,7 +82,9 @@ class AgoMQTT(agoclient.AgoApp):
 
         self.worker = MQTTThread(self)
         self.worker.start()
-
+        if (self.get_config_option("publish", "0") != "0"):
+            self.log.info("Adding event handler to publish agocontrol events to mqtt")
+            self.connection.add_event_handler(self.event_handler)
     def cleanup_app(self):
         self.log.info("Saving MQTT device list...")
         try:
