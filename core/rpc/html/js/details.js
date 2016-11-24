@@ -158,6 +158,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //configure datetime pickers
                 startEl.datetimepicker({
                     format: getDatetimepickerFormat(),
+                    maxDate: 0,
                     onChangeDateTime: function(dt,$input)
                     {
                         //check date
@@ -178,6 +179,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //set end date
                 endEl.datetimepicker({
                     format: getDatetimepickerFormat(),
+                    maxDate: 0,
                     onChangeDateTime: function(dt,$input)
                     {
                         //check date
@@ -519,7 +521,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = datetimeToString(new Date(values[i].time * 1000));
+                values[i].date = timestampToString(values[i].time);
                 values[i].value = values[i].level + " " + unit;
                 delete values[i].level;
             }
@@ -528,7 +530,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = datetimeToString(new Date(values[i].time * 1000));
+                values[i].date = timestampToString(values[i].time);
                 values[i].value = values[i].latitude + "," + values[i].longitude;
                 delete values[i].latitude;
                 delete values[i].longitude;

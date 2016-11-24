@@ -158,7 +158,7 @@ class AgoConnection:
                 simplejson.dump(self.uuids, outfile)
         except (OSError, IOError) as exception:
             self.log.error("Cannot write uuid map file: %s", exception)
-        except ValueError, exception:  # includes simplejson error
+        except ValueError as exception:  # includes simplejson error
             self.log.error("Cannot encode uuid map: %s", exception)
 
     def load_uuid_map(self):
@@ -173,7 +173,7 @@ class AgoConnection:
                 self.log.debug("Cannot find uuid map file: %s", exception)
             else:
                 self.log.error("Cannot load uuid map file: %s", exception)
-        except ValueError, exception:  # includes simplejson error
+        except ValueError as exception:  # includes simplejson error
             self.log.error("Cannot decode uuid map from file: %s", exception)
 
     def emit_device_announce(self, uuid, device, initial_name):
