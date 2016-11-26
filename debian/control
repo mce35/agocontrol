@@ -230,7 +230,7 @@ Description: ImperiHome App gateway for agocontrol
 Package: agocontrol-tellstick
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
-Description: Tellstick Duo & Tellstick Net interface driver 
+Description: Tellstick Duo & Tellstick Net interface driver d
 
 Package: agocontrol-axisaudiotransmit
 Architecture: all
@@ -246,3 +246,8 @@ Package: agocontrol-nvr
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libopencv-core2.4, libopencv-imgproc2.4, libopencv-objdetect2.4, libopencv-highgui2.4
 Description: Ago Network Video Recorder
+
+Package: agocontrol-lifx
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-requests
+Description: Ago LIFX light interface driver

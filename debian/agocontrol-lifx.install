@@ -1,0 +1,4 @@
+lib/systemd/system/agolifx.service
+opt/agocontrol/bin/agolifx.py
+opt/agocontrol/bin/lifxbase.py
+opt/agocontrol/bin/lifxnet.py
