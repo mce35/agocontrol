@@ -179,7 +179,7 @@ Description: squeezeboxes
 
 Package: agocontrol-mopidy
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-requests
 Description: Mopidy music players
 
 Package: agocontrol-ipx800
@@ -239,7 +239,7 @@ Description: Plays audio samples via built in speaker of an Axis IP Camera
 
 Package: agocontrol-weatherreporter
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-configparser, python-requests
 Description: Reports weather conditions to crowd sourced weather sites
 
 Package: agocontrol-nvr
