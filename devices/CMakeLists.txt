@@ -36,6 +36,7 @@ set (AGODEVICES
   raspiCamera
   scheduler
   tellstick
+  lifx
   knx
   agodmx
   PLCBUS
@@ -50,7 +51,6 @@ set (AGODEVICES
   MQTT
   NVR
   harmonyhub
-  lifx
 )
 
 FIND_PACKAGE(OpenCV)
