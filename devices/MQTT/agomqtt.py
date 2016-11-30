@@ -9,6 +9,7 @@
 # to use the client library we have to import it
 import agoclient
 import json
+import errno
 
 try:
     import paho.mqtt.client as mqtt
