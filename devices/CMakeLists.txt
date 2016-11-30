@@ -50,6 +50,7 @@ set (AGODEVICES
   MQTT
   NVR
   harmonyhub
+  lifx
 )
 
 FIND_PACKAGE(OpenCV)
