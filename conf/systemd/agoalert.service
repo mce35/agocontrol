@@ -2,8 +2,8 @@
 Description=ago control alerts system
 
 [Service]
-ExecStart=/opt/agocontrol/bin/agoalert.py
-WorkingDirectory=/opt/agocontrol/bin
+ExecStart=@BINDIR@/agoalert.py
+WorkingDirectory=@BINDIR@
 StandardOutput=syslog
 StandardError=syslog
 Restart=always

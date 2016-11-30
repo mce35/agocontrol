@@ -2,8 +2,8 @@
 Description=ago raspberry pi Camera device
 	
 [Service]
-ExecStart=/opt/agocontrol/bin/raspiCamera.py
-WorkingDirectory=/opt/agocontrol/bin
+ExecStart=@BINDIR@/raspiCamera.py
+WorkingDirectory=@BINDIR@
 Restart=always
 RestartSec=2
 User=root

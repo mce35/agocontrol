@@ -2,8 +2,8 @@
 Description=ago control Tellstick handler
 
 [Service]
-ExecStart=/opt/agocontrol/bin/agotellstick.py
-WorkingDirectory=/opt/agocontrol/bin
+ExecStart=@BINDIR@/agotellstick.py
+WorkingDirectory=@BINDIR@
 StandardOutput=syslog
 StandardError=syslog
 Restart=always

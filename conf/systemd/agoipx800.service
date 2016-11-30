@@ -2,8 +2,8 @@
 Description=ago control IPX800
 
 [Service]
-ExecStart=/opt/agocontrol/bin/agoipx800.py
-WorkingDirectory=/opt/agocontrol/bin
+ExecStart=@BINDIR@/agoipx800.py
+WorkingDirectory=@BINDIR@
 StandardOutput=syslog
 StandardError=syslog
 Restart=always

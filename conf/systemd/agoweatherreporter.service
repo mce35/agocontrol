@@ -2,8 +2,8 @@
 Description=ago control Weather Reporter service
 
 [Service]
-ExecStart=/opt/agocontrol/bin/agoweatherreporter.py
-WorkingDirectory=/opt/agocontrol/bin
+ExecStart=@BINDIR@/agoweatherreporter.py
+WorkingDirectory=@BINDIR@
 StandardOutput=syslog
 StandardError=syslog
 Restart=always
