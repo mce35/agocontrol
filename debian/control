@@ -179,7 +179,7 @@ Description: squeezeboxes
 
 Package: agocontrol-mopidy
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-requests
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-requests, python-websocket
 Description: Mopidy music players
 
 Package: agocontrol-ipx800

@@ -1,2 +1,3 @@
 lib/systemd/system/agomopidy.service
 opt/agocontrol/bin/agomopidy.py
+opt/agocontrol/bin/mopidy.py

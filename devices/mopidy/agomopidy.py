@@ -136,7 +136,7 @@ class AgoMopidy(agoclient.AgoApp):
 
                 q1 = Queue.Queue()
 
-                mop = Mopidy(host, port, self.app, q1)
+                mop = Mopidy(host, port, self, q1)
                 if mop.connected:
                     self.log.info("Mopidy player %s connected.", pl)
                 else:
