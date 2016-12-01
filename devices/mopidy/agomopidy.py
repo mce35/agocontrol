@@ -1,6 +1,13 @@
 #!/usr/bin/python
+import agoclient
+import threading
+import Queue
+from mopidy import Mopidy
+from mopidy import RunningStates
+# from mopidy import PlayingStates
+
 AGO_MOPIDY_VERSION = '0.0.1'
-############################################
+#
 #
 # Mopidy support for ago control
 #
@@ -13,15 +20,8 @@ __maintainer__ = 'Joakim Lindbom'
 __email__ = 'Joakim.Lindbom@gmail.com'
 __status__ = 'Experimental'
 __version__ = AGO_MOPIDY_VERSION
-############################################
+#
 
-import agoclient
-import threading, Queue
-import time
-import websocket
-from mopidy import Mopidy
-from mopidy import RunningStates
-from mopidy import PlayingStates
 
 STATE_OFF = "0"
 STATE_ON = "255"
@@ -30,51 +30,61 @@ STATE_PLAY = "100"
 STATE_STOP = "150"
 STATE_PAUSE = "200"
 
+
 class AgoMopidy(agoclient.AgoApp):
     """AgoControl device for the Mopidy music player"""
-    def app_cmd_line_options(self, parser):
+
+    def __init__(self):
+        self.internalid = None
+        self.state = None
+        self.players = {}
+
+        #super(AgoMopidy, self).__init__()
+        agoclient.AgoApp.__init__(self)
+
+    @staticmethod
+    def app_cmd_line_options(parser):
         """App-specific command line options"""
         parser.add_argument('-T', '--test', action="store_true",
-                help="This can be set or not set")
+                            help="This can be set or not set")
 
         parser.add_argument('--set-parameter',
-                help="Set this to do set_config_option with the value upon startup")
+                            help="Set this to do set_config_option with the value upon startup")
 
     def message_handler(self, internalid, content):
         """The messagehandler."""
         if "command" in content:
             self.internalid = internalid
-            # TODO: Move thread start here
             player = self.players[internalid]["mopidy"]
+
             if content["command"] == "on":
                 self.log.debug("switching on: %s", internalid)
-                # TODO Add ON command
                 self.connection.emit_event(internalid, "event.device.statechanged", STATE_ON, "")
-                self.players[internalid]["mopidy"].playingstate = RunningStates.On
+                self.players[internalid][
+                    "mopidy"].playingstate = RunningStates.On
                 self.emit_media_info(internalid)
-
             elif content["command"] == "off":
                 self.log.debug("switching off: %s", internalid)
-                # TODO Add OFF command
                 self.connection.emit_event(internalid, "event.device.statechanged", STATE_OFF, "")
-                self.players[internalid]["mopidy"].playingstate = RunningStates.Off
+                self.players[internalid][
+                    "mopidy"].playingstate = RunningStates.Off
 
             elif content["command"] == "play":
                 self.log.debug("Start playing: player %s", internalid)
-                self.connection.emit_event(internalid, "event.device.statechanged", STATE_PLAY, "")
                 player.Play()
+                self.connection.emit_event(internalid, "event.device.statechanged", STATE_PLAY, "")
                 self.emit_media_info(internalid)
                 self.state = "playing"
             elif content["command"] == "pause":
                 self.log.debug("Pause player %s", internalid)
-                self.connection.emit_event(internalid, "event.device.statechanged", STATE_PAUSE, "")
                 player.Pause()
+                self.connection.emit_event(internalid, "event.device.statechanged", STATE_PAUSE, "")
                 self.emit_media_info(internalid)
                 self.state = "paused"
             elif content["command"] == "stop":
                 self.log.debug("Stoping playing: player %s", internalid)
-                self.connection.emit_event(internalid, "event.device.statechanged", STATE_STOP, "")
                 player.Stop()
+                self.connection.emit_event(internalid, "event.device.statechanged", STATE_STOP, "")
                 self.emit_media_info(internalid)
                 self.state = "stopped"
 
@@ -90,89 +100,92 @@ class AgoMopidy(agoclient.AgoApp):
             elif content["command"] == "setvolume":
                 self.log.debug("Set volume for player %s", internalid)
                 if 'volume' in content:
-                    # print "volume=" + str(content['volume'])
                     player.SetVolume(content['volume'])
                     return True
                 else:
-                    self.log.info('Missing parameter "volume" to command SETVOLUME. Player=%s", internalid')
+                    self.log.info(
+                        'Missing parameter "volume" to command SETVOLUME. Player=%s", internalid')
                     return False
 
             elif content["command"] == "mediainfos":
                 infos = player.GetCurrentTrackInfo()
-                self.log.info("Requested to get MediaInfo. Player %s", internalid) # TODO: revert to debug
+                self.log.info(
+                    "Requested to get MediaInfo. Player %s",
+                    internalid)  # TODO: revert to debug
                 return infos
 
     def setup_app(self):
+        """ Initiate the mopidy device"""
         self.connection.add_handler(self.message_handler)
         self.internalid = None
 
         self.players = {}
         playerlist = self.get_config_option("Players", "[none]")
 
-
         if ',' not in playerlist:
             playerlist += ','
 
-        print "playerlist=" + playerlist
-
-        for p in playerlist.split(","):
+        for pl in playerlist.split(","):
             # TODO: remove spaces from p?
-            if len(p) > 0:
-                print "p=" + p
-                self.log.debug('Player ' + p + ' found')
-                host = self.get_config_option("host", "127.0.0.1", section=p, app='mopidy')
-                port = self.get_config_option("port", "6680", section=p, app='mopidy')
-                self.connection.add_device(p, "mopidy")
-                self.log.info("Mopidy player %s added. host=%s, port=%s", p, host, port)
+            if len(pl) > 0:
+                self.log.debug('Player ' + pl + ' found')
+                host = self.get_config_option("host", "127.0.0.1", section=pl, app='mopidy')
+                port = self.get_config_option("port", "6680", section=pl, app='mopidy')
+                self.connection.add_device(pl, "mopidy")
+                self.log.info("Mopidy player %s added. host=%s, port=%s", pl, host, port)
 
-                q = Queue.Queue()
+                q1 = Queue.Queue()
 
-                mop = Mopidy(host, port, q)
+                mop = Mopidy(host, port, self.app, q1)
                 if mop.connected:
-                    self.log.info("Mopidy player %s connected.", p)
+                    self.log.info("Mopidy player %s connected.", pl)
                 else:
-                    self.log.info("Mopidy player %s NOT connected.", p)
+                    self.log.info("Mopidy player %s NOT connected.", pl)
 
                 player = {
-                    "name"   : p,
-                    "host"   : host,
-                    "port"   : port,
-                    "mopidy" : mop,
-                    "queue"  : q
+                    "name": pl,
+                    "host": host,
+                    "port": port,
+                    "mopidy": mop,
+                    "queue": q1
                 }
-                self.players[p] = player
-                self.emit_media_info(p)
-                self.log.info("Now playing: %s - %s - %s ", self.players[p]["mopidy"].TrackInfo["artist"],
-                              self.players[p]["mopidy"].TrackInfo["album"],
-                              self.players[p]["mopidy"].TrackInfo["title"])  #TODO: change to debug
+                self.players[pl] = player
+                self.emit_media_info(pl)
+                self.log.info("Now playing: %s - %s - %s ",
+                              self.players[pl]["mopidy"].TrackInfo["artist"],
+                              self.players[pl]["mopidy"].TrackInfo["album"],
+                              self.players[pl]["mopidy"].TrackInfo["title"])  # TODO: change to debug
 
                 if mop.runningstate == RunningStates.On:
-                    self.connection.emit_event(p, "event.device.statechanged", STATE_ON, "")
+                    self.connection.emit_event(pl, "event.device.statechanged", STATE_ON, "")
                 else:
-                    self.connection.emit_event(p, "event.device.statechanged", STATE_OFF, "")
+                    self.connection.emit_event(pl, "event.device.statechanged", STATE_OFF, "")
 
-                BACKGROUND = MediaInfoCollector(self, p, q)
-                BACKGROUND.setDaemon(True)
-                BACKGROUND.start()
+                background_thread = MediaInfoCollector(self, pl, q1)
+                background_thread.setDaemon(True)
+                background_thread.start()
 
     def app_cleanup(self):
-        # When our app is about to shutdown, we should clean up any resources we've
-        # allocated in app_setup. This is done here.
+        """Any cleanup of resources goes here"""
         pass
 
     def emit_media_info(self, player):
+        """Emit media info to agocontroll message bus"""
         self.log.info('emitting MEDIAINFOS')
-        TrackInfo = self.players[player]["mopidy"].GetCurrentTrackInfo()
-        self.connection.emit_event_raw(player, "event.device.mediainfos", TrackInfo)
+        trackinfo = self.players[player]["mopidy"].GetCurrentTrackInfo()
+        self.connection.emit_event_raw(player, "event.device.mediainfos", trackinfo)
+
 
 class MediaInfoCollector(threading.Thread):
+
     """Class driving a thread to collect media info."""
-    # TODO: Replace with event monitoring via Mopidy WebSocket API
-    def __init__(self, app, player, q):
+
+    def __init__(self, app, player, q1):
+        """Constructor - connect to a Queue receiving media change info received via Mopidy WebSocket API"""
         super(MediaInfoCollector, self).__init__()
         self.app = app
         self.player = player
-        self.q = q
+        self.q1 = q1
         self.stoprequest = threading.Event()
 
     def join(self, timeout=None):
@@ -181,10 +194,10 @@ class MediaInfoCollector(threading.Thread):
         super(MediaInfoCollector, self).join(timeout)
 
     def run(self):
+        """Main thread logic. Poll queue and relay to agocontrol message bus"""
         while not self.stoprequest.isSet():
             try:
-                mediainfo = self.q.get(True, 0.5)
-                #print "MediaCollector: mediainfo=" + str(mediainfo)
+                mediainfo = self.q1.get(True, 0.5)
                 self.app.connection.emit_event_raw(self.player, "event.device.mediainfos", mediainfo)
             except Queue.Empty:
                 continue
@@ -192,4 +205,3 @@ class MediaInfoCollector(threading.Thread):
 
 if __name__ == "__main__":
     AgoMopidy().main()
-
