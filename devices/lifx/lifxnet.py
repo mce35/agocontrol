@@ -17,13 +17,18 @@ __version__ = AGO_LIFX_VERSION
 ############################################
 
 from lifxbase import lifxbase
-# import sys, getopt, httplib, urllib, json, os, thread, time
-# import oauth.oauth as oauth
-# import datetime
+import time
 from agoclient.agoapp import ConfigurationError
 import json
 import requests
 
+
+class LIFX_Offline(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return repr(self.msg)
 
 class LifxNet(lifxbase):
     """Class used for Lifx devices via LIFX Cloud API"""
@@ -58,12 +63,44 @@ class LifxNet(lifxbase):
     def close(self):
         pass
 
-    def set_state(self, devId, state):
-        """Set light to "on" or "off" """
-        payload = {"power": state,}
+    def turnOn(self, devid):
+        """ Turn on light"""
+        self.log.trace('turnOn {}'.format(devid))
+        return self.set_state(devid, {"power": "on", })
+
+    def turnOff(self, devid):
+        """ Turn off light"""
+        self.log.trace('turnOff {}'.format(devid))
+        return self.set_state(devid, {"power": "off", })
+
+    def set_state(self, devId, payload, limit=0):
+        """Set state of light to on, off, color, dim """
+
         #self.log.trace(payload)
         response = requests.put('https://api.lifx.com/v1/lights/' + devId + '/state', data=payload, headers=self.headers)
-        return self.checkResponse(response)
+        try:
+            return self.checkResponse(response)
+        except LIFX_Offline:
+            """Workaround for intermediate Offline status"""
+            self.log.info('Cloud API return Offline status. Going into retry mode')
+            if limit < 3:
+                limit += 1  #TODO: Get from config
+                self.log.info('Retry #{}'.format(limit))
+                time.sleep(2)  #TODO: Get from config
+                return self.set_state(devId, payload, limit)
+            else:
+                self.log.info('Retrying did not work. Ending')
+                return False
+
+    def set_colour(self, devid, red, blue, green):
+        """Set light to colour (RGB) """
+        print red
+        print blue
+        print green
+
+        payload = {"color": "rgb:{},{},{}".format(red, blue, green)}
+        self.log.info(payload)  # TODO: Change to trace
+        return self.set_state(devid, payload)
 
     def list_lights(self):
         """Get a list of devices for current account"""
@@ -75,14 +112,15 @@ class LifxNet(lifxbase):
         """Get state of one light"""
         response = requests.get('https://api.lifx.com/v1/lights/id:{}'.format(devId), headers=self.headers)
 
+
         if response.status_code == 200:
             # print response.content
             rsp = response.content
             if "id" in rsp:  # .content:
                 rj = json.loads(rsp)
-                state= {"power" : rj[0]["power"],
-                        "dimlevel" : rj[0]["brightness"],
-                       }
+                state = {"power":    rj[0]["power"],       # on/off
+                         "dimlevel": rj[0]["brightness"]*100,  # 0-100 ???
+                         }
 
                 return state
 
@@ -92,6 +130,11 @@ class LifxNet(lifxbase):
     def listSwitches(self):
         """Create a dictionary with all lights"""
         ra = self.list_lights()
+        try:
+            if not self.checkResponse(ra):
+               return {}
+        except:
+            pass
         rsp = ra.content
         if "id" in rsp:
             rj = json.loads(rsp)
@@ -108,31 +151,27 @@ class LifxNet(lifxbase):
                         "id": dev_id,
                         "name": i["label"],
                         "model": model}
-                    if 'White' in model:  # TODO: Replace with Dimmer property
+
+                    if 'White' in model or 'Color' in model:  # TODO: Replace with Dimmer property, also add colour property based on capability
                         dev["isDimmer"] = True
                     else:
                         dev["isDimmer"] = False
-                    # light["status"] = "on" if i["connected"] else "Off"
+
+                    if 'Color' in model:  # TODO: Replace with Dimmer property, also add colour property based on capability
+                        dev["isRGB"] = True
+                    else:
+                        dev["isRGB"] = False
+
+                    dev["status"] = "on" if i["connected"] else "off"
+                    dev["dimlevel"] = i["brightness"]*100
                     self.switches[dev_id] = dev
+            self.devicesRetrieved = True
         return self.switches
-
-    def turnOn(self, devId):
-        """ Turn on light"""
-        self.log.trace('turnOn {}'.format(devId))
-        self.set_state(devId, "on")
-        return True
-
-    def turnOff(self, dev_Id):
-        """ Turn off light"""
-        self.log.trace('turnOff {}'.format(dev_Id))
-        self.set_state(dev_Id, "off")
-        # return self.doMethod(devId, self.LIFX_TURNOFF)
-        return True
 
     def getErrorString(self, res_code):
         return res_code  # TOT: Remove
 
-    def dim(self, devId, level):
+    def dim(self, devId, level, limit=0):
         """ Dim light, level=0-100 """
         self.log.trace('Dim {} level {}'.format(devId, str(float(level/100.0))))
         #TODO: Add support for Duration
@@ -142,20 +181,30 @@ class LifxNet(lifxbase):
         # print payload
         response = requests.put('https://api.lifx.com/v1/lights/' + devId + '/state', data=payload, headers=self.headers)
         # return self.doMethod(devId, self.LIFX_DIM, level)
-        return self.checkResponse(response)
+        try:  # TODO: Move retry to setstate
+            return self.checkResponse(response)
+        except LIFX_Offline:
+            """Workaround for intermediate Offline status"""
+            self.log.info('Cloud API return Offline status. Going into retry mode')
+            if limit < 3:
+                limit += 1  #TODO: Get from config
+                self.log.info('Retry #{}'.format(limit))
+                time.sleep(2)  #TODO: Get from config
+                return self.dim(devId, level, limit)
+            else:
+                self.log.info('Retrying did not work. Ending')
+                return False
+
 
     def checkResponse(self, response):
+        """Parse the response from the API, return True if is was OK"""
         # Response: < Response[207] >
-        # Status code: 207
         # Content: {"results": [{"id": "e111d111f111", "label": "LIFX Bulb 12f116", "status": "offline"}]}
 
         # Response: < Response[207] >
-        # Status code: 207
         # Content: {"results": [{"id": "e111d112f111", "label": "LIFX Bulb 12f116", "status": "ok"}]}
 
-        # print ("Response: %s" % rsp)
-        # print ("Status code: %d" % rsp.status_code)
-        # print ("Content: %s" % rsp.content)
+        self.log.debug('Response: {} Content {}'.format(response, response.content))
 
         if response.status_code == 200:
             return True
@@ -168,7 +217,8 @@ class LifxNet(lifxbase):
                     if r[u'status'] == 'ok':  # TODO: check if this is sufficient
                         return True
                     if r[u'status'] == 'offline':
-                        self.log.error("Cloud API return Offline status. Check your connection and if http://api.lifx.com is alive")
+                        self.log.error('Cloud API return Offline status. Check your connection and if https://api.lifx.com is alive')
+                        raise LIFX_Offline('Cloud API return Offline status. Check your connection and if https://api.lifx.com is alive')
 
             except KeyError:
                 self.log.error("Malformed response Code=%d, rsp=%s" % (response.status_code, response.content))
@@ -188,6 +238,7 @@ class LifxNet(lifxbase):
                 502: 'Something went wrong on LIFXs end.',
                 503: 'Something went wrong on LIFXs end.',
                 523: 'Something went wrong on LIFXs end.',
+                525: 'Something went wrong on LIFXs end. Official response: Oops!',
             }
             return sw.get(error_code, "Something went wrong and no message text assigned. Bummer.")
 
@@ -212,11 +263,9 @@ class LifxNet(lifxbase):
             return name
 
     def getNumberOfDevices(self):
-        if len(self.switches) > 0:
-            return len(self.switches)
-        else:
+        if len(self.switches) == 0:
             self.listSwitches()
-            return len(self.switches)
+        return len(self.switches)
 
     def getDeviceId(self, i):
         return (self.devices[i])
@@ -288,6 +337,3 @@ class LifxNet(lifxbase):
                 self.names[sensor["id"]] = devId
 
         return self.sensors
-
-    # def sensorThread(self, sensorCallback, dummy):
-    #    pass

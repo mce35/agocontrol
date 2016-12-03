@@ -13,11 +13,17 @@ class lifxTests(unittest.TestCase):
         self.assertGreater(len(self.switches), 0, "No lamps found. Error in config?")
         print ("No lamps found %d" % len(self.switches))
 
-    def test_printinfo(self):
+    def test1_printinfo(self):
         if len(self.switches) > 0:
             print self.switches
 
-    def test_getLightState(self):
+    def test2_listdeviceinfo(self):
+        if len(self.switches) > 0:
+            #print switches
+            for devId, dev in self.switches.iteritems():
+                print ('devId={} dev={}'.format(devId, dev))
+
+    def test3_getLightState(self):
         if len(self.switches) > 0:
             for devid in self.switches:
                 self.assertTrue(self.lifx.turnOn(devid))
@@ -30,27 +36,20 @@ class lifxTests(unittest.TestCase):
                 state = self.lifx.getLightState(devid)
                 self.assertEqual(state["power"], u'off')
 
-    def test_listdeviceinfo(self):
-        if len(self.switches) > 0:
-            #print switches
-            for devId, dev in self.switches.iteritems():
-                print ('devId={}'.format(devId))
-                print ('dev={}'.format(dev))
-                print ('MODEL={}'.format(dev["model"]))
-
-    def test_turnon(self):
+    def test4_turnon(self):
         for devid in self.switches:
             self.assertTrue(self.lifx.turnOff(devid))
             time.sleep(1)
             self.assertTrue(self.lifx.turnOn(devid))
 
-    def test_dim(self):
-        for devid in self.switches:
-            self.assertTrue(self.lifx.dim(devid, 100))
-            time.sleep(1)
-            self.assertTrue(self.lifx.dim(devid, 10))
-            time.sleep(1)
-            self.assertTrue(self.lifx.dim(devid, 100))
+    def test5_dim(self):
+        for devid, dev in self.switches.iteritems():
+            if dev["isDimmer"]:
+                self.assertTrue(self.lifx.dim(devid, 100))
+                time.sleep(1)
+                self.assertTrue(self.lifx.dim(devid, 10))
+                time.sleep(1)
+                self.assertTrue(self.lifx.dim(devid, 100))
 
     def tearDown(self):
         for devid in self.switches:
