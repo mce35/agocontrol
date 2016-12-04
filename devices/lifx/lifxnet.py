@@ -118,8 +118,8 @@ class LifxNet(lifxbase):
             rsp = response.content
             if "id" in rsp:  # .content:
                 rj = json.loads(rsp)
-                state = {"power":    rj[0]["power"],       # on/off
-                         "dimlevel": rj[0]["brightness"]*100,  # 0-100 ???
+                state = {"power":    rj[0]["power"],                # on/off
+                         "dimlevel": int(rj[0]["brightness"]*100),  # 0-100
                          }
 
                 return state

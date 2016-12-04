@@ -64,10 +64,10 @@ class AgoLIFX(agoclient.AgoApp):
                     self.log.error("Failed to turn on device")
 
             elif content["command"] == "setlevel":
-                self.log.debug("dimming: {}, level={}".format(internalid, content["level"]))
+                self.log.debug("dimming: {}, level={}".format(internalid, int(content["level"])))
                 if self.lifx.dim(internalid, int(content["level"])):
                     self.log.trace("Dim OK")
-                    self.connection.emit_event(internalid, "event.device.statechanged", content["level"], "")
+                    self.connection.emit_event(internalid, "event.device.statechanged", int(content["level"]), "")
                 else:
                     self.log.error("Failed dimming device")
 
@@ -147,8 +147,8 @@ class PullStatus(threading.Thread):
             for devid in self.switches:
                 try:
                     state = self.app.lifx.getLightState(devid)
-                    self.app.connection.emit_event(devid, "event.device.statechanged", state["dimlevel"] if state["power"] == u'on' else 0, "")
-                    self.log.debug("PullStatus: {}, {}, level={}".format(devid, state["power"], state["dimlevel"]))
+                    self.app.connection.emit_event(devid, "event.device.statechanged", int(state["dimlevel"]) if state["power"] == u'on' else 0, "")
+                    self.log.debug("PullStatus: {}, {}, level={}".format(devid, state["power"], int(state["dimlevel"])))
                 except TypeError as e:
                     self.log.error("PullStatus: Exception occurred in background thread. {}".format(e.message))
             time.sleep(10)  # TODO: Calculate ((60-n)/NoDevices)/60
