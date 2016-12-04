@@ -98,7 +98,7 @@ class LifxNet(lifxbase):
         print blue
         print green
 
-        payload = {"color": "rgb:{},{},{}".format(red, blue, green)}
+        payload = {"color": "rgb:{},{},{}".format(red, green, blue)}
         self.log.info(payload)  # TODO: Change to trace
         return self.set_state(devid, payload)
 
