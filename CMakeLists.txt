@@ -65,6 +65,14 @@ set_property( DIRECTORY
 	-DBOOST_FILESYSTEM_VERSION=3
 	-DBOOST_FILESYSTEM_NO_DEPRECATED)
 
+# Workaround for bug in Boost on Clang which tries to add pragma warning group keyward-warning
+# which does not exists in clang:
+# http://lists.boost.org/Archives/boost/2016/07/230350.php
+set_property( DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-Wno-error=unknown-pragmas)
+
 # add the binary tree to the search path for include files
 # so that we will find version.h and other configured files
 include_directories("${PROJECT_BINARY_DIR}")
