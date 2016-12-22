@@ -96,6 +96,13 @@ if (JSONCPP_FOUND)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 endif (JSONCPP_FOUND)
 
+find_package(CppDb REQUIRED)
+if (CPPDB_FOUND)
+	include_directories(${CPPDB_INCLUDE_DIRS})
+else()
+	message(FATAL_ERROR "Could not find cppdb")
+endif (CPPDB_FOUND)
+
 FIND_PACKAGE(Boost COMPONENTS system filesystem thread program_options date_time regex REQUIRED)
 
 FIND_PACKAGE(Boost COMPONENTS log)
