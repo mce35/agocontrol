@@ -79,7 +79,11 @@ class lifxbase(object):
     def getErrorString(self, resCode):
         pass
 
-    def dim(self, devId, level):
+    def dim(self, devId, level, duration=1, limit=3):
+        """ devId: Device to dim
+            level: 0-100
+            duration: seconds to fade
+            limit: Max # of retries"""
         pass
 
     def getName(self, devId):

@@ -50,7 +50,7 @@ class LifxNet(lifxbase):
     def __delete__(self, obj):
         pass
 
-    def init(self, API_KEY=None, sensor_poll_delay=None, temp_units='C'):
+    def init(self, API_KEY=None, sensor_poll_delay=None, temp_units='C', RetryLimit=3, RetryTime=2):
         self.SUPPORTED_METHODS = self.LIFX_TURNON | self.LIFX_TURNOFF | self.LIFX_DIM
 
         self.API_KEY = API_KEY
@@ -58,6 +58,10 @@ class LifxNet(lifxbase):
             raise ConfigurationError("API_KEY missing in LIFX.conf. Cannot continue")
 
         self.headers = {"Authorization": "Bearer %s" % self.API_KEY, }
+
+        self.RetryLimit = RetryLimit
+        self.RetryTime = RetryTime
+
         return True
 
     def close(self):
@@ -82,17 +86,17 @@ class LifxNet(lifxbase):
             return self.checkResponse(response)
         except LIFX_Offline:
             """Workaround for intermediate Offline status"""
-            self.log.info('Cloud API return Offline status. Going into retry mode')
-            if limit < 3:
-                limit += 1  #TODO: Get from config
+            self.log.info('Cloud API returned Offline status. Going into retry mode')
+            if limit < self.RetryLimit:
+                limit += 1
                 self.log.info('Retry #{}'.format(limit))
-                time.sleep(2)  #TODO: Get from config
+                time.sleep(self.RetryTime)
                 return self.set_state(devId, payload, limit)
             else:
                 self.log.info('Retrying did not work. Ending')
                 return False
 
-    def set_colour(self, devid, red, blue, green):
+    def set_colour(self, devid, red, green, blue):
         """Set light to colour (RGB) """
         print red
         print blue
@@ -112,7 +116,6 @@ class LifxNet(lifxbase):
         """Get state of one light"""
         response = requests.get('https://api.lifx.com/v1/lights/id:{}'.format(devId), headers=self.headers)
 
-
         if response.status_code == 200:
             # print response.content
             rsp = response.content
@@ -123,8 +126,9 @@ class LifxNet(lifxbase):
                          }
 
                 return state
-
-        return None
+        else:
+            self.log.error('getLightState failed. Received status {}'.format(response.status_code))
+            return None
 
 
     def listSwitches(self):
@@ -171,7 +175,7 @@ class LifxNet(lifxbase):
     def getErrorString(self, res_code):
         return res_code  # TOT: Remove
 
-    def dim(self, devId, level, limit=0):
+    def dim(self, devId, level, duration=1, limit=0):
         """ Dim light, level=0-100 """
         self.log.trace('Dim {} level {}'.format(devId, str(float(level/100.0))))
         #TODO: Add support for Duration
