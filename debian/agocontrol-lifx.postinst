@@ -1,0 +1,6 @@
+#!/bin/bash
+# agocontrol-lifx LAN postinst script
+#
+
+pip install bitstring
+
