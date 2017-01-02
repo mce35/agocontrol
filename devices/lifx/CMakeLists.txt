@@ -1,7 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 
-set (LIFXLAN ${BINDIR}/lifxlan CACHE STRING "Directory for lifxlan files")
-
 # Files needed for lifxlan
 FILE(GLOB LIFXLAN_FILES lifxlan/*.*)
 
@@ -11,8 +9,8 @@ install (PROGRAMS lifxnet.py DESTINATION ${BINDIR})
 install (PROGRAMS lifxlan2.py DESTINATION ${BINDIR})
 
 # Install files for lifxlan in subdir
-install (DIRECTORY DESTINATION ${LIFXLAN})
-install (FILES ${LIFXLAN_FILES} DESTINATION ${LIFXLAN})
+install (DIRECTORY DESTINATION ${BINDIR}/lifxlan)
+install (PROGRAMS ${LIFXLAN_FILES} DESTINATION ${BINDIR}/lifxlan)
 
 #install (PROGRAMS lifxlan/__init.py lifxnet.py DESTINATION ${LIFXLAN})
 #install (PROGRAMS lifxlan/device.py lifxnet.py DESTINATION ${LIFXLAN})
