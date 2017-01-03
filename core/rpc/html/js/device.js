@@ -38,7 +38,7 @@ function device(agocontrol, obj, uuid) {
         return (self.stale() ? 'bg-red' : 'bg-light-blue');
     });
 
-    if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" )
+    if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" || this.devicetype=="ibulb")
     {
         this.level = ko.observable(currentState);
         this.state.subscribe(function(v){
@@ -74,7 +74,7 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.journal = uuid;
     }
 
-    if( this.devicetype=="dimmerrgb" )
+    if( this.devicetype=="dimmerrgb" || this.devicetype=="ibulb" )
     {
         self.color = ko.observableArray([255,0,0]);
 
