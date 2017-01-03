@@ -65,7 +65,7 @@ class LifxLAN2(lifxbase):
         self.RetryLimit = RetryLimit
         self.RetryTime = RetryTime
 
-        print("Discovering lights...")
+        self.log.info("Discovering lights...")
         self.lifx = LifxLAN(num_lights)
 
         return True
@@ -95,9 +95,6 @@ class LifxLAN2(lifxbase):
         """Set light to colour (RGB)
            rgb: 0-255
         """
-        print red
-        print blue
-        print green
 
         self.log.info("color rgb:{},{},{}".format(red, green, blue))  # TODO: Change to trace
 
@@ -134,8 +131,8 @@ class LifxLAN2(lifxbase):
                 "internal_id": dev_id,
                 "name": name,
                 'bulb': i}
-            print dev_id
-            print i
+            #print dev_id
+            #print i
             for m in self.prodinfo[0]['products']:
                 #print m
                 if i.product == m['pid']:
@@ -155,9 +152,7 @@ class LifxLAN2(lifxbase):
                 dev["dimlevel"] = lvl  # From 16 bit integer to percent
                 dev["status"] = "on" if lvl > 0 else "off"
             except:
-                print("Oops")
-                print i
-                print i.power_level
+                self.log.error("Oops. Error getting power state. Dev={} Power={}".format(i, i.power_level))
 
             self.switches[name] = dev
             self.devices[name] = dev
@@ -174,7 +169,7 @@ class LifxLAN2(lifxbase):
 
         try:
             power = self.devices[devid]["bulb"].get_power()
-            print ("power {}".format(power))
+            self.log.info("power {}".format(power))
         except IOError:
             self.log.error('IOError from LIFXLAN. Ignoring request')
             return None  # TODO: On IOError - log + return last known value?

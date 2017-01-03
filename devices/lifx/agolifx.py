@@ -56,7 +56,7 @@ class AgoLIFX(agoclient.AgoApp):
             self.lifx = LifxNet(self)
             self.lifx.init(API_KEY=api_key)
         elif "LAN" in api:
-            self.NumLights = self.get_config_option('NumLights', 1, section='lifx', app='lifx')  # Speeds init up
+            self.NumLights = self.get_config_option('NumLights', 1, section='lifx', app='lifx')  # Speeds up init
             from lifxlan2 import LifxLAN2
             self.lifx = LifxLAN2(self)
             self.lifx.init(self.NumLights)
