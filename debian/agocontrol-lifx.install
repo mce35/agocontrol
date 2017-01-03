@@ -3,3 +3,5 @@ opt/agocontrol/bin/agolifx.py
 opt/agocontrol/bin/lifxbase.py
 opt/agocontrol/bin/lifxnet.py
 opt/agocontrol/bin/lifxlan2.py
+opt/agocontrol/bin/prodinfo.json
+opt/agocontrol/bin/lifxlan
