@@ -64,6 +64,27 @@ commands:
         name: level for blue color
         type: integer
         range: [0, 100]
+  sethue:
+    name: set hue (color)
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 65535]
+  setsaturation:
+    name: set saturation (color)
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 65535]
+  setcolortemp:
+    name: set color temperature (color)
+    parameters:
+      level:
+        name: level to set (K)
+        type: integer
+        range: [0, 65535]
   sendir:
     name: send infrared remote code
     parameters:
@@ -168,6 +189,10 @@ devicetypes:
     name: RGB dimmer
     description: allows to set different colors
     commands: ["on", "off", setlevel, setcolor]
+  ibulb:
+    name: "Intelligent" bulb (e.g. LIFX)
+    description: Bulb with integrated WiFi. Allows to set different colors
+    commands: ["on", "off", setlevel, setcolor, sethue, setsaturation, setcolortemp]
   controller:
     name: controller
     description: generic controller
