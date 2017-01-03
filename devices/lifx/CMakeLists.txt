@@ -1,12 +1,15 @@
 cmake_minimum_required (VERSION 2.6)
 
 # Files needed for lifxlan
+# Installing local copy of lifxlan for now. CDhnages accepted by maintainer but still not available in standard package
+# https://github.com/mclarkk/lifxlan
 FILE(GLOB LIFXLAN_FILES lifxlan/*.*)
 
 install (PROGRAMS agolifx.py DESTINATION ${BINDIR})
 install (PROGRAMS lifxbase.py DESTINATION ${BINDIR})
 install (PROGRAMS lifxnet.py DESTINATION ${BINDIR})
 install (PROGRAMS lifxlan2.py DESTINATION ${BINDIR})
+install (FILES    prodinfo.json DESTINATION ${BINDIR})
 
 # Install files for lifxlan in subdir
 install (DIRECTORY DESTINATION ${BINDIR}/lifxlan)
