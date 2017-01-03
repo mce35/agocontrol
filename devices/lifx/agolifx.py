@@ -56,7 +56,7 @@ class AgoLIFX(agoclient.AgoApp):
             self.lifx = LifxNet(self)
             self.lifx.init(API_KEY=api_key)
         elif "LAN" in api:
-            self.NumLights = self.get_config_option('NumLights', 1, section='lifx', app='lifx')  # Speeds up init
+            self.NumLights = self.get_config_option('NumLights', None, section='lifx', app='lifx')  # Speeds up init
             from lifxlan2 import LifxLAN2
             self.lifx = LifxLAN2(self)
             self.lifx.init(self.NumLights)
@@ -76,17 +76,17 @@ class AgoLIFX(agoclient.AgoApp):
 
         # Get devices, wait until bulbs are discovered
         self.log.debug('Looking for devices')
-        self.switches = None
-        while self.switches is None or self.switches is {}: #len(self.switches) == 0:
+        self.switches = {}
+        while len(self.switches) == 0:
             self.switches = self.lifx.listSwitches()
+            self.log.debug('Found: {}'.format(self.switches))
             if len(self.switches) == 0:
                 self.log.debug('Not found, retrying')
                 time.sleep(5)
 
-        print self.switches
-
         # Add bulbs to agocontrol
         self.log.info('Found {} bulbs'.format(len(self.switches)))
+        self.log.debug('Bulbs: {}'.format(self.switches))
         if len(self.switches) > 0:
             # print self.switches
             self.log.info('Looking for devices, found:')
