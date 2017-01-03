@@ -121,9 +121,12 @@ class LifxLAN2(lifxbase):
         self.devices = {}
         devices = self.lifx.get_lights()
         if devices is None:
-            self.log.debug('list_lights: No bulbs found!')
+            self.log.info('list_lights: No bulbs found!')
             return {}  # None
 
+        self.log.info('list_lights: get_lights returned {} devices'.format(len(devices)))
+        self.log.info('list_lights: Devioces: {}'.format(devices))
+        self.log.info('list_lights: prodinfo {}'.format(self.prodinfo[0]['products']))
         for i in devices:
             dev_id = i.source_id
             name = i.get_label()
@@ -135,7 +138,7 @@ class LifxLAN2(lifxbase):
             self.log.debug('list_lights: Found {}'.format(dev_id))
             self.log.debug('list_lights: Bulb info {}'.format(i))
             for m in self.prodinfo[0]['products']:
-                self.log.debug('Matching {} with {}'.format(i.product, m))
+                self.log.info('Matching {} with {}'.format(i.product, m))
                 if i.product == m['pid']:
                     #print "found"
                     dev['model'] = m['name']
@@ -146,7 +149,7 @@ class LifxLAN2(lifxbase):
                     # TODO: Also check ['features']['infrared'] and ['features']['multizone']
                     break
             if 'model' not in dev:
-                self.log.error("Couldn't locate a suitable bulb in prodinfo")
+                self.log.info("Couldn't locate a suitable bulb in prodinfo")  # TODO: error
 
             dev["isDimmer"] = True
             try:

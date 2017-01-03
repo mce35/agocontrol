@@ -40,12 +40,13 @@ class AgoLIFX(agoclient.AgoApp):
 
     def setup_app(self):
         """ Set-up of app"""
+        self.log.info("=== Starting agocontrol LIFX service ===")
         self.connection.add_handler(self.message_handler)
 
         if self.args.test:
-            self.log.info("Test argument was set")
+            self.log.debug("Test argument was set")
         else:
-            self.log.warning("Test argument was NOT set")
+            self.log.debug("Test argument was NOT set")
 
         api = self.get_config_option('API', 'Cloud', section='lifx', app='lifx')
         self.log.info("Configuration parameter 'API'=%s", api)
@@ -65,7 +66,6 @@ class AgoLIFX(agoclient.AgoApp):
 
         self.PollDelay = self.get_config_option('PollDelay', 10, section='lifx', app='lifx')
         self.log.info("Configuration parameter 'PollDelay={}".format(self.PollDelay ))
-
 
         if self.args.set_parameter:
             self.log.info("Setting configuration parameter 'some_key' to %s", self.args.set_parameter)
