@@ -49,7 +49,7 @@ class AgoLIFX(agoclient.AgoApp):
             self.log.debug("Test argument was NOT set")
 
         api = self.get_config_option('API', 'Cloud', section='lifx', app='lifx')
-        self.log.info("Configuration parameter 'API'=%s", api)
+        self.log.info("Configuration parameter 'API'={}".format(api))
         if "Cloud" in api:
             from lifxnet import LifxNet
             api_key = self.get_config_option('APIKEY', 'NoKey', section='lifx', app='lifx')
@@ -65,7 +65,7 @@ class AgoLIFX(agoclient.AgoApp):
             raise ConfigurationError("Unsupported API selected. Typo on conf file?")
 
         self.PollDelay = self.get_config_option('PollDelay', 10, section='lifx', app='lifx')
-        self.log.info("Configuration parameter 'PollDelay={}".format(self.PollDelay ))
+        self.log.info("Configuration parameter 'PollDelay'={}".format(self.PollDelay ))
 
         if self.args.set_parameter:
             self.log.info("Setting configuration parameter 'some_key' to %s", self.args.set_parameter)
@@ -183,7 +183,7 @@ class PullStatus(threading.Thread):
                         self.log.error('PullStatus: Could not get status from light')
                 except TypeError as e:
                     self.log.error("PullStatus: Exception occurred in background thread. {}".format(e.message))
-            time.sleep(self.PollDelay)  # TODO: Calculate ((60-n)/NoDevices)/60
+            time.sleep(float(self.PollDelay))  # TODO: Calculate ((60-n)/NoDevices)/60
 
 if __name__ == "__main__":
     AgoLIFX().main()

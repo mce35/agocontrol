@@ -193,8 +193,8 @@ class LifxNet(lifxbase):
             if limit < 3:
                 limit += 1  #TODO: Get from config
                 self.log.info('Retry #{}'.format(limit))
-                time.sleep(2)  #TODO: Get from config
-                return self.dim(devId, level, limit)
+                time.sleep(5)  #TODO: Get from config
+                return self.dim(devId, level, limit=limit)
             else:
                 self.log.info('Retrying did not work. Ending')
                 return False
@@ -221,8 +221,8 @@ class LifxNet(lifxbase):
                     if r[u'status'] == 'ok':  # TODO: check if this is sufficient
                         return True
                     if r[u'status'] == 'offline':
-                        self.log.error('Cloud API return Offline status. Check your connection and if https://api.lifx.com is alive')
-                        raise LIFX_Offline('Cloud API return Offline status. Check your connection and if https://api.lifx.com is alive')
+                        self.log.error('Cloud API return Offline status. Probable cause: Bulb disconnected/unplugged')
+                        raise LIFX_Offline('Cloud API return Offline status. Probable cause: Bulb disconnected/unplugged')
 
             except KeyError:
                 self.log.error("Malformed response Code=%d, rsp=%s" % (response.status_code, response.content))
