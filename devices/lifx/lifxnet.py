@@ -175,13 +175,13 @@ class LifxNet(lifxbase):
     def getErrorString(self, res_code):
         return res_code  # TOT: Remove
 
-    def dim(self, devId, level, duration=1, limit=0):
+    def dim(self, devId, level, duration=1.0, limit=0):
         """ Dim light, level=0-100 """
         self.log.trace('Dim {} level {}'.format(devId, str(float(level/100.0))))
         #TODO: Add support for Duration
         payload = {"power": "on",
                    "brightness": float(level/100.0),
-                   "duration": float(1.0), }
+                   "duration": float(duration), }
         # print payload
         response = requests.put('https://api.lifx.com/v1/lights/' + devId + '/state', data=payload, headers=self.headers)
         # return self.doMethod(devId, self.LIFX_DIM, level)

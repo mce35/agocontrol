@@ -65,7 +65,10 @@ class AgoLIFX(agoclient.AgoApp):
             raise ConfigurationError("Unsupported API selected. Typo on conf file?")
 
         self.PollDelay = self.get_config_option('PollDelay', 10, section='lifx', app='lifx')
-        self.log.info("Configuration parameter 'PollDelay'={}".format(self.PollDelay ))
+        self.log.info("Configuration parameter 'PollDelay'={}".format(self.PollDelay))
+
+        self.FadeTime = self.get_config_option('FadeTime', 10.0, section='lifx', app='lifx')
+        self.log.info("Configuration parameter 'FadeTime'={}".format(self.FadeTime))
 
         if self.args.set_parameter:
             self.log.info("Setting configuration parameter 'some_key' to %s", self.args.set_parameter)
@@ -114,7 +117,7 @@ class AgoLIFX(agoclient.AgoApp):
                 dev = self.switches[internalid]
                 self.log.info('dev={}'.format(dev))
                 if dev["dimlevel"] != 0 and dev["dimlevel"] != 100:
-                    if self.lifx.dim(internalid, dev["dimlevel"]):
+                    if self.lifx.dim(internalid, dev["dimlevel"], duration=self.FadeTime):
                         self.lifx.turnOn(internalid)
                         self.switches[internalid]["status"] = "on"
                         self.connection.emit_event(internalid, "event.device.statechanged", dev["dimlevel"], "")
@@ -139,7 +142,7 @@ class AgoLIFX(agoclient.AgoApp):
 
             elif content["command"] == "setlevel":
                 self.log.debug("dimming: {}, level={}".format(internalid, int(content["level"])))
-                if self.lifx.dim(internalid, int(content["level"])):
+                if self.lifx.dim(internalid, int(content["level"]), duration=self.FadeTime):
                     self.connection.emit_event(internalid, "event.device.statechanged", int(content["level"]), "")
                     self.log.trace("Dim OK")
                 else:
@@ -175,7 +178,7 @@ class PullStatus(threading.Thread):
             for devid in self.switches:
                 try:
                     state = self.app.lifx.getLightState(devid)
-                    self.log.debug('state: power {} dimlevel {}%'.format(state["power"], int(state["dimlevel"])))
+                    self.log.trace('state: power {} dimlevel {}%'.format(state["power"], int(state["dimlevel"])))
                     if state is not None:
                         self.app.connection.emit_event(devid, "event.device.statechanged", int(state["dimlevel"]) if state["power"] == u'on' else 0, "")
                         self.log.debug("PullStatus: {}, {}, level={}".format(devid, state["power"], int(state["dimlevel"])))
