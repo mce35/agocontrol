@@ -138,7 +138,7 @@ class LifxLAN2(lifxbase):
             self.log.debug('list_lights: Found {}'.format(dev_id))
             self.log.debug('list_lights: Bulb info {}'.format(i))
             for m in self.prodinfo[0]['products']:
-                self.log.info('Matching {} with {}'.format(i.product, m))
+                self.log.trace('Matching {} with {}'.format(i.product, m))
                 if i.product == m['pid']:
                     #print "found"
                     dev['model'] = m['name']

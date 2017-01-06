@@ -67,7 +67,7 @@ class AgoLIFX(agoclient.AgoApp):
         self.PollDelay = self.get_config_option('PollDelay', 10, section='lifx', app='lifx')
         self.log.info("Configuration parameter 'PollDelay'={}".format(self.PollDelay))
 
-        self.FadeTime = self.get_config_option('FadeTime', 10.0, section='lifx', app='lifx')
+        self.FadeTime = float(self.get_config_option('FadeTime', 10.0, section='lifx', app='lifx'))
         self.log.info("Configuration parameter 'FadeTime'={}".format(self.FadeTime))
 
         if self.args.set_parameter:
