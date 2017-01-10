@@ -175,13 +175,13 @@ class LifxNet(lifxbase):
     def getErrorString(self, res_code):
         return res_code  # TOT: Remove
 
-    def dim(self, devId, level, duration=1, limit=0):
+    def dim(self, devId, level, duration=1.0, limit=0):
         """ Dim light, level=0-100 """
         self.log.trace('Dim {} level {}'.format(devId, str(float(level/100.0))))
         #TODO: Add support for Duration
         payload = {"power": "on",
                    "brightness": float(level/100.0),
-                   "duration": float(1.0), }
+                   "duration": float(duration), }
         # print payload
         response = requests.put('https://api.lifx.com/v1/lights/' + devId + '/state', data=payload, headers=self.headers)
         # return self.doMethod(devId, self.LIFX_DIM, level)
@@ -193,8 +193,8 @@ class LifxNet(lifxbase):
             if limit < 3:
                 limit += 1  #TODO: Get from config
                 self.log.info('Retry #{}'.format(limit))
-                time.sleep(2)  #TODO: Get from config
-                return self.dim(devId, level, limit)
+                time.sleep(5)  #TODO: Get from config
+                return self.dim(devId, level, limit=limit)
             else:
                 self.log.info('Retrying did not work. Ending')
                 return False
@@ -221,8 +221,8 @@ class LifxNet(lifxbase):
                     if r[u'status'] == 'ok':  # TODO: check if this is sufficient
                         return True
                     if r[u'status'] == 'offline':
-                        self.log.error('Cloud API return Offline status. Check your connection and if https://api.lifx.com is alive')
-                        raise LIFX_Offline('Cloud API return Offline status. Check your connection and if https://api.lifx.com is alive')
+                        self.log.error('Cloud API return Offline status. Probable cause: Bulb disconnected/unplugged')
+                        raise LIFX_Offline('Cloud API return Offline status. Probable cause: Bulb disconnected/unplugged')
 
             except KeyError:
                 self.log.error("Malformed response Code=%d, rsp=%s" % (response.status_code, response.content))

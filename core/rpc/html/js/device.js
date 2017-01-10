@@ -38,7 +38,7 @@ function device(agocontrol, obj, uuid) {
         return (self.stale() ? 'bg-red' : 'bg-light-blue');
     });
 
-    if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" )
+    if( this.devicetype=="dimmer" || this.devicetype=="dimmerrgb" || this.devicetype=="smartdimmer")
     {
         this.level = ko.observable(currentState);
         this.state.subscribe(function(v){
@@ -52,6 +52,22 @@ function device(agocontrol, obj, uuid) {
             self.agocontrol.sendCommand(content);
         };
     }
+
+    if(this.devicetype=="smartdimmer")
+    {
+        this.level = ko.observable(currentState);
+        this.state.subscribe(function(v){
+            this.colortemp(v);
+        }, this);
+        this.syncColorTemp = function() {
+            var content = {};
+            content.uuid = uuid;
+            content.command = "setcolortemp";
+            content.colortemp= self.colortemp();
+            self.agocontrol.sendCommand(content);
+        };
+    }
+
 
     if (this.devicetype == "agocontroller")
     {
@@ -74,7 +90,7 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.journal = uuid;
     }
 
-    if( this.devicetype=="dimmerrgb" )
+    if( this.devicetype=="dimmerrgb" || this.devicetype=="smartdimmer" )
     {
         self.color = ko.observableArray([255,0,0]);
 

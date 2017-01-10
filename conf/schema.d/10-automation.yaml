@@ -42,6 +42,24 @@ commands:
         name: level to set
         type: integer
         range: [0, 100]
+  fade:
+    name: fade to a level with a timed delay
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 100]
+      time:
+        name: time slope for setting the level, milli seconds
+        type: integer
+        range: [0, 4294967296]
+  setfadetime:
+    name: set time (in ms) to be used for setlevel commands
+    parameters:
+      time:
+        name: time slope for setting the level, milli seconds
+        type: integer
+        range: [0, 4294967296]
   setchannel:
     name: set channel
     parameters:
@@ -64,6 +82,27 @@ commands:
         name: level for blue color
         type: integer
         range: [0, 100]
+  sethue:
+    name: set hue (color)
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 65535]
+  setsaturation:
+    name: set saturation (color)
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 65535]
+  setcolortemp:
+    name: set color temperature (color)
+    parameters:
+      level:
+        name: level to set (K)
+        type: integer
+        range: [0, 65535]
   sendir:
     name: send infrared remote code
     parameters:
@@ -168,6 +207,10 @@ devicetypes:
     name: RGB dimmer
     description: allows to set different colors
     commands: ["on", "off", setlevel, setcolor]
+  smartdimmer:
+    name: Dimmer with more advanced features
+    description: Bulb with integrated WiFi. Allows to set different colors and beyond
+    commands: ["on", "off", setlevel, fade, setfadetime, setcolor, sethue, setsaturation, setcolortemp]
   controller:
     name: controller
     description: generic controller

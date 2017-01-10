@@ -21,6 +21,7 @@ templates/devices/binarysensor.html
 templates/devices/barometersensor.html
 templates/devices/placeholder.html
 templates/devices/dimmerrgb.html
+templates/devices/ibulb.html
 templates/devices/distancesensor.html
 templates/devices/humiditysensor.html
 templates/devices/multilevelsensor.html

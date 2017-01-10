@@ -4,6 +4,7 @@
 from device import Device, WorkflowException
 from msgtypes import *
 import colorsys
+from time import sleep
 
 RED = [65535, 65535, 65535, 3500]
 ORANGE = [5525, 65535, 65535, 3500]
@@ -23,6 +24,7 @@ class Light(Device):
         mac_addr = mac_addr.lower()
         super(Light, self).__init__(mac_addr, ip_addr, service, port, source_id, verbose)
         self.color = None
+        self.verbose2 = True
 
     ############################################################################
     #                                                                          #
@@ -36,7 +38,9 @@ class Light(Device):
             response = self.req_with_resp(LightGetPower, LightStatePower)
             self.power_level = response.power_level
         except WorkflowException as e:
-            print(e)
+            if self.verbose2:
+                print('get_power - {}'.format(e))
+            sleep(0.5)
         return self.power_level
 
     def set_power(self, power, duration=0, rapid=False):
@@ -54,7 +58,8 @@ class Light(Device):
             else:
                 print("{} is not a valid power level.".format(power))
         except WorkflowException as e:
-            print(e)
+            if self.verbose2:
+                print('set_power - {}'.format(e))
 
     # color is [Hue, Saturation, Brightness, Kelvin]
     def set_waveform(self, is_transient, color, period, cycles, duty_cycle, waveform, rapid=False):
@@ -65,7 +70,8 @@ class Light(Device):
                 else:
                     self.req_with_ack(LightSetWaveform, {"transient": is_transient, "color": color, "period": period, "cycles": cycles, "duty_cycle": duty_cycle, "waveform": waveform})
             except WorkflowException as e:
-                print(e)
+                if self.verbose2:
+                    print('set_waveform - {}'.format(e))
 
     # color is [Hue, Saturation, Brightness, Kelvin], duration in ms
     def set_color(self, color, duration=0, rapid=False):
@@ -76,7 +82,8 @@ class Light(Device):
                 else:
                     self.req_with_ack(LightSetColor, {"color": color, "duration": duration})
             except WorkflowException as e:
-                print(e)
+                if self.verbose2:
+                    print('set_color - {}'.format(e))
 
     # LightGet, color, power_level, label
     def get_color(self):
@@ -86,7 +93,10 @@ class Light(Device):
             self.power_level = response.power_level
             self.label = response.label
         except WorkflowException as e:
-            print(e)
+            if self.verbose2:
+                print('get_color - {}'.format(e))
+            sleep(0.5)
+
         return self.color
 
     def set_HSB(self, hue, saturation, brightness, duration=0, rapid=False):
@@ -101,7 +111,8 @@ class Light(Device):
             else:
                 self.req_with_ack(LightSetColor, {"color": color2, "duration": duration})
         except WorkflowException as e:
-                print(e)
+            if self.verbose2:
+                print('set_HSB - {}'.format(e))
 
     def set_RGB(self, red, green, blue, duration=0, rapid=False):
         """ Set colour according to RGB scheme
@@ -122,7 +133,8 @@ class Light(Device):
             else:
                 self.req_with_ack(LightSetColor, {"color": color2, "duration": duration})
         except WorkflowException as e:
-                print(e)
+            if self.verbose2:
+                print('set_RGB - {}'.format(e))
 
 
     def set_hue(self, hue, duration=0, rapid=False):
@@ -136,7 +148,8 @@ class Light(Device):
             else:
                 self.req_with_ack(LightSetColor, {"color": color2, "duration": duration})
         except WorkflowException as e:
-                print(e)
+            if self.verbose2:
+                print('set_hue - {}'.format(e))
 
     def set_saturation(self, saturation, duration=0, rapid=False):
         """ saturation to set
@@ -149,7 +162,8 @@ class Light(Device):
             else:
                 self.req_with_ack(LightSetColor, {"color": color2, "duration": duration})
         except WorkflowException as e:
-                print(e)
+            if self.verbose2:
+                print('set_saturation - {}'.format(e))
 
     def set_brightness(self, brightness, duration=0, rapid=False):
         """ brightness to set
@@ -162,21 +176,24 @@ class Light(Device):
             else:
                 self.req_with_ack(LightSetColor, {"color": color2, "duration": duration})
         except WorkflowException as e:
-            print(e)
+            if self.verbose2:
+                print('set_brightness - {}'.format(e))
+
 
     def set_colortemp(self, kelvin, duration=0, rapid=False):
         """ kelvin: color temperature to set 2500-9000
             duration in ms"""
         color = self.get_color()
-        color2 = (color[0], color[1], color[2], kelvin if kelvin>=2500 and kelvin <= 9000
-                                                       else 2500 if kelvin < 2500 else 9000)
+        color2 = (color[0], color[1], color[2], kelvin if kelvin>=2500 and kelvin <= 9000 else 2500 if kelvin < 2500 else 9000)
         try:
             if rapid:
                 self.fire_and_forget(LightSetColor, {"color": color2, "duration": duration}, num_repeats=5)
             else:
                 self.req_with_ack(LightSetColor, {"color": color2, "duration": duration})
         except WorkflowException as e:
-            print(e)
+            if self.verbose2:
+                print('set_colortemp - {}'.format(e))
+
 
     ############################################################################
     #                                                                          #
