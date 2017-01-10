@@ -190,7 +190,7 @@ devicetypes:
     description: allows to set different colors
     commands: ["on", "off", setlevel, setcolor]
   ibulb:
-    name: "Intelligent" bulb (e.g. LIFX)
+    name: Intelligent bulb (e.g. LIFX)
     description: Bulb with integrated WiFi. Allows to set different colors
     commands: ["on", "off", setlevel, setcolor, sethue, setsaturation, setcolortemp]
   controller:
