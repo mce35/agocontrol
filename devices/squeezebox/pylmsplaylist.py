@@ -126,7 +126,7 @@ class LMSPlaylist(LMSServerNotifications):
                         #no song found (why?), execute callback anyway
                         self.logger.debug('no song found')
                         self.__play_callback(items[0], song, items[4])
-                    elif song['id']!=self.__lastNewsongId:
+                    elif song.has_key('id') and song['id']!=self.__lastNewsongId:
                         #song id is different than previous one, execute callback
                         self.logger.debug('song found')
                         self.__lastNewsongId = song['id']

@@ -16,12 +16,21 @@ function VariablesConfig(agocontrol)
             $(td).editable(
                 function(value, settings)
                 {
+                    var varName = $(this).data('variable');
+                    var v = self.agocontrol.variables.find(function(v){return v.variable == varName});
+                    if(!v || v.value === value) return;
+
                     var content = {};
-                    content.variable = $(this).data('variable');
+                    content.variable = varName;
                     content.uuid = self.agocontrol.agoController;
                     content.command = "setvariable";
                     content.value = value;
-                    self.agocontrol.sendCommand(content);
+                    self.agocontrol
+                        .sendCommand(content)
+                        .then(function(r){
+                            // refresh local inventory
+                            v.value = value;
+                        });
                     return value;
                 },
                 {

@@ -83,7 +83,7 @@ commands:
         type: integer
         range: [0, 100]
   sethue:
-    name: set hue (color)
+    name: set hue (colour)
     parameters:
       level:
         name: level to set
