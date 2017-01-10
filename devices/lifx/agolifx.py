@@ -81,7 +81,7 @@ class AgoLIFX(agoclient.AgoApp):
         self.log.debug('Looking for devices')
         self.switches = {}
         while len(self.switches) == 0:
-            self.switches = self.lifx.listSwitches()
+            self.switches = self.lifx.listSwitches(self.FadeTime)
             self.log.debug('Found: {}'.format(self.switches))
             if len(self.switches) == 0:
                 self.log.debug('Not found, retrying')
@@ -92,7 +92,7 @@ class AgoLIFX(agoclient.AgoApp):
         self.log.debug('Bulbs: {}'.format(self.switches))
         if len(self.switches) > 0:
             # print self.switches
-            self.log.info('Looking for devices, found:')
+            self.log.debug('Looking for devices, found:')
             for devId, dev in self.switches.iteritems():
                 self.log.debug('devId={} dev={} Name = {}, Model={}'.format(devId, dev, dev["name"], dev["model"]))
                 if dev["isRGB"]:  # TODO: Also check dimming to set correct type?
@@ -115,17 +115,17 @@ class AgoLIFX(agoclient.AgoApp):
             if content["command"] == "on":
                 self.log.debug("switching on: %s", internalid)
                 dev = self.switches[internalid]
-                self.log.info('dev={}'.format(dev))
+                self.log.trace('dev={}'.format(dev))
                 if dev["dimlevel"] != 0 and dev["dimlevel"] != 100:
-                    if self.lifx.dim(internalid, dev["dimlevel"], duration=self.FadeTime):
-                        self.lifx.turnOn(internalid)
+                    if self.lifx.dim(internalid, dev["dimlevel"], duration=0.0):
+                        self.lifx.turnOn(internalid, duration=self.FadeTime)
                         self.switches[internalid]["status"] = "on"
                         self.connection.emit_event(internalid, "event.device.statechanged", dev["dimlevel"], "")
                         self.log.debug("TurnOn OK using dim")
                     else:
                         self.log.error("Failed to turn on device using dim")
 
-                elif self.lifx.turnOn(internalid):  # TODO: Add retry handling if state not as expected?
+                elif self.lifx.turnOn(internalid, duration=self.FadeTime):  # TODO: Add retry handling if state not as expected?
                     self.connection.emit_event(internalid, "event.device.statechanged", 255, "")
                     self.log.debug("TurnOn OK")
                 else:
@@ -134,7 +134,7 @@ class AgoLIFX(agoclient.AgoApp):
             elif content["command"] == "off":
                 self.log.debug("switching off: %s", internalid)
 
-                if self.lifx.turnOff(internalid):
+                if self.lifx.turnOff(internalid, duration=self.FadeTime):
                     self.connection.emit_event(internalid, "event.device.statechanged", 0, "")
                     self.log.trace("TurnOff OK")
                 else:
@@ -153,7 +153,7 @@ class AgoLIFX(agoclient.AgoApp):
                 green = int(content["green"]);
                 blue = int(content["blue"]);
                 self.log.debug("setting colour for: {} - R={} G={} B={}".format(internalid, red, green, blue))
-                self.lifx.set_colour(internalid, red, green, blue)
+                self.lifx.set_colour(internalid, red, green, blue, duration=self.FadeTime)
                 #self.connection.emit_event(internalid, "event.device.statechanged", content["level"], "")
 
     def app_cleanup(self):
@@ -171,7 +171,7 @@ class PullStatus(threading.Thread):
         self.PollDelay = PollDelay
 
     def run(self):
-        self.log.info('Background thread started')
+        self.log.debug('Background thread started')
 
         # TODO: Improve this; we do not handle proper shutdown..
         while not self.app.is_exit_signaled():
@@ -181,7 +181,7 @@ class PullStatus(threading.Thread):
                     self.log.trace('state: power {} dimlevel {}%'.format(state["power"], int(state["dimlevel"])))
                     if state is not None:
                         self.app.connection.emit_event(devid, "event.device.statechanged", int(state["dimlevel"]) if state["power"] == u'on' else 0, "")
-                        self.log.debug("PullStatus: {}, {}, level={}".format(devid, state["power"], int(state["dimlevel"])))
+                        self.log.trace("PullStatus: {}, {}, level={}".format(devid, state["power"], int(state["dimlevel"])))
                     else:
                         self.log.error('PullStatus: Could not get status from light')
                 except TypeError as e:

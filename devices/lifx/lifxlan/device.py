@@ -427,7 +427,7 @@ class Device(object):
                 except error as err:
                     #if err.errno == socket.EBADF:
                     if err.errno == errno.EBADF:
-                        print("EBADF received")
+                        print("req_with_resp - EBADF received")
                 #else:
                 #    raise  # Make sure errors are escalated
                 elapsed_time = time() - start_time

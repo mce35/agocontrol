@@ -70,35 +70,35 @@ class LifxLAN2(lifxbase):
         self.RetryTime = RetryTime
 
         self.log.info("Discovering lights...")
-        self.lifx = LifxLAN(num_lights)
+        self.lifx = LifxLAN(num_lights, verbose=False)  # if self.log.level== self.log.)
 
         return True
 
     def close(self):
         pass
 
-    def turnOn(self, devid):
+    def turnOn(self, devid, duration=1.0):
         """ Turn on light"""
         self.log.trace('turnOn {}'.format(self.devices[devid]["name"]))
-        self.devices[devid]["bulb"].set_power("on", True)
+        self.devices[devid]["bulb"].set_power("on", duration=int(1000*duration), rapid=False)
         self.devices[devid]["status"] = "on"
         return True
 
-    def turnOff(self, devid):
+    def turnOff(self, devid, duration=1.0):
         """ Turn off light"""
         self.log.trace('turnOff {}'.format(self.devices[devid]["name"]))
-        self.devices[devid]["bulb"].set_power("off", True)
+        self.devices[devid]["bulb"].set_power("off", duration=int(1000*duration), rapid=False)
         self.devices[devid]["status"] = "off"
         return True
 
-    def set_colour(self, devid, red, green, blue):
+    def set_colour(self, devid, red, green, blue, duration=1.0):
         """Set light to colour (RGB)
            rgb: 0-255
         """
 
         self.log.info("color rgb:{},{},{}".format(red, green, blue))  # TODO: Change to trace
 
-        self.devices[devid]["bulb"].set_RGB(red, green, blue)
+        self.devices[devid]["bulb"].set_RGB(red, green, blue, int(1000*duration), rapid=False)
 
         return
 
@@ -116,16 +116,15 @@ class LifxLAN2(lifxbase):
 
         #return
 
-    def list_lights(self):
+    def list_lights(self, default_duration=1.0):
         """Get a list of devices on local LAN"""
         self.devices = {}
         devices = self.lifx.get_lights()
         if devices is None:
-            self.log.info('list_lights: No bulbs found!')
+            self.log.error('list_lights: No bulbs found!')
             return {}  # None
 
-        self.log.info('list_lights: get_lights returned {} devices'.format(len(devices)))
-        self.log.info('list_lights: Devices: {}'.format(devices))
+        self.log.debug('list_lights: get_lights returned {} devices'.format(len(devices)))
         self.log.trace('list_lights: prodinfo {}'.format(self.prodinfo[0]['products']))
         for i in devices:
             dev_id = i.source_id
@@ -134,13 +133,13 @@ class LifxLAN2(lifxbase):
                 "id": name,
                 "internal_id": dev_id,
                 "name": name,
+                "fadetime": default_duration,  #TODO: Get per device FadeTime from config
                 'bulb': i}
             self.log.debug('list_lights: Found {}'.format(dev_id))
             self.log.debug('list_lights: Bulb info {}'.format(i))
             for m in self.prodinfo[0]['products']:
                 self.log.trace('Matching {} with {}'.format(i.product, m))
                 if i.product == m['pid']:
-                    #print "found"
                     dev['model'] = m['name']
                     if m['features']['color'] == True:
                         dev["isRGB"] = True
@@ -149,7 +148,7 @@ class LifxLAN2(lifxbase):
                     # TODO: Also check ['features']['infrared'] and ['features']['multizone']
                     break
             if 'model' not in dev:
-                self.log.info("Couldn't locate a suitable bulb in prodinfo")  # TODO: error
+                self.log.error("Couldn't locate a suitable bulb in prodinfo")
 
             dev["isDimmer"] = True
             try:
@@ -163,7 +162,7 @@ class LifxLAN2(lifxbase):
             self.switches[name] = dev
             self.devices[name] = dev
 
-            self.log.info('Found {}'.format(dev['name']))
+            self.log.debug('Added {} to list of devices'.format(dev['name']))
 
         self.devicesRetrieved = True
 
@@ -242,24 +241,24 @@ class LifxLAN2(lifxbase):
                        "kelvin": color[3]}
         return self.colour
 
-    def set_colourtemp(self, devId, kelvin, duration=1000):
+    def set_colourtemp(self, devId, kelvin, duration=1.0):
         """ Set colour temperature of light. Other colour parameters not affected"""
-        self.devices[devId]["bulb"].set_colortemp(kelvin, duration)
+        self.devices[devId]["bulb"].set_colortemp(kelvin, duration=int(1000*duration))
         return True  # TODO Check if colour temp was changed
 
-    def set_brightness(self, devId, lvl, duration=1000):
+    def set_brightness(self, devId, lvl, duration=1.0):
         """ test """
-        self.devices[devId]["bulb"].set_brightness(lvl, duration)
+        self.devices[devId]["bulb"].set_brightness(lvl, duration=int(1000*duration))
         return True  # TODO Check if brightness was changed
 
-    def set_hue(self, devId, hue, duration=1000):
+    def set_hue(self, devId, hue, duration=1.0):
         """ test """
-        self.devices[devId]["bulb"].set_hue(hue, duration)
+        self.devices[devId]["bulb"].set_hue(hue, duration=int(1000*duration))
         return True  # TODO Check if brightness was changed
 
-    def set_saturation(self, devId, saturation, duration=1000):
+    def set_saturation(self, devId, saturation, duration=1.0):
         """ test """
-        self.devices[devId]["bulb"].set_saturation(saturation, duration)
+        self.devices[devId]["bulb"].set_saturation(saturation, duration=int(1000*duration))
         return True  # TODO Check if brightness was changed
 
     def checkResponse(self, response):
