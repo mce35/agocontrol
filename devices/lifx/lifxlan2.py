@@ -134,6 +134,8 @@ class LifxLAN2(lifxbase):
                 "internal_id": dev_id,
                 "name": name,
                 "fadetime": default_duration,  #TODO: Get per device FadeTime from config
+                "model": None,
+                "isRGB": None,
                 'bulb': i}
             self.log.debug('list_lights: Found {}'.format(dev_id))
             self.log.debug('list_lights: Bulb info {}'.format(i))
@@ -199,11 +201,11 @@ class LifxLAN2(lifxbase):
         #    return None
 
 
-    def listSwitches(self):
+    def listSwitches(self, FadeTime=1.0):
         """Create a dictionary with all lights"""
 
         if len(self.devices) == 0:
-            devs = self.list_lights()
+            devs = self.list_lights(default_duration=FadeTime)
 
         return self.switches
 
