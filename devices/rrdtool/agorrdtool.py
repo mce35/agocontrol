@@ -211,8 +211,8 @@ def eventHandler(event, content):
                 rrds[content['uuid']] = rrdfile
 
             #update rrd
-            logging.info('Update rrdfile "%s" with level=%f' % (str(rrdfile), float(content['level'])))
-            ret = rrdtool.update(str(rrdfile), 'N:%f' % content['level'])
+            logging.debug('Update rrdfile "%s" with level=%f' % (str(rrdfile), float(content['level'])))
+            ret = rrdtool.update(str(rrdfile), 'N:%f' % float(content['level']))
         except:
             logging.exception('Exception on eventHandler:')
 
