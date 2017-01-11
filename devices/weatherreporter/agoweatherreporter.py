@@ -23,53 +23,54 @@ from datetime import date, datetime
 import threading
 import requests
 import agoclient
+import sys
 
 import json
 
 class AgoWeatherReporter(agoclient.AgoApp):
 
     def event_handler(self, subject, content):
-        """event handler - Processes incomming events and looks if they are of a relevant kind
+        """event handler - Processes incoming events and looks if they are of a relevant kind
                          - Look up if there are reporting services to call for the sensor
         """
         self.log.trace("event_handler start")
         if "event.environment.temperaturechanged" in subject:
             self.log.trace("subject=%s content=%s", subject, content)
 
-            js = json.loads(str(content).replace("u\'", '\"').replace("\'", '\"')) #TODO: check if replacement is necessary
-            print ("level=", js["level"])
+            js = json.loads(str(content).replace("u\'", '\"').replace("\'", '\"'))  # TODO: check if replacement is necessary
+            self.log.debug("uuid={} level={}".format(js["uuid"], js["level"]))  # TODO: Change to trace
 
             for x in self.sensors:
                 if js["uuid"] == self.sensors[x]["UUID"]:
                     self.sensors[x]["temp"] = float(js["level"])
-                    self.log.info("New temp for device=" + self.sensors[x]["device"] + " temp=" + str(self.sensors[x]["temp"]))
+                    self.log.debug("New temp for device=" + self.sensors[x]["device"] + " temp=" + str(self.sensors[x]["temp"]))
 
                     if "temperatur.nu" in self.sensors[x]:
                         #if self.sensors[x]["unit"] == 'degC': #TODO: Handle degF also
-                        TN=self.sensors[x]["temperatur.nu"]
-                        self.log.trace ("temperatur.nu upload. temp = %d TN-Hash: %s", self.sensors[x]["temp"], TN["Hash"])
+                        TN = self.sensors[x]["temperatur.nu"]
+                        self.log.trace ("temperatur.nu upload. temp={} TN-Hash: {}".format(self.sensors[x]["temp"], TN["Hash"]))
                         self.sendTemperaturNu(self.sensors[x]["temp"], TN["Hash"]) #TODO: check if return ok
-                        self.sensors[x]["temperatur.nu"]["LastUpdate"]=datetime.now()
+                        self.sensors[x]["temperatur.nu"]["LastUpdate"] = datetime.now()
                     else:
-                        self.log.trace ("No temperatur.nu upload")
+                        self.log.trace("No temperatur.nu upload")
 
                     if "WeatherUnderground" in self.sensors[x]:
-                        WU=self.sensors[x]["WeatherUnderground"]
-                        self.log.trace("WeatherUnderground upload. temp=%d Station %s", self.sensors[x]["temp"], WU["Station"])
-                        self.sendWeatherUnderground(WU["Station"], WU["Password"],self.sensors[x]["temp"], self.sensors[x]["unit"]) #TODO: check if return ok
+                        WU = self.sensors[x]["WeatherUnderground"]
+                        self.log.trace("WeatherUnderground upload. temp={} Station {}".format(self.sensors[x]["temp"], WU["Station"]))
+                        self.sendWeatherUnderground(WU["Station"], WU["Password"], self.sensors[x]["temp"], self.sensors[x]["unit"])  # TODO: check if return ok
                         self.sensors[x]["WeatherUnderground"]["LastUpdate"]=datetime.now()
                     else:
                         self.log.trace("No WU upload")
 
         if "event.environment.humiditychanged" in subject:
-            self.log.trace("subject=%s content=%s", subject, content)
-            #TODO: add humidity reporting
+            self.log.trace("subject={} content={}".format(subject, content))
+            # TODO: add humidity reporting
 
 
     def sendTemperaturNu(self, temp, reporthash):
         """ Send temperature data to http://temperatur.nu
         """
-        self.log.info ("temperatur.nu reporting temp=" +str(temp)+ " for hash=" + reporthash)
+        self.log.debug("temperatur.nu reporting temp=" + str(temp) + " for hash=" + reporthash)
 
         # Critical section, don't want two of these running at the same time
         with self.temperaturenu_lock:
@@ -78,8 +79,8 @@ class AgoWeatherReporter(agoclient.AgoApp):
             if r.status_code == 200 and "ok! (" in r.text and len(r.text) > 6:
                 return True
             else:
-                self.log.error("something went wrong when reporting. response=" + data)
-                # Some logging needed here
+                self.log.error("Something went wrong when reporting. response={}".format(r))
+                self.log.info("Reply: {}".format(r.text))
                 return False
 
     def sendWeatherUnderground(self, stationId, password, temp, tempUnit):
@@ -88,7 +89,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
 
         #TODO: Add humidity reportiong
 
-        self.log.info ("Weather Underground reporting temp=" +str(temp)+ " for Station=" + stationId)
+        self.log.debug("Weather Underground reporting temp=" + str(temp) + " for Station=" + stationId)
 
         # Critical section, don't want two of these running at the same time
         with self.weatherunderground_lock:
@@ -109,7 +110,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
                 'realtime': '1',
                 'rtfreq': '2.5'
             }
-            self.log.trace ("WeatherUnderground station=%s pw=%s temp=%s", data["ID"], data["PASSWORD"], str(temp))
+            self.log.trace("WeatherUnderground station={} pw={} temp={}".format(data["ID"], data["PASSWORD"], str(temp)))
             url = 'http://rtupdate.wunderground.com/weatherstation/updateweatherstation.php'
 
             r = requests.post(url=url, data=data)
@@ -119,7 +120,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
             if r.text == 'success\n':
                 return True
             else:
-                self.log.error ('Uploading to WeatherUnderground failed. response=%s', r.text)
+                self.log.error('Uploading to WeatherUnderground failed. response={}'.format(r.text))
                 return False
 
     def setup_app(self):
@@ -139,7 +140,7 @@ class AgoWeatherReporter(agoclient.AgoApp):
         try:
             self.Delay = self.get_config_option('Delay', 301, section="General", app=app)
         except ValueError:
-            self.Delay=300 # 5 minutes
+            self.Delay = 300  # 5 minutes
 
         try:
             WU_Password = self.get_config_option('Password', '', section="WeatherUnderground", app=app)
@@ -152,64 +153,65 @@ class AgoWeatherReporter(agoclient.AgoApp):
         try:
             devIds  = (self.get_config_option('sensors', '', section="General", app=app)).replace(' ', '').split(',')
         except ValueError:
-            self.Delay=300 # 5 minutes
+            self.log.error('No sensors in config file. Cannot continue.')
+            sys.exit(1)
 
         for devId in devIds.__iter__():
-            print ("devId=%s", devId)
+            self.log.debug("devId={}".format(devId))
             sensor = {}
             sensor[devId] = devId
             sensor["delay"] = self.Delay
 
             try:
-                sensor["UUID"]= self.get_config_option("UUID", "", section=devId, app=app)
+                sensor["UUID"] = self.get_config_option("UUID", "", section=devId, app=app)
             except ValueError:
-                self.log.error ("UUID mandatory, skipping sensor %s", devId)
+                self.log.error("UUID mandatory, skipping sensor {}".format(devId))
                 continue
-            if sensor["UUID"] =="":
-                self.log.error ("UUID mandatory, skipping sensor %s", devId)
+            if sensor["UUID"] == "":
+                self.log.error("UUID mandatory, skipping sensor {}".format(devId))
                 continue
             sensor["device"] = devId
 
-            try: # Check if Weather Underground is defined for this sensor
+            try:  # Check if Weather Underground is defined for this sensor
                 WU_Station = self.get_config_option('WU-Station', '', section=devId, app=app)
             except ValueError:
-                self.log.info ("No Weather Underground config for devId=%s", devId)
+                self.log.info("No Weather Underground config for devId={}".format(devId))
 
             try:
                 WU_Delay = int(self.get_config_option('Delay', self.Delay, 'Weather Underground', app=app))
             except ValueError:
-                self.log.info ("No Weather Underground delay for devId=%s", devId)
+                self.log.info("No Weather Underground delay for devId=%s", devId)
 
             if WU_Station != '':
-                WeatherUnderground={}
+                WeatherUnderground = {}
                 WeatherUnderground["Station"] = WU_Station
                 WeatherUnderground["Delay"] = WU_Delay
-                WeatherUnderground["Password"]=WU_Password
-                sensor["WeatherUnderground"]=WeatherUnderground
+                WeatherUnderground["Password"] = WU_Password
+                sensor["WeatherUnderground"] = WeatherUnderground
 
             try: # Check if temperatur.nu is defined for this sensor
                 TN_Hash= self.get_config_option('TN-Hash', '', section=devId, app=app)
             except ValueError:
-                self.log.info ("No temperatur.nu config for devId=%s", devId)
+                self.log.info("No temperatur.nu config for devId={}".format(devId))
 
             try:
                 TN_Delay = int(self.get_config_option('Delay', self.Delay, 'temperatur.ny', app=app))
             except ValueError:
-                self.log.info ("No temperatur.nu delay for devId=%s", devId)
+                self.log.info("No temperatur.nu delay for devId={}".format(devId))
 
             if TN_Hash != '':
-                temperaturnu={}
+                temperaturnu = {}
                 temperaturnu["Hash"] = TN_Hash
                 temperaturnu["Delay"] = TN_Delay
                 temperaturnu["LastUpdate"] = -1
                 sensor["temperatur.nu"] = temperaturnu
 
-            sensor["unit"]="degC" #TODO: Look it up
-            sensor["temp"]=-274
+            sensor["unit"] = "degC"  # TODO: Look it up
+            sensor["temp"] = -274
 
             print ("sensor=")
             print (sensor)
-            self.sensors[devId]= sensor
+            self.sensors[devId] = sensor
 
         # Set-up background thread to handle periodic updates
         BACKGROUND = reportThread(self)
@@ -221,31 +223,34 @@ class reportThread(threading.Thread):
     """ Some weather sites need to get updated frequently in order to accept the data.
         This thread sends data on a defined interval
     """
-    def __init__(self,app):
+    def __init__(self, app):
         threading.Thread.__init__(self)
         self.Delay = 60
         self.app = app
 
     def run(self):
         while not self.app.is_exit_signaled():
-            #TODO: Check if delay needs to be divided into sub-periods to avoid haning when close-down
-            time.sleep (self.Delay) #general_delay or service specific
+            # TODO: Check if delay needs to be divided into sub-periods to avoid haning when close-down
+            time.sleep(self.Delay)  # general_delay or service specific
             now = datetime.now()
             for s, val in self.app.sensors.iteritems():
                 if "temperatur.nu" in val and val['temp'] != -274:
                     diff = (now-val["temperatur.nu"]["LastUpdate"]).seconds
-                    if diff>=val["temperatur.nu"]["Delay"]:
+                    if diff >= val["temperatur.nu"]["Delay"]:
                         self.app.log.trace("temperatur.nu background report")
                         self.app.sendTemperaturNu(val["temp"], val["temperatur.nu"]["Hash"])
                         self.app.sensors[s]["temperatur.nu"]["LastUpdate"]=datetime.now()
 
                 if "WeatherUnderground" in val and val['temp'] != -274:
                     diff = (now-val["WeatherUnderground"]["LastUpdate"]).seconds
-                    if diff>=val["WeatherUnderground"]["Delay"]:
+                    if diff >= val["WeatherUnderground"]["Delay"]:
                         self.app.log.trace("Weather Underground background report")
-                        WU=val["WeatherUnderground"]
-                        self.app.sendWeatherUnderground(WU["Station"], WU["Password"],self.app.sensors[s]["temp"], self.app.sensors[s]["unit"]) #TODO: check if return ok
-                        self.app.sensors[s]["WeatherUnderground"]["LastUpdate"]=datetime.now()
+                        WU = val["WeatherUnderground"]
+                        try:
+                            self.app.sendWeatherUnderground(WU["Station"], WU["Password"], self.app.sensors[s]["temp"], self.app.sensors[s]["unit"]) #TODO: check if return ok
+                        except requests.HTTPError as e:
+                            self.app.log.error("Weather Underground - HTTP Error received. Error={}".format(e))
+                        self.app.sensors[s]["WeatherUnderground"]["LastUpdate"] = datetime.now()
 
 
 if __name__ == "__main__":
