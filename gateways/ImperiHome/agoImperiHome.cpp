@@ -247,7 +247,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                         paramList.push_back(param2);
                         deviceinfo["params"]=paramList;
                     }
-                } else if (device["devicetype"] == "dimmerrgb" || device["devicetype"] == "dimmerrgbw" || device["devicetype"] == "ibulb") {
+                } else if (device["devicetype"] == "dimmerrgb" || device["devicetype"] == "dimmerrgbw" || device["devicetype"] == "smartdimmer") {
                     AGO_DEBUG() << "Values for dimmerrgb device: " << values;
                     deviceinfo["type"]="DevRGBLight";
                     qpid::types::Variant::List paramList;
@@ -266,7 +266,7 @@ int AgoImperiHome::mg_event_handler(struct mg_connection *conn, enum mg_event ev
                     param3["value"]="1";
                     paramList.push_back(param3);
                     param4["key"]="whitechannel";
-                    if (device["devicetype"] == "dimmerrgb" || device["devicetype"] == "ibulb") { /* TODO: Check if this is right for iBulb */
+                    if (device["devicetype"] == "dimmerrgb" || device["devicetype"] == "smartdimmer") { /* TODO: Check if this is right for smartdimmer */
                         param4["value"]="0";
                     } else {
                         param4["value"]="1";
