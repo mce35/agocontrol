@@ -4,7 +4,10 @@
 # agorrdtool
 # Addon that log environment event on rrdtool database
 # It also generates on the fly rrdtool graphs
-# copyright (c) 2014 tang (tanguy.bonneau@gmail.com) 
+# copyright (c) 2014 tang (tanguy.bonneau@gmail.com)
+
+# This module is depreciated. All functionality has been moved into the agodatalogger
+# Keeping it in the source tree for reference and potential future use
  
 import sys
 import os
