@@ -33,6 +33,9 @@ class tellstickduo(tellstickbase):
     def __delete__(self, obj):
         pass
 
+    def __init__(self):
+        self.SensorEvent = None
+
     def init(self, SensorPollDelay, TempUnits):
         # TELLSTICK_BELL | TELLSTICK_TOGGLE | TELLSTICK_LEARN | TELLSTICK_EXECUTE | TELLSTICK_UP | TELLSTICK_DOWN | TELLSTICK_STOP
         td.init(defaultMethods=td.TELLSTICK_TURNON | td.TELLSTICK_TURNOFF | td.TELLSTICK_DIM)
@@ -81,33 +84,33 @@ class tellstickduo(tellstickbase):
         return td.registerDeviceChangedEvent(deviceEvent)
 
     def newTempSensor(self, devId, model, value):
-        s = {}
-        s["id"] = devId
-        s["description"] = ""
-        s["model"] = model
         self.log.debug("New temperature sensor intercepted: devId=" + devId + " model=" + model)
-        s["new"] = True
-        s["temp"] = float(value)  # C/F
-        s["offset"] = 0.0  # TODO: Add to parameter & config file
-        s["lastTemp"] = float(-274.0)
-        s["isTempSensor"] = True
-        s["isHumiditySensor"] = False
-        s["ignore"] = False
+        s = {
+            "id" : devId,
+            "description" : "",
+            "model" : model,
+            "new" : True,
+            "temp" : float(value),  # C/F
+            "offset" : 0.0,  # TODO: Add to parameter & config file
+            "lastTemp" : float(-274.0),
+            "isTempSensor" : True,
+            "isHumiditySensor" : False,
+            "ignore" : False}
         return s
 
     def newHumiditySensor(self, devId, model, value):
-        s = {}
-        s["id"] = devId
-        s["description"] = ""
-        s["model"] = model
         self.log.debug("New humidity sensor intercepted: devId=" + devId + " model=" + model)
-        s["new"] = True
-        s["humidity"] = float(value)
-        s["offset"] = 0.0  # TODO: Add to parameter & config file
-        s["lastHumidity"] = float(-999.0)
-        s["isHumiditySensor"] = True
-        s["isTempSensor"] = False
-        s["ignore"] = False
+        s = {
+            "id" : devId,
+            "description" : "",
+            "model" : model,
+            "new" : True,
+            "humidity" : float(value),
+            "offset" : 0.0,  # TODO: Add to parameter & config file
+            "lastHumidity" : float(-999.0),
+            "isHumiditySensor" : True,
+            "isTempSensor" : False,
+            "ignore" : False}
         return s
 
     def SensorEventInterceptor(self, protocol, model, id, dataType, value, timestamp, callbackId):
@@ -153,7 +156,7 @@ class tellstickduo(tellstickbase):
                             # New hum sensor found
                             self.sensors[devId] = self.newHumiditySensor(devId, value["model"], value["humidity"])
 
-                if value["new"] != True:
+                if not value["new"]:
                     continue
 
         return self.sensors
@@ -166,10 +169,10 @@ class tellstickduo(tellstickbase):
                 model = self.getModel(devId)
 
                 if ('switch' in model or 'dimmer' in model):
-                    dev = {}
-                    dev["id"] = devId
-                    dev["name"] = self.getName(devId)
-                    dev["model"] = model
+                    dev = {
+                        "id" : devId,
+                        "name" : self.getName(devId),
+                        "model" : model}
                     if 'dimmer' in model:
                         dev["isDimmer"] = True
                     else:
@@ -187,10 +190,10 @@ class tellstickduo(tellstickbase):
                 model = self.getModel(devId)
                 self.log.info("devId=" + str(devId) + " model=" + model)
                 if 'switch' not in model and 'dimmer' not in model:
-                    dev = {}
-                    dev["id"] = str(devId)
-                    dev["name"] = self.getName(devId)
-                    dev["model"] = model
+                    dev = {
+                        "id" : str(devId),
+                        "name" : self.getName(devId),
+                        "model" : model}
                     self.log.info("devId=" + str(devId) + " model=" + model)
 
                     self.remotes[devId] = dev

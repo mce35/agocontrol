@@ -10,6 +10,9 @@ SensorPollInterval = 300
 log_level = INFO
 debug = false
 
+#Should names be read from the tellstick.conf file
+SetNames=No
+
 ####################################################################
 [EventDevices]
 # Ignore repeated events from the same device
