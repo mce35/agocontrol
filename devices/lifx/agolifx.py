@@ -87,6 +87,8 @@ class AgoLIFX(agoclient.AgoApp):
                 self.log.debug('Not found, retrying')
                 time.sleep(5)
 
+        self.smartdimmers = self.get_config_option('AddSmartdimmer', 'No', section='lifx', app='lifx') == 'Yes'
+
         # Add bulbs to agocontrol
         self.log.info('Found {} bulbs'.format(len(self.switches)))
         self.log.debug('Bulbs: {}'.format(self.switches))
@@ -101,6 +103,8 @@ class AgoLIFX(agoclient.AgoApp):
                 else:
                     self.connection.add_device(dev["id"], "dimmer", dev["name"])
                     self.log.info('Added {} as dimmer'.format(dev["id"]))
+                if self.smartdimmers:
+                    self.connection.add_device(dev["id"], "smartdimmer", str('sm' + dev["name"]))
 
         #self.connection.add_device("testrgb", "dimmerrgb", "test")
         #self.log.info('Added testrgb as dimmerrgb')
@@ -158,7 +162,7 @@ class AgoLIFX(agoclient.AgoApp):
 
             elif content["command"] == "setcolortemp":
                 colortemp = int(content["level"]);
-                self.log.debug("setting colour temp {}K for: {} ".format(colortemp, internalid))
+                self.log.debug("setting colour temp {} K for: {} ".format(colortemp, internalid))
                 self.lifx.set_colourtemp(internalid, colortemp, duration=self.FadeTime)
 
     def app_cleanup(self):
