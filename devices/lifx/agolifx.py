@@ -156,6 +156,11 @@ class AgoLIFX(agoclient.AgoApp):
                 self.lifx.set_colour(internalid, red, green, blue, duration=self.FadeTime)
                 #self.connection.emit_event(internalid, "event.device.statechanged", content["level"], "")
 
+            elif content["command"] == "setcolortemp":
+                colortemp = int(content["level"]);
+                self.log.debug("setting colour temp {}K for: {} ".format(colortemp, internalid))
+                self.lifx.set_colourtemp(internalid, colortemp, duration=self.FadeTime)
+
     def app_cleanup(self):
         pass
 
