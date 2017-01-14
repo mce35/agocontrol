@@ -245,7 +245,7 @@ class LifxLAN2(lifxbase):
 
     def set_colourtemp(self, devId, kelvin, duration=1.0):
         """ Set colour temperature of light. Other colour parameters not affected"""
-        self.devices[devId]["bulb"].set_colortemp(kelvin, duration=int(1000*duration))
+        self.devices[devId]["bulb"].set_colortemp(kelvin if kelvin >=2700 and kelvin<=9000 else 2700 if kelvin < 2700 else 9000, duration=int(1000*duration))
         return True  # TODO Check if colour temp was changed
 
     def set_brightness(self, devId, lvl, duration=1.0):

@@ -67,12 +67,12 @@ class LifxNet(lifxbase):
     def close(self):
         pass
 
-    def turnOn(self, devid):
+    def turnOn(self, devid, duration=1.0):
         """ Turn on light"""
         self.log.trace('turnOn {}'.format(devid))
         return self.set_state(devid, {"power": "on", })
 
-    def turnOff(self, devid):
+    def turnOff(self, devid, duration=1.0):
         """ Turn off light"""
         self.log.trace('turnOff {}'.format(devid))
         return self.set_state(devid, {"power": "off", })
@@ -96,7 +96,7 @@ class LifxNet(lifxbase):
                 self.log.info('Retrying did not work. Ending')
                 return False
 
-    def set_colour(self, devid, red, green, blue):
+    def set_colour(self, devid, red, green, blue, duration=1.0):
         """Set light to colour (RGB) """
         print red
         print blue
@@ -105,6 +105,15 @@ class LifxNet(lifxbase):
         payload = {"color": "rgb:{},{},{}".format(red, green, blue)}
         self.log.info(payload)  # TODO: Change to trace
         return self.set_state(devid, payload)
+
+    def set_colourtemp(self, devid, kelvin, duration=1.0):
+        """Set colour temperature for bulb """
+        #print('Kelvin={}'.format(kelvin))
+        kelvin = kelvin if kelvin >=2700 and kelvin<=9000 else 2700 if kelvin < 2700 else 9000
+        payload = {"color": "kelvin:{}".format(kelvin)}
+        self.log.info(payload)  # TODO: Change to trace
+        return self.set_state(devid, payload)
+
 
     def list_lights(self):
         """Get a list of devices for current account"""
@@ -128,10 +137,10 @@ class LifxNet(lifxbase):
                 return state
         else:
             self.log.error('getLightState failed. Received status {}'.format(response.status_code))
-            return None
+            return None  # Return last known state?
 
 
-    def listSwitches(self):
+    def listSwitches(self, FadeTime=1.0):
         """Create a dictionary with all lights"""
         ra = self.list_lights()
         try:
@@ -241,6 +250,7 @@ class LifxNet(lifxbase):
                 500: 'Something went wrong on LIFXs end.',
                 502: 'Something went wrong on LIFXs end.',
                 503: 'Something went wrong on LIFXs end.',
+                520: 'Something went wrong on LIFXs end.',
                 523: 'Something went wrong on LIFXs end.',
                 525: 'Something went wrong on LIFXs end. Official response: Oops!',
             }
