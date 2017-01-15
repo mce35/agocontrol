@@ -391,7 +391,7 @@ bool AgoDataLogger::prepareGraph(std::string uuid, int multiId, qpid::types::Var
     else
     {
         //device not found
-        AGO_ERROR() << "agodatalogger-RRDtool: device " << device["name"].isVoid()?"<void>:device["name"].asString() << " not found";
+        AGO_ERROR() << "agodatalogger-RRDtool: device " << device["uuid"].isVoid()?"<void>:device["uuid"].asString() << " not found";
         return false;
     }
 
