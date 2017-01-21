@@ -266,7 +266,7 @@ class AgoTellstick(agoclient.AgoApp):
         self.tellstick = None
         self.SensorPollInterval = 300.0  # 5 minutes
         self.general_delay = 0.5
-        self.setNames = False
+        self.setnames = False
         self.TempUnits = "C"
         #super(AgoTellstick, self).__init__()
         agoclient.AgoApp.__init__(self)
@@ -293,9 +293,9 @@ class AgoTellstick(agoclient.AgoApp):
             self.TempUnits = "F"
         self.log.debug("TempUnits: %s", self.TempUnits)
 
-        stickVersion = self.get_config_option('StickVersion', 'Duo', section='tellstick', app='tellstick')
+        stick_version = self.get_config_option('StickVersion', 'Duo', section='tellstick', app='tellstick')
         try:
-            if "Net" in stickVersion:
+            if "Net" in stick_version:
                 # Postpone tellsticknet loading, has extra dependencies which
                 # we can do without if we've only got a Duo
                 from tellsticknet import tellsticknet
@@ -310,13 +310,13 @@ class AgoTellstick(agoclient.AgoApp):
             raise agoclient.agoapp.StartupError()
 
         try:
-            setNames = self.get_config_option('SetNames', 'No', section='tellstick', app='tellstick')
+            setnames = self.get_config_option('SetNames', 'No', section='tellstick', app='tellstick')
         except ValueError:
-            setNames = 'No'
+            setnames = 'No'
 
-        self.setNames = (True if setNames.lower() == 'yes' else False)
-        self.log.info("setNames: Device names will " + (
-            "" if self.setNames else "not ") + "be fetched from Tellstick config file")
+        self.setnames = (True if setnames.lower() == 'yes' else False)
+        self.log.info("setnames: Device names will " + (
+            "" if self.setnames else "not ") + "be fetched from Tellstick config file")
 
         self.tellstick.init(self.SensorPollInterval, self.TempUnits)
 
@@ -436,7 +436,7 @@ class AgoTellstick(agoclient.AgoApp):
                 # info("Switch Name=" + dev.name + " protocol=" + dev.protocol + " model=" + dev.model)
 
                 # If a new device, set name from the tellstick config file
-                if self.setNames:
+                if self.setnames:
                     setNameIfNecessary(deviceUUID, name)
 
     def app_cleanup(self):
