@@ -35,6 +35,11 @@
                                 <span class="en-cancel"></span>
                             </button>
                         </div>
+                        <div class="btn-group" data-bind="if: booleanValue() !== null">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Toggle true/false" _title="Toggle true/false" data-translateable="true" data-bind="click: $parent.toggleBoolean">
+                                <span class="en-shuffle"></span>
+                            </button>
+                        </div>
                     </td>
                 </script>
                 <div data-bind="agoGrid:grid"/>

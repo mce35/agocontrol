@@ -1,6 +1,6 @@
 /**
  * Model class
- * 
+ *
  * @returns {EventsConfig}
  */
 function EventsConfig(agocontrol)
@@ -256,7 +256,7 @@ function EventsConfig(agocontrol)
             res.elements = [ self.parseGroup("(" + input.nesting + ")", criteria) ];
         }
         res.path = input.event;
-    
+
         return res;
     };
 
@@ -342,7 +342,7 @@ function EventsConfig(agocontrol)
         content.uuid = self.agocontrol.eventController;
         content.command = "setevent";
         content.eventmap = self.map;
-    
+
         self.agocontrol.sendCommand(content)
             .then(function(res) {
                 if (res.data.event)
@@ -616,7 +616,7 @@ function EventsConfig(agocontrol)
             }
         };
         div.appendChild(button);
-    
+
         var button = document.createElement("button");
         button.setAttribute("class", "btn btn-primary");
         button.appendChild(document.createTextNode(">"));
@@ -669,9 +669,9 @@ function EventsConfig(agocontrol)
 
         var span = document.createElement("span");
         span.className = "eventParams";
-    
+
         dd.appendChild(span);
-    
+
         if (eventObj)
         {
             self.renderEvent(eventObj.param.type, eventObj.path, self.agocontrol.schema().events[eventObj.path], span, eventObj);
@@ -728,7 +728,7 @@ function EventsConfig(agocontrol)
                         eventObj.param = {};
                         eventObj.param.type = "event";
                         eventObj.param.parameter = selects[1].options[selects[1].selectedIndex].value;
-    
+
                         eventObj.value = subList.childNodes[j].getElementsByTagName("input")[0].value;
                     }
                     else if (type == "device")
@@ -1030,7 +1030,7 @@ function EventsConfig(agocontrol)
                 {
                     params.options[i].selected = true;
                 }
-                variableValues[variable.variable] = variable.value;
+                variableValues[variable.variable] = variable.value();
                 i++;
             }
             container.appendChild(params);
@@ -1178,7 +1178,7 @@ function EventsConfig(agocontrol)
         container.appendChild(deviceListSelect);
         container.appendChild(commandSelect);
         commandParams = containerParameters;
-    
+
         deviceListSelect.onchange = function()
         {
             if (deviceListSelect.options[deviceListSelect.selectedIndex] == undefined)
@@ -1276,7 +1276,7 @@ function EventsConfig(agocontrol)
                 commandParams.style.display = "none";
             }
         };
-    
+
         commandSelect.onchange();
     };
 

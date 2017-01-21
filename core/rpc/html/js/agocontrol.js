@@ -153,7 +153,7 @@ Agocontrol.prototype = {
 
         }, this);
 
-        
+
     },
 
     /**
@@ -210,13 +210,13 @@ Agocontrol.prototype = {
 
         return Promise.all([p0, p1, p2]);
     },
-    
+
     /**
      * Send a command to an arbitrary Ago component.
      *
-     * (if oldstyleCallback is ommited and a numeric is passed as second parameter, 
+     * (if oldstyleCallback is ommited and a numeric is passed as second parameter,
      * we will use that as timeout)
-     * 
+     *
      * @param content Should be a dict with any parameters to broadcast to the qpid bus.
      * @param oldstyleCallback A deprecated callback; do not use for new code!
      * @param timeout How many seconds we want the RPC gateway to wait for response
@@ -254,7 +254,7 @@ Agocontrol.prototype = {
                     dataType : "json",
                     success: function(r, textStatus, jqXHR) {
                         // JSON-RPC call gave JSON-RPC response
-         
+
                         // Old-style callback users
                         if (oldstyleCallback)
                         {
@@ -431,7 +431,7 @@ Agocontrol.prototype = {
                     {
                         devs[uuid].room = "";
                     }
-                
+
                     var found = false;
                     for ( var i=0; i<self.devices().length; i++)
                     {
@@ -525,6 +525,35 @@ Agocontrol.prototype = {
         }
     },
 
+    /**
+     * Internal helper function to add new variables to the observableArray 'variables'.
+     * Note that this should not be used to create new variables in the system!
+     *
+     * @param name
+     * @param value
+     */
+    initVariable: function(name, value) {
+        var variable = {
+            variable: name,
+            value: ko.observable(value),
+            action: '' //dummy for datatables
+        };
+
+        // This translate the string value into a boolean, or explicit null if it is not a boolean.
+        // Idea: Add data types to variables instead?
+        variable.booleanValue = ko.pureComputed(function() {
+            var v = (variable.value() || '').toLowerCase();
+            if(v == 'true')
+                return true;
+            else if(v == 'false')
+                return false;
+            else
+                return null;
+        });
+
+        this.variables.push(variable);
+    },
+
     //handle inventory
     handleInventory: function(result)
     {
@@ -543,15 +572,9 @@ Agocontrol.prototype = {
         }
 
         //variables
-        for( name in inv.variables )
-        {
-            var variable = {
-                variable: name,
-                value: inv.variables[name],
-                action: '' //dummy for datatables
-            };
-            self.variables.push(variable);
-        }
+        Object.keys(inv.variables).forEach(function(name) {
+            self.initVariable(name, inv.variables[name]);
+        });
 
         //system
         self.system(inv.system);
@@ -1205,7 +1228,7 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 ) 
+            if( !res || !res.result || res.result===0 )
             {
                 notif.error('Unable to save skin');
             }
@@ -1228,7 +1251,7 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 ) 
+            if( !res || !res.result || res.result===0 )
             {
                 notif.error('Unable to save dashboard size');
             }
@@ -1279,7 +1302,7 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 ) 
+            if( !res || !res.result || res.result===0 )
             {
                 notif.error('Unable to save skin');
             }

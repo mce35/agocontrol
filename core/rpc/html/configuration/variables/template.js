@@ -1,6 +1,6 @@
 /**
  * Model class
- * 
+ *
  * @returns {VariablesConfig}
  */
 function VariablesConfig(agocontrol)
@@ -8,6 +8,32 @@ function VariablesConfig(agocontrol)
     var self = this;
     self.agocontrol = agocontrol;
     self.newVariable = ko.observable('');
+
+    var setVar = function(variableName, value) {
+        var varObj = self.agocontrol.variables.find(function(v){return v.variable == variableName});
+        if(varObj && varObj.value() === value)
+            // No-op
+            return Promise.resolve();
+
+        var content = {};
+        content.variable = variableName;
+        content.value = value;
+        content.command = 'setvariable';
+        content.uuid = self.agocontrol.agoController;
+
+        return self.agocontrol
+            .sendCommand(content)
+            .then(function(res) {
+                if(!varObj) {
+                    self.agocontrol.initVariable(
+                        content.variable,
+                        content.value
+                    );
+                }else{
+                    varObj.value(content.value);
+                }
+            });
+    };
 
     self.makeEditable = function(item, td, tr)
     {
@@ -17,20 +43,8 @@ function VariablesConfig(agocontrol)
                 function(value, settings)
                 {
                     var varName = $(this).data('variable');
-                    var v = self.agocontrol.variables.find(function(v){return v.variable == varName});
-                    if(!v || v.value === value) return;
 
-                    var content = {};
-                    content.variable = varName;
-                    content.uuid = self.agocontrol.agoController;
-                    content.command = "setvariable";
-                    content.value = value;
-                    self.agocontrol
-                        .sendCommand(content)
-                        .then(function(r){
-                            // refresh local inventory
-                            v.value = value;
-                        });
+                    setVar(varName, value);
                     return value;
                 },
                 {
@@ -58,27 +72,22 @@ function VariablesConfig(agocontrol)
     self.createVariable = function(data, event)
     {
         self.agocontrol.block($('#agoGrid'));
-        var content = {};
-        content.variable = self.newVariable();
-        content.value = "True";
-        content.command = 'setvariable';
-        content.uuid = self.agocontrol.agoController;
-        self.agocontrol.sendCommand(content, function(res) {
-            if (res.result && res.result.returncode == 0)
-            {
-                self.agocontrol.variables.push({
-                    variable : content.variable,
-                    value : content.value,
-                    action : ""
-                });
-                self.newVariable('');
-            }
-            else
-            {
-                notif.error("Error while creating variable!");
-            }
-            self.agocontrol.unblock($('#agoGrid'));
-        });
+
+        setVar(self.newVariable(), "True")
+          .then(function(){
+              self.newVariable('');
+           })
+           .finally(function(){
+               self.agocontrol.unblock($('#agoGrid'));
+           });
+    };
+
+    self.toggleBoolean = function(item, event)
+    {
+        var currentValue = item.booleanValue();
+        if(currentValue === null) return;
+
+        setVar(item.variable, currentValue ? 'False' : 'True');
     };
 
     self.deleteVariable = function(item, event)
