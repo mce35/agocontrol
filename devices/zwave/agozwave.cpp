@@ -1900,7 +1900,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 string index;
                 qpid::types::Variant::Map node;
                 qpid::types::Variant::List neighborsList;
-                qpid::types::Variant::List valuesList;
+                qpid::types::Variant::List internalIds;
                 qpid::types::Variant::Map status;
                 qpid::types::Variant::List params;
 
@@ -1922,7 +1922,8 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     ZWaveNode *device = devices.findValue(currentValueID);
                     if (device != NULL)
                     {
-                        valuesList.push_back(device->getId());
+                        if(std::find(internalIds.begin(), internalIds.end(), device->getId()) == internalIds.end())
+                            internalIds.push_back(device->getId());
                     }
 
                     //get node specific parameters
@@ -1951,7 +1952,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         }
                     }
                 }
-                node["internalids"] = valuesList;
+                node["internalids"] = internalIds;
 
                 node["manufacturer"]=Manager::Get()->GetNodeManufacturerName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
                 node["version"]=Manager::Get()->GetNodeVersion(nodeInfo->m_homeId,nodeInfo->m_nodeId);
