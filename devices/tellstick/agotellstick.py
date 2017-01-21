@@ -268,6 +268,9 @@ class AgoTellstick(agoclient.AgoApp):
         self.general_delay = 0.5
         self.setNames = False
         self.TempUnits = "C"
+        #super(AgoTellstick, self).__init__()
+        agoclient.AgoApp.__init__(self)
+
 
     def setup_app(self):
         try:

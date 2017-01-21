@@ -33,7 +33,8 @@ class tellstickduo(tellstickbase):
     def __delete__(self, obj):
         pass
 
-    def __init__(self):
+    def __init__(self, app):
+        super(tellstickduo, self).__init__(app)
         self.SensorEvent = None
 
     def init(self, SensorPollDelay, TempUnits):
