@@ -622,7 +622,21 @@ Agocontrol.prototype = {
     // Handle dashboard-part of inventory
     handleDashboards : function(floorplans) {
         var dashboards = [];
-        dashboards.push({name:'all', ucName:ko.observable('All my devices'), action:'', editable:false, icon:'fa-th-large'});
+
+        // localstorage hack for favourite dashboard.. Backend only has uuid->name now..
+        var isHome = function(uuid) {
+           return localStorage && (localStorage['home_dashboard'] == uuid);
+        };
+
+        var noHomeSelected = !localStorage['home_dashboard'];
+
+        dashboards.push({
+            name:'all', uuid: 'all',
+            ucName:ko.observable('All my devices'),
+            action:'',
+            editable:false, icon:'fa-th-large',
+            isHome: ko.observable(noHomeSelected || isHome('all'))});
+
         for( uuid in floorplans )
         {
             var dashboard = floorplans[uuid];
@@ -630,6 +644,7 @@ Agocontrol.prototype = {
             dashboard.action = '';
             dashboard.ucName = ko.observable(dashboard.name);
             dashboard.editable = true;
+            dashboard.isHome = ko.observable(isHome(uuid));
             if( dashboard.icon===undefined )
             {
                 dashboard.icon = null;

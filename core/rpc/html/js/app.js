@@ -504,6 +504,19 @@ function AgocontrolViewModel()
         }
     };
 
+    self.setHomeDashboard = function(dashboard, edit)
+    {
+        // There can only be one...
+        self.agocontrol.dashboards.forEach(function(d) {
+            d.isHome(false);
+        });
+        dashboard.isHome(true);
+
+        if(localStorage) {
+            localStorage['home_dashboard'] = dashboard.uuid;
+        }
+    };
+
     self.gotoConfiguration = function(config)
     {
         location.hash = 'config/' + config.name;
@@ -800,7 +813,16 @@ function AgocontrolViewModel()
         //startup page (dashboard)
         this.get('', function ()
         {
-            this.app.runRoute('get', '#dashboard/all');
+            var name = 'all';
+            // Find default dashboard
+            var home = localStorage && localStorage['home_dashboard'];
+            if(home) {
+                var db = self.agocontrol.dashboards.findByKey('uuid', home);
+                if(db) {
+                    name = db.name;
+                }
+            }
+            this.app.runRoute('get', '#dashboard/'+name);
         });
     });
 

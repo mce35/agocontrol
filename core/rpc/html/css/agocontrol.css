@@ -128,6 +128,10 @@ body {
     margin-top: 20px;
 }
 
+.sidebar-menu .fa-home.inactive {
+    color: #e9e9e9;
+}
+
 /********** custom dashboard widget **********/
 div.dashboard-widget-draggable {
     cursor:move;
