@@ -157,6 +157,13 @@ ko.observableArray.fn.find = function(predicate) {
     return underlyingArray.find(predicate);
 };
 
+ko.observableArray.fn.findByKey = function(key, wantedValue) {
+    var underlyingArray = this();
+    return underlyingArray.find(function(obj) {
+        return typeof(obj) === 'object' && obj[key] === wantedValue;
+    });
+};
+
 ko.observableArray.fn.forEach = function(callback, thisArg) {
     var underlyingArray = this();
     return underlyingArray.forEach(callback, thisArg);

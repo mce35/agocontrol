@@ -786,15 +786,7 @@ Agocontrol.prototype = {
     },
 
     getDashboard:function(name){
-        var dashboards = this.dashboards();
-        for( var i=0; i < dashboards.length; i++ )
-        {
-            if(dashboards[i].name == name )
-            {
-                return dashboards[i];
-            }
-        }
-        return null;
+        return this.dashboards.findByKey('name', name);
     },
 
     //get event
