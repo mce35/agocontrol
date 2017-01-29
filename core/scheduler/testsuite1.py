@@ -8,7 +8,9 @@ class scheduler_test1(unittest.TestCase):
         #self.s.parseJSON("schedule.json")
 
     def test1_load(self):
-        self.s.parseJSON("schedule.json")
+        self.s.parse_conf_file("schedule.json")
+
+        self.s.weekday = "mo"
         self.s.new_day("mo")
         r = self.s.rules.find("1234-1234")
         self.assertTrue(r.execute())

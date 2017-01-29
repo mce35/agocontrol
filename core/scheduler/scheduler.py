@@ -2,7 +2,7 @@
 AGO_SCHEDULER_VERSION = '0.0.1'
 ############################################
 """
-Basic class for device and device group schedule
+Basic class for device and device group conf
 
 """
 __author__     = "Joakim Lindbom"
@@ -34,33 +34,32 @@ class Scheduler:
         try:
             self.log = app.log
         except AttributeError:
-            #We seem to be in test mode, need a local logger
+            # We seem to be in test mode, need a local logger
             self.log = llog()
 
+    def parse_conf_file(self, filename):
+        with open(filename) as conf_file:
+            conf = json.load(conf_file)
+        if "rules" in conf:
+            self.log.debug("Rules config: {}".format(conf["rules"]))
+            self.rules = Rules(conf["rules"])
 
-    def parseJSON(self, filename):
-        with open(filename) as schedule_file:
-            schedule = json.load(schedule_file)
-        self.log.info("JSON file: {}".format(schedule))
-        if "rules" in schedule:
-            self.rules = Rules(schedule["rules"])
-
-        if "items" in schedule:
-            self.schedules = Schedules(schedule["items"], self.rules)
+        if "items" in conf:
+            self.log.debug("Schedule config: {}".format(conf["items"]))
+            self.schedules = Schedules(conf["items"], self.rules)
 
     def new_day(self, weekday):
-        """ Load the schedules for the new day
+        """ Load the confs for the new day
             E.g. called when it's 00:00
         """
-        self.schedules.weekday = weekday
+        self.schedules.new_day(weekday)
 
 
-
-
-class Schedules:
+class Schedules(object):
     def __init__(self, jsonstr, rules):
         self.schedules = []
         self.activities = []
+        self._weekday = None
         self.weekday = None
 
         for element in jsonstr:
@@ -85,7 +84,7 @@ class Schedules:
     @weekday.setter
     def weekday(self, day):
         print "setter of weekday called"
-        if day not in all_days:
+        if day is not None and day not in all_days:
             raise ValueError
 
         if self._weekday != day:
@@ -95,9 +94,12 @@ class Schedules:
     def new_day(self, weekday):
         self.activities = []
         for s in self.schedules:
-            if weekday in s.days:
-                #found  a day to include
-                self.activities.append(s)
+            for i in s.schedules:
+                item = s.schedules[i]
+                print item
+                if item["enabled"] and weekday in item["days"]:
+                    #found  a day to include
+                    self.activities.append(item)
         print self.activities
         print " "
 
@@ -107,7 +109,7 @@ class Schedule:
         self.scenario = None
         self.group = None
         if "device" in jsonstr:
-            self.device= jsonstr["device"]
+            self.device = jsonstr["device"]
         if "scenario" in jsonstr:
             self.scenario = jsonstr["scenario"]
         if "group-uuid" in jsonstr:
@@ -120,15 +122,17 @@ class Schedule:
             seq += 1
             x = {"action": a["action"],   # On/Off/Run etc
                  "time":   a["time"],
-                 "enabled": a["enabled"]}
+                 "enabled": a["enabled"],
+                 "device": self.device,
+                 "scenario": self.scenario,
+                 "group": self.group}
             if "days" in a:
-                if a["days"] == "weekdays":
+                if a["days"][0] == u"weekdays":
                     x["days"] = ["mo", "tu", "we", "th", "fr"]
-                elif a["days"] == "weekends":
+                elif a["days"][0] == u"weekends":
                     x["days"] = ["sa", "su"]
-                elif a["days"] == "all":
+                elif a["days"][0] == u"all":
                     x["days"] = ["mo", "tu", "we", "th", "fr", "sa", "su"]
-
                 else:
                     x["days"] = a["days"]
 
@@ -157,7 +161,7 @@ class Schedule:
             s += "Scenario {}".format(self.scenario)
         if self.group is not None:
             s += "Group {}".format(self.group)
-        s += "Enaled" if self.enabled else "Disabled"
+        s += "Enabled" if self.enabled else "Disabled"
         s += "# schedules: {}".format(len(self.schedules))
 
         return s

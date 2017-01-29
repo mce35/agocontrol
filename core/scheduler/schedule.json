@@ -28,10 +28,10 @@
             "action": "dim", "level": 100, "time": "08:10", "days": ["all"], "enabled": true, "comment": "bla, bla, bla"
           },
           {
-            "action": "fadedown", "time": "21:00", "endtime": "22:00", "tolevel":10, "enabled": true, "seq": 1
+            "action": "fadedown", "time": "21:00", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
           },
           {
-            "action": "off", "time": "22:00", "enabled": true, "seq": 2
+            "action": "off", "time": "22:00", "days": ["all"], "enabled": true, "seq": 2
           }
         ]
     },
@@ -70,7 +70,7 @@
       "uuid": "1234-1234",
       "rules": [
         {
-          "type": "variable check",          
+          "type": "variable check",
           "variable": "HouseMode",
           "operator": "eq",
           "value": "At home"
