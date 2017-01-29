@@ -12,10 +12,10 @@
             "action": "off", "time": "09:00", "days": ["weekdays"], "enabled": true
           },
           {
-            "action": "on", "time": "08:00", "days": ["weekends"], "enabled": true
+            "action": "on", "time": "09:00", "days": ["weekends"], "enabled": true
           },
           {
-            "action": "off", "time": "09:00", "days": ["weekends"], "enabled": true
+            "action": "off", "time": "10:00", "days": ["weekends"], "enabled": true
           }
 
         ]
@@ -26,6 +26,9 @@
         "actions": [
           {
             "action": "dim", "level": 100, "time": "08:10", "days": ["all"], "enabled": true, "comment": "bla, bla, bla"
+          },
+          {
+            "action": "fadedown", "time": "21:40", "endtime": "21:00", "days": ["all"], "tolevel":50, "enabled": true
           },
           {
             "action": "fadedown", "time": "21:00", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1

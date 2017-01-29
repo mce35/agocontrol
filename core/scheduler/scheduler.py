@@ -54,6 +54,39 @@ class Scheduler:
         """
         self.schedules.new_day(weekday)
 
+    def get_first(self, when="00:00"):
+        """ Get the first activity at the given time or later
+
+        @param when: hh:mm format, 00:00 - 23:59
+        @return: Matching activity
+        """
+        return self.schedules.get_first(when)
+
+    def get_next(self, when=None):
+        """ Get next activity to execute
+
+        @param when: hh:mm format, 00:00 - 23:59
+        @return: next activity
+        """
+        return self.schedules.get_next(when)
+
+    def get_weekday(self):
+        d = datetime.now().strftime('%A')
+        dl= d[:2].lower()  # TODO: Check if this is local dependant
+        #d1 = datetime.weekday()
+        #d2 = all_days[d1]
+        return dl
+
+    def now(self):
+        """
+        Get current time
+        @return: Current time, formatted as HH:MM
+        """
+        h = datetime.now().strftime('%H')
+        m = datetime.now().strftime('%M')
+        self._now = h.zfill(2) + ":" + m.zfill(2)
+        return self._now
+
 
 class Schedules(object):
     def __init__(self, jsonstr, rules):
@@ -75,6 +108,31 @@ class Schedules(object):
                 rule = r
         return rule
 
+    def get_first(self, when="00:00"):
+        """ Get the first activity at the given time or later
+
+        @param when: hh:mm format, 00:00 - 23:59
+        @return: Matching activity or None if nothing found
+        """
+        #for item in self.activities:
+        for idx, item in enumerate(self.activities):
+            if item["time"] >= when:
+                #print "found first "
+                self.latest_idx = idx
+                return item
+        return None
+
+    def get_next(self, when=None):
+        """ Get next activity to execute
+
+        @param when: hh:mm format, 00:00 - 23:59
+        @return: next activity
+        """
+        if self.latest_idx > len(self.activities):
+            return None
+        self.latest_idx += 1
+        return (self.activities[self.latest_idx])
+
     @property
     def weekday(self):
         """Weekday property."""
@@ -92,16 +150,25 @@ class Schedules(object):
             self._weekday = day
 
     def new_day(self, weekday):
+        activities = []
         self.activities = []
         for s in self.schedules:
             for i in s.schedules:
                 item = s.schedules[i]
-                print item
+                #print item
                 if item["enabled"] and weekday in item["days"]:
                     #found  a day to include
-                    self.activities.append(item)
-        print self.activities
-        print " "
+                    activities.append(item)
+        #print self.activities
+        #print "_______________________________________"
+        #for item in activities:
+        #    print item
+        print "_______________________________________"
+        print "Sorted activities"
+        self.activities= sorted(activities, key=lambda k: k['time'])
+        for item in self.activities:
+            print item
+        print "_______________________________________"
 
 class Schedule:
     def __init__(self, jsonstr, rules=None):

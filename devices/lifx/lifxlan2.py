@@ -160,6 +160,9 @@ class LifxLAN2(lifxbase):
                 dev["status"] = "on" if lvl > 0 else "off"
             except:
                 self.log.error("Oops. Error getting power state. Dev={} Power={}".format(i, i.power_level))
+                dev["dimlevel"] = 0
+                dev["status"] = "off"
+
 
             self.switches[name] = dev
             self.devices[name] = dev
