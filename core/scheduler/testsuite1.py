@@ -76,7 +76,7 @@ class scheduler_test1(unittest.TestCase):
 
         r = item["rule"]
 
-        self.assertTrue(r.execute())
+        self.assertFalse(r.execute())
 
     def test5_get_current_weekday(self):
         """ Get current weekday. Cannot be asserted

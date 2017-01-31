@@ -18,16 +18,14 @@ class variables(object):
         self.refresh(self.filename)
 
     def refresh(self, filename):
+        print "Using file {}".format(filename)
         self.variables = {}
+        # TODO: Get via AgoConnection instead if direct from map file
         with open(filename) as conf_file:
             conf = json.load(conf_file)
 
         for k, v in conf.items():
             self.variables[k] = v
-            #print (k + "=" + v)
-
-        #print self.variables
-        #print " "
 
     def get_variable(self, variable):
         """ Gets the value for a global variable

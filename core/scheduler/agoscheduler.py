@@ -22,7 +22,6 @@ import threading
 import agoclient
 import sys
 from scheduler import Scheduler
-from variables import variables
 
 import json
 
@@ -68,12 +67,12 @@ class AgoScheduler(agoclient.AgoApp):
         self.s = Scheduler(self)
 
         self.s.parse_conf_file("schedule.json")  # TODO: Replace with real file
-        dl, d = self.s.get_weekday()
+        dl, day_no = self.s.get_weekday()
         self.log.info("Weekday={}".format(dl))
         self.s.weekday = dl
         self.s.new_day(dl)
         self.weekday =dl
-        self.weekdayno = d
+        self.weekdayno = day_no
 
         #item = self.s.get_first("00:00")
         #item = self.s.get_first(self.s.now())

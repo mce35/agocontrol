@@ -169,6 +169,10 @@ class Schedules(object):
             else:
                 return 0
 
+        if weekday == "today":
+            # _weekday = self.
+            pass
+
         if _weekday not in all_days:
             return 0
 
@@ -267,14 +271,14 @@ class Rules:
     def __init__(self, jsonstr):
         self.rules = []
 
-        self.variables = variables()
-        if len(self.variables) == 0:
+        self.variables = variables("variablesmap.json")  # TODO: Use system default instaed
+        if len(self.variables.variables) == 0:
             print("Variables map not parsed correctly, zero items retrieved")
 
         for element in jsonstr:
             # self.log.trace(element)
-            rule = Rule(element)
-            self.rules.append(rule, self.variables)
+            rule = Rule(element, self.variables)
+            self.rules.append(rule)
             #print rule
 
 
@@ -291,7 +295,7 @@ class Rule:
     Represent a rule, containing rules definition and rules execution
     """
     def __init__(self, jsonstr, variables):
-        self.varioables = variables
+        self.variables = variables
         self.name = jsonstr["name"]
         self.uuid = jsonstr["uuid"]
         self.rules = {}
@@ -332,7 +336,7 @@ class Rule:
                 #    vv = "True"
                 vv = self.variables.get_variable(r["variable"])
                 if vv is None:
-                    # log!
+                    print ("Variable {} not found".format(r["variable"]))
                     return False
 
                 if r["operator"] == 'eq':
