@@ -55,6 +55,12 @@
       "enabled": true,
         "actions": [
           {
+            "action": "on", "time": "06:00", "days": ["tu"], "enabled": true
+          },
+          {
+            "action": "off", "time": "06:00", "days": ["tu"], "enabled": true
+          },
+          {
             "action": "on", "time": "17:00", "days": ["weekdays"], "enabled": true
           },
           {

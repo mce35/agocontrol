@@ -62,10 +62,14 @@ class scheduler_test1(unittest.TestCase):
 
         # It's midnight, let's shift over to a new day
         no = self.s.new_day("tu")
-        self.assertEqual(no, 9)  # 9 items expected for Tuesday
+        self.assertEqual(no, 11)  # 11 items expected for Tuesday
 
         item = self.s.get_next()
-        self.assertEqual(item["time"], "08:00")  # Tuesday, first item should be 08:00
+        self.assertEqual(item["time"], "06:00")  # Tuesday, first item should be 06:00
+
+        item = self.s.get_next()
+        self.assertEqual(item["time"], "06:00")  # Tuesday, second item should be 06:00
+
 
     def test4_execute_rule(self):
         """ Locate and execute a rule, use day index to locate Monday

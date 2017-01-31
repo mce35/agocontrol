@@ -39,15 +39,16 @@ class Scheduler:
             self.log = llog()
 
     def parse_conf_file(self, filename):
-        with open(filename) as conf_file:
-            conf = json.load(conf_file)
-        if "rules" in conf:
-            self.log.debug("Rules config: {}".format(conf["rules"]))
-            self.rules = Rules(conf["rules"])
+        if filename is not None:
+            with open(filename) as conf_file:
+                conf = json.load(conf_file)
+            if "rules" in conf:
+                self.log.debug("Rules config: {}".format(conf["rules"]))
+                self.rules = Rules(conf["rules"])
 
-        if "items" in conf:
-            self.log.debug("Schedule config: {}".format(conf["items"]))
-            self.schedules = Schedules(conf["items"], self.rules)
+            if "items" in conf:
+                self.log.debug("Schedule config: {}".format(conf["items"]))
+                self.schedules = Schedules(conf["items"], self.rules)
 
     def new_day(self, weekday):
         """ Load the schedule configuration, applying filters for the new day
