@@ -2,8 +2,9 @@
 AGO_SCHEDULER_VERSION = '0.0.1'
 ############################################
 """
-Basic class for device and device group conf
-
+Scheduler: Controlled by time-of-day, weekday and simple rules
+Triggers actions to device, device-group or scenario
+Shift of day and triggering of events are to be driven from caller, having its own clock driven loop
 """
 __author__     = "Joakim Lindbom"
 __copyright__  = "Copyright 2017, Joakim Lindbom"
@@ -19,13 +20,13 @@ __version__    = AGO_SCHEDULER_VERSION
 import time
 from datetime import date, datetime
 import sys
-
+from variables import variables
 import json
 
-all_days = {"mo", "tu", "we", "th", "fr", "sa", "su"}
+all_days = ["mo", "tu", "we", "th", "fr", "sa", "su"]
 
 class Scheduler:
-    def __init__(self, app):
+    def __init__(self, app=None):
         self.rules = None
         self.schedules = []
 
@@ -49,10 +50,11 @@ class Scheduler:
             self.schedules = Schedules(conf["items"], self.rules)
 
     def new_day(self, weekday):
-        """ Load the confs for the new day
-            E.g. called when it's 00:00
+        """ Load the schedule configuration, applying filters for the new day
+            Typically called at start-up and when it's 00:00
+        @return: # of activities loaded
         """
-        self.schedules.new_day(weekday)
+        return self.schedules.new_day(weekday)
 
     def get_first(self, when="00:00"):
         """ Get the first activity at the given time or later
@@ -71,11 +73,13 @@ class Scheduler:
         return self.schedules.get_next(when)
 
     def get_weekday(self):
+        """
+        Return current weekday in locale independent format, english short-form
+        @return: E.g. "mo", "tu", etc. + weekday # (mo = 1, tu=2 etc)
+        """
         d = datetime.now().strftime('%A')
-        dl= d[:2].lower()  # TODO: Check if this is local dependant
-        #d1 = datetime.weekday()
-        #d2 = all_days[d1]
-        return dl
+        dl = d[:2].lower()
+        return (dl, all_days.index(dl)+1)
 
     def now(self):
         """
@@ -128,7 +132,7 @@ class Schedules(object):
         @param when: hh:mm format, 00:00 - 23:59
         @return: next activity
         """
-        if self.latest_idx > len(self.activities):
+        if (self.latest_idx +1) >= len(self.activities):
             return None
         self.latest_idx += 1
         return (self.activities[self.latest_idx])
@@ -141,6 +145,8 @@ class Schedules(object):
 
     @weekday.setter
     def weekday(self, day):
+        """ Setter of weekday. Triggers loading of new day schedule if it's a new weekday
+        """
         print "setter of weekday called"
         if day is not None and day not in all_days:
             raise ValueError
@@ -150,13 +156,30 @@ class Schedules(object):
             self._weekday = day
 
     def new_day(self, weekday):
+        """
+        Build activities list, filtered to the current weekday
+        @param weekday: Filter schedules for this weekday, "mo", "tu" or 1-7
+        @return: # of activities loaded
+        """
+        _weekday = weekday
+
+        if isinstance(weekday, (int, long)):
+            if int(weekday) in range(1, 7):
+                _weekday = all_days[weekday-1]
+            else:
+                return 0
+
+        if _weekday not in all_days:
+            return 0
+
         activities = []
         self.activities = []
+        self.latest_idx = -1
         for s in self.schedules:
             for i in s.schedules:
                 item = s.schedules[i]
                 #print item
-                if item["enabled"] and weekday in item["days"]:
+                if item["enabled"] and _weekday in item["days"]:
                     #found  a day to include
                     activities.append(item)
         #print self.activities
@@ -169,8 +192,12 @@ class Schedules(object):
         for item in self.activities:
             print item
         print "_______________________________________"
+        return (len(self.activities))
 
 class Schedule:
+    """
+    Represent a schedule item
+    """
     def __init__(self, jsonstr, rules=None):
         self.device = None
         self.scenario = None
@@ -234,13 +261,23 @@ class Schedule:
         return s
 
 class Rules:
+    """
+    Collection of Rules
+    """
     def __init__(self, jsonstr):
         self.rules = []
+
+        self.variables = variables()
+        if len(self.variables) == 0:
+            print("Variables map not parsed correctly, zero items retrieved")
+
         for element in jsonstr:
             # self.log.trace(element)
             rule = Rule(element)
-            self.rules.append(rule)
+            self.rules.append(rule, self.variables)
             #print rule
+
+
 
     def find(self, uuid):
         rule = None
@@ -250,7 +287,11 @@ class Rules:
         return rule
 
 class Rule:
-    def __init__(self, jsonstr):
+    """
+    Represent a rule, containing rules definition and rules execution
+    """
+    def __init__(self, jsonstr, variables):
+        self.varioables = variables
         self.name = jsonstr["name"]
         self.uuid = jsonstr["uuid"]
         self.rules = {}
@@ -268,18 +309,31 @@ class Rule:
             #print (seq, self.rules[seq])
 
     def __str__(self):
-        """Return a string representing content f the Rule object"""
+        """
+        Return a string representing content of the Rule object
+        """
         s = "name={}, uuid={}, type={}, # rules: {} ".format(self.name, self.uuid, self.type, len(self.rules))
         return s
 
     def execute(self):
+        """
+        Execute the rule according to definition
+        For now, if the rule contains several elements, a logical AND operation is applied for the elements
+        @return: True or False, depending on rules outcome
+        """
+
         results = []
         for k, r in self.rules.iteritems():
             if r["type"] == "variable check":
-                if r["variable"] == "HouseMode":
-                    vv = "At home"  # TODO: Get variable from inventory using r["variable"]
-                if r["variable"] == "test":
-                    vv = "True"
+
+                #if r["variable"] == "HouseMode":
+                #    vv = "At home"  # TODO: Get variable from inventory using r["variable"]
+                #if r["variable"] == "test":
+                #    vv = "True"
+                vv = self.variables.get_variable(r["variable"])
+                if vv is None:
+                    # log!
+                    return False
 
                 if r["operator"] == 'eq':
                     if vv == r["value"]:
@@ -287,8 +341,30 @@ class Rule:
                     else:
                         results.append(False)
                         return False
+
                 if r["operator"] == 'lt':
                     if vv < r["value"]:
+                        results.append(True)
+                    else:
+                        results.append(False)
+                        return False
+
+                if r["operator"] == 'le':
+                    if vv <= r["value"]:
+                        results.append(True)
+                    else:
+                        results.append(False)
+                        return False
+
+                if r["operator"] == 'gt':
+                    if vv > r["value"]:
+                        results.append(True)
+                    else:
+                        results.append(False)
+                        return False
+
+                if r["operator"] == 'ge':
+                    if vv >= r["value"]:
                         results.append(True)
                     else:
                         results.append(False)

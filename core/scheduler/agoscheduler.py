@@ -2,7 +2,7 @@
 AGO_SCHEDULER_VERSION = '0.0.1'
 ############################################
 """
-Device and device group scheduler
+Device, device group and scenario scheduler
 
 """
 __author__     = "Joakim Lindbom"
@@ -22,6 +22,7 @@ import threading
 import agoclient
 import sys
 from scheduler import Scheduler
+from variables import variables
 
 import json
 
@@ -29,9 +30,10 @@ class AgoScheduler(agoclient.AgoApp):
 
     def event_handler(self, subject, content):
         """event handler - Processes incoming events and looks if they are of a relevant kind
-                         - For now, it's only time event that are of interrest
+                         - For now, it's only time event that are of interest
         """
         self.log.trace("event_handler start")
+
         if "event.environment.timechanged" in subject:
             #self.log.trace("subject=%s content=%s", subject, content)
 
@@ -40,16 +42,20 @@ class AgoScheduler(agoclient.AgoApp):
             #self.log.debug("uuid={} level={}".format(js["uuid"], js["level"]))  # TODO: Change to trace
             #t_now = str(js["hour"]) + ":" + str(js["minute"])
             t_now = self.s.now()
-            print("now={} - waiting for {}".format(t_now, self.nexttime))  # TODO: Change to trace
+            self.log.info("now={} - waiting for {}".format(t_now, self.nexttime))  # TODO: Change to trace
 
             if t_now == self.nexttime:
-                print("Action to be triggered: {}".format(self.next_item))
-                self.s.get_next()
+                self.log.info("Action to be triggered: {}".format(self.next_item))
+
+                # Trigger actions - how about several at same time?
+                self.next_item = self.s.get_next()
+                self.nexttime = self.next_item["time"]
 
             if self.weekdayno != int(js["weekday"]):
-                print ("New day! found: {}".format(int(js["weekday"])))
-                print ("weekday: old {} new".format(self.weekday), js["weekday"])
-                self.s.new_day(int(js["weekday"]))
+                self.log.info("New day! found: {}".format(int(js["weekday"])))
+                self.log.info("weekday: old {} new {}".format(self.weekday), js["weekday"])
+                no_activities = self.s.new_day(int(js["weekday"]))
+                self.log.info("Loaded {} activities for ")
                 self.weekdayno = int(js["weekday"])
 
 
@@ -58,23 +64,25 @@ class AgoScheduler(agoclient.AgoApp):
         self.connection.add_event_handler(self.event_handler)
         app = "scheduler"
 
+
         self.s = Scheduler(self)
 
         self.s.parse_conf_file("schedule.json")  # TODO: Replace with real file
-        d = self.s.get_weekday()
-        print ("weekday: {}".format(d))
-        self.s.weekday = d
-        self.s.new_day(d)
+        dl, d = self.s.get_weekday()
+        self.log.info("Weekday={}".format(dl))
+        self.s.weekday = dl
+        self.s.new_day(dl)
+        self.weekday =dl
+        self.weekdayno = d
+
         #item = self.s.get_first("00:00")
         #item = self.s.get_first(self.s.now())
-        #print item
+        #self.log.info item
 
         self.next_item = self.s.get_first(self.s.now())
         self.nexttime = self.next_item["time"]
-        print ("setup_app nexttime={}".format(self.nexttime))
+        self.log.info("setup_app nexttime={}".format(self.nexttime))
 
-        self.weekday =None
-        self.weekdayno = None
 
 if __name__ == "__main__":
     AgoScheduler().main()

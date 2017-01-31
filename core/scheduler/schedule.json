@@ -31,10 +31,10 @@
             "action": "fadedown", "time": "21:40", "endtime": "21:00", "days": ["all"], "tolevel":50, "enabled": true
           },
           {
-            "action": "fadedown", "time": "21:00", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
+            "action": "fadedown", "time": "22:17", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
           },
           {
-            "action": "off", "time": "22:00", "days": ["all"], "enabled": true, "seq": 2
+            "action": "off", "time": "23:00", "days": ["all"], "enabled": true, "seq": 2
           }
         ]
     },
@@ -43,7 +43,7 @@
       "enabled": true,
         "actions": [
           {
-            "action": "run", "time": "06:00", "days": ["mo", "we", "sa"], "enabled": true
+            "action": "run", "time": "06:00", "days": ["mo", "we", "sa"], "enabled": true, "rule": "1234-1234"
           },
           {
             "action": "run", "time": "15:00", "days": ["tu", "th", "su"], "enabled": true, "rule": "1234-1234"
