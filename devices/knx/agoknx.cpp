@@ -65,7 +65,7 @@ private:
     bool sendShortData(std::string dest, int data);
     bool sendCharData(std::string dest, int data);
     bool sendFloatData(std::string dest, float data);
-
+    bool sendBytes(std::string dest, uint8_t *bytes, int len);
     void setupApp();
     void cleanupApp();
 
@@ -288,6 +288,7 @@ void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content
     }
 }
 
+
 void AgoKnx::sendDate() {
     uint8_t datebytes[3];   
     time_t now = time(NULL);
@@ -319,6 +320,18 @@ void AgoKnx::sendTime() {
     AGO_TRACE() << "sending telegram";
     tg_time->sendTo(eibcon);
     pthread_mutex_unlock (&mutexCon);
+}
+
+bool AgoKnx::sendBytes(std::string dest, uint8_t *bytes, int len) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setUserData(bytes, len);
+    AGO_TRACE() << "sending " << len << " bytes to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
 }
 
 bool AgoKnx::sendShortData(std::string dest, int data) {
@@ -538,9 +551,17 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         checkMsgParameter(content, "red");
         checkMsgParameter(content, "green");
         checkMsgParameter(content, "blue");
-        result = sendCharData(device["red"],atoi(content["red"].asString().c_str()));
-        result &= sendCharData(device["green"],atoi(content["green"].asString().c_str()));
-        result &= sendCharData(device["blue"],atoi(content["blue"].asString().c_str()));
+        if (!device["setcolor"].isVoid()) {
+            uint8_t buf[3];
+            buf[0]= atoi(content["red"].asString().c_str());
+            buf[1]= atoi(content["green"].asString().c_str());
+            buf[2]= atoi(content["blue"].asString().c_str());
+            result = sendBytes(device["setcolor"], buf, 3);
+        } else {
+            result = sendCharData(device["red"],atoi(content["red"].asString().c_str()));
+            result &= sendCharData(device["green"],atoi(content["green"].asString().c_str()));
+            result &= sendCharData(device["blue"],atoi(content["blue"].asString().c_str()));
+        }
     } else {
         return responseUnknownCommand();
     }
