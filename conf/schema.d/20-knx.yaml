@@ -22,6 +22,10 @@ devicetypes:
           name: level status
         setlevel:
           name: set level
+        setcolor:
+          name: set level
+        colorstatus:
+          name: color status
         stop:
           name: stop
         temperature:
@@ -39,6 +43,7 @@ devicetypes:
       childdevices:
         switch: [onoff, onoffstatus]
         dimmer: [onoff, onoffstatus, setlevel, levelstatus]
+        dimmerrgb: [onoff, onoffstatus, setlevel, levelstatus, setcolor, colorstatus]
         drapes: [onoff, onoffstatus, setlevel, levelstatus, stop]
         binarysensor: [binary]
         brightnesssensor: [brightness]
