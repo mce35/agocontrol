@@ -251,3 +251,8 @@ Package: agocontrol-lifx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient, python-requests, python-pip
 Description: Ago LIFX light interface driver
+
+Package: agocontrol-scheduler
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-agoclient
+Description: Ago Scheduler

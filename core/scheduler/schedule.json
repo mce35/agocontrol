@@ -1,0 +1,118 @@
+{
+"items":
+[
+    {
+      "device": "1111-1111", "name": "Lampa 1111-1111",
+      "enabled": true,
+        "actions": [
+          {
+            "action": "on", "time": "08:00", "days": ["weekdays"], "enabled": true
+          },
+          {
+            "action": "off", "time": "09:00", "days": ["weekdays"], "enabled": true
+          },
+          {
+            "action": "on", "time": "09:00", "days": ["weekends"], "enabled": true
+          },
+          {
+            "action": "off", "time": "10:00", "days": ["weekends"], "enabled": true
+          },
+          {
+            "action": "on", "time": "sunrise-10m", "days": ["fr"], "enabled": true
+          },
+          {
+            "action": "off", "time": "sunrise-120m", "days": ["fr"], "enabled": true
+          },
+          {
+            "action": "on", "time": "sunset-25m", "days": ["fr"], "enabled": true
+          },
+          {
+            "action": "off", "time": "sunset+20m", "days": ["fr"], "enabled": true
+          }
+        ]
+    },
+    {
+      "device": "2222-2222",
+      "enabled": true,
+        "actions": [
+          {
+            "action": "dim", "level": 100, "time": "08:10", "days": ["all"], "enabled": true, "comment": "bla, bla, bla"
+          },
+          {
+            "action": "fadedown", "time": "21:40", "endtime": "21:00", "days": ["all"], "tolevel":50, "enabled": true
+          },
+          {
+            "action": "fadedown", "time": "22:17", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
+          },
+          {
+            "action": "off", "time": "23:00", "days": ["all"], "enabled": true, "seq": 2
+          }
+        ]
+    },
+    {
+      "scenario": "Plant lights on",
+      "enabled": true,
+        "actions": [
+          {
+            "action": "run", "time": "06:00", "days": ["mo", "we", "sa"], "enabled": true, "rule": "1234-1234"
+          },
+          {
+            "action": "run", "time": "15:00", "days": ["tu", "th", "su"], "enabled": true, "rule": "1234-1234"
+          }
+        ]
+    },
+    {
+      "group": "5555-5555",
+      "enabled": true,
+        "actions": [
+          {
+            "action": "on", "time": "06:00", "days": ["tu"], "enabled": true
+          },
+          {
+            "action": "off", "time": "06:00", "days": ["tu"], "enabled": true
+          },
+          {
+            "action": "on", "time": "17:00", "days": ["weekdays"], "enabled": true
+          },
+          {
+            "action": "off", "time": "22:00", "days": ["weekdays"], "enabled": true
+          }
+        ]
+    }
+  ],
+"rules":
+  [
+    {
+      "name": "Alarm - at home",
+      "uuid": "1234-1234",
+      "rules": [
+        {
+          "type": "variable check",
+          "variable": "HouseMode",
+          "operator": "eq",
+          "value": "At home"
+        }
+      ]
+    },
+    {
+      "name": "Alarm - empty house",
+      "uuid": "1235-1235",
+      "rules": [
+        {
+          "type": "variable check",
+          "variable": "HouseMode",
+          "operator": "eq",
+          "value": "Empty"
+        },
+        {
+          "type": "variable check",
+          "variable": "test",
+          "operator": "eq",
+          "value": "True"
+        }
+
+      ]
+    }
+
+  ]
+}
