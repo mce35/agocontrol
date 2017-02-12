@@ -4,14 +4,14 @@ __date__       = "2017-01-27"
 __license__    = "GPL Public License Version 3"
 
 import unittest
-import time
-from datetime import datetime
-from scheduler import Scheduler
+from scheduler import Scheduler, all_days
+from groups import Groups
 
 class scheduler_test1(unittest.TestCase):
     def setUp(self):
-        self.s = Scheduler()
-        self.s.parse_conf_file("schedule.json")  # Prepped schedule with 9 schedule items and 2 rules
+        self.groups = Groups("groups.json")
+        self.s = Scheduler(12.7, 56.6, groups=self.groups)
+        self.s.parse_conf_file("schedule.json")  # Prepped schedule with 11 schedule items and 2 rules
 
     def test1_start_at_midnight(self):
         """ This is a normal situation, where the schedules are reloaded when it's 00:00/a new day
@@ -63,12 +63,38 @@ class scheduler_test1(unittest.TestCase):
         # It's midnight, let's shift over to a new day
         no = self.s.new_day("tu")
         self.assertEqual(no, 11)  # 11 items expected for Tuesday
+        #self.s.schedules.list_full_day()
 
         item = self.s.get_next()
         self.assertEqual(item["time"], "06:00")  # Tuesday, first item should be 06:00
 
         item = self.s.get_next()
-        self.assertEqual(item["time"], "06:00")  # Tuesday, second item should be 06:00
+        self.assertEqual(item["time"], "06:00")  # Tuesday, second item should also be 06:00
+
+    def test3b_new_day(self):
+        """ Normal shift of day.
+        """
+        self.s.new_day("mo")
+
+        # Get last item for Monday
+        item = self.s.get_first("23:00")
+        self.assertEqual(item["time"], "23:00")
+        #sendmessage(item)
+
+        # This should fail, there are no more items
+        self.assertIsNone(self.s.get_next())
+
+        # It's midnight, let's shift over to a new day
+        no = self.s.new_day("tu")
+        self.assertEqual(no, 11)  # 11 items expected for Tuesday
+
+        item = self.s.get_next()
+        self.assertEqual(item["time"], "06:00")  # Tuesday, first item should be 06:00
+        #sendmessage(item)
+
+        item = self.s.get_next()
+        self.assertEqual(item["time"], "06:00")  # Tuesday, second item should also be 06:00
+        #sendmessage(item)
 
 
     def test4_execute_rule(self):
@@ -87,6 +113,24 @@ class scheduler_test1(unittest.TestCase):
         """
         dl, d = self.s.get_weekday()
         print ("dl={}, d={}".format(dl, d))
+
+    def test6_list_items(self):
+        """ List all items for this day
+        """
+        self.s.new_day("mo")
+        item = self.s.schedules.list_full_day(now="04:01")  # Before first
+        item = self.s.schedules.list_full_day(now="09:00")  # In between
+        item = self.s.schedules.list_full_day(now="23:01")  # After last
+        item = self.s.schedules.list_full_day()             # Should insets now based on current time. Cannot be validated easily
+        self.s.new_day("fr")
+        item = self.s.schedules.list_full_day(now="00:00")  # Should contain 2 sunset/sunrise based times
+
+
+    def test7_double_assign(self):
+        self.weekday = weekday = all_days[2-1]
+        self.assertEqual(self.weekday, "tu")
+        self.assertEqual(weekday, "tu")
+
 
     def tearDown(self):
         pass

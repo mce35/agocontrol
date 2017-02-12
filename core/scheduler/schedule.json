@@ -2,7 +2,7 @@
 "items":
 [
     {
-      "device": "1111-1111",
+      "device": "1111-1111", "name": "Lampa 1111-1111",
       "enabled": true,
         "actions": [
           {
@@ -16,8 +16,19 @@
           },
           {
             "action": "off", "time": "10:00", "days": ["weekends"], "enabled": true
+          },
+          {
+            "action": "on", "time": "sunrise-10m", "days": ["fr"], "enabled": true
+          },
+          {
+            "action": "off", "time": "sunrise-120m", "days": ["fr"], "enabled": true
+          },
+          {
+            "action": "on", "time": "sunset-20m", "days": ["fr"], "enabled": true
+          },
+          {
+            "action": "off", "time": "sunset+20m", "days": ["fr"], "enabled": true
           }
-
         ]
     },
     {
@@ -68,9 +79,6 @@
           }
         ]
     }
-
-
-
   ],
 "rules":
   [

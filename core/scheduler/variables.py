@@ -18,7 +18,7 @@ class variables(object):
         self.refresh(self.filename)
 
     def refresh(self, filename):
-        print "Using file {}".format(filename)
+        #print "Using file {}".format(filename)
         self.variables = {}
         # TODO: Get via AgoConnection instead if direct from map file
         with open(filename) as conf_file:
