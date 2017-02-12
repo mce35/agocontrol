@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from scheduler import Scheduler
 
+
 class scheduler_test1(unittest.TestCase):
     def setUp(self):
         self.s = Scheduler()

@@ -19,7 +19,6 @@ __version__    = AGO_SCHEDULER_VERSION
 import agoclient
 from scheduler import Scheduler, all_days
 from groups import Groups
-
 import json
 
 

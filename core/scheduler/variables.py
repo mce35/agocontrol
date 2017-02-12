@@ -6,7 +6,7 @@ basedir = "/etc/opt/agocontrol/"  #TODO: Get from config
 vmap = "maps/variablesmap.json"
 
 
-class variables(object):
+class Variables(object):
     def __init__(self, filename=None):
         self.variables = {}
         self.refresh(filename)

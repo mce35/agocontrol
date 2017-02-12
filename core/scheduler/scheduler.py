@@ -19,7 +19,7 @@ __version__    = AGO_SCHEDULER_VERSION
 
 import time
 from datetime import datetime, timedelta #, date.fromtimestamp, date.utcfromtimestamp
-from variables import variables
+from variables import Variables
 import json
 import math
 #import datetime
@@ -32,6 +32,7 @@ else:
     # py2
     import codecs
     import warnings
+
     def open(file, mode='r', buffering=-1, encoding=None,
              errors=None, newline=None, closefd=True, opener=None):
         if newline is not None:
@@ -484,7 +485,7 @@ class Rules:
         self.log = log
         self.rules = []
 
-        self.variables = variables("variablesmap.json")  # TODO: Use system default instead
+        self.variables = Variables("variablesmap.json")  # TODO: Use system default instead
         if len(self.variables.variables) == 0:
             print("Variables map not parsed correctly, zero items retrieved")
 

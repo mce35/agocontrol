@@ -24,7 +24,7 @@
             "action": "off", "time": "sunrise-120m", "days": ["fr"], "enabled": true
           },
           {
-            "action": "on", "time": "sunset-20m", "days": ["fr"], "enabled": true
+            "action": "on", "time": "sunset-25m", "days": ["fr"], "enabled": true
           },
           {
             "action": "off", "time": "sunset+20m", "days": ["fr"], "enabled": true

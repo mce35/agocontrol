@@ -42,7 +42,6 @@ class Group(object):
         self._name = jsonstr["name"]
         self.uuid = jsonstr["uuid"]
         self.devices = []
-        #print self.name
         for d in jsonstr["devices"]:
             self.devices.append(d)
 

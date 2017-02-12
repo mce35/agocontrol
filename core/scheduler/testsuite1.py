@@ -79,7 +79,6 @@ class scheduler_test1(unittest.TestCase):
         # Get last item for Monday
         item = self.s.get_first("23:00")
         self.assertEqual(item["time"], "23:00")
-        #sendmessage(item)
 
         # This should fail, there are no more items
         self.assertIsNone(self.s.get_next())
@@ -90,11 +89,9 @@ class scheduler_test1(unittest.TestCase):
 
         item = self.s.get_next()
         self.assertEqual(item["time"], "06:00")  # Tuesday, first item should be 06:00
-        #sendmessage(item)
 
         item = self.s.get_next()
         self.assertEqual(item["time"], "06:00")  # Tuesday, second item should also be 06:00
-        #sendmessage(item)
 
 
     def test4_execute_rule(self):

@@ -6,13 +6,14 @@ __license__    = "GPL Public License Version 3"
 import unittest
 import time
 from datetime import datetime
-from variables import variables
+from variables import Variables
 
 vmap = "variablesmap.json"
 
+
 class scheduler_test1(unittest.TestCase):
     def setUp(self):
-        self.v = variables(vmap)
+        self.v = Variables(vmap)
 
     def test1_check_loading(self):
         """ Check that the loading f the variables went OK

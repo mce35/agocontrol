@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from groups import Groups
 
+
 class scheduler_test1(unittest.TestCase):
     def setUp(self):
         self.g = Groups("groups.json")
