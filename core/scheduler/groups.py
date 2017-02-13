@@ -5,7 +5,7 @@ import json
 basedir = "/etc/opt/agocontrol/"  #TODO: Get from config
 vmap = "maps/groupsmap.json"
 
-class Groups:
+class Groups(object):
     """
     Collection of Groups
     """
@@ -24,7 +24,6 @@ class Groups:
             # self.log.trace(element)
             grp = Group(element, self.log)
             self.Groups.append(grp)
-            #print Group
 
     def find(self, uuid):
         grp = None
@@ -57,7 +56,7 @@ class Group(object):
         return self._name
 
 
-class llog:
+class llog(object):
     def __init__(self):
         pass
 

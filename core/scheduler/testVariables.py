@@ -34,6 +34,21 @@ class scheduler_test1(unittest.TestCase):
         val = self.v.get_variable("should-not-be-there")
         self.assertIsNone(val)
 
+    def test4_add_del_update(self):
+        """ Check adding, changing and deleting a variable
+        """
+        self.assertEqual(self.v.variables["housemode"], "At home")
+        self.v.set_variable("housemode", "Away")
+        self.assertEqual(self.v.variables["housemode"], "Away")
+        val = self.v.get_variable("should-not-be-there")
+        self.assertRaises(KeyError)
+        self.v.set_variable("should-not-be-there", "now it's there")
+        val = self.v.get_variable("should-not-be-there")
+        self.assertEqual(val, "now it's there")
+        self.v.del_variable("should-not-be-there")
+        val = self.v.get_variable("should-not-be-there")
+        self.assertRaises(KeyError)  # OK, it's gone again
+
     def tearDown(self):
         pass
 

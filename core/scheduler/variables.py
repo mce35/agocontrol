@@ -18,7 +18,6 @@ class Variables(object):
         self.refresh(self.filename)
 
     def refresh(self, filename):
-        #print "Using file {}".format(filename)
         self.variables = {}
         # TODO: Get via AgoConnection instead if direct from map file
         with open(filename) as conf_file:
@@ -33,14 +32,13 @@ class Variables(object):
         @param   variable: The variable to set
         @return: The value retrieved, or None if non-existent
         """
-        self.refresh(self.filename)
+        #self.refresh(self.filename)
         try:
             val = self.variables[variable]
         except KeyError:
             val = None
 
         return val
-
 
     def set_variable(self, variable, value):
         """ Sets the global variable, store it to the global map
@@ -49,7 +47,7 @@ class Variables(object):
         @param value:    The value to assign. Needs to be a string for now
         @return:
         """
-        pass
+        self.variables[variable] = value
 
     def add_variable(self, variable, value):
         """ Creates a new global variable, store it to the global map
@@ -58,15 +56,16 @@ class Variables(object):
         @param value:    The value to assign. Needs to be a string for now
         @return:
         """
-        pass
+        self.variables[variable] = value
+        # TODO: Persist to disk / Send message to persist
 
     def del_variable(self, variable):
         """ Deletes a global variable from the global map
 
         @param variable: The variable to set
-        @return:
+        @return: Nothing. @excpet: KeyError if the variable don't exist
         """
-        pass
-
-
-
+        try:
+            del self.variables[variable]
+        except KeyError:
+            pass

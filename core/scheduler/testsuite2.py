@@ -4,14 +4,14 @@ __date__       = "2017-02-02"
 __license__    = "GPL Public License Version 3"
 
 import unittest
-import time
-from datetime import datetime
 from scheduler import Scheduler
+from groups import Groups
 
 
-class scheduler_test1(unittest.TestCase):
+class SchedulerTest2(unittest.TestCase):
     def setUp(self):
-        self.s = Scheduler()
+        self.groups = Groups("groups.json")
+        self.s = Scheduler(12.7, 56.6, self.groups)
         self.s.parse_conf_file("winter.json")  # Prepped schedule with 9 schedule items and 2 rules
 
     def test1_start_at_midnight(self):
@@ -27,7 +27,7 @@ class scheduler_test1(unittest.TestCase):
 
         # Start later in the day, search for exact match in time
         item = self.s.get_first("08:10")
-        self.assertEqual(item["time"], "17:00")
+        self.assertEqual(item["time"], "15:00")
         self.assertEqual(item["group"], "5555-5555")
 
     def test2_start_in_evening(self):
@@ -38,7 +38,7 @@ class scheduler_test1(unittest.TestCase):
         item = self.s.get_first("21:35")
         self.assertEqual(item["time"], "21:45")
         item = self.s.get_next()
-        self.assertEqual(item["time"], "22:00")
+        self.assertEqual(item["time"], "21:59")
 
     def test2b_start_with_errors(self):
         """ Start with invalid days. 0 scheduled items expected as result
@@ -88,15 +88,14 @@ class scheduler_test1(unittest.TestCase):
         self.assertEqual(no, 7)  # 10 items expected for Thursday
 
         item = self.s.get_next()
-        self.assertEqual(item["time"], "06:25")  # Tuesday, first item should be 06:00
+        self.assertEqual(item["time"], "06:25")  # Thursday, first item should be 06:25
 
         item = self.s.get_next()
-        self.assertEqual(item["time"], "07:25")  # Tuesday, second item should also be 06:00
+        self.assertEqual(item["time"], "15:00")  # Thursday, second item should also be 15:00
 
     def test4_list(self):
         """ Test sunrise calculation"""
         self.s.schedules.list_full_day()
-
 
     def test5_sunrise(self):
         """ Test sunrise calculation"""
@@ -107,7 +106,7 @@ class scheduler_test1(unittest.TestCase):
         pass
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(scheduler_test1)
+    suite = unittest.TestLoader().loadTestsFromTestCase(SchedulerTest2)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 

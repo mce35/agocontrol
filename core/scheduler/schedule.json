@@ -39,10 +39,10 @@
             "action": "dim", "level": 100, "time": "08:10", "days": ["all"], "enabled": true, "comment": "bla, bla, bla"
           },
           {
-            "action": "fadedown", "time": "21:40", "endtime": "21:00", "days": ["all"], "tolevel":50, "enabled": true
+            "action": "fadedown", "time": "20:40", "endtime": "21:00", "days": ["all"], "tolevel":50, "enabled": true
           },
           {
-            "action": "fadedown", "time": "22:17", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
+            "action": "fadedown", "time": "21:40", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
           },
           {
             "action": "off", "time": "23:00", "days": ["all"], "enabled": true, "seq": 2

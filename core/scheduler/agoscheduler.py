@@ -34,17 +34,17 @@ class AgoScheduler(agoclient.AgoApp):
             self.log.trace("subject=%s content=%s", subject, content)
 
             js = json.loads(str(content).replace("u\'", '\"').replace("\'", '\"'))  # TODO: check if replacement is necessary
-            t_now = self.s.now()
+            t_now = self.scheduler.now()
             self.log.trace("now={} - waiting for {}".format(t_now, self.nexttime))
 
             if self.nexttime is not None and t_now == self.nexttime:
                 while True:  # Loop through all items with same time
                     self.log.debug("Action to be triggered: {}".format(self.next_item))
                     try:
-                        self.sendmessage(self.next_item)
+                        self.send_message(self.next_item)
                     except NameError as e:
                         self.log.error("Oops, could not send message. Msg={}".format(e))
-                    self.next_item = self.s.get_next()
+                    self.next_item = self.scheduler.get_next()
                     if self.next_item is None:
                         self.nexttime = None
                         break
@@ -60,13 +60,12 @@ class AgoScheduler(agoclient.AgoApp):
                 # TODO: Check config if a new schedule file is to be loaded
                 self.weekdayno = int(js["weekday"])
                 self.new_day(self.weekdayno)
-                self.next_item = self.s.get_first("00:00")
+                self.next_item = self.scheduler.get_first("00:00")
                 if self.next_item is not None:
                     self.nexttime = self.next_item["time"]
                 else:
                     self.nexttime = None
                 self.log.debug("First item scheduled for {}".format(self.nexttime))
-
 
         # TODO: Event handler for "reload" event
 
@@ -84,30 +83,14 @@ class AgoScheduler(agoclient.AgoApp):
             self.log.debug("About to set device content={}".format(content))
             self.connection.send_message(msg, content)
 
-    def sendmessage(self, item):
-        self.log.debug(("In sendmessage. item={}".format(item)))
+    def send_message(self, item):
+        self.log.debug(("In send_message. item={}".format(item)))
         if item["device"] is not None:
             if item["action"] in {"on", "off"}:
                 self.device_msg(item["device"], item["action"])
             elif item["action"] in {"setlevel"}:
                 self.device_msg(item["device"], item["action"], item["level"])
-            # content = {"uuid": item["device"]}
-            # if item["action"] == "setlevel":
-            #     content["action"] = "setlevel"
-            #     content["level"] = int(item["level"])
-            # elif item["action"] == "on":
-            #     content["command"] = "on"
-            # elif item["action"] == "off":
-            #     content["command"] = "off"
-            # elif item["action"] == "fade":
-            #     pass
-
-            # if item["action"] in {"on", "off", "setlevel"}:
-            #     msg = "event.device.statechanged"
-            #
-            #     # todo: aDD ACTION SPECIFIC FIELDS
-            #     self.log.debug("About to set device content={}".format(content))
-            #     self.connection.send_message(msg, content)
+            # todo: aDD ACTION SPECIFIC FIELDS
 
         if item["scenario"] is not None:
             content = {"uuid": item["scenario"],
@@ -126,8 +109,7 @@ class AgoScheduler(agoclient.AgoApp):
                         elif item["action"] in {"setlevel"}:
                             self.device_msg(dev, item["action"], item["level"])
 
-
-    def getScenarioControllerUuid(self):
+    def get_scenario_controller_uuid(self):
         """Get UUID for the scenario controller"""
         inventory = self.connection.get_inventory()
 
@@ -146,11 +128,11 @@ class AgoScheduler(agoclient.AgoApp):
         """
         self.weekday = weekday = all_days[weekdayno - 1]
         self.log.trace("new_day() weekday={}".format(weekday))
-        no_activities = self.s.new_day(weekday)
-        self.next_item = self.s.get_first("00:00")
+        no_activities = self.scheduler.new_day(weekday)
+        self.next_item = self.scheduler.get_first("00:00")
         self.weekdayno = weekdayno
 
-        self.s.schedules.list_full_day()
+        self.scheduler.schedules.list_full_day()
         self.log.info("New day: {}. Loaded {} schedule items for today.".format(weekday, no_activities))
 
     def setup_app(self):
@@ -158,7 +140,7 @@ class AgoScheduler(agoclient.AgoApp):
         self.connection.add_event_handler(self.event_handler)
         app = "scheduler"
 
-        self.scenario_controllerUUID = self.getScenarioControllerUuid()
+        self.scenario_controllerUUID = self.get_scenario_controller_uuid()
         if self.scenario_controllerUUID is None:
             self.log.error(("Scenario Controler not found."))
 
@@ -173,22 +155,15 @@ class AgoScheduler(agoclient.AgoApp):
 
         self.groups = Groups(agoclient.config.CONFDIR + '/conf.d/' + 'groups.json')  # TODO: Change to proper file
 
-        self.s = Scheduler(self, self.groups)
+        self.scheduler = Scheduler(12.7, 56.05, app=self, groups=self.groups)
 
-        self.s.parse_conf_file(self.mapfile)
-        dl, day_no = self.s.get_weekday()
-        self.s.weekday = dl
+        self.scheduler.parse_conf_file(self.mapfile)
+        dl, day_no = self.scheduler.get_weekday()
+        self.scheduler.weekday = dl
         self.log.trace("day_no={}".format(day_no))
         self.new_day(day_no)
-        #self.weekday =dl
-        #self.weekdayno = day_no
-        #self.s.schedules.list_full_day()
 
-        # item = self.s.get_first("00:00")
-        # item = self.s.get_first(self.s.now())
-        # self.log.info item
-
-        self.next_item = self.s.get_first(self.s.now())
+        self.next_item = self.scheduler.get_first(self.scheduler.now())
         if self.next_item is not None:
             self.nexttime = self.next_item["time"]
         else:

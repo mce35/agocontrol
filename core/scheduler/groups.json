@@ -2,7 +2,7 @@
 "groups":
 [
     {
-      "name": "Living room 2222", "uuid": "5555-5555", "enabled": true,
+      "name": "Living room", "uuid": "5555-5555", "enabled": true,
         "devices": ["1111-1111", "2222-2222"]
     },
     {

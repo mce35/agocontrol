@@ -22,7 +22,6 @@ from datetime import datetime, timedelta #, date.fromtimestamp, date.utcfromtime
 from variables import Variables
 import json
 import math
-#import datetime
 from groups import Groups
 import sys
 if sys.version_info[0] > 2:
@@ -46,6 +45,7 @@ else:
 
 all_days = ["mo", "tu", "we", "th", "fr", "sa", "su"]
 
+
 class Scheduler(object):
     def __init__(self, lon, lat, app=None, groups=None):
         self.rules = None
@@ -56,6 +56,7 @@ class Scheduler(object):
         self._nexttime = None
         self._weekday = None
         self._nexttime = None
+        self._now = None
 
         coords = {'longitude': float(lon), 'latitude': float(lat)}
         self.sun = Sun(coords)
@@ -63,7 +64,7 @@ class Scheduler(object):
         if groups is not None:
             self.groups = groups
         else:
-            self.groups = Groups("")
+            self.groups = None
         try:
             self.log = app.log
         except AttributeError:
@@ -87,7 +88,6 @@ class Scheduler(object):
             Typically called at start-up and when it's 00:00
         @return: # of activities loaded
         """
-
         return self.schedules.new_day(weekday)
 
     def get_nexttime(self):
@@ -122,7 +122,6 @@ class Scheduler(object):
         """Time-of-day for next activity, or None if there is none."""
         return self.schedules.nexttime
 
-
     def get_weekday(self):
         """
         Return current weekday in locale independent format, english short-form
@@ -130,7 +129,7 @@ class Scheduler(object):
         """
         d = datetime.now().strftime('%A')
         dl = d[:2].lower()
-        return (dl, all_days.index(dl)+1)
+        return dl, all_days.index(dl)+1
 
     def now(self):
         """
@@ -151,11 +150,10 @@ class Scheduler(object):
 
         sun = Sun(coords, use_local=True)
 
-        sunrise = sun.getSunriseTime()
+        sunrise = sun.get_sunrise_time()
         self.sunrise = sunrise['str_hr'] + ':' + sunrise['str_min']
 
         print("Sunrise today: {}".format(self.sunrise))
-
 
 
 class Schedules(object):
@@ -164,6 +162,7 @@ class Schedules(object):
         self.activities = []
         self._weekday = None
         self.weekday = None
+        self._nexttime = None
         self.groups = groups
         self.log = log
         self.latest_idx = -1
@@ -172,14 +171,14 @@ class Schedules(object):
         self.sunrise_hhmm = None
         self.sunset = None
         self.sunset_hhmm = None
+        self._now = None
 
         self.sun = sun
 
         for element in jsonstr:
-            # self.log.trace(element)
+            self.log.trace(element)
             item = Schedule(element, self.sun, rules)
             self.schedules.append(item)
-            # print item
 
     def find(self, uuid):
         rule = None
@@ -194,10 +193,8 @@ class Schedules(object):
         @param when: hh:mm format, 00:00 - 23:59
         @return: Matching activity or None if nothing found
         """
-        #for item in self.activities:
         for idx, item in enumerate(self.activities):
             if item["time"] >= when:
-                #print "found first "
                 self.latest_idx = idx
                 return item
         return None
@@ -208,18 +205,20 @@ class Schedules(object):
         @param when: hh:mm format, 00:00 - 23:59
         @return: next activity
         """
-        if (self.latest_idx +1) >= len(self.activities):
+        if when is not None:
+            return self.get_first(when)
+
+        if (self.latest_idx + 1) >= len(self.activities):
             return None
         self.latest_idx += 1
-        return (self.activities[self.latest_idx])
+        return self.activities[self.latest_idx]
 
     def list_full_day(self, now = None):
         _latest_idx = self.latest_idx
         now_printed = False
 
-        if now == None:
+        if now is None:
             now = self.now()
-
 
         item = self.get_first("00:00")
         while item is not None:
@@ -245,7 +244,6 @@ class Schedules(object):
 
         self.latest_idx = _latest_idx
 
-
     def now(self):
         """
         Get current time
@@ -264,7 +262,6 @@ class Schedules(object):
     @property
     def weekday(self):
         """Weekday property."""
-        #print "getter of weekday called"
         return self._weekday
 
     @weekday.setter
@@ -279,11 +276,11 @@ class Schedules(object):
             self._weekday = day
 
     def get_sun_times(self):
-        tp = self.sun.getSunriseTime()
+        tp = self.sun.get_sunrise_time()
         self.sunrise = tp["datetime"]
         self.sunrise_hhmm = "{}:{}".format(tp['str_hr'], tp['str_min'])
 
-        tp = self.sun.getSunsetTime()
+        tp = self.sun.get_sunset_time()
         self.sunset = tp["datetime"]
         self.sunset_hhmm = "{}:{}".format(tp['str_hr'], tp['str_min'])
 
@@ -314,21 +311,18 @@ class Schedules(object):
         self.activities = []
         self.latest_idx = -1
         for s in self.schedules:
-            s.update_sun_times() #self.sunrise, self.sunset)
+            s.update_sun_times()
             for i in s.activities:
                 item = s.activities[i]
-                #print item
                 if item["enabled"] and _weekday in item["days"]:
-                    #found  a day to include
                     activities.append(item)
         self.activities = sorted(activities, key=lambda k: k['time'])  # TODO: Check with (k["time"], k["seq"])
         if len(self.activities) > 0:
             self._nexttime = self.activities[0]["time"]  # TODO: Set to None? start time yet not known
-        #self.get_first("00:00")
         return len(self.activities)
 
 
-class Schedule:
+class Schedule(object):
     """
     Represent a schedule item
     """
@@ -348,7 +342,7 @@ class Schedule:
             self.name = jsonstr["name"]
         except KeyError:
             self.name = None
-        self.activities= {}
+        self.activities = {}
 
         seq = 0
         for a in jsonstr["actions"]:
@@ -360,16 +354,6 @@ class Schedule:
                  "name": self.name,
                  "group": self.group}
 
-            # if a["time"] == "sunrise":
-            #     sunrise = "{}:{}".format(sun.getSunriseTime()['str_hr'], sun.getSunriseTime()['str_min'])
-            #     x["time"] = sunrise
-            #     x["dynamic_time"] = True
-            #     x["time_base"] = "sunrise"
-            # elif a["time"] == "sunset":
-            #     sunset = "{}:{}".format(sun.getSunsetTime()['str_hr'], sun.getSunsetTime()['str_min'])
-            #     x["time"] = sunset
-            #     x["dynamic_time"] = True
-            #     x["time_base"] = "sunset"
             if "sunrise" in a["time"] or "sunset" in a["time"]:
                 x["time"] = self.get_sun_time(a["time"])
                 x["time_base"] = a["time"]
@@ -403,7 +387,6 @@ class Schedule:
             if "rule" in a:
                 x["rule-uuid"] = a["rule"]
                 x["rule"] = rules.find(a["rule"])
-                #print x["rule"]
 
             self.activities[seq] = x
 
@@ -418,9 +401,9 @@ class Schedule:
                                   sunset-10m   = 10 minutes before sunset
         @return: time as str(hh:mm) or 99:99 to indicate error
         """
-        sunrise = self.sun.getSunriseTime()
+        sunrise = self.sun.get_sunrise_time()
         sunrise_hhmm = "{}:{}".format(sunrise['str_hr'], sunrise['str_min'])
-        sunset = self.sun.getSunsetTime()
+        sunset = self.sun.get_sunset_time()
         sunset_hhmm = "{}:{}".format(sunset['str_hr'], sunset['str_min'])
 
         if time_base == "sunrise":
@@ -445,7 +428,7 @@ class Schedule:
                     new_time = sunset["datetime"] + td
 
                 return self.get_hhmm(new_time)
-        return "99:99"
+        return "99:99"  # TODO: Raise exception?
 
     def get_hhmm(self, dt):
         """
@@ -455,7 +438,6 @@ class Schedule:
         """
         a = str(dt.hour).zfill(2) + ':' + str(dt.minute).zfill(2)
         return a
-
 
     def update_sun_times(self):
         for i in self.activities:
@@ -477,7 +459,7 @@ class Schedule:
         return s
 
 
-class Rules:
+class Rules(object):
     """
     Collection of Rules
     """
@@ -501,7 +483,8 @@ class Rules:
                 rule = r
         return rule
 
-class Rule:
+
+class Rule(object):
     """
     Represent a rule, containing rules definition and rules execution
     """
@@ -519,16 +502,14 @@ class Rule:
                  "variable": r["variable"],
                  "operator": r["operator"],
                  "value":    r["value"]}
-            #print x
 
             self.rules[seq] = x
-            #print (seq, self.rules[seq])
 
     def __str__(self):
         """
         Return a string representing content of the Rule object
         """
-        s = "name={}, uuid={}, type={}, # rules: {} ".format(self.name, self.uuid, self.type, len(self.rules))
+        s = "name={}, uuid={}, # rules: {} ".format(self.name, self.uuid, len(self.rules))
         return s
 
     def execute(self):
@@ -542,10 +523,6 @@ class Rule:
         for k, r in self.rules.iteritems():
             if r["type"] == "variable check":
 
-                #if r["variable"] == "HouseMode":
-                #    vv = "At home"  # TODO: Get variable from inventory using r["variable"]
-                #if r["variable"] == "test":
-                #    vv = "True"
                 vv = self.variables.get_variable(r["variable"])
                 if vv is None:
                     self.log.error("Variable {} not found".format(r["variable"]))
@@ -588,7 +565,6 @@ class Rule:
 
         return True
 
-
     def addlog(self, log):
         self.log = log
 
@@ -608,13 +584,13 @@ class Sun:
 
         self.coords = coords
 
-    def getSunriseTime(self):
-        return self.calcSunTime(self.coords, True)
+    def get_sunrise_time(self):
+        return self.calc_sun_time(self.coords, True)
 
-    def getSunsetTime(self):
-        return self.calcSunTime(self.coords, False)
+    def get_sunset_time(self):
+        return self.calc_sun_time(self.coords, False)
 
-    def calcSunTime(self, coords, isRiseTime, zenith=90.8):
+    def calc_sun_time(self, coords, isRiseTime, zenith=90.8):
         """
         Calculate sunrise or sunset
         @param coords:     Longitude/latitude
@@ -632,126 +608,127 @@ class Sun:
             'datetime': time as a datetime object
             }
         """
-        day, month, year = self.getCurrentUTC()
+        day, month, year = self.get_current_utc()
 
-        TO_RAD = math.pi/180
+        to_rad = math.pi/180
 
         # 1. first calculate the day of the year
-        N1 = math.floor(275 * month / 9)
-        N2 = math.floor((month + 9) / 12)
-        N3 = (1 + math.floor((year - 4 * math.floor(year / 4) + 2) / 3))
-        N = N1 - (N2 * N3) + day - 30
+        n1 = math.floor(275 * month / 9)
+        n2 = math.floor((month + 9) / 12)
+        n3 = (1 + math.floor((year - 4 * math.floor(year / 4) + 2) / 3))
+        n = n1 - (n2 * n3) + day - 30
 
         # 2. convert the longitude to hour value and calculate an approximate time
         lngHour = coords['longitude'] / 15
 
         if isRiseTime:
-            t = N + ((6 - lngHour) / 24)
-        else: #sunset
-            t = N + ((18 - lngHour) / 24)
+            t = n + ((6 - lngHour) / 24)
+        else:  # sunset
+            t = n + ((18 - lngHour) / 24)
 
         # 3. calculate the Sun's mean anomaly
-        M = (0.9856 * t) - 3.289
+        m = (0.9856 * t) - 3.289
 
         # 4. calculate the Sun's true longitude
-        L = M + (1.916 * math.sin(TO_RAD*M)) + (0.020 * math.sin(TO_RAD * 2 * M)) + 282.634
-        L = self.forceRange(L, 360)  #NOTE: L adjusted into the range [0,360)
+        l = m + (1.916 * math.sin(to_rad*m)) + (0.020 * math.sin(to_rad * 2 * m)) + 282.634
+        l = self.force_range(l, 360)  #NOTE: l adjusted into the range [0,360)
 
         # 5a. calculate the Sun's right ascension
 
-        RA = (1/TO_RAD) * math.atan(0.91764 * math.tan(TO_RAD*L))
-        RA = self.forceRange(RA, 360)  #NOTE: RA adjusted into the range [0,360)
+        ra = (1/to_rad) * math.atan(0.91764 * math.tan(to_rad*l))
+        ra = self.force_range(ra, 360)  #NOTE: ra adjusted into the range [0,360)
 
         # 5b. right ascension value needs to be in the same quadrant as L
-        Lquadrant  = (math.floor(L/90)) * 90
-        RAquadrant = (math.floor(RA/90)) * 90
-        RA += (Lquadrant - RAquadrant)
+        l_quadrant  = (math.floor(l/90)) * 90
+        ra_quadrant = (math.floor(ra/90)) * 90
+        ra += (l_quadrant - ra_quadrant)
 
         # 5c. right ascension value needs to be converted into hours
-        RA = RA / 15
+        ra /= 15
 
         # 6. calculate the Sun's declination
-        sinDec = 0.39782 * math.sin(TO_RAD*L)
-        cosDec = math.cos(math.asin(sinDec))
+        sin_dec = 0.39782 * math.sin(to_rad*l)
+        cos_dec = math.cos(math.asin(sin_dec))
 
         # 7a. calculate the Sun's local hour angle
-        cosH = (math.cos(TO_RAD*zenith) - (sinDec * math.sin(TO_RAD*coords['latitude']))) \
-               / (cosDec * math.cos(TO_RAD*coords['latitude']))
+        cos_h = (math.cos(to_rad*zenith) - (sin_dec * math.sin(to_rad*coords['latitude']))) \
+               / (cos_dec * math.cos(to_rad*coords['latitude']))
 
-        if cosH > 1:
+        if cos_h > 1:
             return {'status': False, 'msg': 'the sun never rises on this location (on the specified date)'}
 
-        if cosH < -1:
+        if cos_h < -1:
             return {'status': False, 'msg': 'the sun never sets on this location (on the specified date)'}
 
         # 7b. finish calculating H and convert into hours
         if isRiseTime:
-            H = 360 - (1/TO_RAD) * math.acos(cosH)
+            h = 360 - (1/to_rad) * math.acos(cos_h)
         else:  # Sunset
-            H = (1/TO_RAD) * math.acos(cosH)
+            h = (1/to_rad) * math.acos(cos_h)
 
-        H /= 15
+        h /= 15
 
         # 8. calculate local mean time of rising/setting
-        local_mean_time = H + RA - (0.06571 * t) - 6.622
+        local_mean_time = h + ra - (0.06571 * t) - 6.622
 
         # 9. adjust back to UTC
         utc_time = local_mean_time - lngHour
-        utc_time = self.forceRange(utc_time, 24)  # UTC time in decimal format (e.g. 23.23)
+        utc_time = self.force_range(utc_time, 24)  # UTC time in decimal format (e.g. 23.23)
 
         # 10. Return
-        hr = self.forceRange(int(utc_time), 24)
-        min = round((utc_time - int(utc_time))*60,0)
+        hr = self.force_range(int(utc_time), 24)
+        minute = round((utc_time - int(utc_time))*60, 0)
 
         if self.use_local:
-            hr, min, utc_time = self.utc_to_local(hr, min, utc_time)
-
-        str_hr = self.zero_padded_string(hr, 2)
+            hr, minute, utc_time = self.utc_to_local(hr, minute, utc_time)
 
         return {
             'status': True,
             'decimal': utc_time,
             'hr': hr,
-            'min': min,
+            'min': minute,
             'str_hr': self.zero_padded_string(hr, 2),
-            'str_min': self.zero_padded_string(min, 2),
-            'datetime': self.get_datetime(hr, min)
+            'str_min': self.zero_padded_string(minute, 2),
+            'datetime': self.get_datetime(hr, minute)
         }
 
-    def zero_padded_string(self, value, length):
+    @staticmethod
+    def zero_padded_string(value, length):
         a = str(value).zfill(length)
         return a
 
-    def forceRange(self, v, max):
+    @staticmethod
+    def force_range(v, maximum):
         """ Force v to be >= 0 and < max
             Used for circular ranges (clock (0-23), circle (0-359 degrees), etc.)
         """
         if v < 0:
-            return v + max
-        elif v >= max:
-            return v - max
+            return v + maximum
+        elif v >= maximum:
+            return v - maximum
 
         return v
 
-    def get_datetime(self, hr, min):
+    def get_datetime(self, hr, minute):
         if self.now is None:
             self.now = datetime.now()
 
         now_timestamp = time.time()
         now = datetime.fromtimestamp(now_timestamp)
 
-        then = now.replace(hour=int(hr), minute=int(min), second=0, microsecond=0)
+        then = now.replace(hour=int(hr), minute=int(minute), second=0, microsecond=0)
 
         return then
 
-    def getCurrentUTC(self):
+    def get_current_utc(self):
         """
         @return: Current UTC time
         """
         self.now = datetime.now()
         return [self.now.day, self.now.month, self.now.year]
 
-    def utc_to_local(self, utc_hr, utc_min, utc):
+    @staticmethod
+    def utc_to_local(utc_hr, utc_min, utc):
         now_timestamp = time.time()
 
         now = datetime.fromtimestamp(now_timestamp)
@@ -767,12 +744,12 @@ class Sun:
         return [then.hour, then.minute, utc]
 
 
-class Days:
+class Days(object):
     def __init__(self):
         pass
 
 
-class llog:
+class llog(object):
     def __init__(self):
         pass
 

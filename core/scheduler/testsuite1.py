@@ -7,7 +7,8 @@ import unittest
 from scheduler import Scheduler, all_days
 from groups import Groups
 
-class scheduler_test1(unittest.TestCase):
+
+class SchedulerTest1(unittest.TestCase):
     def setUp(self):
         self.groups = Groups("groups.json")
         self.s = Scheduler(12.7, 56.6, groups=self.groups)
@@ -93,7 +94,6 @@ class scheduler_test1(unittest.TestCase):
         item = self.s.get_next()
         self.assertEqual(item["time"], "06:00")  # Tuesday, second item should also be 06:00
 
-
     def test4_execute_rule(self):
         """ Locate and execute a rule, use day index to locate Monday
         """
@@ -118,10 +118,9 @@ class scheduler_test1(unittest.TestCase):
         item = self.s.schedules.list_full_day(now="04:01")  # Before first
         item = self.s.schedules.list_full_day(now="09:00")  # In between
         item = self.s.schedules.list_full_day(now="23:01")  # After last
-        item = self.s.schedules.list_full_day()             # Should insets now based on current time. Cannot be validated easily
+        item = self.s.schedules.list_full_day()             # Cannot be validated easily
         self.s.new_day("fr")
         item = self.s.schedules.list_full_day(now="00:00")  # Should contain 2 sunset/sunrise based times
-
 
     def test7_double_assign(self):
         self.weekday = weekday = all_days[2-1]
@@ -133,7 +132,7 @@ class scheduler_test1(unittest.TestCase):
         pass
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(scheduler_test1)
+    suite = unittest.TestLoader().loadTestsFromTestCase(SchedulerTest1)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 
