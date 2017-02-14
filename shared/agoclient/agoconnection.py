@@ -245,15 +245,17 @@ class AgoConnection:
         """suspend a device"""
         uuid = self.internal_id_to_uuid(internalid)
         if uuid:
-            self.devices[uuid]["stale"] = 1
-            self.emit_device_stale(uuid, 1)
+            if self.devices.has_key(uuid):
+                self.devices[uuid]["stale"] = 1
+                self.emit_device_stale(uuid, 1)
 
     def resume_device(self, internalid):
         """resume a device"""
         uuid = self.internal_id_to_uuid(internalid)
         if uuid:
-            self.devices[uuid]["stale"] = 0
-            self.emit_device_stale(uuid, 0)
+            if self.devices.has_key(uuid):
+                self.devices[uuid]["stale"] = 0
+                self.emit_device_stale(uuid, 0)
 
     def is_device_stale(self, internalid):
         """return True if a device is stale"""
