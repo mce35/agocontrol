@@ -21,6 +21,7 @@ import time
 from datetime import datetime, timedelta #, date.fromtimestamp, date.utcfromtimestamp
 from variables import Variables
 import json
+import random
 import math
 from groups import Groups
 import sys
@@ -47,29 +48,35 @@ all_days = ["mo", "tu", "we", "th", "fr", "sa", "su"]
 
 
 class Scheduler(object):
-    def __init__(self, lon, lat, app=None, groups=None):
+    def __init__(self, lon, lat, groups=None, log=None):
         self.rules = None
         self.schedules = []
 
-        self.log = None
-        self.app = app
+
+        if log is not None:
+            self.log = log
+        else:
+            self.log = llog()
+        #self.app = app
         self._nexttime = None
         self._weekday = None
         self._nexttime = None
         self._now = None
+        self.sunrise = None
+        self._random_minutes = None
 
         coords = {'longitude': float(lon), 'latitude': float(lat)}
-        self.sun = Sun(coords)
+        self.sun = Sun(coords, self.log)
 
         if groups is not None:
             self.groups = groups
         else:
             self.groups = None
-        try:
-            self.log = app.log
-        except AttributeError:
-            # We seem to be in test mode, need a local logger
-            self.log = llog()
+        #try:
+        #    self.log = app.log
+        #except AttributeError:
+        #    # We seem to be in test mode, need a local logger
+        #    self.log = llog()
 
     def parse_conf_file(self, filename):
         if filename is not None:
@@ -83,12 +90,20 @@ class Scheduler(object):
                 self.log.debug("Schedule config: {}".format(conf["items"]))
                 self.schedules = Schedules(conf["items"], self.rules, self.log, self.sun, self.groups)
 
+    @property
+    def random_minutes(self):
+        return self._random_minutes
+
+    @random_minutes.setter
+    def random_minutes(self, minutes):
+        self._random_minutes  = minutes
+
     def new_day(self, weekday):
         """ Load the schedule configuration, applying filters for the new day
             Typically called at start-up and when it's 00:00
         @return: # of activities loaded
         """
-        return self.schedules.new_day(weekday)
+        return self.schedules.new_day(weekday, self._random_minutes)
 
     def get_nexttime(self):
         return self.nexttime
@@ -145,15 +160,16 @@ class Scheduler(object):
         #TODO: Or just build the dict and let caller execute command?
         pass
 
-    def sunrise(self, lon=12.7, lat=56.05):
-        coords = {'longitude': float(lon), 'latitude': float(lat)}
+    def calc_sunrise(self, date=None):
+        #coords = {'longitude': float(lon), 'latitude': float(lat)}
 
-        sun = Sun(coords, use_local=True)
+        #sun = Sun(coords, use_local=True)
 
-        sunrise = sun.get_sunrise_time()
+        sunrise = self.sun.get_sunrise_time(date)
         self.sunrise = sunrise['str_hr'] + ':' + sunrise['str_min']
 
-        print("Sunrise today: {}".format(self.sunrise))
+        #print("Sunrise today: {}".format(self.sunrise))
+        return self.sunrise
 
 
 class Schedules(object):
@@ -177,7 +193,7 @@ class Schedules(object):
 
         for element in jsonstr:
             self.log.trace(element)
-            item = Schedule(element, self.sun, rules)
+            item = Schedule(element, self.sun, rules, self.log)
             self.schedules.append(item)
 
     def find(self, uuid):
@@ -213,7 +229,7 @@ class Schedules(object):
         self.latest_idx += 1
         return self.activities[self.latest_idx]
 
-    def list_full_day(self, now = None):
+    def list_full_day(self, now=None):
         _latest_idx = self.latest_idx
         now_printed = False
 
@@ -236,7 +252,7 @@ class Schedules(object):
             if dsc is None and item_type == "Scenario":
                 dsc = item["scenario"]
 
-            self.log.info("{} {:<8} - {:<25} - {}".format(item["time"], item_type, dsc, item["action"]))
+            self.log.info("{}{} {:<8} - {:<25} - {}".format(item["time"], '*' if item["dynamic_time"] else " ", item_type, dsc, item["action"]))
 
             item = self.get_next()
         if not now_printed:
@@ -256,7 +272,7 @@ class Schedules(object):
 
     @property
     def nexttime(self):
-        """Time-of-day for next activity, or None if there is none."""
+        """Time-of-day for next activity, or None if there are no more."""
         return self._nexttime
 
     @property
@@ -284,7 +300,7 @@ class Schedules(object):
         self.sunset = tp["datetime"]
         self.sunset_hhmm = "{}:{}".format(tp['str_hr'], tp['str_min'])
 
-    def new_day(self, weekday):
+    def new_day(self, weekday, random_minutes=None):
         """
         Build activities list, filtered to the current weekday
         @param weekday: Filter schedules for this weekday, "mo", "tu" or 1-7
@@ -311,7 +327,7 @@ class Schedules(object):
         self.activities = []
         self.latest_idx = -1
         for s in self.schedules:
-            s.update_sun_times()
+            s.update_dynamic_times(random_minutes)
             for i in s.activities:
                 item = s.activities[i]
                 if item["enabled"] and _weekday in item["days"]:
@@ -326,11 +342,12 @@ class Schedule(object):
     """
     Represent a schedule item
     """
-    def __init__(self, jsonstr, sun, rules=None):
+    def __init__(self, jsonstr, sun, rules=None, log=None):
         self.device = None
         self.scenario = None
         self.group = None
         self.sun = sun
+        self.log = log
         if "device" in jsonstr:  # TODO: Only include the type that's at hand, not all 3?
             self.device = jsonstr["device"]
         if "scenario" in jsonstr:
@@ -356,10 +373,17 @@ class Schedule(object):
 
             if "sunrise" in a["time"] or "sunset" in a["time"]:
                 x["time"] = self.get_sun_time(a["time"])
+                print("{} = {}".format(a["time"], x["time"]))
                 x["time_base"] = a["time"]
                 x["dynamic_time"] = True
+            elif "random" in a and a["random"] is True:
+                x["time_base"] = a["time"]
+                x["dynamic_time"] = True
+                x["random_minutes"] = a["random_minutes"]
+                x["time"] = self.get_random_time(a["time"], x["random_minutes"])
             else:  # TODO: Add times relative to sunset/sunrise
                 x["time"] = a["time"]
+                x["time_base"] = a["time"]
                 x["dynamic_time"] = False
 
             if "days" in a:
@@ -402,15 +426,18 @@ class Schedule(object):
         @return: time as str(hh:mm) or 99:99 to indicate error
         """
         sunrise = self.sun.get_sunrise_time()
+        self.log.debug("sunrise:{}".format(sunrise))
         sunrise_hhmm = "{}:{}".format(sunrise['str_hr'], sunrise['str_min'])
         sunset = self.sun.get_sunset_time()
         sunset_hhmm = "{}:{}".format(sunset['str_hr'], sunset['str_min'])
 
         if time_base == "sunrise":
+            self.log.debug("get_sun_time Base:{} result:{}".format(time_base, sunrise_hhmm))
             return sunrise_hhmm
         elif time_base == "sunset":
+            self.log.debug("get_sun_time Base:{} result:{}".format(time_base, sunset_hhmm))
             return sunset_hhmm
-        elif "sunrise" in time_base or "sunset" in time_base :
+        elif "sunrise" in time_base or "sunset" in time_base:
             if "sunrise" in time_base:
                 rt = time_base[7:]
             else:
@@ -427,8 +454,34 @@ class Schedule(object):
                 else:
                     new_time = sunset["datetime"] + td
 
-                return self.get_hhmm(new_time)
+                new_time_hhmm = self.get_hhmm(new_time)
+                self.log.debug("get_sun_time Base:{} result:{}".format(time_base, new_time_hhmm))
+                return new_time_hhmm
+
+        self.log.error("get_sun_time failed. Base:{}".format(time_base))
         return "99:99"  # TODO: Raise exception?
+
+    def get_random_time(self, time_base, minutes):
+        """
+        Calculate a time based on a given time plus/minus no. of minutes
+        @param time_base: Time to base new time on (hh:mm format)
+        @param minutes: # minutes to deviate plus/minus the base time
+        @return: new time (hh:mm format)
+        """
+        sign = random.randint(1, 2)
+        rand_min = random.randint(1, minutes)
+        time = datetime.now().replace(hour=int(time_base[:2]), minute=int(time_base[-2:]))
+        if sign == 1:  # Minus
+            td = timedelta(seconds=-60 * rand_min)
+        else:            # Plus
+            td = timedelta(seconds=60 * rand_min)
+
+        new_time = time + td
+        new_time_hhmm = self.get_hhmm(new_time)
+
+        self.log.debug("get_random_time time_base={} {} newtime={}".format(time_base, time, new_time_hhmm))
+
+        return new_time_hhmm
 
     def get_hhmm(self, dt):
         """
@@ -439,11 +492,16 @@ class Schedule(object):
         a = str(dt.hour).zfill(2) + ':' + str(dt.minute).zfill(2)
         return a
 
-    def update_sun_times(self):
+    def update_dynamic_times(self, random_minutes):
         for i in self.activities:
             item = self.activities[i]
             if item["dynamic_time"]:
-                self.activities[i]["time"] = self.get_sun_time(item["time_base"])
+                if "random_minutes" in item:
+                    self.activities[i]["time"] = self.get_random_time(item["time_base"], item["random_minutes"])
+                else:
+                    self.activities[i]["time"] = self.get_sun_time(item["time_base"])
+            elif random_minutes is not None:
+                self.activities[i]["time"] = self.get_random_time(item["time_base"], random_minutes)
 
     def __str__(self):
         s = "Schedule: "
@@ -569,10 +627,10 @@ class Rule(object):
         self.log = log
 
 
-class Sun:
+class Sun(object):
     """ Calculates sunrise and sunset events
         based on http://stackoverflow.com/questions/19615350/calculate-sunrise-and-sunset-times-for-a-given-gps-coordinate-within-postgresql """
-    def __init__(self, coords, use_local=True):
+    def __init__(self, coords, log, use_local=True):
         """
         @param use_local: True: Convert to local time zone when returning sunset or sunrise.
                           False: Use UTC when returning sunset or sunrise.
@@ -581,21 +639,23 @@ class Sun:
         self.sunrise = None
         self.sunset = None
         self.now = None
+        self.log = log
 
         self.coords = coords
 
-    def get_sunrise_time(self):
-        return self.calc_sun_time(self.coords, True)
+    def get_sunrise_time(self, date=None):
+        return self.calc_sun_time(self.coords, True, date)
 
-    def get_sunset_time(self):
-        return self.calc_sun_time(self.coords, False)
+    def get_sunset_time(self, date=None):
+        return self.calc_sun_time(self.coords, False, date)
 
-    def calc_sun_time(self, coords, isRiseTime, zenith=90.8):
+    def calc_sun_time(self, coords, isRiseTime, date=None, zenith=90.8):
         """
         Calculate sunrise or sunset
         @param coords:     Longitude/latitude
         @param isRiseTime: True: return time for sunrise
                            False: return time for sunset
+        @param date        Date for calculation. None = Today
         @param zenith:     Zenith angle
         @return: {
             'status':   True if successful calculation
@@ -608,7 +668,14 @@ class Sun:
             'datetime': time as a datetime object
             }
         """
-        day, month, year = self.get_current_utc()
+        if date is None:
+            day, month, year = self.get_current_utc()  # TODO: Get as parameter to make this testable.
+        else:
+            year = date.year
+            month = date.month
+            day = date.day
+
+        self.log.debug("calc_sun_times: Coords: {} Date: {}-{}-{}".format(coords, year, month, day))
 
         to_rad = math.pi/180
 

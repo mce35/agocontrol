@@ -11,7 +11,10 @@ from groups import Groups
 class SchedulerTest1(unittest.TestCase):
     def setUp(self):
         self.groups = Groups("groups.json")
-        self.s = Scheduler(12.7, 56.6, groups=self.groups)
+        lat = 56.045000000000002
+        lon = 12.718400000000001
+
+        self.s = Scheduler(lat=lat, lon=lon, groups=self.groups)
         self.s.parse_conf_file("schedule.json")  # Prepped schedule with 11 schedule items and 2 rules
 
     def test1_start_at_midnight(self):
@@ -53,6 +56,8 @@ class SchedulerTest1(unittest.TestCase):
         """ Normal shift of day.
         """
         self.s.new_day("mo")
+
+        self.s.schedules.list_full_day()
 
         # Get last item for Monday
         item = self.s.get_first("23:00")
@@ -126,6 +131,24 @@ class SchedulerTest1(unittest.TestCase):
         self.weekday = weekday = all_days[2-1]
         self.assertEqual(self.weekday, "tu")
         self.assertEqual(weekday, "tu")
+
+
+    def test8a_random_time(self):
+        self.s.new_day("mo")
+        item = self.s.get_first("00:00")
+        print("random times")
+
+        for i in range(1, 10):
+            time = self.s.schedules.schedules[0].get_random_time("08:00", 5)
+            self.assertIsNotNone(time)
+            print("{}".format(time))
+
+    def test8b_random_time(self):
+        self.s.random_minutes = 10
+        self.s.new_day("mo")
+
+        item = self.s.get_first("00:00")
+        item = self.s.schedules.list_full_day(now="08:00")
 
 
     def tearDown(self):

@@ -6,7 +6,7 @@
       "enabled": true,
         "actions": [
           {
-            "action": "on", "time": "08:00", "days": ["weekdays"], "enabled": true
+            "action": "on", "time": "08:00", "days": ["weekdays"], "enabled": true, "fixed": true
           },
           {
             "action": "off", "time": "09:00", "days": ["weekdays"], "enabled": true
@@ -15,7 +15,7 @@
             "action": "on", "time": "09:00", "days": ["weekends"], "enabled": true
           },
           {
-            "action": "off", "time": "10:00", "days": ["weekends"], "enabled": true
+            "action": "off", "time": "10:00", "days": ["weekends"], "enabled": true, "fixed": true
           },
           {
             "action": "on", "time": "sunrise-10m", "days": ["fr"], "enabled": true
@@ -45,7 +45,7 @@
             "action": "fadedown", "time": "21:40", "endtime": "22:00", "days": ["all"], "tolevel":10, "enabled": true, "seq": 1
           },
           {
-            "action": "off", "time": "23:00", "days": ["all"], "enabled": true, "seq": 2
+            "action": "off", "time": "23:00", "days": ["all"], "enabled": true, "seq": 2, "fixed": true
           }
         ]
     },
@@ -54,7 +54,7 @@
       "enabled": true,
         "actions": [
           {
-            "action": "run", "time": "06:00", "days": ["mo", "we", "sa"], "enabled": true, "rule": "1234-1234"
+            "action": "run", "time": "06:00", "days": ["mo", "we", "sa"], "enabled": true, "rule": "1234-1234", "fixed": true
           },
           {
             "action": "run", "time": "15:00", "days": ["tu", "th", "su"], "enabled": true, "rule": "1234-1234"
@@ -72,10 +72,10 @@
             "action": "off", "time": "06:00", "days": ["tu"], "enabled": true
           },
           {
-            "action": "on", "time": "17:00", "days": ["weekdays"], "enabled": true
+            "action": "on", "time": "17:00", "days": ["weekdays"], "enabled": true, "random": true, "random_minutes": 5
           },
           {
-            "action": "off", "time": "22:00", "days": ["weekdays"], "enabled": true
+            "action": "off", "time": "22:00", "days": ["weekdays"], "enabled": true, "fixed": true
           }
         ]
     }

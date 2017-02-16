@@ -24,6 +24,18 @@ import json
 
 class AgoScheduler(agoclient.AgoApp):
 
+    def __init__(self):
+        agoclient.AgoApp.__init__(self)
+        self.weekdayno = None
+        self.weekday = None
+        self.nexttime = None
+        self.next_item = None
+        self.groups = None
+        self.scheduler = None
+        self.scenario_controllerUUID = None
+        self.mapfile = None
+        self.print_schedule = False
+
     def event_handler(self, subject, content):
         """event handler - Processes incoming events and looks if they are of a relevant kind
                          - For now, it's only time event that are of interest
@@ -132,7 +144,8 @@ class AgoScheduler(agoclient.AgoApp):
         self.next_item = self.scheduler.get_first("00:00")
         self.weekdayno = weekdayno
 
-        self.scheduler.schedules.list_full_day()
+        if self.print_schedule:
+            self.scheduler.schedules.list_full_day()
         self.log.info("New day: {}. Loaded {} schedule items for today.".format(weekday, no_activities))
 
     def setup_app(self):
@@ -142,20 +155,26 @@ class AgoScheduler(agoclient.AgoApp):
 
         self.scenario_controllerUUID = self.get_scenario_controller_uuid()
         if self.scenario_controllerUUID is None:
-            self.log.error(("Scenario Controler not found."))
+            self.log.error("Scenario Controller not found.")
 
         mapfile = self.get_config_option('schedule', None, section=app, app=app)
+        self.print_schedule = self.get_config_option('print_daily_schedule', "Yes", section=app, app=app) == "Yes"
+        self.log.info("Print daily schedule? {}".format(self.print_schedule))
 
         if mapfile is None:
             self.mapfile = None
-            self.log.error("No Schedule file found in config file. Idling.")
+            self.log.error("No Schedule file found in config file. Idling.")  # TODO: Follow up - set flag to avoid processing!
         else:
             self.mapfile = agoclient.config.CONFDIR + '/conf.d/' + mapfile
             self.log.info("Reading schedules from {}".format(self.mapfile))
 
         self.groups = Groups(agoclient.config.CONFDIR + '/conf.d/' + 'groups.json')  # TODO: Change to proper file
 
-        self.scheduler = Scheduler(12.7, 56.05, app=self, groups=self.groups)
+        lat = self.get_config_option("lat", "47.07", "system")
+        lon = self.get_config_option("lon", "15.42", "system")
+
+        self.log.info("Getting position. lat={} lon={}".format(lat, lon))
+        self.scheduler = Scheduler(lat=float(lat), lon=float(lon), log=self.log, groups=self.groups)
 
         self.scheduler.parse_conf_file(self.mapfile)
         dl, day_no = self.scheduler.get_weekday()
@@ -174,4 +193,3 @@ class AgoScheduler(agoclient.AgoApp):
 
 if __name__ == "__main__":
     AgoScheduler().main()
-4

@@ -6,12 +6,13 @@ __license__    = "GPL Public License Version 3"
 import unittest
 from scheduler import Scheduler
 from groups import Groups
+from datetime import datetime
 
 
 class SchedulerTest2(unittest.TestCase):
     def setUp(self):
         self.groups = Groups("groups.json")
-        self.s = Scheduler(12.7, 56.6, self.groups)
+        self.s = Scheduler(12.7, 56.6, self.groups)  # Coords for south of Sweden
         self.s.parse_conf_file("winter.json")  # Prepped schedule with 9 schedule items and 2 rules
 
     def test1_start_at_midnight(self):
@@ -94,13 +95,17 @@ class SchedulerTest2(unittest.TestCase):
         self.assertEqual(item["time"], "15:00")  # Thursday, second item should also be 15:00
 
     def test4_list(self):
-        """ Test sunrise calculation"""
+        """ List full day, incl sunrise/sunset calculation"""
         self.s.schedules.list_full_day()
 
     def test5_sunrise(self):
         """ Test sunrise calculation"""
+        now = datetime.now()
+        then = now.replace(year=2017, month=02, day=14)
+        self.assertEqual(self.s.calc_sunrise(then), "07:40")
 
-        self.s.sunrise()
+        then = now.replace(year=2017, month=07, day=22)
+        self.assertEqual(self.s.calc_sunrise(then), "03:51")
 
     def tearDown(self):
         pass
