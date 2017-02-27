@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -56,6 +56,7 @@ class Ipx800v3Telnet(threading.Thread):
         self.running = True
         self.charset = charset
         self.__telnet = None
+        self.__last_response = time.time()
 
     def __del__(self):
         """
@@ -83,7 +84,13 @@ class Ipx800v3Telnet(threading.Thread):
                 if self.telnet_is_connected():
                     response = self.telnet_response(timeout=1)
                     if response:
+                        #update last response time
+                        self.__last_response = time.time()
                         self.telnet_parse_response(response)
+                    elif time.time()>(self.__last_response + 43200.0):
+                        #no response for too long (power interrupt?), reconnect to ipx
+                        self.logger.warn('No reponse for too long, force disconnection from ipx board "%s"' % self.ip)
+                        self.telnet_disconnect()
             except:
                 self.logger.exception('Exception in run():')
 
