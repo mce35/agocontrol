@@ -27,6 +27,7 @@ function AlertPlugin(devices, agocontrol)
     self.pushbulletApikey = ko.observable();
     self.pushoverUserid = ko.observable();
     self.pushoverToken = ko.observable();
+	self.pushsaferKey = ko.observable();
     self.nmaApikey = ko.observable(self.nmaApikey);
     self.nmaAvailableApikeys = ko.observableArray();
     self.nmaSelectedApikeys = ko.observableArray();
@@ -94,6 +95,10 @@ function AlertPlugin(devices, agocontrol)
                     {
                         self.pushoverUserid(res.data.push.userid);
                         self.pushoverToken(res.data.push.token);
+                    }
+                    else if (res.data.push.provider == 'pushsafer')
+                    {
+                        self.pushsaferKey(res.data.push.key);
                     }
                     else if (res.data.push.provider == 'notifymyandroid')
                     {
@@ -290,6 +295,10 @@ function AlertPlugin(devices, agocontrol)
         {
             content.userid = this.pushoverUserid();
             content.token = this.pushoverToken();
+        }
+        else if (this.selectedPushProvider() == 'pushsafer')
+        {
+            content.key = this.pushsaferKey();
         }
         else if (this.selectedPushProvider() == 'notifymyandroid')
         {
