@@ -222,6 +222,7 @@
                                 <select data-bind="value:selectedPushProvider" class="form-control">
                                     <option value="pushbullet">Pushbullet</option>
                                     <option value="pushover">Pushover</option>
+									<option value="pushsafer">Pushsafer</option>
                                     <option value="notifymyandroid">Notifymyandroid</option>
                                 </select>
                             </div>
@@ -266,6 +267,17 @@
                             </div>
                         </div>
                         </ko>
+                        <ko opts="if: selectedPushProvider()=='pushsafer'">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">
+                                <_span data-translateable="true">Enter your private or alias key</_span>
+                                (<_a data-translateable="true" target="_blank" href="https://www.pushsafer.com">available here</_a>)
+                            </label>
+                            <div class="col-sm-6">
+								<input data-translateable="true" type="text" data-bind="value:pushsaferKey" class="form-control" _placeholder="private or alias key"></input>
+                            </div>
+                        </div>						
+                        </ko>						
                         <ko opts="if: selectedPushProvider()=='notifymyandroid'">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">

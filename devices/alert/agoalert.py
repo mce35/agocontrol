@@ -27,7 +27,7 @@ from email.mime.text import MIMEText
 import urllib
 import urllib2
 import ssl
-#pushover
+#pushover pushsafer
 import httplib
 import json
 #pushbullet
@@ -727,6 +727,92 @@ class Pushover(Alert):
             except:
                 self.log.exception('Pushover: Exception push message')
                 return False, str(e.message)
+				
+class Pushsafer(Alert):
+    """
+    Class for Pushsafer push notification sending for ios, android and windows 10
+    """
+    def __init__(self, log, connection, type, key):
+        """
+        Constructor
+        @see https://www.pushsafer.com/
+        """
+        Alert.__init__(self, log, connection, type)
+        self.name = 'pushsafer'
+        self.key = key
+        self.pushTitle = 'Agocontrol'
+        if key and len(key)>0:
+            self.add_device()
+            self.__configured = True
+        else:
+            self.__configured = False
+
+    def get_config(self):
+        configured = 0
+        if self.__configured:
+            configured = 1
+        return {'configured':configured, 'provider':self.name, 'key':self.key}
+
+    def set_config(self, key):
+        """
+        Set config
+        @param key: pushsafer private or alias key
+        """
+        if not key or len(key)==0:
+            self.log.error('Pushsafer: all parameters are mandatory')
+            self.remove_device()
+            return False
+
+        self.key = key
+        self.__configured = True
+        self.add_device()
+        return True
+
+    def prepare_message(self, content):
+        """
+        Add push
+        @param message: push notification
+        """
+        if self.__configured:
+            #check params
+            if not self.check_command_param(content, 'message', empty=True)[0]:
+                msg = 'Unable to add push ("message" parameter is mandatory)'
+                self.log.error('Pushsafer: %s' % msg)
+                return None, msg
+            #queue push message
+            return {'message':content['message']}, ''
+        else:
+            msg = 'Unable to add message because not configured'
+            self.log.error('Pushsafer: %s' % msg)
+            return None, msg
+
+    def _sendMessage(self, message):
+        conn = httplib.HTTPSConnection("pushsafer.com:443")
+        conn.request("POST", "/api",
+        urllib.urlencode({
+            'k': self.key,
+            'm':message['message'],
+            't':self.pushTitle
+        }), { "Content-type": "application/x-www-form-urlencoded" })
+        resp = conn.getresponse()
+        self.log.trace('Pushsafer response: %s' % resp)
+        #check response
+        if resp:
+            try:
+                read = resp.read()
+                self.log.trace('Pushsafer response: %s' % read)
+                resp = json.loads(read)
+                #TODO handle receipt https://www.pushsafer.com/en/pushapi
+                if resp['status']==0:
+                    #error occured
+                    self.log.error('Pushsafer: %s' % (str(resp['errors'])))
+                    return False, str(resp['errors'])
+                else:
+                    self.log.info('Pushsafer: message received by user')
+                    return True, 'Message pushed successfully'
+            except:
+                self.log.exception('Pushsafer: Exception push message')
+                return False, str(e.message)				
 
 class Pushbullet(Alert):
     """
@@ -1032,6 +1118,7 @@ class AgoAlert(agoclient.AgoApp):
             self.set_config_option('devices', self.config['pushbullet']['devices'], "pushbullet", "alert")
             self.set_config_option('userid', self.config['pushover']['userid'], "pushover", "alert")
             self.set_config_option('token', self.config['pushover']['token'], "pushover", "alert")
+			self.set_config_option('key', self.config['pushsafer']['key'], "pushsafer", "alert")
             self.set_config_option('apikeys', self.config['notifymyandroid']['apikeys'], "notifymyandroid", "alert")
 
             #save uuids
@@ -1081,6 +1168,8 @@ class AgoAlert(agoclient.AgoApp):
             self.config['pushover'] = {}
             self.config['pushover']['userid'] = self.get_config_option("userid", "", "pushover", "alert")
             self.config['pushover']['token'] = self.get_config_option("token", "", "pushover", "alert")
+            self.config['pushsafer'] = {}
+            self.config['pushsafer']['key'] = self.get_config_option("key", "", "pushsafer", "alert")			
             self.config['notifymyandroid'] = {}
             self.config['notifymyandroid']['apikeys'] = self.get_config_option("apikeys", "", "notifymyandroid", "alert")
 
@@ -1194,6 +1283,8 @@ class AgoAlert(agoclient.AgoApp):
                     (msg, error) = self.push.prepare_message({'message':'This is an agocontrol test notification', 'file':''})
                 elif self.push.name=='pushover':
                     (msg, error) = self.push.prepare_message({'message':'This is an agocontrol test notification', 'priority':'0'})
+                elif self.push.name=='pushsafer':
+                    (msg, error) = self.push.prepare_message({'message':'This is an agocontrol test notification'})
                 elif self.push.name=='notifymyandroid':
                     (msg, error) = self.push.prepare_message({'message':'This is an agocontrol test notification', 'priority':'0'})
                 if msg:
@@ -1438,6 +1529,8 @@ class AgoAlert(agoclient.AgoApp):
                         self.push = Pushbullet(self.log, self.connection, Alert.TYPE_PUSH, '', '')
                     elif provider=='pushover':
                         self.push = Pushover(self.log, self.connection, Alert.TYPE_PUSH, '', '')
+                    elif provider=='pushsafer':
+                        self.push = Pushsafer(self.log, self.connection, Alert.TYPE_PUSH, '')
                     elif provider=='notifymyandroid':
                         self.push = Notifymyandroid(self.log, self.connection, Alert.TYPE_PUSH, '')
                     else:
@@ -1499,6 +1592,18 @@ class AgoAlert(agoclient.AgoApp):
                     else:
                         return self.connection.response_failed('Failed to save configuration')
 
+				elif provider=='pushsafer':
+                    if not self.check_command_param(content, 'key')[0]:
+                        msg = 'Missing "key" parameter'
+                        self.log.error(msg)
+                        return self.connection.response_missing_parameters(msg)
+                            
+                    self.config['pushsafer']['key'] = content['key']
+                    if self.push.set_config(content['key']) and self.save_config():
+                        return self.connection.response_success(None, 'Configuration saved successfully')
+                    else:
+                        return self.connection.response_failed('Failed to save configuration')
+
                 elif provider=='notifymyandroid':
                     if not self.check_command_param(content, 'apikeys')[0]:
                         msg = 'Missing "apikeys" parameter'
@@ -1546,6 +1651,8 @@ class AgoAlert(agoclient.AgoApp):
             self.push = Pushbullet(self.log, self.connection, Alert.TYPE_PUSH, self.config['pushbullet']['apikey'], self.config['pushbullet']['devices'])
         elif self.config['push']['provider']=='pushover':
             self.push = Pushover(self.log, self.connection, Alert.TYPE_PUSH, self.config['pushover']['userid'], self.config['pushover']['token'])
+		elif self.config['push']['provider']=='pushsafer':
+            self.push = Pushsafer(self.log, self.connection, Alert.TYPE_PUSH, self.config['pushsafer']['key'])
         elif self.config['push']['provider']=='notifymyandroid':
             self.push = Notifymyandroid(self.log, self.connection, Alert.TYPE_PUSH, self.config['notifymyandroid']['apikeys'])
             
