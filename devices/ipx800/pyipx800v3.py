@@ -93,6 +93,8 @@ class Ipx800v3Telnet(threading.Thread):
                         self.telnet_disconnect()
             except:
                 self.logger.exception('Exception in run():')
+                #error occured, disconnect
+                self.telnet_disconnect()
 
         self.telnet_disconnect()
         self.logger.info('Thread ended for %s:%d' % (self.ip, self.port))
@@ -103,6 +105,7 @@ class Ipx800v3Telnet(threading.Thread):
         """
         try:
             self.__telnet = telnetlib.Telnet(self.ip, self.port)
+            self.__last_response = time.time()
         except Exception as e:
             self.logger.exception('Unable to connect to telnet port %d' % self.port)
             self.__telnet = None
@@ -114,6 +117,7 @@ class Ipx800v3Telnet(threading.Thread):
 	"""
         if self.__telnet:
             self.__telnet.close()
+            self.__telnet = None
 
     def telnet_is_connected(self):
         """
