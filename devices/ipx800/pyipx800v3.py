@@ -104,6 +104,7 @@ class Ipx800v3Telnet(threading.Thread):
         Connect to telnet port
         """
         try:
+            self.logger.info('Connect to %s:%d' % (self.ip, self.port))
             self.__telnet = telnetlib.Telnet(self.ip, self.port)
             self.__last_response = time.time()
         except Exception as e:
@@ -116,6 +117,7 @@ class Ipx800v3Telnet(threading.Thread):
 	Disconnect from telnet
 	"""
         if self.__telnet:
+            self.logger.info('Disconnect from %s:%d' % (self.ip, self.port))
             self.__telnet.close()
             self.__telnet = None
 
