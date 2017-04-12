@@ -255,15 +255,13 @@ void *AgoKnx::listener() {
                         } else if (type == "windspeed") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.windspeedchanged", tl.getFloatData(), "m/s");
                         } else if (type == "energy") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "A");
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "kWh");
                         } else if (type == "power") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.powerchanged", tl.getFloatData(), "kW");
-                        } else if (type == "energyusage") {
-                            unsigned char buffer[4];
-                            if (tl.getUserData(buffer,4) == 4) {
-                                AGO_DEBUG() << "USER DATA: " << std::hex << buffer[0] << " " << buffer[1] << " " << buffer[2] << buffer[3];
-                            }
-                            // event.setSubject("event.environment.powerchanged");
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.powerchanged", tl.getFloatData(), "kWh");
+                        } else if (type == "flow") {
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.flowchanged", tl.getFloatData(), "l/h");
+                        } else if (type == "counter") {
+                        	agoConnection->emitEvent(uuid.c_str(), "event.environment.counterchanged",tl.getIntData(), "Wh");
                         } else if (type == "binary") {
                             agoConnection->emitEvent(uuid.c_str(), "event.security.sensortriggered", tl.getShortUserData()==1 ? 255 : 0, "");
                         }

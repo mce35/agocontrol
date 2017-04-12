@@ -151,6 +151,18 @@ devicetypes:
     name: power meter
     description: sensor for power utilisation
     commands: []
+  energycounter:
+    name: energy counter 
+    description: coutner for energy consumption
+    commands: []
+  energymeter:
+    name: energy meter
+    description: sensor for current energy level
+    commands: []
+  flowmeter:
+    name: flow meter
+    description: sensor for water/gas flow
+    commands: []
   binarysensor:
     name: binary sensor
     description: sensor for on off values
@@ -277,8 +289,17 @@ events:
   event.security.sensortriggered:
     description: sensor was triggererd
     parameters: [level, uuid]
+  event.environment.powerchanged:
+    description: power level has changed
+    parameters: [level, uuid]
   event.environment.energychanged:
-    description: energy has changed
+    description: energy level has changed
+    parameters: [level, uuid]
+  event.environment.flowchanged:
+    description: flow has changed
+    parameters: [level, uuid]
+  event.environment.counterchanged:
+    description: counter value has changed
     parameters: [level, uuid]
   event.proximity.ndef:
     description: NFC NDEF tag within range
@@ -353,3 +374,9 @@ units:
   Wh:
     label: "Wh"
     description: Power in watt hour
+  lh:
+    label: "l/h"
+    description: flow in liter per hour
+  ms:
+    label: "m/s"
+    description: Speed in meter per seconds
