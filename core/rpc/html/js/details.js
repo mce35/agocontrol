@@ -323,7 +323,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         colorL = '#FF0000';
         colorA = '#FF8787';
     }
-    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype==='' ||device.devicetype=='batterysensor' )
+    else if( device.devicetype=='powermeter' || device.devicetype=='energycounter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype==='' ||device.devicetype=='batterysensor' )
     {
         colorL = '#007A00';
         colorA = '#00BB00';

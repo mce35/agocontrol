@@ -1,6 +1,7 @@
 
 #include "Telegram.h"
 #include "math.h"
+#include <cstring>
 
 Telegram::Telegram():_length(0),_shortdata(0),_type(EIBWRITE),_addrdest(0),_addrfrom(0)
 {
@@ -101,6 +102,7 @@ int Telegram::getIntData() const
 		case(0): return _shortdata; break;
 		case(1): return (int)*_data;break;
 		case(2): return ( (int)_data[0] <<8 )  + (int)_data[1];
+		case(4): return ( (int)_data[0] <<24 ) + ((int)_data[1] <<16 ) + ((int)_data[2] <<8)  + (int)_data[3];
 		default: return 0;
 	}
 }
@@ -119,6 +121,23 @@ float Telegram::getFloatData() const
 			unsigned short usd;
 			getUserData((unsigned char*)&usd,2);
 			return getFloatFromUShort(usd);
+			break;
+
+		case(4):
+			float value;
+			char buffer[sizeof(float)];
+			getUserData((unsigned char*)&buffer,4);
+
+			/* convert little endian to big endian */			
+			for (int i = 0, j = sizeof(float) - 1; i < j; ++i, --j)
+			{
+	    		char temp = buffer[i];
+   				buffer[i] = buffer[j];
+   				buffer[j] = temp;
+			}
+			memcpy (&value,&buffer,sizeof(float));
+
+			return value;
 			break;
 			
 		default: return 0;
