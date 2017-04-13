@@ -169,7 +169,7 @@ function device(agocontrol, obj, uuid) {
         self.agocontrol.multigraphThumbs.push(def);
     }
 
-    if (this.devicetype.match(/counter$/) || (this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/) || this.devicetype=="multigraph" )
+    if (this.devicetype.match(/counter$/) || this.devicetype.match(/sensor$/) || this.devicetype.match(/meter$/) || this.devicetype.match(/thermostat$/) || this.devicetype=="multigraph" )
     {
         //fill values list
         this.valueList = ko.computed(function()
