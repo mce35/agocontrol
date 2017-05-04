@@ -1,8 +1,8 @@
 <div class="widget-lg">
 
-	<div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
         <div class="inner">
-			<span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
             <div>
                 <ko opts="if:room">
                 <div class="widget-box-location">
@@ -18,18 +18,17 @@
     </div>
 
     <div class="info-box">
-        <ko opts="foreach: valueList">
         <div class="info-box-content no-margin-left">
             <div class="well">
                 <ko opts="foreach: valueList">
                 <div class="row">
-                    <div class="col-xs-4 col-md-4 text-center">
+                    <div class="col-xs-6 col-md-6 text-center">
                         <h4 class="nowrap" data-bind="text:name"></h4>
                     </div>
-                    <div class="col-xs-4 col-md-4 text-center">
+                    <div class="col-xs-6 col-md-6 text-center">
                         <h4><strong class="nowrap" data-bind="text:levelUnit"></strong></h4>
                     </div>
-                    <div class="col-xs-4 col-md-4 text-center">
+                    <div class="col-xs-6 col-md-6 text-center">
                         <ko opts="if: name=='Forecast'">
                             <img class="img-responsive" data-bind="attr: { src:'img/forecast/'+level+'.png' }"/>
                         </ko>
@@ -38,8 +37,5 @@
                 </ko>
             </div>
         </div>
-        </ko>
     </div>
-
-
 </div>
