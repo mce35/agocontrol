@@ -11,6 +11,12 @@ commands:
     name: volume up
   vol-:
     name: volume down
+  setvolume:
+    name: set volume
+    parameters:
+      volume:
+        name: volume
+        type: integer
   chan+:
     name: next channel
   chan-:
@@ -198,13 +204,19 @@ devicetypes:
   squeezebox:
     name: Squeezebox Player
     description: Plays music
-    commands: ["on", "off", play, pause, stop, displaymessage]
+    commands: ["on", "off", play, pause, stop, displaymessage, setvolume]
     events: [event.device.statechanged, event.device.mediastatechanged]
     properties: [mediastate]
   squeezeboxserver:
     name: Squeezebox Server
     description: Squeezebox player manager
     commands: ["allon", "alloff", displaymessage]
+  mopidy:
+    name: Mopidy Music Player
+    description: Plays music
+    commands: ["on", "off", play, pause, stop, setvolume]
+    events: [event.device.statechanged, event.device.mediastatechanged]
+    properties: [mediastate]
   settopbox:
     name: Set top box
     description: Receives TV Service

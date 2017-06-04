@@ -31,11 +31,13 @@ set (AGODEVICES
   temperatur.nu
   wake_on_lan
   squeezebox
+  mopidy
   alert
   ipx800
   raspiCamera
   scheduler
   tellstick
+  lifx
   knx
   agodmx
   PLCBUS

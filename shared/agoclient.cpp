@@ -8,7 +8,7 @@
 
 #include <boost/bind.hpp>
 
-#include <jsoncpp/json/reader.h>
+#include <json/reader.h>
 #include "agoclient.h"
 
 using namespace std;
@@ -508,7 +508,7 @@ bool agocontrol::AgoConnection::emitDeviceDiscover(const char *internalId, const
     return true;
 }
 
-bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const char *deviceType) {
+bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const char *deviceType, const char *initialName) {
     Variant::Map content;
     Message event;
 
@@ -516,6 +516,10 @@ bool agocontrol::AgoConnection::emitDeviceAnnounce(const char *internalId, const
     content["internalid"] = internalId;
     content["handled-by"] = instance;
     content["uuid"] = internalIdToUuid(internalId);
+
+    if(initialName)
+        content["initial_name"] = initialName;
+
     encode(content, event);
     event.setSubject("event.device.announce");
     try {
@@ -576,7 +580,7 @@ bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *de
 
 }
 
-bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *deviceType) {
+bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *deviceType, const char*initialName) {
     if (internalIdToUuid(internalId).size()==0) {
         // need to generate new uuid
         uuidMap[generateUuid()] = internalId;
@@ -586,10 +590,13 @@ bool agocontrol::AgoConnection::addDevice(const char *internalId, const char *de
     device["devicetype"] = deviceType;
     device["internalid"] = internalId;
     device["stale"] = 0;
+
+    // XXX: This is not read by agoresolver currently
     qpid::types::Variant::Map parameters; //specific parameters map
     device["parameters"] = parameters;
+
     deviceMap[internalIdToUuid(internalId)] = device;
-    emitDeviceAnnounce(internalId, deviceType);
+    emitDeviceAnnounce(internalId, deviceType, initialName);
     return true;
 }
 
@@ -651,8 +658,6 @@ void agocontrol::AgoConnection::reportDevices()
     for (Variant::Map::const_iterator it = deviceMap.begin(); it != deviceMap.end(); ++it)
     {
         Variant::Map device;
-        Variant::Map content;
-        Message event;
 
         // printf("uuid: %s\n", it->first.c_str());
         device = it->second.asMap();

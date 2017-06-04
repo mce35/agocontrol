@@ -12,8 +12,6 @@
 
 #include <sqlite3.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 
 using namespace std;
@@ -27,44 +25,49 @@ public:
     ~Inventory();
     void close();
 
-    string getdevicename (string uuid);
-    string getdeviceroom (string uuid);
-    int setdevicename (string uuid, string name);
-    string getroomname (string uuid);
-    int setroomname (string uuid, string name);
-    int setdeviceroom (string deviceuuid, string roomuuid);
-    string getdeviceroomname (string uuid);
-    Variant::Map getrooms();
-    int deleteroom (string uuid);
+    bool isDeviceRegistered(string uuid);
+    void deleteDevice(string uuid);
 
-    string getfloorplanname (string uuid);
-    int setfloorplanname(string uuid, string name);
-    int setdevicefloorplan(string deviceuuid, string floorplanuuid, int x, int y);
-    int deldevicefloorplan(string deviceuuid, string floorplanuuid);
-    int deletefloorplan(string uuid);
-    Variant::Map getfloorplans();
+    string getDeviceName(string uuid);
+    string getDeviceRoom(string uuid);
+    bool setDeviceName(string uuid, string name);
+    string getRoomName(string uuid);
+    bool setRoomName(string uuid, string name);
+    bool setDeviceRoom(string deviceuuid, string roomuuid);
+    string getDeviceRoomName(string uuid);
+    Variant::Map getRooms();
+    bool deleteRoom(string uuid);
 
-    string getlocationname (string uuid);
-    string getroomlocation (string uuid);
-    int setlocationname(string uuid, string name);
-    int setroomlocation(string roomuuid, string locationuuid);
-    int deletelocation(string uuid);
-    Variant::Map getlocations();
+    string getFloorplanName(string uuid);
+    bool setFloorplanName(string uuid, string name);
+    bool setDeviceFloorplan(string deviceuuid, string floorplanuuid, int x, int y);
+    void delDeviceFloorplan(string deviceuuid, string floorplanuuid);
+    bool deleteFloorplan(string uuid);
+    Variant::Map getFloorplans();
 
-    int createuser(string uuid, string username, string password, string pin, string description);
-    int deleteuser(string uuid);
-    int authuser(string uuid);
-    int setpassword(string uuid);
-    int setpin(string uuid);
-    int setpermission(string uuid, string permission);
-    int deletepermission(string uuid, string permission);
-    Variant::Map getpermissions(string uuid);
+    string getLocationName(string uuid);
+    string getRoomLocation(string uuid);
+    bool setLocationName(string uuid, string name);
+    bool setRoomLocation(string roomuuid, string locationuuid);
+    bool deleteLocation(string uuid);
+    Variant::Map getLocations();
+
+    bool createUser(string uuid, string username, string password, string pin, string description);
+    bool deleteUser(string uuid);
+    bool authUser(string uuid);
+    bool setPassword(string uuid);
+    bool setPin(string uuid);
+    bool setPermission(string uuid, string permission);
+    bool deletePermission(string uuid, string permission);
+    Variant::Map getPermissions(string uuid);
 
 
 private:
     sqlite3 *db;
-    string getfirst(const char *query);
-    string getfirst(const char *query, int n, ...);
+    string getFirst(const char *query);
+    string getFirst(const char *query, int n, ...);
+    string getFirstFound(const char *query, bool &found, int n, ...);
+    string getFirstArgs(const char *query, bool &found, int n, va_list args);
     bool createTableIfNotExist(std::string tablename, std::string createquery);
 };
 

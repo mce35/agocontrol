@@ -1,8 +1,12 @@
-agocontrol (1.0-868) UNRELEASED; urgency=low
+agocontrol (2) UNRELEASED; urgency=low
 
+  [ root ]
   * version jump
 
- -- root <root@pluto.vt100.at>  Tue, 17 Sep 2013 15:46:23 +0200
+  [ Hari ]
+  * 
+
+ -- Hari <hari@pluto.vt100.intra>  Mon, 21 Mar 2016 15:20:58 +0100
 
 agocontrol (1.0-98) unstable; urgency=low
 

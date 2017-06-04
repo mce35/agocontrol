@@ -1,0 +1,48 @@
+[tellstick]
+# Any value but "Net" will use Tellstick (Duo) code
+# Net will use Tellstick NET code
+StickVersion = Duo
+
+# Sensor poll interval, in seconds
+# (only used with StickVersion Net)
+SensorPollInterval = 300
+
+log_level = INFO
+debug = false
+
+#Should names be read from the tellstick.conf file
+SetNames=No
+
+####################################################################
+[EventDevices]
+# Ignore repeated events from the same device
+# witih this many milliseconds
+Delay = 500
+IgnoreModels = codeswitchX, testX
+IgnoreDevices = S1,S3
+
+
+[501]
+Type=Motion sensor
+Desc = Motion sensor
+Delay = 950
+
+[502]
+Type=Wall switch
+Desc = Wall switch media room, left of window
+
+
+###################################################################
+[Sensors]
+#How long to wait for a sensor event before asking for a value (seconds)
+MaxWait=300
+
+[S2-temp]
+Desc=Outdoor sensor garage (temp + hum)
+Offset=-0.8
+
+[S101-temp]
+Desc=Outdoor sensor entrance (temp + hum) Oregon
+
+
+

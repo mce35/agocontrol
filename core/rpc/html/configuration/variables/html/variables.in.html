@@ -1,7 +1,7 @@
 <div>
 
     <!-- popup -->
-    <div class="modal fade" id="confirmPopup">
+    <div class="modal fade" id="confirmPopup" tabindex="-1" data-bind="event:{defaultAction: doDeleteVariable}">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-body">
@@ -33,6 +33,11 @@
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary btn-xs" _alt="Delete" _title="Delete" data-translateable="true" data-bind="click: $parent.deleteVariable">
                                 <span class="en-cancel"></span>
+                            </button>
+                        </div>
+                        <div class="btn-group" data-bind="if: booleanValue() !== null">
+                            <button type="button" class="btn btn-primary btn-xs" _alt="Toggle true/false" _title="Toggle true/false" data-translateable="true" data-bind="click: $parent.toggleBoolean">
+                                <span class="en-shuffle"></span>
                             </button>
                         </div>
                     </td>

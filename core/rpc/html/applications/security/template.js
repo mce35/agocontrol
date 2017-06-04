@@ -33,12 +33,12 @@ function SecurityConfig(agocontrol)
         for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
             var device = self.agocontrol.devices()[i];
-            if( device.name && device.name.length>0 )
+            if( device.name() && device.name().length>0 )
             {
                 //only keep binary sensors
                 if( device.devicetype=='binarysensor' )
                 {
-                    output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                    output.push({uuid:device.uuid, name:device.name(), devicetype:device.devicetype});
                 }
             }
         }
@@ -55,14 +55,14 @@ function SecurityConfig(agocontrol)
             if( device.devicetype=='smsgateway' || device.devicetype=='smtpgateway' || device.devicetype=='twittergateway' || device.devicetype=='pushgateway' )
             {
                 //name specified by user
-                output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                output.push({uuid:device.uuid, name:(device.name()||device.devicetype)+' (gateway)', devicetype:device.devicetype});
             }
-            else if( device.name && device.name.length>0 )
+            else if( device.name() && device.name().length>0 )
             {
-                //only keep switch (maybe scenarii too?)
-                if( device.devicetype=='switch' )
+                //only keep switch and scenarii
+                if( device.devicetype=='switch' || device.devicetype=='scenario' )
                 {
-                    output.push({uuid:device.uuid, name:device.name, devicetype:device.devicetype});
+                    output.push({uuid:device.uuid, name:device.name()+' ('+device.devicetype+')', devicetype:device.devicetype});
                 }
             }
         }

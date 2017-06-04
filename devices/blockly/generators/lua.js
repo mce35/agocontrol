@@ -192,7 +192,8 @@ Blockly.Lua.quote_ = function(string) {
   // TODO: This is a quick hack.  Replace with goog.string.quote
   string = string.replace(/\\/g, '\\\\')
                  .replace(/\n/g, '\\\n')
-                 .replace(/\%/g, '\\%')
+                 //.replace(/\%/g, '\\%')
+                 //.replace(/\%/g, '%%')
                  .replace(/'/g, '\\\'');
   return '\'' + string + '\'';
 };
@@ -218,7 +219,7 @@ Blockly.Lua.scrub_ = function(block, code) {
     // Collect comment for this block.
     var comment = block.getCommentText();
     if (comment) {
-      commentCode += this.prefixLines(comment, '# ') + '\n';
+      commentCode += this.prefixLines(comment, '-- ') + '\n';
     }
     // Collect comments for all value arguments.
     // Don't collect comments for nested statements.
@@ -228,7 +229,7 @@ Blockly.Lua.scrub_ = function(block, code) {
         if (childBlock) {
           var comment = this.allNestedComments(childBlock);
           if (comment) {
-            commentCode += this.prefixLines(comment, '# ');
+            commentCode += this.prefixLines(comment, '-- ');
           }
         }
       }

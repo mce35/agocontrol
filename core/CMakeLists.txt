@@ -72,3 +72,8 @@ OPTION(BUILD_CORE_system "Build agosystem" ON)
 if (BUILD_CORE_system)
   add_subdirectory (system)
 endif()
+
+OPTION(BUILD_CORE_system "Build agoscheduler" ON)
+if (BUILD_CORE_system)
+  add_subdirectory (scheduler)
+endif()

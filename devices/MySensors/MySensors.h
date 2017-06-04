@@ -347,3 +347,160 @@ const char* getMsgTypeNameV15(enum msgTypeV15 type);
 const char* getDeviceTypeNameV15(enum deviceTypesV15 type);
 const char* getVariableTypeNameV15(enum varTypesV15 type);
 const char* getInternalTypeNameV15(enum internalTypesV15 type);
+
+
+/**
+ * PROTOCOL V2.0
+ **/
+
+enum msgTypeV20
+{
+    PRESENTATION_V20 = 0,
+    SET_V20 = 1,
+    REQ_V20 = 2,
+    INTERNAL_V20 = 3,
+    STREAM_V20 = 4
+};
+
+enum deviceTypesV20
+{
+    S_DOOR_V20 = 0, //Door and window sensors
+    S_MOTION_V20 = 1,   //Motion sensors
+    S_SMOKE_V20 = 2,    //Smoke sensor
+    S_BINARY_V20 = 3,   //Binary device (on/off), Alias for S_LIGHT
+    S_DIMMER_V20 = 4,   //Dimmable device of some kind
+    S_COVER_V20 = 5,    //Window covers or shades
+    S_TEMP_V20 = 6, //Temperature sensor
+    S_HUM_V20 = 7,  //Humidity sensor
+    S_BARO_V20 = 8, //Barometer sensor (Pressure)
+    S_WIND_V20 = 9, //Wind sensor
+    S_RAIN_V20 = 10,    //Rain sensor
+    S_UV_V20 = 11,  //UV sensor
+    S_WEIGHT_V20 = 12,  //Weight sensor for scales etc.
+    S_POWER_V20 = 13,   //Power measuring device, like power meters
+    S_HEATER_V20 = 14,  //Heater device
+    S_DISTANCE_V20 = 15,    //Distance sensor
+    S_LIGHT_LEVEL_V20 = 16, //Light sensor
+    S_ARDUINO_NODE_V20 = 17,    //Arduino node device
+    S_ARDUINO_REPEATER_NODE_V20 = 18,   //Arduino repeating node device
+    S_LOCK_V20 = 19,    //Lock device
+    S_IR_V20 = 20,  //Ir sender/receiver device
+    S_WATER_V20 = 21,   //Water meter
+    S_AIR_QUALITY_V20 = 22, //Air quality sensor e.g. MQ-2
+    S_CUSTOM_V20 = 23,  //Use this for custom sensors where no other fits.
+    S_DUST_V20 = 24,    //Dust level sensor
+    S_SCENE_CONTROLLER_V20 = 25,    //Scene controller device
+    S_RGB_LIGHT_V20 = 26,   //RGB light
+    S_RGBW_LIGHT_V20 = 27,  //RGBW light (with separate white component)
+    S_COLOR_SENSOR_V20 = 28,    //Color sensor
+    S_HVAC_V20 = 29,    //Thermostat/HVAC device
+    S_MULTIMETER_V20 = 30,  //Multimeter device
+    S_SPRINKLER_V20 = 31,   //Sprinkler device
+    S_WATER_LEAK_V20 = 32,  //Water leak sensor
+    S_SOUND_V20 = 33,   //Sound sensor
+    S_VIBRATION_V20 = 34,   //Vibration sensor
+    S_MOISTURE_V20 = 35, //Moisture sensor
+    S_INFO_V20 = 36, //LCD text device
+    S_GAS_V20 = 37, //Gas meter
+    S_GPS_V20 = 38, //GPS Sensor
+    S_WATER_QUALITY_V20 = 39 //Water quality sensor
+};
+
+enum varTypesV20
+{
+    V_TEMP_V20 = 0, //Temperature
+    V_HUM_V20 = 1,  //Humidity
+    V_STATUS_V20 = 2,   //Binary status. 0=off 1=on
+    V_PERCENTAGE_V20 = 3,   //Percentage value. 0-100 (%)
+    V_PRESSURE_V20 = 4, //Atmospheric Pressure
+    V_FORECAST_V20 = 5, //Whether forecast. One of "stable", "sunny", "cloudy", "unstable", "thunderstorm" or "unknown"
+    V_RAIN_V20 = 6, //Amount of rain
+    V_RAINRATE_V20 = 7, //Rate of rain
+    V_WIND_V20 = 8, //Windspeed
+    V_GUST_V20 = 9, //Gust
+    V_DIRECTION_V20 = 10,   //Wind direction
+    V_UV_V20 = 11,  //UV light level
+    V_WEIGHT_V20 = 12,  //Weight (for scales etc)
+    V_DISTANCE_V20 = 13,    //Distance
+    V_IMPEDANCE_V20 = 14,   //Impedance value
+    V_ARMED_V20 = 15,   //Armed status of a security sensor. 1=Armed, 0=Bypassed
+    V_TRIPPED_V20 = 16, //Tripped status of a security sensor. 1=Tripped, 0=Untripped
+    V_WATT_V20 = 17,    //Watt value for power meters
+    V_KWH_V20 = 18, //Accumulated number of KWH for a power meter
+    V_SCENE_ON_V20 = 19,    //Turn on a scene
+    V_SCENE_OFF_V20 = 20,   //Turn of a scene
+    V_HVAC_FLOW_STATE_V20 = 21, //Mode of header. One of "Off", "HeatOn", "CoolOn", or "AutoChangeOver"
+    V_HVAC_SPEED_V20 = 22,  //HVAC/Heater fan speed ("Min", "Normal", "Max", "Auto")
+    V_LIGHT_LEVEL_V20 = 23, //Uncalibrated light level. 0-100%. Use V_LEVEL for light level in lux.
+    V_VAR1_V20 = 24,    //Custom value
+    V_VAR2_V20 = 25,    //Custom value
+    V_VAR3_V20 = 26,    //Custom value
+    V_VAR4_V20 = 27,    //Custom value
+    V_VAR5_V20 = 28,    //Custom value
+    V_UP_V20 = 29,  //Window covering. Up.
+    V_DOWN_V20 = 30,    //Window covering. Down.
+    V_STOP_V20 = 31,    //Window covering. Stop.
+    V_IR_SEND_V20 = 32, //Send out an IR-command
+    V_IR_RECEIVE_V20 = 33,  //This message contains a received IR-command
+    V_FLOW_V20 = 34,    //Flow of water (in meter)
+    V_VOLUME_V20 = 35,  //Water volume
+    V_LOCK_STATUS_V20 = 36, //Set or get lock status. 1=Locked, 0=Unlocked
+    V_LEVEL_V20 = 37,   //Used for sending level-value
+    V_VOLTAGE_V20 = 38, //Voltage level
+    V_CURRENT_V20 = 39, //Current level
+    V_RGB_V20 = 40, //RGB value transmitted as ASCII hex string (I.e "ff0000" for red)
+    V_RGBW_V20 = 41,    //RGBW value transmitted as ASCII hex string (I.e "ff0000ff" for red + full white)
+    V_ID_V20 = 42,  //Optional unique sensor id (e.g. OneWire DS1820b ids)
+    V_UNIT_PREFIX_V20 = 43, //Allows sensors to send in a string representing the unit prefix to be displayed in GUI. This is not parsed by controller! E.g. cm, m, km, inch.
+    V_HVAC_SETPOINT_COOL_V20 = 44,  //HVAC cold setpoint (Integer between 0-100)
+    V_HVAC_SETPOINT_HEAT_V20 = 45,  //HVAC/Heater setpoint (Integer between 0-100)
+    V_HVAC_FLOW_MODE_V20 = 46,   //Flow mode for HVAC ("Auto", "ContinuousOn", "PeriodicOn")
+    V_TEXT_V20 = 47, //Text message to display on LCD or controller device
+    V_CUSTOM_V20 = 48, //Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type.
+    V_POSITION_V20 = 49, //GPS position and altitude. Payload: latitude;longitude;altitude(m). E.g. "55.722526;13.017972;18"
+    V_IR_RECORD_V20 = 50, //Record IR codes S_IR for playback
+    V_PH_V20 = 51, //Water PH
+    V_ORP_V20 = 52, //Water ORP: redox potential in mV
+    V_EC_V20 = 53, //Water electric conductivity μS/cm (microSiemens/cm)
+    V_VAR_V20 = 54, //Reactive power: volt-ampere reactive (var)
+    V_VA_V20 = 55, //Apparent power: volt-ampere (VA)
+    V_POWER_FACTOR_V20 = 56 //Ratio of real power to apparent power: floating point value in the range [-1,..,1]
+};
+
+enum internalTypesV20
+{
+    I_BATTERY_LEVEL_V20 = 0,    //Use this to report the battery level (in percent 0-100).
+    I_TIME_V20 = 1, //Sensors can request the current time from the Controller using this message. The time will be reported as the seconds since 1970
+    I_VERSION_V20 = 2,  //Used to request gateway version from controller.
+    I_ID_REQUEST_V20 = 3,   //Use this to request a unique node id from the controller.
+    I_ID_RESPONSE_V20 = 4,  //Id response back to sensor. Payload contains sensor id.
+    I_INCLUSION_MODE_V20 = 5,   //Start/stop inclusion mode of the Controller (1=start, 0=stop).
+    I_CONFIG_V20 = 6,   //Config request from node. Reply with (M)etric or (I)mperal back to sensor.
+    I_FIND_PARENT_V20 = 7,  //When a sensor starts up, it broadcast a search request to all neighbor nodes. They reply with a I_FIND_PARENT_RESPONSE.
+    I_FIND_PARENT_RESPONSE_V20 = 8, //Reply message type to I_FIND_PARENT request.
+    I_LOG_MESSAGE_V20 = 9,  //Sent by the gateway to the Controller to trace-log a message
+    I_CHILDREN_V20 = 10,    //A message that can be used to transfer child sensors (from EEPROM routing table) of a repeating node.
+    I_SKETCH_NAME_V20 = 11, //Optional sketch name that can be used to identify sensor in the Controller GUI
+    I_SKETCH_VERSION_V20 = 12,  //Optional sketch version that can be reported to keep track of the version of sensor in the Controller GUI.
+    I_REBOOT_V20 = 13,  //Used by OTA firmware updates. Request for node to reboot.
+    I_GATEWAY_READY_V20 = 14,   //Send by gateway to controller when startup is complete.
+    I_REQUEST_SIGNING_V20 = 15, //Used between sensors when initialting signing.
+    I_GET_NONCE_V20 = 16,   //Used between sensors when requesting nonce.
+    I_GET_NONCE_RESPONSE_V20 = 17,   //Used between sensors for nonce response.
+    I_HEARTBEAT_V20 = 18, //Heartbeat request
+    I_PRESENTATION_V20 = 19, //Presentation message
+    I_DISCOVER_V20 = 20, //Discover request
+    I_DISCOVER_RESPONSE_V20 = 21, //Discover response
+    I_HEARTBEAT_RESPONSE_V20 = 22, //Heartbeat response
+    I_LOCKED_V20 = 23, //Node is locked (reason in string-payload)
+    I_PING_V20 = 24, //Ping sent to node, payload incremental hop counter
+    I_PONG_V20 = 25, //In return to ping, sent back to sender, payload incremental hop counter
+    I_REGISTRATION_REQUEST_V20 = 26, //Register request to GW
+    I_REGISTRATION_RESPONSE_V20 = 27, //Register response from GW
+    I_DEBUG_V20 = 28 //Debug message
+};
+
+const char* getMsgTypeNameV20(enum msgTypeV20 type);
+const char* getDeviceTypeNameV20(enum deviceTypesV20 type);
+const char* getVariableTypeNameV20(enum varTypesV20 type);
+const char* getInternalTypeNameV20(enum internalTypesV20 type);

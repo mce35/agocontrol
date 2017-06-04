@@ -16,8 +16,20 @@ rm ${TMPFILE}
 
 # Restore knockout containerless control flow
 # And replace all "and" and "or" respectively by "&&" and "||". Only 3 substitutions are supported !
-TMPFILE2=$(realpath $1.tmp)
-sed -e '/<ko opts=".*">/{s/\(.*\) and \(.*\)/\1 \&\& \2/gi}' -e '/<ko opts=".*">/{s/\(.*\) and \(.*\)/\1 \&\& \2/gi}' -e '/<ko opts=".*">/{s/\(.*\) and \(.*\)/\1 \&\& \2/gi}' $2 > $TMPFILE2 && mv $TMPFILE2 $2 || exit 1
-sed -e '/<ko opts=".*">/{s/\(.*\) or \(.*\)/\1 \|\| \2/gi}' -e '/<ko opts=".*">/{s/\(.*\) or \(.*\)/\1 \|\| \2/gi}' -e '/<ko opts=".*">/{s/\(.*\) or \(.*\)/\1 \|\| \2/gi}' $2 > $TMPFILE2 && mv $TMPFILE2 $2 || exit 1
+TMPFILE2="${SOURCEFILE}.tmp"
+sed -e '/<ko opts=".*">/{s/\(.*\) and \(.*\)/\1 \&\& \2/gi
+	}' \
+	 -e '/<ko opts=".*">/{s/\(.*\) and \(.*\)/\1 \&\& \2/gi
+	}' \
+	 -e '/<ko opts=".*">/{s/\(.*\) and \(.*\)/\1 \&\& \2/gi
+	}' $2 > $TMPFILE2 && mv $TMPFILE2 $2 || exit 1
+
+sed -e '/<ko opts=".*">/{s/\(.*\) or \(.*\)/\1 \|\| \2/gi
+	}' \
+    -e '/<ko opts=".*">/{s/\(.*\) or \(.*\)/\1 \|\| \2/gi
+	}' \
+    -e '/<ko opts=".*">/{s/\(.*\) or \(.*\)/\1 \|\| \2/gi
+	}' $2 > $TMPFILE2 && mv $TMPFILE2 $2 || exit 1
+
 sed -e "s/<ko opts=\"\(.*\)\">/<\!\-\- ko \1 \-\->/g" $2 > $TMPFILE2 && mv $TMPFILE2 $2 || exit 1
 sed -e "s/<\/ko>/<\!\-\- \/ko \-\->/g" $2 > $TMPFILE2 && mv $TMPFILE2 $2 || exit 1

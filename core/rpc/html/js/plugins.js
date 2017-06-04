@@ -109,6 +109,7 @@ function SecurityPlugin(agocontrol)
                     if( res.data.alarmactivated==1 )
                     {
                         //alarm is running, open pin panel right now
+                        self.countdown('expired!');
                         self.openPanel();
                     }
                 })
@@ -198,13 +199,13 @@ function SecurityPlugin(agocontrol)
     //open pin panel
     self.openPanel = function()
     {
-        $('#securityPanel').addClass('active');
+        $('#securityPanel').modal('show');
     };
 
     //close pin panel
     self.closePanel = function()
     {
-        $('#securityPanel').removeClass('active');
+        $('#securityPanel').modal('hide');
     };
 };
 

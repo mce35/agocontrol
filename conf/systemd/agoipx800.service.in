@@ -1,0 +1,14 @@
+[Unit]
+Description=ago control IPX800
+
+[Service]
+ExecStart=@BINDIR@/agoipx800.py
+WorkingDirectory=@BINDIR@
+StandardOutput=syslog
+StandardError=syslog
+Restart=always
+RestartSec=2
+User=agocontrol
+
+[Install]
+WantedBy=multi-user.target

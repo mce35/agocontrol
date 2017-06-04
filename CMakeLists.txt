@@ -59,6 +59,20 @@ set_property( DIRECTORY
 	COMPILE_OPTIONS
 	-Wall -DBOOST_LOG_DYN_LINK)
 
+set_property( DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-DBOOST_FILESYSTEM_VERSION=3
+	-DBOOST_FILESYSTEM_NO_DEPRECATED)
+
+# Workaround for bug in Boost on Clang which tries to add pragma warning group keyward-warning
+# which does not exists in clang:
+# http://lists.boost.org/Archives/boost/2016/07/230350.php
+set_property( DIRECTORY
+	APPEND PROPERTY
+	COMPILE_OPTIONS
+	-Wno-error=unknown-pragmas)
+
 # add the binary tree to the search path for include files
 # so that we will find version.h and other configured files
 include_directories("${PROJECT_BINARY_DIR}")
@@ -70,7 +84,10 @@ include_directories("${LOCALDIR}/include/libxml2")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-# JSONCpp is used globally (agoclient.h)
+# JSONCpp is used by all components (via agoclient.h)
+# Note that jsoncpp is usually installed under .../include/jsoncpp, not directly into
+# include. But this is not always true, i.e. Brew on Mac does not install it there.
+# Do not include 'jsoncpp/' in C++ include directives!
 set (JSONCPP_ROOT_DIR "${LOCALDIR}/lib")
 set (JSONCPP_INCLUDE_DIR "${LOCALDIR}/include/jsoncpp")
 
@@ -78,6 +95,13 @@ find_package (JsonCpp REQUIRED)
 if (JSONCPP_FOUND)
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 endif (JSONCPP_FOUND)
+
+find_package(CppDb REQUIRED)
+if (CPPDB_FOUND)
+	include_directories(${CPPDB_INCLUDE_DIRS})
+else()
+	message(FATAL_ERROR "Could not find cppdb")
+endif (CPPDB_FOUND)
 
 FIND_PACKAGE(Boost COMPONENTS system filesystem thread program_options date_time regex REQUIRED)
 

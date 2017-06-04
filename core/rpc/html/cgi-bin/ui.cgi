@@ -9,6 +9,9 @@ import json
 import os
 import re
 
+# TODO: Make configurable
+UI_DIR='/etc/opt/agocontrol/ui/'
+
 def loadFile(f):
     content = {}
     try:
@@ -89,6 +92,7 @@ try:
                     f.write('{}')
                     f.close()
                 except Exception as e:
+                    result['result'] = 1
                     result['error'] = 'Unable to create "%s" [%s]' % (path, str(e))
 
             if os.path.exists(path):
@@ -114,7 +118,7 @@ try:
     elif not key and param and not value:
         #get content
         if param in allowedContent.keys():
-            path = os.path.join('/etc/opt/agocontrol/ui/', param+'.json')
+            path = os.path.join(UI_DIR, param+'.json')
             result['result'] = 1
             if not os.path.exists(path):
                 result['content'] = {}

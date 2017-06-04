@@ -797,18 +797,14 @@ function Zwave(devices, agocontrol)
      ***********************/
 
     //Get associations
-    self.getAssociations = function(node, group, callback) {
+    self.getAllAssociations = function(node) {
         var content = {
             uuid: self.controllerUuid,
-            command: 'getassociations',
-            node: node,
-            group: group
+            command: 'getallassociations',
+            node: node
         };
 
-        self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                callback(res.data.associations, res.data.label, node, group);
-            });
+        return self.agocontrol.sendCommand(content);
     };
 
     //Add association
@@ -821,10 +817,7 @@ function Zwave(devices, agocontrol)
             target: target
         };
 
-        self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                notif.success('#addassociationok');
-            });
+        return self.agocontrol.sendCommand(content);
     };
 
     //Remove association
@@ -837,10 +830,7 @@ function Zwave(devices, agocontrol)
             target: target
         };
 
-        self.agocontrol.sendCommand(content)
-            .then(function(res) {
-                notif.success('removeassociationok');
-            });
+        return self.agocontrol.sendCommand(content);
     };
 }
  
@@ -909,7 +899,7 @@ function zwaveConfig(zwave) {
     self.nodeParametersGrid = new ko.agoGrid.viewModel({
         data: self.nodeParameters,
         columns: [
-            {headerText:'', rowText:''},
+            {headerText:'Index', rowText:''},
             {headerText:'Parameter', rowText:''},
             {headerText:'Value', rowText:''},
             {headerText:'', rowText:''}
@@ -937,27 +927,30 @@ function zwaveConfig(zwave) {
     //get and set zwave controller uuid
     var zwaveControllerUuid = zwave.getControllerUuid();
     zwave.setControllerUuid(zwaveControllerUuid);
-    
+
     //open node details from chord graph
     self.openNodeDetailsFromGraph = function(id)
     {
         self.openNodeDetails(self.nodes()[id]);
     };
-    
+
+    self.getNode = function(id) {
+        var nodes = self.nodes();
+        for( var i=0; nodes.length; i++ )
+        {
+            if( nodes[i].id===id )
+            {
+                return nodes[i];
+            }
+        }
+        return null;
+    }
+ 
     //open node details from devices list
     self.openNodeDetailsFromList = function(id)
     {
         var i = 0;
-        var node = null;
-
-        for( i=0; self.nodes().length; i++ )
-        {
-            if( self.nodes()[i].id===id )
-            {
-                node = self.nodes()[i];
-                break;
-            }
-        }
+        var node = self.getNode(id);
 
         if( node===null )
         {
@@ -969,7 +962,7 @@ function zwaveConfig(zwave) {
             self.openNodeDetails(node);
         }
     };
-    
+
     //open node details
     self.openNodeDetails = function(node)
     {
@@ -982,8 +975,6 @@ function zwaveConfig(zwave) {
             self.nodeStatus.pop();
         while( self.nodeParameters().length>0 )
             self.nodeParameters.pop();
-        while( self.nodeAssociations().length>0 )
-            self.nodeAssociations.pop();
         while( self.nodesForAssociation().length>0 )
             self.nodesForAssociation.pop();
 
@@ -1041,73 +1032,95 @@ function zwaveConfig(zwave) {
             });
         }
 
-        //get node associations
-        if( self.selectedNode.numgroups )
-        {
-            for( var group=1; group<=self.selectedNode.numgroups; group++ )
-            {
-                zwave.getAssociations(self.selectedNode.id, group, function(associations, label, node, group) {
-                    //get associated node infos
-                    var id, i;
-                    var assos = [];
-                    var targets = ko.observableArray([]);
-
-                    //fill list of targets with all nodes
-                    for( i=0; i<self.nodes().length; i++ )
-                    {
-                        targets.push({key:self.nodes()[i].id, value:self.nodes()[i].type+'('+self.nodes()[i].id+')'});
-                    }
-
-                    //fill associations
-                    for( var key in associations )
-                    {
-                        id = associations[key]-1;
-                        if( id<self.nodes().length )
-                        {
-                            assos.push({asso:self.nodes()[id].type+'('+self.nodes()[id].id+')', node:parseInt(node), group:group, target:parseInt(self.nodes()[id].id), add:false});
-                        }
-                        //remove associated node from targets
-                        for( i=targets().length-1; i>=0; i-- )
-                        {
-                            if( targets()[i].key==self.nodes()[id].id )
-                            {
-                                targets().splice(i,1);
-                                break;
-                            }
-                        }
-                    }
-
-                    //remove itself from targets
-                    for( i=targets().length-1; i>=0; i-- )
-                    {
-                        if( targets()[i].key==self.selectedNode.id )
-                        {
-                            targets().splice(i,1);
-                            break;
-                        }
-                    }
-
-                    //append association
-                    assos.push({asso:'', node:parseInt(node), group:group, target:ko.observable(), targets:targets, add:true});
-                    self.nodeAssociations.push({label:label, assos:assos});
-                });
-            }
-        }
-        
+        self.loadAssociations(node);
 
         //open modal
         $('#nodeDetails').modal('show');
+    };
+
+    self.loadAssociations = function(node){
+        if(typeof node === "number")
+            node = self.getNode(node);
+
+        if( !node.numgroups )
+            return;
+
+        zwave.getAllAssociations(node.id)
+            .then(function(res) {
+                if(!self.selectedNode || self.selectedNode.id !== node.id)
+                    // prevent late responses replacing global content
+                    return;
+
+                var newAssocations = [];
+                var groups = res.data.groups;
+                for(var i=0; i < groups.length; i++) {
+                    var
+                        group = groups[i].group,
+                        associations = groups[i].associations,
+                        label =  groups[i].label;
+
+                    // fill associations
+                    var j;
+                    var skipTargets = {};
+                    skipTargets[node.id] = true;
+                    var assos = ko.observableArray();
+                    for( j=0; j < associations.length; j++)
+                    {
+                        var targetNode = self.getNode(associations[j]);
+                        assos.push({asso: targetNode.type+'('+targetNode.id+')',
+                            node: node.id,
+                            group: group,
+                            target: targetNode.id,
+                            add:false
+                        });
+
+                        skipTargets[targetNode.id] = true;
+                    }
+
+                    //fill list of targets with all nodes
+                    var targets = ko.observableArray([]);
+                    for( j=0; j<self.nodes().length; j++ )
+                    {
+                        var targetNode = self.nodes()[j];
+                        if(skipTargets[targetNode.id])
+                            continue;
+
+                        // Add similar struct here which can be moved to assos array
+                        // after add
+                        targets.push({
+                            asso: targetNode.type+'('+targetNode.id+')',
+                            node: node.id,
+                            group: group,
+                            target: targetNode.id,
+                            add:false
+                        });
+                    }
+
+                    // Final row for adding new associations (select box)
+                    assos.push({asso:'',
+                        node:node.id,
+                        group:group,
+                        target:ko.observable(),
+                        targets:targets,
+                        add:true});
+
+                    newAssocations.push({group: group, label:label, assos:assos});
+                }
+                self.nodeAssociations.replaceAll(newAssocations);
+            });
     };
     
     //get nodes and build nodes graph
     self.init = function() {
         zwave.getNodes(function(nodelist) {
+            var newNodes = [];
             for( var id in nodelist ) 
             {
                 var newNode = nodelist[id];
-                newNode.id = id;
-                self.nodes.push(newNode);
+                newNode.id = parseInt(id, 10); // Enforce numeric sort
+                newNodes.push(newNode);
             }
+            self.nodes.replaceAll(newNodes);
             self.nodesCount(self.nodes().length);
         });
     };
@@ -1180,13 +1193,44 @@ function zwaveConfig(zwave) {
     //create association
     self.createAssociation = function() {
         //console.log("add association node="+self.selectedNode.id+" group="+(self.selectedNode.numgroups+1)+" target="+self.selectedNodeForAssociation().key);
-        zwave.addAssociation(self.selectedNode.id, (self.selectedNode.numgroups+1), self.selectedNodeForAssociation().key);
+        zwave
+            .addAssociation(self.selectedNode.id, (self.selectedNode.numgroups+1), self.selectedNodeForAssociation().key)
+            .then(function(res) {
+                // Reload associations
+                self.loadAssociations();
+                notif.success('#addassociationok');
+            });
     };
 
     //add association
     self.addAssociation = function(asso) {
         //console.log("add association node="+asso.node+" group="+asso.group+" target="+asso.target().key);
-        zwave.addAssociation(asso.node, asso.group, asso.target().key);
+        var selectedTarget = asso.target();
+        zwave
+            .addAssociation(asso.node, asso.group, selectedTarget.target)
+            .then(function(res) {
+                notif.success('#addassociationok');
+                // Associations take some time in backend.
+                // Fake-add to have responsive UI
+                if(!self.selectedNode || self.selectedNode.id !== asso.node)
+                    return;
+
+                // Find association
+                var nA = self.nodeAssociations();
+                for(var i=0; i < nA.length; i++) {
+                    if(nA[i].group !== asso.group)
+                        continue;
+
+                    // Add to list of associations.. just before
+                    // the selector
+                    nA[i].assos.splice(-1, 0, selectedTarget);
+
+                    // Remove from list of targets
+                    asso.targets.remove(selectedTarget);
+                    asso.target(null);
+                    break;
+                }
+            });
     };
 
     //remove association
@@ -1194,7 +1238,31 @@ function zwaveConfig(zwave) {
         var msg = $('#reallyremoveassociation').html();
         if( confirm(msg) )
         {
-            zwave.removeAssociation(asso.node, asso.group, asso.target);
+            zwave
+                .removeAssociation(asso.node, asso.group, asso.target)
+                .then(function(res) {
+                    notif.success('removeassociationok');
+
+                    // Associations take some time in backend.
+                    // Fake-remove to have responsive UI
+                    if(!self.selectedNode || self.selectedNode.id !== asso.node)
+                        return;
+
+                    // Find association
+                    var nA = self.nodeAssociations();
+                    for(var i=0; i < nA.length; i++) {
+                        if(nA[i].group !== asso.group)
+                            continue;
+
+                        // Remove from list of associations
+                        var assos = nA[i].assos;
+                        assos.remove(asso);
+
+                        // Re-add to list of targets (which is on the last assos item)
+                        assos()[assos().length-1].targets.push(asso);
+                        break;
+                    };
+                });
         }
     };
 

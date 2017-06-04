@@ -20,8 +20,10 @@ __version__    = AGO_TELLSTICK_VERSION
 from tellstickbase import tellstickbase
 import td
 
+
 class tellstickduo(tellstickbase):
     """Class used for Tellstick & Tellstick Duo devices"""
+
     def __get__(self, obj, objtype=None):
         pass
 
@@ -31,9 +33,14 @@ class tellstickduo(tellstickbase):
     def __delete__(self, obj):
         pass
 
+    def __init__(self, app):
+        super(tellstickduo, self).__init__(app)
+        self.SensorEvent = None
+
     def init(self, SensorPollDelay, TempUnits):
-        #TELLSTICK_BELL | TELLSTICK_TOGGLE | TELLSTICK_LEARN | TELLSTICK_EXECUTE | TELLSTICK_UP | TELLSTICK_DOWN | TELLSTICK_STOP
-        td.init( defaultMethods = td.TELLSTICK_TURNON | td.TELLSTICK_TURNOFF | td.TELLSTICK_DIM)
+        # TELLSTICK_BELL | TELLSTICK_TOGGLE | TELLSTICK_LEARN | TELLSTICK_EXECUTE | TELLSTICK_UP | TELLSTICK_DOWN | TELLSTICK_STOP
+        td.init(defaultMethods=td.TELLSTICK_TURNON | td.TELLSTICK_TURNOFF | td.TELLSTICK_DIM)
+        self.log.info("Init executed")
 
     def close(self):
         return td.close()
@@ -43,7 +50,7 @@ class tellstickduo(tellstickbase):
         return self.getErrorString(resCode).lower()
 
     def turnOff(self, devId):
-        resCode =  td.turnOff(devId)
+        resCode = td.turnOff(devId)
         return self.getErrorString(resCode).lower()
 
     def getErrorString(self, resCode):
@@ -53,7 +60,7 @@ class tellstickduo(tellstickbase):
         resCode = td.dim(devId, level)
         return self.getErrorString(resCode).lower()
 
-    def getName(self,devId):
+    def getName(self, devId):
         return td.getName(devId)
 
     def methodsReadable(self, method, default):
@@ -63,10 +70,9 @@ class tellstickduo(tellstickbase):
         return td.getNumberOfDevices()
 
     def getNumberOfSensors(self):
-        return td.getNumberOfDevices() #wrong
+        return td.getNumberOfDevices()  # wrong
 
-
-    def getDeviceId(self,i):
+    def getDeviceId(self, i):
         return td.getDeviceId(i)
 
     def getModel(self, devId):
@@ -78,68 +84,83 @@ class tellstickduo(tellstickbase):
     def registerDeviceChangedEvent(self, deviceEvent):
         return td.registerDeviceChangedEvent(deviceEvent)
 
-    def SensorEventInterceptor (self, protocol, model, id, dataType, value, timestamp, callbackId):
-        devId = "S" + str(id)
-        print "SensorEventInterceptod called for " + devId
+    def newTempSensor(self, devId, model, value):
+        self.log.debug("New temperature sensor intercepted: devId=" + devId + " model=" + model)
+        s = {
+            "id" : devId,
+            "description" : "",
+            "model" : model,
+            "new" : True,
+            "temp" : float(value),  # C/F
+            "offset" : 0.0,  # TODO: Add to parameter & config file
+            "lastTemp" : float(-274.0),
+            "isTempSensor" : True,
+            "isHumiditySensor" : False,
+            "ignore" : False}
+        return s
 
-        if devId not in self.sensors:
-            s = {}
-            s["id"] =devId
-            s["model"]= model
-            #print("New sensor intercepted: devId=" + s["id"] + " model=" + model)
-            s["new"] = True
-            if dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE:
-                s["temp"] = float(value) # C/F
-                s["lastTemp"] = float(-274.0)
-                s["isTempSensor"] = True
-            else:
-                s["isTempSensor"] = False
-            if dataType & td.TELLSTICK_HUMIDITY == td.TELLSTICK_HUMIDITY:
-                s["humidity"] = float(value)
-                s["lastHumidity"] = float(-999.0)
-                s["isHumiditySensor"] = True
-            else:
-                s["isHumiditySensor"] = False
-            if "temp" in s and "humidity" in s:
-                s["isMultiLevel"] = True
-            else:
-                s["isMultiLevel"] = False
-            self.sensors[devId] = s
+    def newHumiditySensor(self, devId, model, value):
+        self.log.debug("New humidity sensor intercepted: devId=" + devId + " model=" + model)
+        s = {
+            "id" : devId,
+            "description" : "",
+            "model" : model,
+            "new" : True,
+            "humidity" : float(value),
+            "offset" : 0.0,  # TODO: Add to parameter & config file
+            "lastHumidity" : float(-999.0),
+            "isHumiditySensor" : True,
+            "isTempSensor" : False,
+            "ignore" : False}
+        return s
 
+    def SensorEventInterceptor(self, protocol, model, id, dataType, value, timestamp, callbackId):
+        devId = 'S' + str(id)  # Prefix 'S' to make sure name doesn't clash with self-defined devices
+        devIdT = devId + "-temp"
+        devIdH = devId + "-hum"
+        # self.checkIgnore(self, devId) #TODO: Add once moved
+        self.log.trace("SensorEventInterceptor called for " + devId)
 
-        if devId in self.sensors:
-            s = self.sensors[devId]
-            if (dataType & td.TELLSTICK_HUMIDITY == td.TELLSTICK_HUMIDITY and s["isHumiditySensor"] == False) or (dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE and s["isTempSensor"] == False):
-                print("New data type intercepted: devId=" + devId + " model=" + model)
-                s["new"] = True
-                if dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE:
-                    s["temp"] = float(value)  # C/F
-                    s["lastTemp"] = float(-274.0)
-                    s["isTempSensor"] = True
-                    if "humidity" in s:
-                        s["isMultiLevel"] = True
+        if str(id) not in self.ignoreDevices:
+            # New temperature sensor?
+            if devIdT not in self.sensors and dataType & td.TELLSTICK_TEMPERATURE == td.TELLSTICK_TEMPERATURE:
+                self.sensors[devIdT] = self.newTempSensor(devIdT, model, value)
 
-                if dataType & td.TELLSTICK_HUMIDITY == td.TELLSTICK_HUMIDITY:
-                    s["humidity"] = float(value)
-                    s["lastHumidity"] = float(-999.0)
-                    s["isHumiditySensor"] = True
-                    if "temp" in s:
-                        s["isMultiLevel"] = True
-                self.sensors[devId] = s
+            # New humidity sensor?
+            if devIdH not in self.sensors and dataType & td.TELLSTICK_HUMIDITY == td.TELLSTICK_HUMIDITY:
+                self.sensors[devIdH] = self.newHumiditySensor(devIdH, model, value)
 
-        # Call registered callback
-        self.SensorEvent(protocol, model, devId, dataType, value, timestamp, callbackId)
+            # Call registered callback
+            self.SensorEvent(protocol, model, devId, dataType, value, timestamp, callbackId)
 
     def registerSensorEvent(self, deviceEvent):
         self.SensorEvent = deviceEvent
         return td.registerSensorEvent(self.SensorEventInterceptor)
 
     def listSensors(self):
-        if len(self.sensors) == 0:
-            self.sensors = td.listSensors()
+        sensors = td.listSensors()
+
+        if len(sensors) != 0:
+            for id, value in sensors.iteritems():
+                self.log.trace("listSensors: devId: %s ", str(id))
+
+                if id not in self.ignoreDevices:
+                    devId = str(id) + "-temp"
+                    if devId not in self.sensors:
+                        if value["isTempSensor"]:
+                            # New temp sensor found
+                            self.sensors[devId] = self.newTempSensor(devId, value["model"], value["temp"])
+
+                    devId = str(id) + "-hum"
+                    if devId not in self.sensors:
+                        if value["isHumiditySensor"]:
+                            # New hum sensor found
+                            self.sensors[devId] = self.newHumiditySensor(devId, value["model"], value["humidity"])
+
+                if not value["new"]:
+                    continue
 
         return self.sensors
-
 
     def listSwitches(self):
         if len(self.switches) == 0:
@@ -149,10 +170,10 @@ class tellstickduo(tellstickbase):
                 model = self.getModel(devId)
 
                 if ('switch' in model or 'dimmer' in model):
-                    dev = {}
-                    dev["id"] = devId
-                    dev["name"] = self.getName(devId)
-                    dev["model"] = model
+                    dev = {
+                        "id" : devId,
+                        "name" : self.getName(devId),
+                        "model" : model}
                     if 'dimmer' in model:
                         dev["isDimmer"] = True
                     else:
@@ -162,15 +183,19 @@ class tellstickduo(tellstickbase):
         return self.switches
 
     def listRemotes(self):
+        self.log.trace("listRemotes start")
         if len(self.remotes) == 0:
+            self.log.info("getNumberOfDevices=" + str(self.getNumberOfDevices()))
             for i in range(self.getNumberOfDevices()):
                 devId = self.getDeviceId(i)
                 model = self.getModel(devId)
+                self.log.info("devId=" + str(devId) + " model=" + model)
                 if 'switch' not in model and 'dimmer' not in model:
-                    dev = {}
-                    dev["id"] = devId
-                    dev["name"] = self.getName(devId)
-                    dev["model"] = model
+                    dev = {
+                        "id" : str(devId),
+                        "name" : self.getName(devId),
+                        "model" : model}
+                    self.log.info("devId=" + str(devId) + " model=" + model)
 
                     self.remotes[devId] = dev
         return self.remotes

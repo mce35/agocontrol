@@ -2,6 +2,31 @@
  * Extend Agocontrol object with device details functions
  */
 
+Agocontrol.templateExists = {};
+Agocontrol.prototype.checkTemplateExists = function(templateName) {
+    var cache = Agocontrol.templateExists,
+        cachedValue = cache[templateName];
+    if(cachedValue === true)
+        return Promise.resolve();
+    else if(cachedValue === false)
+        return Promise.reject();
+
+    var p = new Promise(function(resolve, reject) {
+        $.ajax({
+            type : 'HEAD',
+            url: templateName,
+            success: resolve,
+            error: reject
+        })
+    });
+
+    p.then(
+            function(){cache[templateName] = true;},
+            function(){cache[templateName] = false;});
+
+    return p;
+}
+
 //Opens details page for the given device
 Agocontrol.prototype.showDetails = function(device)
 {
@@ -18,19 +43,17 @@ Agocontrol.prototype.showDetails = function(device)
         }
     }
 
-    //Check if we have a template if yes use it otherwise fall back to default
-    $.ajax({
-        type : 'HEAD',
-        url : "templates/details/" + device.devicetype + ".html",
-        success : function()
-        {
-            self.doShowDetails(device, device.devicetype, environment);
-        },
-        error : function()
-        {
-            self.doShowDetails(device, "default", environment);
-        }
-    });
+    // Check if we have a template if yes use it otherwise fall back to default
+    var templateName = "templates/details/" + device.devicetype + ".html";
+    this.checkTemplateExists(templateName)
+        .then(function()
+            {
+                self.doShowDetails(device, device.devicetype, environment);
+            },
+            function()
+            {
+                self.doShowDetails(device, "default", environment);
+            });
 };
 
 //Shows the detail page of a device
@@ -56,10 +79,12 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 self.render(device, environment, startDt, endDt);
             });
 
-            if( $('#commandList').length )
+            if( template=='default' )
             {
                 //empty template, fill command list
-                self.showCommandList($('#commandList')[0], device);
+                if( $('#commandList').length ) {
+                    self.showCommandList($('#commandList')[0], device);
+                }
             }
             else if( device.devicetype=='camera' )
             {
@@ -106,7 +131,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                     rangeEl.append($('<option>', {'text':item.text, 'value':item.value}));
                 });
                 rangeEl.change(function() {
-                    if( rangeEl.val()===0 )
+                    if( rangeEl.val()==0 )
                     {
                         //display custom range fields
                         startEl.parent().show();
@@ -133,6 +158,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //configure datetime pickers
                 startEl.datetimepicker({
                     format: getDatetimepickerFormat(),
+                    maxDate: 0,
                     onChangeDateTime: function(dt,$input)
                     {
                         //check date
@@ -153,6 +179,7 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //set end date
                 endEl.datetimepicker({
                     format: getDatetimepickerFormat(),
+                    maxDate: 0,
                     onChangeDateTime: function(dt,$input)
                     {
                         //check date
@@ -173,11 +200,11 @@ Agocontrol.prototype.doShowDetails = function(device, template, environment)
                 //render graph
                 if( device.devicetype=="gpssensor" )
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "map");
                 }
                 else
                 {
-                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt);
+                    self.render(device, environment ? environment : device.valueList()[0].name, startDt, endDt, "graph");
                 }
             }
 
@@ -204,12 +231,15 @@ Agocontrol.prototype.showCommandList = function(container, device)
     commandSelect.className = "form-control";
     var commandParams = document.createElement("p");
     commandParams.style['padding-top'] = '10px';
+
+    var schemaCommands = self.schema().commands;
     var type = device.devicetype;
     if( type && self.schema().devicetypes[type] )
     {
-        for ( var i = 0; i < self.schema().devicetypes[type].commands.length; i++)
+        var cmds = self.schema().devicetypes[type].commands;
+        for ( var i = 0; i < cmds.length; i++)
         {
-            commandSelect.options[i] = new Option(self.schema().commands[self.schema().devicetypes[type].commands[i]].name, self.schema().devicetypes[type].commands[i]);
+            commandSelect.options[i] = new Option(schemaCommands[cmds[i]].name, cmds[i]);
         }
     }
 
@@ -219,7 +249,7 @@ Agocontrol.prototype.showCommandList = function(container, device)
         {
            return 0;
         }
-        var cmd = self.schema().commands[commandSelect.options[commandSelect.selectedIndex].value];
+        var cmd = schemaCommands[commandSelect.options[commandSelect.selectedIndex].value];
         commandParams.innerHTML = "";
         if( cmd.parameters!==undefined )
         {
@@ -293,7 +323,7 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         colorL = '#FF0000';
         colorA = '#FF8787';
     }
-    else if( device.devicetype=='powermeter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype==='' ||device.devicetype=='batterysensor' )
+    else if( device.devicetype=='powermeter' || device.devicetype=='energycounter' || device.devicetype=='energysensor' ||device.devicetype=='powersensor' ||device.devicetype==='' ||device.devicetype=='batterysensor' )
     {
         colorL = '#007A00';
         colorA = '#00BB00';
@@ -323,7 +353,8 @@ Agocontrol.prototype.renderPlots = function(device, environment, unit, data, sta
         .scale(xScale)
         .orient("bottom")
         .tickSize(-height, 0)
-        .tickPadding(6);
+        .tickPadding(6)
+        .tickFormat(getD3DatetimeParser());
     var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left")
@@ -490,7 +521,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = datetimeToString(new Date(values[i].time * 1000));
+                values[i].date = timestampToString(values[i].time);
                 values[i].value = values[i].level + " " + unit;
                 delete values[i].level;
             }
@@ -499,7 +530,7 @@ Agocontrol.prototype.renderList = function(device, environment, unit, values, st
         {
             for ( var i = 0; i < values.length; i++)
             {
-                values[i].date = datetimeToString(new Date(values[i].time * 1000));
+                values[i].date = timestampToString(values[i].time);
                 values[i].value = values[i].latitude + "," + values[i].longitude;
                 delete values[i].latitude;
                 delete values[i].longitude;
@@ -583,7 +614,7 @@ Agocontrol.prototype.renderRRD = function(data)
 };
 
 //render stuff
-Agocontrol.prototype.render = function(device, environment, startDt, endDt)
+Agocontrol.prototype.render = function(device, environment, startDt, endDt/*, type*/)
 {
     var self = this;
     self.block($('#graphContainer'));

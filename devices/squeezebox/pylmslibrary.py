@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -28,39 +28,56 @@ import threading
 import os
 import logging
 import urllib
+import time
 
 class CacheCovers(threading.Thread):
-    """cache covers for thumbnails"""
+    """
+    Cache covers for thumbnails
+    """
 
-    def __init__(self, server_ip, server_port, cover_path, albums, end_callback=None):
-        """init"""
+    def __init__(self, server_ip, server_html_port, cover_path, albums, end_callback=None, size=(100,100), force=False):
+        """
+        Constructor
+        @param server_ip: LMS server ip
+        @param server_html_port: LMS html port (typically 9000)
+        @param cover_path: directory where covers are cached
+        @param end_callback: callback when caching process is terminated
+        @param size: size of cover
+        @param force: force rebuilding entire cache
+        """
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("CacheCovers")
         self.albums = albums
         self.cover_path = cover_path
-        self.server_port = server_port
+        self.server_html_port = server_html_port
         self.server_ip = server_ip
         self.running = True
         self.end_callback = end_callback
+        self.force = force
         
     def stop(self):
-        """stop process"""
+        """
+        Stop process
+        """
         self.running = False
         
     def start(self):
-        """start process"""
+        """
+        Start process
+        """
         self.logger.debug('CacheCovers started')
+        start_time = int(time.time())
         for album in self.albums:
             if not album.has_key('id'):
                 self.logger.warning('Album has no Id !?!?')
             elif not album.has_key('artwork_track_id'):
                 self.logger.warning('Album "%s" has no artwork_track_id field' % album['id'])
             else:
-                url = 'http://%s:%d/music/%s/cover_100x100.png' % (self.server_ip, self.server_port, album['artwork_track_id'])
+                url = 'http://%s:%d/music/%s/cover_%dx%d.png' % (self.server_ip, self.server_html_port, album['artwork_track_id'], size[0], size[1])
                 path = os.path.join(self.cover_path, '%s_%s.png' % (album['id'], album['artwork_track_id']))
                 #self.logger.debug('New cover : url=%s cover=%s' % (url, path))
-                if not os.path.exists(path):
-                    #cover not exists
+                if not os.path.exists(path) or self.force:
+                    #cover not exists or force flag enabled
                     fil = open(path, 'wb')
                     bin = urllib.urlopen(url)
                     fil.write(bin.read())
@@ -69,7 +86,8 @@ class CacheCovers(threading.Thread):
             #stop statement?
             if not self.running:
                 break
-        self.logger.debug('CacheCovers stopped')
+        end_time = int(time.time())
+        self.logger.debug('CacheCovers terminated (duration %sseconds)' % (end_time-start_time))
 
         
        
@@ -82,14 +100,17 @@ class LMSLibrary():
     LIBRARY_UPTODATE = 1
     LIBRARY_UPDATING = 2
 
-    def __init__(self, server_ip, server_port=9090, server_user='', server_password=''):
-        """constructor"""
+    def __init__(self, server_ip, server_cli_port=9090, server_html_port=9000, server_user='', server_password=''):
+        """
+        Constructor
+        """
         #init
         self.logger = logging.getLogger("Library")
         
         #members
         self.server_ip = server_ip
-        self.server_port = server_port
+        self.server_cli_port = server_cli_port
+        self.server_html_port = server_html_port
         self.__cover_path = os.path.join(os.path.expanduser('~'), '.squeezedesktop', 'cache')
         if not os.path.exists(self.__cover_path):
             try:
@@ -105,18 +126,22 @@ class LMSLibrary():
         self.__years_count = 0
         
         #objects
-        self.server = LMSServer(server_ip, server_port, server_user, server_password)
+        self.server = LMSServer(server_ip, server_cli_port, server_user, server_password)
         self.server.connect()
         self.cache_covers = None
         
     def __del__(self):
-        """destructor"""
+        """
+        Destructor
+        """
         #only stop threads if runnings
         if self.cache_covers:
             self.cache_covers.stop()
             
     def get_albums(self):
-        """return all albums"""
+        """
+        Return all albums
+        """
         #     id 	Album ID. Item delimiter.
         #l 	  album 	Album name, including the server's added "(N of M)" if the server is set to group multi disc albums together. See tag "title" for the unmodified value.
         #y 	  year 	Album year. This is determined by the server based on the album tracks.
@@ -137,7 +162,9 @@ class LMSLibrary():
             return items
             
     def get_album(self, id):
-        """return album infos"""
+        """
+        Return album infos
+        """
         if id!=None:
             count, items, error = self.server.request_with_results('albums 0 1 album_id:%d tags:ljyS' % id)
             if error:
@@ -148,7 +175,9 @@ class LMSLibrary():
             return None
             
     def get_album_songs(self, id):
-        """return all songs from specified album id"""
+        """
+        Return all songs from specified album id
+        """
         # rescan 	Returned with value 1 if the server is still scanning the database. The results may therefore be incomplete. Not returned if no scan is in progress.
         #    count 	Number of results returned by the query, that is, total number of elements to return for this song.
         #    id 	Track ID.
@@ -204,7 +233,9 @@ class LMSLibrary():
             return None
             
     def get_artists(self):
-        """return all artists"""
+        """
+        Return all artists
+        """
         #   id 	Artist ID. Item delimiter.
         #   artist 	Artist name.
         #s 	  textkey 	The artist's "textkey" is the first letter of the sorting key. 
@@ -215,7 +246,9 @@ class LMSLibrary():
             return items
             
     def get_artist(self, id):
-        """return artist infos"""
+        """
+        Return artist infos
+        """
         if id!=None:
             count, items, error = self.server.request_with_results('artists 0 1 artist_id:%d' % id)
             if error:
@@ -226,7 +259,9 @@ class LMSLibrary():
             return None
             
     def get_artist_albums(self, id):
-        """return albums from specified artist id"""
+        """
+        Return albums from specified artist id
+        """
         if id!=None:
             count, items, error = self.server.request_with_results('albums 0 %d artist_id:%d tags:ljyS' % (self.__albums_count, id))
             if error:
@@ -237,7 +272,9 @@ class LMSLibrary():
             return None
             
     def get_genres(self):
-        """return all genres"""
+        """
+        Return all genres
+        """
         count, items, error = self.server.request_with_results('genres 0 %d' % self.__genres_count)
         if error:
             return None
@@ -245,7 +282,9 @@ class LMSLibrary():
             return items
             
     def get_genre(self, id):
-        """return genre infos"""
+        """
+        Return genre infos
+        """
         if id!=None:
             count, items, error = self.server.request_with_results('genre 0 1 genre_id:%d' % id)
             if error:
@@ -256,7 +295,9 @@ class LMSLibrary():
             return None
             
     def get_genre_albums(self, id):
-        """return albums from specified genre id"""
+        """
+        Return albums from specified genre id
+        """
         if id!=None:
             count, items, error = self.server.request_with_results('albums 0 %d genre_id:%d tags:ljyS' % (self.__albums_count, id))
             if error:
@@ -267,7 +308,9 @@ class LMSLibrary():
             return None
             
     def get_years(self):
-        """return all years"""
+        """
+        Return all years
+        """
         count, items, error = self.server.request_with_results('years 0 %d' % self.__years_count)
         if error:
             return None
@@ -275,7 +318,9 @@ class LMSLibrary():
             return items
             
     def get_year_albums(self, id):
-        """return albums from specified year id"""
+        """
+        Return albums from specified year id
+        """
         if id!=None:
             count, items, error = self.server.request_with_results('albums 0 %d year:%d tags:ljyS' % (self.__albums_count, id))
             if error:
@@ -286,9 +331,11 @@ class LMSLibrary():
             return None
             
     def get_song_infos(self, id):
-        """return full song infos"""
+        """
+        Return full song infos
+        """
         if id!=None:
-            count, items, error = self.server.request_with_results('songinfo 0 50 track_id:%d tags:adefgIJlnortTuvyY' % id)
+            count, items, error = self.server.request_with_results('songinfo 0 50 track_id:%d tags:adefgIJKlNortTuvxyY' % id)
             if not error and count==1:
                 return items[0]
             else:
@@ -297,9 +344,11 @@ class LMSLibrary():
             return None
             
     def get_song_infos_by_url(self, url):
-        """return full song infos"""
+        """
+        Return full song infos
+        """
         if id!=None:
-            count, items, error = self.server.request_with_results('songinfo 0 50 url:%s tags:adefgIJlnortTuvyY' % url)
+            count, items, error = self.server.request_with_results('songinfo 0 50 url:%s tags:adefgIJKlNortTuvxyY' % url)
             self.logger.debug('count=%d' % count)
             self.logger.debug('items=%s' % str(items))
             self.logger.debug('error=%s' % str(error))
@@ -309,10 +358,58 @@ class LMSLibrary():
                 return None
         else:
             return None
-        
-            
-    def get_cover_path(self, album_id, artwork_track_id):
-        """return cover"""
+
+    def get_remote_cover(self, artwork_url):
+        """
+        Just download cover of remote service and return data
+        @param artwork_url: url found in player.get_current_status. Only available for online services (deezer, spotify, pandora...)
+        """
+        try:
+            #generate url
+            url = 'http://%s:%d/%s' % (self.server_ip, self.server_html_port, artwork_url)
+            self.logger.debug('Remote cover url: %s' % url)
+
+            #download and return file content
+            b = urllib.urlopen(url)
+            return b.read()
+        except:
+            self.logger.exception('Unable to get remote cover:')
+            return None
+
+    def get_cover(self, album_id, artwork_track_id, filename, size=(100,100)):
+        """
+        Get cover and return cover data or None if error
+        @param filename: cover filename used to get file extension
+        """
+        if album_id and artwork_track_id:
+            #get extension
+            (_, ext) = os.path.splitext(filename)
+            if not ext or len(ext)==0:
+                ext = '.png'
+
+            #generate url
+            url = 'http://%s:%d/music/%s/cover_%dx%d%s' % (self.server_ip, self.server_html_port, artwork_track_id, size[0], size[1], ext)
+            self.logger.debug('Cover url: "%s"' % url)
+
+            #download and return file content
+            try:
+                b = urllib.urlopen(url)
+                return b.read()
+            except:
+                self.logger.exception('Unable to get cover:')
+                return None
+        else:
+            #missing parameters
+            self.logger.error('Unable to get cover, missing parameters!')
+            return None
+
+    def get_cover_path(self, album_id, artwork_track_id, local_path=None, filename=None, size=(100,100)):
+        """
+        Return cover from cache or try to download it from server (if local_path specified)
+        @param local_path: path to download file. Mandatory if covers aren't cached.
+        @param filename: output filename. Default "cover_<width>x<height>.png"
+        @param size: size of cover. Useless if covers are cached
+        """
         cover_path = None
         
         if album_id and artwork_track_id:
@@ -320,9 +417,31 @@ class LMSLibrary():
                 cover_path = os.path.join(self.__cover_path, '%s_%s.png' % (album_id, artwork_track_id))
                 self.logger.debug('Cover path:%s' % cover_path)
                 if not os.path.exists(cover_path):
-                    #cover doesn't exists
-                    self.logger.debug('Cover doesn\'t exist!')
-                    cover_path = None
+                    #no cover cached
+                    if local_path:
+                        #path specified, try to download it directly from server
+
+                        #build output filepath
+                        cover_path = None
+                        if filename:
+                            cover_path = os.path.join(local_path, filename)
+                        else:
+                            cover_path = os.path.join(local_path, '%s_%s.png' % (album_id, artwork_track_id))
+
+                        #download and save file locally
+                        data = self.get_cover(album_id, artwork_track_id, filename, size)
+                        if data:
+                            f = open(cover_path, 'wb')
+                            f.write(data)
+                            f.close()
+                            self.logger.debug('Cover downloaded to %s' % cover_path)
+                        else:
+                            self.logger.error('Unable to get cover data')
+                            cover_path = None
+                    else:
+                        #cover doesn't exists
+                        self.logger.error('Cover for album id %d and track id %d is not cached!')
+                        cover_path = None
             else:
                 #cover cache disabled
                 pass
@@ -330,12 +449,16 @@ class LMSLibrary():
         return cover_path
         
     def search(self, term):
-        """search something on database"""
+        """
+        Search something on database
+        """
         #TODO
         pass
         
-    def check_update(self):
-        """check if library needs update, return True if database needs update followed by number of albums, artists, and genres"""
+    def check_update(self, update_covers_cache=False):
+        """
+        Check if library needs update, return True if database needs update followed by number of albums, artists, and genres
+        """
         #get stats
         lms_genres_count = int(self.server.request('info total genres ?'))
         self.__genres_count = lms_genres_count
@@ -377,23 +500,28 @@ class LMSLibrary():
             self.logger.debug('%d==%d %d==%d %d==%d' % (lms_genres_count, local_genres_count, lms_artists_count, local_artists_count, lms_albums_count, local_albums_count))
             if lms_genres_count!=local_genres_count or lms_artists_count!=local_artists_count or lms_albums_count!=local_albums_count:
                 #need update
-                self.logger.debug('Need update')
-                self.__cache_covers(lms_albums_count)
+                if update_covers_cache:
+                    self.logger.debug('Need covers cache update')
+                    self.__cache_covers(lms_albums_count)
                     
     def __cache_covers(self, albums_count):
-        """cache covers for thumbnails"""
+        """
+        Cache covers for thumbnails
+        """
         count, albums, error = self.server.request_with_results('albums 0 %d tags:j' % albums_count)
         if not error:
             if self.__cover_path!=None:
-                self.logger.debug('Updating...')
-                self.cache_covers = CacheCovers(self.server_ip, self.server_port, self.__cover_path, albums)
+                self.logger.debug('Updating cache...')
+                self.cache_covers = CacheCovers(self.server_ip, self.server_html_port, self.__cover_path, albums)
                 self.cache_covers.start()
         else:
             #error
             self.logger.error('Unable to get albums list')
         
 
-"""TESTS"""
+"""
+TESTS
+"""
 if __name__=="__main__":
     import gobject; gobject.threads_init()
     logger = logging.getLogger()
@@ -404,7 +532,7 @@ if __name__=="__main__":
     logger.addHandler(console_sh)
     
     try:
-        lib = LMSLibrary('192.168.1.53', 9090)
+        lib = LMSLibrary('192.168.1.53', 9090, 9000)
         infos = lib.get_song_infos_by_url('file:///media/raid/mp3/J/Joseph%20Arthur%20-%202013%20-%20Ballad%20Of%20Boogie%20Christ/03%20-%20The%20Ballad%20Of%20Boogie%20Christ.mp3')
         logger.info(infos)
         #lib.check_update()

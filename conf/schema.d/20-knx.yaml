@@ -22,25 +22,40 @@ devicetypes:
           name: level status
         setlevel:
           name: set level
+        setcolor:
+          name: set level
+        colorstatus:
+          name: color status
         stop:
           name: stop
         temperature:
-          name: temperature
+          name: temperature (KNX float)
         brightness:
-          name: brightness
+          name: brightness (KNX float)
         energy:
-          name: energy
+          name: energy level in kWh (KNX float)
+        counter:
+          name: counts in Wh  (long int KNX datatype)
+        flow:
+          name: water/gas flow in l/h (KNX float)
         airquality:
           name: air quality ppm
         humidity:
-          name: humidity percent
+          name: humidity percent (KNX float)
+        windspeed:
+          name: windspeed in m/s (KNX float)
       childdevices:
         switch: [onoff, onoffstatus]
         dimmer: [onoff, onoffstatus, setlevel, levelstatus]
+        dimmerrgb: [onoff, onoffstatus, setlevel, levelstatus, setcolor, colorstatus]
         drapes: [onoff, onoffstatus, setlevel, levelstatus, stop]
         binarysensor: [binary]
         brightnesssensor: [brightness]
         temperaturesensor: [temperature]
         powermeter: [energy]
+        energycounter: [counter]
+        energymeter: [energy]
+        flowmeter: [flow]
         co2sensor: [airquality]
         humiditysensor: [humidity]
+        windsensor: [windspeed]

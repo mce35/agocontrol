@@ -5,9 +5,7 @@
 #include <sstream>
 #include <fstream>
 
-#ifndef __FreeBSD__
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -18,10 +16,8 @@
 #include <qpid/messaging/Session.h>
 #include <qpid/messaging/Address.h>
 
-#include <jsoncpp/json/value.h>
+#include <json/value.h>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
 
@@ -90,7 +86,7 @@ namespace agocontrol {
         bool filterCommands;
         boost::function< qpid::types::Variant::Map (qpid::types::Variant::Map) > commandHandler;
         boost::function< void (std::string, qpid::types::Variant::Map) > eventHandler;
-        bool emitDeviceAnnounce(const char *internalId, const char *deviceType);
+        bool emitDeviceAnnounce(const char *internalId, const char *deviceType, const char*initialName);
         bool emitDeviceDiscover(const char *internalId, const char *deviceType);
         bool emitDeviceRemove(const char *internalId);
     public:
@@ -98,7 +94,7 @@ namespace agocontrol {
         ~AgoConnection();
         void run();
         void shutdown();
-        bool addDevice(const char *internalId, const char *deviceType);
+        bool addDevice(const char *internalId, const char *deviceType, const char*initialName = NULL);
         bool addDevice(const char *internalId, const char *deviceType, bool passuuid);
         bool removeDevice(const char *internalId);
         bool suspendDevice(const char* internalId);

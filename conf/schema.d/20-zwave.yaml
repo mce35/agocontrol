@@ -1,17 +1,9 @@
 commands:
-  addnode:
-    name: add a node
-  removenode:
-    name: remove a node
-  addcontroller:
-    name: add a controller
-  removecontroller:
-    name: remove a controller
   addassociation:
     name: add association
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       group:
         name: group
@@ -19,25 +11,46 @@ commands:
       target:
         name: target
         type: integer
+  addnode:
+    name: set controller in pairing mode
+  cancel:
+    name: cancel current operation
+  downloadconfig:
+    name: receive network
+  getassociations:
+    name: return associations for specified node
+    parameters:
+      node:
+        name: node id
+        type: integer
+      group:
+        name: group
+        type: integer
+  getnodes:
+    name: return all network nodes
+  getport:
+    name: get ZWave controller port
+  getstatistics:
+    name: return Zwave statistics
   healnetwork:
-    name: heal the zwave network
+    name: heal Zwave network
   healnode:
-    name: heal a zwave node
+    name: heal a Zwave node
     paramters:
       node:
-        name: node
+        name: node id
         type: integer
   refreshnode:
-    name: refresh network info about a zwave node
+    name: refresh network info about a Zwave node
     paramters:
       node:
-        name: node
+        name: node id
         type: integer
   removeassociation:
     name: remove association
     parameters:
       node:
-        name: node
+        name: node id
         type: integer
       group:
         name: group
@@ -45,13 +58,23 @@ commands:
       target:
         name: target
         type: integer
-  setconfigparam:
-    name: configure parameter
+  removenode:
+    name: set controller in unpairing mode or remove a node
     parameters:
       node:
         name: node
         type: integer
-      index:
+  reset:
+    name: reset network info
+  saveconfig:
+    name: save network config
+  setconfigparam:
+    name: configure node parameter
+    parameters:
+      node:
+        name: node id
+        type: integer
+      param:
         name: parameter number
         type: integer
       value:
@@ -60,19 +83,39 @@ commands:
       size:
         name: size of value
         type: integer
-  downloadconfig:
-    name: receive network
-  cancel:
-    name: cancel operation
-  saveconfig:
-    name: save network config
-  reset:
-    name: reset network info
+  setport:
+    name: set ZWave controller port
     parameters:
-      name: confirm
-      type: boolean
+      port:
+        name: port
+        type: string
+  testnetwork:
+    name: launch command to test ZWave network 
+    parameters:
+      count:
+        name: number of test message to send
+        type: integer
+  testnode:
+    name: launch command to test specified node
+    parameters:
+      node:
+        name: node id
+        type: integer
+      count:
+        name: number of test messages to send
+        type: integer
 devicetypes:
   zwavecontroller:
     name: z-wave interface
     description: z-wave interface from agozwave
-    commands: [allon, alloff, addnode, removenode, addcontroller, removecontroller, addassociation, removeassociation, setconfigparam, downloadconfig, cancel, saveconfig, reset, healnode, healnetwork]
+    commands: [testnetwork, testnode, healnetwork, healnode, refreshnode, allon, alloff, cancel, reset, getassociations, addassociation, removeassociation, downloadconfig, saveconfig, getnodes, getport, setport, getstatistics, setconfigparam, removenode, addnode]
+events:
+  event.zwave.controllerstate:
+    description: controller state changed
+    parameters: [statecode, state, description]
+  event.zwave.associationchanged:
+    description: node association changed
+    parameters: [description, state, nodeid, homeid]
+  event.zwave.networkchanged:
+    description: Zwave network changed
+    parameters: [description, state, nodeid, homeid]

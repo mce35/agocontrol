@@ -1,48 +1,22 @@
-#/bin/bash
+#!/bin/bash
 
-for i in `find -maxdepth 1 -name \*in.html`;
-    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
-done
+# set up symlinks .in.html -> .xml.in
+find -name \*.in.html -execdir bash \-c "file=\"{}\";ln -s \"{}\" \"\${file%.in.html}.xml.in\"" \;
 
-cd templates
-for i in `find . -name \*in.html`;
-    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
-done
+# dynamically create POTFILES.in
+find -name \*.xml.in -printf "%P\n" > po/POTFILES.in
 
-cd ..
-cd applications
-for i in `find . -name \*in.html`;
-    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
-done
-
-cd ..
-cd protocols
-for i in `find . -name \*in.html`;
-    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
-done
-
-cd ..
-cd configuration
-for i in `find . -name \*in.html`;
-    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
-done
-
-cd ..
-cd help
-for i in `find . -name \*in.html`;
-    do ln -s `basename "$i"` "${i%.*.*}.xml.in";
-done
-
-cd ..
+# update translation files
 cd po
-intltool-update -p -x -g agocontrol
-for i in *.po;
-    do msgmerge -U "$i" agocontrol.pot;
+intltool-update --pot --verbose --gettext-package=agocontrol
+for i in *.po
+do
+    echo -n "Updating $i "
+    msgmerge --update "$i" agocontrol.pot;
 done
-
 cd ..
-for i in `find . -name \*xml.in`;
-    do rm "$i";
-done
 
+# remove temporary files
+find -name \*.xml.in -delete
+rm po/POTFILES.in
 

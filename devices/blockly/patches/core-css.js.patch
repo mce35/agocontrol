@@ -1,0 +1,22 @@
+diff --git a/core/css.js b/core/css.js
+index f1cafb0..3d1e029 100644
+--- a/core/css.js
++++ b/core/css.js
+@@ -140,7 +140,7 @@ Blockly.Css.CONTENT = [
+   '.blocklyWidgetDiv {',
+     'display: none;',
+     'position: absolute;',
+-    'z-index: 999;',
++    'z-index: 1099;',
+   '}',
+ 
+   '.blocklyTooltipDiv {',
+@@ -154,7 +154,7 @@ Blockly.Css.CONTENT = [
+     'opacity: 0.9;',
+     'padding: 2px;',
+     'position: absolute;',
+-    'z-index: 1000;',
++    'z-index: 1100;',
+   '}',
+ 
+   '.blocklyResizeSE {',

@@ -1,7 +1,7 @@
 /**
  * Ipx plugin
  */
-function ipxConfig(devices, agocontrol)
+function ipxConfig(agocontrol)
 {
     //members
     var self = this;
@@ -16,6 +16,7 @@ function ipxConfig(devices, agocontrol)
     self.selectedAnalogPin1 = ko.observable();
     self.selectedCounterPin1 = ko.observable();
     self.selectedDigitalPin1 = ko.observable();
+    self.selectedDigitalType = ko.observable();
     self.selectedBoard = ko.observable();
     self.selectedBoardUuid = ko.computed(function() {
         if( self.selectedBoard() )
@@ -39,6 +40,7 @@ function ipxConfig(devices, agocontrol)
     self.outputDevices = ko.observableArray([]);
     self.digitalDevices = ko.observableArray([]);
     self.binaryDevices = ko.observableArray([]);
+    self.pushbuttonDevices = ko.observableArray([]);
     self.analogDevices = ko.observableArray([]);
     self.counterDevices = ko.observableArray([]);
     self.selectedDeviceToForce = ko.observable();
@@ -51,28 +53,167 @@ function ipxConfig(devices, agocontrol)
     self.links = ko.observableArray([]);
 
     //ipx controller uuid and boards
-    if( devices!==undefined )
+    if( self.agocontrol.devices()!==undefined )
     {
-        for( var i=0; i<devices.length; i++ )
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
-            if( devices[i].devicetype=='ipx800controller' )
+            if( self.agocontrol.devices()[i].devicetype=='ipx800controller' )
             {
-                self.controllerUuid = devices[i].uuid;
+                self.controllerUuid = self.agocontrol.devices()[i].uuid;
+                break;
             }
         }
     }
-    
+
+    //edit row
+    self.makeEditable = function(item, td, tr)
+    {
+        if( $(td).hasClass('change_name') )
+        {
+            $(td).editable(function(value, settings) {
+                var content = {};
+                content.device = item.uuid;
+                content.uuid = self.agocontrol.agoController;
+                content.command = "setdevicename";
+                content.name = value;
+                self.agocontrol.sendCommand(content)
+                    .catch(function(err) {
+                        notif.error('Unable to rename device');
+                    });
+                return value;
+            },
+            {
+                data : function(value, settings) { return value; },
+                onblur : "cancel"
+            }).click();
+        }
+            
+        if( $(td).hasClass('change_room') )
+        {
+            var d = self.agocontrol.findDevice(item.uuid);
+            if( d && d.name() && d.name().length>0 )
+            {
+                $(td).editable(function(value, settings) {
+                    var content = {};
+                    content.device = item.uuid;
+                    content.uuid = self.agocontrol.agoController;
+                    content.command = "setdeviceroom";
+                    value = value == "unset" ? "" : value;
+                    content.room = value;
+                    self.agocontrol.sendCommand(content)
+                        .then(function(res) {
+                            //update inventory
+                            var d = self.agocontrol.findDevice(item.uuid);
+                            if( d && value==="" )
+                            {
+                                d.room = d.roomUID = "";
+                                self.agocontrol.inventory.devices[item.uuid].room = "";
+                                self.agocontrol.inventory.devices[item.uuid].roomUID = "";
+                            }
+                            else if( d )
+                            {
+                                var room = self.agocontrol.findRoom(value);
+                                if(room)
+                                {
+                                    d.room = room.name;
+                                    self.agocontrol.inventory.devices[item.uuid].room = room.name;
+                                }
+                                d.roomUID = value;
+                                self.agocontrol.inventory.devices[item.uuid].roomUID = value;
+                            }
+                        })
+                        .catch(function(err) {
+                            notif.error('Error updating room');
+                        });
+
+                    if( value==="" )
+                    {
+                        return "unset";
+                    }
+                    else
+                    {
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                        {
+                            if( self.agocontrol.rooms()[i].uuid==value )
+                            {
+                                return self.agocontrol.rooms()[i].name;
+                            }
+                        }
+                    }
+                },
+                {
+                    data : function(value, settings)
+                    {
+                        var list = {};
+                        list["unset"] = "--";
+                        for( var i=0; i<self.agocontrol.rooms().length; i++ )
+                        {
+                            list[self.agocontrol.rooms()[i].uuid] = self.agocontrol.rooms()[i].name;
+                        }
+                        return JSON.stringify(list);
+                    },
+                    type : "select",
+                    onblur : "submit"
+                }).click();
+            }
+            else
+            {
+                notif.warning('Please specify device name first');
+            }
+        }
+    };
+
+    self.grid = new ko.agoGrid.viewModel({
+        data: self.allDevices,
+        pageSize: 25,
+        columns: [
+            {headerText:'Name', rowText:'name'},
+            {headerText:'Room', rowText:'room'},
+            {headerText:'Type', rowText:'type'},
+            {headerText:'Connections', rowText:'inputs'},
+            {headerText:'Uuid', rowText:'uuid'},
+            {headerText:'Actions', rowText:''}
+        ],
+        rowCallback: self.makeEditable,
+        rowTemplate: 'rowTemplate'
+    });
+
+    //get device from inventory according to its internalid
+    self.getDeviceInfos = function(obj) {
+        var infos = {};
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
+        {
+            if( self.agocontrol.devices()[i].internalid==obj.internalid )
+            {
+                infos['room'] = self.agocontrol.devices()[i].room;
+                infos['uuid'] = self.agocontrol.devices()[i].uuid;
+                if( self.agocontrol.devices()[i].name() && self.agocontrol.devices()[i].name().length>0 )
+                {
+                    infos['name'] = self.agocontrol.devices()[i].name();
+                }
+                else
+                {
+                    //always return a name
+                    infos['name'] = obj.internalid;
+                }
+                infos['internalid'] = obj.internalid;
+                break;
+            }
+        }
+        return infos;
+    };
+ 
     //get device name. Always returns something
     self.getDeviceName = function(obj) {
         var name = '';
         var found = false;
-        for( var i=0; i<devices.length; i++ )
+        for( var i=0; i<self.agocontrol.devices().length; i++ )
         {
-            if( devices[i].internalid==obj.internalid )
+            if( self.agocontrol.devices()[i].internalid==obj.internalid )
             {
-                if( devices[i].name.length!=0 )
+                if( self.agocontrol.devices()[i].name().length!=0 )
                 {
-                    name = devices[i].name;
+                    name = self.agocontrol.devices()[i].name();
                 }
                 else
                 {
@@ -89,7 +230,7 @@ function ipxConfig(devices, agocontrol)
             name = obj.internalid;
         }
 
-        name += '('+obj.type;
+        name += ' ('+obj.type;
         if( obj.inputs )
             name += '['+obj.inputs+']';
         name += ')';
@@ -97,10 +238,113 @@ function ipxConfig(devices, agocontrol)
     };
 
     //get link name. Always returns something
-    self.getLinkName = function(obj) {
+    self.getLinkName = function(obj)
+    {
         var outputName = self.getDeviceName(obj.output);
         var binaryName = self.getDeviceName(obj.binary);
         return binaryName+' => '+outputName;
+    };
+
+    //update devices
+    self.updateDevices = function(devices, links)
+    {
+        //clear previous content
+        self.outputDevices.removeAll();
+        self.digitalDevices.removeAll();
+        self.binaryDevices.removeAll();
+        self.pushbuttonDevices.removeAll();
+        self.analogDevices.removeAll();
+        self.counterDevices.removeAll();
+        self.allDevices.removeAll();
+        self.links.removeAll();
+    
+        //append outputs
+        var i=0;
+        for( i=0; i<devices.outputs.length; i++ )
+        {
+            var infos = self.getDeviceInfos(devices.outputs[i]);
+            if( devices.outputs[i].type=='odrapes' )
+                infos['type'] = 'Output drapes';
+            else if( devices.outputs[i].type=='oswitch' )
+                infos['type'] = 'Output switch';
+            else
+                infos['type'] = devices.outputs[i].type;
+            infos['inputs'] = 'O'+devices.outputs[i].inputs;
+            var dev = infos;
+            self.outputDevices.push(dev);
+            self.allDevices.push(dev);
+        }
+
+        //append digitals
+        for( i=0; i<devices.digitals.length; i++ )
+        {
+            var infos = self.getDeviceInfos(devices.digitals[i]);
+            if( devices.digitals[i].type=='dbinary' )
+                infos['type'] = 'Digital binary';
+            else if( devices.digitals[i].type=='dpushbutton' )
+                infos['type'] = 'Digital pushbutton';
+            else
+                infos['type'] = devices.digitals[i].type;
+            infos['inputs'] = 'D'+devices.digitals[i].inputs;
+            var dev = infos;
+            self.digitalDevices.push(dev);
+            if( devices.digitals[i].type=='dbinary' )
+            {
+                self.binaryDevices.push(dev);
+            }
+            else if( devices.digitals[i].type=='dpushbutton' )
+            {
+                self.pushbuttonDevices.push(dev);
+            }
+            self.allDevices.push(dev);
+        }
+
+        //append analogs
+        for( i=0; i<devices.analogs.length; i++ )
+        {
+            var infos = self.getDeviceInfos(devices.analogs[i]);
+            if( devices.analogs[i].type=='atemperature' )
+                infos['type'] = 'Analog temperature';
+            else if( devices.analogs[i].type=='alight' )
+                infos['type'] = 'Analog light';
+            else if( devices.analogs[i].type=='avolt' )
+                infos['type'] = 'Analog volt';
+            else if( devices.analogs[i].type=='ahumidity' )
+                infos['type'] = 'Analog humidity';
+            else if( devices.analogs[i].type=='abinary' )
+                infos['type'] = 'Analog binary';
+            else
+                infos['type'] = devices.analogs[i].type;
+            infos['inputs'] = 'A'+devices.analogs[i].inputs;
+            var dev = infos;
+            self.analogDevices.push(dev);
+            if( devices.analogs[i].type=='abinary' )
+            {
+                self.binaryDevices.push(dev);
+            }
+            self.allDevices.push(dev);
+        }
+
+        //append counters
+        for( i=0; i<devices.counters.length; i++ )
+        {
+            var infos = self.getDeviceInfos(devices.counters[i]);
+            infos['type'] = 'Counter';
+            infos['inputs'] = 'C'+devices.counters[i].inputs;
+            var dev = infos;
+            self.counterDevices.push(dev);
+            self.allDevices.push(dev);
+        }
+
+        //append links
+        if( links )
+        {
+            for( i=0; i<links.length; i++ )
+            {
+                var link = {'name':self.getLinkName(links[i]), 'output':links[i].output, 'binary':links[i].binary};
+                self.links.push(link);
+            }
+        }
     };
 
     //get board status
@@ -116,63 +360,15 @@ function ipxConfig(devices, agocontrol)
                 {
                     if( res.result.error===0 )
                     {
-                        //console.log('STATUS res:');
-                        //console.log(res);
+                        //console.log('STATUS res:', res);
                         $('#currentoutputs').html(res.result.status.outputs);
                         $('#currentanalogs').html(res.result.status.analogs);
                         $('#currentcounters').html(res.result.status.counters);
                         $('#currentdigitals').html(res.result.status.digitals);
 
-                        //console.log('BOARD DEVICES:');
-                        //console.log(res.result.devices);
-                        //clear previous content
-                        self.outputDevices.removeAll();
-                        self.digitalDevices.removeAll();
-                        self.binaryDevices.removeAll();
-                        self.analogDevices.removeAll();
-                        self.counterDevices.removeAll();
-                        self.allDevices.removeAll();
-                        self.links.removeAll();
-
-                        //append new one
-                        var i=0;
-                        for( i=0; i<res.result.devices.outputs.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.outputs[i].internalid, 'name':self.getDeviceName(res.result.devices.outputs[i])};
-                            self.outputDevices.push(dev);
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.devices.digitals.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.digitals[i].internalid, 'name':self.getDeviceName(res.result.devices.digitals[i])};
-                            self.digitalDevices.push(dev);
-                            if( res.result.devices.digitals[i].type=='dbinary' )
-                            {
-                                self.binaryDevices.push(dev);
-                            }
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.devices.analogs.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.analogs[i].internalid, 'name':self.getDeviceName(res.result.devices.analogs[i])};
-                            self.analogDevices.push(dev);
-                            if( res.result.devices.analogs[i].type=='abinary' )
-                            {
-                                self.binaryDevices.push(dev);
-                            }
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.devices.counters.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.counters[i].internalid, 'name':self.getDeviceName(res.result.devices.counters[i])};
-                            self.counterDevices.push(dev);
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.links.length; i++ )
-                        {
-                            var link = {'name':self.getLinkName(res.result.links[i]), 'output':res.result.links[i].output, 'binary':res.result.links[i].binary};
-                            self.links.push(link);
-                        }
+                        //console.log('BOARD DEVICES:', res.result.devices);
+                        self.updateDevices(res.result.devices, res.result.links);
+                        //console.log("ALLDEVICES", self.allDevices());
                     }
                     else
                     {
@@ -202,11 +398,11 @@ function ipxConfig(devices, agocontrol)
     {
         if( internalid )
         {
-            for( var i=0; i<devices.length; i++ )
+            for( var i=0; i<self.agocontrol.devices().length; i++ )
             {
-                if( devices[i].devicetype=='ipx800v3board' && devices[i].internalid==internalid)
+                if( self.agocontrol.devices()[i].devicetype=='ipx800v3board' && self.agocontrol.devices()[i].internalid==internalid)
                 {
-                    return devices[i].uuid;
+                    return self.agocontrol.devices()[i].uuid;
                 }
             }
         }
@@ -261,8 +457,7 @@ function ipxConfig(devices, agocontrol)
                 {
                     self.boards.removeAll();
                     self.boards(res.result.boards);
-                    //console.log("BOARDS:");
-                    //console.log(res.result.boards);
+                    //console.log("BOARDS:", res.result.boards);
     
                     //select first board
                     if( self.boards().length>0 )
@@ -287,44 +482,12 @@ function ipxConfig(devices, agocontrol)
             self.agocontrol.sendCommand(content, function(res) {
                 if( res!==undefined && res.result!==undefined && res.result!=='no-reply')
                 {
-                    //console.log('BOARD DEVICES:');
-                    //console.log(res.result.devices);
+                    //console.log('BOARD DEVICES:', res.result.devices);
                     
                     if( res.result.error===0 )
                     {
-                        //clear previous content
-                        self.outputDevices.removeAll();
-                        self.digitalDevices.removeAll();
-                        self.analogDevices.removeAll();
-                        self.counterDevices.removeAll();
-                        self.allDevices.removeAll();
-
-                        //append new one
-                        var i=0;
-                        for( i=0; i<res.result.devices.outputs.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.outputs[i], 'name':self.getDeviceName(res.result.devices.outputs[i])};
-                            self.outputDevices.push(dev);
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.devices.digitals.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.digitals[i], 'name':self.getDeviceName(res.result.devices.digitals[i])};
-                            self.digitalDevices.push(dev);
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.devices.analogs.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.analogs[i], 'name':self.getDeviceName(res.result.devices.analogs[i])};
-                            self.analogDevices.push(dev);
-                            self.allDevices.push(dev);
-                        }
-                        for( i=0; i<res.result.devices.counters.length; i++ )
-                        {
-                            var dev = {'internalid':res.result.devices.counters[i], 'name':self.getDeviceName(res.result.devices.counters[i])};
-                            self.counterDevices.push(dev);
-                            self.allDevices.push(dev);
-                        }
+                        //update devices
+                        self.updateDevices(res.result.devices, null);
                     }
                     else
                     {
@@ -435,7 +598,7 @@ function ipxConfig(devices, agocontrol)
             var content = {};
             content.uuid = self.selectedBoardUuid;
             content.command = 'adddevice';
-            content.type = 'dbinary';
+            content.type = self.selectedDigitalType();
             content.pin1 = self.selectedDigitalPin1();
             self.addDevice(content, function() {
                 self.updateUi();
@@ -467,7 +630,8 @@ function ipxConfig(devices, agocontrol)
     };
 
     //delete link
-    self.deleteLink = function() {
+    self.deleteLink = function()
+    {
         if( self.selectedBoardUuid )
         {
             if( confirm('Really delete selected link?') )
@@ -676,7 +840,7 @@ function init_template(path, params, agocontrol)
         }
     };
 
-    var model = new ipxConfig(agocontrol.devices(), agocontrol);
+    var model = new ipxConfig(agocontrol);
     return model;
 }
 

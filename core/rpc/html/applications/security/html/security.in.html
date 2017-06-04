@@ -1,7 +1,7 @@
 <div>
 
     <!-- zone modal -->
-    <div id="zoneModal" class="modal fade">
+    <div id="zoneModal" class="modal fade" tabindex="-1" data-bind="event:{defaultAction: addZone}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -19,7 +19,7 @@
     </div>
 
     <!-- housemode modal -->
-    <div id="housemodeModal" class="modal fade">
+    <div id="housemodeModal" class="modal fade" tabindex="-1"  data-bind="event:{defaultAction: addHousemode}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -37,7 +37,7 @@
     </div>
 
     <!-- security pin panel -->
-    <div id="pinPanel" class="modal fade">
+    <div id="pinPanel" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
@@ -122,7 +122,7 @@
                 <li class="active"><_a href="#status" data-translateable="true" class="en-info-circled">Status</_a></li>
                 <li><_a href="#pin" data-translateable="true" class="en-lock">Pin configuration</_a></li>
                 <li><_a href="#housemodes" data-translateable="true" class="en-home">Housemodes/zones configuration</_a></li>
-                <li><_a href="#security" data-translateable="true" class="en-tools">Security configguration</_a></li>
+                <li><_a href="#security" data-translateable="true" class="en-tools">Security configuration</_a></li>
             </ul>
             <div class="tab-content">
 

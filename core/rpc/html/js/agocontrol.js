@@ -153,7 +153,7 @@ Agocontrol.prototype = {
 
         }, this);
 
-        
+
     },
 
     /**
@@ -170,14 +170,6 @@ Agocontrol.prototype = {
 
         //get device size
         self.deviceSize = getDeviceSize();
-
-        //handle dark/light style changes
-        self.darkStyle.subscribe(function(value) {
-            if( self.theme )
-            {
-                self.setSkin(self.theme);
-            }
-        });
 
         //get ui config (localstorage)
         //this is used to avoid skin refresh at startup
@@ -199,6 +191,14 @@ Agocontrol.prototype = {
             }
         }
 
+        //handle dark/light style changes
+        self.darkStyle.subscribe(function(value) {
+            if( self.theme )
+            {
+                self.setSkin(self.theme);
+            }
+        });
+
         var p0 = this.getUiConfig();
         var p1 = this.getInventory()
             .then(this.handleInventory.bind(this))
@@ -210,13 +210,13 @@ Agocontrol.prototype = {
 
         return Promise.all([p0, p1, p2]);
     },
-    
+
     /**
      * Send a command to an arbitrary Ago component.
      *
-     * (if oldstyleCallback is ommited and a numeric is passed as second parameter, 
+     * (if oldstyleCallback is ommited and a numeric is passed as second parameter,
      * we will use that as timeout)
-     * 
+     *
      * @param content Should be a dict with any parameters to broadcast to the qpid bus.
      * @param oldstyleCallback A deprecated callback; do not use for new code!
      * @param timeout How many seconds we want the RPC gateway to wait for response
@@ -254,7 +254,7 @@ Agocontrol.prototype = {
                     dataType : "json",
                     success: function(r, textStatus, jqXHR) {
                         // JSON-RPC call gave JSON-RPC response
-         
+
                         // Old-style callback users
                         if (oldstyleCallback)
                         {
@@ -431,7 +431,7 @@ Agocontrol.prototype = {
                     {
                         devs[uuid].room = "";
                     }
-                
+
                     var found = false;
                     for ( var i=0; i<self.devices().length; i++)
                     {
@@ -447,6 +447,7 @@ Agocontrol.prototype = {
                     {
                         //add new device
                         self.devices.push(new device(self, devs[uuid], uuid));
+                        self.inventory.devices[uuid] = devs[uuid];
                     }
                 }
             });
@@ -524,6 +525,35 @@ Agocontrol.prototype = {
         }
     },
 
+    /**
+     * Internal helper function to add new variables to the observableArray 'variables'.
+     * Note that this should not be used to create new variables in the system!
+     *
+     * @param name
+     * @param value
+     */
+    initVariable: function(name, value) {
+        var variable = {
+            variable: name,
+            value: ko.observable(value),
+            action: '' //dummy for datatables
+        };
+
+        // This translate the string value into a boolean, or explicit null if it is not a boolean.
+        // Idea: Add data types to variables instead?
+        variable.booleanValue = ko.pureComputed(function() {
+            var v = (variable.value() || '').toLowerCase();
+            if(v == 'true')
+                return true;
+            else if(v == 'false')
+                return false;
+            else
+                return null;
+        });
+
+        this.variables.push(variable);
+    },
+
     //handle inventory
     handleInventory: function(result)
     {
@@ -542,15 +572,9 @@ Agocontrol.prototype = {
         }
 
         //variables
-        for( name in inv.variables )
-        {
-            var variable = {
-                variable: name,
-                value: inv.variables[name],
-                action: '' //dummy for datatables
-            };
-            self.variables.push(variable);
-        }
+        Object.keys(inv.variables).forEach(function(name) {
+            self.initVariable(name, inv.variables[name]);
+        });
 
         //system
         self.system(inv.system);
@@ -598,7 +622,21 @@ Agocontrol.prototype = {
     // Handle dashboard-part of inventory
     handleDashboards : function(floorplans) {
         var dashboards = [];
-        dashboards.push({name:'all', ucName:ko.observable('All my devices'), action:'', editable:false, icon:'fa-th-large'});
+
+        // localstorage hack for favourite dashboard.. Backend only has uuid->name now..
+        var isHome = function(uuid) {
+           return localStorage && (localStorage['home_dashboard'] == uuid);
+        };
+
+        var noHomeSelected = !localStorage['home_dashboard'];
+
+        dashboards.push({
+            name:'all', uuid: 'all',
+            ucName:ko.observable('All my devices'),
+            action:'',
+            editable:false, icon:'fa-th-large',
+            isHome: ko.observable(noHomeSelected || isHome('all'))});
+
         for( uuid in floorplans )
         {
             var dashboard = floorplans[uuid];
@@ -606,6 +644,7 @@ Agocontrol.prototype = {
             dashboard.action = '';
             dashboard.ucName = ko.observable(dashboard.name);
             dashboard.editable = true;
+            dashboard.isHome = ko.observable(isHome(uuid));
             if( dashboard.icon===undefined )
             {
                 dashboard.icon = null;
@@ -762,15 +801,7 @@ Agocontrol.prototype = {
     },
 
     getDashboard:function(name){
-        var dashboards = this.dashboards();
-        for( var i=0; i < dashboards.length; i++ )
-        {
-            if(dashboards[i].name == name )
-            {
-                return dashboards[i];
-            }
-        }
-        return null;
+        return this.dashboards.findByKey('name', name);
     },
 
     //get event
@@ -806,11 +837,19 @@ Agocontrol.prototype = {
                     }
 
                     // request timeout (server side), continue polling
-                    self.handleEvent(false, data);
+                    try {
+                        self.handleEvent(false, data);
+                    }finally{
+                        self.getEvent();
+                    }
                 }
                 else
                 {
-                    self.handleEvent(true, data);
+                    try {
+                        self.handleEvent(true, data);
+                    }finally{
+                        self.getEvent();
+                    }
                 }
             },
             error: function(jqXHR, textStatus, errorThrown)
@@ -828,209 +867,203 @@ Agocontrol.prototype = {
     handleEvent: function(requestSucceed, response)
     {
         var self = this;
-        var done = false;
 
-        if( requestSucceed )
+        if(!requestSucceed )
+            return;
+
+        //send event to other handlers
+        for( var i=0; i<self.eventHandlers.length; i++ )
         {
-            //send event to other handlers
-            for( var i=0; i<self.eventHandlers.length; i++ )
-            {
-                self.eventHandlers[i](response.result);
-            }
-
-            //remove device from inventory
-            if( response.result.event=="event.device.remove" )
-            {
-                //remove thumb request if device is multigraph
-                for( var i=0; i<self.multigraphThumbs.length; i++ )
-                {
-                    if( self.multigraphThumbs[i].uuid===response.result.uuid )
-                    {
-                        self.multigraphThumbs[i].removed = true;
-                    }
-                }
-
-                //then remove device from inventory
-                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
-                {
-                    delete self.inventory.devices[response.result.uuid];
-                    self.devices.remove(function(item) {
-                        return item.uuid===response.result.uuid;
-                    });
-                }
-                else
-                {
-                    console.warn('Unable to delete device "'+response.result.uuid+'" because it wasn\'t found in inventory');
-                }
-
-                //nothing else to do
-                done = true;
-            }
-
-            //update device infos if necessary
-            if( !done && response.result.event=="event.device.announce" )
-            {
-                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
-                {
-                    //brand new device, refresh all inventory
-                    self.refreshDevices();
-                    /*self.getInventory()
-                        .then(function(result) {
-                            var tmpDevices = self.cleanInventory(result.data.devices);
-                            if( tmpDevices && tmpDevices[response.result.uuid] )
-                            {
-                                self.inventory.devices[response.result.uuid] = tmpDevices[response.result.uuid];
-                            }
-                            else
-                            {
-                                console.warn('Unable to update device because no infos about it in inventory');
-                            }
-                        });*/
-                }
-
-                //nothing else to do
-                done = true;
-            }
-
-            //update device name
-            if( !done && response.result.event=="event.system.devicenamechanged" )
-            {
-                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
-                {
-                    self.inventory.devices[response.result.uuid].name = response.result.name;
-                    var dev = self.findDevice(response.result.uuid);
-                    if( dev!==null )
-                    {
-                        dev.name(response.result.name);
-                    }
-                }
-
-                //nothing else to do
-                done = true;
-            }
-
-            //handle stale event
-            if( !done && response.result.event=="event.device.stale" )
-            {
-                if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
-                {
-                    self.inventory.devices[response.result.uuid].stale = response.result.stale;
-                    var dev = self.findDevice(response.result.uuid);
-                    if( dev!==null )
-                    {
-                        dev.stale(response.result.stale);
-                    }
-                }
-
-                //nothing else to do
-                done = true;
-            }
-
-            //update dashboard name
-            if( !done && response.result.event=="event.system.floorplannamechanged" )
-            {
-                for( var i=0; i<self.dashboards().length; i++ )
-                {
-                    if( self.dashboards()[i].uuid && self.dashboards()[i].uuid===response.result.uuid )
-                    {
-                        self.dashboards()[i].name = response.result.name;
-                        self.dashboards()[i].ucName(response.result.name);
-                        //stop statement
-                        break;
-                    }
-                }
-
-                //nothing else to do
-                done = true;
-            }
-
-            //update device data (values)
-            if( !done )
-            {
-                for( var i=0; i<self.devices().length; i++ )
-                {
-                    if( self.devices()[i].uuid==response.result.uuid )
-                    {
-                        // update device last seen datetime
-                        self.devices()[i].timeStamp(datetimeToString(new Date()));
-
-                        //update device level
-                        if( response.result.level !== undefined)
-                        {
-                            // update custom device member
-                            if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1)
-                            {
-                                // event that update device member
-                                var member = response.result.event.replace('event.device.', '').replace('changed', '');
-                                if (self.devices()[i][member] !== undefined)
-                                {
-                                    self.devices()[i][member](response.result.level);
-                                }
-                            }
-                            // Binary sensor has its own event
-                            else if (response.result.event == "event.security.sensortriggered")
-                            {
-                                if (self.devices()[i]['state'] !== undefined)
-                                {
-                                    self.devices()[i]['state'](response.result.level);
-                                }
-                            }
-                    }   
-
-                        //update device stale
-                        if( response.result.event=="event.device.stale" && response.result.stale!==undefined )
-                        {
-                            self.devices()[i]['stale'](response.result.stale);
-                        }
-
-                        //update quantity
-                        if (response.result.quantity)
-                        {
-                            var values = self.devices()[i].values();
-                            //We have no values so reload from inventory
-                            if (values[response.result.quantity] === undefined)
-                            {
-                                self.getInventory()
-                                    .then(function(result) {
-                                        var tmpInv = self.cleanInventory(result.data.devices);
-                                        var uuid = result.data.uuid;
-                                        if (tmpInv[uuid] !== undefined)
-                                        {
-                                            if (tmpInv[uuid].values)
-                                            {
-                                                self.devices()[i].values(tmpInv[uuid].values);
-                                            }
-                                        }
-                                    });
-                                break;
-                            }
-    
-                            if( response.result.level !== undefined )
-                            {
-                               if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
-                                {
-                                    //update forecast value for barometer sensor only if string specified
-                                    self.devices()[i].forecast(response.result.level);
-                                }
-                                //save new level
-                                values[response.result.quantity].level = response.result.level;
-                            }
-                            else if( response.result.latitude!==undefined && response.result.longitude!==undefined )
-                            {
-                                values[response.result.quantity].latitude = response.result.latitude;
-                                values[response.result.quantity].longitude = response.result.longitude;
-                            }
-    
-                            self.devices()[i].values(values);
-                        }
-    
-                        break;
-                    }
-                }
-            }
+            self.eventHandlers[i](response.result);
         }
 
-        self.getEvent();
+        //remove device from inventory
+        if( response.result.event=="event.device.remove" )
+        {
+            //remove thumb request if device is multigraph
+            for( var i=0; i<self.multigraphThumbs.length; i++ )
+            {
+                if( self.multigraphThumbs[i].uuid===response.result.uuid )
+                {
+                    self.multigraphThumbs[i].removed = true;
+                }
+            }
+
+            //then remove device from inventory
+            if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid] )
+            {
+                delete self.inventory.devices[response.result.uuid];
+                self.devices.remove(function(item) {
+                    return item.uuid===response.result.uuid;
+                });
+            }
+            else
+            {
+                console.warn('Unable to delete device "'+response.result.uuid+'" because it wasn\'t found in inventory');
+            }
+
+            return;
+        }
+
+        //update device infos if necessary
+        if(response.result.event=="event.device.announce" )
+        {
+            if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]===undefined )
+            {
+                //brand new device, refresh all inventory
+                self.refreshDevices();
+                /*self.getInventory()
+                    .then(function(result) {
+                        var tmpDevices = self.cleanInventory(result.data.devices);
+                        if( tmpDevices && tmpDevices[response.result.uuid] )
+                        {
+                            self.inventory.devices[response.result.uuid] = tmpDevices[response.result.uuid];
+                        }
+                        else
+                        {
+                            console.warn('Unable to update device because no infos about it in inventory');
+                        }
+                    });*/
+            }
+
+            return;
+        }
+
+        //update device name
+        if( response.result.event=="event.system.devicenamechanged" )
+        {
+            if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
+            {
+                self.inventory.devices[response.result.uuid].name = response.result.name;
+                var dev = self.findDevice(response.result.uuid);
+                if( dev!==null )
+                {
+                    dev.name(response.result.name);
+                }
+            }
+
+            return;
+        }
+
+        //handle stale event
+        if(response.result.event=="event.device.stale" )
+        {
+            if( self.inventory && self.inventory.devices && self.inventory.devices[response.result.uuid]!==undefined )
+            {
+                self.inventory.devices[response.result.uuid].stale = response.result.stale;
+                var dev = self.findDevice(response.result.uuid);
+                if( dev!==null )
+                {
+                    dev.stale(response.result.stale);
+                }
+            }
+
+            return;
+        }
+
+        //update dashboard name
+        if(response.result.event=="event.system.floorplannamechanged" )
+        {
+            for( var i=0; i<self.dashboards().length; i++ )
+            {
+                if( self.dashboards()[i].uuid && self.dashboards()[i].uuid===response.result.uuid )
+                {
+                    self.dashboards()[i].name = response.result.name;
+                    self.dashboards()[i].ucName(response.result.name);
+                    //stop statement
+                    break;
+                }
+            }
+
+            return;
+        }
+
+        var dev = self.findDevice(response.result.uuid);
+        if(dev) {
+            //update media infos
+            if(response.result.event=="event.device.mediainfos" )
+            {
+                if( dev.updateMediaInfos )
+                {
+                    //update device media infos
+                    dev.updateMediaInfos(response.result);
+                }
+            }
+
+            // update device last seen datetime
+            dev.timeStamp(datetimeToString(new Date()));
+
+            // update device level
+            if( response.result.level !== undefined)
+            {
+                // update custom device member
+                if (response.result.event.indexOf('event.device') != -1 && response.result.event.indexOf('changed') != -1)
+                {
+                    // event that update device member
+                    var member = response.result.event.replace('event.device.', '').replace('changed', '');
+                    if (dev[member] !== undefined)
+                    {
+                        dev[member](response.result.level);
+                    }
+                }
+                // Binary sensor has its own event
+                else if (response.result.event == "event.security.sensortriggered")
+                {
+                    if (dev['state'] !== undefined)
+                    {
+                        dev['state'](response.result.level);
+                    }
+                }
+            }
+
+            //update device stale
+            if( response.result.event=="event.device.stale" && response.result.stale!==undefined )
+            {
+                dev['stale'](response.result.stale);
+            }
+
+            //update quantity
+            if (response.result.quantity)
+            {
+                var values = dev.values();
+                //We have no values so reload from inventory
+                if (values[response.result.quantity] === undefined)
+                {
+                    self.getInventory()
+                        .then(function(result) {
+                            var tmpInv = self.cleanInventory(result.data.devices);
+                            var uuid = dev.uuid;
+                            if (tmpInv[uuid] !== undefined)
+                            {
+                                if (tmpInv[uuid].values)
+                                {
+                                    dev.values(tmpInv[uuid].values);
+                                }
+                            }
+                        });
+                    // Let getInventory fill up all values.
+                    return;
+                }
+
+                if( response.result.level !== undefined )
+                {
+                   if( response.result.quantity==='forecast' && typeof response.result.level=="string" )
+                    {
+                        //update forecast value for barometer sensor only if string specified
+                        dev.forecast(response.result.level);
+                    }
+                    //save new level
+                    values[response.result.quantity].level = response.result.level;
+                }
+                else if( response.result.latitude!==undefined && response.result.longitude!==undefined )
+                {
+                    values[response.result.quantity].latitude = response.result.latitude;
+                    values[response.result.quantity].longitude = response.result.longitude;
+                }
+
+                dev.values(values);
+            }
+        }
     },
 
     //add event handler
@@ -1048,14 +1081,17 @@ Agocontrol.prototype = {
     removeEventHandler: function(callback)
     {
         var self = this;
-        var index = self.eventHandlers.indexOf(callback);
-        if( callback && index!==-1 )
+        if( self.eventHandlers.length>0 )
         {
-            self.eventHandlers.splice(index, 1);
-        }
-        else
-        {
-            console.error('Unable to remove callback from eventHandlers list because callback was not found!');
+            var index = self.eventHandlers.indexOf(callback);
+            if( callback && index!==-1 )
+            {
+                self.eventHandlers.splice(index, 1);
+            }
+            else
+            {
+                console.error('Unable to remove callback from eventHandlers list because callback was not found!');
+            }
         }
     },
 
@@ -1199,7 +1235,7 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 ) 
+            if( !res || !res.result || res.result===0 )
             {
                 notif.error('Unable to save skin');
             }
@@ -1222,7 +1258,7 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 ) 
+            if( !res || !res.result || res.result===0 )
             {
                 notif.error('Unable to save dashboard size');
             }
@@ -1273,7 +1309,7 @@ Agocontrol.prototype = {
             method : "GET",
             async : true,
         }).done(function(res) {
-            if( !res || !res.result || res.result===0 ) 
+            if( !res || !res.result || res.result===0 )
             {
                 notif.error('Unable to save skin');
             }

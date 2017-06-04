@@ -1,14 +1,14 @@
 <div>
 
     <section class="content-notifs">
-        <_span data-translateable="true" id="nr">Agoalert is not responding</_span>
+        <_span data-translateable="true" id="nr">agoalert is not responding.</_span>
         <_span data-translateable="true" id="ie">Internal error</_span>
-        <_span data-translateable="true" id="rdpb">Unable to refresh PushBullet devices</_span>
-        <_span data-translateable="true" id="rdpbs">PushBullet devices retrieved successfully</_span>
-        <_span data-translateable="true" id="gu">generating url</_span>
-        <_span data-translateable="true" id="au">authorization url</_span>
-        <_span data-translateable="true" id="cok">Configuration saved successfully</_span>
-        <_span data-translateable="true" id="cko">Failed to save configuration</_span>
+        <_span data-translateable="true" id="rdpb">Unable to refresh PushBullet devices.</_span>
+        <_span data-translateable="true" id="rdpbs">PushBullet devices retrieved successfully.</_span>
+        <_span data-translateable="true" id="gu">generating URL</_span>
+        <_span data-translateable="true" id="au">authorization URL</_span>
+        <_span data-translateable="true" id="cok">Configuration saved successfully.</_span>
+        <_span data-translateable="true" id="cko">Failed to save configuration.</_span>
     </section>
 
     <!-- title -->
@@ -28,7 +28,7 @@
             <div class="tab-content">
                 <!-- twitter tab -->
                 <div id="twitter" class="tab-pane fade in active">
-                    <div class="callout callout-info" data-translateable="true">Follow instructions above to authorize agocontrol to access your Twitter account</div>
+                    <_div class="callout callout-info" data-translateable="true">Follow instructions above to authorize ago control to access your Twitter account.</_div>
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Configured?</_label>
@@ -37,7 +37,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Click on link to generate an authorization url</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Click on link to generate an authorization URL</_label>
                             <div class="col-sm-6 form-control-static">
                                 <_a href="#" data-translateable="true" data-bind="click: twitterUrl">here</_a>
                             </div>
@@ -60,13 +60,13 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Finally click on button to save access code</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Finally click on button to save access code.</_label>
                             <div class="col-sm-6">
                                 <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: twitterAccessCode">Save changes</_button>
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">To send test tweet on your account, click on button</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">To place a test tweet on your account, click on the button.</_label>
                             <div class="col-sm-6">
                                 <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: twitterTest">Test</_button>
                             </div>
@@ -83,7 +83,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Choose SMS provider in list</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Choose an SMS provider from the list</_label>
                             <div class="col-sm-6">
                                 <select data-bind="value:selectedSmsProvider" class="form-control">
                                     <option value="12voip">12voip</option>
@@ -96,7 +96,7 @@
                             <_span data-translateable="true">You need to create an account on</_span> 
                             <a target="_blank" href="http://www.12voip.com/">12voip</a> 
                             <_span data-translateable="true">and add credits to send SMS</_span> 
-                            (<_a target="_blank" href="https://www.12voip.com/sms_rates" data-translateable="true">SMS rates</_a>)
+                            (<_a target="_blank" href="https://www.12voip.com/sms_rates" data-translateable="true">SMS rates</_a>).
                         </div>
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Username</_label>
@@ -113,9 +113,9 @@
                         </ko>
                         <ko opts="if: selectedSmsProvider()=='freemobile'">
                         <div class="callout callout-info">
-                            <_span data-translateable="true">Free Mobile is a french internet/mobile provider. It offers for free to send SMS to mobile account owner and only for its number.</_span>
+                            <_span data-translateable="true">Free Mobile is a french internet/mobile provider. It offers to send SMS for free to the account owner and only for its number.</_span>
                             <br/>
-                            <_span data-translateable="true">To use it in ago control, activate option in your free account and save provided apikey</_span>
+                            <_span data-translateable="true">To use it in ago control, activate the option in your free account and save the provided API key.</_span>
                         </div>
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">User</_label>
@@ -136,7 +136,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">To send you a test SMS, click on button</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">To send a test SMS, click on the button.</_label>
                             <div class="col-sm-6">
                                 <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: smsTest">Test</_button>
                             </div>
@@ -145,7 +145,9 @@
                 </div>
                 <!-- mail tab -->
                 <div id="mail" class="tab-pane fade">
-                    <div class="callout callout-info" data-translateable="true">Specify your email SMTP server and a sender email address (* is mandatory)</div>
+                    <div class="callout callout-info">
+                        <_span data-translateable="true">Specify your email SMTP server and a sender email address (* is mandatory).</_span>
+                    </div>
                     <form class="form-horizontal">
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Configured?</_label>
@@ -154,9 +156,9 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">SMTP server* (smtp:port)</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">SMTP server*</_label>
                             <div class="col-sm-6">
-                                <input data-translateable="true" class="form-control" type="text" data-bind="value:mailSmtp" _placeholder="smtp"></input>
+                                <input data-translateable="true" class="form-control" type="text" data-bind="value:mailSmtp" _placeholder="server:port"></input>
                             </div>
                         </div>
                         <div class="form-group">
@@ -168,13 +170,13 @@
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Login</_label>
                             <div class="col-sm-6">
-                                <input data-translateable="true" class="form-control" type="text" data-bind="value:mailLogin" _placeholder="login"></input>
+                                <input data-translateable="true" class="form-control" type="text" data-bind="value:mailLogin" _placeholder="Login"></input>
                             </div>
                         </div>
                         <div class="form-group">
                             <_label class="col-sm-4 control-label" data-translateable="true">Password</_label>
                             <div class="col-sm-6">
-                                <input data-translateable="true" class="form-control" type="password" data-bind="value:mailPassword" _placeholder="password"></input>
+                                <input data-translateable="true" class="form-control" type="password" data-bind="value:mailPassword" _placeholder="Password"></input>
                             </div>
                         </div>
                         <div class="form-group">
@@ -182,7 +184,7 @@
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" data-bind="checked:mailTls" id="checkTLS"/> 
-                                        <_span data-translateable="true">TLS</_span>?
+                                        <_span data-translateable="true">Use TLS</_span>
                                     </label>
                                 </div>
                             </div>
@@ -193,10 +195,10 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">To send you a test email, type your email address and click on button</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">To send a test email, type your email address and click on the button.</_label>
                             <div class="col-sm-6">
                                 <div class="input-group">
-                                    <input type="text" _placeholder="email" data-translateable="true" class="form-control" id="mailEmail"/>
+                                    <input type="text" _placeholder="Email address" data-translateable="true" class="form-control" id="mailEmail"/>
                                     <span class="input-group-btn">
                                         <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: mailTest">Test</_button>
                                     </span>
@@ -215,11 +217,12 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">Choose push provider in list</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">Choose a push provider from list</_label>
                             <div class="col-sm-6">
                                 <select data-bind="value:selectedPushProvider" class="form-control">
                                     <option value="pushbullet">Pushbullet</option>
                                     <option value="pushover">Pushover</option>
+									<option value="pushsafer">Pushsafer</option>
                                     <option value="notifymyandroid">Notifymyandroid</option>
                                 </select>
                             </div>
@@ -231,7 +234,7 @@
                                 (<_a data-translateable="true" target="_blank" href="https://www.pushbullet.com/account">available here</_a>)
                             </label>
                             <div class="col-sm-6">
-                                <input data-translateable="true" class="form-control" type="text" data-bind="value:pushbulletApikey" _placeholder="apikey"></input>
+                                <input data-translateable="true" class="form-control" type="text" data-bind="value:pushbulletApikey" _placeholder="Apikey"></input>
                             </div>
                         </div>
                         <div class="form-group">
@@ -264,6 +267,17 @@
                             </div>
                         </div>
                         </ko>
+                        <ko opts="if: selectedPushProvider()=='pushsafer'">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">
+                                <_span data-translateable="true">Enter your private or alias key</_span>
+                                (<_a data-translateable="true" target="_blank" href="https://www.pushsafer.com">available here</_a>)
+                            </label>
+                            <div class="col-sm-6">
+								<input data-translateable="true" type="text" data-bind="value:pushsaferKey" class="form-control" _placeholder="private or alias key"></input>
+                            </div>
+                        </div>						
+                        </ko>						
                         <ko opts="if: selectedPushProvider()=='notifymyandroid'">
                         <div class="form-group">
                             <label class="col-sm-4 control-label">
@@ -289,7 +303,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <_label class="col-sm-4 control-label" data-translateable="true">To push you test notification, click on button</_label>
+                            <_label class="col-sm-4 control-label" data-translateable="true">To push a test notification, click on the button.</_label>
                             <div class="col-sm-6">
                                 <_button type="submit" class="btn btn-primary" data-translateable="true" data-bind="click: pushTest">Test</_button>
                             </div>

@@ -1,0 +1,12 @@
+[Unit]
+Description=ago raspberry pi Camera device
+	
+[Service]
+ExecStart=@BINDIR@/raspiCamera.py
+WorkingDirectory=@BINDIR@
+Restart=always
+RestartSec=2
+User=root
+	
+[Install]
+WantedBy=multi-user.target

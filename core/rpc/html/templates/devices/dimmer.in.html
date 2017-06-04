@@ -1,21 +1,11 @@
 <div class="widget-lg">
 
-    <div class="info-box" data-bind="css:staleStyle">
-        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-            <i class="fa en-adjust"></i>
-        </span>
-        <div class="info-box-content">
-            <div class="info-box-title">
-                <ko opts="if:name">
-                <span data-bind="text:name"/>
-                </ko>
-                <ko opts="ifnot:name">
-                <span data-bind="text:devicetype"/>
-                </ko>
-            </div>
-            <div class="info-box-detail">
-                <div class="info-box-state">
-                    <i class="en-info-circled"/>
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+        <div class="inner">
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <div>
+                <div class="widget-box-state">
+                    <i class="en-info-circled"></i>
                     <ko opts="ifnot:state">
                     <_span data-translateable="true">OFF</_span>
                     </ko>
@@ -24,12 +14,15 @@
                     </ko>
                 </div>
                 <ko opts="if:room">
-                <div class="info-box-location">
-                    <i class="en-location"/>
+                <div class="widget-box-location">
+                    <i class="en-location"></i>
                     <span data-bind="text:room"/>
                 </div>
                 </ko>
             </div>
+        </div>
+        <div class="icon">
+            <i class="fa en-adjust"></i>
         </div>
     </div>
 

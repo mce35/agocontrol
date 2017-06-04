@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -37,9 +37,7 @@ class LMSServer(object):
     LMS Server access to perform some requests
     """
 
-    def __init__(self, hostname="localhost", port=9090, 
-                       username="", password="",
-                       charset="utf-8"):
+    def __init__(self, hostname="localhost", cli_port=9090, username="", password="", charset="utf-8"):
         """
         Constructor
         """
@@ -48,7 +46,7 @@ class LMSServer(object):
         self.telnet = None
         self.logged_in = False
         self.hostname = hostname
-        self.port = port
+        self.cli_port = cli_port
         self.username = username
         self.password = password
         self.version = ""
@@ -99,7 +97,7 @@ class LMSServer(object):
         Telnet Connect
         """
         try:
-            self.telnet = telnetlib.Telnet(self.hostname, self.port)
+            self.telnet = telnetlib.Telnet(self.hostname, self.cli_port)
         except Exception as e:
             self.logger.critical('Unable to connect [%s]' % str(e))
             self.telnet = None
@@ -201,40 +199,47 @@ class LMSServer(object):
         items = []
         try:
             #request command without decoding output
+            self.logger.debug('COMMAND=%s' % command)
             response = self.request(command, False)
+            self.logger.debug('RESPONSE=%s' % response)
             response_parts = response.split(' ')
-            if response.startswith('count'):
-                self.logger.debug('count response')
-                #get number of items
-                count = int(self._decode(response_parts[0]).split(':',1)[1])
+            if len(response)>0:
+                if response.startswith('count'):
+                    self.logger.debug('count response')
+                    #get number of items
+                    count = int(self._decode(response_parts[0]).split(':',1)[1])
 
-                #get items separator
-                separator = self._decode(response_parts[1]).split(':',1)[0]
+                    #get items separator
+                    separator = self._decode(response_parts[1]).split(':',1)[0]
 
-                #get items
-                sub_items = None
-                for i in range(1, len(response_parts)):
-                    (key,val) = self._decode(response_parts[i]).split(':',1)
-                    if key==separator:
-                        #save current sub_items
-                        if sub_items:
-                            items.append(sub_items)
-                        sub_items = {}
+                    #get items
+                    sub_items = None
+                    for i in range(1, len(response_parts)):
+                        (key,val) = self._decode(response_parts[i]).split(':',1)
+                        if key==separator:
+                            #save current sub_items
+                            if sub_items:
+                                items.append(sub_items)
+                            sub_items = {}
+                            sub_items[key] = val
+                        else:
+                            sub_items[key] = val
+                    items.append(sub_items)
+                    self.logger.debug(items)
+
+                else:
+                    self.logger.debug('no count response')
+                    #just split items
+                    sub_items = {}
+                    count = 1
+                    for i in range(len(response_parts)):
+                        (key,val) = self._decode(response_parts[i]).split(':',1)
                         sub_items[key] = val
-                    else:
-                        sub_items[key] = val
-                items.append(sub_items)
-                self.logger.debug(items)
+                    items.append(sub_items)
 
             else:
-                self.logger.debug('no count response')
-                #just split items
-                sub_items = {}
-                count = 1
-                for i in range(len(response_parts)):
-                    (key,val) = self._decode(response_parts[i]).split(':',1)
-                    sub_items[key] = val
-                items.append(sub_items)
+                #no response:S bad request surely
+                return 0,[],True
 
         except Exception as e:
             #error parsing results (not correct?)
@@ -330,9 +335,11 @@ class LMSServerNotifications(threading.Thread, LMSServer):
     """
     Class that catch LMS server notifications to create events on some server actions
     """
-    def __init__(self, notifications_callback, hostname="localhost", port=9090, username="", password="", charset="utf-8"):
-        """constructor"""
-        LMSServer.__init__(self, hostname, port, username, password, charset)
+    def __init__(self, notifications_callback, hostname="localhost", cli_port=9090, username="", password="", charset="utf-8"):
+        """
+        Constructor
+        """
+        LMSServer.__init__(self, hostname, cli_port, username, password, charset)
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("LMSServerNotifications")
         
@@ -342,16 +349,22 @@ class LMSServerNotifications(threading.Thread, LMSServer):
         self._callback = notifications_callback
         
     def __del__(self):
-        """Destructor"""
+        """
+        Destructor
+        """
         self.stop()
         LMSServer.__del__(self)
 
     def stop(self):
-        """stop process"""
+        """
+        Stop process
+        """
         self.__running = False
             
     def subscribe_players(self, player_ids):
-        """subscribe players to notifications"""
+        """
+        Subscribe to specified players notifications
+        """
         if not player_ids:
             self._player_ids = []
         elif type(player_ids) is list:
@@ -362,12 +375,16 @@ class LMSServerNotifications(threading.Thread, LMSServer):
             self._player_ids = []
 
     def _process_response(self, items):
-        """process response received by lmsserver
-           this function can be overwriten to process some other stuff"""
+        """
+        Process response received by lmsserver this function can be
+        overwriten to process some other stuff
+        """
         self._callback(items)
 
     def run(self):
-        """process"""
+        """
+        Process
+        """
         while self.__running:
             if not self.is_connected():
                 #connect pylmsserver
@@ -394,7 +411,7 @@ class LMSServerNotifications(threading.Thread, LMSServer):
                             #notifications for specified player
                             self._process_response(items)
                     else:
-                        #no player id filter
+                        #no player filtering activated, process any player
                         self._process_response(items)
             else:
                 #pause
@@ -405,7 +422,9 @@ class LMSServerNotifications(threading.Thread, LMSServer):
 
 
 
-"""TESTS"""
+"""
+TESTS
+"""
 if __name__=="__main__":
     import gobject; gobject.threads_init()
     logger = logging.getLogger()

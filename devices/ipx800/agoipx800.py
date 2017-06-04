@@ -19,8 +19,9 @@ DEVICEMAPFILE = os.path.join(agoclient.CONFDIR, 'maps/ipx800.json')
 IPX_WEBSERVER_PORT = 8010
 STATE_ON = 255
 STATE_OFF = 0
-STATE_LONG_PRESS = 200
-STATE_VERY_LONG_PRESS = 150
+STATE_SINGLE_CLICK = 200
+STATE_DOUBLE_CLICK = 150
+STATE_TRIPLE_CLICK = 100
 STATE_OPENED = 255
 STATE_CLOSED = 0
 STATE_OPENING = 50
@@ -36,12 +37,13 @@ DEVICE_ANALOG_VOLT = 'avolt'
 DEVICE_ANALOG_BINARY = 'abinary'
 DEVICE_COUNTER = 'counter'
 DEVICE_DIGITAL_BINARY = 'dbinary'
+DEVICE_DIGITAL_PUSHBUTTON = 'dpushbutton'
 GET_STATUS_FREQUENCY = 60 #in seconds
 
 client = None
 devices = {}
 durations = {}
-longpresses = {}
+multiclicks = {}
 ipx800v3 = None
 units = 'SI'
 configLock = threading.Lock()
@@ -86,7 +88,9 @@ class Task:
 #utils
 #=================================
 def quit(msg):
-    """Exit application"""
+    """
+    Exit application
+    """
     global ipx800v3, client
     if getBoardsStatusTask:
         getBoardsStatusTask.stop()
@@ -101,7 +105,9 @@ def quit(msg):
     sys.exit(0)
     
 def saveDevices():
-    """Save devices infos"""
+    """
+    Save devices infos
+    """
     global DEVICEMAPFILE, devices
     try:
         configLock.acquire()
@@ -115,7 +121,9 @@ def saveDevices():
     return True
 
 def loadDevices():
-    """Load devices infos"""
+    """
+    Load devices infos
+    """
     global DEVICEMAPFILE, devices
     try:
         if os.path.exists(DEVICEMAPFILE):
@@ -139,9 +147,11 @@ def loadDevices():
     return True
     
 def getDevice(ipxIp, internalid):
-    """Return device identified by internalid on ipxIp board
-       @param ipxIp: ipx ip address
-       @param internalid: device internalid"""
+    """
+    Return device identified by internalid on ipxIp board
+    @param ipxIp: ipx ip address
+    @param internalid: device internalid
+    """
     global devices
     if not devices.has_key(ipxIp):
         logger.warning('Try to get a device of unknown IPX800 [%s]' % ipxIp)
@@ -151,7 +161,9 @@ def getDevice(ipxIp, internalid):
     return None
     
 def getIpx800Ip(internalid):
-    """Return ipx ip of which the device (internalid) belongs"""
+    """
+    Return ipx ip of which the device (internalid) belongs
+    """
     global devices
     for ipxIp in devices:
         if ipxIp==internalid:
@@ -166,10 +178,12 @@ def getIpx800Ip(internalid):
     return None
 
 def getDeviceUsingOutput(ipxIp, outputId):
-    """return device using specified outputId
-       @param ipxIp: ip address of ipx 
-       @param outputId : output id to search for (must be int)
-       @return None if no device are using specified output id, device otherwise"""
+    """
+    Return device using specified outputId
+    @param ipxIp: ip address of ipx 
+    @param outputId : output id to search for (must be int)
+    @return None if no device are using specified output id, device otherwise
+    """
     global devices
     if not devices.has_key(ipxIp):
         logger.warning('Try to get a device of unknown IPX800 [%s]' % ipxIp)
@@ -184,10 +198,12 @@ def getDeviceUsingOutput(ipxIp, outputId):
     return None, None
 
 def getDeviceUsingDigital(ipxIp, digitalId):
-    """return device using specified digitalId
-       @param ipxIp: ip address of ipx 
-       @param digitalId : digital id to search for
-       @return None if no device are using specified digital id, device otherwise"""
+    """
+    Return device using specified digitalId
+    @param ipxIp: ip address of ipx 
+    @param digitalId : digital id to search for
+    @return None if no device are using specified digital id, device otherwise
+    """
     global devices
     if not devices.has_key(ipxIp):
         logger.warning('Try to get a device of unknown IPX800 [%s]' % ipxIp)
@@ -198,10 +214,12 @@ def getDeviceUsingDigital(ipxIp, digitalId):
     return None, None
 
 def getDeviceUsingAnalog(ipxIp, analogId):
-    """return device using specified analogId
-       @param ipxIp: ip address of ipx 
-       @param analogId : analog id to search for
-       @return None if no device are using specified analog id, device otherwise"""
+    """
+    Return device using specified analogId
+    @param ipxIp: ip address of ipx 
+    @param analogId : analog id to search for
+    @return None if no device are using specified analog id, device otherwise
+    """
     global devices
     if not devices.has_key(ipxIp):
         logger.warning('Try to get a device of unknown IPX800 [%s]' % ipxIp)
@@ -212,10 +230,12 @@ def getDeviceUsingAnalog(ipxIp, analogId):
     return None, None
 
 def getDeviceUsingCounter(ipxIp, counterId):
-    """return device using specified counterId
-       @param ipxIp: ip address of ipx 
-       @param counterId : counter id to search for
-       @return None if no device are using specified counter id, device otherwise"""
+    """
+    Return device using specified counterId
+    @param ipxIp: ip address of ipx 
+    @param counterId : counter id to search for
+    @return None if no device are using specified counter id, device otherwise
+    """
     global devices
     if not devices.has_key(ipxIp):
         logger.warning('Try to get a device of unknown IPX800 [%s]' % ipxIp)
@@ -226,8 +246,10 @@ def getDeviceUsingCounter(ipxIp, counterId):
     return None, None
 
 def getOutputLinkedTo(ipxIp, binary):
-    """Return output linked to specified binary
-       @param binary: binary device internalid """
+    """
+    Return output linked to specified binary
+    @param binary: binary device internalid
+    """
     global devices
     if not devices.has_key(ipxIp):
         logger.warning('Try to get a device of unknown IPX800 [%s]' % ipxIp)
@@ -238,11 +260,15 @@ def getOutputLinkedTo(ipxIp, binary):
     return None, None
 
 def getEmptyDevice():
-    """Return empty structure of a device"""
+    """
+    Return empty structure of a device
+    """
     return {'type':None, 'outputs':[], 'digitals':[], 'analogs':[], 'counters':[], 'state':None, 'duration':None, 'open':None, 'close':None, 'links':[]}
 
 def updateDeviceDuration(ipxIp, internalid, duration):
-    """Update device durarion"""
+    """
+    Update device durarion
+    """
     global devices
     if devices.has_key(ipxIp) and devices[ipxIp].has_key(internalid) and isinstance(duration, dict) and duration.has_key('start') and duration.has_key('stop'):
         devicesLock.acquire()
@@ -252,8 +278,10 @@ def updateDeviceDuration(ipxIp, internalid, duration):
     else:
         logger.error('updateDeviceDuration: device "%s" not found' % internalid)
     
-def emitDeviceValueChanged(ipxIp, internalid, value):
-    """Emit event for specified device"""
+def emitDeviceValueChanged(ipxIp, internalid, value, force=False):
+    """
+    Emit event for specified device
+    """
     global client, units, devices
     #get device
     device = getDevice(ipxIp, internalid)
@@ -293,12 +321,22 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
         elif device['type']==DEVICE_DIGITAL_BINARY:
             event = 'event.device.statechanged'
             unit = '-'
+        elif device['type']==DEVICE_DIGITAL_PUSHBUTTON:
+            if value==STATE_TRIPLE_CLICK:
+                event = 'event.device.triplepush'
+                unit = '-'
+            if value==STATE_DOUBLE_CLICK:
+                event = 'event.device.doublepush'
+                unit = '-'
+            if value==STATE_SINGLE_CLICK:
+                event = 'event.device.push'
+                unit = '-'
         else:
             event = 'event.device.statechanged'
             unit = None
 
         #prevent from useless message
-        if devices[ipxIp][internalid]['state']==value:
+        if not force and devices[ipxIp][internalid]['state']==value:
             #same value, drop it
             return True
 
@@ -313,46 +351,46 @@ def emitDeviceValueChanged(ipxIp, internalid, value):
         logger.error('emitDeviceValueChanged: no device found for internalid "%s"' % internalid)
         return False
 
-#function launch in timer for binary devices
-def updateBinaryDeviceValue(ipxIp, internalid, caller):
-    global longpresses
-    logger.info('updateBinaryDeviceValue called for "%s@%s" by %s' % (ipxIp, internalid, caller))
-    if longpresses.has_key(internalid):
-        #get infos and remove it from dict
-        logger.info('infos before for "%s@%s": %s' % (ipxIp, internalid, str(longpresses)))
-        infos = longpresses.pop(internalid)
-        logger.info('infos after for "%s@%s": %s' % (ipxIp, internalid, str(longpresses)))
+def updatePushbuttonDeviceValue(ipxIp, internalid, caller):
+    """
+    Function launched in timer for pushbutton devices
+    """
+    global multiclicks
+    logger.info('updatePushbuttonDeviceValue called for "%s@%s" by %s' % (ipxIp, internalid, caller))
+    if multiclicks.has_key(internalid):
+        #it's a pushbutton
+        infos = multiclicks.pop(internalid)
 
-        if infos['end']!=None:
-            diff = infos['end'] - infos['start']
-            logger.info('diff=%s' % (str(diff)))
-            if diff<3.5:
-                #short press
-                logger.info('short press of digital "%s@%s"' % (ipxIp, internalid))
-                emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
-            elif diff<7.0:
-                logger.info('long press of digital "%s@%s"' % (ipxIp, internalid))
-                emitDeviceValueChanged(ipxIp, internalid, STATE_LONG_PRESS)
-            elif diff<12.0:    
-                logger.info('very long press of digital "%s@%s"' % (ipxIp, internalid))
-                emitDeviceValueChanged(ipxIp, internalid, STATE_VERY_LONG_PRESS)
+        if infos.has_key('count'):
+            count = infos['count']
+            if count==1:
+                logger.info('Single click of pushbutton "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_SINGLE_CLICK)
+            elif count==2:
+                logger.info('Double click of pushbutton "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_DOUBLE_CLICK)
             else:
-                logger.info('normal press of digital "%s@%s"' % (ipxIp, internalid))
-                emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
+                #3 clicks or more are considered as 3 clicks
+                logger.info('Triple click of pushbutton "%s@%s"' % (ipxIp, internalid))
+                emitDeviceValueChanged(ipxIp, internalid, STATE_TRIPLE_CLICK)
+
         else:
-            logger.info('normal state of digital "%s@%s"' % (ipxIp, internalid))
+            #logger.info('normal state of digital "%s@%s"' % (ipxIp, internalid))
             emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
     else:
-        logger.error('updateBinaryDeviceValue: no pulses infos for internalid "%s" [%s]' % (internalid, str(pulses)))
-        
+        #it's a binary info, just update current device state
+        emitDeviceValueChanged(ipxIp, internalid, STATE_ON)        
 
         
 #=================================
 #functions
 #=================================
 def ipxCallback(ipxIp, content):
-    """ipxCallback is called after IPX800 M2M call
-       ipxDict: dict of digitals/outputs/counters/timer/... depending on IPX800 M2M config"""
+    """
+    IpxCallback is called after IPX800 M2M call or telnet callback
+    @param ipxIp: ip of ipx board 
+    @param content: dict of digitals/outputs/counters/timer/... depending on IPX800 M2M config
+    """
     logger.debug('Callback received from ipx "%s": %s' % (ipxIp, str(content)))
     global client
     global durations
@@ -364,10 +402,10 @@ def ipxCallback(ipxIp, content):
                 outputid = int(item.replace('out', ''))
                 (internalid, device) = getDeviceUsingOutput(ipxIp, outputid)
                 if device:
-                    logger.info("-------------");
-                    logger.info("internalid=%s" % str(internalid))
-                    logger.info("device=%s" % str(device))
-                    logger.info('item=%s outouputid=%s internalid=%s' % (str(item), str(outputid), str(internalid)))
+                    logger.debug("-------------");
+                    logger.debug("internalid=%s" % str(internalid))
+                    logger.debug("device=%s" % str(device))
+                    logger.debug('item=%s outouputid=%s internalid=%s' % (str(item), str(outputid), str(internalid)))
                     if device['type']==DEVICE_OUTPUT_SWITCH:
                         if content[item]==0:
                             if device['state']==STATE_ON:
@@ -388,15 +426,15 @@ def ipxCallback(ipxIp, content):
 
                         if outputid==device['open']:
                             #open action
-                            logger.info(' -> open action (content[item]=%s)' % str(content[item]))
+                            logger.debug(' -> open action (content[item]=%s)' % str(content[item]))
                             if content[item]==0:
-                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_OPENING)))
+                                logger.debug('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_OPENING)))
                                 if device['state']==STATE_OPENING:
                                     #drapes opened or partially opened
                                     durations[internalid]['stop'] = int(time.time())
                                     if devices[ipxIp][internalid]['duration']:
                                         dur = durations[internalid]['stop'] - durations[internalid]['start']
-                                        logger.info('dur[%d]>=%d and dur[%d]<=%d' % (dur, devices[ipxIp][internalid]['duration']-1, dur, devices[ipxIp][internalid]['duration']+1))
+                                        logger.debug('dur[%d]>=%d and dur[%d]<=%d' % (dur, devices[ipxIp][internalid]['duration']-1, dur, devices[ipxIp][internalid]['duration']+1))
                                         if dur>=devices[ipxIp][internalid]['duration']-1 and dur<=devices[ipxIp][internalid]['duration']+1:
                                             #fully opened
                                             logger.info('Drapes "%s@%s" fully opened' % (ipxIp, internalid))
@@ -410,7 +448,7 @@ def ipxCallback(ipxIp, content):
                                         updateDeviceDuration(ipxIp, internalid, durations[internalid])
 
                             elif content[item]==1:
-                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_CLOSED)))
+                                logger.debug('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_CLOSED)))
                                 if device['state']==STATE_CLOSED or device['state']==STATE_PARTIAL:
                                     #drapes is opening
                                     logger.info('Drapes "%s@%s" is opening' % (ipxIp, internalid))
@@ -423,15 +461,15 @@ def ipxCallback(ipxIp, content):
 
                         elif outputid==device['close']:
                             #close action
-                            logger.info(' -> close action (content[item]=%s)' % str(content[item]))
+                            logger.debug(' -> close action (content[item]=%s)' % str(content[item]))
                             if content[item]==0:
-                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_CLOSING)))
+                                logger.debug('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_CLOSING)))
                                 if device['state']==STATE_CLOSING:
                                     #drapes closed or partially closed
                                     durations[internalid]['stop'] = int(time.time())
                                     if devices[ipxIp][internalid]['duration']:
                                         dur = durations[internalid]['stop'] - durations[internalid]['start']
-                                        logger.info('dur[%d]>=%d and dur[%d]<=%d' % (dur, devices[ipxIp][internalid]['duration']-1, dur, devices[ipxIp][internalid]['duration']+1))
+                                        logger.debug('dur[%d]>=%d and dur[%d]<=%d' % (dur, devices[ipxIp][internalid]['duration']-1, dur, devices[ipxIp][internalid]['duration']+1))
                                         if dur>=devices[ipxIp][internalid]['duration']-1 and dur<=devices[ipxIp][internalid]['duration']+1:
                                             #fully closed
                                             logger.info('Drapes "%s@%s" fully closed' % (ipxIp, internalid))
@@ -446,7 +484,7 @@ def ipxCallback(ipxIp, content):
                                         updateDeviceDuration(ipxIp, internalid, durations[internalid])
 
                             elif content[item]==1:
-                                logger.info('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_OPENED)))
+                                logger.debug('  -> state[%s]==%s ??' % (str(device['state']), str(STATE_OPENED)))
                                 if device['state']==STATE_OPENED or device['state']==STATE_PARTIAL:
                                     #Drapes is closing
                                     logger.info('Drapes "%s@%s" is closing' % (ipxIp, internalid))
@@ -460,7 +498,7 @@ def ipxCallback(ipxIp, content):
                         #XXX manage new device using outputs here
                         pass
 
-                    logger.info("-------------");
+                    logger.debug("-------------");
             except:
                 logger.exception('Exception in ipxCallback (output):')
 
@@ -470,30 +508,33 @@ def ipxCallback(ipxIp, content):
                 digitalid = int(item.replace('in', ''))
                 (internalid, device) = getDeviceUsingDigital(ipxIp, digitalid)
                 if device:
-                    if device['type']==DEVICE_DIGITAL_BINARY:
+                    if device['type']==DEVICE_DIGITAL_PUSHBUTTON:
+                        logger.debug('pushbutton clicked %d' % content[item])
                         if content[item]==1:
-                            if not longpresses.has_key(internalid):
-                                longpresses[internalid] = {}
-                                longpresses[internalid]['start'] = time.time()
-                                longpresses[internalid]['end'] = None
-                                longpresses[internalid]['timer'] = threading.Timer(float(13.0), updateBinaryDeviceValue, [ipxIp, internalid, 'timer'])
-                                longpresses[internalid]['timer'].start()
+                            #pushbutton clicked
+                            if not multiclicks.has_key(internalid):
+                                logger.debug('add new multiclicks entry')
+                                #pushbutton not clicked yet, create structure
+                                multiclicks[internalid] = {}
+                                multiclicks[internalid]['count'] = 1
+                                #and start timer
+                                multiclicks[internalid]['timer'] = threading.Timer(float(2.5), updatePushbuttonDeviceValue, [ipxIp, internalid, 'timer'])
+                                multiclicks[internalid]['timer'].start()
                             else:
-                                #impossible case
-                                pass
+                                #pushbutton already clicked, increase counter
+                                multiclicks[internalid]['count'] += 1
+                                logger.debug('increase multiclicks counter %d' % multiclicks[internalid]['count'])
                         else:
-                            if longpresses.has_key(internalid):
-                                #cancel timer
-                                longpresses[internalid]['timer'].cancel()
-                                #and update binary value
-                                longpresses[internalid]['end'] = time.time()
-                                updateBinaryDeviceValue(ipxIp, internalid, 'manual')
-                                time.sleep(0.5)
-                                emitDeviceValueChanged(ipxIp, internalid, STATE_OFF)
-                            else:
-                                #no timer running, just emit event
-                                logger.info('Update value of digital "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
-                                emitDeviceValueChanged(ipxIp, internalid, STATE_OFF)
+                            #pushbutton unclicked
+                            logger.debug('drop pushbutton release')
+                            #nothing to do
+
+                    elif device['type']==DEVICE_DIGITAL_BINARY:
+                        if content[item]==1:
+                            emitDeviceValueChanged(ipxIp, internalid, STATE_ON)
+                        else:
+                            emitDeviceValueChanged(ipxIp, internalid, STATE_OFF)
+
                     else:
                         #XXX handle new device using digitals here
                         pass
@@ -507,7 +548,7 @@ def ipxCallback(ipxIp, content):
                 (internalid, device) = getDeviceUsingAnalog(ipxIp, analogid)
                 if device:
                     if device['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_BINARY):
-                        #logger.info('Update value of analog "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
+                        logger.debug('Update value of analog "%s@%s[%s]" with "%s"' % (ipxIp, internalid, device['type'], str(content[item])))
                         emitDeviceValueChanged(ipxIp, internalid, content[item])
                     else:
                         #XXX handle new device using analogs here
@@ -531,11 +572,14 @@ def ipxCallback(ipxIp, content):
                 logger.exception('Exception in ipxCallback (counter):')
 
         else:
-            #unmanaged info
+            #unhandled info
+            logger.debug('Unhandled info from callback: %s' % item)
             pass
 
 def getBoardsStatus():
-    """get status of boards devices"""
+    """
+    Get status of boards devices
+    """
     global devices
     if len(devices)==0:
         return
@@ -567,16 +611,29 @@ def getBoardsStatus():
                 elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_BINARY:
                     if len(devices[ipxIp][internalid]['digitals'])==1 and status.has_key('in%d' % devices[ipxIp][internalid]['digitals'][0]):
                         value = status['in%d' % devices[ipxIp][internalid]['digitals'][0]]
-                        logger.debug('  - value "%s" set to digital "%s@%s"' % (str(value), ipxIp, internalid))
+                        logger.debug('  - value "%s" set to digital binary "%s@%s"' % (str(value), ipxIp, internalid))
                         emitDeviceValueChanged(ipxIp, internalid, value)
                     else:
-                        logger.warning('Unable to set current digital value to "%s@%s"' % (ipxIp, internalid))
+                        logger.warning('Unable to set current digital binary value to "%s@%s"' % (ipxIp, internalid))
+                        #logger.info('key=%s status:%s' % ('in%d' % devices[ipxIp][internalid]['digitals'][0], status))
+                        emitDeviceValueChanged(ipxIp, internalid, 0)
+
+                elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_PUSHBUTTON:
+                    if len(devices[ipxIp][internalid]['digitals'])==1 and status.has_key('in%d' % devices[ipxIp][internalid]['digitals'][0]):
+                        value = status['in%d' % devices[ipxIp][internalid]['digitals'][0]]
+                        logger.debug('  - value "%s" set to digital pushbutton "%s@%s"' % (str(value), ipxIp, internalid))
+                        emitDeviceValueChanged(ipxIp, internalid, value)
+                    else:
+                        logger.warning('Unable to set current digital pushbutton value to "%s@%s"' % (ipxIp, internalid))
                         #logger.info('key=%s status:%s' % ('in%d' % devices[ipxIp][internalid]['digitals'][0], status))
                         emitDeviceValueChanged(ipxIp, internalid, 0)
     
 
 def addIpx800v3Board(ipxIp):
-    """add ipx800v3 board"""
+    """
+    Add ipx800v3 board
+    @param ipxIp: ip of ipx board
+    """
     global client, devices
     if ipxIp and len(ipxIp)>0 and not devices.has_key(ipxIp):
         devices[ipxIp] = {}
@@ -591,7 +648,10 @@ def addIpx800v3Board(ipxIp):
         return False
 
 def removeIpx800v3Board(ipxIp):
-    """remove ipx800v3 board"""
+    """
+    Remove ipx800v3 board
+    @param ipxIp: ip of ipx board
+    """
     global client, devices
     if ipxIp and len(ipxIp)>0 and devices.has_key(ipxIp):
         del devices[ipxIp]
@@ -606,7 +666,11 @@ def removeIpx800v3Board(ipxIp):
         return False
         
 def deleteDevice(ipxIp, internalid):
-    """Delete device"""
+    """
+    Delete specified device
+    @param ipxIp: ip of ipx board
+    @param internalid: device internalid
+    """
     #TODO when removing output, remove links too !
     global client, devices
     if ipxIp and len(ipxIp)>0 and internalid and len(internalid)>0:
@@ -626,9 +690,11 @@ def deleteDevice(ipxIp, internalid):
         return False, 'Internal error'
 
 def addOutputSwitch(ipxIp, outputId):
-    """add switch as virtual device
-       @param name: name of switch
-       @param output: used relay"""
+    """
+    Add switch as virtual device
+    @param ipxIp: ip of ipx board
+    @param outputId: id of output
+    """
     global client
     if ipxIp and len(ipxIp)>0:
         #make sure outputId is integer
@@ -663,10 +729,12 @@ def addOutputSwitch(ipxIp, outputId):
         return False, 'Internal error'
 
 def addOutputDrapes(ipxIp, relayOpen, relayClose):
-    """add drapes as virtual device
-       @param ipxIp: ipx ip address
-       @param relayOpen: relay used to open the drapes (saved in inputs list)
-       @param relayClose: relay used to close the drapes (saved in outputs list)"""
+    """
+    Add drapes as virtual device
+    @param ipxIp: ipx ip address
+    @param relayOpen: relay used to open the drapes (saved in inputs list)
+    @param relayClose: relay used to close the drapes (saved in outputs list)
+    """
     global client
     if ipxIp and len(ipxIp)>0:
         #make sure relayOpen and relayClose are integers
@@ -710,9 +778,11 @@ def addOutputDrapes(ipxIp, relayOpen, relayClose):
         return False, 'Internal error'
 
 def addDigitalBinary(ipxIp, digitalId):
-    """add binary sensor as virtual device
-       @param name: name of switch
-       @param digitalId: used digital input"""
+    """
+    Add binary sensor as virtual device
+    @param ipxIp: ip of ipx board
+    @param digitalId: used digital input
+    """
     global client
     if ipxIp and len(ipxIp)>0:
         #make sure digitalId is integer
@@ -746,11 +816,52 @@ def addDigitalBinary(ipxIp, digitalId):
         logger.error('addDigitalBinary: invalid parameters')
         return False, 'Internal error'
 
+def addDigitalPushbutton(ipxIp, digitalId):
+    """
+    Add pushbutton device as virtual device
+    @param ipxIp: ip of ipx board
+    @param digitalId: used digital input
+    """
+    global client
+    if ipxIp and len(ipxIp)>0:
+        #make sure digitalId is integer
+        try:
+            digitalId = int(digitalId)
+        except:
+            logger.error('addDigitalPushbutton: unable to add binary because invalid id [%s]' % str(digitalId))
+            return False, 'Unable to add binary because invalid digital id [%s]' % str(digitalId)
+
+        #search device already using specified digital
+        (internalid, device) = getDeviceUsingDigital(ipxIp, digitalId)
+        if device:
+            logger.error('addDigitalPushbutton: digital id %d is already used by device "%s"' % (digitalId, internalid))
+            return False, 'Digital id %d is already used by device %s' % (digitalId, internalid)
+            
+        #add device
+        internalid = str(uuid4())
+        devices[ipxIp][internalid] = getEmptyDevice()
+        devices[ipxIp][internalid]['type'] = DEVICE_DIGITAL_PUSHBUTTON
+        devices[ipxIp][internalid]['state'] = STATE_OFF
+        devices[ipxIp][internalid]['digitals'].append(digitalId)
+        if saveDevices():
+            client.add_device(internalid, 'pushbutton')
+            emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'])
+            logger.info('Digital pushbutton "%s@%s" added successfully' % (ipxIp, internalid))
+            return True, ''
+        else:
+            logger.error('addDigitalPushbutton: unable to save devices')
+            return False, 'Internal error'
+    else:
+        logger.error('addDigitalPushbutton: invalid parameters')
+        return False, 'Internal error'
+
 def addAnalog(ipxIp, deviceType, analogId):
-    """add analog device
-       @param ipxIp: ipx ip address
-       @param analogId: analog id used
-       @param deviceType: device type """
+    """
+    Add analog device
+    @param ipxIp: ipx ip address
+    @param deviceType: device type
+    @param analogId: analog id used
+    """
     global client, ipx800v3
     if ipxIp and len(ipxIp)>0 and deviceType in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_BINARY):
         #make sure analogId is integer
@@ -804,9 +915,11 @@ def addAnalog(ipxIp, deviceType, analogId):
         return False, 'Internal error'
 
 def addCounter(ipxIp, counterId):
-    """add counter device
-       @param ipxIp: ipx ip address
-       @param counterId: counter id used"""
+    """
+    Add counter device
+    @param ipxIp: ipx ip address
+    @param counterId: counter id used
+    """
     global client
     if ipxIp and len(ipxIp)>0:
         #make sure counterId is integer
@@ -849,9 +962,11 @@ def addCounter(ipxIp, counterId):
         return False, 'Internal error'
 
 def addLink(ipxIp, output, binary):
-    """add link between specified output and digital
-       @param output: output internalid
-       @param binary: binary device internalid """
+    """
+    Add link between specified output and digital
+    @param output: output internalid
+    @param binary: binary device internalid
+    """
     global devices
     if ipxIp and len(ipxIp)>0 and devices.has_key(ipxIp) and devices[ipxIp].has_key(output) and devices[ipxIp].has_key(binary):
         #get existing link
@@ -873,9 +988,11 @@ def addLink(ipxIp, output, binary):
         return False, 'Internal error'
 
 def deleteLink(ipxIp, output, digital):
-    """delete link between output and digital
-       @param output: output internalid
-       @param digital: digital internalid"""
+    """
+    Delete link between output and digital
+    @param output: output internalid
+    @param digital: digital internalid
+    """
     global devices
     if ipxIp and len(ipxIp)>0 and devices.has_key(ipxIp) and devices[ipxIp].has_key(output) and devices[ipxIp].has_key(digital):
         #get digital input
@@ -891,10 +1008,13 @@ def deleteLink(ipxIp, output, digital):
         return False, 'Internal error'
 
 def checkLink(ipxIp, output):
-    """Check link status
-       @return True if link is valid (binary device is OFF) or no link associated
-       @return False if link is not valid (binary device is ON) 
-       @param output: output internalid """
+    """
+    Check link status
+    @param ipxIp: ip of ipx board
+    @param output: output internalid
+    @return True if link is valid (binary device is OFF) or no link associated
+    @return False if link is not valid (binary device is ON) 
+    """
     global devices
     dev = getDevice(ipxIp, output)
     if not dev:
@@ -919,9 +1039,11 @@ def checkLink(ipxIp, output):
         return True
 
 def openDrapes(ipxIp, internalid):
-    """open drapes
-       @param internalid: internal id 
-       @param ipxIp: ipx ip"""
+    """
+    Open drapes
+    @param internalid: internal id 
+    @param ipxIp: ipx ip
+    """
     global ipx800v3, devices
     dev = getDevice(ipxIp, internalid)
     if dev:
@@ -943,9 +1065,11 @@ def openDrapes(ipxIp, internalid):
     return True
 
 def closeDrapes(ipxIp, internalid):
-    """open drapes
-       @param internalid: internal id 
-       @param ipxIp: ipx ip"""
+    """
+    Open drapes
+    @param internalid: internal id 
+    @param ipxIp: ipx ip
+    """
     global ipx800v3, devices
     dev = getDevice(ipxIp, internalid)
     if dev:
@@ -967,9 +1091,11 @@ def closeDrapes(ipxIp, internalid):
     return True
 
 def stopDrapes(ipxIp, internalid):
-    """stop drapes
-       @param internalid: internal id 
-       @param ipxIp: ipx ip"""
+    """
+    Stop drapes
+    @param internalid: internal id 
+    @param ipxIp: ipx ip
+    """
     global ipx800v3
     logger.info('stopDrapes: ipxIp=%s internalid=%s' % (ipxIp, internalid))
     dev = getDevice(ipxIp, internalid)
@@ -986,17 +1112,21 @@ def stopDrapes(ipxIp, internalid):
     return True
 
 def setlevelDrapes(ipxIp, internalid):
-    """setlevelDrapes is a callback of setlevel command Timer
-       @param internalid: internal id 
-       @param ipxIp: ipx ip"""
+    """
+    SsetlevelDrapes is a callback of setlevel command Timer
+    @param internalid: internal id 
+    @param ipxIp: ipx ip
+    """
     logger.info('setlevelDrapes: ipxIp=%s internalid=%s' % (ipxIp, internalid))
     stopDrapes(ipxIp, internalid)
     return False
 
 def turnOnSwitch(ipxIp, internalid):
-    """turn on switch
-       @param internalid: internal id 
-       @param ipxIp: ipx ip"""
+    """
+    Turn on switch
+    @param internalid: internal id 
+    @param ipxIp: ipx ip
+    """
     global ipx800v3, devices
     dev = getDevice(ipxIp, internalid)
     if dev:
@@ -1012,9 +1142,11 @@ def turnOnSwitch(ipxIp, internalid):
     return True
 
 def turnOffSwitch(ipxIp, internalid):
-    """turn off switch
-       @param internalid: internal id 
-       @param ipxIp: ipx ip"""
+    """
+    Turn off switch
+    @param internalid: internal id 
+    @param ipxIp: ipx ip
+    """
     global ipx800v3, devices
     dev = getDevice(ipxIp, internalid)
     if dev:
@@ -1030,10 +1162,12 @@ def turnOffSwitch(ipxIp, internalid):
     return True
 
 def resetCounter(ipxIp, internalid):
-    """Reset specified counter
-       @param internalid: internalid
-       @param ipxIp: ipx ip
-       @param counterId: counter id"""
+    """
+    Reset specified counter
+    @param internalid: internalid
+    @param ipxIp: ipx ip
+    @param counterId: counter id
+    """
     global ipx800v3, devices
     dev = getDevice(ipxIp, internalid)
     if dev:
@@ -1045,7 +1179,9 @@ def resetCounter(ipxIp, internalid):
     return True
 
 def commandHandler(internalid, content):
-    """ago command handler"""
+    """
+    Ago command handler
+    """
     logger.info('commandHandler: %s, %s' % (internalid,content))
     global client
     command = None
@@ -1145,6 +1281,18 @@ def commandHandler(internalid, content):
                 if content.has_key('pin1'):
                     logger.info('Add digital binary on "%s" using In%s' % (ipxIp, str(content['pin1'])))
                     (res, msg) = addDigitalBinary(ipxIp, content['pin1'])
+                    if res:
+                        return {'error':0, 'msg':'Device added successfully'}
+                    else:
+                        return {'error':1, 'msg':msg}
+                else:
+                    logger.error('Missing "pin1" parameter')
+                    return {'error':1, 'msg':'Internal error'}
+
+            elif content['type']==DEVICE_DIGITAL_PUSHBUTTON:
+                if content.has_key('pin1'):
+                    logger.info('Add digital pushbutton on "%s" using In%s' % (ipxIp, str(content['pin1'])))
+                    (res, msg) = addDigitalPushbutton(ipxIp, content['pin1'])
                     if res:
                         return {'error':0, 'msg':'Device added successfully'}
                     else:
@@ -1320,7 +1468,7 @@ def commandHandler(internalid, content):
                     devs['counters'].append({'internalid':internalid, 'type':devices[ipxIp][internalid]['type'], 'inputs':'-'.join(str(x) for x in devices[ipxIp][internalid]['counters'])})
                 if devices[ipxIp][internalid]['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_BINARY):
                     devs['analogs'].append({'internalid':internalid, 'type':devices[ipxIp][internalid]['type'], 'inputs':'-'.join(str(x) for x in devices[ipxIp][internalid]['analogs'])})
-                if devices[ipxIp][internalid]['type'] in (DEVICE_DIGITAL_BINARY):
+                if devices[ipxIp][internalid]['type'] in (DEVICE_DIGITAL_BINARY, DEVICE_DIGITAL_PUSHBUTTON):
                     devs['digitals'].append({'internalid':internalid, 'type':devices[ipxIp][internalid]['type'], 'inputs':'-'.join(str(x) for x in devices[ipxIp][internalid]['digitals'])})
             
             status = {'outputs':" ".join(outputs), 'digitals':" ".join(digitals), 'analogs':" ".join(analogs), 'counters':" ".join(counters)}
@@ -1442,6 +1590,7 @@ def eventHandler(event, content):
     global client
     uuid = None
     internalid = None
+    #TODO handle device deletion
 
     #get uuid
     #if content.has_key('uuid'):
@@ -1467,6 +1616,9 @@ try:
     units = agoclient.get_config_option("system", "units", "SI")
     logger.info('System units: %s' % units)
 
+    #create ipx800v3 object
+    ipx800v3 = Ipx800v3(IPX_WEBSERVER_PORT, ipxCallback)
+
     #add known devices
     if not loadDevices():
         quit('Unable to load devices. Exit now.')
@@ -1476,36 +1628,50 @@ try:
         #register board
         logger.info('  - add board [%s]' % ipxIp)
         client.add_device(ipxIp, 'ipx800v3board')
+        ipx800v3.add_board(ipxIp)
         for internalid in devices[ipxIp]:
             if devices[ipxIp][internalid]['type']==DEVICE_OUTPUT_SWITCH:
                 logger.info('    - add switch [%s]' % internalid)
                 client.add_device(internalid, 'switch')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_OUTPUT_DRAPES:
                 logger.info('    - add drapes [%s]' % internalid)
                 client.add_device(internalid, 'drapes')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type'] in (DEVICE_ANALOG_TEMPERATURE, DEVICE_ANALOG_HUMIDITY, DEVICE_ANALOG_VOLT, DEVICE_ANALOG_LIGHT, DEVICE_ANALOG_BINARY):
                 logger.info ('    - add analog [%s]' % internalid)
                 if devices[ipxIp][internalid]['type']==DEVICE_ANALOG_TEMPERATURE:
                     client.add_device(internalid, 'temperaturesensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_HUMIDITY:
                     client.add_device(internalid, 'humiditysensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_VOLT:
                     client.add_device(internalid, 'energymeter')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_LIGHT:
                     client.add_device(internalid, 'brightnesssensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
                 elif devices[ipxIp][internalid]['type']==DEVICE_ANALOG_BINARY:
                     client.add_device(internalid, 'binarysensor')
+                    emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_COUNTER:
                 logger.info('    - add counter [%s]' % internalid)
                 client.add_device(internalid, 'multilevelsensor')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_BINARY:
                 logger.info('    - add digital [%s]' % internalid)
                 client.add_device(internalid, 'binarysensor')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
+            elif devices[ipxIp][internalid]['type']==DEVICE_DIGITAL_PUSHBUTTON:
+                logger.info('    - add pushbutton [%s]' % internalid)
+                client.add_device(internalid, 'pushbutton')
+                emitDeviceValueChanged(ipxIp, internalid, devices[ipxIp][internalid]['state'], True)
             else:
                 logger.error('    - add nothing: unknown device type [%s]' % (internalid))
-        
-    #create ipx800v3 object
-    ipx800v3 = Ipx800v3(IPX_WEBSERVER_PORT, ipxCallback)
+
+    #start ipxv3
+    #XXX still useful?
     ipx800v3.start()
 
     #update counter and analog devices value

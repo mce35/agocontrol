@@ -1,7 +1,7 @@
 <div>
 
     <!-- delete popup -->
-    <div class="modal fade" id="confirmPopup">
+    <div class="modal fade" id="confirmPopup" tabindex="-1" data-bind="event:{defaultAction: doDelDevice}">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-body">
@@ -16,7 +16,7 @@
     </div> 
 
     <!-- treeview popup -->
-    <div class="modal fade" id="treeviewModal">
+    <div class="modal fade" id="treeviewModal" tabindex="-1" data-bind="event:{defaultAction: selectDevice}">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">

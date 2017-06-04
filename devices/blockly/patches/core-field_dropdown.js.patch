@@ -1,0 +1,13 @@
+diff --git a/core/field_dropdown.js b/core/field_dropdown.js
+index 72b6c98..fe51074 100644
+--- a/core/field_dropdown.js
++++ b/core/field_dropdown.js
+@@ -210,6 +210,8 @@ Blockly.FieldDropdown.prototype.trimOptions_ = function() {
+   if (!goog.isArray(options) || options.length < 2) {
+     return;
+   }
++  //tang: remove prefix/suffix generation (not appropriate for agocontrol)
++  return;
+   var strings = options.map(function(t) {return t[0];});
+   var shortest = Blockly.shortestStringLength(strings);
+   var prefixLength = Blockly.commonWordPrefix(strings, shortest);

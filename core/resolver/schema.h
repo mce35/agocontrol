@@ -1,8 +1,6 @@
 #ifndef SCHEMA_H
 #define SCHEMA_H
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 
 #ifdef __FreeBSD__

@@ -99,7 +99,9 @@ Blockly.Lua['agocontrol_content'] = function(block) {
             code += " or ";
         else
             code += " and ";
-        code += Blockly.Lua.valueToCode(block, 'PROP'+i, Blockly.Lua.ORDER_NONE) || '';
+        var e = Blockly.Lua.valueToCode(block, 'PROP'+i, Blockly.Lua.ORDER_NONE);
+		  if(e)
+           code += '(' + e + ')';
     }
     return [code, Blockly.Lua.ORDER_NONE];
 };
@@ -207,5 +209,27 @@ Blockly.Lua['agocontrol_journal'] = function(block) {
         code = "print('No journal available!')\n";
     }
     return code;
+};
+
+Blockly.Lua['agocontrol_weekday'] = function(block) {
+    var day = Blockly.Lua.valueToCode(block, 'WEEKDAY', Blockly.Lua.ORDER_ATOMIC) || '';
+    var type = block.getFieldValue('TYPE');
+    var code = "";
+    if(type == -2)
+    {
+        //weekday (1-5)
+        code = "tonumber("+day+") <= 5"
+    }
+    else if(type == -1)
+    {
+        //weekend (6,7)
+        code = "tonumber("+day+") >= 6"
+    }
+    else
+    {
+        //specific day
+        code = "tonumber("+day+") == "+type
+    }
+    return [code, Blockly.Lua.ORDER_RELATIONAL];
 };
 

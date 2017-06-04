@@ -1,42 +1,34 @@
 <div class="widget-lg">
 
-    <div class="info-box" data-bind="css:staleStyle">
-        <span class="info-box-icon" data-bind="click: function(data, event) { agocontrol.showDetails(data) }">
-            <i class="fa en-cloud"></i>
-        </span>
-        <div class="info-box-content">
-            <div class="info-box-title">
-                <ko opts="if:name">
-                <span data-bind="text:name"/>
-                </ko>
-                <ko opts="ifnot:name">
-                <span data-bind="text:devicetype"/>
-                </ko>
-            </div>
-            <div class="info-box-detail">
+    <div class="widget-box" data-bind="css:staleStyle, click:function(data, event) { agocontrol.showDetails(data); }">
+        <div class="inner">
+            <span data-bind="text:name, attr:{title:name, alt:name}"></span>
+            <div>
                 <ko opts="if:room">
-                <div class="info-box-location">
-                    <i class="en-location"/>
+                <div class="widget-box-location">
+                    <i class="en-location"></i>
                     <span data-bind="text:room"/>
                 </div>
                 </ko>
             </div>
         </div>
+        <div class="icon">
+            <i class="fa en-cloud"></i>
+        </div>
     </div>
 
     <div class="info-box">
-        <ko opts="foreach: valueList">
         <div class="info-box-content no-margin-left">
             <div class="well">
                 <ko opts="foreach: valueList">
                 <div class="row">
-                    <div class="col-xs-4 col-md-4 text-center">
+                    <div class="col-xs-6 col-md-6 text-center">
                         <h4 class="nowrap" data-bind="text:name"></h4>
                     </div>
-                    <div class="col-xs-4 col-md-4 text-center">
+                    <div class="col-xs-6 col-md-6 text-center">
                         <h4><strong class="nowrap" data-bind="text:levelUnit"></strong></h4>
                     </div>
-                    <div class="col-xs-4 col-md-4 text-center">
+                    <div class="col-xs-6 col-md-6 text-center">
                         <ko opts="if: name=='Forecast'">
                             <img class="img-responsive" data-bind="attr: { src:'img/forecast/'+level+'.png' }"/>
                         </ko>
@@ -45,8 +37,5 @@
                 </ko>
             </div>
         </div>
-        </ko>
     </div>
-
-
 </div>

@@ -20,6 +20,7 @@
 
 #include <limits.h>
 #include <float.h>
+#include <time.h>
 
 
 #define __STDC_FORMAT_MACROS
@@ -44,6 +45,9 @@
 #define CONFIG_BASE_PATH "/etc/openzwave/"
 #define CONFIG_MANUFACTURER_SPECIFIC CONFIG_BASE_PATH "manufacturer_specific.xml"
 
+// Helper method to cap an int to 0x00-0xFF
+#define CAP_8BIT_INT(value) (max(min(value, 0xFF), 0x00))
+
 using namespace std;
 using namespace qpid::types;
 using namespace agocontrol;
@@ -58,6 +62,7 @@ private:
     int unitsystem;
     uint32 g_homeId;
     bool g_initFailed;
+    qpid::types::Variant::Map sentEvents;
 
     typedef struct {
         uint32			m_homeId;
@@ -78,17 +83,23 @@ private:
     qpid::types::Variant::Map getCommandClassWakeUpParameter(OpenZWave::ValueID* valueID);
     bool setCommandClassParameter(uint32 homeId, uint8 nodeId, uint8 commandClassId, uint8 index, string newValue);
     void requestAllNodeConfigParameters();
+    bool filterEvent(const char *internalId, const char *eventType, string level);
+    bool emitFilteredEvent(const char *internalId, const char *eventType, const char *level, const char *unit);
+    bool emitFilteredEvent(const char *internalId, const char *eventType, double level, const char *unit);
+    bool emitFilteredEvent(const char *internalId, const char *eventType, int level, const char *unit);
 
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content);
     void setupApp();
     void cleanupApp();
     string getHRCommandClassId(uint8_t commandClassId);
     string getHRNotification(Notification::NotificationType notificationType);
+
 public:
     AGOAPP_CONSTRUCTOR_HEAD(AgoZwave)
         , unitsystem(0)
         , g_homeId(0)
         , g_initFailed(false)
+        , sentEvents()
      //   , initCond(PTHREAD_COND_INITIALIZER)
      //   , initMutex(PTHREAD_MUTEX_INITIALIZER)
         {}
@@ -134,7 +145,7 @@ void MyLog::Write( LogLevel _level, uint8 const _nodeId, char const* _format, va
         vsnprintf( lineBuf, sizeof(lineBuf), _format, _args );
         va_end( saveargs );
     }
-	std::string nodeString = GetNodeString(_nodeId);
+    std::string nodeString = GetNodeString(_nodeId);
 
     if (_level == LogLevel_StreamDetail) AGO_TRACE() << "OZW " << nodeString << string(lineBuf);
     else if (_level == LogLevel_Debug) AGO_DEBUG() << "OZW " << nodeString << string(lineBuf);
@@ -514,9 +525,9 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
         case COMMAND_CLASS_ZIP_ADV_CLIENT:
             output="COMMAND_CLASS_ZIP_ADV_CLIENT";
             break;
-        case COMMAND_CLASS_ZIP_ADV_SERVER:
-            output="COMMAND_CLASS_ZIP_ADV_SERVER";
-            break;
+        //case COMMAND_CLASS_ZIP_ADV_SERVER:
+        //    output="COMMAND_CLASS_ZIP_ADV_SERVER";
+        //    break;
         case COMMAND_CLASS_ZIP_ADV_SERVICES:
             output="COMMAND_CLASS_ZIP_ADV_SERVICES";
             break;
@@ -533,7 +544,9 @@ string AgoZwave::getHRCommandClassId(uint8_t commandClassId)
             output="COMMAND_CLASS_COLOR";
             break;
         default:
-            output="COMMAND_UNKNOWN";
+            stringstream temp;
+            temp << "COMMAND_UNKNOWN[" << commandClassId << "]";
+            output = temp.str();
     }
     return output;
 }
@@ -636,6 +649,134 @@ string AgoZwave::getHRNotification(Notification::NotificationType notificationTy
     return output;
 }
 
+/**
+ * Emit event like in agoconnection but filtered duplicated event within the same second
+ */
+bool AgoZwave::filterEvent(const char *internalId, const char *eventType, string level)
+{
+    bool filtered = false;
+    string sInternalId = string(internalId);
+    string sEventType = string(eventType);
+
+    qpid::types::Variant::Map infos;
+    uint64_t now = (uint64_t)(time(NULL));
+    if( sentEvents[sInternalId].isVoid() )
+    {
+        //add new entry
+        AGO_TRACE() << "filterEvent: create new entry for internalid " << sInternalId;
+        infos["eventype"] = sEventType;
+        infos["level"] = level;
+        infos["timestamp"] = now;
+        sentEvents[sInternalId] = infos;
+
+        //no filtering
+        filtered = false;
+    }
+    else
+    {
+        infos = sentEvents[sInternalId].asMap();
+        //check level
+        if( !infos["level"].isVoid() )
+        {
+            string oldLevel = infos["level"].asString();
+            if( oldLevel==level )
+            {
+                if( !infos["timestamp"].isVoid() )
+                {
+                    //same level received, check timestamp
+                    uint64_t oldTimestamp = infos["timestamp"].asUint64();
+                    //1 seconds seems to be enough
+                    if( now<=(oldTimestamp+1) )
+                    {
+                        //same event sent too quickly, drop it
+                        AGO_TRACE() << "filterEvent: event " << sEventType  << " for " << sInternalId << " is filtered";
+                        filtered = true;
+                    }
+                    else
+                    {
+                        //last event was sent some time ago, no filtering
+                        AGO_TRACE() << "filterEvent: duplicated event " << sEventType << " detected for " << sInternalId << "but timeout expired";
+                        filtered = false;
+                    }
+                }
+                else
+                {
+                    //should not happen
+                    AGO_TRACE() << "filterEvent: infos[timestamp] isn't exist";
+                    filtered = false;
+                }
+            }
+            else
+            {
+                //level is different, no filtering
+                AGO_TRACE() << "filterEvent: level " << level << " is different from old one " << oldLevel << " for " << sInternalId;
+                filtered = false;
+            }
+        }
+        else
+        {
+            //should not happen
+            AGO_TRACE() << "filterEvent: infos[level] isn't exist";
+            filtered = false;
+        }
+
+        //update map
+        if( !filtered )
+        {
+            infos["level"] = level;
+            infos["timestamp"] = now;
+            sentEvents[sInternalId] = infos;
+        }
+    }
+
+    AGO_TRACE() << "filterEvent: sentEvent: " << sentEvents;
+
+    return filtered;
+}
+
+bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, const char *level, const char *unit)
+{
+    string sLevel = string(level);
+    if( !filterEvent(internalId, eventType, sLevel) )
+    {
+        return agoConnection->emitEvent(internalId, eventType, level, unit);
+    }
+    else
+    {
+        AGO_DEBUG() << "Event '" << eventType << "' from '" << internalId << "' at level '" << level << "' is filtered";
+        return true;
+    }
+}
+
+bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, double level, const char *unit)
+{
+    stringstream sLevel;
+    sLevel << level;
+    if( !filterEvent(internalId, eventType, sLevel.str()) )
+    {
+        return agoConnection->emitEvent(internalId, eventType, level, unit);
+    }
+    else
+    {
+        AGO_DEBUG() << "Event '" << eventType << "' from '" << internalId << "' at level '" << level << "' is filtered";
+        return true;
+    }
+}
+
+bool AgoZwave::emitFilteredEvent(const char *internalId, const char *eventType, int level, const char *unit)
+{
+    stringstream sLevel;
+    sLevel << level;
+    if( !filterEvent(internalId, eventType, sLevel.str()) )
+    {
+        return agoConnection->emitEvent(internalId, eventType, level, unit);
+    }
+    else
+    {
+        AGO_DEBUG() << "Event '" << eventType << "' from '" << internalId << "' at level '" << level << "' is filtered";
+        return true;
+    }
+}
 
 //-----------------------------------------------------------------------------
 // <getNodeInfo>
@@ -683,7 +824,7 @@ ValueID* AgoZwave::getValueID(int nodeid, int instance, string label)
         {
             if ( ((*it)->m_nodeId == nodeid) && ((*it2).GetInstance() == instance) )
             {
-                string valuelabel = Manager::Get()->GetValueLabel((*it2));
+                string valuelabel = OpenZWave::Manager::Get()->GetValueLabel((*it2));
                 if (label == valuelabel)
                 {
                     // AGO_TRACE() << "Found ValueID: " << (*it2).GetId();
@@ -1028,6 +1169,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 {   
                                     device->addValue(label, id);
                                     device->setDevicetype("dimmerrgb");
+                                    agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
                                 }
                                 else
                                 {
@@ -1255,6 +1397,22 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                                 // Manager::Get()->EnablePoll(id);
                             }
                             break;
+                        case COMMAND_CLASS_DOOR_LOCK:
+                            AGO_DEBUG() << "adding door lock label: " << label;
+                            if ((device = devices.findId(nodeinstance)) != NULL)
+                            {
+                                device->addValue(label, id);
+                                device->setDevicetype("doorlock");
+                            }
+                            else
+                            {
+                                device = new ZWaveNode(nodeinstance, "doorlock");
+                                device->addValue(label, id);
+                                devices.add(device);
+                                AGO_DEBUG() << "Doorlock: add new doorlock [" << device->getId() << ", " << device->getDevicetype() << "]";
+                                agoConnection->addDevice(device->getId().c_str(), device->getDevicetype().c_str());
+                            }
+                            break;
                         default:
                             AGO_INFO() << "Notification: Unassigned Value Added Home=" << std::hex << _notification->GetHomeId() << " Node=" << std::dec << (int)_notification->GetNodeId() << " Genre=" << std::dec << (int)id.GetGenre() << " Class=" << getHRCommandClassId(id.GetCommandClassId()) << " Instance=" << std::dec << (int)id.GetInstance() << " Index=" << std::dec << (int)id.GetIndex() << " Type=" << (int)id.GetType() << " Label: " << label;
 
@@ -1424,7 +1582,7 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                         if (device != NULL)
                         {
                             AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
-                            agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.c_str(), units.c_str());	
+                            emitFilteredEvent(device->getId().c_str(), eventtype.c_str(), level.c_str(), units.c_str());	
                         }
                     }
                 }
@@ -1503,11 +1661,11 @@ void AgoZwave::_OnNotification (Notification const* _notification)
                 if (device != NULL)
                 {
                     AGO_DEBUG() << "Sending " << eventtype << " from child " << device->getId();
-                    agoConnection->emitEvent(device->getId().c_str(), eventtype.c_str(), level.str().c_str(), "");	
+                    emitFilteredEvent(device->getId().c_str(), eventtype.c_str(), level.str().c_str(), "");	
                 }
                 else
                 {
-                    AGO_WARNING() << "no agocontrol device found for node event: Label=" << label << " Level=" << level;
+                    AGO_WARNING() << "no agocontrol device found for node event: Label=" << label << " Level=" << level.str();
                 }
 
             }
@@ -1582,6 +1740,52 @@ void AgoZwave::_OnNotification (Notification const* _notification)
         }
         case Notification::Type_DriverReset:
         case Notification::Type_Notification:
+        {
+            uint8 _notificationCode = _notification->GetNotification();
+            ValueID id = _notification->GetValueID();
+            ZWaveNode *device = devices.findValue(id);
+            qpid::types::Variant::Map eventmap;
+            stringstream message;
+            switch (_notificationCode) {
+                case Notification::Code_MsgComplete:
+                    //completed message
+                    //update lastseen
+                    break;
+                case Notification::Code_Timeout:
+                    AGO_ERROR() << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
+                    message << "Z-wave command did time out for nodeid " << _notification->GetNodeId();
+                    eventmap["message"] = message.str();
+                    if( device )
+                    {
+                        agoConnection->emitEvent(device->getId().c_str(), "event.system.error", eventmap);
+                    }
+                    break;
+                case Notification::Code_NoOperation:
+                    break;
+                case Notification::Code_Awake:
+                    break;
+                case Notification::Code_Sleep:
+                    break;
+                case Notification::Code_Dead:
+                    AGO_ERROR() << "Z-wave nodeid " << _notification->GetNodeId() << " is presumed dead!";
+                    if( device )
+                    {
+                        agoConnection->suspendDevice(device->getId().c_str());
+                    }
+                    break;
+                case Notification::Code_Alive:
+                    AGO_ERROR() << "Z-wave nodeid " << _notification->GetNodeId() << " is alive again";
+                    if( device )
+                    {
+                        agoConnection->resumeDevice(device->getId().c_str());
+                    }
+                    break;
+                default:
+                    AGO_INFO() << "Z-wave reports an uncatch notification for nodeid " << _notification->GetNodeId();
+                    break;
+            }
+            break;
+        }
         case Notification::Type_NodeNaming:
         case Notification::Type_NodeProtocolInfo:
         case Notification::Type_NodeQueriesComplete:
@@ -1696,7 +1900,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                 string index;
                 qpid::types::Variant::Map node;
                 qpid::types::Variant::List neighborsList;
-                qpid::types::Variant::List valuesList;
+                qpid::types::Variant::List internalIds;
                 qpid::types::Variant::Map status;
                 qpid::types::Variant::List params;
 
@@ -1718,7 +1922,8 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     ZWaveNode *device = devices.findValue(currentValueID);
                     if (device != NULL)
                     {
-                        valuesList.push_back(device->getId());
+                        if(std::find(internalIds.begin(), internalIds.end(), device->getId()) == internalIds.end())
+                            internalIds.push_back(device->getId());
                     }
 
                     //get node specific parameters
@@ -1747,7 +1952,7 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         }
                     }
                 }
-                node["internalids"] = valuesList;
+                node["internalids"] = internalIds;
 
                 node["manufacturer"]=Manager::Get()->GetNodeManufacturerName(nodeInfo->m_homeId,nodeInfo->m_nodeId);
                 node["version"]=Manager::Get()->GetNodeVersion(nodeInfo->m_homeId,nodeInfo->m_nodeId);
@@ -1807,6 +2012,35 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
             qpid::types::Variant::Map returnval;
             returnval["associations"] = associationsmap;
             returnval["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, mygroup);
+            return responseSuccess(returnval);
+        }
+        else if (content["command"] == "getallassociations")
+        {
+            checkMsgParameter(content, "node", VAR_INT32);
+            int mynode = content["node"];
+            int numGroups = Manager::Get()->GetNumGroups(g_homeId, mynode);
+
+            qpid::types::Variant::List groups;
+            for(int group=1; group <= numGroups; group++) {
+                qpid::types::Variant::Map g;
+                uint8_t *associations;
+                uint32_t numassoc = Manager::Get()->GetAssociations(g_homeId, mynode, group, &associations);
+
+                qpid::types::Variant::List associationsList;
+                for (uint32_t assoc = 0; assoc < numassoc; assoc++)
+                    associationsList.push_back(associations[assoc]);
+
+                if (numassoc >0) delete[] associations;
+
+                g["group"] = group;
+                g["associations"] = associationsList;
+                g["label"] = Manager::Get()->GetGroupLabel(g_homeId, mynode, group);
+
+                groups.push_back(g);
+            }
+
+            qpid::types::Variant::Map returnval;
+            returnval["groups"] = groups;
             return responseSuccess(returnval);
         }
         else if (content["command"] == "removeassociation")
@@ -2010,11 +2244,15 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                     checkMsgParameter(content, "red");
                     checkMsgParameter(content, "green");
                     checkMsgParameter(content, "blue");
+                    int red, green, blue = 0;
+                    red = CAP_8BIT_INT(atoi(content["red"].asString().c_str()));
+                    green = CAP_8BIT_INT(atoi(content["green"].asString().c_str()));
+                    blue = CAP_8BIT_INT(atoi(content["blue"].asString().c_str()));
                     stringstream colorString;
                     colorString << "#";
-                    colorString << std::uppercase << std::hex << content["red"].asString();
-                    colorString << std::uppercase << std::hex << content["green"].asString();
-                    colorString << std::uppercase << std::hex << content["blue"].asString();
+                    colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << red;
+                    colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << green;
+                    colorString << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << blue;
                     colorString << "00";
                     colorString << "00";
                     AGO_DEBUG() << "setting color string: " << colorString.str();
@@ -2177,6 +2415,21 @@ qpid::types::Variant::Map AgoZwave::commandHandler(qpid::types::Variant::Map con
                         else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
                     }
                 }
+            } else if (devicetype == "doorlock") {
+                if (content["command"] == "open")
+                {
+                    tmpValueID = device->getValueID("Locked");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Locked' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , true)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+                } else if (content["command"] == "close")
+                {
+                    tmpValueID = device->getValueID("Locked");
+                    if (tmpValueID == NULL) return responseError(RESPONSE_ERR_INTERNAL, "Cannot determine OpenZWave 'Locked' label");
+                    if (Manager::Get()->SetValue(*tmpValueID , false)) return responseSuccess();
+                    else return responseError(RESPONSE_ERR_INTERNAL, "Cannot set OpenZWave device value");
+
+                }
             }
         }
     }
@@ -2212,10 +2465,11 @@ void AgoZwave::setupApp()
     // pLog->SetLogFileName("/var/log/zwave.log"); // Make sure, in case Log::Create already was called before we got here
     // pLog->SetLoggingState(OpenZWave::LogLevel_Info, OpenZWave::LogLevel_Debug, OpenZWave::LogLevel_Error);
 
-    if(Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" ) == NULL) {
-	   AGO_ERROR() << "Failed to configure OpenZWave";
-	   throw StartupError();
-	}
+    if(Options::Create( "/etc/openzwave/", getConfigPath("/ozw/").c_str(), "" ) == NULL)
+    {
+        AGO_ERROR() << "Failed to configure OpenZWave";
+        throw StartupError();
+    }
     if (getConfigOption("returnroutes", "true")=="true")
     {
         Options::Get()->AddOptionBool("PerformReturnRoutes", false );
@@ -2274,7 +2528,7 @@ void AgoZwave::setupApp()
         Manager::Destroy();
         pthread_mutex_destroy( &g_criticalSection );
         throw StartupError();
-    }	
+    }
 }
 
 void AgoZwave::cleanupApp() {

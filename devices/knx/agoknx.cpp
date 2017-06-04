@@ -65,7 +65,7 @@ private:
     bool sendShortData(std::string dest, int data);
     bool sendCharData(std::string dest, int data);
     bool sendFloatData(std::string dest, float data);
-
+    bool sendBytes(std::string dest, uint8_t *bytes, int len);
     void setupApp();
     void cleanupApp();
 
@@ -140,9 +140,6 @@ bool AgoKnx::loadDevicesXML(fs::path &filename, Variant::Map& _deviceMap) {
 void AgoKnx::reportDevices(Variant::Map devicemap) {
     for (Variant::Map::const_iterator it = devicemap.begin(); it != devicemap.end(); ++it) {
         Variant::Map device;
-        Variant::Map content;
-        Message event;
-
         device = it->second.asMap();
         agoConnection->addDevice(it->first.c_str(), device["devicetype"].asString().c_str(), true);
     }
@@ -255,16 +252,16 @@ void *AgoKnx::listener() {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.humiditychanged", tl.getFloatData(), "percent");
                         } else if (type == "airquality") {
                             agoConnection->emitEvent(uuid.c_str(), "event.environment.co2changed", tl.getFloatData(), "ppm");
+                        } else if (type == "windspeed") {
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.windspeedchanged", tl.getFloatData(), "m/s");
                         } else if (type == "energy") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "A");
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.energychanged", tl.getFloatData(), "kWh");
                         } else if (type == "power") {
-                            agoConnection->emitEvent(uuid.c_str(), "event.environment.powerchanged", tl.getFloatData(), "kW");
-                        } else if (type == "energyusage") {
-                            unsigned char buffer[4];
-                            if (tl.getUserData(buffer,4) == 4) {
-                                AGO_DEBUG() << "USER DATA: " << std::hex << buffer[0] << " " << buffer[1] << " " << buffer[2] << buffer[3];
-                            }
-                            // event.setSubject("event.environment.powerchanged");
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.powerchanged", tl.getFloatData(), "kWh");
+                        } else if (type == "flow") {
+                            agoConnection->emitEvent(uuid.c_str(), "event.environment.flowchanged", tl.getFloatData(), "l/h");
+                        } else if (type == "counter") {
+                        	agoConnection->emitEvent(uuid.c_str(), "event.environment.counterchanged",tl.getIntData(), "Wh");
                         } else if (type == "binary") {
                             agoConnection->emitEvent(uuid.c_str(), "event.security.sensortriggered", tl.getShortUserData()==1 ? 255 : 0, "");
                         }
@@ -288,6 +285,7 @@ void AgoKnx::eventHandler(std::string subject, qpid::types::Variant::Map content
         }
     }
 }
+
 
 void AgoKnx::sendDate() {
     uint8_t datebytes[3];   
@@ -320,6 +318,18 @@ void AgoKnx::sendTime() {
     AGO_TRACE() << "sending telegram";
     tg_time->sendTo(eibcon);
     pthread_mutex_unlock (&mutexCon);
+}
+
+bool AgoKnx::sendBytes(std::string dest, uint8_t *bytes, int len) {
+    Telegram *tg = new Telegram();
+    tg->setGroupAddress(Telegram::stringtogaddr(dest));
+    tg->setUserData(bytes, len);
+    AGO_TRACE() << "sending " << len << " bytes to " << dest;
+    pthread_mutex_lock (&mutexCon);
+    bool result = tg->sendTo(eibcon);
+    pthread_mutex_unlock (&mutexCon);
+    AGO_DEBUG() << "Result: " << result;
+    return result;
 }
 
 bool AgoKnx::sendShortData(std::string dest, int data) {
@@ -539,9 +549,17 @@ qpid::types::Variant::Map AgoKnx::commandHandler(qpid::types::Variant::Map conte
         checkMsgParameter(content, "red");
         checkMsgParameter(content, "green");
         checkMsgParameter(content, "blue");
-        result = sendCharData(device["red"],atoi(content["red"].asString().c_str()));
-        result &= sendCharData(device["green"],atoi(content["green"].asString().c_str()));
-        result &= sendCharData(device["blue"],atoi(content["blue"].asString().c_str()));
+        if (!device["setcolor"].isVoid()) {
+            uint8_t buf[3];
+            buf[0]= atoi(content["red"].asString().c_str());
+            buf[1]= atoi(content["green"].asString().c_str());
+            buf[2]= atoi(content["blue"].asString().c_str());
+            result = sendBytes(device["setcolor"], buf, 3);
+        } else {
+            result = sendCharData(device["red"],atoi(content["red"].asString().c_str()));
+            result &= sendCharData(device["green"],atoi(content["green"].asString().c_str()));
+            result &= sendCharData(device["blue"],atoi(content["blue"].asString().c_str()));
+        }
     } else {
         return responseUnknownCommand();
     }

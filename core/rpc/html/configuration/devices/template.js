@@ -344,41 +344,19 @@ function DeviceConfig(agocontrol)
         $("#confirmPopup").modal('hide');
 
         var item = $("#confirmPopup").data('item');
-        var request = {};
-        request.method = "message";
-        request.params = {};
-        request.params.content = {
-            uuid : item.uuid
-        };
-        request.params.subject = "event.device.remove";
-        request.id = 1;
-        request.jsonrpc = "2.0";
-
-        // XXX(1): sending an event does NOT yield a response
-        // XXX(2): dont build requests manually like this
-        $.ajax({
-            type : 'POST',
-            url : self.agocontrol.url,
-            data : JSON.stringify(request),
-            success : function() {
-                var content = {};
-                content.device = item.uuid;
-                content.uuid = self.agocontrol.agoController;
-                content.command = "setdevicename";
-                content.name = "";
-                self.agocontrol.sendCommand(content)
-                    .then(function(res) {
-                        self.agocontrol.devices.remove(function(e) {
-                            return e.uuid == item.uuid;
-                        });
-                    })
-                    .finally(function() {
-                        self.agocontrol.unblock($('#agoGrid'));
-                    });
-            },
-            dataType : "json",
-            async : true
-        });
+        var content = {};
+        content.device = item.uuid;
+        content.uuid = self.agocontrol.agoController;
+        content.command = "deletedevice";
+        self.agocontrol.sendCommand(content)
+            .then(function(res) {
+                self.agocontrol.devices.remove(function(e) {
+                    return e.uuid == item.uuid;
+                });
+            })
+            .finally(function() {
+                self.agocontrol.unblock($('#agoGrid'));
+            });
     };
 
     //update filters

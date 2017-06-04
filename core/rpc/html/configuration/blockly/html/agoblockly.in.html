@@ -1,4 +1,4 @@
-<div style="width:100%; height:800px;">
+<div style="width:100%;">
 
     <!-- lua dialog -->
     <div class="modal fade" tabindex="-1" id="luaDialog">
@@ -33,6 +33,12 @@
     </div>
     <script type="text/html" id="rowTemplate">
         <td data-bind="attr: {'data-oldname': name}, text: name" class="rename_script"/>
+        <ko opts="if:enabled">
+        <_td data-translateable="true">Enabled</_td>
+        </ko>
+        <ko opts="ifnot:enabled">
+        <_td data-translateable="true">Disabled</_td>
+        </ko>
         <td>
             <div class="btn-group">
                 <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiLoadScript.bind($data,name)" data-translateable="true" _alt="Load" _title="Load">
@@ -43,6 +49,9 @@
                 </button>
                 <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiExportScript.bind($data,name)" data-translateable="true" _alt="Export" _title="Export">
                     <span class="en-up"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-xs" data-bind="click: $parent.uiEnableScript.bind($data,name)" data-translateable="true" _alt="Enable/disable script" _title="Enable/disable script">
+                    <span class="en-lock"></span>
                 </button>
             </div>
         </td>
@@ -65,13 +74,13 @@
             </div>
         </div>
     </div>
-    
+
     <!-- saveas dialog -->
     <div class="modal fade" tabindex="-1" id="saveasDialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <_h4 data-translateable="true" class="modal-title">Saveas</_h4>
+                    <_h4 data-translateable="true" class="modal-title">Save as</_h4>
                 </div>
                 <div class="modal-body">
                     <form data-bind="formNoEnter:{}">
@@ -283,6 +292,7 @@
             <block type="datetime_totimestamp"/>
             <block type="datetime_currentdate"/>
             <block type="datetime_specificdate"/>
+            <block type="agocontrol_weekday"/>
         </category>
         <category name="Common" colour="20">
             <block type="text_print"/>
@@ -290,6 +300,7 @@
             <block type="common_tostring"/>
             <block type="common_type"/>
             <block type="common_execute"/>
+            <block type="variables_is_defined"/>
         </category>
         <category name="Local variables" colour="330" custom="VARIABLE">
         </category>
@@ -345,37 +356,34 @@
             <block type="agocontrol_defaultPhoneNumber"/>
         </category>
     </xml>
-   
+
     <!-- notification messages -->
     <section class="content-notifs">
         <_span data-translateable="true" id="nr">luacontroller is not responding. Unable to execute action.</_span>
         <_span data-translateable="true" id="nb">No block defined in workspace.</_span>
         <_span data-translateable="true" id="ss">Script saved successfully.</_span>
         <_span data-translateable="true" id="sl">Script loaded successfully.</_span>
-        <_span data-translateable="true" id="pss">Please select a script</_span>
+        <_span data-translateable="true" id="pss">Please select a script.</_span>
         <_span data-translateable="true" id="sc">Unable to load script, it seems to be corrupted!</_span>
-        <_span data-translateable="true" id="ns">Script not saved</_span>
-        <_span data-translateable="true" id="sn">Please specify a valid script name</_span>
+        <_span data-translateable="true" id="ns">Script not saved.</_span>
+        <_span data-translateable="true" id="sn">Please specify a valid script name.</_span>
         <_span data-translateable="true" id="cd">Delete selected script?</_span>
-        <_span data-translateable="true" id="sd">Script deleted successfully</_span>
-        <_span data-translateable="true" id="nd">Unable to delete script</_span>
-        <_span data-translateable="true" id="rss">Script renamed successfully</_span>
-        <_span data-translateable="true" id="rsf">Script not renamed</_span>
+        <_span data-translateable="true" id="sd">Script deleted successfully.</_span>
+        <_span data-translateable="true" id="nd">Unable to delete script.</_span>
+        <_span data-translateable="true" id="rss">Script renamed successfully.</_span>
+        <_span data-translateable="true" id="rsf">Script not renamed.</_span>
+        <_span data-translateable="true" id="ess">Script enabled/disabled successfully.</_span>
+        <_span data-translateable="true" id="esf">Unable to enable or disable script.</_span>
     </section>
 
-    <table style="width:100%; height:100%;">
     <!--title-->
-    <tr>
-        <td style="height:50px;">
-            <section class="content-header">
-                <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
-            </section>
-        </td>
-    </tr>
+    <section class="content-header">
+        <_h1 data-translateable="true">Event configuration stacking blocks</_h1>
+    </section>
     <!-- toolbox -->
-    <tr style="height:40px;">
-        <td style="padding: 20px 20px 0px 20px;">
-            <div class="btn-toolbar">
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12 btn-toolbar">
                 <div class="btn-group">
                     <button type="button" class="btn btn-primary" data-bind="click:clear">
                         <span class="en-doc"></span>
@@ -420,18 +428,14 @@
                     </button>
                 </div>
             </div>
-        </td>
-    </tr>
-    <tr class="hidden-xs hidden-sm">
-        <td id="blocklyArea" style="padding: 0px 20px 0px 20px;">
-            <div id="blocklyDiv" style="" data-bind="blockly:blocklyViewModel"/>    
-        </td>
-    </tr>
-    <tr class="hidden-md hidden-lg">
-        <td>
-            <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
-        </td>
-    </tr>
-    </table>
-
+        </div>
+        <div class="row" style="padding-top:8px;">
+            <div id="blocklyArea" class="col-md-12">
+                <div class="hidden-xs hidden-sm" id="blocklyDiv" data-bind="blockly:blocklyViewModel"/>
+                <div class="hidden-md hidden-lg">
+                    <_span data-translateable="true">Event editor is only available on large resolution devices.</_span>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

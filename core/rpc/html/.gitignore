@@ -21,6 +21,7 @@ templates/devices/binarysensor.html
 templates/devices/barometersensor.html
 templates/devices/placeholder.html
 templates/devices/dimmerrgb.html
+templates/devices/smartdimmer.html
 templates/devices/distancesensor.html
 templates/devices/humiditysensor.html
 templates/devices/multilevelsensor.html
@@ -39,6 +40,7 @@ templates/devices/temperaturesensor.html
 templates/devices/scenario.html
 templates/devices/drapes.html
 templates/devices/squeezebox.html
+templates/devices/mopidy.html
 templates/systemStatus.html
 templates/configuration.html
 templates/dashboard.html

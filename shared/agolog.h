@@ -49,6 +49,10 @@ namespace agocontrol {
 // and initing the logger.
 #define AGO_GET_LOGGER (::agocontrol::log::log_container::get())
 
+// It is not safe to pass a null char* to a stringstream,
+// use this macro to replace null char* with "(null)"
+#define LOG_STR_OR_NULL(v)  (v != NULL ? v : "(null)")
+
 
 namespace agocontrol {
 namespace log {

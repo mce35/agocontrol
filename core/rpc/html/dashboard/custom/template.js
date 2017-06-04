@@ -121,12 +121,10 @@ function Dashboard(dashboard, edition, agocontrol)
             $(this).droppable({
                 accept: '.device-list-item, .dashboard-widget',
                 activate: function(event, ui) {
-                    $(this).find('div.info-box:first-child').addClass('border-t-r-l');
-                    $(this).find('div.info-box:last-child').addClass('border-r-b-l');
+                    $(this).find('div.info-box:last-child').addClass('border-r-b-l-t');
                 },
                 deactivate: function(event, ui) {
-                    $(this).find('div.info-box:first-child').removeClass('border-t-r-l');
-                    $(this).find('div.info-box:last-child').removeClass('border-r-b-l');
+                    $(this).find('div.info-box:last-child').removeClass('border-r-b-l-t');
                 },
                 over: function(event, ui) {
                     $(this).find('div.info-box:first-child').removeClass('bg-white').addClass('bg-aqua');
@@ -290,21 +288,25 @@ function Dashboard(dashboard, edition, agocontrol)
     //sub filter options
     self.subFilterOptions = ko.computed(function()
     {
+        var out = [];
+        function compare(a,b) {
+            if( a.name<b.name ) return -1;
+            else if( a.name>b.name ) return 1;
+            else return 0;
+        };
+
         if( self.selectedMainFilter()=='types' )
         {
             //return devices of specified types
-            return self.deviceTypes();
+            out = self.deviceTypes().slice(0).sort(compare);
         }
         else if( self.selectedMainFilter()=='rooms' )
         {
             //return all rooms
-            return self.rooms();
+            out = self.rooms().slice(0).sort(compare);
         }
-        else
-        {
-            //return nothing
-            return [];
-        }
+
+        return out;
     });
 
     //show editor

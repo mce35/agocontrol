@@ -21,9 +21,7 @@
 #include <math.h>
 
 #include <termios.h>
-#ifndef __FreeBSD__
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -41,9 +39,9 @@
 #include <qpid/messaging/Session.h>
 #include <qpid/messaging/Address.h>
 
-#include <jsoncpp/json/value.h>
-#include <jsoncpp/json/reader.h>
-#include <jsoncpp/json/writer.h>
+#include <json/value.h>
+#include <json/reader.h>
+#include <json/writer.h>
 
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/thread/mutex.hpp>
@@ -163,12 +161,12 @@ static void mg_printmap(struct mg_connection *conn, Variant::Map map);
 
 static void mg_printlist(struct mg_connection *conn, Variant::List list) {
     std::string json = variantListToJSONString(list);
-    mg_printf_data(conn, json.c_str());
+    mg_printf_data(conn, "%s", json.c_str());
 }
 
 static void mg_printmap(struct mg_connection *conn, Variant::Map map) {
     std::string json = variantMapToJSONString(map);
-    mg_printf_data(conn, json.c_str());
+    mg_printf_data(conn, "%s", json.c_str());
 }
 
 /**

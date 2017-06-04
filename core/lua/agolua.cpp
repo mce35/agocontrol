@@ -6,9 +6,10 @@
 #include <sstream>
 #include <cerrno>
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #include "boost/filesystem.hpp"
+
 #include "boost/regex.hpp"
 
 #ifndef SCRIPTSINFOSFILE
@@ -57,9 +58,9 @@ private:
     int filterByEvents;
     fs::path scriptdir;
     qpid::types::Variant::Map scriptContexts;
-    pthread_mutex_t inventoryMutex;
-    pthread_mutex_t scriptsInfosMutex;
-    pthread_mutex_t scriptsContextsMutex;
+    boost::mutex mutexInventory;
+    boost::mutex mutexScriptInfos;
+    boost::mutex mutexScriptContexts;
     int64_t lastInventoryUpdate;
 
     fs::path construct_script_name(fs::path input) ;
@@ -78,6 +79,7 @@ private:
     bool canExecuteScript(qpid::types::Variant::Map content, const fs::path &script);
     qpid::types::Variant::Map commandHandler(qpid::types::Variant::Map content) ;
     void eventHandler(std::string subject, qpid::types::Variant::Map content) ;
+    bool enableScript(const string& script, uint8_t enabled);
 
     void setupApp();
 
@@ -89,7 +91,6 @@ public:
         {}
 
     // called from global static wrapper functions, thus public
-    int luaAddDevice(lua_State *l);
     int luaSendMessage(lua_State *l);
     int luaSetVariable(lua_State *L);
     int luaGetVariable(lua_State *L);
@@ -148,7 +149,8 @@ static std::string get_file_contents(const fs::path &filename)
         in.close();
         return(contents);
     }
-    throw(errno);
+
+    throw fs::filesystem_error( "reading file", filename, boost::system::error_code(errno, boost::system::system_category()) );
 }
 
 /**
@@ -403,14 +405,7 @@ void AgoLua::pullTableToMap(lua_State *L, qpid::types::Variant::Map& table)
         {
             AGO_TRACE() << "Pull '" << key << "' as BOOLEAN";
             bool value = lua_toboolean(L, -1);
-            if( value )
-            {
-                table[key] = true;
-            }
-            else
-            {
-                table[key] = false;
-            }
+            table[key] = value;
         }
         else if( lua_isnoneornil(L, -1) )
         {
@@ -448,14 +443,7 @@ void AgoLua::pullTableToList(lua_State *L, qpid::types::Variant::List& list)
         {
             AGO_TRACE() << "Pull list value as BOOLEAN";
             bool value = lua_toboolean(L, -1);
-            if( value )
-            {
-                list.push_back(true);
-            }
-            else
-            {
-                list.push_back(false);
-            }
+            list.push_back(value);
         }
         else if( lua_isnoneornil(L, -1) )
         {
@@ -540,7 +528,7 @@ int AgoLua::luaSetVariable(lua_State *L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() && !inventory["variables"].isVoid() )
     {
         //update current inventory to reflect changes without reloading it (too long!!)
@@ -562,7 +550,6 @@ int AgoLua::luaSetVariable(lua_State *L)
         //no inventory available
         lua_pushnumber(L, 0);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -578,11 +565,9 @@ int AgoLua::luaGetVariable(lua_State *L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
-        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
-
         //get variable name
         variableName = std::string(lua_tostring(L,1));
 
@@ -610,7 +595,6 @@ int AgoLua::luaGetVariable(lua_State *L)
         //no inventory available
         lua_pushnil(L);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -629,7 +613,7 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
         qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
@@ -717,7 +701,6 @@ int AgoLua::luaGetDeviceInventory(lua_State *L)
         //no inventory available
         lua_pushnil(L);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -731,9 +714,8 @@ int AgoLua::luaGetInventory(lua_State *L)
     updateInventory();
 
     //then return it
-    pthread_mutex_lock(&inventoryMutex);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     pushTableFromMap(L, inventory);
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -794,11 +776,9 @@ int AgoLua::luaGetDeviceName(lua_State* L)
     //update inventory
     updateInventory();
 
-    pthread_mutex_lock(&inventoryMutex);
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     if( inventory.size()>0 && !inventory["devices"].isVoid() )
     {
-        qpid::types::Variant::Map deviceInventory = inventory["devices"].asMap();
-
         //get uuid
         uuid = std::string(lua_tostring(L,1));
         if( uuid.length()>0 && !inventory["devices"].isVoid() )
@@ -834,7 +814,6 @@ int AgoLua::luaGetDeviceName(lua_State* L)
         //no inventory available
         lua_pushnil(L);
     }
-    pthread_mutex_unlock(&inventoryMutex);
 
     return 1;
 }
@@ -844,8 +823,7 @@ int AgoLua::luaGetDeviceName(lua_State* L)
  */
 void AgoLua::updateInventory()
 {
-    pthread_mutex_lock(&inventoryMutex);
-
+    boost::lock_guard<boost::mutex> lock(mutexInventory);
     time_t now = time(NULL);
     if( difftime(now, lastInventoryUpdate)>=INVENTORY_MAX_AGE || inventory.size()==0 )
     {
@@ -883,7 +861,6 @@ void AgoLua::updateInventory()
         }
     }
 
-    pthread_mutex_unlock(&inventoryMutex);
 }
 
 /**
@@ -936,7 +913,7 @@ void AgoLua::searchEvents(const fs::path& scriptPath, qpid::types::Variant::List
  */
 void AgoLua::purgeScripts()
 {
-    pthread_mutex_lock(&scriptsInfosMutex);
+    boost::lock_guard<boost::mutex> lock(mutexScriptInfos);
 
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -974,7 +951,7 @@ void AgoLua::purgeScripts()
     AGO_TRACE() << "Config scripts: " << configScripts;
 
     //purge obsolete infos
-    bool found = false;
+    bool found;
     for( qpid::types::Variant::List::iterator it=configScripts.begin(); it!=configScripts.end(); it++ )
     {
         found = false;
@@ -998,8 +975,6 @@ void AgoLua::purgeScripts()
     scriptsInfos["scripts"] = scripts;
     variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
     scriptsInfos = jsonFileToVariantMap(getConfigPath(SCRIPTSINFOSFILE));
-
-    pthread_mutex_unlock(&scriptsInfosMutex);
 }
 
 /**
@@ -1016,21 +991,22 @@ void AgoLua::initScript(lua_State* L, qpid::types::Variant::Map& content, const 
     }
     luaL_openlibs(L);
 
-    //load script context (from local variables)
-    pthread_mutex_lock(&scriptsContextsMutex);
-    if( scriptContexts[script].isVoid() )
     {
-        //no context yet, create empty one
-        scriptContexts[script] = context;
-    }
-    else
-    {
-        if( !scriptContexts[script].isVoid() )
+        //load script context (from local variables)
+        boost::lock_guard<boost::mutex> lock(mutexScriptContexts);
+        if( scriptContexts[script].isVoid() )
         {
-            context = scriptContexts[script].asMap();
+            //no context yet, create empty one
+            scriptContexts[script] = context;
+        }
+        else
+        {
+            if( !scriptContexts[script].isVoid() )
+            {
+                context = scriptContexts[script].asMap();
+            }
         }
     }
-    pthread_mutex_unlock(&scriptsContextsMutex);
     AGO_TRACE() << "LUA context before:" << context;
 
     //add mapped functions
@@ -1072,9 +1048,10 @@ void AgoLua::finalizeScript(lua_State* L, qpid::types::Variant::Map& content, co
     //handle context value
     lua_getglobal(L, "context");
     pullTableToMap(L, context);
-    pthread_mutex_lock(&scriptsContextsMutex);
-    scriptContexts[script] = context;
-    pthread_mutex_unlock(&scriptsContextsMutex);
+    {
+        boost::lock_guard<boost::mutex> lock(mutexScriptContexts);
+        scriptContexts[script] = context;
+    }
     AGO_TRACE() << "LUA context after:" << context;
 }
 
@@ -1102,26 +1079,20 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
         debugResult["msg"] = "Script debugging started";
         agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
         int status = luaL_loadstring(L, script.c_str());
-        int result = 0;
+        std::string err_prefix = "Failed to load script: ";
         if(status == LUA_OK)
         {
-            result = lua_pcall(L, 0, LUA_MULTRET, 0);
+            err_prefix = "Failed to execute script: ";
+            status = lua_pcall(L, 0, LUA_MULTRET, 0);
         }
-        else
-        {
-            AGO_ERROR()<< "Could not load debug script";
-            debugResult["type"] = DBG_ERROR;
-            debugResult["msg"] = "Could not load debug script";
-            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
-        }
-        if ( result!=0 )
-        {
+
+        if(status != 0) {
             std::string err = lua_tostring(L, -1);
-            AGO_ERROR() << "Debug failed: " << err;
-            debugResult["type"] = DBG_ERROR;
-            debugResult["msg"] = err;
-            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
             lua_pop(L, 1); // remove error message
+            AGO_ERROR() << err_prefix << err;
+            debugResult["type"] = DBG_ERROR;
+            debugResult["msg"] = err_prefix + err;
+            agoConnection->emitEvent("luacontroller", "event.system.debugscript", debugResult);
         }
  
         //finalize script
@@ -1141,6 +1112,36 @@ void AgoLua::debugScript(qpid::types::Variant::Map content, const std::string sc
 }
 
 /**
+ * Enable/disable specified script
+ * @param script: script full path
+ * @param enable: enable(1) or disabled(0)
+ */
+bool AgoLua::enableScript(const string& script, uint8_t enabled)
+{
+    boost::lock_guard<boost::mutex> lock(mutexScriptInfos);
+
+    //get script infos
+    qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
+    if( scripts[script].isVoid() )
+    {
+        //no script infos yet, nothing to do here
+        AGO_DEBUG() << "enableScript: no script infos found";
+    }
+    else
+    {
+        //update enable flag
+        qpid::types::Variant::Map infos = scripts[script].asMap();
+        infos["enabled"] = enabled;
+        scripts[script] = infos;
+        scriptsInfos["scripts"] = scripts;
+        variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
+        AGO_DEBUG() << "enableScript: enabled flag for script '" << script << "' updated to " << (int)enabled;
+    }
+
+    return true;
+}
+
+/**
  * Execute LUA script (blocking).
  * Called in separate thread.
  */
@@ -1157,22 +1158,20 @@ void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &sc
     //execute script
     AGO_TRACE() << "Loading " << script;
     int status = luaL_loadfile(L, script.c_str());
-    int result = 0;
+    std::string err_prefix = "Failed to load script: ";
     if(status == LUA_OK)
     {
-        result = lua_pcall(L, 0, LUA_MULTRET, 0);
+        err_prefix = "Failed to execute script: ";
+        status = lua_pcall(L, 0, LUA_MULTRET, 0);
     }
-    else
+    if(status != 0)
     {
-        AGO_ERROR()<< "Could not load script: " << script;
-    }
-    if ( result!=0 )
-    {
-        AGO_ERROR() << "Script " << script << " failed: " << lua_tostring(L, -1);
-        lua_pop(L, 1); // remove error message
+        // Error msg includes filename
+        AGO_ERROR() << err_prefix << lua_tostring(L, -1);
+        lua_pop(L, 1);
     }
 
-    //finalize script
+    // finalize script
     finalizeScript(L, content, script.string(), context);
     lua_close(L);
     AGO_TRACE() << "Execution of " << script << " finished.";
@@ -1183,7 +1182,7 @@ void AgoLua::executeScript(qpid::types::Variant::Map content, const fs::path &sc
  */
 bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path &script)
 {
-    pthread_mutex_lock(&scriptsInfosMutex);
+    boost::lock_guard<boost::mutex> lock(mutexScriptInfos);
 
     //check integrity
     if( scriptsInfos["scripts"].isVoid() )
@@ -1214,10 +1213,16 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
             }
         }
     }
+
     if( parseScript )
     {
         AGO_DEBUG() << "Update script infos (" << script << ")";
         infos["updated"] = (int32_t)updated;
+        if( infos["enabled"].isVoid() )
+        {
+            //append enabled infos
+            infos["enabled"] = (uint8_t)1;
+        }
         qpid::types::Variant::List events;
         searchEvents(script, &events);
         infos["events"] = events;
@@ -1226,45 +1231,63 @@ bool AgoLua::canExecuteScript(qpid::types::Variant::Map content, const fs::path 
         variantMapToJSONFile(scriptsInfos, getConfigPath(SCRIPTSINFOSFILE));
 
         //reset script context if exists
-        pthread_mutex_lock(&scriptsContextsMutex);
+        boost::lock_guard<boost::mutex> lock(mutexScriptContexts);
         if( !scriptContexts[script.string()].isVoid() )
         {
             qpid::types::Variant::Map context = scriptContexts[script.string()].asMap();
             context.clear();
             scriptContexts[script.string()] = context;
         }
-        pthread_mutex_unlock(&scriptsContextsMutex);
+    }
+
+    bool executeScript = true;
+
+    //check if script is enabled
+    if( !infos["enabled"].isVoid() )
+    {
+        uint8_t enabled = infos["enabled"].asUint8();
+        if( enabled==0 )
+        {
+            AGO_DEBUG() << "Script '" << script << "' disabled by user";
+            executeScript = false;
+        }
     }
 
     //check if current triggered event is caught in script
-    bool executeScript = false;
-    if( filterByEvents==1 )
+    if( executeScript )
     {
-        qpid::types::Variant::List events = infos["events"].asList();
-        if( events.size()>0 )
+        executeScript = false;
+        if( filterByEvents==1 )
         {
-            for( qpid::types::Variant::List::iterator it=events.begin(); it!=events.end(); it++ )
+            qpid::types::Variant::List events = infos["events"].asList();
+            if( events.size()>0 )
             {
-                if( (*it)==content["subject"] )
+                for( qpid::types::Variant::List::iterator it=events.begin(); it!=events.end(); it++ )
                 {
-                    executeScript = true;
-                    break;
+                    if( (*it)==content["subject"] )
+                    {
+                        executeScript = true;
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                //no events detected in script, trigger it everytime :S
+                executeScript = true;
             }
         }
         else
         {
-            //no events detected in script, trigger it everytime :S
+            //config option disable events filtering
             executeScript = true;
         }
-    }
-    else
-    {
-        //config option disable events filtering
-        executeScript = true;
-    }
 
-    pthread_mutex_unlock(&scriptsInfosMutex);
+        if( !executeScript )
+        {
+            AGO_DEBUG() << "Script '" << script << "' disabled by event";
+        }
+    }
 
     return executeScript;
 }
@@ -1282,6 +1305,8 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         if (content["command"]=="getscriptlist")
         {
             qpid::types::Variant::List scriptlist;
+            qpid::types::Variant::Map scripts = scriptsInfos["scripts"].asMap();
+            qpid::types::Variant::Map infos;
             if (fs::exists(scriptdir))
             {
                 fs::recursive_directory_iterator it(scriptdir);
@@ -1290,12 +1315,35 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
                 {
                     if (fs::is_regular_file(*it) && (it->path().extension().string() == ".lua") && (it->path().filename().string() != "helper.lua"))
                     {
-                        scriptlist.push_back(qpid::types::Variant(it->path().stem().string()));
+                        qpid::types::Variant::Map item;
+                        //get script name
+                        fs::path script = construct_script_name(it->path().filename());
+                        string scriptName = it->path().stem().string();
+                        item["name"] = scriptName;
+                        //get script infos
+                        if( !scripts[script.string()].isVoid() )
+                        {
+                            infos = scripts[script.string()].asMap();
+                            if( !infos["enabled"].isVoid() )
+                            {
+                                uint8_t enabled = infos["enabled"].asUint8();
+                                item["enabled"] = enabled;
+                            }
+                            else
+                            {
+                                item["enabled"] = 1;
+                            }
+                        }
+                        else
+                        {
+                            item["enabled"] = 1;
+                        }
+                        scriptlist.push_back(item);
                     }
                     ++it;
                 }
             }
-            returnData["scriptlist"]=scriptlist;
+            returnData["scriptlist"] = scriptlist;
             return responseSuccess(returnData);
         }
         else if (content["command"] == "getscript")
@@ -1323,18 +1371,20 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
         {
             checkMsgParameter(content, "name", VAR_STRING);
 
-            try
-            {
+            try {
                 // if a path is passed, strip it for security reasons
                 fs::path input(content["name"]);
                 fs::path script = construct_script_name(input.stem());
-                std::ofstream file;
 
-                // XXX: this did not seem to throw even if the directory did not exist...
+                std::ofstream file;
                 file.open(script.c_str());
-                file << content["script"].asString();
-                file.close();
-                return responseSuccess();
+                if(file) {
+                    file << content["script"].asString();
+                    file.close();
+                    return responseSuccess();
+                }
+                AGO_ERROR() << "failed to open " << script << ": " << strerror(errno);
+                return responseFailed(std::string("Unable to write script file: ") + strerror(errno));
             }
             catch( const fs::filesystem_error& e )
             {
@@ -1495,6 +1545,25 @@ qpid::types::Variant::Map AgoLua::commandHandler(qpid::types::Variant::Map conte
             returnData["phone"] = getConfigOption("phone", "", "system", "system");
             return responseSuccess(returnData);
         }
+        else if( content["command"]=="enablescript" )
+        {
+            //enable/disable script
+            AGO_DEBUG() << "enable/disable script command received: " << content;
+            checkMsgParameter(content, "enabled", VAR_UINT8);
+            checkMsgParameter(content, "name", VAR_STRING);
+
+            fs::path input(content["name"]);
+            fs::path script = construct_script_name(input.stem());
+            uint8_t enabled = content["enabled"].asUint8();
+            if( enableScript(script.string(), enabled) )
+            {
+                return responseSuccess();
+            }
+            else
+            {
+                return responseFailed("Unable to enable/disable script");
+            }
+        }
         else
         {
             return responseUnknownCommand();
@@ -1560,11 +1629,6 @@ void AgoLua::eventHandler(std::string subject, qpid::types::Variant::Map content
 
 void AgoLua::setupApp()
 {
-    //init mutex
-    pthread_mutex_init(&inventoryMutex, NULL);
-    pthread_mutex_init(&scriptsInfosMutex, NULL);
-    pthread_mutex_init(&scriptsContextsMutex, NULL);
-
     agocontroller = agoConnection->getAgocontroller();
 
     //get config

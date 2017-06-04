@@ -286,8 +286,44 @@ function getDatetimepickerFormat()
 {
     var d = getDateFormat();
     var t = getTimeFormat();
-    return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'h').replace(/m+/gi,'i').replace(/a/gi,'A');
+    var l = new Date().toLocaleTimeString();
+    if( l.indexOf('AM')!==-1 || l.indexOf('PM')!==-1 )
+    {
+        //12h format
+        return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'h').replace(/m+/gi,'i').replace(/a/gi,'A');
+    }
+    else
+    {
+        //24h format
+        return d.replace(/d+/gi,'d').replace(/m+/gi,'m').replace(/yyyy/gi,'Y').replace(/yy/gi,'y') + ' ' + t.replace(/h+/gi,'H').replace(/m+/gi,'i');
+    }
 };
+
+/**
+ * Return D3 date time format parser (use it with tickFormat)
+ */
+function getD3DatetimeParser()
+{
+    var l = new Date().toLocaleTimeString();
+	var hours24 = true;
+    if( l.indexOf('AM')!==-1 || l.indexOf('PM')!==-1 )
+		hours24 = false;
+
+    var format = [];
+	format.push([".%L", function(d) { return d.getMilliseconds(); }]);
+	format.push([":%S", function(d) { return d.getSeconds(); }]);
+	format.push(["%I:%M", function(d) { return d.getMinutes(); }]);
+	if( hours24 )
+		format.push(["%H", function(d) { return d.getHours(); }]);
+	else
+		format.push(["%I %p", function(d) { return d.getHours(); }]);
+	format.push(["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }]);
+	format.push(["%b %d", function(d) { return d.getDate() != 1; }]);
+	format.push(["%B", function(d) { return d.getMonth(); }]);
+	format.push(["%Y", function() { return true; }]);
+
+ 	return d3.time.format.multi(format);
+}
 
 /**
  * Return device type according to bootstrap
@@ -311,3 +347,19 @@ function getDeviceSize()
     return device;
 };
 
+/**
+ * Extend Bootstrap's "modal" module with enter key support.
+ * If enter is pressed, a 'defaultAction' event is submitted to the dialog element.
+ *
+ * Set data-bind="event:{defaultAction: doDeleteDevice}" on the modal root element.
+ */
+$.fn.modal.Constructor.prototype.escape = function(){
+    if (this.isShown && this.options.keyboard) {
+        this.$element.on('keydown.dismiss.bs.modal', $.proxy(function (e) {
+            e.which == 27 && this.hide();
+            e.which == 13 && this.$element.trigger('defaultAction');
+        }, this))
+    } else if (!this.isShown) {
+        this.$element.off('keydown.dismiss.bs.modal')
+    }
+}

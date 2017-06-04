@@ -391,6 +391,9 @@ events:
   event.system.debugscript:
     description: used by agolua to send debug messages to the blockly based event editor
     parameters: [debuglevel, message]
+  event.system.error:
+    description: announce a system error
+    parameters: [uuid, internalid, message]
 categories:
   coredevices:
     name: agocontrol core devices

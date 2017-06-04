@@ -42,6 +42,24 @@ commands:
         name: level to set
         type: integer
         range: [0, 100]
+  fade:
+    name: fade to a level with a timed delay
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 100]
+      time:
+        name: time slope for setting the level, milli seconds
+        type: integer
+        range: [0, 4294967296]
+  setfadetime:
+    name: set time (in ms) to be used for setlevel commands
+    parameters:
+      time:
+        name: time slope for setting the level, milli seconds
+        type: integer
+        range: [0, 4294967296]
   setchannel:
     name: set channel
     parameters:
@@ -64,6 +82,27 @@ commands:
         name: level for blue color
         type: integer
         range: [0, 100]
+  sethue:
+    name: set hue (colour)
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 65535]
+  setsaturation:
+    name: set saturation (color)
+    parameters:
+      level:
+        name: level to set
+        type: integer
+        range: [0, 65535]
+  setcolortemp:
+    name: set color temperature (color)
+    parameters:
+      level:
+        name: level to set (K)
+        type: integer
+        range: [0, 65535]
   sendir:
     name: send infrared remote code
     parameters:
@@ -95,6 +134,7 @@ devicetypes:
     name: Pushbutton
     description: momentary switch
     commands: [push]
+    events: [event.device.push, event.device.doublepush, event.device.triplepush]
   hdmicec:
     name: HDMI CEC interface
     description: control devices on the HDMI bus
@@ -110,6 +150,18 @@ devicetypes:
   powermeter:
     name: power meter
     description: sensor for power utilisation
+    commands: []
+  energycounter:
+    name: energy counter 
+    description: coutner for energy consumption
+    commands: []
+  energymeter:
+    name: energy meter
+    description: sensor for current energy level
+    commands: []
+  flowmeter:
+    name: flow meter
+    description: sensor for water/gas flow
     commands: []
   binarysensor:
     name: binary sensor
@@ -167,6 +219,10 @@ devicetypes:
     name: RGB dimmer
     description: allows to set different colors
     commands: ["on", "off", setlevel, setcolor]
+  smartdimmer:
+    name: Dimmer with more advanced features
+    description: Bulb with integrated WiFi. Allows to set different colors and beyond
+    commands: ["on", "off", setlevel, fade, setfadetime, setcolor, sethue, setsaturation, setcolortemp]
   controller:
     name: controller
     description: generic controller
@@ -233,8 +289,17 @@ events:
   event.security.sensortriggered:
     description: sensor was triggererd
     parameters: [level, uuid]
+  event.environment.powerchanged:
+    description: power level has changed
+    parameters: [level, uuid]
   event.environment.energychanged:
-    description: energy has changed
+    description: energy level has changed
+    parameters: [level, uuid]
+  event.environment.flowchanged:
+    description: flow has changed
+    parameters: [level, uuid]
+  event.environment.counterchanged:
+    description: counter value has changed
     parameters: [level, uuid]
   event.proximity.ndef:
     description: NFC NDEF tag within range
@@ -266,6 +331,18 @@ events:
   event.environment.fanstatechanged:
     description: fan state has changed
     parameters: [level, unit, uuid]
+  event.environment.co2changed:
+    description: CO2 level has changed
+    parameters: [level, unit, uuid]
+  event.device.push:
+    description: single push
+    parameters: [uuid]
+  event.device.doublepush:
+    description: double push
+    parameters: [uuid]
+  event.device.triplepush:
+    description: triple push
+    parameters: [uuid]
 units:
   degC:
     label: "°C"
@@ -297,3 +374,9 @@ units:
   Wh:
     label: "Wh"
     description: Power in watt hour
+  lh:
+    label: "l/h"
+    description: flow in liter per hour
+  ms:
+    label: "m/s"
+    description: Speed in meter per seconds

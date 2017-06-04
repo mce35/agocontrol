@@ -1,0 +1,382 @@
+<html>
+<head>
+<script type="text/javascript" src="blockly_compressed.js"></script>
+<script type="text/javascript" src="blocks_compressed.js"></script>
+<script type="text/javascript" src="lua_compressed.js"></script>
+<script type="text/javascript" src="msg/js/en.js"></script>
+<script type="text/javascript" src="yaml.min.js"></script>
+<script type="text/javascript" src="libphonenumber.js"></script>
+
+</head>
+<body>
+    <xml style="display: none" id="toolbox">
+        <category name="Logic">
+            <block type="controls_if"></block>
+            <block type="logic_compare"></block>
+            <block type="logic_operation"></block>
+            <block type="logic_negate"></block>
+            <block type="logic_boolean"></block>
+            <block type="logic_ternary"></block>
+        </category>
+        <category name="Loops">
+            <block type="controls_repeat"></block>
+            <block type="controls_whileUntil"></block>
+            <block type="controls_for">
+                <value name="FROM">
+                    <block type="math_number">
+                        <field name="NUM">1</field>
+                    </block>
+                </value>
+                <value name="TO">
+                    <block type="math_number">
+                        <field name="NUM">10</field>
+                    </block>
+                </value>
+                <value name="BY">
+                    <block type="math_number">
+                        <field name="NUM">1</field>
+                    </block>
+                </value>
+            </block>
+            <block type="controls_forEach"></block>
+            <block type="controls_flow_statements"></block>
+        </category>
+        <category name="Math">
+            <block type="math_number"></block>
+            <block type="math_arithmetic"></block>
+            <block type="agocontrol_range">
+                <value name="MIN">
+                    <block type="math_number">
+                        <field name="NUM">0</field>
+                    </block>
+                </value>
+                <value name="PROP">
+                    <block type="agocontrol_eventProperty"/>
+                </value>
+                <value name="MAX">
+                    <block type="math_number">
+                        <field name="NUM">100</field>
+                    </block>
+                </value>
+            </block>
+            <block type="math_number_property"></block>
+            <block type="math_change">
+                <value name="DELTA">
+                    <block type="math_number">
+                        <field name="NUM">1</field>
+                    </block>
+                </value>
+            </block>
+            <block type="math_round"></block>
+            <block type="math_on_list"></block>
+            <block type="math_constrain">
+                <value name="LOW">
+                    <block type="math_number">
+                        <field name="NUM">1</field>
+                    </block>
+                </value>
+                <value name="HIGH">
+                    <block type="math_number">
+                        <field name="NUM">100</field>
+                    </block>
+                </value>
+            </block>
+            <block type="math_random_int">
+                <value name="FROM">
+                    <block type="math_number">
+                        <field name="NUM">1</field>
+                    </block>
+                </value>
+                <value name="TO">
+                    <block type="math_number">
+                        <field name="NUM">100</field>
+                    </block>
+                </value>
+            </block>
+            <block type="math_random_float"></block>
+            <block type="math_modulo"></block>
+        </category>
+        <category name="Colour">
+            <block type="colour_picker"></block>
+            <block type="colour_rgb"></block>
+        </category>
+        <category name="Text">
+            <block type="text"></block>
+            <block type="agocontrol_email"></block>
+            <block type="agocontrol_phoneNumber"></block>
+            <block type="agocontrol_valueOptions"></block>
+            <block type="text_join"></block>
+            <block type="text_append">
+                <value name="TEXT">
+                    <block type="text"/>
+                </value>
+            </block>
+            <block type="text_length"></block>
+            <block type="text_isEmpty"></block>
+            <block type="text_changeCase"></block>
+            <block type="text_trim"></block>
+            <block type="text_format"></block>
+        </category>
+        <category name="List">
+            <block type="lists_create_empty"></block>
+            <block type="lists_create_with"></block>
+            <block type="lists_repeat">
+                <value name="NUM">
+                    <block type="math_number">
+                        <field name="NUM">5</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_length"></block>
+            <block type="lists_isEmpty"></block>
+            <block type="lists_indexOf">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_getIndex">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_setIndex">
+                <value name="LIST">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_getSublist">
+                <value name="LIST">
+                    <block type="variables_get">
+                        <field name="VAR">list</field>
+                    </block>
+                </value>
+            </block>
+        </category>
+        <category name="Datetime">
+            <block type="datetime_timestamp"></block>
+            <block type="datetime_totimestamp"></block>
+            <block type="datetime_currentdate"></block>
+            <block type="datetime_specificdate"></block>
+            <block type="agocontrol_weekday"></block>
+        </category>
+        <category name="Common">
+            <block type="text_print"></block>
+            <block type="common_tonumber"></block>
+            <block type="common_tostring"></block>
+            <block type="common_type"></block>
+            <block type="common_execute"></block>
+        </category>
+        <category name="Local variables" custom="VARIABLE">
+        </category>
+        <category name="Procedures" custom="PROCEDURE">
+        </category>
+        <category name="Agocontrol">
+            <category name="Content">
+                <block type="agocontrol_content">
+                    <value name="EVENT">
+                        <block type="agocontrol_eventAll">
+                        </block>
+                    </value>
+                </block>
+                <block type="agocontrol_contentProperty"></block>
+                <block type="logic_compare">
+                    <value name="A">
+                        <block type="agocontrol_contentProperty">
+                        </block>
+                    </value>
+                    <value name="B">
+                        <block type="math_number">
+                            <field name="NUM">0</field>
+                        </block>
+                    </value>
+                </block>
+                <block type="agocontrol_printContent"></block>
+            </category>
+            <category name="Inventory">
+                <block type="agocontrol_deviceProperty"></block>
+            </category>
+            <category name="Device">
+                <block type="agocontrol_deviceUuid"></block>
+                <block type="agocontrol_deviceInternalid"/></block>
+                <block type="agocontrol_deviceName">
+                    <value name="UUID">
+                        <block type="agocontrol_deviceUuid">
+                        </block>
+                    </value>
+                </block>
+            </category>
+            <category name="Event">
+                <block type="agocontrol_deviceEvent"></block>
+                <block type="agocontrol_eventAll"></block>
+            </category>
+            <category name="Actions">
+                <block type="agocontrol_sendMessage"></block>
+                <block type="agocontrol_sleep"></block>
+                <block type="agocontrol_journal"></block>
+            </category>
+            <category name="System variables">
+                <block type="agocontrol_getVariable"></block>
+                <block type="agocontrol_setVariable"></block>
+                <block type="agocontrol_defaultEmail"></block>
+                <block type="agocontrol_defaultPhoneNumber"></block>
+            </category>
+        </category>
+    </xml>
+
+
+    <div id="blocklyDiv" style="height: 600px; width: 960px;"></div>
+    <button id="generate">generate lua</button>
+    <button id="load">load</button>
+    <button id="dump">dump</button>
+    <button id="allblocks">log all blocks</button>
+    <div id="lua" style="height:600px; width:960px;"></div>
+
+  <script type="text/javascript">
+    getUnconnectedBlock = function() {
+        var blocks = Blockly.mainWorkspace.getAllBlocks();
+        for (var i = 0, block; block = blocks[i]; i++)
+        {
+            var connections = block.getConnections_(true);
+            for (var j = 0, conn; conn = connections[j]; j++)
+            {
+                if (!conn.sourceBlock_ || (conn.type == Blockly.INPUT_VALUE || conn.type == Blockly.OUTPUT_VALUE) && !conn.targetConnection)
+                {
+                    return block;
+                }
+            }
+        }
+        return null;
+    };
+    
+    getBlockWithWarning = function()
+    {
+        var blocks = Blockly.mainWorkspace.getAllBlocks();
+        for (var i = 0, block; block = blocks[i]; i++)
+        {
+            if (block.warning)
+            {
+                return block;
+            }
+        }
+        return null;
+    };
+    
+    blinkBlock = function(block)
+    {
+        for(var i=300; i<3000; i=i+300)
+        {
+            setTimeout(function() { block.select(); },i);
+            setTimeout(function() { block.unselect(); },i+150);
+        }
+    };
+  
+    //var schema = YAML.load('http://192.168.1.1/schema.yaml');
+    //var schema = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/master/conf/schema.yaml');
+    //var schema = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/conf/schema.d/00-core.yaml');
+    var schema = YAML.load('http://tanguy.no-ip.org/fullschema.yaml');
+    //var deviceMap = YAML.load('http://192.168.1.1/deviceMap.yaml');
+    //var deviceMap = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/devices/blockly/deviceMap.yaml');
+    //var variables = YAML.load('http://git.agocontrol.com/agocontrol/agocontrol/raw/develop/devices/blockly/variables.yaml');
+    var deviceMap = YAML.load('http://192.168.1.1/deviceMap.yaml');
+    var variables = YAML.load('http://192.168.1.1/variables.yaml');
+    console.log("schema:");
+    console.log(schema);
+    console.log("deviceMap:");
+    console.log(deviceMap);
+    console.log("variables:");
+    console.log(variables);
+    Blockly.inject(document.getElementById('blocklyDiv'),
+        {path: './', toolbox: document.getElementById('toolbox')});
+    BlocklyAgocontrol.init(schema, deviceMap, variables);
+    
+    //add default blocks
+    var ifBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'controls_if');
+    ifBlock.initSvg();
+    var contentBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'agocontrol_content');
+    contentBlock.initSvg();
+    var eventBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'agocontrol_eventAll');
+    eventBlock.initSvg();
+    //connect each others
+    ifBlock.getInput('IF0').connection.connect(contentBlock.outputConnection);
+    contentBlock.getInput('EVENT').connection.connect(eventBlock.outputConnection);
+    //render blocks
+    ifBlock.render();
+    contentBlock.render();
+    eventBlock.render();
+
+    var generate = document.getElementById("generate");
+    var load = document.getElementById("load");
+    var dump = document.getElementById("dump");
+    var lua = document.getElementById("lua");
+    var allblocks = document.getElementById("allblocks");
+    generate.onclick = function() {
+    
+        // Check for bad block configurations that make it unlikely that
+        // the resulting code is correct.
+        var badBlock = getUnconnectedBlock();
+        if (badBlock)
+        {
+            warningText = 'This block is not properly connected to other blocks.';
+        }
+        else
+        {
+            badBlock = getBlockWithWarning();
+            if (badBlock)
+            {
+                warningText = 'Please fix the warning on this block.';
+            }
+        }
+
+        if (badBlock)
+        {
+            lua.innerHTML = '<span style="color:red;">'+warningText+'</span>';
+            blinkBlock(badBlock);
+            return;
+        }
+    
+        var code = Blockly.Lua.workspaceToCode();
+        lua.textContent = code;
+    };
+    load.onclick = function() {
+        //var text = '<xml><block type="controls_if" id="40" inline="false" x="7" y="-88"><value name="IF0"><block type="agocontrol_contentCondition" id="41" inline="true"><value name="EVENT"><block type="agocontrol_eventAll" id="42"><field name="EVENT">event.environment.timechanged</field></block></value></block></value><statement name="DO0"><block type="agocontrol_sendMessage" id="43" inline="false"><value name="COMMAND"><block type="agocontrol_deviceCommand" id="44" inline="false"><mutation currenttype="squeezebox" currentdevice="3fd31990-e51a-47b7-8e40-cd98a12e6af9" currentcommand="displaymessage" duplicated="true"></mutation><field name="TYPE">squeezebox</field><field name="DEVICE">3fd31990-e51a-47b7-8e40-cd98a12e6af9</field><field name="COMMAND">displaymessage</field><value name="CUSTOM_duration"><block type="math_number" id="45"><field name="NUM">5</field></block></value><value name="CUSTOM_line1"><block type="text" id="46"><field name="TEXT">hello</field></block></value><value name="CUSTOM_line2"><block type="text" id="47"><field name="TEXT">world</field></block></value></block></value></block></statement></block></xml>';
+        //var text = '<xml><block type="controls_if" id="7" inline="false" x="31" y="16"><value name="IF0"><block type="agocontrol_content" id="10" inline="false"><value name="EVENT"><block type="agocontrol_eventAll" id="11"><field name="EVENT">event.dummy.text</field></block></value></block></value><statement name="DO0"><block type="controls_if" id="18" inline="false"><value name="IF0"><block type="logic_compare" id="33" inline="true"><field name="OP">EQ</field><value name="A"><block type="agocontrol_eventProperty" id="60"><field name="EVENT">event.dummy.text</field><field name="PROP">email</field></block></value><value name="B"><block type="math_number" id="55"><field name="NUM">0</field></block></value></block></value></block></statement></block></xml>';
+        //var text = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_if" id="1" inline="false" x="15" y="53"><value name="IF0"><block type="agocontrol_content" id="2" inline="false"><mutation conditioncount="1"></mutation><field name="COND1">AND</field><value name="EVENT"><block type="agocontrol_deviceEvent" id="3"><field name="TYPE">squeezebox</field><field name="DEVICE">434e7792-599e-43d0-952a-3333495c0f62</field><field name="EVENT">event.device.mediastatechanged</field></block></value><value name="PROP1"><block type="logic_compare" id="4" inline="true"><field name="OP">EQ</field><value name="A"><block type="agocontrol_eventProperty" id="5"><field name="EVENT">event.device.mediastatechanged</field><field name="PROP">state</field></block></value><value name="B"><block type="agocontrol_device" id="6"><field name="TYPE">scenario</field><field name="DEVICE">0e24d456-7546-443f-9939-0dbbba0a2a13</field></block></value></block></value></block></value><statement name="DO0"><block type="variables_set" id="64" inline="true"><field name="VAR">item</field><value name="VALUE"><block type="agocontrol_deviceProperty" id="10"><field name="TYPE">squeezebox</field><field name="DEVICE">434e7792-599e-43d0-952a-3333495c0f62</field><field name="PROP">state</field></block></value></block></statement></block></xml>'
+        var text = '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="controls_if" id="1" inline="false" x="0" y="0"><value name="IF0"><block type="agocontrol_content" id="2" inline="false"><mutation conditioncount="1"></mutation><field name="COND1">AND</field><value name="EVENT"><block type="agocontrol_eventAll" id="3"><field name="EVENT">event.device.announce</field></block></value><value name="PROP1"><block type="logic_compare" id="10" inline="true"><field name="OP">EQ</field><value name="A"><block type="agocontrol_contentProperty" id="17"><field name="EVENT">event.device.announce</field><field name="PROP">uuid</field></block></value><value name="B"><block type="math_number" id="44"><field name="NUM">0</field></block></value></block></value></block></value><statement name="DO0"><block type="text_print" id="54" inline="false"><value name="TEXT"><block type="agocontrol_deviceProperty" id="58"><field name="TYPE">scenario</field><field name="DEVICE">0e24d456-7546-443f-9939-0dbbba0a2a11</field><field name="PROP">state</field></block></value></block></statement></block></xml> ';
+        var xml = Blockly.Xml.textToDom(text);
+        Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
+    };
+    dump.onclick = function() {
+        var dom = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+        console.log(dom);
+        var xml = Blockly.Xml.domToText(dom);
+        console.log(xml);
+    };
+    allblocks.onclick = function() {
+        var all = Blockly.mainWorkspace.getAllBlocks();
+        console.log(all);
+    };
+    var wschanged = function() {
+        /*console.log(ifBlock);
+        console.log(contentBlock);
+        console.log('--------');*/
+    };
+    Blockly.addChangeListener(wschanged);
+    
+    /*defaultBlock = function() {
+    var rootBlock = Blockly.Block.obtain(Blockly.mainWorkspace, 'factory_base');
+    rootBlock.initSvg();
+    rootBlock.render();
+    rootBlock.setMovable(false);
+    rootBlock.setDeletable(false);
+    };*/
+    
+  </script>
+
+</body>
+</html>

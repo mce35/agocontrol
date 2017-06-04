@@ -14,7 +14,7 @@ using namespace std;
 using namespace cv;
 using namespace boost;
 
-typedef void (*CallbackBoostThreadSleep)(const chrono::duration<int, milli>&);
+typedef void (*CallbackBoostThreadSleep)(const boost::chrono::duration<int, boost::milli>&);
 
 /*class AgoFrame
 {

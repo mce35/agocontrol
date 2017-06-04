@@ -1,0 +1,14 @@
+# agoadmin
+#
+# This service starts up the agocontrol Mopidy device
+# started until it is shut down again.
+
+description     "Start agocontrol Mopidy devices"
+author          "Joakim Lindbom <Joakim.Lindbom@gmail.com>"
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [!2345]
+
+respawn
+chdir @BINDIR@
+exec @BINDIR@/agomopidy.py
